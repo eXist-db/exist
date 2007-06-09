@@ -221,7 +221,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}
     }
     
-    //Since an embedded HSQL has only one connection aailable (unless I'm totally dumb)
+    //Since an embedded HSQL has only one connection available (unless I'm totally dumb)
     //acquire and release the connection from the index, which is *the* connection's owner 
     
     protected Connection acquireConnection() {   
@@ -232,53 +232,6 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	index.releaseConnection(this.broker);
     }
     
-    protected NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry, Connection conn) throws SQLException {    	
-    	String bboxConstraint = "(EPSG4326_MINX = ? AND EPSG4326_MAXX = ?)" +
-    				" AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)"; 
-    	NodeSet result = null;
-        PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
-    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		" WHERE " + bboxConstraint + ";"
-    	);
-        ps.setDouble(1, EPSG4326_geometry.getEnvelopeInternal().getMinX());
-    	ps.setDouble(2, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
-    	ps.setDouble(3, EPSG4326_geometry.getEnvelopeInternal().getMinY());
-    	ps.setDouble(4, EPSG4326_geometry.getEnvelopeInternal().getMaxY());      
-    	ResultSet rs = null;
-    	result = new ExtArrayNodeSet(); //new ExtArrayNodeSet(docs.getLength(), 250)
-    	try {
-    		rs = ps.executeQuery();
-    		while (rs.next()) {    			
-	        	Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));	
-	        	boolean geometryMatches = geometry.equals(EPSG4326_geometry);	        	
-	        	if (geometryMatches) {	        	
-	        		XmldbURI documentURI = XmldbURI.create(rs.getString("DOCUMENT_URI"));
-	        		try {
-	        			Document doc = broker.getXMLResource(documentURI);	        			
-		        		NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-		        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
-		        		result.add(p);
-	        		} catch (PermissionDeniedException e) {
-	        			LOG.debug(e);
-	        		}
-	        	}
-    		}
-    		if (LOG.isDebugEnabled()) {
-    			LOG.debug(rs.getRow() + " eligible geometries, " + result.getItemCount() + "selected");
-    		}
-    		return result;
-        } catch (ParseException e) {
-        	LOG.error(e);
-        	return null;
-    	} finally {   
-    		if (rs != null)
-    			rs.close();
-    		if (ps != null)
-    			ps.close();
-    	}    	
-    }    
-
     protected NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException {
     	String extraSelection = null;
     	String bboxConstraint = null;    	
@@ -552,14 +505,13 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		"SELECT EPSG4326_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
     	); 
         ps.setString(1, doc.getURI().toString());
-        //TODO : better a List with a end of process string transformation ?
-    	Map map = null;
         ResultSet rs = null;
         try {	 
 	        rs = ps.executeQuery();
-	        map = new TreeMap();
+	        Map map = new TreeMap();
 	        while (rs.next()) {
 	        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
+	        	//Returns the EPSG:4326 WKT for every geometry to make occurrence aggregation consistent
 	        	map.put(EPSG4326_geometry, rs.getString("EPSG4326_WKT"));
 	        }
 	        return map;
