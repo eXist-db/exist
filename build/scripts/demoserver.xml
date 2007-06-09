@@ -70,6 +70,7 @@
             <replacefilter token="backup.xml" value="backup.html"/>
             <replacefilter token="building.xml" value="building.html"/>
             <replacefilter token="xmlprague06.xml" value="xmlprague06.html"/>
+			<replacefilter token="soc-ft.xml" value="soc-ft.html"/>
 			<replacefilter token="soc-xqj.xml" value="soc-xqj.html"/>
 			<replacefilter token="tutorials.xml" value="tutorials.html"/>
 
@@ -128,7 +129,8 @@
                 <uri type="append" src="facts.xml"/>
                 <uri type="append" src="extensions.xml"/>
                 <uri type="append" src="summer.xml"/>
-            	<uri type="append" src="soc-xqj.xml"/>
+				<uri type="append" src="soc-ft.xml"/>
+				<uri type="append" src="soc-xqj.xml"/>
             </uris>
         </cocoon>
 
