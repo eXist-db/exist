@@ -742,15 +742,15 @@ protected synchronized void releaseConnection(DBBroker broker) {
 			} else if (rs.getRow() == 0) {
 				Statement stmt = conn.createStatement();
 				stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
-					/*1*/ "DOCUMENT_URI VARCHAR, " +        		
-					/*2*/ "NODE_ID_UNITS INTEGER, " + 
-					/*3*/ "NODE_ID BINARY, " +        			
-					...	        	
-					/*26*/ "IS_VALID BOOLEAN, " +
-					//Enforce uniqueness
-					"UNIQUE (" +
-						"DOCUMENT_URI, NODE_ID" +
-					")" +
+						/*1*/ "DOCUMENT_URI VARCHAR, " +        		
+						/*2*/ "NODE_ID_UNITS INTEGER, " + 
+						/*3*/ "NODE_ID BINARY, " +        			
+						...	        	
+						/*26*/ "IS_VALID BOOLEAN, " +
+						//Enforce uniqueness
+						"UNIQUE (" +
+							"DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
+						")" +
 					")"
 				);
 				stmt.executeUpdate("CREATE INDEX DOCUMENT_URI ON " + TABLE_NAME + " (DOCUMENT_URI);");
