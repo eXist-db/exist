@@ -4,6 +4,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Developer's Guide</title>
+        <date>June 2007</date>
         <author>
             <firstname>Pierrick</firstname>
             <surname>Brihaye</surname>
@@ -106,7 +107,7 @@
     <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex" connectionTimeout="100000" flushAfter="300" />                     
 </modules>
 			]]></markup></programlisting></para>
-			<para>... which defines 2 indexes, backed-up by their specific classes (<sgmltag>class</sgmltag> 
+			<para>... which defines 2 indexes, backed-up by their specific classes (<sgmltag class="attribute">class</sgmltag> 
 			attribute ; these classes implement the <classname>org.exist.indexing.Index</classname> interface as we will
 			see below), eventually assigns them a human-readable (writable even) identifier and passes them custom 
 			parameters which are implementation-dependant. Then, it configures (by calling their 
@@ -269,7 +270,7 @@
 			<synopsis format="linespecific">public void configure(BrokerPool pool, String dataDir, Element config)</synopsis>
 			<para>Its minimal implementation retains the <classname>org.exist.storage.BrokerPool</classname>, 
 			the data directory and the human-defined name, if defined in the configuration file (in an attribute
-			called <sgmltag>id</sgmltag>).
+			called <sgmltag  class="attribute">id</sgmltag>).
 			Sub-classes may call <methodname>super.configure()</methodname> to retain this default behaviour.</para>
 			<para>This member is protected :</para>
 			<synopsis format="linespecific">protected static String ID = "Give me an ID !"</synopsis>
@@ -572,7 +573,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 			<para>The last member is the timeout when a <classname>Connection</classname> to the DB is requested.</para>
 			<para>As we can see, we have an empty constructor again.</para>
 			<para>The next method calls its ancestor's <methodname>configure()</methodname> method and just retains 
-			the content of the <sgmltag>connectionTimeout</sgmltag> attribute as defined in the configuration file.</para>
+			the content of the <sgmltag  class="attribute">connectionTimeout</sgmltag> attribute as defined in the configuration file.</para>
 			<programlisting format="linespecific"><![CDATA[				
 public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
 	super.configure(pool, dataDir, config);
@@ -809,7 +810,7 @@ protected synchronized void releaseConnection(DBBroker broker) {
                     <td>SRS_NAME</td>
                     <td align="center">VARCHAR</td>
                     <td>The SRS of the geometry</td>
-                    <td><sgmltag>srsName</sgmltag> attribute in the GML element</td>
+                    <td><sgmltag class="attribute">srsName</sgmltag> attribute in the GML element</td>
                 </tr>   
                 <tr>
                     <td>WKT</td>

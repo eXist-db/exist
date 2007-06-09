@@ -35,7 +35,7 @@
             <body bgcolor="#FFFFFF">
                 <xsl:apply-templates select="bookinfo|articleinfo"/>
                 <xsl:apply-templates select="sidebar:sidebar"/>
-                <div id="content2col">
+                <div id="content2col">   
                     <xsl:choose>
                         <xsl:when test="self::article">
                             <h1 class="chaptertitle">
@@ -120,7 +120,10 @@
         </div>
     </xsl:template>
 
-    <xsl:template match="chapter/title">    
+    <xsl:template match="chapter/title">
+        <xsl:for-each select="//bookinfo/date | //articleinfo/date">
+        	<xsl:value-of select= "." /><xsl:text> </xsl:text>
+        </xsl:for-each>
         <xsl:for-each select="//author">
         	<xsl:apply-templates select="."/>
         </xsl:for-each>
@@ -400,7 +403,16 @@
         </li>
     </xsl:template>
 
-    <xsl:template match="sgmltag"> &lt;<xsl:apply-templates/>&gt; </xsl:template>
+    <xsl:template match="sgmltag">
+	    <xsl:choose>
+	    	<xsl:when test="@class = 'attribute'">
+	    		@<xsl:apply-templates/>
+	    	</xsl:when>
+	    	<xsl:otherwise>
+	 		    &lt;<xsl:apply-templates/>&gt; 
+	 		</xsl:otherwise>
+	 	</xsl:choose>
+	 </xsl:template>
 
     <xsl:template name="returns2br">
         <xsl:param name="string"/>
