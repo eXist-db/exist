@@ -219,7 +219,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 		        			/*26*/ "IS_VALID BOOLEAN, " +
 		        			//Enforce uniqueness
 		        			"UNIQUE (" +
-		        				"DOCUMENT_URI, NODE_ID" +
+		        				"DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
 		        			")" +
 		        		")"
 	        		);
