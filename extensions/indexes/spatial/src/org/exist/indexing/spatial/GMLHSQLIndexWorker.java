@@ -130,8 +130,10 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             try {
             	EPSG4326_geometry = coordinateTransformer.transform(geometry);
             } catch (TransformException e) {
-        		LOG.error(e);
-        		return false;
+	        	//Transforms the exception into an SQLException.
+	        	SQLException ee = new SQLException(e.getMessage());
+	        	ee.initCause(e);
+	        	throw ee;
             }
             /*DOCUMENT_URI*/ ps.setString(1, doc.getURI().toString());	
             /*NODE_ID_UNITS*/ ps.setInt(2, nodeId.units());
@@ -180,12 +182,14 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
    
     protected boolean removeDocumentNode(DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
-        		"DELETE FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
+        		"DELETE FROM " + GMLHSQLIndex.TABLE_NAME + 
+        		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
         	); 
         ps.setString(1, doc.getURI().toString());
+        ps.setInt(2, nodeId.units());
         byte[] bytes = new byte[nodeId.size()];
         nodeId.serialize(bytes, 0);        
-        ps.setBytes(2, bytes);
+        ps.setBytes(3, bytes);
         try {	 
 	        return (ps.executeUpdate() == 1);
     	} finally {
@@ -285,15 +289,17 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		rs = ps.executeQuery();
     		result = new ExtArrayNodeSet(); //new ExtArrayNodeSet(docs.getLength(), 250)
     		while (rs.next()) {
-    			NodeProxy p = null;	    		
-        		XmldbURI documentURI = XmldbURI.create(rs.getString("DOCUMENT_URI"));
+    			Document doc = null;
         		try {
-        			Document doc = broker.getXMLResource(documentURI);        			
-        			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-	        		p = new NodeProxy((DocumentImpl)doc, nodeId);		        		
+        			doc = broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
         		} catch (PermissionDeniedException e) {
         			LOG.debug(e);
+        			//Ignore since the broker has no right on the document
+        			continue;
         		}        		
+    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);		        		
+
         		//Node is in the context : check if it is accurate
         		//contextSet.contains(p) would have made more sense but there is a problem with
         		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
@@ -340,8 +346,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 				        		break;	        		
 				        	}
 		    	        } catch (ParseException e) {
-		    	        	LOG.error(e); 
-		    	        	return NodeSet.EMPTY_SET;
+		    	        	//Transforms the exception into an SQLException.
+		    	        	//Very unlikely to happen though...
+		    	        	SQLException ee = new SQLException(e.getMessage());
+		    	        	ee.initCause(e);
+		    	        	throw ee;
 		    	        }
 		        	}
 		        	if (geometryMatches)        	
@@ -461,10 +470,18 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_VALID"));
 	    			return false;
 	            }
+
+	            Document doc = null;
+	            try {
+	            	doc = broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
+	            } catch (PermissionDeniedException e) {
+        			//The broker has no right on the document
+	            	LOG.error(e);
+	            	return false;
+	            }
 	            
-	            Document doc = broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
 	            NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 	    		
-	        	StoredNode node = broker.objectWith(new NodeProxy((DocumentImpl)doc, nodeId));
+	            StoredNode node = broker.objectWith(new NodeProxy((DocumentImpl)doc, nodeId));
 	        	if (!GMLHSQLIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
 	        		LOG.info("GML indexed node (" + node.getNodeId()+ ") is in the '" + 
 	        				node.getNamespaceURI() + "' namespace. '" + 
@@ -487,11 +504,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	        return true;
 	        
         } catch (ParseException e) {
-        	LOG.error(e);
-        	return false;
-        } catch (PermissionDeniedException e) {
-        	LOG.error(e);
-        	return false;
+        	//Transforms the exception into an SQLException.
+        	//Very unlikely to happen though...
+        	SQLException ee = new SQLException(e.getMessage());
+        	ee.initCause(e);
+        	throw ee;
 		} finally {   
 			if (rs != null)
 				rs.close();
@@ -516,8 +533,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	        }
 	        return map;
         } catch (ParseException e) {
-        	LOG.error(e);
-        	return null;
+        	//Transforms the exception into an SQLException.
+        	//Very unlikely to happen though...
+        	SQLException ee = new SQLException(e.getMessage());
+        	ee.initCause(e);
+        	throw ee;
     	} finally {   
     		if (rs != null)
     			rs.close();
@@ -530,12 +550,13 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         PreparedStatement ps = conn.prepareStatement(
     		"SELECT " + propertyName + 
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
+    		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?"
     	);
         ps.setString(1, p.getDocument().getURI().toString());
+        ps.setInt(2, p.getNodeId().units());
         byte[] bytes = new byte[p.getNodeId().size()];
         p.getNodeId().serialize(bytes, 0);
-    	ps.setBytes(2, bytes);    	
+    	ps.setBytes(3, bytes);    	
     	ResultSet rs = null;    	
     	try {
     		rs = ps.executeQuery();
@@ -570,12 +591,13 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         PreparedStatement ps = conn.prepareStatement(
         	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
+    		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
     	);
         ps.setString(1, p.getDocument().getURI().toString());
+        ps.setInt(2, p.getNodeId().units());
         byte[] bytes = new byte[p.getNodeId().size()];
         p.getNodeId().serialize(bytes, 0);
-    	ps.setBytes(2, bytes);   
+    	ps.setBytes(3, bytes);   
     	ResultSet rs = null;    	
     	try {
     		rs = ps.executeQuery();
@@ -589,8 +611,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		}
         	return geometry;    
         } catch (ParseException e) {
-        	LOG.error(e); 
-        	return null;
+        	//Transforms the exception into an SQLException.
+        	//Very unlikely to happen though...
+        	SQLException ee = new SQLException(e.getMessage());
+        	ee.initCause(e);
+        	throw ee;
     	} finally {   
     		if (rs != null)
     			rs.close();
