@@ -13,6 +13,16 @@
 	</address>
       </affiliation>
     </author>
+    <author>
+      <firstname>Pierrick</firstname>
+      <surname>Brihaye</surname>
+      <affiliation>
+		<address format="linespecific">
+		  <email>pierrick dot brihaye at culture dot gouv dot fr</email>
+		  <email>pierrick dot brihaye at region dash bretagne dot fr</email>
+		</address>
+      </affiliation>
+    </author>
   </bookinfo>
   <ci:include src="sidebar.xml"/>
   <chapter>
@@ -23,9 +33,9 @@
     <para>The source code for extension modules should be placed in their own folder inside 
     <filename>$EXIST_HOME/extensions/modules/src/org/exist/xquery/modules</filename>. 
     They may then be compiled in place using either <command>$EXIST_HOME/build.sh extension-modules</command> or 
-    <command>%EXIST_HOME%\build.bat extensions</command>.</para>
+    <command>%EXIST_HOME%\build.bat extensions</command> depending on the platform.</para>
     <para>Modules associated to modularized indexes should be placed in the <filename>$EXIST_HOME/extensions/indexes/*/xquery/modules/*</filename> hierarchy.
-    Thy will be compiled automatically by the build targets.</para>
+    They will be compiled automatically by the standard build targets or as indicated above.</para>
     <para>eXist must also be told which modules to load, this is done in <filename>conf.xml</filename> and the Class name and Namespace for each module is listed below. Note - eXist will require a restart to load the new module.
     Once a Module is configured and loaded eXist will display the module and its function definitions as part of the <ulink url="xquery/functions.xq">function library</ulink> page or through <command>util:decribe-function()</command>.</para>
 
@@ -175,7 +185,7 @@
 
     <section id="module_spatial">
       <title>Spatial module</title>
-      <para>Various functions for <ulink url="http://www.opengeospatial.org/standards/gml">GML</ulink> geometries.</para>
+      <para>Various functions for <ulink url="http://www.opengeospatial.org/standards/gml">GML</ulink> geometries, whether indexed or not.</para>
       <para>
 	<command>Creator:</command>&#160;<dc:creator>Pierrick Brihaye</dc:creator>
 	<command>Licence:</command>&#160;LGPL
