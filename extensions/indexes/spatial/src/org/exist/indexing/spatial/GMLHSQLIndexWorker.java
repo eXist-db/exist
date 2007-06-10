@@ -52,7 +52,6 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.ValueSequence;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.w3c.dom.Document;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -298,6 +297,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         			//Ignore since the broker has no right on the document
         			continue;
         		}        		
+        		//contextSet == null should be use to scan the whole index
         		if (contextSet == null || contextSet.getDocumentSet().contains(doc.getDocId())) {
 	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
 	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);		
@@ -610,6 +610,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         			doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
         		} catch (PermissionDeniedException e) {
         			LOG.debug(e);
+        			//Untested, but that is roughly what should be returned.
 	        		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
 	        			result.add(BooleanValue.EMPTY_VALUE);
 	        		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
