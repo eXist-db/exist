@@ -142,9 +142,9 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 		        	throw new XPathException("Unable to find a spatial index worker");
 		        Geometry EPSG4326_geometry = null;
 		        NodeValue geometryNode = (NodeValue) args[1].itemAt(0);   
-				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE)
+				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) 
 					//The node should be indexed
-					EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);		
+					EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
 		        if (EPSG4326_geometry == null) {		        	
 		        	Geometry geometry = indexWorker.streamGeometryForNode(context, geometryNode);
 	            	//Argl ! No SRS !
@@ -152,28 +152,35 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 	            	//Erroneous workaround
 		        	String sourceCRS = "osgb:BNG";
 		            //Transform the geometry to EPSG:4326		            
-		            EPSG4326_geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");	        		        
+		        	EPSG4326_geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");	        		        
 		        }
-		        int spatialOp = SpatialOperator.UNKNOWN;
-		        if (isCalledAs("equals"))
-		        	spatialOp = SpatialOperator.EQUALS;
-		        else if (isCalledAs("disjoint"))
-		        	spatialOp = SpatialOperator.DISJOINT;
-		        else if (isCalledAs("intersects"))
-		        	spatialOp = SpatialOperator.INTERSECTS;	 
-		        else if (isCalledAs("touches"))
-		        	spatialOp = SpatialOperator.TOUCHES;
-		        else if (isCalledAs("crosses"))
-		        	spatialOp = SpatialOperator.CROSSES;	   
-		        else if (isCalledAs("within"))
-		        	spatialOp = SpatialOperator.WITHIN;		
-		        else if (isCalledAs("contains"))
-		        	spatialOp = SpatialOperator.CONTAINS;		
-		        else if (isCalledAs("overlaps"))
-		        	spatialOp = SpatialOperator.OVERLAPS;
-		        //Search the EPSG:4326 in the index
-		        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
-		        hasUsedIndex = true;
+				//Provisional workaround : Geotools sometimes returns null geometries 
+				//due to a too strict check. 
+				//I can't see a way to return something useful in such a case
+	        	if (EPSG4326_geometry == null) 
+	        		result = Sequence.EMPTY_SEQUENCE;
+	        	else {
+			        int spatialOp = SpatialOperator.UNKNOWN;
+			        if (isCalledAs("equals"))
+			        	spatialOp = SpatialOperator.EQUALS;
+			        else if (isCalledAs("disjoint"))
+			        	spatialOp = SpatialOperator.DISJOINT;
+			        else if (isCalledAs("intersects"))
+			        	spatialOp = SpatialOperator.INTERSECTS;	 
+			        else if (isCalledAs("touches"))
+			        	spatialOp = SpatialOperator.TOUCHES;
+			        else if (isCalledAs("crosses"))
+			        	spatialOp = SpatialOperator.CROSSES;	   
+			        else if (isCalledAs("within"))
+			        	spatialOp = SpatialOperator.WITHIN;		
+			        else if (isCalledAs("contains"))
+			        	spatialOp = SpatialOperator.CONTAINS;		
+			        else if (isCalledAs("overlaps"))
+			        	spatialOp = SpatialOperator.OVERLAPS;
+			        //Search the EPSG:4326 in the index
+			        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
+			        hasUsedIndex = true;
+	        	}
         	} catch (SpatialIndexException e) {
         		throw new XPathException(e);
         	}

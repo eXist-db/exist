@@ -49,6 +49,7 @@ import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.ValueSequence;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.w3c.dom.Document;
@@ -289,72 +290,73 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		rs = ps.executeQuery();
     		result = new ExtArrayNodeSet(); //new ExtArrayNodeSet(docs.getLength(), 250)
     		while (rs.next()) {
-    			Document doc = null;
+    			DocumentImpl doc = null;
         		try {
-        			doc = broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+        			doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
         		} catch (PermissionDeniedException e) {
         			LOG.debug(e);
         			//Ignore since the broker has no right on the document
         			continue;
         		}        		
-    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);		        		
-
-        		//Node is in the context : check if it is accurate
-        		//contextSet.contains(p) would have made more sense but there is a problem with
-        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
-        		if (contextSet == null || contextSet.get(p) != null) {        			
-		        	boolean geometryMatches = false;
-		        	if (spatialOp == SpatialOperator.DISJOINT) {
-		        		//No BBox intersection : obviously disjoint
-		        		if (rs.getDouble("EPSG4326_MAXX") < EPSG4326_geometry.getEnvelopeInternal().getMinX() ||	        			
-			        		rs.getDouble("EPSG4326_MINX") > EPSG4326_geometry.getEnvelopeInternal().getMaxX() ||	        			
-			        		rs.getDouble("EPSG4326_MAXY") < EPSG4326_geometry.getEnvelopeInternal().getMinY() ||	        			
-			        		rs.getDouble("EPSG4326_MINY") > EPSG4326_geometry.getEnvelopeInternal().getMaxY()) {
-			        			geometryMatches = true;
-					        		disjointPostFiltered++;	
-		        		}
-		        	}
-		        	//Possible match : check the geometry
-		        	if (!geometryMatches) {	
-		        		try {			        	
-				        	Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));			        	
-				        	switch (spatialOp) {
-				        	case SpatialOperator.EQUALS:	        		        		
-				        		geometryMatches = geometry.equals(EPSG4326_geometry);
-				        		break;
-				        	case SpatialOperator.DISJOINT:        		
-				        		geometryMatches = geometry.disjoint(EPSG4326_geometry);
-				        		break;	        		
-				        	case SpatialOperator.INTERSECTS:        		
-				        		geometryMatches = geometry.intersects(EPSG4326_geometry);
-				        		break;	        		
-				        	case SpatialOperator.TOUCHES:
-					        	geometryMatches = geometry.touches(EPSG4326_geometry);
-				        		break;	        		
-				        	case SpatialOperator.CROSSES:
-					        	geometryMatches = geometry.crosses(EPSG4326_geometry);
-				        		break;	        		
-				        	case SpatialOperator.WITHIN:        		
-				        		geometryMatches = geometry.within(EPSG4326_geometry);
-				        		break;	        		
-				        	case SpatialOperator.CONTAINS:	        		
-				        		geometryMatches = geometry.contains(EPSG4326_geometry);
-				        		break;	        		
-				        	case SpatialOperator.OVERLAPS:	        		
-				        		geometryMatches = geometry.overlaps(EPSG4326_geometry);
-				        		break;	        		
-				        	}
-		    	        } catch (ParseException e) {
-		    	        	//Transforms the exception into an SQLException.
-		    	        	//Very unlikely to happen though...
-		    	        	SQLException ee = new SQLException(e.getMessage());
-		    	        	ee.initCause(e);
-		    	        	throw ee;
-		    	        }
-		        	}
-		        	if (geometryMatches)        	
-			        	result.add(p);
+        		if (contextSet == null || contextSet.getDocumentSet().contains(doc.getDocId())) {
+	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);		
+	        		//Node is in the context : check if it is accurate
+	        		//contextSet.contains(p) would have made more sense but there is a problem with
+	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
+	        		if (contextSet == null || contextSet.get(p) != null) {        			
+			        	boolean geometryMatches = false;
+			        	if (spatialOp == SpatialOperator.DISJOINT) {
+			        		//No BBox intersection : obviously disjoint
+			        		if (rs.getDouble("EPSG4326_MAXX") < EPSG4326_geometry.getEnvelopeInternal().getMinX() ||	        			
+				        		rs.getDouble("EPSG4326_MINX") > EPSG4326_geometry.getEnvelopeInternal().getMaxX() ||	        			
+				        		rs.getDouble("EPSG4326_MAXY") < EPSG4326_geometry.getEnvelopeInternal().getMinY() ||	        			
+				        		rs.getDouble("EPSG4326_MINY") > EPSG4326_geometry.getEnvelopeInternal().getMaxY()) {
+				        			geometryMatches = true;
+						        		disjointPostFiltered++;	
+			        		}
+			        	}
+			        	//Possible match : check the geometry
+			        	if (!geometryMatches) {	
+			        		try {			        	
+					        	Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));			        	
+					        	switch (spatialOp) {
+					        	case SpatialOperator.EQUALS:	        		        		
+					        		geometryMatches = geometry.equals(EPSG4326_geometry);
+					        		break;
+					        	case SpatialOperator.DISJOINT:        		
+					        		geometryMatches = geometry.disjoint(EPSG4326_geometry);
+					        		break;	        		
+					        	case SpatialOperator.INTERSECTS:        		
+					        		geometryMatches = geometry.intersects(EPSG4326_geometry);
+					        		break;	        		
+					        	case SpatialOperator.TOUCHES:
+						        	geometryMatches = geometry.touches(EPSG4326_geometry);
+					        		break;	        		
+					        	case SpatialOperator.CROSSES:
+						        	geometryMatches = geometry.crosses(EPSG4326_geometry);
+					        		break;	        		
+					        	case SpatialOperator.WITHIN:        		
+					        		geometryMatches = geometry.within(EPSG4326_geometry);
+					        		break;	        		
+					        	case SpatialOperator.CONTAINS:	        		
+					        		geometryMatches = geometry.contains(EPSG4326_geometry);
+					        		break;	        		
+					        	case SpatialOperator.OVERLAPS:	        		
+					        		geometryMatches = geometry.overlaps(EPSG4326_geometry);
+					        		break;	        		
+					        	}
+			    	        } catch (ParseException e) {
+			    	        	//Transforms the exception into an SQLException.
+			    	        	//Very unlikely to happen though...
+			    	        	SQLException ee = new SQLException(e.getMessage());
+			    	        	ee.initCause(e);
+			    	        	throw ee;
+			    	        }
+			        	}
+			        	if (geometryMatches)        	
+				        	result.add(p);
+	        		}
         		}
     		}
     		if (LOG.isDebugEnabled()) {
@@ -478,15 +480,14 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	    			return false;
 	            }
 
-	            Document doc = null;
+	            DocumentImpl doc = null;
 	            try {
-	            	doc = broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
+	            	doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
 	            } catch (PermissionDeniedException e) {
         			//The broker has no right on the document
 	            	LOG.error(e);
 	            	return false;
 	            }
-	            
 	            NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 	    		
 	            StoredNode node = broker.objectWith(new NodeProxy((DocumentImpl)doc, nodeId));
 	        	if (!GMLHSQLIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
@@ -569,7 +570,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		rs = ps.executeQuery();
     		if (!rs.next())
     			//Nothing returned
-    			return null;
+    			return AtomicValue.EMPTY_VALUE;
     		AtomicValue result = null;
     		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
     			result = new BooleanValue(rs.getBoolean(1));
@@ -594,6 +595,63 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         }
     }      
     
+    protected ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException {
+        PreparedStatement ps = conn.prepareStatement(
+    		"SELECT " + propertyName + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + 
+    		" FROM " + GMLHSQLIndex.TABLE_NAME
+    	);
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		ValueSequence result = new ValueSequence(contextSet.getLength());    		
+    		while (rs.next()) {
+    			DocumentImpl doc = null;
+        		try {
+        			doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+        		} catch (PermissionDeniedException e) {
+        			LOG.debug(e);
+	        		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+	        			result.add(BooleanValue.EMPTY_VALUE);
+	        		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+	        			result.add(DoubleValue.EMPTY_VALUE);
+	        		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+	        			result.add(StringValue.EMPTY_VALUE);
+	        		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+	        			result.add(Base64Binary.EMPTY_VALUE);
+	        		} else 
+	        			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
+        			//Ignore since the broker has no right on the document
+        			continue;
+        		}        		
+        		if (contextSet.getDocumentSet().contains(doc.getDocId())) {
+	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
+	        		//Node is in the context : check if it is accurate
+	        		//contextSet.contains(p) would have made more sense but there is a problem with
+	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
+	        		if (contextSet.get(p) != null) {
+		        		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+		        			result.add(new BooleanValue(rs.getBoolean(1)));
+		        		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+		        			result.add(new DoubleValue(rs.getDouble(1)));
+		        		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+		        			result.add(new StringValue(rs.getString(1)));
+		        		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+		        			result.add(new Base64Binary(rs.getBytes(1)));
+		        		} else 
+		        			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
+	        		}
+        		}
+    		}
+    		return result;    
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    }      
+
     protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
         	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") +
@@ -629,5 +687,52 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		if (ps != null)
     			ps.close();
         }
-    } 
+    }
+    
+    protected Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(
+        	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
+    		" FROM " + GMLHSQLIndex.TABLE_NAME 
+    	);
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		Geometry[] result = new Geometry[contextSet.getLength()];
+    		int index= 0;
+    		while (rs.next()) {
+    			DocumentImpl doc = null;
+        		try {
+        			doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+        		} catch (PermissionDeniedException e) {
+        			LOG.debug(e);
+        			result[index++] = null;
+        			//Ignore since the broker has no right on the document
+        			continue;
+        		}        
+        		if (contextSet.getDocumentSet().contains(doc.getDocId())) {
+	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
+	        		//Node is in the context : check if it is accurate
+	        		//contextSet.contains(p) would have made more sense but there is a problem with
+	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
+	        		if (contextSet.get(p) != null) {
+			        	Geometry geometry = wkbReader.read(rs.getBytes(1));        			
+			        	result[index++] = geometry;
+	        		}
+        		}
+    		}
+    		return result;
+        } catch (ParseException e) {
+        	//Transforms the exception into an SQLException.
+        	//Very unlikely to happen though...
+        	SQLException ee = new SQLException(e.getMessage());
+        	ee.initCause(e);
+        	throw ee;
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    }    
 }
