@@ -67,6 +67,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.ValueSequence;
 import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
 import org.geotools.gml.GMLFilterDocument;
 import org.geotools.gml.GMLFilterGeometry;
@@ -463,16 +464,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	    }
     }
     
-    public AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, String propertyName) 
-    	throws  SpatialIndexException {
+    protected Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326) throws SpatialIndexException {
     	Connection conn = null;
         try {
         	conn = acquireConnection();
-        	return getGeometricPropertyForNode(broker, p, conn, propertyName);
+        	return getGeometriesForNodes(broker, contextSet, getEPSG4326, conn);
 	    } catch (SQLException e) {
 	    	throw new SpatialIndexException(e);
-	    } catch (XPathException e) {
-	    	throw new SpatialIndexException(e);	    	
 	    } finally {
         	try {
         		if (conn != null)
@@ -482,7 +480,49 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             	return null;
             }            
 	    }
-    }    
+    }
+    
+    public AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, String propertyName) 
+	throws  SpatialIndexException {
+		Connection conn = null;
+	    try {
+	    	conn = acquireConnection();
+	    	return getGeometricPropertyForNode(broker, p, conn, propertyName);
+	    } catch (SQLException e) {
+	    	throw new SpatialIndexException(e);
+	    } catch (XPathException e) {
+	    	throw new SpatialIndexException(e);	    	
+	    } finally {
+	    	try {
+	    		if (conn != null)
+	    			releaseConnection(conn);
+	        } catch (SQLException e) {
+	        	LOG.error(e);
+	        	return null;
+	        }            
+	    }
+	}    
+    
+    public ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, String propertyName) 
+	throws  SpatialIndexException {
+		Connection conn = null;
+	    try {
+	    	conn = acquireConnection();
+	    	return getGeometricPropertyForNodes(broker, contextSet, conn, propertyName);
+	    } catch (SQLException e) {
+	    	throw new SpatialIndexException(e);
+	    } catch (XPathException e) {
+	    	throw new SpatialIndexException(e);	    	
+	    } finally {
+	    	try {
+	    		if (conn != null)
+	    			releaseConnection(conn);
+	        } catch (SQLException e) {
+	        	LOG.error(e);
+	        	return null;
+	        }            
+	    }
+	}
     
     public Geometry streamGeometryForNode(XQueryContext context, NodeValue node) throws SpatialIndexException {
     	try {
@@ -568,8 +608,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected abstract Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException;
     
     protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException;
+
+    protected abstract ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException;
     
     protected abstract Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException;
+    
+    protected abstract Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn) throws SQLException;
     
     protected abstract NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException;
     
@@ -697,7 +741,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
   
     private class GeometryHandler extends XMLFilterImpl implements GMLHandlerJTS {
         public void geometry(Geometry geometry) {
-        	streamedGeometry = geometry;      		
+        	streamedGeometry = geometry;      	
+        	//TODO : null geometries can't be returned for many reasons, including a (too) strict
+        	//topology check done by the Geotools SAX parser.
+        	//It would be nice to have static classes extending Geometry to report such geometries
 			if (geometry == null)
 				LOG.error("Collected null geometry for node: " + currentNodeId + ". Indexing will be skipped");
         }

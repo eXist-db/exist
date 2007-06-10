@@ -199,7 +199,14 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		sourceSRS = "osgb:BNG";
 		        	}
 		        	srsName = args[1].itemAt(0).getStringValue().trim();
-		        	geometry = indexWorker.transformGeometry(geometry, sourceSRS, srsName);
+					//Provisional workaround : Geotools sometimes returns null geometries 
+					//due to a too strict check. 
+					//I can't see a way to return something useful in such a case
+		        	if (geometry == null) { 
+		        		result = Sequence.EMPTY_SEQUENCE;
+		        		hasUsedIndex= false;
+		        	} else
+		        		geometry = indexWorker.transformGeometry(geometry, sourceSRS, srsName);
 	        	}	        	
 	        } else if (isCalledAs("WKTtoGML")) {
 	        	if (args[0].isEmpty())
@@ -213,6 +220,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 			        } catch (ParseException e) {
 			        	throw new XPathException(e);	
 			        }
+					//Provisional workaround : Geotools sometimes returns null geometries 
+					//due to a too strict check. 
+					//I can't see a way to return something useful in such a case
+		        	if (geometry == null) 
+		        		result = Sequence.EMPTY_SEQUENCE;
 	        	}
 	        } else if (isCalledAs("buffer")) {
 	        	if (args[0].isEmpty())
@@ -232,24 +244,31 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		            	//Erroneous workaround
 		            	srsName = "osgb:BNG";
 		        	}
-		        	double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
-		        	int quadrantSegments = 8;	
-		        	int endCapStyle = BufferOp.CAP_ROUND;
-		        	if (getArgumentCount() > 2 && Type.subTypeOf(args[2].itemAt(0).getType(), Type.INTEGER))
-		        		quadrantSegments = ((IntegerValue)args[2].itemAt(0)).getInt();
-		        	if (getArgumentCount() > 3 && Type.subTypeOf(args[3].itemAt(0).getType(), Type.INTEGER))
-		        		endCapStyle = ((IntegerValue)args[3].itemAt(0)).getInt();
-		        	switch (endCapStyle) {
-			        	case BufferOp.CAP_ROUND:
-			        	case BufferOp.CAP_BUTT:
-			        	case BufferOp.CAP_SQUARE:
-			        		//OK
-			        		break;
-			        	default:
-			        		throw new XPathException("Invalid line end style");	
+					//Provisional workaround : Geotools sometimes returns null geometries 
+					//due to a too strict check. 
+					//I can't see a way to return something useful in such a case
+		        	if (geometry == null) { 
+		        		result = Sequence.EMPTY_SEQUENCE;
+		        		hasUsedIndex = false;
+		        	} else {
+			        	double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
+			        	int quadrantSegments = 8;	
+			        	int endCapStyle = BufferOp.CAP_ROUND;
+			        	if (getArgumentCount() > 2 && Type.subTypeOf(args[2].itemAt(0).getType(), Type.INTEGER))
+			        		quadrantSegments = ((IntegerValue)args[2].itemAt(0)).getInt();
+			        	if (getArgumentCount() > 3 && Type.subTypeOf(args[3].itemAt(0).getType(), Type.INTEGER))
+			        		endCapStyle = ((IntegerValue)args[3].itemAt(0)).getInt();
+			        	switch (endCapStyle) {
+				        	case BufferOp.CAP_ROUND:
+				        	case BufferOp.CAP_BUTT:
+				        	case BufferOp.CAP_SQUARE:
+				        		//OK
+				        		break;
+				        	default:
+				        		throw new XPathException("Invalid line end style");	
+			        	}
+		        		geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);
 		        	}
-	
-		        	geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);	
 	        	}
 	        } else if (isCalledAs("getBbox")) {
 	        	if (args[0].isEmpty())
@@ -269,7 +288,14 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		            	//Erroneous workaround
 		            	srsName = "osgb:BNG";
 		        	}
-		        	geometry = geometry.getEnvelope();
+					//Provisional workaround : Geotools sometimes returns null geometries 
+					//due to a too strict check. 
+					//I can't see a way to return something useful in such a case
+		        	if (geometry == null) { 
+		        		result = Sequence.EMPTY_SEQUENCE;
+		        		hasUsedIndex = false;
+		        	} else
+		        		geometry = geometry.getEnvelope();
 	        	}	        	
 	        } else if (isCalledAs("convexHull")) {
 	        	if (args[0].isEmpty())
@@ -289,7 +315,14 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		            	//Erroneous workaround
 		            	srsName = "osgb:BNG";
 		        	}
-		        	geometry = geometry.convexHull();
+					//Provisional workaround : Geotools sometimes returns null geometries 
+					//due to a too strict check. 
+					//I can't see a way to return something useful in such a case
+		        	if (geometry == null) { 
+		        		result = Sequence.EMPTY_SEQUENCE;
+		        		hasUsedIndex = false;
+		        	} else
+		        		geometry = geometry.convexHull();
 	        	}
 	        } else if (isCalledAs("boundary")) {
 	        	if (args[0].isEmpty())
@@ -308,8 +341,16 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
 		            	//Erroneous workaround
 		            	srsName = "osgb:BNG";
-		        	}		        		
-		        	geometry = geometry.getBoundary();
+		        	}
+					//Provisional workaround : Geotools sometimes returns null geometries 
+					//due to a too strict check. 
+					//I can't see a way to return something useful in such a case
+		        	if (geometry == null) {
+		        		result = Sequence.EMPTY_SEQUENCE;
+		        		hasUsedIndex = false;
+		        	} else {
+		        		geometry = geometry.getBoundary();
+		        	}
 	        	}
 	        } else {
 	        	Geometry geometry1 = null;
@@ -352,20 +393,27 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		            	srsName2 = "osgb:BNG";		            	
 		        	}
 					
-					//Transform the second geometry if necessary
-					if (!srsName1.equalsIgnoreCase(srsName2)) {
-				        geometry2 = indexWorker.transformGeometry(geometry2, srsName1, srsName2);      	
-					}
-					
-					if (isCalledAs("intersection")) {
-						geometry = geometry1.intersection(geometry2);
-					} else if (isCalledAs("union")) {
-						geometry = geometry1.union(geometry2);
-					} else if (isCalledAs("difference")) {	
-						geometry = geometry1.difference(geometry2);
-					} else if (isCalledAs("symetricDifference")) {
-						geometry = geometry1.symDifference(geometry2);
-					}
+					//Provisional workaround : Geotools sometimes returns null geometries 
+					//due to a too strict check. 
+					//I can't see a way to return something useful in such a case
+		        	if (geometry1== null || geometry2== null) { 
+		        		result = Sequence.EMPTY_SEQUENCE;
+		        		hasUsedIndex = false;
+		        	} else {		        	
+			        	//Transform the second geometry if necessary
+						if (!srsName1.equalsIgnoreCase(srsName2)) {
+					        geometry2 = indexWorker.transformGeometry(geometry2, srsName1, srsName2);      	
+						}						
+						if (isCalledAs("intersection")) {
+							geometry = geometry1.intersection(geometry2);
+						} else if (isCalledAs("union")) {
+							geometry = geometry1.union(geometry2);
+						} else if (isCalledAs("difference")) {	
+							geometry = geometry1.difference(geometry2);
+						} else if (isCalledAs("symetricDifference")) {
+							geometry = geometry1.symDifference(geometry2);
+						}
+		        	}
 	        	}
 	        }
 	        
