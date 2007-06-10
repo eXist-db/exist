@@ -1,4 +1,5 @@
-#eXist build info
+#eXist build info (updated using svnkit)
+#Sun Jun 10 15:10:59 CEST 2007
 project.version=1.1.2dev
-project.build=20010101
-svn.revision=0000
+project.build=20070610
+svn.revision=6051

@@ -103,7 +103,7 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             // XSD for addressbook_valid.xml is *not* registered in system catalog.
             // result should be "document is invalid"
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_valid.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/addressbook_valid.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "addressbook_valid.xml not in systemcatalog", "false", r );
             
@@ -128,8 +128,8 @@ public class ValidationFunctions_XSD_Test extends TestCase {
         try {
             logger.info("Test1");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_valid.xml'), "
-                +" xs:anyURI('/db/validationtest/xsd/catalog.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/addressbook_valid.xml'), "
+                +" xs:anyURI('/db/validation/xsd/catalog.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("valid document", "true", r );
             
@@ -137,8 +137,8 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             
             logger.info("Test2");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_invalid.xml'), "
-                +" xs:anyURI('/db/validationtest/xsd/catalog.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/addressbook_invalid.xml'), "
+                +" xs:anyURI('/db/validation/xsd/catalog.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "invalid document", "false", r );
             
@@ -146,8 +146,8 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             
             logger.info("Test3");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_valid.xml'), "
-                +" xs:anyURI('/db/validationtest/dtd/catalog.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/addressbook_valid.xml'), "
+                +" xs:anyURI('/db/validation/dtd/catalog.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("wrong catalog", "false", r );
             
@@ -155,8 +155,8 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             
             logger.info("Test4");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_invalid.xml'),"
-                +" xs:anyURI('/db/validationtest/dtd/catalog.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/addressbook_invalid.xml'),"
+                +" xs:anyURI('/db/validation/dtd/catalog.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("wrong catalog, invalid document", "false", r );
             
@@ -179,8 +179,8 @@ public class ValidationFunctions_XSD_Test extends TestCase {
         try {
             logger.info("Test1");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_valid.xml'), "
-                +" xs:anyURI('/db/validationtest/xsd/addressbook.xsd') )");
+                "validation:validate( xs:anyURI('/db/validation/addressbook_valid.xml'), "
+                +" xs:anyURI('/db/validation/xsd/addressbook.xsd') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("valid document", "true", r );
             
@@ -188,8 +188,8 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             
             logger.info("Test2");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_invalid.xml'), "
-                +" xs:anyURI('/db/validationtest/xsd/addressbook.xsd') )");
+                "validation:validate( xs:anyURI('/db/validation/addressbook_invalid.xml'), "
+                +" xs:anyURI('/db/validation/xsd/addressbook.xsd') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "invalid document", "false", r );
             
@@ -216,8 +216,8 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             
             logger.info("Test1");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_valid.xml'), "
-                +" xs:anyURI('/db/validationtest/xsd/') )");
+                "validation:validate( xs:anyURI('/db/validation/addressbook_valid.xml'), "
+                +" xs:anyURI('/db/validation/xsd/') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("valid document", "true", r );
             
@@ -225,8 +225,8 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             
             logger.info("Test2");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_valid.xml'), "
-                +" xs:anyURI('/db/validationtest/dtd/') )");
+                "validation:validate( xs:anyURI('/db/validation/addressbook_valid.xml'), "
+                +" xs:anyURI('/db/validation/dtd/') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "valid document, not found", "false", r );
             
@@ -234,7 +234,7 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             
             logger.info("Test3");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_valid.xml'), "
+                "validation:validate( xs:anyURI('/db/validation/addressbook_valid.xml'), "
                 +" xs:anyURI('/db/') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("valid document", "true", r );
@@ -243,7 +243,7 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             
             logger.info("Test4");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/addressbook_invalid.xml') ,"
+                "validation:validate( xs:anyURI('/db/validation/addressbook_invalid.xml') ,"
                 +" xs:anyURI('/db/') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "invalid document", "false", r );

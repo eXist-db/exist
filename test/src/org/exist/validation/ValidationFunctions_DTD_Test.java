@@ -99,7 +99,7 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             // DTD for hamlet_valid.xml is registered in system catalog.
             // result should be "document is valid"
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/tmp/hamlet_valid.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/tmp/hamlet_valid.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "hamlet_valid.xml in systemcatalog", "true", r );
             
@@ -123,8 +123,8 @@ public class ValidationFunctions_DTD_Test extends TestCase {
         try {
             logger.info("Test1");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_valid.xml') ,"
-                +" xs:anyURI('/db/validationtest/dtd/catalog.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml') ,"
+                +" xs:anyURI('/db/validation/dtd/catalog.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("valid document", "true", r );
             
@@ -132,8 +132,8 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             
             logger.info("Test2");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_invalid.xml') ,"
-                +" xs:anyURI('/db/validationtest/dtd/catalog.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/hamlet_invalid.xml') ,"
+                +" xs:anyURI('/db/validation/dtd/catalog.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "invalid document", "false", r );
             
@@ -141,8 +141,8 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             
             logger.info("Test3");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_valid.xml'), "
-                +" xs:anyURI('/db/validationtest/xsd/catalog.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
+                +" xs:anyURI('/db/validation/xsd/catalog.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("wrong catalog", "false", r );
             
@@ -150,8 +150,8 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             
             logger.info("Test4");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_invalid.xml'), "
-                +" xs:anyURI('/db/validationtest/xsd/catalog.xml') )");
+                "validation:validate( xs:anyURI('/db/validation/hamlet_invalid.xml'), "
+                +" xs:anyURI('/db/validation/xsd/catalog.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("wrong catalog, invalid document", "false", r );
             
@@ -174,8 +174,8 @@ public class ValidationFunctions_DTD_Test extends TestCase {
         try {
             logger.info("Test1");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_valid.xml'), "
-                +" xs:anyURI('/db/validationtest/dtd/hamlet.dtd') )");
+                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
+                +" xs:anyURI('/db/validation/dtd/hamlet.dtd') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("valid document", "true", r );
             
@@ -183,8 +183,8 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             
             logger.info("Test2");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_invalid.xml'), "
-                +" xs:anyURI('/db/validationtest/dtd/hamlet.dtd') )");
+                "validation:validate( xs:anyURI('/db/validation/hamlet_invalid.xml'), "
+                +" xs:anyURI('/db/validation/dtd/hamlet.dtd') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "invalid document", "false", r );
             
@@ -211,8 +211,8 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             
             logger.info("Test1");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_valid.xml'), "
-                +" xs:anyURI('/db/validationtest/dtd/') )");
+                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
+                +" xs:anyURI('/db/validation/dtd/') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("valid document", "true", r );
             
@@ -220,8 +220,8 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             
             logger.info("Test2");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_valid.xml'), "
-                +" xs:anyURI('/db/validationtest/xsd/') )");
+                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
+                +" xs:anyURI('/db/validation/xsd/') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "valid document, not found", "false", r );
             
@@ -229,7 +229,7 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             
             logger.info("Test3");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_valid.xml'), "
+                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
                 +" xs:anyURI('/db/') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("valid document", "true", r );
@@ -238,7 +238,7 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             
             logger.info("Test4");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validationtest/hamlet_invalid.xml'), "
+                "validation:validate( xs:anyURI('/db/validation/hamlet_invalid.xml'), "
                 +" xs:anyURI('/db/') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "invalid document", "false", r );

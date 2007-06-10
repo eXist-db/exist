@@ -102,9 +102,9 @@ public class ValidationFunctions_Node_Test extends TestCase {
         
         try {
             logger.info("Test1");
-            query = "let $doc := doc('/db/validationtest/addressbook_valid.xml') "+
+            query = "let $doc := doc('/db/validation/addressbook_valid.xml') "+
             "let $result := validation:validate( $doc, "+
-            " xs:anyURI('/db/validationtest/xsd/addressbook.xsd') ) "+
+            " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) "+
             "return $result";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
@@ -121,9 +121,9 @@ public class ValidationFunctions_Node_Test extends TestCase {
         try {
             logger.info("Test2");
             
-            query = "let $doc := doc('/db/validationtest/addressbook_invalid.xml') "+
+            query = "let $doc := doc('/db/validation/addressbook_invalid.xml') "+
             "let $result := validation:validate( $doc, "+
-            " xs:anyURI('/db/validationtest/xsd/addressbook.xsd') ) "+
+            " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) "+
             "return $result";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
@@ -160,7 +160,7 @@ public class ValidationFunctions_Node_Test extends TestCase {
             "<person> <cname>Julia Roberts</cname> <email>jr@pw.com</email> </person>"+
             "</addressBook> " +
             "let $result := validation:validate( $doc, "+
-            " xs:anyURI('/db/validationtest/xsd/addressbook.xsd') ) "+
+            " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) "+
             "return $result";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
@@ -184,7 +184,7 @@ public class ValidationFunctions_Node_Test extends TestCase {
             "<person> <cname>Julia Roberts</cname> <email>jr@pw.com</email> </person>"+
             "</addressBook> " +
             "let $result := validation:validate( $doc, "+
-            " xs:anyURI('/db/validationtest/xsd/addressbook.xsd') ) "+
+            " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) "+
             "return $result";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();

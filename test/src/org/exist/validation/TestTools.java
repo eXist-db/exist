@@ -36,7 +36,7 @@ import java.net.URLConnection;
  */
 public class TestTools {
     
-    public final static String VALIDATION_HOME="/db/validationtest";
+    public final static String VALIDATION_HOME="/db/validation";
     public final static String VALIDATION_DTD=VALIDATION_HOME+"/dtd";
     public final static String VALIDATION_XSD=VALIDATION_HOME+"/xsd";
     public final static String VALIDATION_TMP=VALIDATION_HOME+"/tmp";
