@@ -52,7 +52,7 @@ public class LockedDocumentMap extends Int2ObjectHashMap {
     private void unlockDocument(LockedDocument d) {
         Lock dlock;
         dlock = d.document.getUpdateLock();
-        dlock.release(Lock.READ_LOCK, d.locksAcquired);
+        dlock.release(Lock.WRITE_LOCK, d.locksAcquired);
 //        for (int i = 0; i < d.locksAcquired; i++) {
 //            dlock.release(Lock.READ_LOCK);
 //        }

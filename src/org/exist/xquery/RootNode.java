@@ -73,7 +73,7 @@ public class RootNode extends Step {
         NodeSet result = new ExtArrayNodeSet(2);
         try {
             // wait for pending updates
-            ds.lock(false, true);
+            ds.lock(lockOnLoad, true);
             
 	        DocumentImpl doc;
 	        for (Iterator i = ds.iterator(); i.hasNext();) {

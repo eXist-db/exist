@@ -150,7 +150,7 @@ public class ExtDocument extends Function {
 	    try {
             if(!cacheIsValid)
                 // wait for pending updates
-                docs.lock(false, true);
+                docs.lock(lockOnLoad, true);
 	        // wait for pending updates
 			if(result == null) {
 			    result = new ExtArrayNodeSet(docs.getLength(), 1);
@@ -168,7 +168,7 @@ public class ExtDocument extends Function {
         } finally {
             if(!(cacheIsValid || lockOnLoad))
                 // release all locks
-                docs.unlock(false);
+                docs.unlock(lockOnLoad);
 	    }
 		cached = result;
 		cachedDocs = docs;
