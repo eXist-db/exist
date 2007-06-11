@@ -213,7 +213,7 @@ public class Validation extends BasicFunction  {
         }
         
         LOG.error("invoked with wrong function name");
-        return null;
+        throw new XPathException("unknown function");
     }
     
     private NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {

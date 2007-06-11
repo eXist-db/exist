@@ -150,10 +150,12 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         LOG.debug("Resolving '"+xri.toString()+"'");
         XMLInputSource retValue = super.resolveEntity(xri);
         
+        
+        
         LOG.debug("Resolved " + (retValue!=null));
         if(retValue!=null){
              LOG.debug("PublicId='" + retValue.getPublicId() + "' SystemId='" 
-                + retValue.getSystemId() +"'");
+                + retValue.getSystemId() +"' BaseSystemId=" + retValue.getBaseSystemId());
         }
         
         return retValue;
