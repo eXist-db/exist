@@ -2086,16 +2086,9 @@ public class XQueryTest extends XMLTestCase {
                     = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals("false", result.getResource(0).getContent().toString());
-        } catch (XMLDBException ex) {
-            ex.printStackTrace();
-            fail(ex.toString());
-        }
-        
-        try {
-            String query="\"A\" = ( )";
-            XPathQueryService service 
-                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
-            ResourceSet result = service.query(query);
+
+            query="\"A\" = ( )";
+            result = service.query(query);
             assertEquals("false", result.getResource(0).getContent().toString());
         } catch (XMLDBException ex) {
             ex.printStackTrace();
@@ -2104,7 +2097,28 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
-   
+    public void testPositionInPredicate(){
+        
+        try {
+            String query="let $example := <Root> <Element>1</Element> <Element>2</Element> </Root>"+
+                         "return  $example/Element[1] ";
+            XPathQueryService service 
+                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals("<Element>1</Element>", result.getResource(0).getContent().toString());
+            
+            query="let $example := <Root> <Element>1</Element> <Element>2</Element> </Root>"+
+                         "return  $example/Element[position() = 1] ";
+            result = service.query(query);
+            assertEquals("<Element>1</Element>", result.getResource(0).getContent().toString());
+            
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
     
 
 
