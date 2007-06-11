@@ -315,7 +315,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 				if (result == null) {
 		        	//builds the geometry
 					if (geometry == null) {
-			        	geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+			        	geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		            	//Argl ! No SRS !
 		            	//sourceCRS = ((Element)geometryNode).getAttribute("srsName").trim();
 		            	//Erroneous workaround
