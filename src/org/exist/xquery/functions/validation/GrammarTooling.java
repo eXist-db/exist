@@ -34,7 +34,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.GrammarPool;
-import org.exist.validation.ValidationReport;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -43,9 +42,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  *   xQuery function for validation of XML instance documents
@@ -168,15 +167,11 @@ public class GrammarTooling extends BasicFunction  {
         
             XMLGrammarDescription xgd = grammar.getGrammarDescription();
             
-            builder.startElement("", "grammar", "grammar", null);
+            AttributesImpl attribs = new AttributesImpl();
+            attribs.addAttribute("", "type", "type", "CDATA", xgd.getGrammarType());
             
-            String grammarType=xgd.getGrammarType();
-            if(grammarType!=null){
-                builder.startElement("", "Type", "Type", null);
-                builder.characters(grammarType);
-                builder.endElement();
-            }
-            
+            builder.startElement("", "grammar", "grammar", attribs);
+      
             String namespace=xgd.getNamespace();
             if(namespace!=null){
                 builder.startElement("", "Namespace", "Namespace", null);
@@ -212,5 +207,6 @@ public class GrammarTooling extends BasicFunction  {
             }
 
             builder.endElement();
+            attribs.clear();
     }
 }
