@@ -146,7 +146,7 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 					//The node should be indexed
 					EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
 		        if (EPSG4326_geometry == null) {		        	
-		        	Geometry geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		        	Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 	            	//Argl ! No SRS !
 	            	//sourceCRS = ((Element)geometryNode).getAttribute("srsName").trim();
 	            	//Erroneous workaround

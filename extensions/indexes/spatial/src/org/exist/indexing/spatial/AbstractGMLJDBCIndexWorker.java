@@ -100,11 +100,10 @@ import com.vividsolutions.jts.io.WKTWriter;
 public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	
 	public static String GML_NS = "http://www.opengis.net/gml";
-
-    private static final Logger LOG = Logger.getLogger(AbstractGMLJDBCIndexWorker.class);
-
     //The general configuration's element name to configure this kind of worker
-    private final static String INDEX_ELEMENT = "gml";    
+    protected final static String INDEX_ELEMENT = "gml";   
+    
+    private static final Logger LOG = Logger.getLogger(AbstractGMLJDBCIndexWorker.class);
 
     protected IndexController controller;
     protected AbstractGMLJDBCIndex index;
@@ -115,11 +114,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected Map geometries = new TreeMap();    
     NodeId currentNodeId = null;    
     Geometry streamedGeometry = null;
-    boolean documentDeleted= false;
+    boolean documentDeleted = false;
     int flushAfter = -1;
     protected GMLHandlerJTS geometryHandler = new GeometryHandler(); 
     protected GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
-    protected GMLFilterDocument handler = new GMLFilterDocument(geometryFilter);      
+    protected GMLFilterDocument geometryDocument = new GMLFilterDocument(geometryFilter);      
     protected GMLStreamListener gmlStreamListener = new GMLStreamListener();
     protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
     protected GeometryTransformer gmltransformer = new GeometryTransformer();		
@@ -524,12 +523,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	    }
 	}
     
-    public Geometry streamGeometryForNode(XQueryContext context, NodeValue node) throws SpatialIndexException {
+    public Geometry streamNodeToGeometry(XQueryContext context, NodeValue node) throws SpatialIndexException {
     	try {
     		context.pushDocumentContext();
 			try {
 				//TODO : get rid of the context dependency
-	    		node.toSAX(context.getBroker(), handler, null);
+	    		node.toSAX(context.getBroker(), geometryDocument, null);
 			} finally {
 	            context.popDocumentContext();
 	        }
@@ -539,7 +538,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	return streamedGeometry;
     }
     
-    public Element streamGeometry(Geometry geometry, String srsName, Receiver receiver) throws SpatialIndexException {       
+    public Element streamGeometryToElement(Geometry geometry, String srsName, Receiver receiver) throws SpatialIndexException {       
 	    //YES !!!
 	     String gmlString = null;
 		try {
@@ -547,6 +546,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 			//1) the SRS
 			//2) gmlPrefix
 			//3) other stuff...
+			//This willr equire some changes in GeometryTransformer
 			gmlString = gmltransformer.transform(geometry);
 		} catch (TransformerException e) {
 			throw new SpatialIndexException(e);
@@ -573,7 +573,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }
     
     public Geometry transformGeometry(Geometry geometry, String sourceCRS, String targetCRS) throws SpatialIndexException {
-    	MathTransform mathTransform = getTransform(sourceCRS, targetCRS);
+        //provisional workaround
+        if ("osgb:BNG".equalsIgnoreCase(sourceCRS.trim()))
+        	sourceCRS = "EPSG:27700";  	    
+        if ("osgb:BNG".equalsIgnoreCase(targetCRS.trim()))
+        	targetCRS = "EPSG:27700";    	
+    	MathTransform mathTransform = TransformationsFactory.getTransform(sourceCRS, targetCRS);
         if (mathTransform == null) {
     		throw new SpatialIndexException("Unable to get a transformation from '" + sourceCRS + "' to '" + targetCRS +"'");        		           	
         }
@@ -582,18 +587,8 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         	return coordinateTransformer.transform(geometry);
         } catch (TransformException e) {
         	throw new SpatialIndexException(e);
-        }	     	
-    	
+        }
     }
-
-    public MathTransform getTransform(String sourceCRS, String targetCRS) {
-        //provisional workaround
-        if ("osgb:BNG".equalsIgnoreCase(sourceCRS.trim()))
-        	sourceCRS = "EPSG:27700";  	    
-        if ("osgb:BNG".equalsIgnoreCase(targetCRS.trim()))
-        	targetCRS = "EPSG:27700";
-    	return TransformationsFactory.getTransform(sourceCRS, targetCRS);
-	}    
     
     protected abstract boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException;
     
@@ -648,7 +643,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         		processDeferredElement();
 	        	deferredElement = null;
 	        	try {
-	        		handler.characters(text.getData().toCharArray(), 0, text.getLength());
+	        		geometryDocument.characters(text.getData().toCharArray(), 0, text.getLength());
 	        	} catch (Exception e) {
 	        		LOG.error(e);
 	        	}    
@@ -666,7 +661,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         		if (GML_NS.equals(element.getNamespaceURI()))
         			currentSrsName = (String)srsNamesStack.pop();        		
         		try {
-	        		handler.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
+        			geometryDocument.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
 	        		//Some invalid/(yet) incomplete geometries don't have a SRS
 	        		if (streamedGeometry != null && currentSrsName != null) {   
 	        			currentNodeId = element.getNodeId();
@@ -699,7 +694,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     		//We need to collect the retained element's attributes in order to feed the SAX handler
     		AttributesImpl attList = collectAttributes(deferredElement); 
         	try {
-        		handler.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
+        		geometryDocument.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
         	} catch (Exception e) {
         		e.printStackTrace();
         		LOG.error(e);
@@ -773,12 +768,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	}    	
     }
     
-    private static class TransformationsFactory {
+    protected static class TransformationsFactory {
     	
-    	static TreeMap transforms = new TreeMap();
-    	static boolean useLenientMode = false;
+    	private static TreeMap transforms = new TreeMap();
+    	private static boolean useLenientMode = false;
     	
-    	private static MathTransform getTransform(String sourceCRS, String targetCRS) {
+    	protected static MathTransform getTransform(String sourceCRS, String targetCRS) {
     		MathTransform transform = (MathTransform)transforms.get(sourceCRS + "_" + targetCRS);
     		if (transform == null) {
 	    		try {

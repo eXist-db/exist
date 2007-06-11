@@ -192,7 +192,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		hasUsedIndex = true;
 		        	//Otherwise, build it
 		        	} else { 		        		
-		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		            	//Argl ! No SRS !
 		            	//sourceSRS = ((Element)geometryNode).getAttribute("srsName").trim();
 		            	//Erroneous workaround
@@ -238,7 +238,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		hasUsedIndex = true;
 		        	//Otherwise, build it
 		        	} else { 		        		
-		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		            	//Argl ! No SRS !
 		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
 		            	//Erroneous workaround
@@ -282,7 +282,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		hasUsedIndex = true;
 		        	//Otherwise, build it
 		        	} else { 		        		
-		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		            	//Argl ! No SRS !
 		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
 		            	//Erroneous workaround
@@ -309,7 +309,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		hasUsedIndex = true;
 		        	//Otherwise, build it
 		        	} else { 		        		
-		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		            	//Argl ! No SRS !
 		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
 		            	//Erroneous workaround
@@ -336,7 +336,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		hasUsedIndex = true;
 		        	//Otherwise, build it
 		        	} else { 		        		
-		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		            	//Argl ! No SRS !
 		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
 		            	//Erroneous workaround
@@ -379,14 +379,14 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	}
 		        	//Otherwise build them
 		            if (geometry1 == null) {
-		            	geometry1 = indexWorker.streamGeometryForNode(context, geometryNode1);	
+		            	geometry1 = indexWorker.streamNodeToGeometry(context, geometryNode1);	
 		            	//Argl ! No SRS !
 		            	//srsName1 = ((Element)geometryNode1).getAttribute("srsName").trim();
 		            	//Erroneous workaround
 		            	srsName1 = "osgb:BNG";
 		            }
 		        	if (geometry2 == null) {
-		            	geometry2 = indexWorker.streamGeometryForNode(context, geometryNode2);
+		            	geometry2 = indexWorker.streamNodeToGeometry(context, geometryNode2);
 		        		//Argl ! No SRS !
 		            	//srsName2 = ((Element)geometryNode2).getAttribute("srsName").trim();
 		            	//Erroneous workaround
@@ -426,7 +426,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 				try {
 					MemTreeBuilder builder = context.getDocumentBuilder();
 			        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-					result = (NodeValue)indexWorker.streamGeometry(geometry, srsName, receiver);
+					result = (NodeValue)indexWorker.streamGeometryToElement(geometry, srsName, receiver);
 				} finally {
 		            context.popDocumentContext();
 		        }

@@ -118,18 +118,12 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		//TODO : use a default SRS from the config file ?
             if (srsName == null) {
         		LOG.error("Geometry has a null SRS");
-        		return false;                    	
-            }
-            MathTransform mathTransform = getTransform(srsName, "EPSG:4326");
-            if (mathTransform == null) {
-        		LOG.error("Unable to get a transformation from '" + srsName + "' to 'EPSG:4326'");
-        		return false;              	
-            }
-            coordinateTransformer.setMathTransform(mathTransform);        
+        		return false;                  	
+            }   
             Geometry EPSG4326_geometry = null;
             try {
-            	EPSG4326_geometry = coordinateTransformer.transform(geometry);
-            } catch (TransformException e) {
+            	EPSG4326_geometry = transformGeometry(geometry, srsName, "EPSG:4326");
+            } catch (SpatialIndexException e) {
 	        	//Transforms the exception into an SQLException.
 	        	SQLException ee = new SQLException(e.getMessage());
 	        	ee.initCause(e);
