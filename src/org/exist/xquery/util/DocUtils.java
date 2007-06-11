@@ -148,7 +148,7 @@ public class DocUtils {
 
 			// check if the loaded documents should remain locked
 			boolean lockOnLoad = context.lockDocumentsOnLoad();
-
+            int lockType = lockOnLoad ? Lock.WRITE_LOCK : Lock.READ_LOCK;
 			DocumentImpl doc = null;
 			try
 			{
@@ -156,12 +156,12 @@ public class DocUtils {
 				// relative collection Path: add the current base URI
 				pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
 				// try to open the document and acquire a lock
-				doc = context.getBroker().getXMLResource(pathUri, Lock.READ_LOCK);
+				doc = context.getBroker().getXMLResource(pathUri, lockType);
 				if(doc != null)
 				{
 					if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
 					{
-						doc.getUpdateLock().release(Lock.READ_LOCK);
+						doc.getUpdateLock().release(lockType);
 						throw new PermissionDeniedException("Insufficient privileges to read resource " + path);
 					}
 					
@@ -190,7 +190,7 @@ public class DocUtils {
 			{
 				// release all locks unless lockOnLoad is true
 				if(!lockOnLoad && doc != null)
-					doc.getUpdateLock().release(Lock.READ_LOCK);
+					doc.getUpdateLock().release(lockType);
 			}
 		}	 	  
 		return document;

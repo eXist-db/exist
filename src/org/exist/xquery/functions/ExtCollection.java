@@ -136,16 +136,16 @@ public class ExtCollection extends Function {
 		    doc = (DocumentImpl)i.next();
 		    dlock = doc.getUpdateLock();
 		    try {
-		        dlock.acquire(Lock.READ_LOCK);
+		        dlock.acquire(lockOnLoad ? Lock.WRITE_LOCK : Lock.READ_LOCK);
 		        result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
-                if(lockOnLoad) {
+                if (lockOnLoad) {
                     LOG.debug("Locking document: " + doc.getURI());
                     context.addLockedDocument(doc);
                 }
 		    } catch (LockException e) {
                 LOG.info("Could not acquire read lock on document " + doc.getURI());
             } finally {
-                if(!lockOnLoad)
+                if (!lockOnLoad)
                     dlock.release(Lock.READ_LOCK);
 		    }
 		}
