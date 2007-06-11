@@ -2078,6 +2078,34 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
+    public void bugtestOrderCompareAtomicType_1733265(){
+        
+        try {
+            String query="( ) = \"A\"";
+            XPathQueryService service 
+                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals("false", result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+        try {
+            String query="\"A\" = ( )";
+            XPathQueryService service 
+                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals("false", result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
+    
+   
+    
 
 
     // ======================================
