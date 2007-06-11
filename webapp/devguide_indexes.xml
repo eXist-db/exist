@@ -28,7 +28,7 @@
             
             <section>
 			<title>Brief overview</title>
-            <para>Since spring 2007, eXist provides a new mechanism to index XML data. This mechanism is modular
+            <para>Since spring 2007, i.e. <strong>after</strong> the 1.1 release, eXist provides a new mechanism to index XML data. This mechanism is modular
             and should ease index development as well as the development of related (possibly not so) custom functions. 
             As a proof of concept, eXist currently ships with 2 index types :
             <itemizedlist>
@@ -346,8 +346,8 @@
 			<para>Obviously, they are used by the <methodname>setMode()</methodname> method in <classname>org.exist.indexing.IndexController</classname>
 			which is istself called by the different <classname>org.exist.storage.DBBroker</classname>s when they have to (re)index
 			a node and its descendants. As their name suggests, there is a mode for storing nodes and two modes
-			for removing them from the indexes. The difference between <classname>REMOVE_ALL_NODES</classname> and
-			<classname>REMOVE_SOME_NODES</classname> is that the former removes all the nodes from a document
+			for removing them from the indexes. The difference between <classname>StreamListener.REMOVE_ALL_NODES</classname> and
+			<classname>StreamListener.REMOVE_SOME_NODES</classname> is that the former removes all the nodes from a document
 			whereas the latter removes only some nodes from a document, usually the descendants of the node returned by
 			<methodname>getReindexRoot()</methodname>. We thus have the opportunity to trigger a process that will directly
 			remove all the nodes from a given document without having to listen to each of them. Such a technique is described below.</para>
@@ -404,8 +404,10 @@
 			<filename>extensions/indexes</filename> and the file system's architecture is designed to follow
 			eXist's core architecture, i.e. <classname>org.exist.indexing.*</classname> for the <classname>Index</classname>es
 			and <classname>org.exist.xquery.*</classname> for their associated <classname>Module</classname>s. There is also a dedicated location for required external
-			libraries and for the test cases. The build system should normally be able to build the all the files
-			automatically and even launch the tests provided that the DB's configuration file declares the
+			libraries and for the test cases. The build system should normally be able to download the required
+			libraries from the WWW (do no forget to adjust your proxy server's properties in <filename>build.properties</filename>
+			if required) build the all the files automatically, in particular the <parameter>extension-modules</parameter> 
+			Ant target, and even launch the tests provided that the DB's configuration file declares the
 			<classname>Index</classname>es (see above) and their associated <classname>Module</classname>s (see below).</para>
 			<para>The described spatial <classname>Index</classname> heavily relies on the excellent open source 
 			librairies provided by the <ulink url="http://geotools.codehaus.org/">Geotools</ulink> project. We
@@ -648,7 +650,8 @@ protected void removeIndexContent() throws DBException {
 		    int nodeCount = stmt.executeUpdate("DELETE FROM " + GMLHSQLIndex.TABLE_NAME + ";");       
 		    stmt.close();
 		    if (LOG.isDebugEnabled()) 
-		        LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + ". " + nodeCount + " nodes removed");
+		        LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + ". " + 
+		        	nodeCount + " nodes removed");
 		}		
 	} catch (SQLException e) {
 		throw new DBException(e.getMessage()); 
@@ -712,6 +715,8 @@ protected Connection acquireConnection(DBBroker broker) throws SQLException {
 }
 
 protected synchronized void releaseConnection(DBBroker broker) throws SQLException {   
+	if (connectionOwner == null)
+		throw new SQLException("Attempted to release a connection that wasn't acquired");
 	connectionOwner = null;
 }  			
 			]]></programlisting>
@@ -720,7 +725,7 @@ protected synchronized void releaseConnection(DBBroker broker) throws SQLExcepti
 			roughly means the same thing). This is where a <classname>Connection</classname> is created if necessary (see below)
 			and that's why eXist will have to pay the first connection's performance cost only when needed.</para>
 			<para><methodname>releaseConnection()</methodname> marks the connection as being unused. It will thus
-			become available when requested again. No exception can be thrown here but we must follow the interface.</para>
+			become available when requested again.</para>
 			<para>The last method concentrates the index-level DB-dependant code in just one place (<methodname>removeIndexContent()</methodname>
 			is relatively DB-independant).</para>
 			<programlisting format="linespecific"><![CDATA[				
@@ -729,7 +734,7 @@ protected synchronized void releaseConnection(DBBroker broker) throws SQLExcepti
 	System.setProperty("hsqldb.cache_size_scale", "12");
 	System.setProperty("hsqldb.default_table_type", "cached");
 	//Get a connection to the DB... and keep it
-	this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix /* + ";shutdown=true" */, "sa", "");
+	this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix, "sa", "");
 	try {	
 		ResultSet rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[] { "TABLE" });
 		rs.last(); 
@@ -933,6 +938,8 @@ protected synchronized void releaseConnection(DBBroker broker) throws SQLExcepti
                     <td>See the <ulink url="http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf">JTS documentation</ulink> (chapter 13). Should always be TRUE</td>                    
                 </tr>                                                                 
             </table>
+            <para>Uniqueness will be enforced on a <parameter>(DOCUMENT_URI, NODE_ID_UNITS, NODE_ID)</parameter> basis. Indeed, we
+            can have at most one index entry for a given node in a given document.</para>
             <para>Also, indexes are created on these fields to help queries :</para>
             <itemizedlist>  
             	<listitem>DOCUMENT_URI</listitem>  	
@@ -946,7 +953,7 @@ protected synchronized void releaseConnection(DBBroker broker) throws SQLExcepti
             	<listitem>EPSG4326_MAXY</listitem>  	
             	<listitem>EPSG4326_CENTROID_X</listitem>  	
             	<listitem>EPSG4326_CENTROID_Y</listitem> 
-            </itemizedlist>
+            </itemizedlist>            
             <para>Every geometry will be internally stored in <strong>both</strong> its original SRS and in the epsg:4326 SRS. 
             Having this kind of common, world-wide applicable, SRS for <strong>all</strong> geometries in the index allows to make operations on them even if they are originally defined in different SRSes.</para>
             <important>
@@ -960,17 +967,1071 @@ protected synchronized void releaseConnection(DBBroker broker) throws SQLExcepti
 			</section>	
 
 			<section>			
-			<title>Writing the concrete implementation of <classname>org.exist.indexing.IndexWorker</classname></title>
-			<!--			
-			<para>       			  		
-			
-			</para>			
-			<programlisting format="linespecific"><![CDATA[				
-			
+			<title>Writing the concrete implementation of <classname>org.exist.indexing.IndexWorker</classname></title>					
+			<para>Just like for <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndex</classname>, we will start
+			to design a database-independant abstract class. This class should normally be the basis of every JDBC spatial
+			indexes. It will handle most of the hard work.</para>
+			<para>Let's start by a few members and a few general-purpose public methods :</para>			
+			<programlisting format="linespecific"><![CDATA[	
+package org.exist.indexing.spatial;
+						
+public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
+	
+	public static String GML_NS = "http://www.opengis.net/gml";    
+	protected final static String INDEX_ELEMENT = "gml";   
+	
+	private static final Logger LOG = Logger.getLogger(AbstractGMLJDBCIndexWorker.class);
+	
+	protected IndexController controller;
+	protected AbstractGMLJDBCIndex index;
+	protected DBBroker broker;
+	protected int currentMode = StreamListener.UNKNOWN;    
+	protected DocumentImpl currentDoc = null;  
+	private boolean isDocumentGMLAware = false;
+	protected Map geometries = new TreeMap();    
+	NodeId currentNodeId = null;    
+	Geometry streamedGeometry = null;
+	boolean documentDeleted = false;
+	int flushAfter = -1;
+	protected GMLHandlerJTS geometryHandler = new GeometryHandler(); 
+	protected GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
+	protected GMLFilterDocument geometryDocument = new GMLFilterDocument(geometryFilter);
+	protected TreeMap transformations = new TreeMap();
+	protected boolean useLenientMode = false;   
+	protected GMLStreamListener gmlStreamListener = new GMLStreamListener(); 
+	protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
+	protected GeometryTransformer gmltransformer = new GeometryTransformer();		
+	protected WKBWriter wkbWriter = new WKBWriter();
+	protected WKBReader wkbReader = new WKBReader();
+	protected WKTWriter wktWriter = new WKTWriter();
+	protected WKTReader wktReader = new WKTReader();
+	protected Base64Encoder base64Encoder = new Base64Encoder();
+	protected Base64Decoder base64Decoder = new Base64Decoder();  
+	
+	public AbstractGMLJDBCIndexWorker(AbstractGMLJDBCIndex index, DBBroker broker) {
+	    this.index = index;
+	    this.broker = broker;
+	}
+	
+	public String getIndexId() {
+	    return AbstractGMLJDBCIndex.ID;
+	}        
+	
+	public String getIndexName() {
+	    return index.getIndexName();
+	}        
+	
+	public Index getIndex() {
+	    return index;
+	}
+    
+}			
 			]]></programlisting>
-			-->
+			<para>Of course, <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker</classname> implements
+			<classname>org.exist.indexing.IndexWorker</classname>.</para>
+			<para><parameter>GML_NS</parameter> is the GML namespace for which the spatial index is specially designed. 
+			Use this public member to avoid redundancy and, worse, inconsistencies.</para>
+			<para><parameter>INDEX_ELEMENT</parameter> is the configuration's element name which is accurate for our <classname>Index</classname>
+			configuration. To configure a collection in order to index its GML data, define such a configuration : </para> 			
+			<programlisting format="linespecific"><![CDATA[				
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+	<index>
+		<gml flushAfter="200"/>
+	</index>
+</collection>		
+			]]></programlisting>
+			<para>Got the <sgmltag>gml</sgmltag> element ? We will shortly see how this information is able
+			to configure our <classname>IndexWorker</classname>.</para>
+			<para><parameter>controller</parameter>, <parameter>index</parameter> and <parameter>broker</parameter>
+			should now be quite straightforward.</para>
+			<para><parameter>currentMode</parameter> and <parameter>currentDoc</parameter> should also be straightforward.
+			Notice that they are initialized this "empty" values.</para>
+			<para><parameter>geometries</parameter> is a collection of <classname>com.vividsolutions.jts.geom.Geometry</classname> 
+			instances that are currently held in memory, waiting for being "flushed" to the database. Depending of 
+			<parameter>currentMode</parameter>, they're pending for insertion or removal.</para>
+			<para><parameter>currentNodeId</parameter> is used to share the ID of the node currently being processed between the different inner classes.</para>
+			<para><parameter>streamedGeometry</parameter> is the last <classname>com.vividsolutions.jts.geom.Geometry</classname> that has been generated by 
+			GML parsing. It is <parameter>null</parameter> if the geometry is topologically
+			not well formed. This latter case is maybe a too restrictive feature of Geotools parser which also
+			throws <classname>NullPointerException</classname>s (!) if the GML is somehow not well-formed. See
+			<ulink url="http://jira.codehaus.org/browse/GEOT-742">GEOT-742</ulink> for more information on this issue.</para>
+			<para><parameter>documentDeleted</parameter> is a flag indicating that the current document has been deleted and
+			that we don't have to process it any more. Remember that <classname>StreamListener.REMOVE_ALL_NODES</classname> send some
+			events for <strong>all</strong> nodes.</para>
+			<para><parameter>flushAfter </parameter> will hold our configuration's setting.</para>
+			<para><parameter>geometryHandler</parameter> is our GML geometries SAX handler that will convert GML
+			to a <classname>com.vividsolutions.jts.geom.Geometry</classname> instance. It is included in a handler chain 
+			composed of <parameter>geometryFilter</parameter> and <parameter>geometryDocument</parameter>.</para>			
+			<para><parameter>transforms</parameter> will cache a list a transformations between a source and a target SRS.</para> 
+			<para><parameter>useLenientMode</parameter> will be set to <parameter>true</parameter> is the transformation libraries
+			that are in the CLASSPATH don't have the Bursa-Wolf parameters. Transformations will be attempted,
+		 	but with a precision loss (see above).</para>
+			<para><parameter>gmlStreamListener</parameter> is our own implementation of <classname>org.exist.indexing.StreamListener</classname>.
+			Since there is a 1:1 (or even 1:0) relationship with the <classname>IndexWorker</classname>, it will
+			be implemented as an inner class and will be described below.</para> 
+			<para><parameter>coordinateTransformer</parameter> will be needed during <classname>Geometry</classname> transformations to other SRSes.</para>
+			<para><parameter>gmlTransformer</parameter> will be needed during <classname>Geometry</classname> transformations to XML.</para>
+			<para><parameter>wkbWriter</parameter> and <parameter>wkbReader</parameter> will be needed during <classname>Geometry</classname> serialization
+			and deserialization to and from the database.</para>
+			<para><parameter>wktWriter</parameter> and <parameter>wktReader</parameter> will be needed during <classname>Geometry</classname> WKT serialization
+			and deserialization to and from the database. WKT could be dynamically generated from <classname>Geometry</classname> but we
+			have chosen to store it in the HSQLDB.</para>	
+			<para><parameter>base64Encoder</parameter> and <parameter>base64Decoder</parameter> will be needed to convert binary date, namely WKB,
+			to XML types, namely <parameter>xs:base64Binary</parameter>.</para>		
+			<para>No need to comment the methods, expect maybe <methodname>getIndexId()</methodname> that will return
+			the <strong>static</strong> ID of the <classname>Index</classname>. No chance to be wrong with such a design.</para>		
+			<para>The next method is a bit specific :</para>
+			<programlisting format="linespecific"><![CDATA[				
+public Object configure(IndexController controller, NodeList configNodes, Map namespaces) 
+		throws DatabaseConfigurationException {
+	this.controller = controller;
+	Map map = null;      
+	for(int i = 0; i < configNodes.getLength(); i++) {
+		Node node = configNodes.item(i);
+		if (node.getNodeType() == Node.ELEMENT_NODE && INDEX_ELEMENT.equals(node.getLocalName())) { 
+		    map = new TreeMap();
+		    GMLIndexConfig config = new GMLIndexConfig(namespaces, (Element)node);
+		    map.put(AbstractGMLJDBCIndex.ID, config);
+		}
+	}
+	return map;}	
+			]]></programlisting>
+			<para>It is only interested in the <sgmltag>gml</sgmltag> element of the configuration. If it finds one,
+			it creates a <classname>org.exist.indexing.spatial.GMLIndexConfig</classname> instance wich is a very
+			simple class :</para>
+			<programlisting format="linespecific"><![CDATA[				
+package org.exist.indexing.spatial;
+
+public class GMLIndexConfig {
+
+	private static final Logger LOG = Logger.getLogger(GMLIndexConfig.class);
+	
+	private final static String FLUSH_AFTER = "flushAfter";	
+	private int flushAfter = -1;
+	
+	public GMLIndexConfig(Map namespaces, Element node) throws DatabaseConfigurationException {       
+		String param = ((Element)node).getAttribute(FLUSH_AFTER);
+		if (param != null) {
+			try {
+				flushAfter = Integer.parseInt(param);
+			} catch (NumberFormatException e) {
+				LOG.error("Invalid value for '" + FLUSH_AFTER + "'", e);
+			}
+		}	    	
+	}
+	
+	public int getFlushAfter() {
+		return flushAfter;
+	}
+}			
+			]]></programlisting>
+			<para>... that retains the configuration attribute and provides a getter for it.</para>
+			<para>This configuration object is saved in a Map with the <classname>Index</classname> ID and 
+			will be available as shown in the next method :</para>								
+			<programlisting format="linespecific"><![CDATA[				
+public void setDocument(DocumentImpl document) {  
+	isDocumentGMLAware = false;
+	documentDeleted= false;
+	if (document != null) {
+		IndexSpec idxConf = document.getCollection().getIndexConfiguration(document.getBroker());
+		if (idxConf != null) {
+			Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
+			if (collectionConfig != null) {
+				isDocumentGMLAware = true;
+				if (collectionConfig.get(AbstractGMLJDBCIndex.ID) != null)
+					flushAfter = ((GMLIndexConfig)collectionConfig.
+						get(AbstractGMLJDBCIndex.ID)).getFlushAfter();
+			}
+		}
+	}
+	if (isDocumentGMLAware) {
+	    currentDoc = document;	        
+	} else {
+	    currentDoc = null;
+	    currentMode = StreamListener.UNKNOWN;    		
+	}
+} 			
+			]]></programlisting>
+			<para>The objective is to determine if <parameter>document</parameter> should be indexed by the spatial <classname>Index</classname>.</para>
+			<para>For this, we look up its collection configuration and try to find a "custom" index specification for
+			our <classname>Index</classname>. If one is found, our <parameter>document</parameter> will be processed by the <classname>IndexWorker</classname>.
+			We also take advantage of this process to set one of our members. If <parameter>document</parameter> doesn't
+			interest our <classname>IndexWorker</classname>, we reset some members to avoid having an inconsistent sticky state.</para>
+			<para>The next methods don't require any particular comment :</para>
+			<programlisting format="linespecific"><![CDATA[		
+public void setDocument(DocumentImpl doc, int mode) {
+	setDocument(doc);
+	setMode(mode);
+}
+
+public DocumentImpl getDocument() {
+	return currentDoc;
+}
+
+public int getMode() {
+	return currentMode;
+}    			
+			]]></programlisting>
+			<para>The next method is somehow tricky :</para>
+			<programlisting format="linespecific"><![CDATA[				
+public StreamListener getListener() {      
+	if (currentDoc == null || currentMode == StreamListener.REMOVE_ALL_NODES)
+		return null;
+	return gmlStreamListener;
+}			
+			]]></programlisting>	
+			<para>It doesn't return any <classname>StreamListener</classname> in the 
+			<classname>StreamListner.REMOVE_ALL_NODES</classname>. It would be totally unnecessary to listen
+			at every node whereas a JDBC database will be able to delete all the document's nodes in 
+			one single statement.</para>		
+			<para>The next method is a place holder that needs more thinking. How to highlight a geometric information
+			smartly ?</para>
+			<programlisting format="linespecific"><![CDATA[				
+public MatchListener getMatchListener(NodeProxy proxy) {
+	return null;
+}			
+			]]></programlisting>	
+			<para>The next method computes the reindexing root. We will go bottom-up form the not to be modified
+			until the top-most element in the GML namespace. Indeed, GML allows "nested" or "multi" geometries. 
+			If a single part of such <classname>Geometry</classname> is modified, the whole geometry has to be 
+			recomputed.</para>		
+			<programlisting format="linespecific"><![CDATA[				
+public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
+	if (!isDocumentGMLAware)
+		//Not concerned
+		return null;
+	StoredNode topMost = node;
+	StoredNode currentNode = node;
+	for (int i = path.length() ; i > 0; i--) {
+		currentNode = (StoredNode)currentNode.getParentNode();
+		if (GML_NS.equals(currentNode.getNamespaceURI()))		
+			topMost = currentNode;
+	}
+	return topMost;    	
+}    			
+			]]></programlisting>
+			<para>The next method delegates the write operations :</para>			
+			<programlisting format="linespecific"><![CDATA[				
+    public void flush() {
+	if (!isDocumentGMLAware)
+		//Not concerned
+		return;
+	//Is the job already done ?
+	if (currentMode == StreamListener.REMOVE_ALL_NODES && documentDeleted)
+		return;
+	Connection conn = null;
+	try {
+		conn = acquireConnection();
+		conn.setAutoCommit(false);
+		switch (currentMode) {
+			case StreamListener.STORE :
+				saveDocumentNodes(conn);
+				break;
+			case StreamListener.REMOVE_SOME_NODES :
+				dropDocumentNode(conn);
+				break;
+			case StreamListener.REMOVE_ALL_NODES:
+				removeDocument(conn);
+				documentDeleted = true;
+				break;
+		}
+		conn.commit();	  
+	} catch (SQLException e) {
+		LOG.error("Document: " + currentDoc + " NodeID: " + currentNodeId, e);
+		try {
+			conn.rollback();
+		} catch (SQLException ee) {
+			LOG.error(ee);
+		}    	
+	} finally {
+		try {
+			if (conn != null) {
+				conn.setAutoCommit(true);
+				releaseConnection(conn);
+			}
+		} catch (SQLException e) {
+			LOG.error(e);
+		}        		
+	}
+}			
+			]]></programlisting>	
+			<para>Even though its code looks thick, it proves to be a good way to acquire (then release) a <classname>Connection</classname>
+			whatever the way it is provided by the <classname>IndexWorker</classname> (see above for these aspects,
+			concurrency in particular). It then	delegates the write operations to dedicated methods, which do not have to care about the <classname>Connection</classname>.
+			Write operations are embedded in a transaction. Shoud an exception occur, it would be logged and...
+			swallowed : eXist doesn't like exceptions when it flushes its data.</para>
+			<para>The next method delegates node storage :</para>
+			<programlisting format="linespecific"><![CDATA[				
+private void saveDocumentNodes(Connection conn) throws SQLException {
+    if (geometries.size() == 0)
+        return;  
+    try {	        
+        for (Iterator iterator = geometries.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            NodeId nodeId = (NodeId)entry.getKey();
+            SRSGeometry srsGeometry = (SRSGeometry)entry.getValue();       	
+            try {
+            	saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(), 
+            			currentDoc, nodeId, conn);
+            } finally {
+            	//Help the garbage collector
+            	srsGeometry = null;
+            }
+        }
+    } finally {
+    	geometries.clear();
+    }
+}			
+			]]></programlisting>
+			<para>It will call <methodname>saveGeometryNode()</methodname> (see below) passing a container
+			inner class that will not be described given its simplicity.</para> 
+			<para>The next two methods are built with the same design. The first one destroys the index
+			entry for the currently processed node and the second one removes the index entries for the whole
+			document.</para>	
+			<programlisting format="linespecific"><![CDATA[				
+private void dropDocumentNode(Connection conn) throws SQLException {    	
+    if (currentNodeId == null)
+        return;        
+    try {         
+        boolean removed = removeDocumentNode(currentDoc, currentNodeId, conn);
+        if (!removed)
+        	LOG.error("No data dropped for node " + currentNodeId.toString() + " from GML index");
+        else {
+        	if (LOG.isDebugEnabled())	            
+            	LOG.debug("Dropped data for node " + currentNodeId.toString() + " from GML index");
+    	}
+    } finally {        
+    	currentNodeId = null;
+    }
+}
+
+private void removeDocument(Connection conn) throws SQLException {
+    if (LOG.isDebugEnabled())
+        LOG.debug("Dropping GML index for document " + currentDoc.getURI());        
+    int nodeCount = removeDocument(currentDoc, conn);
+    if (LOG.isDebugEnabled())
+        LOG.debug("Dropped " + nodeCount + " nodes from GML index");
+}			
+			]]></programlisting>
+			<para>The next method is a mix of the designs described above. It also previously makes a check :</para> 			
+			<programlisting format="linespecific"><![CDATA[	
+public void removeCollection(Collection collection, DBBroker broker) {
+	boolean isCollectionGMLAware = false;
+	IndexSpec idxConf = collection.getIndexConfiguration(broker);
+	if (idxConf != null) {
+		Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
+		if (collectionConfig != null) {
+			isCollectionGMLAware = (collectionConfig != null);
+		}
+	}
+	if (!isCollectionGMLAware)
+		return;  
+	
+	Connection conn = null;
+	try {
+		conn = acquireConnection();
+		if (LOG.isDebugEnabled())
+		    LOG.debug("Dropping GML index for collection " + collection.getURI());	        
+		int nodeCount = removeCollection(collection, conn);	
+		if (LOG.isDebugEnabled())
+		    LOG.debug("Dropped " + nodeCount + " nodes from GML index");	         
+	} catch (SQLException e) {
+		LOG.error(e);
+	} finally {
+		try {
+			if (conn != null)
+				releaseConnection(conn);
+	    } catch (SQLException e) {
+	    	LOG.error(e);
+	    }        		
+	}
+}							
+			]]></programlisting>
+			<para>Indeed, we have to check if the collection is indexable by the <classname>Index</classname>
+			before trying to delete its index entries.</para>
+			<para>The next methods are built on the same design (<classname>Collection</classname> and exception
+			management) and will thus not be described.</para>			
+			<programlisting format="linespecific"><![CDATA[
+public NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp)
+	...    	
+}
+
+public Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326) throws  SpatialIndexException {
+	...
+}
+
+protected Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326) throws SpatialIndexException {
+	...
+}
+
+public AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, String propertyName) 
+throws  SpatialIndexException {
+	...
+}    
+
+public ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, String propertyName) 
+throws  SpatialIndexException {
+	...
+}			
+			]]></programlisting>		
+			<para>... because all these methods delegate to the following abstract methods that will have to be 
+			implemented by the DB-dependant concrete classes :</para>
+			<programlisting format="linespecific"><![CDATA[		
+protected abstract boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn)
+	throws SQLException;
+
+protected abstract boolean removeDocumentNode(DocumentImpl doc, NodeId nodeID, Connection conn)
+	 throws SQLException;
+
+protected abstract int removeDocument(DocumentImpl doc, Connection conn)
+	 throws SQLException;
+
+protected abstract int removeCollection(Collection collection, Connection conn)
+	 throws SQLException;
+	 
+protected abstract Connection acquireConnection() throws SQLException;
+
+protected abstract void releaseConnection(Connection conn) throws SQLException;	 
+	 
+protected abstract NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn)
+	 throws SQLException;		 
+
+protected abstract Map getGeometriesForDocument(DocumentImpl doc, Connection conn)
+	 throws SQLException;
+
+protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, 
+	String propertyName) throws SQLException, XPathException;
+
+protected abstract ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName)
+	 throws SQLException, XPathException;
+
+protected abstract Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn)
+	 throws SQLException;
+
+protected abstract Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn)
+	 throws SQLException;
+
+protected abstract boolean checkIndex(DBBroker broker, Connection conn)
+	 throws SQLException, SpatialIndexException;	 
+					
+			]]></programlisting>	
+			<para>Let's have a look however at this method that doesn't need a DB-dependant implementation :</para>				
+			<programlisting format="linespecific"><![CDATA[	
+public Occurrences[] scanIndex(DocumentSet docs) {    	
+	Map occurences = new TreeMap();
+	Connection conn = null;
+	try { 
+		conn = acquireConnection();
+		//Collect the (normalized) geometries for each document
+		for (Iterator iDoc = docs.iterator(); iDoc.hasNext();) {
+			DocumentImpl doc = (DocumentImpl)iDoc.next();
+			//TODO : check if document is GML-aware ?
+			//Aggregate the occurences between different documents
+			for (Iterator iGeom = getGeometriesForDocument(doc, conn).entrySet().iterator(); iGeom.hasNext();) {
+				Map.Entry entry = (Map.Entry) iGeom.next();
+				Geometry key = (Geometry)entry.getKey();
+				//Do we already have an occurence for this geometry ?
+				Occurrences oc = (Occurrences)occurences.get(key);
+				if (oc != null) {
+					//Yes : increment occurence count
+					oc.addOccurrences(oc.getOccurrences() + 1);
+					//...and reference the document
+					oc.addDocument(doc);
+				} else {
+					//No : create a new occurence with EPSG4326_WKT as "term"
+					oc = new Occurrences((String)entry.getValue());
+					//... with a count set to 1
+					oc.addOccurrences(1);
+					//... and reference the document
+					oc.addDocument(doc);
+					occurences.put(key, oc);
+				}
+			}
+		}
+	} catch (SQLException e) {
+		LOG.error(e);
+		return null;
+	} finally {
+		try {
+			if (conn != null)
+				releaseConnection(conn);
+		} catch (SQLException e) {
+			LOG.error(e);
+			return null;
+		}            
+	}
+	Occurrences[] result = new Occurrences[occurences.size()];
+	occurences.values().toArray(result);
+	return result;
+}						
+			]]></programlisting>	
+			<para>Same design (<classname>Collection</classname> and exception management, delegation mechanism).
+			We probably will add more like this in the future.</para>	
+			<para>The following methods are utility methods to stream <classname>Geometry</classname> instances 
+			to XML and vice-versa.</para>			
+			<programlisting format="linespecific"><![CDATA[				
+public Geometry streamNodeToGeometry(XQueryContext context, NodeValue node) throws SpatialIndexException {
+	try {
+		context.pushDocumentContext();
+		try {			
+			node.toSAX(context.getBroker(), geometryDocument, null);
+		} finally {
+			context.popDocumentContext();
+		}
+	} catch (SAXException e) {
+		throw new SpatialIndexException(e);
+	}
+	return streamedGeometry;
+}	
+
+public Element streamGeometryToElement(Geometry geometry, String srsName, Receiver receiver) throws SpatialIndexException {           
+	String gmlString = null;
+	try {
+		gmlString = gmltransformer.transform(geometry);
+	} catch (TransformerException e) {
+		throw new SpatialIndexException(e);
+	} 	
+	try {
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(true);
+		InputSource src = new InputSource(new StringReader(gmlString));
+		SAXParser parser = factory.newSAXParser();
+		XMLReader reader = parser.getXMLReader();
+		reader.setContentHandler((ContentHandler)receiver);
+		reader.parse(src);
+		Document doc = receiver.getDocument();
+		return doc.getDocumentElement(); 
+	} catch (ParserConfigurationException e) {				
+		throw new SpatialIndexException(e);
+	} catch (SAXException e) {
+		throw new SpatialIndexException(e);
+	} catch (IOException e) {
+		throw new SpatialIndexException(e);	
+	}
+}    		
+    	]]></programlisting>	
+    	<para>The first one uses a <classname>org.geotools.gml.GMLFilterDocument</classname> (see below) and the second one uses
+    	a <classname>org.geotools.gml.producer.GeometryTransformer</classname> which needs some polishing because,
+    	despite it is called a transformer, it doesn't cope easily with a <classname>Handler</classname> and returns a...
+    	<classname>String</classname> !</para>
+    	<para>The last method is also a utility method :</para>
+			<programlisting format="linespecific"><![CDATA[	
+public Geometry transformGeometry(Geometry geometry, String sourceCRS, String targetCRS) throws SpatialIndexException {    
+	if ("osgb:BNG".equalsIgnoreCase(sourceCRS.trim()))
+		sourceCRS = "EPSG:27700";  	    
+	if ("osgb:BNG".equalsIgnoreCase(targetCRS.trim()))
+		targetCRS = "EPSG:27700"; 
+	MathTransform transform = (MathTransform)transformations.get(sourceCRS + "_" + targetCRS);
+	if (transform == null) {
+		try {
+			try {        	
+				transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);
+			} catch (OperationNotFoundException e) {
+				LOG.info(e);
+				LOG.info("Switching to lenient mode... beware of precision loss !");
+				useLenientMode = true;
+				transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);	
+			}
+			transformations.put(sourceCRS + "_" + targetCRS, transform);
+			LOG.debug("Instantiated transformation from '" + sourceCRS + "' to '" + targetCRS + "'");
+		} catch (NoSuchAuthorityCodeException e) {
+			LOG.error(e);
+		} catch (FactoryException e) {
+			LOG.error(e);
+		}
+	}
+	if (transform == null) {
+		throw new SpatialIndexException("Unable to get a transformation from '" + sourceCRS + "' to '" + targetCRS +"'");        		           	
+	}
+	coordinateTransformer.setMathTransform(transform);
+	try {
+		return coordinateTransformer.transform(geometry);
+	} catch (TransformException e) {
+		throw new SpatialIndexException(e);
+	}
+}						
+			]]></programlisting>	
+			<para>It implements a workaround for our test file SRS which isn't yet known by Geotools libraries,
+			then it tries to get the transformation from our cache. If it doesn't succeed, it tries to find one
+			in the libraries that are in the CLASSPATH. Should those libraries lack the Brursa-Wolf parameters,
+			it will make another attempt in lenient mode, which will induce a loss of accuracy. Then, it transforms
+			the <classname>Geometry</classname> from its <parameter>sourceCRS</parameter> to the required
+			<parameter>targetCRS</parameter>.</para>
+			<para>Now, let's study how the abstract methods are implement by the HSQLDB-dependant class :</para>			
+			<programlisting format="linespecific"><![CDATA[	
+package org.exist.indexing.spatial;
+
+public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
+
+	private static final Logger LOG = Logger.getLogger(GMLHSQLIndexWorker.class);
+	
+	public GMLHSQLIndexWorker(GMLHSQLIndex index, DBBroker broker) {
+		super(index, broker);
+	}
+}						
+			]]></programlisting>	
+			<para>The only noticeable point is that we indeed extend our <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker</classname></para>			
+			<para>Now, this method will do something more interesting, store the <classname>Geometry</classname>
+			associated to a node :</para>
+			<programlisting format="linespecific"><![CDATA[				
+protected boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
+	PreparedStatement ps = conn.prepareStatement("INSERT INTO " + GMLHSQLIndex.TABLE_NAME + "(" +
+		/*1*/ "DOCUMENT_URI, " +            		
+		/*2*/ "NODE_ID_UNITS, " + 
+		/*3*/ "NODE_ID, " +        			
+		/*4*/ "GEOMETRY_TYPE, " +
+		/*5*/ "SRS_NAME, " +
+		/*6*/ "WKT, " +
+		/*7*/ "WKB, " +
+		/*8*/ "MINX, " +
+		/*9*/ "MAXX, " +
+		/*10*/ "MINY, " +
+		/*11*/ "MAXY, " +
+		/*12*/ "CENTROID_X, " +
+		/*13*/ "CENTROID_Y, " +
+		/*14*/ "AREA, " +
+		//Boundary ?        		
+		/*15*/ "EPSG4326_WKT, " +
+		/*16*/ "EPSG4326_WKB, " +
+		/*17*/ "EPSG4326_MINX, " +
+		/*18*/ "EPSG4326_MAXX, " +
+		/*19*/ "EPSG4326_MINY, " +
+		/*20*/ "EPSG4326_MAXY, " +
+		/*21*/ "EPSG4326_CENTROID_X, " +
+		/*22*/ "EPSG4326_CENTROID_Y, " +
+		/*23*/ "EPSG4326_AREA," +
+		//Boundary ?
+		/*24*/ "IS_CLOSED, " +
+		/*25*/ "IS_SIMPLE, " +
+		/*26*/ "IS_VALID" +    			
+		") VALUES (" +
+			"?, ?, ?, ?, ?, " +
+			"?, ?, ?, ?, ?, " +
+			"?, ?, ?, ?, ?, " +
+			"?, ?, ?, ?, ?, " +
+			"?, ?, ?, ?, ?, " +
+			"?"
+		+ ")"
+    );       
+	try {
+		Geometry EPSG4326_geometry = null;
+		try {
+			EPSG4326_geometry = transformGeometry(geometry, srsName, "EPSG:4326");
+		} catch (SpatialIndexException e) {
+			//Transforms the exception into an SQLException.
+			SQLException ee = new SQLException(e.getMessage());
+			ee.initCause(e);
+			throw ee;
+		}
+		/*DOCUMENT_URI*/ ps.setString(1, doc.getURI().toString());	
+		/*NODE_ID_UNITS*/ ps.setInt(2, nodeId.units());
+		byte[] bytes = new byte[nodeId.size()];
+		nodeId.serialize(bytes, 0);
+		/*NODE_ID*/ ps.setBytes(3, bytes);
+		/*GEOMETRY_TYPE*/ ps.setString(4, geometry.getGeometryType());
+		/*SRS_NAME*/ ps.setString(5, srsName);
+		/*WKT*/ ps.setString(6, wktWriter.write(geometry));
+		/*WKB*/ ps.setBytes(7, wkbWriter.write(geometry));
+		/*MINX*/ ps.setDouble(8, geometry.getEnvelopeInternal().getMinX());
+		/*MAXX*/ ps.setDouble(9, geometry.getEnvelopeInternal().getMaxX());
+		/*MINY*/ ps.setDouble(10, geometry.getEnvelopeInternal().getMinY());
+		/*MAXY*/ ps.setDouble(11, geometry.getEnvelopeInternal().getMaxY());
+		/*CENTROID_X*/ ps.setDouble(12, geometry.getCentroid().getCoordinate().x);   
+		/*CENTROID_Y*/ ps.setDouble(13, geometry.getCentroid().getCoordinate().y);  		
+		/*AREA*/ ps.setDouble(14, geometry.getArea());		
+		/*EPSG4326_WKT*/ ps.setString(15, wktWriter.write(EPSG4326_geometry));
+		/*EPSG4326_WKB*/ ps.setBytes(16, wkbWriter.write(EPSG4326_geometry));		
+		/*EPSG4326_MINX*/ ps.setDouble(17, EPSG4326_geometry.getEnvelopeInternal().getMinX());
+		/*EPSG4326_MAXX*/ ps.setDouble(18, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
+		/*EPSG4326_MINY*/ ps.setDouble(19, EPSG4326_geometry.getEnvelopeInternal().getMinY());
+		/*EPSG4326_MAXY*/ ps.setDouble(20, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
+		/*EPSG4326_CENTROID_X*/ ps.setDouble(21, EPSG4326_geometry.getCentroid().getCoordinate().x);   
+		/*EPSG4326_CENTROID_Y*/ ps.setDouble(22, EPSG4326_geometry.getCentroid().getCoordinate().y);  
+		//EPSG4326_geometry.getRepresentativePoint()
+		/*EPSG4326_AREA*/ ps.setDouble(23, EPSG4326_geometry.getArea());		
+		//For empty Curves, isClosed is defined to have the value false.
+		/*IS_CLOSED*/ ps.setBoolean(24, !geometry.isEmpty());
+		/*IS_SIMPLE*/ ps.setBoolean(25, geometry.isSimple());
+		//Should always be true (the GML SAX parser makes a too severe check)
+		/*IS_VALID*/ ps.setBoolean(26, geometry.isValid());
+		return (ps.executeUpdate() == 1);
+	} finally {
+		if (ps != null)
+			ps.close();
+		//Let's help the garbage collector...
+		geometry = null;
+	}    	
+}			
+			]]></programlisting>	
+			<para>The generated SQL statement should be straightforward. We make a heavy use of the methods
+			provided by <classname>com.vividsolutions.jts.geom.Geometry</classname>, both on the "native" <classname>Geometry</classname>
+			and on its EPSG:4326 transformation. Would could probably store other properties here (like, e.g. the 
+			geometry's boundary). Other <classname>IndexWorker</classname>s, especially those accessing a spatially-enabled
+			DBMS, might prefer to store fewer properties if they can be computed dynamically at a cheap price.</para>
+			<para>The next method is even much easier to understand :</para>
+			<programlisting format="linespecific"><![CDATA[				
+protected boolean removeDocumentNode(DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
+	PreparedStatement ps = conn.prepareStatement(
+		"DELETE FROM " + GMLHSQLIndex.TABLE_NAME + 
+		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
+	); 
+	ps.setString(1, doc.getURI().toString());
+	ps.setInt(2, nodeId.units());
+	byte[] bytes = new byte[nodeId.size()];
+	nodeId.serialize(bytes, 0);        
+	ps.setBytes(3, bytes);
+	try {	 
+	    return (ps.executeUpdate() == 1);
+	} finally {
+		if (ps != null)
+			ps.close();
+	}       
+}
+    		]]></programlisting>
+    		<para>... and this one even more :</para>
+			<programlisting format="linespecific"><![CDATA[				
+protected int removeDocument(DocumentImpl doc, Connection conn) throws SQLException {    	
+	PreparedStatement ps = conn.prepareStatement(
+		"DELETE FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
+	); 
+	ps.setString(1, doc.getURI().toString());
+	try {
+		return ps.executeUpdate();	 
+	} finally {
+		if (ps != null)
+			ps.close();
+	}       
+}   			
+			]]></programlisting>	      			
+    		<para>This one however, is a little bit trickier :</para>
+  			<programlisting format="linespecific"><![CDATA[		
+protected int removeCollection(Collection collection, Connection conn) throws SQLException {
+	PreparedStatement ps = conn.prepareStatement(
+		"DELETE FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE SUBSTRING(DOCUMENT_URI, 1, ?) = ?;"
+	); 
+	ps.setInt(1, collection.getURI().toString().length());
+	ps.setString(2, collection.getURI().toString());
+	try {
+		return ps.executeUpdate();
+	} finally {
+		if (ps != null)
+			ps.close();
+	}
+}		
+	    ]]></programlisting>
+	    <para>... maybe because it makes use of a SQL function to filter the right documents ?</para>
+	    <para>The two next methods are straightforward, now that we have explained that <classname>Connection</classname>s
+	    had to be requested from the <classname>Index</classname> to avoid concurrency problems on an embedded
+	    HSQLDB instance.</para>
+		<programlisting format="linespecific"><![CDATA[	
+protected Connection acquireConnection() throws SQLException {   
+	return index.acquireConnection(this.broker);
+}
+
+protected void releaseConnection(Connection conn) throws SQLException {   
+	index.releaseConnection(this.broker);
+}
+		]]></programlisting>
+	    
+	    <para>The next method is much more interesting. This is where is the core of the spatial index is :</para>					
+		<programlisting format="linespecific"><![CDATA[				
+protected NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException {
+	String extraSelection = null;
+	String bboxConstraint = null;    	
+	switch (spatialOp) {
+	//BBoxes are equal
+	case SpatialOperator.EQUALS:
+		bboxConstraint = "(EPSG4326_MINX = ? AND EPSG4326_MAXX = ?)" +
+			" AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)";
+		break;
+	//Nothing much we can do with the BBox at this stage
+	case SpatialOperator.DISJOINT:
+	//Retrieve the BBox though...
+		extraSelection = ", EPSG4326_MINX, EPSG4326_MAXX, EPSG4326_MINY, EPSG4326_MAXY";
+		break;
+	//BBoxes intersect themselves
+	case SpatialOperator.INTERSECTS:        		
+	case SpatialOperator.TOUCHES:        		   		
+	case SpatialOperator.CROSSES:        		      		
+	case SpatialOperator.OVERLAPS: 
+		bboxConstraint = "(EPSG4326_MAXX >= ? AND EPSG4326_MINX <= ?)" +
+		" AND (EPSG4326_MAXY >= ? AND EPSG4326_MINY <= ?)";
+		break;
+	//BBox is fully within
+	case SpatialOperator.WITHIN:   
+		bboxConstraint = "(EPSG4326_MINX >= ? AND EPSG4326_MAXX <= ?)" +
+		" AND (EPSG4326_MINY >= ? AND EPSG4326_MAXY <= ?)";
+		break;
+	//BBox fully contains
+	case SpatialOperator.CONTAINS: 
+		bboxConstraint = "(EPSG4326_MINX <= ? AND EPSG4326_MAXX >= ?)" +
+		" AND (EPSG4326_MINY <= ? AND EPSG4326_MAXY >= ?)";
+		break;             		
+	default:
+		throw new IllegalArgumentException("Unsupported spatial operator:" + spatialOp);
+	}
+	PreparedStatement ps = conn.prepareStatement(
+		"SELECT EPSG4326_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + (extraSelection == null ? "" : extraSelection) +
+		" FROM " + GMLHSQLIndex.TABLE_NAME + 
+		(bboxConstraint == null ? "" : " WHERE " + bboxConstraint) + ";"
+	);
+	if (bboxConstraint != null) {
+		ps.setDouble(1, EPSG4326_geometry.getEnvelopeInternal().getMinX());
+		ps.setDouble(2, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
+		ps.setDouble(3, EPSG4326_geometry.getEnvelopeInternal().getMinY());
+		ps.setDouble(4, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
+	}
+	ResultSet rs = null;
+	NodeSet result = null;
+	try { 
+		int disjointPostFiltered = 0;
+		rs = ps.executeQuery();
+		result = new ExtArrayNodeSet(); //new ExtArrayNodeSet(docs.getLength(), 250)
+		while (rs.next()) {
+			DocumentImpl doc = null;
+			try {
+				doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+			} catch (PermissionDeniedException e) {
+				LOG.debug(e);
+				//Ignore since the broker has no right on the document
+				continue;
+			}        		
+			//contextSet == null should be use to scan the whole index
+			if (contextSet == null || contextSet.getDocumentSet().contains(doc.getDocId())) {
+				NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+				NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);							
+				if (contextSet == null || contextSet.get(p) != null) {        			
+			    	boolean geometryMatches = false;
+			    	if (spatialOp == SpatialOperator.DISJOINT) {
+			    		//No BBox intersection : obviously disjoint
+			    		if (rs.getDouble("EPSG4326_MAXX") < EPSG4326_geometry.getEnvelopeInternal().getMinX() ||	        			
+		        		rs.getDouble("EPSG4326_MINX") > EPSG4326_geometry.getEnvelopeInternal().getMaxX() ||	        			
+		        		rs.getDouble("EPSG4326_MAXY") < EPSG4326_geometry.getEnvelopeInternal().getMinY() ||	        			
+		        		rs.getDouble("EPSG4326_MINY") > EPSG4326_geometry.getEnvelopeInternal().getMaxY()) {
+		        			geometryMatches = true;
+							disjointPostFiltered++;	
+			    		}
+			    	}
+			    	//Possible match : check the geometry
+			    	if (!geometryMatches) {	
+			    		try {			        	
+				        	Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));			        	
+				        	switch (spatialOp) {
+				        	case SpatialOperator.EQUALS:	        		        		
+				        		geometryMatches = geometry.equals(EPSG4326_geometry);
+				        		break;
+				        	case SpatialOperator.DISJOINT:        		
+				        		geometryMatches = geometry.disjoint(EPSG4326_geometry);
+				        		break;	        		
+				        	case SpatialOperator.INTERSECTS:        		
+				        		geometryMatches = geometry.intersects(EPSG4326_geometry);
+				        		break;	        		
+				        	case SpatialOperator.TOUCHES:
+					        	geometryMatches = geometry.touches(EPSG4326_geometry);
+				        		break;	        		
+				        	case SpatialOperator.CROSSES:
+					        	geometryMatches = geometry.crosses(EPSG4326_geometry);
+				        		break;	        		
+				        	case SpatialOperator.WITHIN:        		
+				        		geometryMatches = geometry.within(EPSG4326_geometry);
+				        		break;	        		
+				        	case SpatialOperator.CONTAINS:	        		
+				        		geometryMatches = geometry.contains(EPSG4326_geometry);
+				        		break;	        		
+				        	case SpatialOperator.OVERLAPS:	        		
+				        		geometryMatches = geometry.overlaps(EPSG4326_geometry);
+				        		break;	        		
+				        	}
+				        } catch (ParseException e) {
+				        	//Transforms the exception into an SQLException.
+				        	//Very unlikely to happen though...
+				        	SQLException ee = new SQLException(e.getMessage());
+				        	ee.initCause(e);
+				        	throw ee;
+				        }
+			    	}
+			    	if (geometryMatches)        	
+			        	result.add(p);
+				}
+			}
+		}
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(rs.getRow() + " eligible geometries, " + result.getItemCount() + "selected" +
+				(spatialOp == SpatialOperator.DISJOINT ? "(" + disjointPostFiltered + " post filtered)" : ""));
+		}
+		return result;	    	
+	} finally {   
+		if (rs != null)
+			rs.close();
+		if (ps != null)
+			ps.close();	    		
+	}
+}			
+			]]></programlisting>
+			<para>The trick is to filter the geometries on (fast) BBox operations first (intersecting geometries have
+			their BBox intersecting as well...) which is possible in every case but for the <methodname>Spatial.DISJOINT</methodname>
+			operator. For the latter case, we will have to retain the BBox coordinates in order to apply a further
+			filtering. The, we examine the results and filter out the documents that are not in the <parameter>contextSet</parameter>.
+			Then we apply a <methodname>Spatial.DISJOINT</methodname> filtering that allow to avoid the next step. Only then, 
+			we perform the costly operations, namely <classname>Geometry</classname> deserialization from the DB 
+			then performing spatial operations on it. Matching nodes are then returned.</para>
+			<para>The next method is quite straightfoward :</para>
+			<programlisting format="linespecific"><![CDATA[		
+protected Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
+	PreparedStatement ps = conn.prepareStatement(
+		"SELECT EPSG4326_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
+	); 
+	ps.setString(1, doc.getURI().toString());
+	ResultSet rs = null;
+	try {	 
+		rs = ps.executeQuery();
+		Map map = new TreeMap();
+		while (rs.next()) {
+			Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
+			//Returns the EPSG:4326 WKT for every geometry to make occurrence aggregation consistent
+			map.put(EPSG4326_geometry, rs.getString("EPSG4326_WKT"));
+		}
+		return map;
+	} catch (ParseException e) {
+		//Transforms the exception into an SQLException.
+		//Very unlikely to happen though...
+		SQLException ee = new SQLException(e.getMessage());
+		ee.initCause(e);
+		throw ee;
+	} finally {   
+		if (rs != null)
+			rs.close();
+		if (ps != null)
+			ps.close();
+	}
+} 			
+		    ]]></programlisting>
+		    <para>Notice that it will return EPSG:4326 <classname>Geometry</classname>ies and that it will rethrow
+		    a <classname>com.vividsolutions.jts.io.ParseException</classname> as a <classname>java.sql.SQLException</classname>.</para>	
+		    <para>This is the next method :</para>
+		    <programlisting format="linespecific"><![CDATA[	
+protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException {
+	PreparedStatement ps = conn.prepareStatement(
+		"SELECT " + propertyName + 
+		" FROM " + GMLHSQLIndex.TABLE_NAME + 
+		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?"
+	);
+	ps.setString(1, p.getDocument().getURI().toString());
+	ps.setInt(2, p.getNodeId().units());
+	byte[] bytes = new byte[p.getNodeId().size()];
+	p.getNodeId().serialize(bytes, 0);
+	ps.setBytes(3, bytes);    	
+	ResultSet rs = null;    	
+	try {
+		rs = ps.executeQuery();
+		if (!rs.next())
+			//Nothing returned
+			return AtomicValue.EMPTY_VALUE;
+		AtomicValue result = null;
+		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+			result = new BooleanValue(rs.getBoolean(1));
+		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+			result = new DoubleValue(rs.getDouble(1));
+		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+			result = new StringValue(rs.getString(1));
+		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+			result = new Base64Binary(rs.getBytes(1));
+		} else 
+			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
+		if (rs.next()) {   	
+			//Should be impossible    		
+			throw new SQLException("More than one geometry for node " + p);
+		}
+		return result;    
+	} finally {   
+		if (rs != null)
+			rs.close();
+		if (ps != null)
+			ps.close();
+	}
+}      		    
+		    ]]></programlisting>	
+		    <para>It directly requests the required property from the DB and returns an appropriate XML atomic value.</para>
+		    <para>The next method is a generalization of the previous one :</para>
+			<programlisting format="linespecific"><![CDATA[			
+protected ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException {
+	PreparedStatement ps = conn.prepareStatement(
+		"SELECT " + propertyName + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + 
+		" FROM " + GMLHSQLIndex.TABLE_NAME
+	);
+	ResultSet rs = null;    	
+	try {
+		rs = ps.executeQuery();
+		ValueSequence result = new ValueSequence(contextSet.getLength());    		
+		while (rs.next()) {
+			DocumentImpl doc = null;
+			try {
+				doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+			} catch (PermissionDeniedException e) {
+				LOG.debug(e);				
+				if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+					result.add(BooleanValue.EMPTY_VALUE);
+				} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+					result.add(DoubleValue.EMPTY_VALUE);
+				} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+					result.add(StringValue.EMPTY_VALUE);
+				} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+					result.add(Base64Binary.EMPTY_VALUE);
+				} else 
+					throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
+				//Ignore since the broker has no right on the document
+				continue;
+			}        		
+			if (contextSet.getDocumentSet().contains(doc.getDocId())) {
+				NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+				NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
+				if (contextSet.get(p) != null) {
+		    		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+		    			result.add(new BooleanValue(rs.getBoolean(1)));
+		    		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+		    			result.add(new DoubleValue(rs.getDouble(1)));
+		    		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+		    			result.add(new StringValue(rs.getString(1)));
+		    		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+		    			result.add(new Base64Binary(rs.getBytes(1)));
+		    		} else 
+		    			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
+				}
+			}
+		}
+		return result;    
+	} finally {   
+		if (rs != null)
+			rs.close();
+		if (ps != null)
+			ps.close();
+	}
+}      				
+			]]></programlisting>
+			<para>It queries the whole index for the requested property, then ignores the document that are not in 
+			the	<parameter>contextSet</parameter>, the ignores the nodes that are not in the <parameter>contextSet</parameter>
+			then returns the property mapped to the appropriate XML atomic value</para>
+			<note>This method is not yet used by the spatial functions but it is planned to use it in a future
+			optimization effort.</note> 
+						
+			</section>	
 			
-			</section>																	
+			<section>
+				<title>Writing the implementation of <classname>org.exist.indexing.StreamListner</classname></title>
+			
+			
+			
+			
+			
+			
+			
+			
+							
+			<programlisting format="linespecific"><![CDATA[				
+			]]></programlisting>				
+			</section>
+			
+																			
 		</section>
 					
 			
