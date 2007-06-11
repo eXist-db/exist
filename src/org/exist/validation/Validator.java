@@ -63,15 +63,6 @@ public class Validator {
     private GrammarPool grammarPool = null;
     private Configuration config = null;
     
-    // Xerces feature and property names
-    final static String FEATURE_SCHEMA
-            ="http://apache.org/xml/features/validation/schema";
-    final static String PROPERTIES_GRAMMARPOOL
-            ="http://apache.org/xml/properties/internal/grammar-pool";
-    final static String PROPERTIES_RESOLVER
-            ="http://apache.org/xml/properties/internal/entity-resolver";
-    final static String PROPERTIES_LOAD_EXT_DTD
-            ="http://apache.org/xml/features/nonvalidating/load-external-dtd";
 
     /**
      *  Setup Validator object with brokerpool as centre.
@@ -109,8 +100,8 @@ public class Validator {
                 // Enable validation features of xerces
                 saxFactory.setFeature(Namespaces.SAX_VALIDATION, true);
                 saxFactory.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
-                saxFactory.setFeature(FEATURE_SCHEMA,true);
-                saxFactory.setFeature(PROPERTIES_LOAD_EXT_DTD, true);
+                saxFactory.setFeature(XMLReaderObjectFactory.FEATURE_SCHEMA,true);
+                saxFactory.setFeature(XMLReaderObjectFactory.PROPERTIES_LOAD_EXT_DTD, true);
                 saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
                 
             } catch (ParserConfigurationException ex){
@@ -181,7 +172,7 @@ public class Validator {
             InputSource source = new InputSource(reader);
             
             SAXParser sax = saxFactory.newSAXParser();
-            sax.setProperty(PROPERTIES_GRAMMARPOOL, grammarPool);
+            sax.setProperty(XMLReaderObjectFactory.PROPERTIES_GRAMMARPOOL, grammarPool);
             
             XMLReader xmlReader = sax.getXMLReader();
             

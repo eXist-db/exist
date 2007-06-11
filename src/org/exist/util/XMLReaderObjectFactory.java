@@ -30,6 +30,7 @@ import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
+import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 
 import org.xml.sax.SAXNotRecognizedException;
@@ -56,8 +57,15 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     public final static String CATALOG_URIS = "validation.catalog_uris";
     public final static String GRAMMER_POOL = "validation.grammar_pool";
     
+    // Xerces feature and property names
+    public final static String FEATURE_SCHEMA
+            ="http://apache.org/xml/features/validation/schema";
+    public final static String PROPERTIES_GRAMMARPOOL
+            ="http://apache.org/xml/properties/internal/grammar-pool";
+    public final static String PROPERTIES_LOAD_EXT_DTD
+            ="http://apache.org/xml/features/nonvalidating/load-external-dtd";
     public final static String PROPERTIES_RESOLVER
-        ="http://apache.org/xml/properties/internal/entity-resolver";
+            ="http://apache.org/xml/properties/internal/entity-resolver";
     
     private BrokerPool pool;
 
@@ -116,6 +124,13 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             }
             SAXParser sax = saxFactory.newSAXParser();
             XMLReader parser = sax.getXMLReader();
+            
+            // Setup grammar cache
+            GrammarPool grammarPool = 
+               (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+            if(grammarPool!=null){
+                sax.setProperty(PROPERTIES_GRAMMARPOOL, grammarPool);
+            }
             
             eXistXMLCatalogResolver resolver = (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
             if(resolver!=null){
