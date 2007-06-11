@@ -35,12 +35,10 @@ public class GMLIndexConfig {
 
 	private static final Logger LOG = Logger.getLogger(GMLIndexConfig.class);
 	
-	private final static String FLUSH_AFTER = "flushAfter";
-	
+	private final static String FLUSH_AFTER = "flushAfter";	
 	private int flushAfter = -1;
 	
-	public GMLIndexConfig(Map namespaces, Element node) throws DatabaseConfigurationException {
-        //TODO : something useful here
+	public GMLIndexConfig(Map namespaces, Element node) throws DatabaseConfigurationException {       
     	String param = ((Element)node).getAttribute(FLUSH_AFTER);
         if (param != null) {
         	try {
@@ -54,5 +52,4 @@ public class GMLIndexConfig {
 	public int getFlushAfter() {
 		return flushAfter;
 	}
-
 }
