@@ -108,7 +108,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected IndexController controller;
     protected AbstractGMLJDBCIndex index;
     protected DBBroker broker;
-    protected int mode = StreamListener.UNKNOWN;    
+    protected int currentMode = StreamListener.UNKNOWN;    
     protected DocumentImpl currentDoc = null;  
     private boolean isDocumentGMLAware = false;
     protected Map geometries = new TreeMap();    
@@ -122,10 +122,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected GMLStreamListener gmlStreamListener = new GMLStreamListener();
     protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
     protected GeometryTransformer gmltransformer = new GeometryTransformer();		
-    protected WKTWriter wktWriter = new WKTWriter();
-    protected WKTReader wktReader = new WKTReader();
     protected WKBWriter wkbWriter = new WKBWriter();
     protected WKBReader wkbReader = new WKBReader();
+    protected WKTWriter wktWriter = new WKTWriter();
+    protected WKTReader wktReader = new WKTReader();
     protected Base64Encoder base64Encoder = new Base64Encoder();
     protected Base64Decoder base64Decoder = new Base64Decoder();  
     
@@ -179,12 +179,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	        currentDoc = document;	        
     	} else {
 	        currentDoc = null;
-	        mode = StreamListener.UNKNOWN;    		
+	        currentMode = StreamListener.UNKNOWN;    		
     	}
     } 
     
     public void setMode(int newMode) {  
-	    mode = newMode; 
+	    currentMode = newMode; 
     }
     
     public void setDocument(DocumentImpl doc, int mode) {
@@ -207,12 +207,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
      * @return the document
      */
     public int getMode() {
-    	return mode;
+    	return currentMode;
     }    
     
     public StreamListener getListener() {      
         //We won't listen to anything here
-        if (currentDoc == null || mode == StreamListener.REMOVE_ALL_NODES)
+        if (currentDoc == null || currentMode == StreamListener.REMOVE_ALL_NODES)
         	return null;
         return gmlStreamListener;
     }
@@ -241,13 +241,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     		//Not concerned
     		return;
     	//Is the job already done ?
-    	if (mode == StreamListener.REMOVE_ALL_NODES && documentDeleted)
+    	if (currentMode == StreamListener.REMOVE_ALL_NODES && documentDeleted)
     		return;
     	Connection conn = null;
     	try {
     		conn = acquireConnection();
             conn.setAutoCommit(false);
-	        switch (mode) {
+	        switch (currentMode) {
 	            case StreamListener.STORE :
 	                saveDocumentNodes(conn);
 	                break;
