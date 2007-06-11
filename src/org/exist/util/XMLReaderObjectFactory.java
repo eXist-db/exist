@@ -118,7 +118,9 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             XMLReader parser = sax.getXMLReader();
             
             eXistXMLCatalogResolver resolver = (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
-            parser.setProperty(PROPERTIES_RESOLVER, resolver);
+            if(resolver!=null){
+                parser.setProperty(PROPERTIES_RESOLVER, resolver);
+            }
             return parser;
             
         } catch (ParserConfigurationException e) {
