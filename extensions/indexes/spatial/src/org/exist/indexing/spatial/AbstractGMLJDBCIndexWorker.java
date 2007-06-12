@@ -120,6 +120,8 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
     protected GMLFilterDocument geometryDocument = new GMLFilterDocument(geometryFilter);      
     protected GMLStreamListener gmlStreamListener = new GMLStreamListener();
+	protected TreeMap transformations = new TreeMap();
+	protected boolean useLenientMode = false;    
     protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
     protected GeometryTransformer gmltransformer = new GeometryTransformer();		
     protected WKBWriter wkbWriter = new WKBWriter();
@@ -356,76 +358,6 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
     
-    public boolean checkIndex(DBBroker broker) {    	
-    	Connection conn = null;
-        try {
-        	conn = acquireConnection();
-        	return checkIndex(broker, conn);
-	    } catch (SQLException e) {
-	    	LOG.error(e);
-	    	return false;
-	    } catch (SpatialIndexException e) {
-	    	LOG.error(e);
-	    	return false;	    	
-	    } finally {
-        	try {
-        		if (conn != null)
-        			releaseConnection(conn);
-            } catch (SQLException e) {
-            	LOG.error(e);
-            	return false;
-            }        		
-	    }	    
-    }
-    
-    public Occurrences[] scanIndex(DocumentSet docs) {    	
-    	Map occurences = new TreeMap();
-    	Connection conn = null;
-    	try { 
-    		conn = acquireConnection();
-    		//Collect the (normalized) geometries for each document
-			for (Iterator iDoc = docs.iterator(); iDoc.hasNext();) {
-				DocumentImpl doc = (DocumentImpl)iDoc.next();
-				//TODO : check if document is GML-aware ?
-		    	//Aggregate the occurences between different documents
-		    	for (Iterator iGeom = getGeometriesForDocument(doc, conn).entrySet().iterator(); iGeom.hasNext();) {
-		    		Map.Entry entry = (Map.Entry) iGeom.next();
-		            Geometry key = (Geometry)entry.getKey();
-		            //Do we already have an occurence for this geometry ?
-		            Occurrences oc = (Occurrences)occurences.get(key);
-		            if (oc != null) {
-		            	//Yes : increment occurence count
-		            	oc.addOccurrences(oc.getOccurrences() + 1);
-		            	//...and reference the document
-		            	oc.addDocument(doc);
-		            } else {
-		            	//No : create a new occurence with EPSG4326_WKT as "term"
-		            	oc = new Occurrences((String)entry.getValue());
-		            	//... with a count set to 1
-		            	oc.addOccurrences(1);
-		            	//... and reference the document
-		            	oc.addDocument(doc);
-		            	occurences.put(key, oc);
-		            }
-		        }
-			}
-    	} catch (SQLException e) {
-    		LOG.error(e);
-    		return null;
-    	} finally {
-        	try {
-        		if (conn != null)
-        			releaseConnection(conn);
-            } catch (SQLException e) {
-            	LOG.error(e);
-            	return null;
-            }            
-    	}
-    	Occurrences[] result = new Occurrences[occurences.size()];
-    	occurences.values().toArray(result);
-    	return result;
-    }
-    
     public NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp)
     	throws SpatialIndexException {
     	Connection conn = null;
@@ -523,6 +455,104 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	    }
 	}
     
+    
+    public boolean checkIndex(DBBroker broker) {    	
+    	Connection conn = null;
+        try {
+        	conn = acquireConnection();
+        	return checkIndex(broker, conn);
+	    } catch (SQLException e) {
+	    	LOG.error(e);
+	    	return false;
+	    } catch (SpatialIndexException e) {
+	    	LOG.error(e);
+	    	return false;	    	
+	    } finally {
+        	try {
+        		if (conn != null)
+        			releaseConnection(conn);
+            } catch (SQLException e) {
+            	LOG.error(e);
+            	return false;
+            }        		
+	    }	    
+    }    
+
+    protected abstract boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException;
+    
+    protected abstract boolean removeDocumentNode(DocumentImpl doc, NodeId nodeID, Connection conn) throws SQLException;
+
+    protected abstract int removeDocument(DocumentImpl doc, Connection conn) throws SQLException;
+    
+    protected abstract int removeCollection(Collection collection, Connection conn) throws SQLException;
+  
+    protected abstract Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException;
+    
+    protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException;
+
+    protected abstract ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException;
+    
+    protected abstract Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException;
+    
+    protected abstract Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn) throws SQLException;
+    
+    protected abstract NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException;
+    
+    protected abstract boolean checkIndex(DBBroker broker, Connection conn) throws SQLException, SpatialIndexException;
+
+    
+    protected abstract Connection acquireConnection() throws SQLException;
+    
+    protected abstract void releaseConnection(Connection conn) throws SQLException;
+    
+    public Occurrences[] scanIndex(DocumentSet docs) {    	
+    	Map occurences = new TreeMap();
+    	Connection conn = null;
+    	try { 
+    		conn = acquireConnection();
+    		//Collect the (normalized) geometries for each document
+			for (Iterator iDoc = docs.iterator(); iDoc.hasNext();) {
+				DocumentImpl doc = (DocumentImpl)iDoc.next();
+				//TODO : check if document is GML-aware ?
+		    	//Aggregate the occurences between different documents
+		    	for (Iterator iGeom = getGeometriesForDocument(doc, conn).entrySet().iterator(); iGeom.hasNext();) {
+		    		Map.Entry entry = (Map.Entry) iGeom.next();
+		            Geometry key = (Geometry)entry.getKey();
+		            //Do we already have an occurence for this geometry ?
+		            Occurrences oc = (Occurrences)occurences.get(key);
+		            if (oc != null) {
+		            	//Yes : increment occurence count
+		            	oc.addOccurrences(oc.getOccurrences() + 1);
+		            	//...and reference the document
+		            	oc.addDocument(doc);
+		            } else {
+		            	//No : create a new occurence with EPSG4326_WKT as "term"
+		            	oc = new Occurrences((String)entry.getValue());
+		            	//... with a count set to 1
+		            	oc.addOccurrences(1);
+		            	//... and reference the document
+		            	oc.addDocument(doc);
+		            	occurences.put(key, oc);
+		            }
+		        }
+			}
+    	} catch (SQLException e) {
+    		LOG.error(e);
+    		return null;
+    	} finally {
+        	try {
+        		if (conn != null)
+        			releaseConnection(conn);
+            } catch (SQLException e) {
+            	LOG.error(e);
+            	return null;
+            }            
+    	}
+    	Occurrences[] result = new Occurrences[occurences.size()];
+    	occurences.values().toArray(result);
+    	return result;
+    }
+    
     public Geometry streamNodeToGeometry(XQueryContext context, NodeValue node) throws SpatialIndexException {
     	try {
     		context.pushDocumentContext();
@@ -573,16 +603,36 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }
     
     public Geometry transformGeometry(Geometry geometry, String sourceCRS, String targetCRS) throws SpatialIndexException {
-        //provisional workaround
+        //provisional workarounds
         if ("osgb:BNG".equalsIgnoreCase(sourceCRS.trim()))
         	sourceCRS = "EPSG:27700";  	    
         if ("osgb:BNG".equalsIgnoreCase(targetCRS.trim()))
-        	targetCRS = "EPSG:27700";    	
-    	MathTransform mathTransform = TransformationsFactory.getTransform(sourceCRS, targetCRS);
-        if (mathTransform == null) {
+        	targetCRS = "EPSG:27700"; 
+        MathTransform transform = (MathTransform)transformations.get(sourceCRS + "_" + targetCRS);
+		if (transform == null) {
+    		try {
+	    		try {        	
+    				transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);
+	    		} catch (OperationNotFoundException e) {
+	    			LOG.info(e);
+	    			LOG.info("Switching to lenient mode... beware of precision loss !");
+	    			//Last parameter set to true ; won't bail out if it can't find the Bursa Wolf parameters
+	        		//as it is the case in current gt2-epsg-wkt-2.4-M1.jar
+	    			useLenientMode = true;
+	    			transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);	
+	    		}
+	    		transformations.put(sourceCRS + "_" + targetCRS, transform);
+	    		LOG.debug("Instantiated transformation from '" + sourceCRS + "' to '" + targetCRS + "'");
+	        } catch (NoSuchAuthorityCodeException e) {
+	        	LOG.error(e);
+	        } catch (FactoryException e) {
+	        	LOG.error(e);
+    		}
+		}
+        if (transform == null) {
     		throw new SpatialIndexException("Unable to get a transformation from '" + sourceCRS + "' to '" + targetCRS +"'");        		           	
         }
-        coordinateTransformer.setMathTransform(mathTransform);
+        coordinateTransformer.setMathTransform(transform);
         try {
         	return coordinateTransformer.transform(geometry);
         } catch (TransformException e) {
@@ -590,41 +640,20 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
     
-    protected abstract boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException;
-    
-    protected abstract boolean removeDocumentNode(DocumentImpl doc, NodeId nodeID, Connection conn) throws SQLException;
-
-    protected abstract int removeDocument(DocumentImpl doc, Connection conn) throws SQLException;
-    
-    protected abstract int removeCollection(Collection collection, Connection conn) throws SQLException;
-    
-    protected abstract boolean checkIndex(DBBroker broker, Connection conn) throws SQLException, SpatialIndexException;
-    
-    protected abstract Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException;
-    
-    protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException;
-
-    protected abstract ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException;
-    
-    protected abstract Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException;
-    
-    protected abstract Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn) throws SQLException;
-    
-    protected abstract NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException;
-    
-    protected abstract Connection acquireConnection() throws SQLException;
-    
-    protected abstract void releaseConnection(Connection conn) throws SQLException;
-    
     private class GMLStreamListener extends AbstractStreamListener {
 
     	Stack srsNamesStack = new Stack();
     	ElementImpl deferredElement;
+    	
+        public IndexWorker getWorker() {
+        	return AbstractGMLJDBCIndexWorker.this;
+        }         	
         
         public void startElement(Txn transaction, ElementImpl element, NodePath path) { 
         	if (isDocumentGMLAware) {
-        		//Release the deferred element
-        		processDeferredElement();
+        		//Release the deferred element if any
+        		if (deferredElement != null)        		
+        			processDeferredElement();
         		//Retain this element
 	    		deferredElement = element;  
         	}
@@ -639,9 +668,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
         public void characters(Txn transaction, TextImpl text, NodePath path) {
         	if (isDocumentGMLAware) {
-        		//Release the deferred element
-        		processDeferredElement();
-	        	deferredElement = null;
+        		//Release the deferred element if any
+        		if (deferredElement != null)        		
+        			processDeferredElement();	        	
 	        	try {
 	        		geometryDocument.characters(text.getData().toCharArray(), 0, text.getLength());
 	        	} catch (Exception e) {
@@ -654,66 +683,32 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
         	if (isDocumentGMLAware) {   
-        		//Release the deferred element
-	        	processDeferredElement();
-	        	deferredElement = null;
-        		String currentSrsName = null;
-        		if (GML_NS.equals(element.getNamespaceURI()))
-        			currentSrsName = (String)srsNamesStack.pop();        		
-        		try {
-        			geometryDocument.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
-	        		//Some invalid/(yet) incomplete geometries don't have a SRS
-	        		if (streamedGeometry != null && currentSrsName != null) {   
-	        			currentNodeId = element.getNodeId();
-		    			geometries.put(currentNodeId, new SRSGeometry(currentSrsName, streamedGeometry));		        		
-			        	if (flushAfter != -1 && geometries.size() >= flushAfter) {
-			        		//Mmmh... doesn't flush since it is currently dependant from the
-			        		//number of nodes in the DOM file ; would need refactorings
-			        		//currentDoc.getBroker().checkAvailableMemory();
-			        		currentDoc.getBroker().flush();
-			        		///Aaaaaargl !
-			        		final double percent = ((double) Runtime.getRuntime().freeMemory() / (double) Runtime.getRuntime().maxMemory()) * 100;
-			                if (percent < 30) {			        		
-			                	System.gc();
-			                }
-			        	}
-	        		}        		
-	        	} catch (Exception e) {
-	        		LOG.error("Unable to collect geometry for node: " + currentNodeId + ". Indexing will be skipped", e);        		
-	    		} finally {  
-	    			streamedGeometry = null;	        			
-	    		}
+        		//Release the deferred element if any
+        		if (deferredElement != null)        		
+        			processDeferredElement();	        	
+	        	//Process the element 
+        		processCurrentElement(element);
         	}
         	//Forward the event to the next listener 
             super.endElement(transaction, element, path);
-        }
+        }             	
         
-        private void processDeferredElement() {
-        	if (deferredElement == null)
-        		return;    
-    		//We need to collect the retained element's attributes in order to feed the SAX handler
-    		AttributesImpl attList = collectAttributes(deferredElement); 
-        	try {
-        		geometryDocument.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
-        	} catch (Exception e) {
-        		e.printStackTrace();
-        		LOG.error(e);
-        	}        	       	
-        }
-        
-        private AttributesImpl collectAttributes(ElementImpl element) {        	
+        private void processDeferredElement() {  
+    		//We need to collect the deferred element's attributes in order to feed the SAX handler
         	AttributesImpl attList = new AttributesImpl();
-        	NamedNodeMap attrs = element.getAttributes();
+        	NamedNodeMap attrs = deferredElement.getAttributes();
         	
-        	//Maybe we could assume a default value here
         	String whatToPush = null;
         	
         	for (int i = 0; i < attrs.getLength() ; i++) {
         		AttrImpl attrib = (AttrImpl)attrs.item(i);
         		
             	//Store the srs
-        		if (GML_NS.equals(element.getNamespaceURI()) && attrib.getName().equals("srsName")) {
-        			whatToPush = attrib.getValue(); 		
+        		if (GML_NS.equals(deferredElement.getNamespaceURI())) {        			
+        			//Maybe we could assume a configurable default value here        			
+        			if (attrib.getName().equals("srsName")) {        		
+        				whatToPush = attrib.getValue();
+        			}
         		} 
         		
         		attList.addAttribute(attrib.getNamespaceURI(), 
@@ -721,23 +716,52 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         				attrib.getQName().getStringValue(), 
         				Integer.toString(attrib.getType()), 
         				attrib.getValue());            		
-        	} 
+        	}
         	
-        	if (GML_NS.equals(element.getNamespaceURI()))
-        		srsNamesStack.push(whatToPush);
-        	
-        	return attList;
+        	srsNamesStack.push(whatToPush);
+
+        	try {
+        		geometryDocument.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        		LOG.error(e);
+        	} finally {
+        		deferredElement = null;
+        	}
         }
         
-        public IndexWorker getWorker() {
-        	return AbstractGMLJDBCIndexWorker.this;
-        }        
+        private void processCurrentElement(ElementImpl element) {
+        	String currentSrsName = (String)srsNamesStack.pop();        		
+    		try {
+    			geometryDocument.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
+        		//Some invalid/(yet) incomplete geometries don't have a SRS
+        		if (streamedGeometry != null && currentSrsName != null) {   
+        			currentNodeId = element.getNodeId();
+	    			geometries.put(currentNodeId, new SRSGeometry(currentSrsName, streamedGeometry));		        		
+		        	if (flushAfter != -1 && geometries.size() >= flushAfter) {
+		        		//Mmmh... doesn't flush since it is currently dependant from the
+		        		//number of nodes in the DOM file ; would need refactorings
+		        		//currentDoc.getBroker().checkAvailableMemory();
+		        		currentDoc.getBroker().flush();
+		        		///Aaaaaargl !
+		        		final double percent = ((double) Runtime.getRuntime().freeMemory() / (double) Runtime.getRuntime().maxMemory()) * 100;
+		                if (percent < 30) {			        		
+		                	System.gc();
+		                }
+		        	}
+        		}        		
+        	} catch (Exception e) {
+        		LOG.error("Unable to collect geometry for node: " + currentNodeId + ". Indexing will be skipped", e);        		
+    		} finally {  
+    			streamedGeometry = null;	        			
+    		}        	
+        }
     }
   
     private class GeometryHandler extends XMLFilterImpl implements GMLHandlerJTS {
         public void geometry(Geometry geometry) {
         	streamedGeometry = geometry;      	
-        	//TODO : null geometries can't be returned for many reasons, including a (too) strict
+        	//TODO : null geometries can be returned for many reasons, including a (too) strict
         	//topology check done by the Geotools SAX parser.
         	//It would be nice to have static classes extending Geometry to report such geometries
 			if (geometry == null)
@@ -751,6 +775,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	private Geometry geometry;
     	
     	public SRSGeometry(String SRSName, Geometry geometry) {
+    		//TODO : implement a default, eventually configurable, SRS ?
     		if (SRSName == null)
     			throw new IllegalArgumentException("Got null SRS");
     		if (geometry == null)
@@ -767,36 +792,5 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     		return geometry;
     	}    	
     }
-    
-    protected static class TransformationsFactory {
-    	
-    	private static TreeMap transforms = new TreeMap();
-    	private static boolean useLenientMode = false;
-    	
-    	protected static MathTransform getTransform(String sourceCRS, String targetCRS) {
-    		MathTransform transform = (MathTransform)transforms.get(sourceCRS + "_" + targetCRS);
-    		if (transform == null) {
-	    		try {
-		    		try {        	
-	    				transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);
-		    		} catch (OperationNotFoundException e) {
-		    			LOG.info(e);
-		    			LOG.info("Switching to lenient mode... beware of precision loss !");
-		    			//Last parameter set to true ; won't bail out if it can't find the Bursa Wolf parameters
-		        		//as it is the case in current gt2-epsg-wkt-2.4-M1.jar
-		    			useLenientMode = true;
-		    			transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);	
-		    		}
-			        transforms.put(sourceCRS + "_" + targetCRS, transform);
-		    		LOG.debug("Instantiated transformation from '" + sourceCRS + "' to '" + targetCRS + "'");
-		        } catch (NoSuchAuthorityCodeException e) {
-		        	LOG.error(e);
-		        } catch (FactoryException e) {
-		        	LOG.error(e);
-	    		}
-    		}
-        	return transform;
-    	}
-    }       
     
 }

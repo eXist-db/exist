@@ -50,16 +50,12 @@ import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.ValueSequence;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
 public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
-	
-	public final static String ID = GMLHSQLIndexWorker.class.getName();	
-	
+
 	private static final Logger LOG = Logger.getLogger(GMLHSQLIndexWorker.class);
 	
     public GMLHSQLIndexWorker(GMLHSQLIndex index, DBBroker broker) {
@@ -115,11 +111,6 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		+ ")"
             );       
     	try {
-    		//TODO : use a default SRS from the config file ?
-            if (srsName == null) {
-        		LOG.error("Geometry has a null SRS");
-        		return false;                  	
-            }   
             Geometry EPSG4326_geometry = null;
             try {
             	EPSG4326_geometry = transformGeometry(geometry, srsName, "EPSG:4326");
@@ -366,6 +357,218 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}
     }
     
+    protected Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
+        PreparedStatement ps = conn.prepareStatement(
+    		"SELECT EPSG4326_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
+    	); 
+        ps.setString(1, doc.getURI().toString());
+        ResultSet rs = null;
+        try {	 
+	        rs = ps.executeQuery();
+	        Map map = new TreeMap();
+	        while (rs.next()) {
+	        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
+	        	//Returns the EPSG:4326 WKT for every geometry to make occurrence aggregation consistent
+	        	map.put(EPSG4326_geometry, rs.getString("EPSG4326_WKT"));
+	        }
+	        return map;
+        } catch (ParseException e) {
+        	//Transforms the exception into an SQLException.
+        	//Very unlikely to happen though...
+        	SQLException ee = new SQLException(e.getMessage());
+        	ee.initCause(e);
+        	throw ee;
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+    	}
+    }
+    
+    protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(
+        	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") +
+    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
+    		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
+    	);
+        ps.setString(1, p.getDocument().getURI().toString());
+        ps.setInt(2, p.getNodeId().units());
+        byte[] bytes = new byte[p.getNodeId().size()];
+        p.getNodeId().serialize(bytes, 0);
+    	ps.setBytes(3, bytes);   
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		if (!rs.next())
+    			//Nothing returned
+    			return null;    		
+        	Geometry geometry = wkbReader.read(rs.getBytes(1));        			
+        	if (rs.next()) {   	
+    			//Should be impossible    		
+    			throw new SQLException("More than one geometry for node " + p);
+    		}
+        	return geometry;    
+        } catch (ParseException e) {
+        	//Transforms the exception into an SQLException.
+        	//Very unlikely to happen though...
+        	SQLException ee = new SQLException(e.getMessage());
+        	ee.initCause(e);
+        	throw ee;
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    }
+    
+    protected Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(
+        	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
+    		" FROM " + GMLHSQLIndex.TABLE_NAME 
+    	);
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		Geometry[] result = new Geometry[contextSet.getLength()];
+    		int index= 0;
+    		while (rs.next()) {
+    			DocumentImpl doc = null;
+        		try {
+        			doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+        		} catch (PermissionDeniedException e) {
+        			LOG.debug(e);
+        			result[index++] = null;
+        			//Ignore since the broker has no right on the document
+        			continue;
+        		}        
+        		if (contextSet.getDocumentSet().contains(doc.getDocId())) {
+	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
+	        		//Node is in the context : check if it is accurate
+	        		//contextSet.contains(p) would have made more sense but there is a problem with
+	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
+	        		if (contextSet.get(p) != null) {
+			        	Geometry geometry = wkbReader.read(rs.getBytes(1));        			
+			        	result[index++] = geometry;
+	        		}
+        		}
+    		}
+    		return result;
+        } catch (ParseException e) {
+        	//Transforms the exception into an SQLException.
+        	//Very unlikely to happen though...
+        	SQLException ee = new SQLException(e.getMessage());
+        	ee.initCause(e);
+        	throw ee;
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    }      
+    
+    protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException {
+        PreparedStatement ps = conn.prepareStatement(
+    		"SELECT " + propertyName + 
+    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
+    		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?"
+    	);
+        ps.setString(1, p.getDocument().getURI().toString());
+        ps.setInt(2, p.getNodeId().units());
+        byte[] bytes = new byte[p.getNodeId().size()];
+        p.getNodeId().serialize(bytes, 0);
+    	ps.setBytes(3, bytes);    	
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		if (!rs.next())
+    			//Nothing returned
+    			return AtomicValue.EMPTY_VALUE;
+    		AtomicValue result = null;
+    		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+    			result = new BooleanValue(rs.getBoolean(1));
+    		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+    			result = new DoubleValue(rs.getDouble(1));
+    		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+    			result = new StringValue(rs.getString(1));
+    		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+    			result = new Base64Binary(rs.getBytes(1));
+    		} else 
+    			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
+        	if (rs.next()) {   	
+    			//Should be impossible    		
+    			throw new SQLException("More than one geometry for node " + p);
+    		}
+        	return result;    
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    }      
+    
+    protected ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException {
+        PreparedStatement ps = conn.prepareStatement(
+    		"SELECT " + propertyName + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + 
+    		" FROM " + GMLHSQLIndex.TABLE_NAME
+    	);
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		ValueSequence result = new ValueSequence(contextSet.getLength());    		
+    		while (rs.next()) {
+    			DocumentImpl doc = null;
+        		try {
+        			doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+        		} catch (PermissionDeniedException e) {
+        			LOG.debug(e);
+        			//Untested, but that is roughly what should be returned.
+	        		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+	        			result.add(BooleanValue.EMPTY_VALUE);
+	        		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+	        			result.add(DoubleValue.EMPTY_VALUE);
+	        		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+	        			result.add(StringValue.EMPTY_VALUE);
+	        		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+	        			result.add(Base64Binary.EMPTY_VALUE);
+	        		} else 
+	        			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
+        			//Ignore since the broker has no right on the document
+        			continue;
+        		}        		
+        		if (contextSet.getDocumentSet().contains(doc.getDocId())) {
+	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
+	        		//Node is in the context : check if it is accurate
+	        		//contextSet.contains(p) would have made more sense but there is a problem with
+	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
+	        		if (contextSet.get(p) != null) {
+		        		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+		        			result.add(new BooleanValue(rs.getBoolean(1)));
+		        		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+		        			result.add(new DoubleValue(rs.getDouble(1)));
+		        		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+		        			result.add(new StringValue(rs.getString(1)));
+		        		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+		        			result.add(new Base64Binary(rs.getBytes(1)));
+		        		} else 
+		        			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
+	        		}
+        		}
+    		}
+    		return result;    
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    }
+    
     protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException {
     	PreparedStatement ps = conn.prepareStatement(
 	    		"SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + ";"
@@ -484,6 +687,10 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	            }
 	            NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 	    		
 	            StoredNode node = broker.objectWith(new NodeProxy((DocumentImpl)doc, nodeId));
+	            if (node == null) {
+	            	LOG.info("Node " + nodeId + "doesn't exist");
+	            	return false;
+	            }	            	
 	        	if (!GMLHSQLIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
 	        		LOG.info("GML indexed node (" + node.getNodeId()+ ") is in the '" + 
 	        				node.getNamespaceURI() + "' namespace. '" + 
@@ -517,217 +724,5 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 			if (ps != null)
 				ps.close();	
 	    }
-    }
-    
-    protected Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
-        PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
-    	); 
-        ps.setString(1, doc.getURI().toString());
-        ResultSet rs = null;
-        try {	 
-	        rs = ps.executeQuery();
-	        Map map = new TreeMap();
-	        while (rs.next()) {
-	        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
-	        	//Returns the EPSG:4326 WKT for every geometry to make occurrence aggregation consistent
-	        	map.put(EPSG4326_geometry, rs.getString("EPSG4326_WKT"));
-	        }
-	        return map;
-        } catch (ParseException e) {
-        	//Transforms the exception into an SQLException.
-        	//Very unlikely to happen though...
-        	SQLException ee = new SQLException(e.getMessage());
-        	ee.initCause(e);
-        	throw ee;
-    	} finally {   
-    		if (rs != null)
-    			rs.close();
-    		if (ps != null)
-    			ps.close();
-    	}
-    } 
-    
-    protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException {
-        PreparedStatement ps = conn.prepareStatement(
-    		"SELECT " + propertyName + 
-    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?"
-    	);
-        ps.setString(1, p.getDocument().getURI().toString());
-        ps.setInt(2, p.getNodeId().units());
-        byte[] bytes = new byte[p.getNodeId().size()];
-        p.getNodeId().serialize(bytes, 0);
-    	ps.setBytes(3, bytes);    	
-    	ResultSet rs = null;    	
-    	try {
-    		rs = ps.executeQuery();
-    		if (!rs.next())
-    			//Nothing returned
-    			return AtomicValue.EMPTY_VALUE;
-    		AtomicValue result = null;
-    		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
-    			result = new BooleanValue(rs.getBoolean(1));
-    		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
-    			result = new DoubleValue(rs.getDouble(1));
-    		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
-    			result = new StringValue(rs.getString(1));
-    		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-    			result = new Base64Binary(rs.getBytes(1));
-    		} else 
-    			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
-        	if (rs.next()) {   	
-    			//Should be impossible    		
-    			throw new SQLException("More than one geometry for node " + p);
-    		}
-        	return result;    
-    	} finally {   
-    		if (rs != null)
-    			rs.close();
-    		if (ps != null)
-    			ps.close();
-        }
-    }      
-    
-    protected ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException {
-        PreparedStatement ps = conn.prepareStatement(
-    		"SELECT " + propertyName + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + 
-    		" FROM " + GMLHSQLIndex.TABLE_NAME
-    	);
-    	ResultSet rs = null;    	
-    	try {
-    		rs = ps.executeQuery();
-    		ValueSequence result = new ValueSequence(contextSet.getLength());    		
-    		while (rs.next()) {
-    			DocumentImpl doc = null;
-        		try {
-        			doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
-        		} catch (PermissionDeniedException e) {
-        			LOG.debug(e);
-        			//Untested, but that is roughly what should be returned.
-	        		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
-	        			result.add(BooleanValue.EMPTY_VALUE);
-	        		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
-	        			result.add(DoubleValue.EMPTY_VALUE);
-	        		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
-	        			result.add(StringValue.EMPTY_VALUE);
-	        		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-	        			result.add(Base64Binary.EMPTY_VALUE);
-	        		} else 
-	        			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
-        			//Ignore since the broker has no right on the document
-        			continue;
-        		}        		
-        		if (contextSet.getDocumentSet().contains(doc.getDocId())) {
-	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
-	        		//Node is in the context : check if it is accurate
-	        		//contextSet.contains(p) would have made more sense but there is a problem with
-	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
-	        		if (contextSet.get(p) != null) {
-		        		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
-		        			result.add(new BooleanValue(rs.getBoolean(1)));
-		        		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
-		        			result.add(new DoubleValue(rs.getDouble(1)));
-		        		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
-		        			result.add(new StringValue(rs.getString(1)));
-		        		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-		        			result.add(new Base64Binary(rs.getBytes(1)));
-		        		} else 
-		        			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
-	        		}
-        		}
-    		}
-    		return result;    
-    	} finally {   
-    		if (rs != null)
-    			rs.close();
-    		if (ps != null)
-    			ps.close();
-        }
-    }      
-
-    protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
-        	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") +
-    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
-    	);
-        ps.setString(1, p.getDocument().getURI().toString());
-        ps.setInt(2, p.getNodeId().units());
-        byte[] bytes = new byte[p.getNodeId().size()];
-        p.getNodeId().serialize(bytes, 0);
-    	ps.setBytes(3, bytes);   
-    	ResultSet rs = null;    	
-    	try {
-    		rs = ps.executeQuery();
-    		if (!rs.next())
-    			//Nothing returned
-    			return null;    		
-        	Geometry geometry = wkbReader.read(rs.getBytes(1));        			
-        	if (rs.next()) {   	
-    			//Should be impossible    		
-    			throw new SQLException("More than one geometry for node " + p);
-    		}
-        	return geometry;    
-        } catch (ParseException e) {
-        	//Transforms the exception into an SQLException.
-        	//Very unlikely to happen though...
-        	SQLException ee = new SQLException(e.getMessage());
-        	ee.initCause(e);
-        	throw ee;
-    	} finally {   
-    		if (rs != null)
-    			rs.close();
-    		if (ps != null)
-    			ps.close();
-        }
-    }
-    
-    protected Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
-        	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
-    		" FROM " + GMLHSQLIndex.TABLE_NAME 
-    	);
-    	ResultSet rs = null;    	
-    	try {
-    		rs = ps.executeQuery();
-    		Geometry[] result = new Geometry[contextSet.getLength()];
-    		int index= 0;
-    		while (rs.next()) {
-    			DocumentImpl doc = null;
-        		try {
-        			doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
-        		} catch (PermissionDeniedException e) {
-        			LOG.debug(e);
-        			result[index++] = null;
-        			//Ignore since the broker has no right on the document
-        			continue;
-        		}        
-        		if (contextSet.getDocumentSet().contains(doc.getDocId())) {
-	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
-	        		//Node is in the context : check if it is accurate
-	        		//contextSet.contains(p) would have made more sense but there is a problem with
-	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
-	        		if (contextSet.get(p) != null) {
-			        	Geometry geometry = wkbReader.read(rs.getBytes(1));        			
-			        	result[index++] = geometry;
-	        		}
-        		}
-    		}
-    		return result;
-        } catch (ParseException e) {
-        	//Transforms the exception into an SQLException.
-        	//Very unlikely to happen though...
-        	SQLException ee = new SQLException(e.getMessage());
-        	ee.initCause(e);
-        	throw ee;
-    	} finally {   
-    		if (rs != null)
-    			rs.close();
-    		if (ps != null)
-    			ps.close();
-        }
     }    
 }
