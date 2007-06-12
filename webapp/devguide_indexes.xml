@@ -2202,13 +2202,13 @@ protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getE
     </section>
     
     <section>
-      <title>Writing the implementation of <classname>org.exist.indexing.StreamListener</classname></title>
+      <title>Writing the concrete implementation of <classname>org.exist.indexing.StreamListener</classname></title>
       <para>Let's see now how our <classname>StreamListener</classname> is implemented. Its main purpose is to
       generate <classname>Geometry</classname> instances, if accurate, from the nodes it listens to.</para>
       <para>This will be done using a <classname>org.geotools.gml.GMLFilterDocument</classname> provided by the Geotools
       libraries. The trick is to map our STAX events to the expected SAX events.</para> 
       <para>As stated above, our <classname>StreamListener</classname> will be implemented as an inner class of
-      <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker</classname>. Of course, it will implement
+      <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker</classname>. Of course, it will extend
       <classname>org.exist.indexing.AbstractStreamListener</classname> :</para>
       <programlisting format="linespecific"><![CDATA[	
 private class GMLStreamListener extends AbstractStreamListener {
@@ -2279,7 +2279,7 @@ private class GMLStreamListener extends AbstractStreamListener {
       <classname>StreamListener</classname> in the pipeline.</para>
       <para>If we have a deferred element, we will process it (see below) in order to collect its attributes and 
       then <methodname>endElement()</methodname> will add an index entry for the current element, if relevant,  
-      (see below as well). <methodname>characters()</methodname> is also forwarded to the SAX handler.</para>
+      (see below as well). <methodname>characters()</methodname> also forwards its data to the SAX handler.</para>
       <note>We could have used <methodname>attribute()</methodname> to collect the deferred element's attributes.
       The described design is just a matter of choice.</note>
       <para>Let's see how the deferred element is processed :</para>
@@ -2330,7 +2330,7 @@ private class GMLStreamListener extends AbstractStreamListener {
       <note>We could have had a smarter mechanism, but we first have to take a decision about the fact that
       we could define a default SRS here, either from the config, either from a higher-level element. This part of
       the code will thus be probably be revisited once the decision is taken.</note>
-      <para>When the attributes are collected, we can send a <classname>startElement()</classname> even to the SAX
+      <para>When the attributes are collected, we can send a <classname>startElement()</classname> event to the SAX
       handler, thus marking the end of the deferring process.</para>
       <para>Let's see how the current element is processed when <methodname>endElement()</methodname> is called :</para>      
       <programlisting format="linespecific"><![CDATA[	
@@ -2383,17 +2383,492 @@ private class GMLStreamListener extends AbstractStreamListener {
     }      
       ]]></programlisting>	 
       <para>Thanks to Geotools SAX parser, it hasn't to be more complicated than setting the <parameter>streamedGeometry</parameter>
-      member.</para>  
+      "global" member.</para>  
       <note>However, it may throw some <classname>NullPointerException</classname>s as described above.</note>
       </section>
       
       <section>
       	<title>Implementing some functions that cooperate with the spatial index</title>
       </section>   
+      <para>We currently provide 3 sets of functions that are able to cooperate with spatial indexes.</para>
+      <para>The functions are declared in the <classname>org.exist.xquery.modules.spatial.SpatialModule</classname> module
+      which operates in the <parameter>http://exist-db.org/xquery/spatial</parameter> namespace (whose default prefix is
+      <parameter>spatial</parameter>).</para>
+      <para>We will not describe the functions signatures (documented together with the functions themselves on 
+      <ulink url="http://demo.exist-db.org/xquery/functions.xq">this page</ulink>) and will only be interested in 
+      their <methodname>eval()</methodname> method.</para>
+      <para>The first functions set we will describe is <classname>org.exist.xquery.modules.spatial.FunSpatialSearch</classname>,
+      which, as its names suggests, performs searches on the spatial index :</para>
+      <programlisting format="linespecific"><![CDATA[				
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        Sequence result = null;
+    	Sequence nodes = args[0];        
+        if (nodes.isEmpty())
+            result = Sequence.EMPTY_SEQUENCE;
+        else if (args[1].isEmpty())
+        	//TODO : to be discussed. We could also return an empty sequence here        	
+        	result = nodes;
+        else {
+        	try {
+	        	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)        	
+		        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
+		        if (indexWorker == null)
+		        	throw new XPathException("Unable to find a spatial index worker");
+		        Geometry EPSG4326_geometry = null;
+		        NodeValue geometryNode = (NodeValue) args[1].itemAt(0);   
+				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) 
+					//Get the geometry from the index if available
+					EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
+		        if (EPSG4326_geometry == null) {
+		        	String sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        	Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);	            
+		        	EPSG4326_geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");	        		        
+		        }
+	        	if (EPSG4326_geometry == null) 
+	        		throw new XPathException("Unable to get a geometry from the node");
+		        int spatialOp = SpatialOperator.UNKNOWN;
+		        if (isCalledAs("equals"))
+		        	spatialOp = SpatialOperator.EQUALS;
+		        else if (isCalledAs("disjoint"))
+		        	spatialOp = SpatialOperator.DISJOINT;
+		        else if (isCalledAs("intersects"))
+		        	spatialOp = SpatialOperator.INTERSECTS;	 
+		        else if (isCalledAs("touches"))
+		        	spatialOp = SpatialOperator.TOUCHES;
+		        else if (isCalledAs("crosses"))
+		        	spatialOp = SpatialOperator.CROSSES;	   
+		        else if (isCalledAs("within"))
+		        	spatialOp = SpatialOperator.WITHIN;		
+		        else if (isCalledAs("contains"))
+		        	spatialOp = SpatialOperator.CONTAINS;		
+		        else if (isCalledAs("overlaps"))
+		        	spatialOp = SpatialOperator.OVERLAPS;
+		        //Search the EPSG:4326 in the index
+		        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
+		        hasUsedIndex = true;	        	
+        	} catch (SpatialIndexException e) {
+        		throw new XPathException(e);
+        	}
+        }
+        return result;
+    }    
+      ]]></programlisting>	
+      <para>We first build an early result if empty sequences are passed to the function.</para>
+      <para>Then, we try to access the <classname>XQueryContext</classname>'s <classname>AbstractGMLJDBCIndex</classname>
+      (remember that there is a 1:1 relationship between <classname>XQueryContext</classname> and <classname>DBBroker</classname> and
+      a 1:1 relationship between <classname>DBBroker</classname> and <classname>IndexWorker</classname>). We throw
+      an <classname>Exception</classname> if we can not find one because we will delegate spatial operations to this
+      <classname>AbstractGMLJDBCIndex</classname> and to its concrete class (whatever its underlying DB implementation is,
+      thanks to our generic design).</para>
+      <para>Then, we examine if the geometry node is persistent, in which case it <emphasis>might</emphasis> be indexed. If so, we try
+      to get an EPSG:4326 <classname>Geometry</classname> from the index.</para>
+      <para>If nothing is returned here, either because the node isn't indexed or because it is an in-memory node,
+      we stream it to a <classname>Geometry</classname> and we transform this <classname>Geometry</classname> into 
+      an EPSG:4326 one. Of course, this process is slower than a direct lookup into the index.</para>
+      <para>Then we search the geometry into the index after having determined the spatial operator from the function's
+      name.</para>
+		<para>The second functions set is <classname>org.exist.xquery.modules.spatial.FunGeometricProperties</classname>,
+      which, as its names suggests, retrieves a property for a <classname>Geometry</classname> :</para>      
+      <programlisting format="linespecific"><![CDATA[	
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    	Sequence result = null;
+    	Sequence nodes = args[0];        
+        if (nodes.isEmpty())
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+        	try {
+	        	Geometry geometry = null;
+	        	String sourceCRS = null;
+	        	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
+		        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
+		        if (indexWorker == null)
+		        	throw new XPathException("Unable to find a spatial index worker");
+	        	String propertyName = null;
+				if (isCalledAs("GMLtoWKT")) {
+					propertyName = "WKT";
+				} else if (isCalledAs("getWKB")) {
+					propertyName = "WKB";						
+				} else if (isCalledAs("getMinX")) {
+					propertyName = "MINX";						
+				} else if (isCalledAs("getMaxX")) {					
+					propertyName = "MAXX";
+				} else if (isCalledAs("getMinY")) {
+					propertyName = "MINY";
+				} else if (isCalledAs("getMaxY")) {
+					propertyName = "MAXY";
+				} else if (isCalledAs("getCentroidX")) {
+					propertyName = "CENTROID_X";
+				} else if (isCalledAs("getCentroidY")) {
+					propertyName = "CENTROID_Y";
+				} else if (isCalledAs("getArea")) {
+					propertyName = "AREA";
+				} else if (isCalledAs("getEPSG4326WKB")) {
+					propertyName = "EPSG4326_WKB";							
+				} else if (isCalledAs("getEPSG4326MinX")) {
+					propertyName = "EPSG4326_MINX";						
+				} else if (isCalledAs("getEPSG4326MaxX")) {					
+					propertyName = "EPSG4326_MAXX";
+				} else if (isCalledAs("getEPSG4326MinY")) {
+					propertyName = "EPSG4326_MINY";
+				} else if (isCalledAs("getEPSG4326MaxY")) {
+					propertyName = "EPSG4326_MAXY";
+				} else if (isCalledAs("getEPSG4326CentroidX")) {
+					propertyName = "EPSG4326_CENTROID_X";
+				} else if (isCalledAs("getEPSG4326CentroidY")) {
+					propertyName = "EPSG4326_CENTROID_Y";
+				} else if (isCalledAs("getEPSG4326Area")) {
+					propertyName = "EPSG4326_AREA";
+				} else if (isCalledAs("getSRS")) {
+					propertyName = "SRS_NAME";
+				} else if (isCalledAs("getGeometryType")) {
+					propertyName = "GEOMETRY_TYPE";
+				} else if (isCalledAs("isClosed")) {
+					propertyName = "IS_CLOSED";
+				} else if (isCalledAs("isSimple")) {
+					propertyName = "IS_SIMPLE";
+				} else if (isCalledAs("isValid")) {
+					propertyName = "IS_VALID";
+				} else {
+					throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
+				}
+		        NodeValue geometryNode = (NodeValue) nodes.itemAt(0);
+				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+					if (propertyName != null) {
+						//The node should be indexed : get its property
+						result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
+						hasUsedIndex = true;
+					} else {
+						//Or, at least, its geometry for further processing
+						if (propertyName.indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
+							geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
+							sourceCRS = "EPSG:4326";
+						} else {
+							geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
+							sourceCRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+						}
+					}
+				}
+				if (result == null) {
+		        	//builds the geometry
+					if (geometry == null) {
+						sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+			        	geometry = indexWorker.streamNodeToGeometry(context, geometryNode);		            	
+					}					
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+					//Transform the geometry to EPSG:4326 if relevant
+					if (propertyName.indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
+						geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
+						if (isCalledAs("getEPSG4326WKB")) {
+							result = new Base64Binary(wkbWriter.write(geometry));
+						} else if (isCalledAs("getEPSG4326MinX")) {
+							result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
+						} else if (isCalledAs("getEPSG4326MaxX")) {
+							result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
+						} else if (isCalledAs("getEPSG4326MinY")) {
+							result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
+						} else if (isCalledAs("getEPSG4326MaxY")) {
+							result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
+						} else if (isCalledAs("getEPSG4326CentroidX")) {
+							result = new DoubleValue(geometry.getCentroid().getX());
+						} else if (isCalledAs("getEPSG4326CentroidY")) {
+							result = new DoubleValue(geometry.getCentroid().getY());
+						} else if (isCalledAs("getEPSG4326Area")) {
+							result = new DoubleValue(geometry.getArea());
+						}
+					} else if (isCalledAs("GMLtoWKT")) {						
+						result = new StringValue(wktWriter.write(geometry));
+					} else if (isCalledAs("getWKB")) {
+			            result = new Base64Binary(wkbWriter.write(geometry));
+					} else if (isCalledAs("getMinX")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
+					} else if (isCalledAs("getMaxX")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
+					} else if (isCalledAs("getMinY")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
+					} else if (isCalledAs("getMaxY")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
+					} else if (isCalledAs("getCentroidX")) {
+						result = new DoubleValue(geometry.getCentroid().getX());
+					} else if (isCalledAs("getCentroidY")) {
+						result = new DoubleValue(geometry.getCentroid().getY());
+					} else if (isCalledAs("getArea")) {
+						result = new DoubleValue(geometry.getArea());
+					} else if (isCalledAs("getSRS")) {
+						result = new StringValue(((Element)geometryNode).getAttribute("srsName"));
+					} else if (isCalledAs("getGeometryType")) {
+						result = new StringValue(geometry.getGeometryType());
+					} else if (isCalledAs("isClosed")) {
+						result = new BooleanValue(!geometry.isEmpty());
+					} else if (isCalledAs("isSimple")) {
+						result = new BooleanValue(geometry.isSimple());
+					} else if (isCalledAs("isValid")) {
+						result = new BooleanValue(geometry.isValid());
+					} else {
+						throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
+					}
+		        }
+        	} catch (SpatialIndexException e) {
+        		throw new XPathException(e);
+        	}
+        }
+        return result;
+    }
+      ]]></programlisting>	            
+      <para>The design is very much the same : we build an early result if empty sequences are involved, we get a
+      <classname>AbstractGMLJDBCIndex</classname>, then we set a <parameter>propertyName</parameter>, which is actually
+      a SQL field name, depending of the function's name.</para>
+      <para>We then attempt to retrieve the field content from the DB and, if we can't succeed, we try to get the
+      node's <classname>Geometry</classname> from the index.</para>
+      <para>Then, if we still haven't this <classname>Geometry</classname>, either because the node isn't indexed or
+      because it is an in-memory node, we stream it to a <classname>Geometry</classname> and we transform this 
+      <classname>Geometry</classname> into an EPSG:4326 one if the function's name requires to do so.</para>
+      <para>We then build <emphasis>dynamically</emphasis> the property to be returned.</para>
+      <note>This mechanism if far from being efficient compared to the index lookup, but it shows how easy it would be to return a property 
+      which is not stored in a spatial index.</note>
+      <para>The third functions set, <classname>org.exist.xquery.modules.spatial.FunGMLProducers</classname>, uses the same design :</para>
+      <programlisting format="linespecific"><![CDATA[				
+     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    	Sequence result = null; 
+    	try {
+        	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
+	        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
+	        if (indexWorker == null)
+	        	throw new XPathException("Unable to find a spatial index worker");
+	        Geometry geometry = null;	        
+	        String targetSRS = null;
+	        if (isCalledAs("transform")) {
+	        	if (args[0].isEmpty())
+	                result = Sequence.EMPTY_SEQUENCE;
+	        	else {
+		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);			        	
+		        	//Try to get the geometry from the index
+		        	String sourceSRS = null;
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		sourceSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
+		        		hasUsedIndex = true;
+		        	}
+		        	//Otherwise, build it
+		        	if (geometry == null) {
+		        		sourceSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
+		        	}		        	
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	targetSRS = args[1].itemAt(0).getStringValue().trim();
+		        	
+		        	geometry = indexWorker.transformGeometry(geometry, sourceSRS, targetSRS);
+	        	}	        	
+	        } else if (isCalledAs("WKTtoGML")) {
+	        	if (args[0].isEmpty())
+	                result = Sequence.EMPTY_SEQUENCE;
+	        	else {
+		        	String wkt = args[0].itemAt(0).getStringValue();
+			        WKTReader wktReader = new WKTReader();
+			        try {			        	
+			        	geometry = wktReader.read(wkt);			        	
+			        } catch (ParseException e) {
+			        	throw new XPathException(e);	
+			        }
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	targetSRS = args[1].itemAt(0).getStringValue().trim();
+	        	}
+	        } else if (isCalledAs("buffer")) {
+	        	if (args[0].isEmpty())
+	                result = Sequence.EMPTY_SEQUENCE;
+	        	else {
+		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
+		        	//Try to get the geometry from the index
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
+		        		hasUsedIndex = true;
+		        	}
+		        	//Otherwise, build it
+			        if (geometry == null) {
+			        	targetSRS =  ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
+		        	}
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	
+		        	double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
+		        	int quadrantSegments = 8;	
+		        	int endCapStyle = BufferOp.CAP_ROUND;
+		        	if (getArgumentCount() > 2 && Type.subTypeOf(args[2].itemAt(0).getType(), Type.INTEGER))
+		        		quadrantSegments = ((IntegerValue)args[2].itemAt(0)).getInt();
+		        	if (getArgumentCount() > 3 && Type.subTypeOf(args[3].itemAt(0).getType(), Type.INTEGER))
+		        		endCapStyle = ((IntegerValue)args[3].itemAt(0)).getInt();
+		        	switch (endCapStyle) {
+			        	case BufferOp.CAP_ROUND:
+			        	case BufferOp.CAP_BUTT:
+			        	case BufferOp.CAP_SQUARE:
+			        		//OK
+			        		break;
+			        	default:
+			        		throw new XPathException("Invalid line end style");	
+		        	}		        	
+	        		geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);		        	
+	        	}
+	        } else if (isCalledAs("getBbox")) {
+	        	if (args[0].isEmpty())
+	                result = Sequence.EMPTY_SEQUENCE;
+	        	else {
+		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
+		        	//Try to get the geometry from the index
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
+		        		hasUsedIndex = true;
+		        	}
+		        	//Otherwise, build it
+		        	if (geometry == null) {
+		        		targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);		            	
+		        	}
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	
+		        	geometry = geometry.getEnvelope();
+	        	}	        	
+	        } else if (isCalledAs("convexHull")) {
+	        	if (args[0].isEmpty())
+	                result = Sequence.EMPTY_SEQUENCE;
+	        	else {
+		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
+		        	//Try to get the geometry from the index
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
+		        		hasUsedIndex = true;
+		        	}
+		        	//Otherwise, build it
+		        	if (geometry == null) {
+		        		targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
+		        	}
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	
+		        	geometry = geometry.convexHull();
+	        	}
+	        } else if (isCalledAs("boundary")) {
+	        	if (args[0].isEmpty())
+	                result = Sequence.EMPTY_SEQUENCE;
+	        	else {
+		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
+		        	//Try to get the geometry from the index
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
+		        		hasUsedIndex = true;
+		        	}
+		        	//Otherwise, build it
+		        	if (geometry == null) {
+		        		targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
+		        	}
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	
+		        	geometry = geometry.getBoundary();		        	
+	        	}
+	        } else {
+	        	Geometry geometry1 = null;
+	        	Geometry geometry2 = null;
+	        	if (args[0].isEmpty() && args[1].isEmpty())
+	                result = Sequence.EMPTY_SEQUENCE;
+	        	else if (!args[0].isEmpty() && args[1].isEmpty())
+	        		result = args[0].itemAt(0).toSequence();
+	        	else if (args[0].isEmpty() && !args[1].isEmpty())
+	        		result = args[1].itemAt(0).toSequence();
+	        	else {
+		        	NodeValue geometryNode1 = (NodeValue) args[0].itemAt(0);
+		        	NodeValue geometryNode2 = (NodeValue) args[1].itemAt(0);
+		        	String srsName1 = null;
+		        	String srsName2 = null;
+		        	//Try to get the geometries from the index
+		        	if (geometryNode1.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		srsName1 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode1, "SRS_NAME").getStringValue();
+		        		geometry1 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode1, false);		        		
+		        		hasUsedIndex = true;
+		        	}
+		        	if (geometryNode2.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		srsName2 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode2, "SRS_NAME").getStringValue();
+		        		geometry2 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode2, false);		        		
+		        		hasUsedIndex = true;
+		        	}
+		        	//Otherwise build them
+		            if (geometry1 == null) {
+		            	srsName1 = ((Element)geometryNode1.getNode()).getAttribute("srsName").trim();
+		            	geometry1 = indexWorker.streamNodeToGeometry(context, geometryNode1);
+
+		            }
+		        	if (geometry2 == null) {
+		        		srsName2 = ((Element)geometryNode2.getNode()).getAttribute("srsName").trim();
+		            	geometry2 = indexWorker.streamNodeToGeometry(context, geometryNode2);	            	
+		        	}
+		        	
+		        	if (geometry1 == null) 
+		        		throw new XPathException("Unable to get a geometry from the first node");
+		        	if (geometry2 == null) 
+		        		throw new XPathException("Unable to get a geometry from the second node");		        	
+		        	
+		        	//Transform the second geometry in the SRS of the first one if necessary
+					if (!srsName1.equalsIgnoreCase(srsName2)) {
+				        geometry2 = indexWorker.transformGeometry(geometry2, srsName1, srsName2);      	
+					}						
+					
+					if (isCalledAs("intersection")) {
+						geometry = geometry1.intersection(geometry2);
+					} else if (isCalledAs("union")) {
+						geometry = geometry1.union(geometry2);
+					} else if (isCalledAs("difference")) {	
+						geometry = geometry1.difference(geometry2);
+					} else if (isCalledAs("symetricDifference")) {
+						geometry = geometry1.symDifference(geometry2);
+					}	
+					
+					targetSRS = srsName1;
+	        	}
+	        }
+	        
+	        if (result == null) {	        
+		        String gmlPrefix = context.getPrefixForURI(AbstractGMLJDBCIndexWorker.GML_NS);
+		        if (gmlPrefix == null) 
+		        	throw new XPathException("'" + AbstractGMLJDBCIndexWorker.GML_NS + "' namespace is not defined");	
+		
+	     		context.pushDocumentContext();
+				try {
+					MemTreeBuilder builder = context.getDocumentBuilder();
+			        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+					result = (NodeValue)indexWorker.streamGeometryToElement(geometry, targetSRS, receiver);
+				} finally {
+		            context.popDocumentContext();
+		        }
+	        }
+    	} catch (SpatialIndexException e) {
+    		throw new XPathException(e);
+    	}        
+        return result;
+    }
+      ]]></programlisting>
+      <para>It looks more complicated because of the multiple possible argument counts. However, the pinciple
+      remains the same : early result when empty sequences are involved, fetching of the <classname>Geometry</classname>ies
+      (and of its/their SRS) from the DB, streaming if nothing can be fetched, then geometric computations after a
+      transformation of the second <classname>Geometry</classname> if relevant.</para>
+      <para>The final process streams the resulting <classname>Geometry</classname> as the result, in the SRS specified
+      by the relevant argument or in the SRS of the first <classname>Geometry</classname>, depending of the function's name.</para>
       
+      <section>
+      	<title>Playing with the spatial index</title>
+      </section>
       
-      
-      
+      <section>
+      	<title>Facts and thoughts</title>
+      </section>      
       
       <programlisting format="linespecific"><![CDATA[				
  
