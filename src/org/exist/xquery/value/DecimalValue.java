@@ -144,7 +144,7 @@ public class DecimalValue extends NumericValue {
 	}
 	
 	public boolean hasFractionalPart() {
-		return (value.scale() != 0);
+		return (value.scale() > 0);
 	}
 
 	/* (non-Javadoc)
