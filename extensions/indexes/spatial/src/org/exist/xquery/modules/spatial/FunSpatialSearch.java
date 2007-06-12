@@ -39,6 +39,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Element;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -143,44 +144,35 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 		        Geometry EPSG4326_geometry = null;
 		        NodeValue geometryNode = (NodeValue) args[1].itemAt(0);   
 				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) 
-					//The node should be indexed
+					//Get the geometry from the index if available
 					EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
-		        if (EPSG4326_geometry == null) {		        	
-		        	Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
-	            	//Argl ! No SRS !
-	            	//sourceCRS = ((Element)geometryNode).getAttribute("srsName").trim();
-	            	//Erroneous workaround
-		        	String sourceCRS = "osgb:BNG";
-		            //Transform the geometry to EPSG:4326		            
+		        if (EPSG4326_geometry == null) {
+		        	String sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        	Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);	            
 		        	EPSG4326_geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");	        		        
 		        }
-				//Provisional workaround : Geotools sometimes returns null geometries 
-				//due to a too strict check. 
-				//I can't see a way to return something useful in such a case
 	        	if (EPSG4326_geometry == null) 
-	        		result = Sequence.EMPTY_SEQUENCE;
-	        	else {
-			        int spatialOp = SpatialOperator.UNKNOWN;
-			        if (isCalledAs("equals"))
-			        	spatialOp = SpatialOperator.EQUALS;
-			        else if (isCalledAs("disjoint"))
-			        	spatialOp = SpatialOperator.DISJOINT;
-			        else if (isCalledAs("intersects"))
-			        	spatialOp = SpatialOperator.INTERSECTS;	 
-			        else if (isCalledAs("touches"))
-			        	spatialOp = SpatialOperator.TOUCHES;
-			        else if (isCalledAs("crosses"))
-			        	spatialOp = SpatialOperator.CROSSES;	   
-			        else if (isCalledAs("within"))
-			        	spatialOp = SpatialOperator.WITHIN;		
-			        else if (isCalledAs("contains"))
-			        	spatialOp = SpatialOperator.CONTAINS;		
-			        else if (isCalledAs("overlaps"))
-			        	spatialOp = SpatialOperator.OVERLAPS;
-			        //Search the EPSG:4326 in the index
-			        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
-			        hasUsedIndex = true;
-	        	}
+	        		throw new XPathException("Unable to get a geometry from the node");
+		        int spatialOp = SpatialOperator.UNKNOWN;
+		        if (isCalledAs("equals"))
+		        	spatialOp = SpatialOperator.EQUALS;
+		        else if (isCalledAs("disjoint"))
+		        	spatialOp = SpatialOperator.DISJOINT;
+		        else if (isCalledAs("intersects"))
+		        	spatialOp = SpatialOperator.INTERSECTS;	 
+		        else if (isCalledAs("touches"))
+		        	spatialOp = SpatialOperator.TOUCHES;
+		        else if (isCalledAs("crosses"))
+		        	spatialOp = SpatialOperator.CROSSES;	   
+		        else if (isCalledAs("within"))
+		        	spatialOp = SpatialOperator.WITHIN;		
+		        else if (isCalledAs("contains"))
+		        	spatialOp = SpatialOperator.CONTAINS;		
+		        else if (isCalledAs("overlaps"))
+		        	spatialOp = SpatialOperator.OVERLAPS;
+		        //Search the EPSG:4326 in the index
+		        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
+		        hasUsedIndex = true;	        	
         	} catch (SpatialIndexException e) {
         		throw new XPathException(e);
         	}

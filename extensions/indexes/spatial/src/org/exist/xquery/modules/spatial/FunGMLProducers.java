@@ -42,6 +42,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Element;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -130,7 +131,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
         ), 
     	new FunctionSignature(
             new QName("intersection", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the intersection of geometry $a and geometry $b.",
+            "Returns the GML representation of the intersection of geometry $a and geometry $b in the SRS of $a.",
             new SequenceType[]{
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
@@ -139,7 +140,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
         ), 
     	new FunctionSignature(
             new QName("union", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the union of geometry $a and geometry $b.",
+            "Returns the GML representation of the union of geometry $a and geometry $b in the SRS of $a.",
             new SequenceType[]{
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
@@ -148,7 +149,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
         ), 
     	new FunctionSignature(
             new QName("difference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the difference of geometry $a and geometry $b.",
+            "Returns the GML representation of the difference of geometry $a and geometry $b in the SRS of $a.",
             new SequenceType[]{
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
@@ -157,7 +158,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
         ), 
     	new FunctionSignature(
             new QName("symetricDifference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the symetric difference of geometry $a and geometry $b.",
+            "Returns the GML representation of the symetric difference of geometry $a and geometry $b in the SRS of $a.",
             new SequenceType[]{
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
@@ -177,36 +178,30 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 	        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
 	        if (indexWorker == null)
 	        	throw new XPathException("Unable to find a spatial index worker");
-	        Geometry geometry = null;
-	        String srsName = null;
+	        Geometry geometry = null;	        
+	        String targetSRS = null;
 	        if (isCalledAs("transform")) {
 	        	if (args[0].isEmpty())
 	                result = Sequence.EMPTY_SEQUENCE;
 	        	else {
-		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
-		        	String sourceSRS = null;
+		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);			        	
 		        	//Try to get the geometry from the index
+		        	String sourceSRS = null;
 		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
 		        		sourceSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
 		        		hasUsedIndex = true;
-		        	//Otherwise, build it
-		        	} else { 		        		
-		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
-		            	//Argl ! No SRS !
-		            	//sourceSRS = ((Element)geometryNode).getAttribute("srsName").trim();
-		            	//Erroneous workaround
-		        		sourceSRS = "osgb:BNG";
 		        	}
-		        	srsName = args[1].itemAt(0).getStringValue().trim();
-					//Provisional workaround : Geotools sometimes returns null geometries 
-					//due to a too strict check. 
-					//I can't see a way to return something useful in such a case
-		        	if (geometry == null) { 
-		        		result = Sequence.EMPTY_SEQUENCE;
-		        		hasUsedIndex= false;
-		        	} else
-		        		geometry = indexWorker.transformGeometry(geometry, sourceSRS, srsName);
+		        	//Otherwise, build it
+		        	if (geometry == null) {
+		        		sourceSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
+		        	}		        	
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	targetSRS = args[1].itemAt(0).getStringValue().trim();
+		        	
+		        	geometry = indexWorker.transformGeometry(geometry, sourceSRS, targetSRS);
 	        	}	        	
 	        } else if (isCalledAs("WKTtoGML")) {
 	        	if (args[0].isEmpty())
@@ -214,17 +209,14 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 	        	else {
 		        	String wkt = args[0].itemAt(0).getStringValue();
 			        WKTReader wktReader = new WKTReader();
-			        try {
-			        	geometry = wktReader.read(wkt);
-			        	srsName = args[1].itemAt(0).getStringValue().trim();
+			        try {			        	
+			        	geometry = wktReader.read(wkt);			        	
 			        } catch (ParseException e) {
 			        	throw new XPathException(e);	
 			        }
-					//Provisional workaround : Geotools sometimes returns null geometries 
-					//due to a too strict check. 
-					//I can't see a way to return something useful in such a case
 		        	if (geometry == null) 
-		        		result = Sequence.EMPTY_SEQUENCE;
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	targetSRS = args[1].itemAt(0).getStringValue().trim();
 	        	}
 	        } else if (isCalledAs("buffer")) {
 	        	if (args[0].isEmpty())
@@ -232,43 +224,36 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 	        	else {
 		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
 		        	//Try to get the geometry from the index
-		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {		        		
-		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
-		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
 		        		hasUsedIndex = true;
+		        	}
 		        	//Otherwise, build it
-		        	} else { 		        		
+			        if (geometry == null) {
+			        	targetSRS =  ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
 		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
-		            	//Argl ! No SRS !
-		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
-		            	//Erroneous workaround
-		            	srsName = "osgb:BNG";
 		        	}
-					//Provisional workaround : Geotools sometimes returns null geometries 
-					//due to a too strict check. 
-					//I can't see a way to return something useful in such a case
-		        	if (geometry == null) { 
-		        		result = Sequence.EMPTY_SEQUENCE;
-		        		hasUsedIndex = false;
-		        	} else {
-			        	double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
-			        	int quadrantSegments = 8;	
-			        	int endCapStyle = BufferOp.CAP_ROUND;
-			        	if (getArgumentCount() > 2 && Type.subTypeOf(args[2].itemAt(0).getType(), Type.INTEGER))
-			        		quadrantSegments = ((IntegerValue)args[2].itemAt(0)).getInt();
-			        	if (getArgumentCount() > 3 && Type.subTypeOf(args[3].itemAt(0).getType(), Type.INTEGER))
-			        		endCapStyle = ((IntegerValue)args[3].itemAt(0)).getInt();
-			        	switch (endCapStyle) {
-				        	case BufferOp.CAP_ROUND:
-				        	case BufferOp.CAP_BUTT:
-				        	case BufferOp.CAP_SQUARE:
-				        		//OK
-				        		break;
-				        	default:
-				        		throw new XPathException("Invalid line end style");	
-			        	}
-		        		geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);
-		        	}
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	
+		        	double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
+		        	int quadrantSegments = 8;	
+		        	int endCapStyle = BufferOp.CAP_ROUND;
+		        	if (getArgumentCount() > 2 && Type.subTypeOf(args[2].itemAt(0).getType(), Type.INTEGER))
+		        		quadrantSegments = ((IntegerValue)args[2].itemAt(0)).getInt();
+		        	if (getArgumentCount() > 3 && Type.subTypeOf(args[3].itemAt(0).getType(), Type.INTEGER))
+		        		endCapStyle = ((IntegerValue)args[3].itemAt(0)).getInt();
+		        	switch (endCapStyle) {
+			        	case BufferOp.CAP_ROUND:
+			        	case BufferOp.CAP_BUTT:
+			        	case BufferOp.CAP_SQUARE:
+			        		//OK
+			        		break;
+			        	default:
+			        		throw new XPathException("Invalid line end style");	
+		        	}		        	
+	        		geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);		        	
 	        	}
 	        } else if (isCalledAs("getBbox")) {
 	        	if (args[0].isEmpty())
@@ -277,25 +262,19 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
 		        	//Try to get the geometry from the index
 		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
-		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
 		        		hasUsedIndex = true;
-		        	//Otherwise, build it
-		        	} else { 		        		
-		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
-		            	//Argl ! No SRS !
-		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
-		            	//Erroneous workaround
-		            	srsName = "osgb:BNG";
 		        	}
-					//Provisional workaround : Geotools sometimes returns null geometries 
-					//due to a too strict check. 
-					//I can't see a way to return something useful in such a case
-		        	if (geometry == null) { 
-		        		result = Sequence.EMPTY_SEQUENCE;
-		        		hasUsedIndex = false;
-		        	} else
-		        		geometry = geometry.getEnvelope();
+		        	//Otherwise, build it
+		        	if (geometry == null) {
+		        		targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);		            	
+		        	}
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	
+		        	geometry = geometry.getEnvelope();
 	        	}	        	
 	        } else if (isCalledAs("convexHull")) {
 	        	if (args[0].isEmpty())
@@ -304,25 +283,19 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
 		        	//Try to get the geometry from the index
 		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
-		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
 		        		hasUsedIndex = true;
-		        	//Otherwise, build it
-		        	} else { 		        		
-		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
-		            	//Argl ! No SRS !
-		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
-		            	//Erroneous workaround
-		            	srsName = "osgb:BNG";
 		        	}
-					//Provisional workaround : Geotools sometimes returns null geometries 
-					//due to a too strict check. 
-					//I can't see a way to return something useful in such a case
-		        	if (geometry == null) { 
-		        		result = Sequence.EMPTY_SEQUENCE;
-		        		hasUsedIndex = false;
-		        	} else
-		        		geometry = geometry.convexHull();
+		        	//Otherwise, build it
+		        	if (geometry == null) {
+		        		targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
+		        	}
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	
+		        	geometry = geometry.convexHull();
 	        	}
 	        } else if (isCalledAs("boundary")) {
 	        	if (args[0].isEmpty())
@@ -331,26 +304,19 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
 		        	//Try to get the geometry from the index
 		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
-		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
 		        		hasUsedIndex = true;
+		        	}
 		        	//Otherwise, build it
-		        	} else { 		        		
-		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
-		            	//Argl ! No SRS !
-		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
-		            	//Erroneous workaround
-		            	srsName = "osgb:BNG";
-		        	}
-					//Provisional workaround : Geotools sometimes returns null geometries 
-					//due to a too strict check. 
-					//I can't see a way to return something useful in such a case
 		        	if (geometry == null) {
-		        		result = Sequence.EMPTY_SEQUENCE;
-		        		hasUsedIndex = false;
-		        	} else {
-		        		geometry = geometry.getBoundary();
+		        		targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		        	}
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+		        	
+		        	geometry = geometry.getBoundary();		        	
 	        	}
 	        } else {
 	        	Geometry geometry1 = null;
@@ -368,52 +334,47 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	String srsName2 = null;
 		        	//Try to get the geometries from the index
 		        	if (geometryNode1.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-		        		geometry1 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode1, false);
 		        		srsName1 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode1, "SRS_NAME").getStringValue();
+		        		geometry1 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode1, false);		        		
 		        		hasUsedIndex = true;
 		        	}
 		        	if (geometryNode2.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-		        		geometry2 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode2, false);
 		        		srsName2 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode2, "SRS_NAME").getStringValue();
+		        		geometry2 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode2, false);		        		
 		        		hasUsedIndex = true;
 		        	}
 		        	//Otherwise build them
 		            if (geometry1 == null) {
-		            	geometry1 = indexWorker.streamNodeToGeometry(context, geometryNode1);	
-		            	//Argl ! No SRS !
-		            	//srsName1 = ((Element)geometryNode1).getAttribute("srsName").trim();
-		            	//Erroneous workaround
-		            	srsName1 = "osgb:BNG";
+		            	srsName1 = ((Element)geometryNode1.getNode()).getAttribute("srsName").trim();
+		            	geometry1 = indexWorker.streamNodeToGeometry(context, geometryNode1);
+
 		            }
 		        	if (geometry2 == null) {
-		            	geometry2 = indexWorker.streamNodeToGeometry(context, geometryNode2);
-		        		//Argl ! No SRS !
-		            	//srsName2 = ((Element)geometryNode2).getAttribute("srsName").trim();
-		            	//Erroneous workaround
-		            	srsName2 = "osgb:BNG";		            	
+		        		srsName2 = ((Element)geometryNode2.getNode()).getAttribute("srsName").trim();
+		            	geometry2 = indexWorker.streamNodeToGeometry(context, geometryNode2);	            	
 		        	}
+		        	
+		        	if (geometry1 == null) 
+		        		throw new XPathException("Unable to get a geometry from the first node");
+		        	if (geometry2 == null) 
+		        		throw new XPathException("Unable to get a geometry from the second node");		        	
+		        	
+		        	//Transform the second geometry in the SRS of the first one if necessary
+					if (!srsName1.equalsIgnoreCase(srsName2)) {
+				        geometry2 = indexWorker.transformGeometry(geometry2, srsName1, srsName2);      	
+					}						
 					
-					//Provisional workaround : Geotools sometimes returns null geometries 
-					//due to a too strict check. 
-					//I can't see a way to return something useful in such a case
-		        	if (geometry1== null || geometry2== null) { 
-		        		result = Sequence.EMPTY_SEQUENCE;
-		        		hasUsedIndex = false;
-		        	} else {		        	
-			        	//Transform the second geometry if necessary
-						if (!srsName1.equalsIgnoreCase(srsName2)) {
-					        geometry2 = indexWorker.transformGeometry(geometry2, srsName1, srsName2);      	
-						}						
-						if (isCalledAs("intersection")) {
-							geometry = geometry1.intersection(geometry2);
-						} else if (isCalledAs("union")) {
-							geometry = geometry1.union(geometry2);
-						} else if (isCalledAs("difference")) {	
-							geometry = geometry1.difference(geometry2);
-						} else if (isCalledAs("symetricDifference")) {
-							geometry = geometry1.symDifference(geometry2);
-						}
-		        	}
+					if (isCalledAs("intersection")) {
+						geometry = geometry1.intersection(geometry2);
+					} else if (isCalledAs("union")) {
+						geometry = geometry1.union(geometry2);
+					} else if (isCalledAs("difference")) {	
+						geometry = geometry1.difference(geometry2);
+					} else if (isCalledAs("symetricDifference")) {
+						geometry = geometry1.symDifference(geometry2);
+					}	
+					
+					targetSRS = srsName1;
 	        	}
 	        }
 	        
@@ -426,7 +387,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 				try {
 					MemTreeBuilder builder = context.getDocumentBuilder();
 			        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-					result = (NodeValue)indexWorker.streamGeometryToElement(geometry, srsName, receiver);
+					result = (NodeValue)indexWorker.streamGeometryToElement(geometry, targetSRS, receiver);
 				} finally {
 		            context.popDocumentContext();
 		        }
