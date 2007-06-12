@@ -1,0 +1,58 @@
+<project basedir="." default="jar" name="XBot">
+    
+    <property name="src" value="./src"/>
+    <property name="lib" value="./lib"/>
+    <property name="dist" value="./dist"/>
+    <property name="classes" value="./classes"/>
+    <property name="server.dir" value="../.."/>
+
+    <target name="prepare">
+        <echo message="--------------------------------------------------"/>
+        <echo message="Compiling XBot IRC Bot"/>
+        <echo message="--------------------------------------------------"/>
+        <mkdir dir="${classes}"/>
+        <mkdir dir="${dist}"/>
+    </target>
+
+    <path id="classpath.xbot">
+        <pathelement path="${lib}/pircbot.jar"/>
+        <pathelement path="${server.dir}/lib/core/xmldb.jar"/>
+        <pathelement path="${server.dir}/lib/core/javax.servlet-1.4.jar"/>
+        <pathelement path="${server.dir}/exist.jar"/>
+    </path>
+	
+	<!-- =================================================================== -->
+    <!-- Compiles the source code                                            -->
+    <!-- =================================================================== -->
+    <target depends="prepare" name="compile">
+        <javac debug="true" deprecation="${build.deprecation}"
+                destdir="${classes}" encoding="UTF-8"
+                optimize="${build.optimize}" srcdir="${src}"
+                source="1.4">
+			<!-- jmv target="1.4" -->
+            <classpath>
+                <path refid="classpath.xbot"/>
+            </classpath>
+        </javac>
+    </target>
+	
+    <target name="jar" depends="compile">
+        <jar basedir="${classes}" jarfile="${dist}/ircbot.jar"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${classes}"/>
+        <delete dir="${dist}"/>
+    </target>
+
+    <target name="dist" depends="compile">
+        <jar basedir="${classes}" compress="true" jarfile="${dist}/xbot.jar">
+            <include name="org/exist/**"/>
+        </jar>
+        <war destfile="${dist}/irc.war" webxml="webapp/WEB-INF/web.xml">
+            <lib dir="${dist}">
+                <include name="*.jar"/>
+            </lib>
+        </war>
+    </target>
+</project>
