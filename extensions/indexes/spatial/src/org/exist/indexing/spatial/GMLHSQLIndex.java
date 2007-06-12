@@ -168,6 +168,8 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
     }
     
     protected synchronized void releaseConnection(DBBroker broker) throws SQLException {   
+    	if (connectionOwner == null)
+    		throw new SQLException("Attempted to release a connection that wasn't acquired");
     	connectionOwner = null;
     }  
     

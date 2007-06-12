@@ -28,9 +28,10 @@
       
       <section>
 	<title>Brief overview</title>
-	<para>Since revision 6000, spring 2007, i.e. <emphasis>after</emphasis> the 1.1 release, eXist provides a new mechanism to index XML data. This mechanism is modular
-	and should ease index development as well as the development of related (possibly not so) custom functions. 
-	As a proof of concept, eXist currently ships with 2 index types :
+	<para>Since around SVN revision 6000, spring 2007, i.e. <emphasis>after</emphasis> the 1.1 release, eXist 
+	provides a new mechanism to index XML data. This mechanism is modular and should ease index development as 
+	well as the development of related (possibly not so) custom functions. As a proof of concept, eXist currently 
+	ships with 2 index types :</para>
 	<itemizedlist>
 	  <listitem>
 	    <variablelist>
@@ -78,17 +79,16 @@
 		    <listitem><para>the polygon itself, stored in a binary form (<ulink url="http://en.wikipedia.org/wiki/Well-known_text">Well-Known Binary</ulink>)</para></listitem>
 		    <listitem><para>the coordinates of its <ulink url="http://en.wikipedia.org/wiki/Minimum_bounding_rectangle">bounding box</ulink></para></listitem>
 		  </itemizedlist>
+		  </para><para>
 		  The spatial index will we discussed in details further below.
 		  </para>
 		</listitem>
 	      </varlistentry>
 	    </variablelist>
 	  </listitem>
-	</itemizedlist>
-	</para>
+	</itemizedlist>	
 	<para>So, the new architecture introduces a new package, <classname>org.exist.indexing</classname> 
-	which contains a class that we will immediately study, <classname>IndexManager</classname>.
-	</para>
+	which contains a class that we will immediately study, <classname>IndexManager</classname>.</para>
       </section>
       
       <section>
@@ -130,18 +130,21 @@
 	<para>This method is called when eXist shuts down. <methodname>close()</methodname> will be called
 	for every registered <classname>Index</classname>. That allows them to free the resources they have allocated.</para>
 	<synopsis format="linespecific">public void removeIndexes()</synopsis>
-	<para>This method is called when <methodname>repair()</methodname> is called from <classname>org.exist.storage.NativeBroker</classname>. 
-	NB! That <methodname>repair()</methodname> reconstructs every index (including the structural one)
-	from what is contained in the persistent DOM (usually <filename>dom.dbx</filename>).
+	<para>This method is called when <methodname>repair()</methodname> is called from <classname>org.exist.storage.NativeBroker</classname>.</para> 
+	<para><note><methodname>repair()</methodname> reconstructs every index (including the structural one)
+	from what is contained in the persistent DOM (usually <filename>dom.dbx</filename>).</note></para>
+	<para>
 	<methodname>remove()</methodname> will be called for every registered <classname>Index</classname>.
 	That allows each index to destroy its persistent storage if it wants to do so (but it is probably 
-	suitable given that <methodname>repair()</methodname> is called when the DB and/or its indexes are corrupted).</para>			
-	<synopsis format="linespecific">public void reopenIndexes()</synopsis>  
-	<para>This method is called when <methodname>repair()</methodname> is called from <classname>org.exist.storage.NativeBroker</classname>. 
-	NB! That <methodname>repair()</methodname> reconstructs every index (including the structural one)
-	from what is contained in the persistent DOM (usually <filename>dom.dbx</filename>).
+	suitable given that <methodname>repair()</methodname> is called when the DB and/or its indexes are corrupted).</para>				
+<synopsis format="linespecific">public void reopenIndexes()</synopsis>  
+	<para>This method is called when <methodname>repair()</methodname> is called from <classname>org.exist.storage.NativeBroker</classname>.</para>
+	<para><note><methodname>repair()</methodname> reconstructs every index (including the structural one)
+	from what is contained in the persistent DOM (usually <filename>dom.dbx</filename>).</note></para>
+	<para>
 	<methodname>open()</methodname> will be called for every registered <classname>Index</classname>.
-	That allows each index to (re)allocate the resources it needs for its persistent storage.</para>	
+	That allows each index to (re)allocate the resources it needs for its persistent storage.</para>			
+		
       </section>
 
       <section>
@@ -1876,12 +1879,12 @@
       ]]></programlisting>
       <para>The trick is to filter the geometries on (fast) BBox operations first (intersecting geometries have
       their BBox intersecting as well...) which is possible in every case but for the <methodname>Spatial.DISJOINT</methodname>
-      operator. For the latter case, we will have to retain the BBox coordinates in order to apply a further
-      filtering. The, we examine the results and filter out the documents that are not in the <parameter>contextSet</parameter>.
-      Then we apply a <methodname>Spatial.DISJOINT</methodname> filtering that allow to avoid the next step. Only then, 
+      operator. For the latter case, we will have to fetch the BBox coordinates in order to apply a further
+      filtering. Then, we examine the results and filter out the documents that are not in the <parameter>contextSet</parameter>.
+      Then we apply a <methodname>Spatial.DISJOINT</methodname> filtering that will avoid the next step if the BBoxes are themselves disjoint. Only then, 
       we perform the costly operations, namely <classname>Geometry</classname> deserialization from the DB 
       then performing spatial operations on it. Matching nodes are then returned.</para>
-      <para>The next method is quite straightfoward :</para>
+      <para>The next method is quite straightforward :</para>
       <programlisting format="linespecific"><![CDATA[		
       protected Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
       PreparedStatement ps = conn.prepareStatement(
@@ -1914,7 +1917,100 @@
       ]]></programlisting>
       <para>Notice that it will return EPSG:4326 <classname>Geometry</classname>ies and that it will rethrow
       a <classname>com.vividsolutions.jts.io.ParseException</classname> as a <classname>java.sql.SQLException</classname>.</para>	
-      <para>This is the next method :</para>
+      <para>The next method is a bit more restrictive and modular :</para>
+      <programlisting format="linespecific"><![CDATA[
+protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException {
+	PreparedStatement ps = conn.prepareStatement(
+		"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") +
+		" FROM " + GMLHSQLIndex.TABLE_NAME + 
+		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
+	);
+	ps.setString(1, p.getDocument().getURI().toString());
+	ps.setInt(2, p.getNodeId().units());
+	byte[] bytes = new byte[p.getNodeId().size()];
+	p.getNodeId().serialize(bytes, 0);
+	ps.setBytes(3, bytes);   
+	ResultSet rs = null;    	
+	try {
+		rs = ps.executeQuery();
+		if (!rs.next())
+			//Nothing returned
+			return null;    		
+		Geometry geometry = wkbReader.read(rs.getBytes(1));        			
+		if (rs.next()) {   	
+			//Should be impossible    		
+			throw new SQLException("More than one geometry for node " + p);
+		}
+		return geometry;    
+	} catch (ParseException e) {
+		//Transforms the exception into an SQLException.
+		//Very unlikely to happen though...
+		SQLException ee = new SQLException(e.getMessage());
+		ee.initCause(e);
+		throw ee;
+	} finally {   
+		if (rs != null)
+			rs.close();
+		if (ps != null)
+			ps.close();
+	}
+}
+]]></programlisting>	  
+	<para>... because if directly selects the right node and allows to return either the original <classname>Geometry</classname>, either
+	its EPSG:4326 transformation.</para>    
+	<para>The next method is a generalization of the previous one :</para>
+      <programlisting format="linespecific"><![CDATA[
+    protected Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(
+        	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
+    		" FROM " + GMLHSQLIndex.TABLE_NAME 
+    	);
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		Geometry[] result = new Geometry[contextSet.getLength()];
+    		int index= 0;
+    		while (rs.next()) {
+    			DocumentImpl doc = null;
+        		try {
+        			doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+        		} catch (PermissionDeniedException e) {
+        			LOG.debug(e);
+        			result[index++] = null;
+        			//Ignore since the broker has no right on the document
+        			continue;
+        		}        
+        		if (contextSet.getDocumentSet().contains(doc.getDocId())) {
+	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
+	        		if (contextSet.get(p) != null) {
+			        	Geometry geometry = wkbReader.read(rs.getBytes(1));        			
+			        	result[index++] = geometry;
+	        		}
+        		}
+    		}
+    		return result;
+        } catch (ParseException e) {
+        	//Transforms the exception into an SQLException.
+        	//Very unlikely to happen though...
+        	SQLException ee = new SQLException(e.getMessage());
+        	ee.initCause(e);
+        	throw ee;
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    }            				
+      ]]></programlisting>		      
+      <para>It queries the whole index for the requested <classname>Geometry</classname>, then ignores the documents that are not in 
+      the <parameter>contextSet</parameter>, then ignores the nodes that are not in the <parameter>contextSet</parameter>
+      then deserializes the <classname>Geometry</classname>.</para>
+      <note><para>This method is not yet used by the spatial functions but it is planned to use it in a future
+      optimization effort.</para></note>
+      
+      <para>This is the next method, designed like <methodname>getGeometryForNode()</methodname> :</para>
       <programlisting format="linespecific"><![CDATA[	
       protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException {
       PreparedStatement ps = conn.prepareStatement(
@@ -2014,28 +2110,295 @@
       }
       }      				
       ]]></programlisting>
-      <para>It queries the whole index for the requested property, then ignores the document that are not in 
-      the	<parameter>contextSet</parameter>, the ignores the nodes that are not in the <parameter>contextSet</parameter>
-      then returns the property mapped to the appropriate XML atomic value</para>
+      <para>It queries the whole index for the requested property, then ignores the documents that are not in 
+      the <parameter>contextSet</parameter>, then ignores the nodes that are not in the <parameter>contextSet</parameter>
+      then returns the property mapped to the appropriate XML atomic value.</para>
       <note><para>This method is not yet used by the spatial functions but it is planned to use it in a future
       optimization effort.</para></note>
+      <para>The last method is a utility one and we will only show a part of its body :</para>
+      <programlisting format="linespecific"><![CDATA[		
+    protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException {
+    	PreparedStatement ps = conn.prepareStatement(
+	    		"SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + ";"
+	    	);
+    	ResultSet rs = null;
+    	try {
+    		rs = ps.executeQuery();
+	        while (rs.next()) {	        	
+	        	Geometry original_geometry = wkbReader.read(rs.getBytes("WKB"));		        	
+	            if (!original_geometry.equals(wktReader.read(rs.getString("WKT")))) {
+	            	LOG.info("Inconsistent WKT : " + rs.getString("WKT"));
+	    			return false;
+	        	}		            	
+	        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));		        	
+	            if (!EPSG4326_geometry.equals(wktReader.read(rs.getString("EPSG4326_WKT")))) {
+	            	LOG.info("Inconsistent WKT : " + rs.getString("EPSG4326_WKT"));
+	    			return false;
+	        	}
+	            
+	        	if (!original_geometry.getGeometryType().equals(rs.getString("GEOMETRY_TYPE"))) {
+	        		LOG.info("Inconsistent geometry type: " + rs.getDouble("GEOMETRY_TYPE"));
+	    			return false;
+	        	}
+	        	
+	            if (original_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("MINX")) {
+	            	LOG.info("Inconsistent MinX: " + rs.getDouble("MINX"));
+	    			return false;
+	        	}
 
+				...
+
+	            DocumentImpl doc = null;
+	            try {
+	            	doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
+	            } catch (PermissionDeniedException e) {
+        			//The broker has no right on the document
+	            	LOG.error(e);
+	            	return false;
+	            }
+	            NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 	    		
+	            StoredNode node = broker.objectWith(new NodeProxy((DocumentImpl)doc, nodeId));
+	            if (node == null) {
+	            	LOG.info("Node " + nodeId + "doesn't exist");
+	            	return false;
+	            }	            
+	        	if (!GMLHSQLIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
+	        		LOG.info("GML indexed node (" + node.getNodeId()+ ") is in the '" + 
+	        				node.getNamespaceURI() + "' namespace. '" + 
+	        				GMLHSQLIndexWorker.GML_NS + "' was expected !");
+	        		return false;
+	        	}
+	        	if (!original_geometry.getGeometryType().equals(node.getLocalName())) {
+	        		if ("Box".equals(node.getLocalName()) && "Polygon".equals(original_geometry.getGeometryType())) {
+	        			LOG.debug("GML indexed node (" + node.getNodeId() + ") is a gml:Box indexed as a polygon");
+	        		} else {
+	        			LOG.info("GML indexed node (" + node.getNodeId() + ") has '" + 
+	        					node.getLocalName() + "' as its local name. '" + 
+	        					original_geometry.getGeometryType() + "' was expected !");
+	        			return false;
+	        		}
+	        	}
+	        	
+	    		LOG.info(node);	        		
+	        }
+	        return true;
+	        
+        } catch (ParseException e) {
+        	//Transforms the exception into an SQLException.
+        	//Very unlikely to happen though...
+        	SQLException ee = new SQLException(e.getMessage());
+        	ee.initCause(e);
+        	throw ee;
+		} finally {   
+			if (rs != null)
+				rs.close();
+			if (ps != null)
+				ps.close();	
+	    }
+    }          		
+      ]]></programlisting>  
+      <para>It deserializes each <classname>Geometry</classname> and checks that its data are consistent with what is stored in the DB.</para>   
+  
     </section>
     
     <section>
-      <title>Writing the implementation of <classname>org.exist.indexing.StreamListner</classname></title>
+      <title>Writing the implementation of <classname>org.exist.indexing.StreamListener</classname></title>
+      <para>Let's see now how our <classname>StreamListener</classname> is implemented. Its main purpose is to
+      generate <classname>Geometry</classname> instances, if accurate, from the nodes it listens to.</para>
+      <para>This will be done using a <classname>org.geotools.gml.GMLFilterDocument</classname> provided by the Geotools
+      libraries. The trick is to map our STAX events to the expected SAX events.</para> 
+      <para>As stated above, our <classname>StreamListener</classname> will be implemented as an inner class of
+      <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker</classname>. Of course, it will implement
+      <classname>org.exist.indexing.AbstractStreamListener</classname> :</para>
+      <programlisting format="linespecific"><![CDATA[	
+private class GMLStreamListener extends AbstractStreamListener {
+
+	Stack srsNamesStack = new Stack();
+	ElementImpl deferredElement;
+	
+	public IndexWorker getWorker() {
+		return AbstractGMLJDBCIndexWorker.this;
+	}
+}		
+      ]]></programlisting>	
+      <para>There are only two members. <parameter>srsNamesStack</parameter> will maintain a (<classname>String</classname>)
+      <classname>java.util.Stack</classname> for the <sgmltag class="attribute">srsName</sgmltag> attribute of the
+      elements in the GML namespace (http://www.opengis.net/gml). <parameter>null</parameter> will be pushed
+      if such an attribute doesn't exist, namely because it isn't accurate.</para>
+      <para><parameter>deferredElement</parameter> will
+      hold an element whose streaming is deferred, namely because we still haven't received its attributes.</para>
+      <para>The <methodname>getWorker()</methodname> method should be straightforward.</para>
+      <para>Let's see how the process is performed :</para>      
+      <programlisting format="linespecific"><![CDATA[		
+        public void startElement(Txn transaction, ElementImpl element, NodePath path) { 
+        	if (isDocumentGMLAware) {
+        		//Release the deferred element if any
+        		if (deferredElement != null)        		
+        			processDeferredElement();
+        		//Retain this element
+	    		deferredElement = element;  
+        	}
+	        //Forward the event to the next listener 
+        	super.startElement(transaction, element, path);
+        }
+        
+        public void attribute(Txn transaction, AttrImpl attrib, NodePath path) { 
+        	//Forward the event to the next listener 
+        	super.attribute(transaction, attrib, path);          
+        }        
+
+        public void characters(Txn transaction, TextImpl text, NodePath path) {
+        	if (isDocumentGMLAware) {
+        		//Release the deferred element if any
+        		if (deferredElement != null)        		
+        			processDeferredElement();	        	
+	        	try {
+	        		geometryDocument.characters(text.getData().toCharArray(), 0, text.getLength());
+	        	} catch (Exception e) {
+	        		LOG.error(e);
+	        	}    
+        	}
+        	//Forward the event to the next listener 
+        	super.characters(transaction, text, path);
+        }        
+
+        public void endElement(Txn transaction, ElementImpl element, NodePath path) {
+        	if (isDocumentGMLAware) {   
+        		//Release the deferred element if any
+        		if (deferredElement != null)        		
+        			processDeferredElement();	        	
+	        	//Process the element 
+        		processCurrentElement(element);
+        	}
+        	//Forward the event to the next listener 
+            super.endElement(transaction, element, path);
+        }             		
+      ]]></programlisting>	 
+      <para>Element deferring occurs only if <parameter>currentDoc</parameter> is to be indexed of course. If
+      so, an incoming element is deferred but we do not forget to forward the event to the next 
+      <classname>StreamListener</classname> in the pipeline.</para>
+      <para>If we have a deferred element, we will process it (see below) in order to collect its attributes and 
+      then <methodname>endElement()</methodname> will add an index entry for the current element, if relevant,  
+      (see below as well). <methodname>characters()</methodname> is also forwarded to the SAX handler.</para>
+      <note>We could have used <methodname>attribute()</methodname> to collect the deferred element's attributes.
+      The described design is just a matter of choice.</note>
+      <para>Let's see how the deferred element is processed :</para>
+      <programlisting format="linespecific"><![CDATA[				
+        private void processDeferredElement() {  
+    		//We need to collect the deferred element's attributes in order to feed the SAX handler
+        	AttributesImpl attList = new AttributesImpl();
+        	NamedNodeMap attrs = deferredElement.getAttributes();
+        	
+        	String whatToPush = null;
+        	
+        	for (int i = 0; i < attrs.getLength() ; i++) {
+        		AttrImpl attrib = (AttrImpl)attrs.item(i);
+        		
+            	//Store the srs
+        		if (GML_NS.equals(deferredElement.getNamespaceURI())) {
+        			//Maybe we could assume a configurable default value here        			
+        			if (attrib.getName().equals("srsName")) {        		
+        				whatToPush = attrib.getValue();
+        			}
+        			srsNamesStack.push(whatToPush);
+        		} 
+        		
+        		attList.addAttribute(attrib.getNamespaceURI(), 
+        				attrib.getLocalName(), 
+        				attrib.getQName().getStringValue(), 
+        				Integer.toString(attrib.getType()), 
+        				attrib.getValue());            		
+        	} 
+        	
+        	srsNamesStack.push(whatToPush);
+
+        	try {
+        		geometryDocument.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        		LOG.error(e);
+        	} finally {
+	        	deferredElement = null;       	       	
+	        }
+        }      
+      ]]></programlisting>	  
+      <para>We first need to collect its attributes and that's why it is deferred, because attributes events
+      come <emphasis>after</emphasis> the call to <methodname>startElement()</methodname>. Elements in the GML 
+      namespace that carry an <sgmltag class="attribute">srsName</sgmltag> attribute will push its value. 
+      If the element is not in the GML namespace or if no <sgmltag class="attribute">srsName</sgmltag> attribute
+	  exists, <parameter>null</parameter> is pushed.</para>
+      <note>We could have had a smarter mechanism, but we first have to take a decision about the fact that
+      we could define a default SRS here, either from the config, either from a higher-level element. This part of
+      the code will thus be probably be revisited once the decision is taken.</note>
+      <para>When the attributes are collected, we can send a <classname>startElement()</classname> even to the SAX
+      handler, thus marking the end of the deferring process.</para>
+      <para>Let's see how the current element is processed when <methodname>endElement()</methodname> is called :</para>      
+      <programlisting format="linespecific"><![CDATA[	
+        private void processCurrentElement(ElementImpl element) {
+        	String currentSrsName = (String)srsNamesStack.pop();        		
+    		try {
+    			geometryDocument.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
+        		//Some invalid/(yet) incomplete geometries don't have a SRS
+        		if (streamedGeometry != null && currentSrsName != null) {   
+        			currentNodeId = element.getNodeId();
+	    			geometries.put(currentNodeId, new SRSGeometry(currentSrsName, streamedGeometry));		        		
+		        	if (flushAfter != -1 && geometries.size() >= flushAfter) {
+		        		//Mmmh... doesn't flush since it is currently dependant from the
+		        		//number of nodes in the DOM file ; would need refactorings
+		        		//currentDoc.getBroker().checkAvailableMemory();
+		        		currentDoc.getBroker().flush();
+		        		///Aaaaaargl !
+		        		final double percent = ((double) Runtime.getRuntime().freeMemory() / (double) Runtime.getRuntime().maxMemory()) * 100;
+		                if (percent < 30) {			        		
+		                	System.gc();
+		                }
+		        	}
+        		}        		
+        	} catch (Exception e) {
+        		LOG.error("Unable to collect geometry for node: " + currentNodeId + ". Indexing will be skipped", e);        		
+    		} finally {  
+    			streamedGeometry = null;	        			
+    		}        	
+        }      			
+      ]]></programlisting>	  
+      <para>We first pop a SRS name from the stack. <parameter>null</parameter> will indicate that the element doesn't
+      have any and thus that it is an element which doesn't carry enough information to build a complete geometry. That doesn't
+      prevent us to forward this element to the SAX handler.</para>
+      <para>The SAX handler might have been able to build a <classname>Geometry</classname> then. If so, the current
+      index entry (composed of <parameter>currentSrsName</parameter>, <parameter>streamedGeometry</parameter>, 
+      <parameter>currentNodeId</parameter> and the "global" <classname>org.exist.dom.DocumentImpl</classname>) is added to <parameter>geometries</parameter> (wrapped in the convenience
+      <classname>SRSGeometry</classname> class). We then check if it's time to flush the pending index entries.</para>
+      <para>This is how the <classname>GeometryHandler</classname> looks like. It is also implemented as an
+      inner class of <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker</classname></para>
+      <programlisting format="linespecific"><![CDATA[				
+    private class GeometryHandler extends XMLFilterImpl implements GMLHandlerJTS {
+        public void geometry(Geometry geometry) {
+        	streamedGeometry = geometry;      	
+        	//TODO : null geometries can be returned for many reasons, including a (too) strict
+        	//topology check done by the Geotools SAX parser.
+        	//It would be nice to have static classes extending Geometry to report such geometries
+			if (geometry == null)
+				LOG.error("Collected null geometry for node: " + currentNodeId + ". Indexing will be skipped");
+        }
+    }      
+      ]]></programlisting>	 
+      <para>Thanks to Geotools SAX parser, it hasn't to be more complicated than setting the <parameter>streamedGeometry</parameter>
+      member.</para>  
+      <note>However, it may throw some <classname>NullPointerException</classname>s as described above.</note>
+      </section>
       
-      
-      
-      
+      <section>
+      	<title>Implementing some functions that cooperate with the spatial index</title>
+      </section>   
       
       
       
       
       
       <programlisting format="linespecific"><![CDATA[				
+ 
       ]]></programlisting>				
-    </section>
+    
   </section>
 </chapter>
 </book>
