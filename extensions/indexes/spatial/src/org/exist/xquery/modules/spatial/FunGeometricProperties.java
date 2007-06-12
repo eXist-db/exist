@@ -252,134 +252,129 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 		        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
 		        if (indexWorker == null)
 		        	throw new XPathException("Unable to find a spatial index worker");
+	        	String propertyName = null;
+				if (isCalledAs("GMLtoWKT")) {
+					propertyName = "WKT";
+				} else if (isCalledAs("getWKB")) {
+					propertyName = "WKB";						
+				} else if (isCalledAs("getMinX")) {
+					propertyName = "MINX";						
+				} else if (isCalledAs("getMaxX")) {					
+					propertyName = "MAXX";
+				} else if (isCalledAs("getMinY")) {
+					propertyName = "MINY";
+				} else if (isCalledAs("getMaxY")) {
+					propertyName = "MAXY";
+				} else if (isCalledAs("getCentroidX")) {
+					propertyName = "CENTROID_X";
+				} else if (isCalledAs("getCentroidY")) {
+					propertyName = "CENTROID_Y";
+				} else if (isCalledAs("getArea")) {
+					propertyName = "AREA";
+				} else if (isCalledAs("getEPSG4326WKB")) {
+					propertyName = "EPSG4326_WKB";							
+				} else if (isCalledAs("getEPSG4326MinX")) {
+					propertyName = "EPSG4326_MINX";						
+				} else if (isCalledAs("getEPSG4326MaxX")) {					
+					propertyName = "EPSG4326_MAXX";
+				} else if (isCalledAs("getEPSG4326MinY")) {
+					propertyName = "EPSG4326_MINY";
+				} else if (isCalledAs("getEPSG4326MaxY")) {
+					propertyName = "EPSG4326_MAXY";
+				} else if (isCalledAs("getEPSG4326CentroidX")) {
+					propertyName = "EPSG4326_CENTROID_X";
+				} else if (isCalledAs("getEPSG4326CentroidY")) {
+					propertyName = "EPSG4326_CENTROID_Y";
+				} else if (isCalledAs("getEPSG4326Area")) {
+					propertyName = "EPSG4326_AREA";
+				} else if (isCalledAs("getSRS")) {
+					propertyName = "SRS_NAME";
+				} else if (isCalledAs("getGeometryType")) {
+					propertyName = "GEOMETRY_TYPE";
+				} else if (isCalledAs("isClosed")) {
+					propertyName = "IS_CLOSED";
+				} else if (isCalledAs("isSimple")) {
+					propertyName = "IS_SIMPLE";
+				} else if (isCalledAs("isValid")) {
+					propertyName = "IS_VALID";
+				} else {
+					throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
+				}
 		        NodeValue geometryNode = (NodeValue) nodes.itemAt(0);
 				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-		        	String propertyName = null;
-					if (isCalledAs("GMLtoWKT")) {
-						propertyName = "WKT";
-					} else if (isCalledAs("getWKB")) {
-						propertyName = "WKB";						
-					} else if (isCalledAs("getMinX")) {
-						propertyName = "MINX";						
-					} else if (isCalledAs("getMaxX")) {					
-						propertyName = "MAXX";
-					} else if (isCalledAs("getMinY")) {
-						propertyName = "MINY";
-					} else if (isCalledAs("getMaxY")) {
-						propertyName = "MAXY";
-					} else if (isCalledAs("getCentroidX")) {
-						propertyName = "CENTROID_X";
-					} else if (isCalledAs("getCentroidY")) {
-						propertyName = "CENTROID_Y";
-					} else if (isCalledAs("getArea")) {
-						propertyName = "AREA";
-					} else if (isCalledAs("getEPSG4326WKB")) {
-						propertyName = "EPSG4326_WKB";							
-					} else if (isCalledAs("getEPSG4326MinX")) {
-						propertyName = "EPSG4326_MINX";						
-					} else if (isCalledAs("getEPSG4326MaxX")) {					
-						propertyName = "EPSG4326_MAXX";
-					} else if (isCalledAs("getEPSG4326MinY")) {
-						propertyName = "EPSG4326_MINY";
-					} else if (isCalledAs("getEPSG4326MaxY")) {
-						propertyName = "EPSG4326_MAXY";
-					} else if (isCalledAs("getEPSG4326CentroidX")) {
-						propertyName = "EPSG4326_CENTROID_X";
-					} else if (isCalledAs("getEPSG4326CentroidY")) {
-						propertyName = "EPSG4326_CENTROID_Y";
-					} else if (isCalledAs("getEPSG4326Area")) {
-						propertyName = "EPSG4326_AREA";
-					} else if (isCalledAs("getSRS")) {
-						propertyName = "SRS_NAME";
-					} else if (isCalledAs("getGeometryType")) {
-						propertyName = "GEOMETRY_TYPE";
-					} else if (isCalledAs("isClosed")) {
-						propertyName = "IS_CLOSED";
-					} else if (isCalledAs("isSimple")) {
-						propertyName = "IS_SIMPLE";
-					} else if (isCalledAs("isValid")) {
-						propertyName = "IS_VALID";
-					} else
-						throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
 					if (propertyName != null) {
-						//The node should be indexed : get its properties
+						//The node should be indexed : get its property
 						result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
 						hasUsedIndex = true;
 					} else {
 						//Or, at least, its geometry for further processing
-						//TODO : think ; the signature may require getEPSG4326
-						geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
-						sourceCRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+						if (propertyName.indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
+							geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
+							sourceCRS = "EPSG:4326";
+						} else {
+							geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
+							sourceCRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+						}
 					}
 				}
 				if (result == null) {
 		        	//builds the geometry
 					if (geometry == null) {
-			        	geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
-		            	//Argl ! No SRS !
-		            	//sourceCRS = ((Element)geometryNode).getAttribute("srsName").trim();
-		            	//Erroneous workaround
-			        	sourceCRS = "osgb:BNG";
-					}
-					
-					//Provisional workaround : Geotools sometimes returns null geometries 
-					//due to a too strict check. 
-					//I can't see a way to return something useful in such a case
-					if (geometry == null) {
-						result = Sequence.EMPTY_SEQUENCE;
-						hasUsedIndex= false;
-					} else {
-					
-						//Transform the geometry to EPSG:4326 if relevant
-						if (mySignature.getName().getLocalName().indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
-							geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
-							if (isCalledAs("getEPSG4326WKB")) {
-								result = new Base64Binary(wkbWriter.write(geometry));
-							} else if (isCalledAs("getEPSG4326MinX")) {
-								result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
-							} else if (isCalledAs("getEPSG4326MaxX")) {
-								result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
-							} else if (isCalledAs("getEPSG4326MinY")) {
-								result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
-							} else if (isCalledAs("getEPSG4326MaxY")) {
-								result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
-							} else if (isCalledAs("getEPSG4326CentroidX")) {
-								result = new DoubleValue(geometry.getCentroid().getX());
-							} else if (isCalledAs("getEPSG4326CentroidY")) {
-								result = new DoubleValue(geometry.getCentroid().getY());
-							} else if (isCalledAs("getEPSG4326Area")) {
-								result = new DoubleValue(geometry.getArea());
-							}
-						} else if (isCalledAs("GMLtoWKT")) {						
-							result = new StringValue(wktWriter.write(geometry));
-						} else if (isCalledAs("getWKB")) {
-				            result = new Base64Binary(wkbWriter.write(geometry));
-						} else if (isCalledAs("getMinX")) {
+						sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+			        	geometry = indexWorker.streamNodeToGeometry(context, geometryNode);		            	
+					}					
+		        	if (geometry == null) 
+		        		throw new XPathException("Unable to get a geometry from the node");
+					//Transform the geometry to EPSG:4326 if relevant
+					if (propertyName.indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
+						geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
+						if (isCalledAs("getEPSG4326WKB")) {
+							result = new Base64Binary(wkbWriter.write(geometry));
+						} else if (isCalledAs("getEPSG4326MinX")) {
 							result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
-						} else if (isCalledAs("getMaxX")) {
+						} else if (isCalledAs("getEPSG4326MaxX")) {
 							result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
-						} else if (isCalledAs("getMinY")) {
+						} else if (isCalledAs("getEPSG4326MinY")) {
 							result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
-						} else if (isCalledAs("getMaxY")) {
+						} else if (isCalledAs("getEPSG4326MaxY")) {
 							result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
-						} else if (isCalledAs("getCentroidX")) {
+						} else if (isCalledAs("getEPSG4326CentroidX")) {
 							result = new DoubleValue(geometry.getCentroid().getX());
-						} else if (isCalledAs("getCentroidY")) {
+						} else if (isCalledAs("getEPSG4326CentroidY")) {
 							result = new DoubleValue(geometry.getCentroid().getY());
-						} else if (isCalledAs("getArea")) {
+						} else if (isCalledAs("getEPSG4326Area")) {
 							result = new DoubleValue(geometry.getArea());
-						} else if (isCalledAs("getSRS")) {
-							result = new StringValue(((Element)geometryNode).getAttribute("srsName"));
-						} else if (isCalledAs("getGeometryType")) {
-							result = new StringValue(geometry.getGeometryType());
-						} else if (isCalledAs("isClosed")) {
-							result = new BooleanValue(!geometry.isEmpty());
-						} else if (isCalledAs("isSimple")) {
-							result = new BooleanValue(geometry.isSimple());
-						} else if (isCalledAs("isValid")) {
-							result = new BooleanValue(geometry.isValid());
-						} else
-							throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
+						}
+					} else if (isCalledAs("GMLtoWKT")) {						
+						result = new StringValue(wktWriter.write(geometry));
+					} else if (isCalledAs("getWKB")) {
+			            result = new Base64Binary(wkbWriter.write(geometry));
+					} else if (isCalledAs("getMinX")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
+					} else if (isCalledAs("getMaxX")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
+					} else if (isCalledAs("getMinY")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
+					} else if (isCalledAs("getMaxY")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
+					} else if (isCalledAs("getCentroidX")) {
+						result = new DoubleValue(geometry.getCentroid().getX());
+					} else if (isCalledAs("getCentroidY")) {
+						result = new DoubleValue(geometry.getCentroid().getY());
+					} else if (isCalledAs("getArea")) {
+						result = new DoubleValue(geometry.getArea());
+					} else if (isCalledAs("getSRS")) {
+						result = new StringValue(((Element)geometryNode).getAttribute("srsName"));
+					} else if (isCalledAs("getGeometryType")) {
+						result = new StringValue(geometry.getGeometryType());
+					} else if (isCalledAs("isClosed")) {
+						result = new BooleanValue(!geometry.isEmpty());
+					} else if (isCalledAs("isSimple")) {
+						result = new BooleanValue(geometry.isSimple());
+					} else if (isCalledAs("isValid")) {
+						result = new BooleanValue(geometry.isValid());
+					} else {
+						throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
 					}
 		        }
         	} catch (SpatialIndexException e) {
