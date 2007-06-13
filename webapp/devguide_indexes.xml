@@ -2867,7 +2867,7 @@
       <title>Playing with the spatial index</title>
       <para></para>
       <para>Now that we have described the spatial index, it is time to play with it. Only a few of its features
-      will be demonstrated, but we will explain again what it happens under the hood.</para>
+      will be demonstrated, but we will explain again what happens under the hood.</para>
       <para>The first step is to make sure to have a recent enough release version of eXist or a newly checked out copy of the eXist trunk from the subversion repository.</para>
       <para>Check to see if you have the required libraries: they should be in 
       <filename>${EXIST_HOME}/extensions/indexes/spatial/lib</filename>. Most of them have a <filename>gt2-*.jar</filename> name.</para>
@@ -2924,7 +2924,7 @@
       <para>Let's start by creating a collection named <filename>spatial</filename> in the <filename>/db</filename> collection. The menus might be localised, but in english it is <command>File/Create a collection...</command>.</para>
       <para>Then, we will configure this collection by creating a configuration collection.</para>
       <para>Let's navigate to <filename>/db/system/config</filename></para>
-      <para>If required, let's create a general configuration collection : File/Create a collection... name it <filename>db</filename> and get into it.</para>
+      <para>If required, let's create a general configuration collection : <command>File/Create a collection...</command> name it <filename>db</filename> and get into it.</para>
       <para>Then let's create a configuration collection for <filename>/db/spatial</filename>: <command>File/Create a collection...</command> name it <filename>spatial</filename> and get into it.</para>
       <para>We are now in <filename>/db/system/config/db/spatial</filename>.</para>
       <para>Let's now create a configuration file for this collection: <command>File/Create an empty document...</command> name it
