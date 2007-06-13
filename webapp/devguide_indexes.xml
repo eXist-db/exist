@@ -3113,6 +3113,10 @@ return spatial:getArea($pol)
 	provides some nice general-purpose methods and allows <emphasis>static</emphasis> members that are nearly mandatory like
 	<parameter>ID</parameter>. The like for <classname>org.exist.indexing.StreamListener</classname> versus
 	 <classname>org.exist.indexing.AbstractStreamListener</classname>.</para>
+	 <para>More tests should also be driven. The spatial index has only be tested on one file until now. It might be
+	 interesting to see how it behaves with unusual geometries like rectangles, multi-geometries and collections. It
+	 might also be interesting to know more about the error margin when geometries in different SRSes are involved
+    in function of the accuracy of the referencing libraries available in the CLASSPATH.</para>
 
       </section> 
 
