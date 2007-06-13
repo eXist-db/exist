@@ -3101,9 +3101,9 @@ return spatial:getArea($pol)
 	<programlisting format="linespecific"><![CDATA[
 <gml flushAfter="200">
   <!-- divide the number of vertices by 2 -->
-  <hint value="simplify1" method="simplify(2)"/>
+  <hint value="simplify1" method="simplify" parameter="2"/>
   <!-- divide the number of vertices by 4 -->
-  <hint value="simplify2" method="simplify(4)"/>
+  <hint value="simplify2" method="simplify" parameter="4"/>
   <!-- reduce to a point -->
   <hint value="simplify3" method="point"/>  
 </gml>
