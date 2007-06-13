@@ -48,7 +48,8 @@
             <replacefilter token="atompub.xml" value="atompub.html"/>
             <replacefilter token="credits.xml" value="credits.html"/>
             <replacefilter token="deployment.xml" value="deployment.html"/>
-            <replacefilter token="devguide.xml" value="devguide.html"/>
+        	<replacefilter token="devguide.xml" value="devguide.html"/>
+        	<replacefilter token="devguide_indexes.xml" value="devguide_indexes.html"/>        	
             <replacefilter token="documentation.xml" value="documentation.html"/>
             <replacefilter token="roadmap.xml" value="roadmap.html"/>
             <replacefilter token="indexing.xml" value="indexing.html"/>
@@ -122,7 +123,8 @@
                 <uri type="append" src="atompub.xml"/>
                 <uri type="append" src="credits.xml"/>
                 <uri type="append" src="deployment.xml"/>
-                <uri type="append" src="devguide.xml"/>
+                <uri type="append" src="devguide.xml"/>	
+				<uri type="append" src="devguide_indexes.xml"/>
                 <uri type="append" src="documentation.xml"/>
                 <uri type="append" src="examples.xml"/>
                 <uri type="append" src="indexing.xml"/>
