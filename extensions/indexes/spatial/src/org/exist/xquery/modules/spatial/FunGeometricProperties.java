@@ -58,7 +58,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 	
     public final static FunctionSignature[] signatures = {
     	new FunctionSignature(
-            new QName("GMLtoWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            new QName("getWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the WKT representation of geometry $a",
             new SequenceType[]{
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
@@ -129,6 +129,14 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
+    	new FunctionSignature(
+                new QName("getEPSG4326WKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+                "Returns the WKT representation of geometry $a in the EPSG:4326 SRS",
+                new SequenceType[]{
+                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+                },
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            ),         
     	new FunctionSignature(
     		new QName("getEPSG4326WKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the WKB representation of geometry $a in the EPSG:4326 SRS",
@@ -253,7 +261,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 		        if (indexWorker == null)
 		        	throw new XPathException("Unable to find a spatial index worker");
 	        	String propertyName = null;
-				if (isCalledAs("GMLtoWKT")) {
+				if (isCalledAs("getWKT")) {
 					propertyName = "WKT";
 				} else if (isCalledAs("getWKB")) {
 					propertyName = "WKB";						
@@ -271,6 +279,8 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 					propertyName = "CENTROID_Y";
 				} else if (isCalledAs("getArea")) {
 					propertyName = "AREA";
+				} else if (isCalledAs("getEPSG4326WKT")) {
+					propertyName = "EPSG4326_WKT";
 				} else if (isCalledAs("getEPSG4326WKB")) {
 					propertyName = "EPSG4326_WKB";							
 				} else if (isCalledAs("getEPSG4326MinX")) {
@@ -328,7 +338,9 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 					//Transform the geometry to EPSG:4326 if relevant
 					if (propertyName.indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
 						geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
-						if (isCalledAs("getEPSG4326WKB")) {
+						if (isCalledAs("getEPSG4326WKT")) {
+							result = new StringValue(wktWriter.write(geometry));
+						} else if (isCalledAs("getEPSG4326WKB")) {
 							result = new Base64Binary(wkbWriter.write(geometry));
 						} else if (isCalledAs("getEPSG4326MinX")) {
 							result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
@@ -345,7 +357,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 						} else if (isCalledAs("getEPSG4326Area")) {
 							result = new DoubleValue(geometry.getArea());
 						}
-					} else if (isCalledAs("GMLtoWKT")) {						
+					} else if (isCalledAs("getWKT")) {						
 						result = new StringValue(wktWriter.write(geometry));
 					} else if (isCalledAs("getWKB")) {
 			            result = new Base64Binary(wkbWriter.write(geometry));
