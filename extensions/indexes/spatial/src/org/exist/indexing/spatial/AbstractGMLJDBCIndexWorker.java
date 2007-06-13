@@ -123,7 +123,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	protected TreeMap transformations = new TreeMap();
 	protected boolean useLenientMode = false;    
     protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
-    protected GeometryTransformer gmltransformer = new GeometryTransformer();		
+    protected GeometryTransformer gmlTransformer = new GeometryTransformer();		
     protected WKBWriter wkbWriter = new WKBWriter();
     protected WKBReader wkbReader = new WKBReader();
     protected WKTWriter wktWriter = new WKTWriter();
@@ -576,8 +576,8 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 			//1) the SRS
 			//2) gmlPrefix
 			//3) other stuff...
-			//This willr equire some changes in GeometryTransformer
-			gmlString = gmltransformer.transform(geometry);
+			//This will possible require some changes in GeometryTransformer
+			gmlString = gmlTransformer.transform(geometry);
 		} catch (TransformerException e) {
 			throw new SpatialIndexException(e);
 		} 

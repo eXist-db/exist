@@ -1009,7 +1009,7 @@
       protected boolean useLenientMode = false;   
       protected GMLStreamListener gmlStreamListener = new GMLStreamListener(); 
       protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
-      protected GeometryTransformer gmltransformer = new GeometryTransformer();		
+      protected GeometryTransformer gmlTransformer = new GeometryTransformer();		
       protected WKBWriter wkbWriter = new WKBWriter();
       protected WKBReader wkbReader = new WKBReader();
       protected WKTWriter wktWriter = new WKTWriter();
@@ -1496,7 +1496,7 @@
       public Element streamGeometryToElement(Geometry geometry, String srsName, Receiver receiver) throws SpatialIndexException {           
       String gmlString = null;
       try {
-      gmlString = gmltransformer.transform(geometry);
+      gmlString = gmlTransformer.transform(geometry);
       } catch (TransformerException e) {
       throw new SpatialIndexException(e);
       } 	
@@ -1522,7 +1522,7 @@
       <para>The first one uses a <classname>org.geotools.gml.GMLFilterDocument</classname> (see below) and the second one uses
       a <classname>org.geotools.gml.producer.GeometryTransformer</classname> which needs some polishing because,
       despite it is called a transformer, it doesn't cope easily with a <classname>Handler</classname> and returns a...
-      <classname>String</classname> !</para>
+      <classname>String</classname> ! See <ulink url="http://codehaus01a.managed.contegix.com/browse/GEOT-1315">GEOT-1315</ulink>.</para>
       <para>The last method is also a utility method :</para>
       <programlisting format="linespecific"><![CDATA[	
       public Geometry transformGeometry(Geometry geometry, String sourceCRS, String targetCRS) throws SpatialIndexException {    
@@ -1560,9 +1560,10 @@
       }
       }						
       ]]></programlisting>	
-      <para>It implements a workaround for our test file SRS which isn't yet known by Geotools libraries,
+      <para>It implements a workaround for our test file SRS which isn't yet known by Geotools libraries (see
+      <ulink url="http://codehaus01a.managed.contegix.com/browse/GEOT-1307">GEOT-1307</ulink>),
       then it tries to get the transformation from our cache. If it doesn't succeed, it tries to find one
-      in the libraries that are in the CLASSPATH. Should those libraries lack the Brursa-Wolf parameters,
+      in the libraries that are in the CLASSPATH. Should those libraries lack the Bursa-Wolf parameters,
       it will make another attempt in lenient mode, which will induce a loss of accuracy. Then, it transforms
       the <classname>Geometry</classname> from its <parameter>sourceCRS</parameter> to the required
       <parameter>targetCRS</parameter>.</para>
@@ -3089,11 +3090,28 @@ return spatial:getArea($pol)
 	indexed integer values here would probably be interesting.</para>
 	<para>Having some better algorithms to prefilter the <classname>Geometry</classname>ies could probably help as well
 	and, more generally, everything a DB server could bring (caching for instance) should be considered.</para>
-	
-	<para>error margins</para>
-	<para>simplified geometries</para>	
-	<para>interfaces refactorings</para>
-	<para>GeometryTransformer</para>
+	<para>An other improvement would be to introduce some error margins for <classname>Geometry</classname>ies computation
+	or BBox ones. The <ulink url="http://www.vividsolutions.com/jts/jtshome.htm">Java Topology Suite</ulink>, widely used by Geotools, has all the ncessary material for this.</para>
+	<para>Another great improvement would be to compute and return simplified <classname>Geometry</classname>ies 
+	depending of a "hint". Applications might want to return simplified polygons and even points at wider scales. Depending on
+	the hint's value, passed in the function's parameters, the index could use the right DB fields in order to work on 
+	<emphasis>precomputed</emphasis> simpler entries.</para>
+	<para>This is how a hint configuration could look like :</para>	
+	<programlisting format="linespecific"><![CDATA[
+<gml flushAfter="200">
+  <!-- divide the number of vertices by 2 -->
+  <hint value="simplify1" method="simplify(2)"/>
+  <!-- divide the number of vertices by 4 -->
+  <hint value="simplify2" method="simplify(4)"/>
+  <!-- reduce to a point -->
+  <hint value="simplify3" method="point"/>  
+</gml>
+	]]></programlisting>
+	<para>We should also discuss with the other developers about the opportunity to have a <classname>org.exist.indexing.Index</classname>
+	interface in the modularized indexes hierarchy. The abstract class <classname>org.exist.indexing.AbstractIndex</classname>
+	provides some nice general-purpose methods and allows <emphasis>static</emphasis> members that are nearly mandatory like
+	<parameter>ID</parameter>. The like for <classname>org.exist.indexing.StreamListener</classname> versus
+	 <classname>org.exist.indexing.AbstractStreamListener</classname>.</para>
 
       </section> 
 
