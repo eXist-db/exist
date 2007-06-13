@@ -600,11 +600,32 @@
     <!-- Download additional files                                                    -->
     <!-- ============================================================================ -->
     <target name="download-additional-jars" description="Download optional third-party jar files.">
+    
+        <!-- International Components for Unicode -->
+        <!-- http://www.icu-project.org/          -->
         <get src="http://prdownloads.sourceforge.net/icu/icu4j-3_6.jar"
           dest="${lib.user}/icu4j-3_6.jar" verbose="true" />
           
+        <!-- Java Uuid Generator (JUG) -->
+        <!-- http://jug.safehaus.org   -->
         <get src="http://jug.safehaus.org/curr/jug-lgpl-2.0.0.jar"
           dest="${lib.user}/jug-lgpl-2.0.0.jar" verbose="true" />
+          
+        <!-- Saxon XSLT2 Processor                 -->
+        <!-- http://sourceforge.net/projects/saxon -->
+        <get src="http://prdownloads.sourceforge.net/saxon/saxonb8-9-0-3j.zip"
+          dest="${lib.endorsed}/saxon.zip" verbose="true" />
+          
+        <unzip src="${lib.endorsed}/saxon.zip" dest="${lib.endorsed}">
+            <patternset>
+                <include name="**/saxon8.jar"/>
+                <include name="**/saxon8-dom.jar"/>
+                <include name="**/saxon8-xpath.jar"/>
+            </patternset>
+        </unzip>
+        
+        <delete failonerror="no" file="${lib.endorsed}/saxon.zip"/>
+
     </target>
     
 </project>
