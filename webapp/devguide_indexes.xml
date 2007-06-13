@@ -419,7 +419,7 @@
 	have experienced a few problems that will be mentioned further, but since feedback has been provided,
 	the situation will unquestionably improve in the future, making current workarounds useless.</para>
 	<para>The <classname>Index</classname> has been tested with only one file which is available from the
-	<ulink url="">Ordnance Survey of Great-Britain</ulink>, a topography layer of Port-Talbot, which
+	<ulink url="http://www.ordnancesurvey.co.uk/oswebsite/">Ordnance Survey of Great-Britain</ulink>, a topography layer of Port-Talbot, which
 	is available as <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/products/osmastermap/layers/topography/sample.html">sample data</ulink>.
 	Shall we mention that obtaining <emphasis>valid</emphasis> and sizeable GML data is still extremely difficult ?
 	</para>
@@ -2392,8 +2392,8 @@
       <para>The functions are declared in the <classname>org.exist.xquery.modules.spatial.SpatialModule</classname> module
       which operates in the <parameter>http://exist-db.org/xquery/spatial</parameter> namespace (whose default prefix is
       <parameter>spatial</parameter>).</para>
-      <para>The functions signatures (are documented together with the functions themselves in 
-      <ulink url="http://demo.exist-db.org/xquery/functions.xq">this page</ulink>). Here we will only look at their <methodname>eval()</methodname> methods.</para>
+      <para>The functions signatures are documented together with the functions themselves in 
+      <ulink url="http://demo.exist-db.org/xquery/functions.xq">this page</ulink>. Here we will only look at their <methodname>eval()</methodname> methods.</para>
       <para>The first functions set we will describe is <classname>org.exist.xquery.modules.spatial.FunSpatialSearch</classname>,
       which performs searches on the spatial index:</para>
       <programlisting format="linespecific"><![CDATA[				
@@ -2613,7 +2613,7 @@
       <para>The design is very much the same : we build an early result if empty sequences are involved, we get a
       <classname>AbstractGMLJDBCIndex</classname>, then we set a <parameter>propertyName</parameter>, which is actually
       a SQL field name, depending on the function's name.</para>
-      <para>An attempt to retrieve the field content from the DB is made and, if unsucceessful, we try to get the
+      <para>An attempt to retrieve the field content from the DB is made and, if unsuccessful, we try to get the
       node's <classname>Geometry</classname> from the index.</para>
       <para>Then, if we still haven't got this <classname>Geometry</classname>, either because the node isn't indexed or
       because it is an in-memory node, we stream it to a <classname>Geometry</classname> and we transform this 
@@ -2860,6 +2860,196 @@
       <section>
 	<title>Playing with the spatial index</title>
 	<para></para>
+      	<para>Now that we have described the spatial index, it is time to play with it. Only a few of its features
+      	will be demonstrated, but we will explain again how it goes under the hood.</para>
+      	<para>The first step is to be sure to have the required libraries : they should be in 
+      	<filename>${EXIST_HOME}/extensions/indexes/spatial/lib</filename>. Most of them have a <filename>gt2-*.jar</filename> name.</para>
+      	<para>If you don't have them, do not worry. Proceed to the next step and apply the same solution.</para>
+      	<para>The next step is to be sure to have available extensions modules. They should be in a file <filename>${EXIST_HOME}/exist-modules.jar</filename>.</para> 
+      	<important>Beware of a legacy <filename>${EXIST_HOME}/exist-modules.jar</filename> file. It will obviously 
+      	<emphasis>not</emphasis> contain modularized indexes as its missing <classname>org.exist.indexing.*</classname>
+      	hierarchy would show. Once again, proceed to the next step if there is a problem.</important>
+      	<para>If something is wrong, execute <command>build extension-modules</command> from a command line.
+      	This should download the required libraries and build the extension modules including the modularized
+      	indexes.</para>
+      	<note>If you are behind a proxy, do not forget to set its settings in <filename>build.properties</filename>.</note>
+      	<para>We now have to enable the spatial index in <filename>conf.xml</filename> if it is not already done :</para>
+      <programlisting format="linespecific"><![CDATA[				
+        <modules>
+            <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
+	            file="ngram.dbx" n="3"/>            
+            <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
+				connectionTimeout="10000" flushAfter="300" />
+        </modules> 
+      ]]></programlisting>	
+      <para>and enable the spatial module :</para>
+      <programlisting format="linespecific"><![CDATA[				
+	<xquery enable-java-binding="no" enable-query-rewriting="no"  backwardCompatible="no">
+		<builtin-modules>
+			...
+			
+			<module class="org.exist.xquery.modules.spatial.SpatialModule"
+				uri="http://exist-db.org/xquery/spatial" />
+			
+			...
+				
+			<!-- Optional Modules -->
+			
+			...
+
+		</builtin-modules>
+	</xquery>				
+      ]]></programlisting>	 
+      <para>Our demonstration file is taken from the <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/">Ordnance Survey of Great-Britain's WWW site</ulink>          	
+      which offers <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/products/osmastermap/layers/topography/sample.html">sample data</ulink>.</para>
+      <para>We have chosen a topography layer of Port-Talbot, which is available as <ulink url="http://www.ordnancesurvey.co.uk/products/osmastermap/layers/topography/sampledata/2182-SS7886-2c1.gz">2182-SS7886-2c1.gz</ulink>.
+      Download this file, gunzip it, and give to the resulting file a <filename>.gml</filename> extension (we have chose <filename>port-talbot.gml</filename>) that will
+      allow eXist to reckognize it as an XML file.</para>
+      <note>If you have previously executed <command>build test</command>, the file should have been downloaded
+      and gunzipped for you in <filename>${EXIST_HOME}/extensions/indexes/spatial/test/resources</filename>.</note>
+      <para>Since this file refers to an OSGB-hosted schema, we will bypass validation in <filename>conf.xml</filename> :</para>
+      <programlisting format="linespecific"><![CDATA[		
+		<validation mode="no">
+      ]]></programlisting>
+      	<para>We are now ready to start the demonstration and we will use the interactive client for that.</para>
+      	<para>Let's start by creating a collection : File/Create a collection... name it, say, <filename>spatial</filename>.</para>
+      	<para>Then, we will configure this collection by creating a configuration collection.</para>
+      	<para>Let's navigate to <filename>system/config</filename></para>
+      	<para>If required, let's create a general configuration collection : File/Create a collection... name it <filename>db</filename> and get into it.</para>
+      	<para>Then let's create a configuration collection for <filename>/db/spatial</filename> : File/Create a collection... name it <filename>spatial</filename> and get into it.</para>
+      	<para>We are now in <filename>/db/system/config/db/spatial</filename>.</para>
+      	<para>Let's now create a configuration file for this collection : File/Create an empty document... name it
+      	<filename>collection.xconf</filename>.</para>
+      	<para>Double-click  on this document and let's replace its auto-generated content :</para>
+		<programlisting format="linespecific"><![CDATA[
+			<template/>
+		]]></programlisting>
+		<para>... by this one :</para>
+		<programlisting format="linespecific"><![CDATA[
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index>
+        <gml flushAfter="200"/>
+    </index>
+</collection>
+		]]></programlisting>
+		<para>Do not forget to save the document before closing the window.</para>
+		<para><filename>/db/system/config/db/spatial</filename> is now configured to index GML geometries when
+		they are uploaded (thanks to the <sgmltag>gml</sgmltag> element) ! It will flush the in-memory index entries
+		to the HSQLDB every 200 geometries and will wait at most 100 seconds, the default value, to establish
+		a connection to the HSQL db.</para>	
+		<para>Let's navigate to <filename>/db/spatial</filename>.</para>
+		<para>Let's upload <filename>port-talbot.gml</filename> : File/Upload files/directories...</para>
+		<para>On my computer, the operation on this 23.6 Mb file is performed in about 100 seconds, including
+		some default fulltext indexing. Let's close the upload window and quit the interactive client.</para>
+		<para>Let's look our our GML file looks like on GML Viewer, a free viewer provided by <ulink url="http://www.snowflakesoftware.co.uk/products/gmlviewer/index.htm">Snowflake software</ulink> :</para>
+		<screenshot><graphic fileref="resources/port-talbot.jpg"/></screenshot>
+		<para>Windows users might want to have a look at the spatial index HSQLDB, which is in <filename>${EXIST_HOME}/webapp/WEB-INF/data/spatial_index.*</filename>. 
+		There is a dedicated <filename>.bat</filename> file in <filename>${EXIST_HOME}/extensions/indexes/spatial/test</filename>
+		to launch HSQL's GUI client : <filename>hsql.bat</filename>.</para>
+		<note>A <filename>.sh</filename> file would be welcome</note>
+		<para>If the SQL command <command>SELECT * FROM SPATIAL_INDEX_V1;</command> is executed, the result window
+		shows that 21961 geometries have been indexed.</para>
+		<para>Let's get back to the interactive client and open the query window (the one we get when clicking on the binocular).</para>
+		<para>This query :</para>
+	<programlisting format="linespecific"><![CDATA[				
+declare namespace gml = "http://www.opengis.net/gml";
+spatial:transform(
+	<gml:Polygon srsName="osgb:BNG" xmlns:gml='http://www.opengis.net/gml'>
+		<gml:outerBoundaryIs><gml:LinearRing><gml:coordinates>
+			278200,187600 278400,187600 278400,188000 278200,188000 278200,187600
+		</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs>
+	</gml:Polygon>, 
+	"epsg:4326")	
+	]]></programlisting>
+		<para>... is processed in a little bit less than 2 seconds. That could seem high, but there is a cost for
+		the Geotools transformation factories initialization. Subsequent requests will be much faster, although
+		there will always be a small cost for the streaming of the in-memory node to a <classname>Geometry</classname>
+		object.</para>
+		<para>The result is :</para>
+	<programlisting format="linespecific"><![CDATA[				
+<gml:Polygon xmlns:gml="http://www.opengis.net/gml">
+    <gml:outerBoundaryIs>
+        <gml:LinearRing>
+            <gml:coordinates decimal="." cs="," ts=" ">-3.7578,51.5743 -3.7579,51.5779 -3.755,51.5779 -3.7549,51.5743 -3.7578,51.5743</gml:coordinates>
+        </gml:LinearRing>
+    </gml:outerBoundaryIs>
+</gml:Polygon>
+	]]></programlisting>
+	<note>Due to the current Geotools limitations, there is no <sgmltag class="attribute">srsName</sgmltag> attribute on <sgmltag>gml:Polygon</sgmltag> ! See above.</note>
+	<para>... but people might find more convenient to perform this query :</para>
+	<programlisting format="linespecific"><![CDATA[				
+declare namespace gml = "http://www.opengis.net/gml";
+spatial:getEPSG4326WKT(
+<gml:Polygon srsName="osgb:BNG" xmlns:gml='http://www.opengis.net/gml'>
+	<gml:outerBoundaryIs><gml:LinearRing><gml:coordinates>
+		278200,187600 278400,187600 278400,188000 278200,188000 278200,187600
+	</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs>
+</gml:Polygon>)	
+	]]></programlisting>
+		<para>... which returns : </para>
+	<programlisting format="linespecific"><![CDATA[				
+POLYGON ((-3.7577853800140995 51.57430250509819, -3.7579241102503356 
+51.57789774692169, -3.7550389942943365 51.57794093512567, -3.754900491457913 51.57434568777196, 
+-3.7577853800140995 51.57430250509819)
+	]]></programlisting>
+	<para>So, 3 degrees West, 51 deegrees North... we must be indeed northern of Brittany, i.e. in south-western Great-Britain.</para>
+	<para>Let's see how our polygon looks like :</para>		
+	<screenshot><graphic fileref="resources/rectangle.jpg"/></screenshot>
+	<para>Let's now do something useful :</para>
+	<programlisting format="linespecific"><![CDATA[				
+declare namespace gml = "http://www.opengis.net/gml";
+spatial:intersects(//gml:Polygon,
+	<gml:Polygon srsName="osgb:BNG" xmlns:gml='http://www.opengis.net/gml'>
+		<gml:outerBoundaryIs><gml:LinearRing><gml:coordinates>
+			278200,187600 278400,187600 278400,188000 278200,188000 278200,187600
+		</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs>
+	</gml:Polygon>
+)	
+	]]></programlisting>
+	<para>This query returns 756 <sgmltag>gml:Polygon</sgmltag> in about 15 seconds. But, once more, there is a
+	cost for initializations, in particular the first connection to the HSQLDB because the index will obviously be used. 
+	A subsequent call returns in just about 450 ms and, to discard eXist's cache's performance, a slighly modified query :</para>
+	<programlisting format="linespecific"><![CDATA[
+declare namespace gml = "http://www.opengis.net/gml";
+spatial:intersects(//gml:Polygon,
+	<gml:Polygon srsName="osgb:BNG" xmlns:gml='http://www.opengis.net/gml'>
+		<gml:outerBoundaryIs><gml:LinearRing><gml:coordinates>
+			278201,187600 278401,187600 278401,188000 278201,188000 278201,187600
+		</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs>
+	</gml:Polygon>
+)
+	]]></programlisting>
+	<para>... retuns 755 <sgmltag>gml:Polygon</sgmltag> (one less) in just about 470 ms.</para>
+	<para>Let's see how the result of our first intersection query looks like :</para>
+	<screenshot><graphic fileref="resources/intersection.jpg"/></screenshot>
+	<para>Let's try another one :</para>
+	<programlisting format="linespecific"><![CDATA[
+declare namespace gml = "http://www.opengis.net/gml";
+spatial:within(//gml:Polygon,
+	<gml:Polygon srsName="osgb:BNG" xmlns:gml='http://www.opengis.net/gml'>
+		<gml:outerBoundaryIs><gml:LinearRing><gml:coordinates>
+			278200,187600 278400,187600 278400,188000 278200,188000 278200,187600
+		</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs>
+	</gml:Polygon>
+)	
+	]]></programlisting>	
+	<para>It returns 598 <sgmltag>gml:Polygon</sgmltag> in just a little bit more than 400 ms. Here is how they look like :</para> 
+	<screenshot><graphic fileref="resources/within.jpg"/></screenshot>
+	<para>The last query of this demonstration is just to demonstrate some interesting capabilities of the spatial functions :</para>
+	<programlisting format="linespecific"><![CDATA[
+declare namespace gml = "http://www.opengis.net/gml";
+spatial:buffer(
+	<gml:Polygon srsName="osgb:BNG" xmlns:gml='http://www.opengis.net/gml'>
+		<gml:outerBoundaryIs><gml:LinearRing><gml:coordinates>
+			278200,187600 278400,187600 278400,188000 278200,188000 278200,187600
+		</gml:coordinates></gml:LinearRing></gml:outerBoundaryIs>
+	</gml:Polygon>,
+	500
+)
+	]]></programlisting>
+	<para>See how nice are the (not so) rounded corners of our 500 metres buffer over Port-Talbot :</para> 	
+	<screenshot><graphic fileref="resources/buffer.jpg"/></screenshot>
+	
       </section>
       
       <section>
