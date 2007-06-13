@@ -3058,10 +3058,43 @@ spatial:buffer(
       
       <section>
 	<title>Facts and thoughts</title>
-	<para></para>
-	<programlisting format="linespecific"><![CDATA[				
-	
+	<para>As of june 2007, the spatial index behaves like expected. It provides an interesting set of functionalities 
+	and its performance is satisfactory given the lightweight, non spatially-enabled, database engine that stores
+	the <classname>Geometry</classname> objects and their properties. The objective was to return below the second ; we're there.</para>
+	<para>However, I already can see some possible improvements.</para>
+	<para>The first one is to plug the <methodname>getGeometriesForNodes()</methodname> and 
+	<methodname>getGeometricPropertyForNodes()</methodname> (in <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker</classname>).</para>
+	<para>Indeed, a query like this one on our test file :</para>
+	<programlisting format="linespecific"><![CDATA[
+declare namespace gml = "http://www.opengis.net/gml";
+for $pol in //gml:Polygon
+return spatial:getArea($pol)
 	]]></programlisting>
+	<para>... returns 5339 items through as many calls to the DB in... 51 seconds on an initialized index ! 
+	Intercepting the <parameter>SINGLE_STEP_EXECUTION</parameter> flag when the expression is analyzed would allow 
+	to call the 2 above methods rather than their "individual" counterparts, namely <methodname>getGeometryForNode()</methodname> 
+	and <methodname>getGeometricPropertyForNode()</methodname>. I think the performance improvement would be
+	interesting.</para>.	
+	<para>The second improvement would be to refine the queries on the HSQLDB. Currently, <methodname>search()</methodname>
+	(in <classname>org.exist.indexing.spatial.GMLHSQLIndexWorker</classname>) filters the records on the BBox of the
+	searched <classname>Geometry</classname>.
+	It would also be nice to refine the query on the context nodes and, in particular, on their involved collections and/or documents.</para>
+	<para>However, we have to be aware that writing such a SQL statement and passing it to the DB server might become
+	counter-productive. The idea is then to define some (configurable) threshold values that would refine the query
+	on, say, 10 documents, and if there are more than 10 documents on, say, 15 collections.</para>
+	<para>It would be quite easy to determine those threshold values above which writing a long SQL statement and
+	passing it to the DB server takes more time than filtering the fectched data.</para>
+	<para>We might also consider the field in which the document's URI is stored (<parameter>DOCUMENT_URI</parameter>)
+	and possibly split it in 2 fields, one for the collection and the second one for the document. Of course, having
+	indexed integer values here would probably be interesting.</para>
+	<para>Having some better algorithms to prefilter the <classname>Geometry</classname>ies could probably help as well
+	and, more generally, everything a DB server could bring (caching for instance) should be considered.</para>
+	
+	<para>error margins</para>
+	<para>simplified geometries</para>	
+	<para>interfaces refactorings</para>
+	<para>GeometryTransformer</para>
+
       </section> 
 
     </section>
