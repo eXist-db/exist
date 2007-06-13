@@ -2861,6 +2861,7 @@ if (isCalledAs("getEPSG4326WKT")) {
       transformation of the second <classname>Geometry</classname> if relevant.</para>
       <para>The final process streams the resulting <classname>Geometry</classname> as the result, in the SRS specified
       by the relevant argument or in the SRS of the first <classname>Geometry</classname>, depending on the function's name.</para>
+     </section>
       
       <section>
 	<title>Playing with the spatial index</title>
@@ -3115,7 +3116,6 @@ return spatial:getArea($pol)
 
       </section> 
 
-    </section>
   </section>
 </chapter>
 </book>
