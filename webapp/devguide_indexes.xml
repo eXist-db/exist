@@ -2941,7 +2941,7 @@
       </index>
       </collection>
       ]]></programlisting>
-      <note>! Do not forget to save the document before closing the window.</note>
+      <note>Do not forget to save the document before closing the window.</note>
       <para>The <filename>/db/system/config/db/spatial</filename> collection is now configured to index GML geometries when they are uploaded. The in-memory index entries will be flushed 
       to the HSQLDB every 200 geometries and will wait at most 100 seconds, the default value, to establish
       a connection to the HSQL db.</para>	
