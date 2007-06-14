@@ -1120,11 +1120,11 @@
       
       public GMLIndexConfig(Map namespaces, Element node) throws DatabaseConfigurationException {       
       String param = ((Element)node).getAttribute(FLUSH_AFTER);
-      if (param != null) {
+      if (param != null && !"".equals(param)) {) {
       try {
       flushAfter = Integer.parseInt(param);
       } catch (NumberFormatException e) {
-      LOG.error("Invalid value for '" + FLUSH_AFTER + "'", e);
+      LOG.info("Invalid value for '" + FLUSH_AFTER + "'", e);
       }
       }	    	
       }
@@ -2920,7 +2920,7 @@
       <programlisting format="linespecific"><![CDATA[		
       <validation mode="no">
       ]]></programlisting>
-      <para>We are now ready to start the demonstration and we will use the interactive client for that. Run either <filename>${EXIST_HOME}/bin/client.bat</filename> or <filename>${EXIST_HOME}/bin/client.sh</filename> from the command line. (Please read elsewhere if you do not know how to start it.)</para>
+      <para>We are now ready to start the demonstration and we will use the interactive client for that. Run either <filename>${EXIST_HOME}/bin/client.bat</filename> or <filename>${EXIST_HOME}/bin/client.sh</filename> from the command line (please read elsewhere if you do not know how to start it).</para>
       <para>Let's start by creating a collection named <filename>spatial</filename> in the <filename>/db</filename> collection. The menus might be localised, but in english it is <command>File/Create a collection...</command>.</para>
       <para>Then, we will configure this collection by creating a configuration collection.</para>
       <para>Let's navigate to <filename>/db/system/config</filename></para>
@@ -3079,10 +3079,13 @@ return spatial:getArea($pol)
 	<para>A second improvement could be to refine the queries on the HSQLDB. Currently, <methodname>search()</methodname>
 	(in <classname>org.exist.indexing.spatial.GMLHSQLIndexWorker</classname>) filters the records on the BBox of the
 	searched <classname>Geometry</classname>.
-	It would also be nice to refine the query on the context nodes and, in particular, on their involved collections and/or documents.</para>
+	It would also be nice to refine the query on the context nodes and, in particular, on their involved collections 
+	and/or documents. The like applies for the HSQL implementation of <methodname>getGeometryForNode()</methodname> 
+	and <methodname>getGeometricPropertyForNode()</methodname> too.</para>
 	<para>However, we have to be aware that writing such a SQL statement and passing it to the DB server might become
 	counter-productive. The idea is then to define some (configurable) threshold values that would refine the query
-	on, say, 10 documents, and if there are more than 10 documents in, say, 15 collections.</para>
+	on the documents if there are fewer than, say, 10 documents in the context nodeset, and if there are more than 
+	10 documents in it,	but less than, say, 15 collections, refine the query on the collection.</para>
 	<para>It would be quite easy to determine those threshold values above which writing a long SQL statement and
 	passing it to the DB server takes more time than filtering the fectched data.</para>
 	<para>We might also consider the field in which the document's URI is stored (<parameter>DOCUMENT_URI</parameter>)
@@ -3090,12 +3093,13 @@ return spatial:getArea($pol)
 	indexed integer values here would probably be interesting.</para>
 	<para>Having some better algorithms to prefilter the <classname>Geometry</classname>ies could probably help as well
 	and, more generally, everything a DB server could bring (caching for instance) should be considered.</para>
-	<para>An other improvement would be to introduce some error margins for <classname>Geometry</classname>ies computation
-	or BBox ones. The <ulink url="http://www.vividsolutions.com/jts/jtshome.htm">Java Topology Suite</ulink>, widely used by Geotools, has all the ncessary material for this.</para>
+	<para>An other improvement would be to introduce some error margins for <classname>Geometry</classname>ies computations
+	or BBox ones. The <ulink url="http://www.vividsolutions.com/jts/jtshome.htm">Java Topology Suite</ulink>, widely
+	used by Geotools, has all the necessary material for this.</para>
 	<para>Another interesting improvement would be to compute and return simplified <classname>Geometry</classname>ies 
 	depending of a "hint". Applications might want to return simplified polygons and even points at wider scales. Depending on
 	the hint's value, passed in the function's parameters, the index could use the right DB fields in order to work on 
-	<emphasis>precomputed</emphasis> simpler entries.</para>
+	<emphasis>precomputed</emphasis> simpler (or, more generally, different) entries.</para>
 	<para>This is how a hint configuration could look like :</para>	
 	<programlisting format="linespecific"><![CDATA[
 <gml flushAfter="200">
@@ -3109,14 +3113,18 @@ return spatial:getArea($pol)
 	]]></programlisting>
 	<para>We should also discuss with the other developers about the opportunity to have a <classname>org.exist.indexing.Index</classname>
 	interface in the modularized indexes hierarchy. The abstract class <classname>org.exist.indexing.AbstractIndex</classname>
-	provides some nice general-purpose methods and allows <emphasis>static</emphasis> members that are nearly mandatory like
-	<parameter>ID</parameter>. The like for <classname>org.exist.indexing.StreamListener</classname> versus
-	 <classname>org.exist.indexing.AbstractStreamListener</classname>.</para>
-	 <para>More tests should also be driven. The spatial index has only be tested on one file until now. It might be
-	 interesting to see how it behaves with unusual geometries like rectangles, multi-geometries and collections. It
-	 might also be interesting to know more about the error margin when geometries in different SRSes are involved
-    in function of the accuracy of the referencing libraries available in the CLASSPATH.</para>
-
+	provides some nice general-purpose methods and allows <emphasis>static</emphasis> members that are nearly 
+	mandatory (like <parameter>ID</parameter>). The like for <classname>org.exist.indexing.StreamListener</classname> 
+	versus <classname>org.exist.indexing.AbstractStreamListener</classname>.</para>
+	 <para>More tests should also be driven. The spatial index has only be tested on one file until now although this
+	 file is sizeable. It might be interesting to see how it behaves with unusual geometries like rectangles, 
+	 multi-geometries and collections. It might also be interesting to know more about the error margin when 
+	 geometries in different SRSes are involved. The accuracy of the referencing libraries available in the 
+	 CLASSPATH would play an important role here.</para>
+	 <para>As always, the code could be written in a more efficient way. There are probably too many <programlisting format="linespecific"><![CDATA[
+	if (...) ... else if(...) ... else ...
+	]]></programlisting> constructs in the code for instance. Also, we will have to follow Geotools progress to get
+	rid of some of the more or less elegant workarounds we've had to implement.</para>
       </section> 
 
   </section>
