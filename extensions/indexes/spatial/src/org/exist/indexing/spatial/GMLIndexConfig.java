@@ -40,11 +40,11 @@ public class GMLIndexConfig {
 	
 	public GMLIndexConfig(Map namespaces, Element node) throws DatabaseConfigurationException {       
     	String param = ((Element)node).getAttribute(FLUSH_AFTER);
-        if (param != null) {
+        if (param != null && !"".equals(param)) {
         	try {
         		flushAfter = Integer.parseInt(param);
         	} catch (NumberFormatException e) {
-        		LOG.error("Invalid value for '" + FLUSH_AFTER + "'", e);
+        		LOG.info("Invalid value for '" + FLUSH_AFTER + "'", e);
         	}
         }	    	
     }
