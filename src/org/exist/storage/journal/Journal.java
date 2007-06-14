@@ -158,8 +158,14 @@ public class Journal {
         String logDir = (String) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_JOURNAL_DIR);
         if (logDir != null) {
             File f = new File(logDir);
-            if (!f.isAbsolute())
-                f = new File(pool.getConfiguration().getExistHome(), logDir);
+            if (!f.isAbsolute()) {
+               if (pool.getConfiguration().getExistHome()==null) {
+                  f = new File(pool.getConfiguration().getExistHome(), logDir);
+               } else if (pool.getConfiguration().getConfigFilePath()!=null) {
+                  File confFile = new File(pool.getConfiguration().getConfigFilePath());
+                  f = new File(confFile.getParent(), logDir);
+               }
+            }
             if (!f.exists()) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Output directory for journal files does not exist. Creating " + f.getAbsolutePath());
