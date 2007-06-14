@@ -2951,9 +2951,9 @@
       some default fulltext indexing. Let's close the upload window and quit the interactive client.</para>
       <para>Let's look our our GML file looks like on GML Viewer, a free viewer provided by <ulink url="http://www.snowflakesoftware.co.uk/products/gmlviewer/index.htm">Snowflake software</ulink> :</para>
       <screenshot><graphic fileref="resources/port-talbot.jpg"/></screenshot>
-      <para>Windows users might want to have a look at the spatial index HSQLDB, which, if you are using the default data-dir, is in <filename>${EXIST_HOME}/webapp/WEB-INF/data/spatial_index.*</filename>. 
-      There is a dedicated <filename>.bat</filename> file in <filename>${EXIST_HOME}/extensions/indexes/spatial/</filename>
-      to launch HSQL's GUI client: <filename>hsql.bat</filename>.</para>
+      <para>If you want to have a look at the spatial index HSQLDB, which, if you are using the default data-dir, is in <filename>${EXIST_HOME}/webapp/WEB-INF/data/spatial_index.*</filename>. 
+      There is a dedicated script file in <filename>${EXIST_HOME}/extensions/indexes/spatial/</filename>
+      to launch HSQL's GUI client: Use either <filename>hsql.bat</filename> or <filename>hsql.sh [data-dir]</filename> (you only need to supply data-dir if it is not the default one).</para>
       <note><para>A <filename>.sh</filename> file would be welcome</para></note>
       <para>If the SQL command <command>SELECT * FROM SPATIAL_INDEX_V1;</command> is executed, the result window
       shows that 21961 geometries have been indexed.</para>
