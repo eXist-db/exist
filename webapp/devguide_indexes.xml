@@ -2875,7 +2875,7 @@
       <para>The final check is to make sure you have up-to-date extensions modules. They should be contained in <filename>${EXIST_HOME}/exist-modules.jar</filename>.</para> 
       <important><para>Beware of any legacy <filename>${EXIST_HOME}/exist-modules.jar</filename> file with a creation date before June 2007. It will <emphasis>not</emphasis> contain the needed modularized indexes since it is missing the <classname>org.exist.indexing.*</classname>
       package hierarchy. Please, proceed to the next step if this is the case.</para></important>
-      <para>If any of the checks above turn out negative, execute either <command>build.bat extension-modules</command> or <command>build.sh extension-modules</command> from a command line.
+      <para>If all of the checks above turn out negative, execute either <command>build.bat extension-modules</command> or <command>build.sh extension-modules</command> from a command line.
       This should download the required libraries and build the extension modules including the modularized
       indexes.</para>
       <note><para>If you are behind a proxy, do not forget to set its settings in <filename>${EXIST_HOME}/build.properties</filename>.</para></note>
@@ -2912,7 +2912,7 @@
       which offers <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/products/osmastermap/layers/topography/sample.html">sample data</ulink>.</para>
       <para>The chosen topography layer is of Port-Talbot, which is available as <ulink url="http://www.ordnancesurvey.co.uk/products/osmastermap/layers/topography/sampledata/2182-SS7886-2c1.gz">2182-SS7886-2c1.gz</ulink>.
       Download this file, gunzip it, and give to the resulting file a <filename>.gml</filename> extension (<filename>port-talbot.gml</filename>) this will
-      allow eXist to reckognize it as a XML file.</para>
+      allow eXist to reckognize it as an XML file.</para>
       <note><para>If you have previously executed <command>build test</command>, the file should have been downloaded
       and gunzipped for you in <filename>${EXIST_HOME}/extensions/indexes/spatial/test/resources</filename>.</para></note>
       <para>Since this file refers to an OSGB-hosted schema, we will need to bypass validation in <filename>${EXIST_HOME}/conf.xml</filename>.</para>
@@ -2941,7 +2941,7 @@
       </index>
       </collection>
       ]]></programlisting>
-      <para>NB! Do not forget to save the document before closing the window.</para>
+      <note>! Do not forget to save the document before closing the window.</note>
       <para>The <filename>/db/system/config/db/spatial</filename> collection is now configured to index GML geometries when they are uploaded. The in-memory index entries will be flushed 
       to the HSQLDB every 200 geometries and will wait at most 100 seconds, the default value, to establish
       a connection to the HSQL db.</para>	
@@ -3013,7 +3013,7 @@
       )	
       ]]></programlisting>
       <para>This query returns 756 <sgmltag>gml:Polygon</sgmltag>s in about 15 seconds.
-      A subsequent call returns in just about 450 ms, not having the cost for initializations (in particular the first connection to the HSQLDB). A slighly modified query, in order to show the performance without utilising eXist's performant cache's:</para>
+      A subsequent call returns in just about 450 ms, not having the cost for initializations (in particular the first connection to the HSQLDB). A slighly modified query, in order to show the performance without utilising eXist's performant cache :</para>
       <programlisting format="linespecific"><![CDATA[
       declare namespace gml = "http://www.opengis.net/gml";
       spatial:intersects(//gml:Polygon,
@@ -3027,7 +3027,7 @@
       <para>... retuns 755 <sgmltag>gml:Polygon</sgmltag> (one less) in just about 470 ms.</para>
       <para>The result of our first intersection query looks like this:</para>
       <screenshot><graphic fileref="resources/intersection.jpg"/></screenshot>
-      <para>Let's try another type of <sgmltag>gml:Polygon</sgmltag>:</para>
+      <para>Let's try another type of spatial query :</para>
       <programlisting format="linespecific"><![CDATA[
       declare namespace gml = "http://www.opengis.net/gml";
       spatial:within(//gml:Polygon,
