@@ -318,7 +318,7 @@ public class Predicate extends PathExpr {
 		/* if the predicate expression returns results from the cache
 		 * we can also return the cached result. 
 		 */
-		if(cached != null && cached.isValid(contextSequence) && nodes.isCached()) {
+		if(cached != null && cached.isValid(contextSequence, null) && nodes.isCached()) {
 			LOG.debug("Using cached results");
             if (context.getProfiler().isEnabled())                     
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
@@ -353,7 +353,7 @@ public class Predicate extends PathExpr {
 		}
         
 		if (contextSequence instanceof NodeSet)
-			cached = new CachedResult((NodeSet)contextSequence, result);
+			cached = new CachedResult((NodeSet)contextSequence, null, result);
         
 		return result;
 	}

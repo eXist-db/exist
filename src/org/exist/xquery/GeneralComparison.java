@@ -314,9 +314,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
 
         Sequence result;
-
+        
         // if the context sequence hasn't changed we can return a cached result
-		if (cached != null && cached.isValid(contextSequence)) {
+		if (cached != null && cached.isValid(contextSequence, contextItem)) {
 			LOG.debug("Using cached results");
             if(context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Returned cached result");
@@ -369,7 +369,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		    	!Dependency.dependsOnVar(getRight());
 
 		    if(canCache)
-				cached = new CachedResult((NodeSet)contextSequence, result);
+				cached = new CachedResult((NodeSet)contextSequence, contextItem, result);
 
 		}
 		

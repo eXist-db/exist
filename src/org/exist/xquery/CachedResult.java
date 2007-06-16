@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.NodeSet;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
@@ -37,11 +38,13 @@ public class CachedResult {
 
 	final protected Sequence cachedResult;
 	final protected Sequence cachedContext;
+	final protected Item cachedItem;	
 	final protected int timestamp;
 	
-	public CachedResult(NodeSet context, Sequence result) {
+	public CachedResult(NodeSet context, Item contextItem, Sequence result) {
 		this.cachedContext = context;
 		this.cachedResult = result;
+		this.cachedItem = contextItem;
 		this.timestamp = context.getState();
 	}
 	
@@ -49,11 +52,11 @@ public class CachedResult {
 		return cachedResult;
 	}
 	
-	public boolean isValid(Sequence context) {
+	public boolean isValid(Sequence context, Item contextItem) {
         if (context == null)
             return false;
 		if(Type.subTypeOf(context.getItemType(), Type.NODE) &&
-			cachedContext == context) {
+			cachedContext == context && cachedItem == contextItem) {
 			if(((NodeSet)context).hasChanged(timestamp)) {
 				return false;
 			} else {
