@@ -266,6 +266,7 @@ public class XPathQueryTest extends XMLTestCase {
             
             queryAndAssert(service, "let $a := ('a', 'b', 'c') return $a[2 to 2]", 1, null);
             queryAndAssert(service, "let $a := ('a', 'b', 'c') return $a[(2 to 2)]", 1, null);
+            queryAndAssert(service, "let $x := <a min='1' max='10'/> return ($x/@min to $x/@max)", 10, null);
             queryAndAssert(service, "(1,2,3)[xs:decimal(.)]", 3, null);
             queryAndAssert(service, "(1,2,3)[. lt 3]", 2, null);
             queryAndAssert(service, "(0, 1, 2)[if(. eq 1) then 0 else position()]", 2, null);
@@ -979,6 +980,14 @@ public class XPathQueryTest extends XMLTestCase {
             result = queryResource(service, "numbers.xml", query, 1);
             assertXMLEqual("<a b=\"c\" d=\"e\"/>", result.getResource(0)
                     .getContent().toString());
+            
+            query = "let $x := <a><b><x/><x/></b><b><x/></b></a>" +
+            	"return $x//b[count(x) = 2]";
+            result = queryResource(service, "numbers.xml", query, 1);
+            assertXMLEqual("<b><x/><x/></b>", result.getResource(0)
+            		.getContent().toString());
+
+            
             
             //Boolean evaluation for "." (atomic sequence)
             query = "(1,2,3)[xs:decimal(.)]";

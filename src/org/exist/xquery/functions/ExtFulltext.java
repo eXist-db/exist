@@ -206,7 +206,7 @@ public class ExtFulltext extends Function implements Optimizable {
 			boolean canCache = 
                 !Dependency.dependsOn(searchTerm, Dependency.CONTEXT_ITEM) &&
                 !Dependency.dependsOnVar(searchTerm);
-			if(	canCache && cached != null && cached.isValid(contextSequence)) {
+			if(	canCache && cached != null && cached.isValid(contextSequence, contextItem)) {
 				return cached.getResult();
 			}
             // do we optimize this expression?
@@ -225,7 +225,7 @@ public class ExtFulltext extends Function implements Optimizable {
                 result = path.eval(contextSequence).toNodeSet();
             }
             if(canCache && contextSequence instanceof NodeSet)
-				cached = new CachedResult((NodeSet)contextSequence, result);
+				cached = new CachedResult((NodeSet)contextSequence, contextItem, result);
 			
 		// otherwise we have to walk through each item in the context
 		} else {

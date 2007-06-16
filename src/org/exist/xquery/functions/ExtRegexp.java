@@ -189,7 +189,7 @@ public class ExtRegexp extends Function implements Optimizable {
 		if (path == null || !Dependency.dependsOn(path, Dependency.CONTEXT_ITEM)) {
 			boolean canCache =
                 (getTermDependencies() & Dependency.CONTEXT_ITEM) == Dependency.NO_DEPENDENCY;
-            if(	canCache && cached != null && cached.isValid(contextSequence)) {
+            if(	canCache && cached != null && cached.isValid(contextSequence, contextItem)) {
 				return cached.getResult();
 			}
             // do we optimize this expression?
@@ -208,7 +208,7 @@ public class ExtRegexp extends Function implements Optimizable {
                 result = path.eval(contextSequence).toNodeSet();
             }
             if(canCache && contextSequence instanceof NodeSet)
-				cached = new CachedResult((NodeSet)contextSequence, result);
+				cached = new CachedResult((NodeSet)contextSequence, contextItem, result);
 
 		// otherwise we have to walk through each item in the context
 		} else {

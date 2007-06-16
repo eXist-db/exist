@@ -241,7 +241,7 @@ public class LocationStep extends Step {
          * result nodeset is *really* null result = NodeSet.EMPTY_SET; //Try to
          * return cached results else
          */
-        if (cached != null && cached.isValid(contextSequence)) {
+        if (cached != null && cached.isValid(contextSequence, contextItem)) {
 	    
             // WARNING : commented since predicates are *also* applied below !
             // -pb
@@ -316,7 +316,7 @@ public class LocationStep extends Step {
         // Caches the result
         if (contextSequence instanceof NodeSet) {
             // TODO : cache *after* removing duplicates ? -pb
-            cached = new CachedResult((NodeSet) contextSequence, result);
+            cached = new CachedResult((NodeSet) contextSequence, contextItem, result);
             registerUpdateListener();
         }
         // Remove duplicate nodes
