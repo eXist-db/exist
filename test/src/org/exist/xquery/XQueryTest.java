@@ -2078,7 +2078,7 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
-    public void bugtestOrderCompareAtomicType_1733265(){
+    public void testOrderCompareAtomicType_1733265(){
         
         try {
             String query="( ) = \"A\"";

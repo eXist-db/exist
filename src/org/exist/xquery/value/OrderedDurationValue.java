@@ -18,6 +18,8 @@ abstract class OrderedDurationValue extends DurationValue {
 	}
 
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+		if (other.isEmpty())
+			return false;
 		int r = compareTo(collator, other);	
 		if (operator != Constants.EQ && operator != Constants.NEQ){
 			if (getType() == Type.DURATION)
@@ -52,6 +54,8 @@ abstract class OrderedDurationValue extends DurationValue {
 	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+		if (other.isEmpty())
+			return Constants.INFERIOR;
 		if (Type.subTypeOf(other.getType(), Type.DURATION)) {
 			//Take care : this method doesn't seem to take ms into account 
 			int r = duration.compare(((DurationValue) other).duration);
