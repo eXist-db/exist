@@ -1622,6 +1622,21 @@ public class XQueryTest extends XMLTestCase {
         }
     }    
 
+    public void bugtestInstanceOf() {
+    	try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
+	
+	        String query = "let $doc := document { <element/> } " +
+	        	"return $doc/root() instance of document-node()";
+	        ResourceSet result = service.query(query);              
+	        assertEquals( "XQuery: " + query, "true", result.getResource(0).getContent().toString());
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }        
+    
     public void testLargeAttributeSimple() {
         ResourceSet result;
         String query;

@@ -602,6 +602,9 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public int getType() {
     switch (nodeType) {
 	case Node.ELEMENT_NODE :
+		//TODO : return Type.DOCUMENT for somein-memory nodes :
+		//http://sourceforge.net/tracker/index.php?func=detail&aid=1730690&group_id=17691&atid=117691
+		//Ideally compute this when proxy is constructed
 	    return Type.ELEMENT;
 	case Node.ATTRIBUTE_NODE :
 	    return Type.ATTRIBUTE;
