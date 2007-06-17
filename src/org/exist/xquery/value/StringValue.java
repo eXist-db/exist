@@ -259,6 +259,8 @@ public class StringValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+		if (other.isEmpty())
+			return false;
 		//A value of type xs:anyURI (or any type derived by restriction from xs:anyURI) 
 		//can be promoted to the type xs:string. 
 		//The result of this promotion is created by casting the original value to the type xs:string.
