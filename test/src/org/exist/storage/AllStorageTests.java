@@ -21,37 +21,32 @@
  */
 package org.exist.storage;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        ReindexTest.class,
+        ShutdownTest.class,
+        CollectionTest.class,
+        CopyResourceTest.class,
+        MoveResourceTest.class,
+        CopyCollectionTest.class,
+        RecoverBinaryTest.class,
+        RecoverBinaryTest2.class,
+        RecoveryTest.class,
+        RemoveCollectionTest.class,
+        AppendTest.class,
+        RemoveTest.class,
+        RenameTest.class,
+        ReplaceTest.class,
+        UpdateTest.class,
+        UpdateAttributeTest.class,
+        UpdateRecoverTest.class,
+        ResourceTest.class
+})
 public class AllStorageTests {
 
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite("Test for org.exist.storage");
-        //$JUnit-BEGIN$
-        // TODO: some problem here... uncommenting next test causes a db corruption
-        suite.addTestSuite(ShutdownTest.class);
-        suite.addTestSuite(CollectionTest.class);
-        suite.addTestSuite(CopyResourceTest.class);
-        suite.addTestSuite(MoveResourceTest.class);
-        suite.addTestSuite(CopyCollectionTest.class);
-        suite.addTestSuite(RecoverBinaryTest.class);
-        suite.addTestSuite(RecoverBinaryTest2.class);
-        suite.addTestSuite(RecoveryTest.class);
-        suite.addTestSuite(RemoveCollectionTest.class);
-        suite.addTestSuite(AppendTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(RenameTest.class);
-        suite.addTestSuite(ReplaceTest.class);
-        suite.addTestSuite(UpdateTest.class);
-        suite.addTestSuite(UpdateAttributeTest.class);
-        suite.addTestSuite(UpdateRecoverTest.class);
-        suite.addTestSuite(ResourceTest.class);
-        //$JUnit-END$
-        return suite;
     }
 }

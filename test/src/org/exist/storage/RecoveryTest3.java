@@ -60,7 +60,7 @@ public class RecoveryTest3 extends TestCase {
     
     private final static int RESOURCE_COUNT = 5000;
     
-    private static String directory = "/home/wolf/xml/movies";
+    private static String directory = "/media/Shared/XML/movies";
     
     private static File dir = new File(directory);
     
