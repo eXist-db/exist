@@ -21,10 +21,7 @@
  */
 package org.exist.storage;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -163,7 +160,7 @@ public class RecoverBinaryTest2 extends TestCase {
         }
     }
     
-    private void storeFiles(DBBroker broker, Txn transaction, Collection test2) throws FileNotFoundException, EXistException, PermissionDeniedException, LockException, TriggerException {
+    private void storeFiles(DBBroker broker, Txn transaction, Collection test2) throws IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
         
         // Get absolute path
         File dir = new File(ConfigurationHelper.getExistHome(), directory);
@@ -186,6 +183,7 @@ public class RecoverBinaryTest2 extends TestCase {
                         test2.addBinaryResource(transaction, broker, uri, is, MimeType.BINARY_TYPE.getName(), 
                                 (int) f.length(), new Date(), new Date());
                     assertNotNull(doc);
+                    is.close();
                 }
             }
         }
