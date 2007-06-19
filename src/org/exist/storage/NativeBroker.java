@@ -1492,7 +1492,7 @@ public class NativeBroker extends DBBroker {
         LOG.debug("Reindexing collection " + collection.getURI());
         
         if (mode == NodeProcessor.MODE_STORE)
-            dropCollectionIndex(collection);
+            dropCollectionIndex(transaction, collection);
         for(Iterator i = collection.iterator(this); i.hasNext(); ) {
             DocumentImpl next = (DocumentImpl)i.next();
             reindexXMLResource(transaction, next, mode);
@@ -1509,7 +1509,7 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    public void dropCollectionIndex(Collection collection) throws PermissionDeniedException {
+    public void dropCollectionIndex(final Txn transaction, Collection collection) throws PermissionDeniedException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         if (!collection.getPermissions().validate(user, Permission.WRITE))
@@ -1528,7 +1528,7 @@ public class NativeBroker extends DBBroker {
                         Value ref = new NodeRef(doc.getDocId());
                         IndexQuery query =
                             new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-                        domDb.remove(query, null);
+                        domDb.remove(transaction, query, null);
                         domDb.flush();
                     } catch (BTreeException e) {
                         LOG.warn("btree error while removing document", e);
