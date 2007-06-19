@@ -508,14 +508,14 @@
         <delete dir="${junit.reports}/pmd"/>
         <delete dir="${junit.reports}/jdepend"/>
         <delete dir="${junit.reports}/classes"/>
-        <!--delete dir="${junit.reports}"/-->
         
-        <delete dir="${src.webapp}/api"/>
+        <!-- valuable data? -->
         <delete dir="${src.webapp}/WEB-INF/data/backup"/>
         <delete dir="${src.webapp}/WEB-INF/data/journal"/>
         <delete>
             <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*" excludes=".DO_NOT_DELETE" />
         </delete>
+        
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
         <delete failonerror="no" file="exist.jar"/>
@@ -528,6 +528,28 @@
         <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="clean"/>
+    </target>
+    
+    <target name="clean-all" description="Cleanup deeper" depends="prepare-extensions">
+        <!-- javadoc -->
+        <delete dir="${src.webapp}/api"/>
+        
+        <!-- derived files -->
+        <delete failonerror="no" file="client.properties"/>
+        <delete failonerror="no" file="conf.xml"/>
+        <delete failonerror="no" file="descriptor.xml"/>
+        <delete failonerror="no" file="mime-types.xml"/>
+        <delete failonerror="no" file="server.xml"/>
+        
+        <delete>
+            <fileset dir="installer"   includes="install.xml" />
+            <fileset dir="webapp"      includes="header.xml" />
+            <fileset dir="webapp/xqts" includes="config.xml" />
+        </delete>
+        
+        <!-- more files -->
+        <delete failonerror="no" file=".exist_history"/>
+        <delete failonerror="no" file=".exist_query_history"/>
     </target>
 
     <!-- ============================================================================ -->
