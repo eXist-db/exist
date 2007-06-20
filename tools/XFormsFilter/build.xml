@@ -73,6 +73,8 @@
         <pathelement path="${build.dir}"/>
     </path>
 	
+	<!-- proxy -->
+	<setproxy proxyhost="proxy-staff.devon.gov.uk" proxyport="80"/>
 	
 	<!-- targets -->
 	
@@ -212,16 +214,33 @@
     	<delete file="${xslt.dir}/ui.xsl"/>
     	<delete file="chiba.default.xml"/>
     	<delete file="${app.name}-${app.version}.jar"/>
+    	<delete file="${chiba.core.src}"/>
+    	<delete file="${chiba.web.src}"/>
+    </target>
+	
+	<!-- downloads the chiba-core source code -->
+	<target name="download-chiba-core" unless="chiba.core.src.present">
+		<echo message=""/>
+        <echo message="---------- Downloading chiba-core source ----------"/>
+        <echo message=""/>
+    	<get src="${chiba.download.mirror}/${chiba.core.src}" dest="${chiba.core.src}" verbose="true"/>
+        <echo message="Download complete"/>
+    </target>
+	
+	<!-- downloads the chiba-web source code -->
+	<target name="download-chiba-web" unless="chiba.web.src.present">
+		<echo message=""/>
+        <echo message="---------- Downloading chiba-web source ----------"/>
+        <echo message=""/>
+    	<get src="${chiba.download.mirror}/${chiba.web.src}" dest="${chiba.web.src}" verbose="true"/>
+		<echo message=""/>
     </target>
 	
 	<!-- builds a jar for chiba-core and copies it to lib -->
-	<target name="chiba-core">
+	<target name="chiba-core" depends="download-chiba-core">
 		<echo message=""/>
         <echo message="---------- building chiba-core ----------"/>
         <echo message=""/>
-		
-        <fail unless="chiba.core.src.present"
-            message="Chiba Core source missing - please download the file ${chiba.core.src} from http://sf.net/projects/chiba and place it in tools/XFormsFilter"/>
 
 		<!-- copy the src archive -->
 		<copy description="copy ${chiba.core.src} to temporary build folder ${temp.build.dir}" file="${chiba.core.src}" todir="${temp.build.dir}"/>
@@ -254,13 +273,10 @@
 	</target>
 
 	<!-- builds a jar for chiba-web and copies it to lib -->
-	<target name="chiba-web" depends="chiba-core">
+	<target name="chiba-web" depends="chiba-core, download-chiba-web">
 		<echo message=""/>
         <echo message="---------- building chiba-web ----------"/>
         <echo message=""/>
-		
-        <fail unless="chiba.web.src.present"
-            message="Chiba Web source missing - please download the file ${chiba.web.src} from http://sf.net/projects/chiba and place it in tools/XFormsFilter"/>
 		
 		<!-- copy the src archive -->
 		<copy description="copy ${chiba.web.src} to temporary build folder ${temp.build.dir}" file="${chiba.web.src}" todir="${temp.build.dir}"/>
