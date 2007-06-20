@@ -8,7 +8,7 @@ of Chiba is supported however it should be trivial to add scripted mode support.
 Licence
 =======
 XFormsFilter
-Copyright (C) 2006 Adam Retter, Devon Portal Project <adam.retter@devon.gov.uk>
+Copyright (C) 2007 Adam Retter, Devon Portal Project <adam.retter@devon.gov.uk>
 www.devonline.gov.uk
 
 This program is free software; you can redistribute it and/or
@@ -36,9 +36,9 @@ http://ant.apache.org/ or your systems software repository.
 
 XFormsFilter has a dependency on Chiba-core and Chiba-web and as such
 the source code archives need to be present in the XFormsFilter folder.
-
-You should download chiba-core-1.3.0-src.tar.gz and
-chiba-web-2.0.0-src.tar.gz from - http://sf.net/projects/chiba
+The Ant build script will attempt to download chiba-core-1.3.0-src.tar.gz and
+chiba-web-2.0.0-src.tar.gz from - http://kent.dl.sourceforge.net/sourceforge/chiba
+otherwise you may download these manually and place them in ${EXIST_HOME}/tools/XFormsFilter
 
 By default the XFormsFilter will expect to generate XHTML 1.1 compatible
 output (if you wish to have HTML 4.01 output see the "Configuration Options" section at the
@@ -53,9 +53,6 @@ Building/Installing
 It is recommended that eXist is shutdown during the installation. You Should also
 make a copy of your eXist Home folder $EXIST_HOME and a backup of your database
 before attempting this, in case anything should go wrong.
-
-From the prerequisites stage, you should have chiba-1.3.0-src.tar.gz and chiba-web-2.0.0-src.tar.gz
-in your $EXIST_HOME/tools/XFormsFilter folder.
 
 If you wish to build and install using Ant provided with eXist then you
 can use either the build.sh or build.bat files provided -
@@ -90,7 +87,8 @@ Configuration Options section below.
 WARNING - Unfortunately this web.xml will disable Apache Axis which provides
 eXist's webservices interface. For some reason XFormsFilter/Chiba does not
 play nicely with Apache Axis. I would like to resolve this eventually.
-However this is of no concern unless you access eXist webservices directly.
+However this is of no concern unless you access eXist webservices directly,
+this will not effect the SOAPServer.
 
 Chiba makes use of a Cascading Style Sheet to layout the (X)HTML generated forms in the
 browser, by default the XFormsFilter will look for the file xforms.css in the eXist database
