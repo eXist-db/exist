@@ -33,10 +33,20 @@ public class ReindexTest {
       dir = new File(existDir,directory);
     }
 
+    @Test
+    public void runTests() {
+        storeDocuments();
+        closeDB();
+
+        removeCollection();
+        closeDB();
+
+        restart();
+    }
+
     /**
      * Store some documents, reindex the collection and crash without commit.
      */
-    @Test
     public void storeDocuments() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = null;
@@ -92,7 +102,6 @@ public class ReindexTest {
     /**
      * Recover, remove the collection, then crash after commit.
      */
-    @Test
     public void removeCollection() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
@@ -117,7 +126,7 @@ public class ReindexTest {
             assertNotNull(root);
             transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
             broker.removeCollection(transaction, root);
-
+            transact.getJournal().flushToLog(true);
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
         } catch (Exception e) {
@@ -131,7 +140,6 @@ public class ReindexTest {
     /**
      * Just recover.
      */
-    @Test
     public void restart() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
