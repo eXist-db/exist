@@ -1057,7 +1057,7 @@ public class NativeBroker extends DBBroker {
                         {                          
                             Value ref = new NodeRef(doc.getDocId());
                             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);                           
-                            domDb.remove(null, query, null); //NULL transaction, so temporary fragment is not journalled - AR
+                            domDb.remove(transaction, query, null); //NULL transaction, so temporary fragment is not journalled - AR
                         }
                         catch(BTreeException e)
                         {
@@ -1085,12 +1085,12 @@ public class NativeBroker extends DBBroker {
                         	long page = ((BinaryDocument)doc).getPage();
                         
                         	if (page > Page.NO_PAGE)
-                        		domDb.removeOverflowValue(null, page); //NULL transaction, so temporary fragment is not journalled - AR
+                        		domDb.removeOverflowValue(transaction, page); //NULL transaction, so temporary fragment is not journalled - AR
                         }
                         else
                         {
                             StoredNode node = (StoredNode)doc.getFirstChild();
-                            domDb.removeAll(null, node.getInternalAddress()); //NULL transaction, so temporary fragment is not journalled - AR
+                            domDb.removeAll(transaction, node.getInternalAddress()); //NULL transaction, so temporary fragment is not journalled - AR
                         }
                         return null;
                     }
@@ -1608,13 +1608,13 @@ public class NativeBroker extends DBBroker {
 			targetDoc.setDocId(getNextResourceId(transaction, temp));
 
 			//index the temporary document
-			DOMIndexer indexer = new DOMIndexer(this, null, doc, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
+			DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
 			indexer.scan();
 			indexer.store();
 
 			//store the temporary document
-			temp.addDocument(null, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
-			storeXMLResource(null, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
+			temp.addDocument(transaction, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
+			storeXMLResource(transaction, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
 			flush();
 			closeDocument();            
 	        
