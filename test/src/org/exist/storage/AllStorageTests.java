@@ -26,6 +26,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        RemoveCollectionTest.class,
         ReindexTest.class,
         ShutdownTest.class,
         CollectionTest.class,
@@ -35,7 +36,6 @@ import org.junit.runners.Suite;
         RecoverBinaryTest.class,
         RecoverBinaryTest2.class,
         RecoveryTest.class,
-        RemoveCollectionTest.class,
         AppendTest.class,
         RemoveTest.class,
         RenameTest.class,
