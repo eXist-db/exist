@@ -2135,6 +2135,7 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
+    // http://sourceforge.net/support/tracker.php?aid=1740880
     public void bugtestElementConstructionWithNamespace_1740880(){
         
         try {
@@ -2153,8 +2154,34 @@ public class XQueryTest extends XMLTestCase {
         }
         
     }
+    
+    // http://sourceforge.net/support/tracker.php?aid=1740883
+    public void bugtestNoErrorNeOperatorWithSequence_1740883(){
+        
+        try {
+            String query="let $foo := <Foo> <Bar>A</Bar> <Bar>B</Bar> <Bar>C</Bar> </Foo> " +
+                "return $foo[Bar ne \"B\"]";
+            
+            XPathQueryService service
+                = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            fail("result should have yielded into an error like "+
+                "'A sequence of more than one item is not allowed as the first "
+                +"operand of 'ne'");
+           
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            // TODO add real test criterium
+            fail("To be removed" +ex.getMessage());
+        }
+        
+    }
 
 
+    
+    
     // ======================================
     
 	/**
