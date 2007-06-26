@@ -2204,6 +2204,53 @@ public class XQueryTest extends XMLTestCase {
     }
     
     
+    // http://sourceforge.net/support/tracker.php?aid=1740891
+    public void bugtestEvalLoosesContext_1740891(){
+        String module="module namespace tst = \"urn:test\"; "+
+            "declare namespace util = \"http://exist-db.org/xquery/util\";" +
+            "declare function tst:bar() as element(Bar)* { "+
+            "let $foo := <Foo><Bar/><Bar/><Bar/></Foo> "+
+            "let $query := \"$foo/Bar\" "+
+            "let $bar := util:eval($query) "+
+            "return $bar };";
+        
+        String module_name="module.xqy";
+        Resource doc;
+        
+        // Store module
+        try {
+            doc = testCollection.createResource(module_name, "BinaryResource");
+            doc.setContent(module);
+            ((EXistResource) doc).setMimeType("application/xquery");
+            testCollection.storeResource(doc);
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+        
+        try {
+            String query="import module namespace tst = \"urn:test\""+
+                "at \"xmldb:exist:///db/test/module.xqy\"; " +
+                "tst:bar()";
+            
+            XPathQueryService service
+                = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            assertEquals(3,result.getSize());
+            assertEquals("First", "<Bar/>", result.getResource(0).getContent().toString());
+            assertEquals("Second", "<Bar/>", result.getResource(1).getContent().toString());
+            assertEquals("Third", "<Bar/>", result.getResource(2).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
+    
+    
+    
     // ======================================
     
 	/**
