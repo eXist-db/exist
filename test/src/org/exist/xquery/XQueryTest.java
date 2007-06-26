@@ -2181,6 +2181,28 @@ public class XQueryTest extends XMLTestCase {
 
 
     
+    // http://sourceforge.net/support/tracker.php?aid=1740885
+    public void bugtestNeOperatorDoesNotWork_1740885(){
+        
+        try {
+            String query="let $foo := <Foo> <Bar>A</Bar> <Bar>B</Bar> <Bar>C</Bar> </Foo>"+
+                "return $foo/Bar[. ne \"B\"]";
+            
+            XPathQueryService service
+                = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            assertEquals(2,result.getSize());
+            assertEquals("First", "<Bar>A</Bar>", result.getResource(0).getContent().toString());
+            assertEquals("Second", "<Bar>C</Bar>", result.getResource(1).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
+    
     
     // ======================================
     
