@@ -1,18 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module version="4" relativePaths="true" type="JAVA_MODULE">
+<module relativePaths="true" type="JAVA_MODULE" version="4">
   <component name="DependecySynchronizer" />
   <component name="ModuleRootManager" />
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/samples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tools/ircbot/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tools/requestlog/src" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="optional libs" level="project" />
     <orderEntry type="library" name="core libs" level="project" />
     <orderEntry type="library" name="tools" level="project" />
+    <orderEntry type="library" name="core" level="project" />
+    <orderEntry type="library" name="xmlrpc-1.2-patched" level="project" />
+    <orderEntry type="library" name="optional" level="project" />
+    <orderEntry type="library" name="user" level="project" />
+    <orderEntry type="library" name="endorsed" level="project" />
+    <orderEntry type="library" name="cocoon" level="project" />
+    <orderEntry type="library" name="ant" level="project" />
     <orderEntryProperties />
   </component>
 </module>
