@@ -2135,6 +2135,24 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
+    public void bugtestElementConstructionWithNamespace_1740880(){
+        
+        try {
+            String query="let $a := <foo:Bar xmlns:foo=\"urn:foo\"/> " +
+                "let $b := element { QName(\"urn:foo\", \"foo:Bar\") } { () } "+
+                "return deep-equal($a, $b) ";
+            
+            XPathQueryService service
+                = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals("Oops", "true", result.getResource(0).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
 
 
     // ======================================
