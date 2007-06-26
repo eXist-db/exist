@@ -2249,7 +2249,33 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
-    
+    // http://sourceforge.net/support/tracker.php?aid=1740886
+    public void bugtestCardinalityIssues_1740886(){
+        String xmldoc = "<Foo><Bar/><Bar/><Bar/></Foo>";
+        String query=
+            "declare namespace tst = \"urn:test\"; "+
+            //======
+            "declare function tst:bar( $foo as element(Foo) ) as element(Foo) { "+
+            "let $dummy := $foo/Bar "+
+            "return $foo }; "+
+            //====== if you leave /test out......
+            "let $foo := doc(\"/db/test/foo.xml\")/element() "+
+            "return tst:bar($foo)";
+
+        try {
+            XPathQueryService service = storeXMLStringAndGetQueryService("foo.xml", xmldoc);
+            ResourceSet result = service.query(query);
+            
+            assertEquals(1,result.getSize());
+            assertEquals("Oops", xmldoc, result.getResource(0).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+        
+        
+    }
     
     // ======================================
     
