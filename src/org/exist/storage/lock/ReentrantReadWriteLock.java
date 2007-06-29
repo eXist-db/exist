@@ -11,6 +11,9 @@
 package org.exist.storage.lock;
 
 import java.util.Stack;
+import java.util.Map;
+import java.util.Collections;
+import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.exist.util.LockException;
@@ -28,32 +31,45 @@ import org.exist.util.LockException;
 
 public class ReentrantReadWriteLock implements Lock {
 
+    private class SuspendedWaiter {
+        Thread thread;
+        int lockMode;
+
+        public SuspendedWaiter(Thread thread, int lockMode) {
+            this.thread = thread;
+            this.lockMode = lockMode;
+        }
+    }
+    
     private final static Logger LOG = Logger.getLogger(ReentrantReadWriteLock.class);
 
     protected String id_ = null;
 	protected Thread owner_ = null;
-	protected long holds_ = 0;
+    protected Stack suspendedThreads = new Stack();
+    
+    protected long holds_ = 0;
 	public int mode_ = Lock.NO_LOCK;
 	private long timeOut_ = 240000L;
 	private Stack modeStack = new Stack();
 	private int writeLocks = 0;
 	private boolean DEBUG = false;
 	private Stack seStack;
+    private LockListener listener = null;
 
-	public ReentrantReadWriteLock(String id) {
-		id_ = id;
-		if (DEBUG)
-			seStack = new Stack(); 
-	}
-	
-	/* @deprecated Use other method
+    public ReentrantReadWriteLock(String id) {
+        id_ = id;
+        if (DEBUG)
+            seStack = new Stack();
+    }
+
+    /* @deprecated Use other method
 	 * @see org.exist.storage.lock.Lock#acquire()
 	 */
 	public boolean acquire() throws LockException {
 		return acquire(Lock.READ_LOCK);
 	}
 
-	public boolean acquire(int mode) throws LockException {
+    public boolean acquire(int mode) throws LockException {
 		if (mode == Lock.NO_LOCK) {
 			LOG.warn("acquired with no lock !");
 			return true;
@@ -61,8 +77,9 @@ public class ReentrantReadWriteLock implements Lock {
 		if (Thread.interrupted())
 			throw new LockException();
 		Thread caller = Thread.currentThread();
-		synchronized (this) {
-			if (caller == owner_) {
+        synchronized (this) {
+            WaitingThread waitingOnResource;
+            if (caller == owner_) {
 				++holds_;
 				modeStack.push(new Integer(mode));
 				if (mode == Lock.WRITE_LOCK)
@@ -85,13 +102,42 @@ public class ReentrantReadWriteLock implements Lock {
 				}				
 				mode_ = mode;
 				return true;
-			} else {
+            } else if ((waitingOnResource = DeadlockDetection.deadlockCheckResource(caller, owner_)) != null) {
+//                LOG.warn("DEADLOCK detected: " + owner_.getName() + " -> " + caller.getName());
+                waitingOnResource.suspendWaiting();
+                SuspendedWaiter suspended = new SuspendedWaiter(owner_, mode_);
+                suspendedThreads.push(suspended);
+                owner_ = caller;
+                holds_ = 1;
+                modeStack.push(new Integer(mode));
+				if (mode== Lock.WRITE_LOCK)
+					writeLocks++;
+                mode_ = mode;
+                listener = waitingOnResource;
+                return true;
+            } else {
 				long waitTime = timeOut_;
 				long start = System.currentTimeMillis();
-				try {
+                DeadlockDetection.addCollectionWaiter(caller, this);
+//                LOG.warn(caller.getName() + " waiting on WRITE lock held by " + owner_.getName());
+                try {
 					for (;;) {
 						wait(waitTime);
-						if (caller == owner_) {
+                        if ((waitingOnResource = DeadlockDetection.deadlockCheckResource(caller, owner_)) != null) {
+//                            LOG.warn("DEADLOCK detected after wakeUp: " + owner_.getName() + " -> " + caller.getName());
+                            waitingOnResource.suspendWaiting();
+                            SuspendedWaiter suspended = new SuspendedWaiter(owner_, mode_);
+                            suspendedThreads.push(suspended);
+                            owner_ = caller;
+                            holds_ = 1;
+                            modeStack.push(new Integer(mode));
+                            if (mode== Lock.WRITE_LOCK)
+                                writeLocks++;
+                            mode_ = mode;
+                            listener = waitingOnResource;
+                            DeadlockDetection.clearCollectionWaiter(owner_);
+                            return true;
+                        } else if (caller == owner_) {
 							++holds_;
 							modeStack.push(new Integer(mode));
 							if (mode == Lock.WRITE_LOCK)
@@ -101,7 +147,8 @@ public class ReentrantReadWriteLock implements Lock {
 								seStack.push(t.getStackTrace());
 							}
 							mode_ = mode;
-							return true;
+                            DeadlockDetection.clearCollectionWaiter(owner_);
+                            return true;
 						} else if (owner_ == null) {
 							owner_ = caller;
 							holds_ = 1;
@@ -113,7 +160,8 @@ public class ReentrantReadWriteLock implements Lock {
 								seStack.push(t.getStackTrace());
 							}
 							mode_ = mode;
-							return true;
+                            DeadlockDetection.clearCollectionWaiter(owner_);
+                            return true;
 						} else {
 							waitTime = timeOut_ - (System.currentTimeMillis() - start);
 							if (waitTime <= 0) {
@@ -140,7 +188,8 @@ public class ReentrantReadWriteLock implements Lock {
 										seStack.push(t.getStackTrace());
 									}
 									mode_ = mode;
-									return true;
+                                    DeadlockDetection.clearCollectionWaiter(owner_);
+                                    return true;
 								} else
 									LOG.warn("Write lock timed out");
 									if (DEBUG) {
@@ -150,8 +199,9 @@ public class ReentrantReadWriteLock implements Lock {
 											LOG.debug(se);
 									    	se = null;
 										}
-									}									
-									throw new LockException("time out while acquiring a lock");
+									}
+                                DeadlockDetection.clearCollectionWaiter(owner_);
+                                throw new LockException("time out while acquiring a lock");
 							}
 						}
 					}
@@ -163,7 +213,11 @@ public class ReentrantReadWriteLock implements Lock {
 		}
 	}
 
-	public boolean attempt(int mode) {
+    public synchronized void wakeUp() {
+        notify();
+    }
+    
+    public boolean attempt(int mode) {
 		Thread caller = Thread.currentThread();
 		synchronized (this) {
 			if (caller == owner_) {
@@ -194,7 +248,7 @@ public class ReentrantReadWriteLock implements Lock {
 			}
 		}
 	}
-	
+
     /* (non-Javadoc)
      * @see org.exist.util.Lock#isLockedForWrite()
      */
@@ -210,7 +264,11 @@ public class ReentrantReadWriteLock implements Lock {
     public synchronized boolean hasLock() {
     	return holds_ > 0;
     }
-    
+
+    public boolean hasLock(Thread owner) {
+        return this.owner_ == owner;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.util.Lock#release(int)
      */
@@ -230,24 +288,34 @@ public class ReentrantReadWriteLock implements Lock {
 			}            
             return;
         }
-    	Integer top = (Integer)modeStack.pop();
+        Integer top = (Integer)modeStack.pop();
     	mode_ = top.intValue();
     	top = null; 	
     	if (mode_ != mode) {
-    		LOG.warn("Released lock of different type. Expected " + mode_ + " got " + mode);
-    		Thread.dumpStack();    		
+    		LOG.warn("Released lock of different type. Expected " + mode_ + " got " + mode, new Throwable());    		
     	}      	
-		if (mode_ == Lock.WRITE_LOCK)
-			writeLocks--;   	
-    	if (DEBUG) {
+		if (mode_ == Lock.WRITE_LOCK) {
+//            if (isCollectionLock)
+//                LOG.warn(owner_.getName() + " RELEASED WRITE lock", new Throwable());
+            writeLocks--;
+        }
+        if (DEBUG) {
     		StackTraceElement[] se = (StackTraceElement[])seStack.pop();
     		se = null;
-    	} 
-    	if (--holds_ == 0) {
+    	}
+        if (!suspendedThreads.isEmpty()) {
+            SuspendedWaiter suspended = (SuspendedWaiter) suspendedThreads.pop();
+            owner_ = suspended.thread;
+            mode_ = suspended.lockMode;
+        } else if (--holds_ == 0) {
 			owner_ = null;
 			mode_ = Lock.NO_LOCK;
 			notify();
 		}
+        if (listener != null) {
+            listener.lockReleased();
+            listener = null;
+        }
     }
 
     public void release(int mode, int count) {
