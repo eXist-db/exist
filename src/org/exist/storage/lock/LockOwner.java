@@ -32,17 +32,17 @@ public class LockOwner {
      * processing overhead.
      */
     public static boolean DEBUG = false;
-    
-    private final Object owner;
+
+    private final Thread owner;
     private Throwable stack = null;
 
-    public LockOwner(Object owner) {
+    public LockOwner(Thread owner) {
         this.owner = owner;
         if (DEBUG)
             this.stack = new Throwable().fillInStackTrace();
     }
 
-    public final Object getOwner() {
+    public final Thread getOwner() {
         return owner;
     }
 
