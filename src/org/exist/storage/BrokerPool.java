@@ -1447,8 +1447,6 @@ public class BrokerPool {
         shutdownListener = null;
         securityManager = null;
         notificationService = null;
-
-        status = OPERATING;
 	}
 
 	//TODO : move this elsewhere
