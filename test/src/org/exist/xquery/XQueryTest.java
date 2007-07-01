@@ -127,7 +127,6 @@ public class XQueryTest extends XMLTestCase {
 			"</game>" +
 		"</series>";
 	
-	private Collection testCollection;
 	private static String attributeXML;
 	private static int stringSize;
 	private static int nbElem;
@@ -139,8 +138,8 @@ public class XQueryTest extends XMLTestCase {
 		super(arg0);
 	}
 
-	protected void setUp() {
-		try {
+	public void setUp() {
+        try {
 			// initialize driver
 			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
 			database = (Database) cl.newInstance();
@@ -151,12 +150,9 @@ public class XQueryTest extends XMLTestCase {
 				DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin",	null);
 			CollectionManagementService service =
 				(CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-			testCollection = service.createCollection("test");
+			Collection testCollection = service.createCollection("test");
 			assertNotNull(testCollection);
-		} catch (ClassNotFoundException e) {
-		} catch (InstantiationException e) {
-		} catch (IllegalAccessException e) {
-		} catch (XMLDBException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -164,21 +160,24 @@ public class XQueryTest extends XMLTestCase {
 	/*
 	 * @see TestCase#tearDown()
 	 */
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		// testCollection.removeResource( testCollection .getResource(file_name));
-		
-		DatabaseManager.deregisterDatabase(database);
+
 		DatabaseInstanceManager dim =
-			(DatabaseInstanceManager) testCollection.getService(
+			(DatabaseInstanceManager) getTestCollection().getService(
 				"DatabaseInstanceManager", "1.0");
 		dim.shutdown();
-        testCollection = null;
+        DatabaseManager.deregisterDatabase(database);
         database = null;
         
 		System.out.println("tearDown PASSED");
 	}
-	
-	public void testLet() {
+
+    private Collection getTestCollection() throws XMLDBException {
+        return DatabaseManager.getCollection("xmldb:exist:///db/test", "admin",	null);
+    }
+
+    public void testLet() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
@@ -201,7 +200,8 @@ public class XQueryTest extends XMLTestCase {
 			
 		} catch (XMLDBException e) {
 			System.out.println("testLet(): XMLDBException: "+e);
-			fail(e.getMessage());
+            e.printStackTrace();
+            fail(e.getMessage());
 		}
 	}
 
@@ -288,7 +288,7 @@ public class XQueryTest extends XMLTestCase {
                 "};\n" +
                 "local:append((), 0)";
             XPathQueryService service =
-                (XPathQueryService) testCollection.getService(
+                (XPathQueryService) getTestCollection().getService(
                     "XPathQueryService",
                     "1.0");
             ResourceSet result = service.query(q1);
@@ -305,7 +305,7 @@ public class XQueryTest extends XMLTestCase {
             String q1 =
                 "let $a := <A/> for $b in $a//B/string() return \"Oops!\"";
             XPathQueryService service =
-                (XPathQueryService) testCollection.getService(
+                (XPathQueryService) getTestCollection().getService(
                     "XPathQueryService",
                     "1.0");
             ResourceSet result = service.query(q1);
@@ -322,7 +322,7 @@ public class XQueryTest extends XMLTestCase {
 		
 		try {
 			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
+				(XPathQueryService) getTestCollection().getService(
 					"XPathQueryService",
 					"1.0");
 			
@@ -369,7 +369,7 @@ public class XQueryTest extends XMLTestCase {
 		
 		try {
 			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
+				(XPathQueryService) getTestCollection().getService(
 					"XPathQueryService",
 					"1.0");
 			
@@ -377,61 +377,61 @@ public class XQueryTest extends XMLTestCase {
 			query = "let $c := (<a/>,<b/>) return <t>text{$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
 
 			System.out.println("testInMemoryNodeSequences 2: ========" );
 			query = "let $c := (<a/>,<b/>) return <t><text/>{$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t><text/><a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t><text/><a/></t>", result.getResource(0).getContent());
 
 			System.out.println("testInMemoryNodeSequences 3: ========" );
 			query = "let $c := (<a/>,<b/>) return <t>{\"text\"}{$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
 
 			System.out.println("testInMemoryNodeSequences 4: ========" );
 			query = "let $c := (<a/>,\"b\") return <t>text{$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
 
 			System.out.println("testInMemoryNodeSequences 5: ========" );
 			query = "let $c := (<a/>,\"b\") return <t><text/>{$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t><text/><a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t><text/><a/></t>", result.getResource(0).getContent());
 
 			System.out.println("testInMemoryNodeSequences 6: ========" );
 			query = "let $c := (<a/>,\"b\") return <t>{\"text\"}{$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
 
 			System.out.println("testInMemoryNodeSequences 7: ========" );
 			query = "let $c := (<a/>,<b/>) return <t>{<text/>,$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
 
 			System.out.println("testInMemoryNodeSequences 8: ========" );
 			query = "let $c := (<a/>,<b/>) return <t>{\"text\",$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
 
 			System.out.println("testInMemoryNodeSequences 9: ========" );
 			query = "let $c := (<a/>,\"b\") return <t>{<text/>,$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
 
 			System.out.println("testInMemoryNodeSequences 10: ========" );
 			query = "let $c := (<a/>,\"b\") return <t>{\"text\",$c[1]}</t>";
 			result = service.query(query);
 			printResult(result);
-			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", result.getResource(0).getContent());
 
 		} catch (XMLDBException e) {
 			System.out.println("testInMemoryNodeSequences(): XMLDBException: "+e);
@@ -447,7 +447,7 @@ public class XQueryTest extends XMLTestCase {
 		String message;				
 		try {
 			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
+				(XPathQueryService) getTestCollection().getService(
 					"XPathQueryService",
 					"1.0");
 
@@ -549,7 +549,7 @@ public class XQueryTest extends XMLTestCase {
 		String message;				
 		try {
 			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
+				(XPathQueryService) getTestCollection().getService(
 					"XPathQueryService",
 					"1.0");
 			service.setProperty(OutputKeys.INDENT, "no");
@@ -592,7 +592,7 @@ public class XQueryTest extends XMLTestCase {
 		String message;				
 		try {
 			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
+				(XPathQueryService) getTestCollection().getService(
 					"XPathQueryService",
 					"1.0");
 			service.setProperty(OutputKeys.INDENT, "no");
@@ -1019,7 +1019,8 @@ public class XQueryTest extends XMLTestCase {
 		boolean exceptionThrown;
 		String message;				
 		try {
-			doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
+            Collection testCollection = getTestCollection();
+            doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
 			doc.setContent(module1);	
 			((EXistResource) doc).setMimeType("application/xquery");
 			testCollection.storeResource(doc);
@@ -1169,7 +1170,7 @@ public class XQueryTest extends XMLTestCase {
 	{
 		try
 		{
-			XPathQueryService service = (XPathQueryService)testCollection.getService("XPathQueryService", "1.0");
+			XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
 		
 			String query = 
 				"xquery version \"1.0\";\n" +
@@ -1218,7 +1219,8 @@ public class XQueryTest extends XMLTestCase {
 		String query;
 		String message;				
 		try {
-			doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
+            Collection testCollection = getTestCollection();
+            doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
 			doc.setContent(module1);	
 			((EXistResource) doc).setMimeType("application/xquery");
 			testCollection.storeResource(doc);
@@ -1260,7 +1262,7 @@ public class XQueryTest extends XMLTestCase {
 			result = service.query(query);	
 			printResult(result);	
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
-			assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());
+			assertEquals( "XQuery: " + query, "value-1", result.getResource(0).getContent());
 			
 			System.out.println("testModule 2: ========" );
 			query = "xquery version \"1.0\";\n" 
@@ -1284,7 +1286,7 @@ public class XQueryTest extends XMLTestCase {
 			result = service.query(query);
 			printResult(result);
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
-			assertEquals( "XQuery: " + query, "value-1", ((XMLResource)result.getResource(0)).getContent());	
+			assertEquals( "XQuery: " + query, "value-1", result.getResource(0).getContent());	
 			
 			System.out.println("testModule 4: ========" );
 			query = "xquery version \"1.0\";\n" 
@@ -1305,9 +1307,9 @@ public class XQueryTest extends XMLTestCase {
 			result = service.query(query);	
 			printResult(result);	
 			assertEquals( "XQuery: " + query, 3, result.getSize() );
-			assertEquals( "XQuery: " + query, "bar", ((XMLResource)result.getResource(0)).getContent());		
-			assertEquals( "XQuery: " + query, "bar1", ((XMLResource)result.getResource(1)).getContent());		
-			assertEquals( "XQuery: " + query, "bar2", ((XMLResource)result.getResource(2)).getContent());		
+			assertEquals( "XQuery: " + query, "bar", result.getResource(0).getContent());
+			assertEquals( "XQuery: " + query, "bar1", result.getResource(1).getContent());		
+			assertEquals( "XQuery: " + query, "bar2", result.getResource(2).getContent());
 			
 //			Non-heritance check
 			System.out.println("testModule 6: ========" );
@@ -1389,7 +1391,7 @@ public class XQueryTest extends XMLTestCase {
 
     public void testGlobalVars() {
         try {
-            assertNotNull(testCollection);
+            Collection testCollection = getTestCollection();
             Resource doc = testCollection.createResource(MODULE5_NAME, "BinaryResource");
             doc.setContent(module5);
             ((EXistResource) doc).setMimeType("application/xquery");
@@ -1608,7 +1610,7 @@ public class XQueryTest extends XMLTestCase {
 		 
 		 try
 		 {
-			 XPathQueryService service = (XPathQueryService)testCollection.getService("XPathQueryService", "1.0");
+			 XPathQueryService service = (XPathQueryService)getTestCollection().getService("XPathQueryService", "1.0");
 			 ResourceSet result = service.query(query);
 			 printResult(result);
 			 assertEquals("XQuery: " + query, 4, result.getSize());
@@ -1634,7 +1636,7 @@ public class XQueryTest extends XMLTestCase {
 
 		try
 		 {
-			 XPathQueryService service = (XPathQueryService)testCollection.getService("XPathQueryService", "1.0");
+			 XPathQueryService service = (XPathQueryService)getTestCollection().getService("XPathQueryService", "1.0");
 			 ResourceSet result = service.query(query);
 			 printResult(result);
 			 
@@ -1662,7 +1664,7 @@ public class XQueryTest extends XMLTestCase {
         String query="let $attr := attribute d { \"xxx\" } "
                 +"return string($attr)"; 
         try {
-            XPathQueryService service = (XPathQueryService) testCollection.getService(
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService(
                     "XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals(1, result.getSize());
@@ -1735,7 +1737,7 @@ public class XQueryTest extends XMLTestCase {
         String query;
         XMLResource resu;
         try {
-            XPathQueryService service = (XPathQueryService) testCollection.getService(
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService(
     				"XPathQueryService", "1.0");
 
             query = "let $doc := document{ <root><![CDATA[gaga]]></root> } " +
@@ -1807,7 +1809,7 @@ public class XQueryTest extends XMLTestCase {
         +"</c:C>"
         +"return local:copy($c)";
         try {
-            XPathQueryService service = (XPathQueryService) testCollection.getService(
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService(
                     "XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals(1, result.getSize());
@@ -1821,7 +1823,7 @@ public class XQueryTest extends XMLTestCase {
     public void testNameConflicts() {
         String query = "let $a := <name name=\"Test\"/> return <wrap>{$a//@name}</wrap>";
         try {
-            XPathQueryService service = (XPathQueryService) testCollection.getService(
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService(
                     "XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals(1, result.getSize());
@@ -1886,7 +1888,7 @@ public class XQueryTest extends XMLTestCase {
 
 	public void testRetrieveLargeAttribute() throws XMLDBException{
 		System.out.println("testRetrieveLargeAttribute 1: ========" );
-		XMLResource res = (XMLResource) testCollection.getResource(file_name);
+		XMLResource res = (XMLResource) getTestCollection().getResource(file_name);
 		System.out.println("res.getContent(): " + res.getContent() );
 	}
 	
@@ -1996,7 +1998,7 @@ public class XQueryTest extends XMLTestCase {
                 +" let $n := <!-- Just a comment! --> return local:name($n) ";
         XPathQueryService service;
         try {
-            service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals( "XQuery: " + query, 0, result.getSize() );
         } catch (XMLDBException ex) {
@@ -2050,7 +2052,7 @@ public class XQueryTest extends XMLTestCase {
         try {
             
             for(int i=0 ; i<25 ; i++){ // repeat a few times
-                XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
                 System.out.println("Attempt "+i);
                 ResourceSet result = service.query(query);
                 assertEquals( 1, result.getSize() );
@@ -2074,7 +2076,7 @@ public class XQueryTest extends XMLTestCase {
         
         XPathQueryService service;
         try {
-            service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals( "XQuery: " + query, 0, result.getSize() );
         } catch (XMLDBException ex) {
@@ -2098,7 +2100,7 @@ public class XQueryTest extends XMLTestCase {
                 +")  ";
         XPathQueryService service;
         try {
-            service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals( "XQuery: " + query, 0, result.getSize() );
         } catch (XMLDBException ex) {
@@ -2113,7 +2115,7 @@ public class XQueryTest extends XMLTestCase {
 
         try {
             XPathQueryService service 
-                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                    = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals(expectedresult, result.getResource(0).getContent().toString());
         } catch (XMLDBException ex) {
@@ -2128,7 +2130,7 @@ public class XQueryTest extends XMLTestCase {
         try {
             String query="<!-- < aa > -->";
             XPathQueryService service 
-                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                    = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals(query, result.getResource(0).getContent().toString());
         } catch (XMLDBException ex) {
@@ -2139,7 +2141,7 @@ public class XQueryTest extends XMLTestCase {
         try {
             String query="<?pi \"<\"aa\">\"?>";
             XPathQueryService service 
-                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                    = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals(query, result.getResource(0).getContent().toString());
         } catch (XMLDBException ex) {
@@ -2156,7 +2158,7 @@ public class XQueryTest extends XMLTestCase {
             String query="let $doc := document { <element/> } "+
                 "return $doc/root() instance of document-node()";
             XPathQueryService service 
-                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                    = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals("true", result.getResource(0).getContent().toString());
         } catch (XMLDBException ex) {
@@ -2171,7 +2173,7 @@ public class XQueryTest extends XMLTestCase {
         try {
             String query="( ) = \"A\"";
             XPathQueryService service 
-                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                    = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals("false", result.getResource(0).getContent().toString());
 
@@ -2191,7 +2193,7 @@ public class XQueryTest extends XMLTestCase {
             String query="let $example := <Root> <Element>1</Element> <Element>2</Element> </Root>"+
                          "return  $example/Element[1] ";
             XPathQueryService service 
-                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                    = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals("<Element>1</Element>", result.getResource(0).getContent().toString());
             
@@ -2217,7 +2219,7 @@ public class XQueryTest extends XMLTestCase {
                 "return deep-equal($a, $b) ";
             
             XPathQueryService service
-                = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals("Oops", "true", result.getResource(0).getContent().toString());
             
@@ -2236,7 +2238,7 @@ public class XQueryTest extends XMLTestCase {
                 "return $foo[Bar ne \"B\"]";
             
             XPathQueryService service
-                = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             
             fail("result should have yielded into an error like "+
@@ -2262,7 +2264,7 @@ public class XQueryTest extends XMLTestCase {
                 "return $foo/Bar[. ne \"B\"]";
             
             XPathQueryService service
-                = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             
             assertEquals(2,result.getSize());
@@ -2292,6 +2294,7 @@ public class XQueryTest extends XMLTestCase {
         
         // Store module
         try {
+            Collection testCollection = getTestCollection();
             doc = testCollection.createResource(module_name, "BinaryResource");
             doc.setContent(module);
             ((EXistResource) doc).setMimeType("application/xquery");
@@ -2307,7 +2310,7 @@ public class XQueryTest extends XMLTestCase {
                 "tst:bar()";
             
             XPathQueryService service
-                = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             
             assertEquals(3,result.getSize());
@@ -2358,7 +2361,8 @@ public class XQueryTest extends XMLTestCase {
 	 */
 	private XPathQueryService storeXMLStringAndGetQueryService(String documentName,
 			String content) throws XMLDBException {
-		XMLResource doc =
+        Collection testCollection = getTestCollection();
+        XMLResource doc =
 			(XMLResource) testCollection.createResource(
 					documentName, "XMLResource" );
 		doc.setContent(content);
@@ -2376,7 +2380,8 @@ public class XQueryTest extends XMLTestCase {
 	 */
 	private XPathQueryService storeXMLStringAndGetQueryService(String documentName
 			) throws XMLDBException {
-		XMLResource doc =
+        Collection testCollection = getTestCollection();
+        XMLResource doc =
 			(XMLResource) testCollection.createResource(
 					documentName, "XMLResource" );
 		doc.setContent(new File(documentName));
