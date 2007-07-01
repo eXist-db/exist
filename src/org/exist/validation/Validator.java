@@ -100,7 +100,7 @@ public class Validator {
                 // Enable validation features of xerces
                 saxFactory.setFeature(Namespaces.SAX_VALIDATION, true);
                 saxFactory.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
-                saxFactory.setFeature(XMLReaderObjectFactory.FEATURE_SCHEMA,true);
+                saxFactory.setFeature(XMLReaderObjectFactory.FEATURES_VALIDATION_SCHEMA,true);
                 saxFactory.setFeature(XMLReaderObjectFactory.PROPERTIES_LOAD_EXT_DTD, true);
                 saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
                 
@@ -172,7 +172,7 @@ public class Validator {
             InputSource source = new InputSource(reader);
             
             SAXParser sax = saxFactory.newSAXParser();
-            sax.setProperty(XMLReaderObjectFactory.PROPERTIES_GRAMMARPOOL, grammarPool);
+            sax.setProperty(XMLReaderObjectFactory.PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             
             XMLReader xmlReader = sax.getXMLReader();
             
@@ -186,20 +186,20 @@ public class Validator {
                 logger.debug("Validation using system catalog.");
                 eXistXMLCatalogResolver resolver = 
                     (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
-                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_RESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
                 
             } else if(grammarPath.endsWith(".xml")){
                 // Scenario 2 : path to catalog (xml)
                 logger.debug("Validation using user specified catalog '"+grammarPath+"'.");
                 eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
                 resolver.setCatalogList(new String[]{grammarPath});
-                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_RESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
                 
             } else if(grammarPath.endsWith("/")){
                 // Scenario 3 : path to collection ("/"): search.
                 logger.debug("Validation using searched grammar, start from '"+grammarPath+"'.");
                 SearchResourceResolver resolver = new SearchResourceResolver(grammarPath, brokerPool);
-                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_RESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
                 
             } else {
                 // Scenario 4 : path to grammar (xsd, dtd) specified.
@@ -208,7 +208,7 @@ public class Validator {
                 // Just find the document using empty resolver
                 //eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
                 StoredResourceResolver resolver = new StoredResourceResolver(grammarPath);
-                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_RESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
 
             }
 

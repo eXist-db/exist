@@ -59,13 +59,13 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     public final static String GRAMMER_POOL = "validation.grammar_pool";
     
     // Xerces feature and property names
-    public final static String FEATURE_SCHEMA
+    public final static String FEATURES_VALIDATION_SCHEMA
             ="http://apache.org/xml/features/validation/schema";
-    public final static String PROPERTIES_GRAMMARPOOL
+    public final static String PROPERTIES_INTERNAL_GRAMMARPOOL
             ="http://apache.org/xml/properties/internal/grammar-pool";
     public final static String PROPERTIES_LOAD_EXT_DTD
             ="http://apache.org/xml/features/nonvalidating/load-external-dtd";
-    public final static String PROPERTIES_RESOLVER
+    public final static String PROPERTIES_ENTITYRESOLVER
             ="http://apache.org/xml/properties/internal/entity-resolver";
     
     private BrokerPool pool;
@@ -111,12 +111,18 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
                 // http://xerces.apache.org/xerces2-j/features.html
                 saxFactory.setFeature(Namespaces.SAX_VALIDATION,
                     validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
-                saxFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",
-                    validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
+                
                 saxFactory.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC,
                     validation == VALIDATION_AUTO);
-                saxFactory.setFeature("http://apache.org/xml/features/validation/schema",
+                
+                saxFactory.setFeature(FEATURES_VALIDATION_SCHEMA,
+                    validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);            
+                
+                saxFactory.setFeature(PROPERTIES_LOAD_EXT_DTD,
                     validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
+                
+                // Attempt to make validation function equal to inser mode
+                //saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
                 
             } catch (SAXNotRecognizedException e1) {
                 // ignore: feature only recognized by xerces
@@ -130,12 +136,12 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             GrammarPool grammarPool = 
                (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
             if(grammarPool!=null){
-                sax.setProperty(PROPERTIES_GRAMMARPOOL, grammarPool);
+                sax.setProperty(PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             }
             
             eXistXMLCatalogResolver resolver = (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
             if(resolver!=null){
-                parser.setProperty(PROPERTIES_RESOLVER, resolver);
+                parser.setProperty(PROPERTIES_ENTITYRESOLVER, resolver);
             }
             return parser;
             
