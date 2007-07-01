@@ -74,7 +74,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(String, String)
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        LOG.debug("Resolving '"+publicId+"','"+systemId+"'");
+        LOG.debug("Resolving publicId='"+publicId+"', systemId='"+systemId+"'");
         InputSource retValue = super.resolveEntity(publicId, systemId);
         LOG.debug("Resolved " + (retValue!=null));
         if(retValue!=null){
@@ -87,7 +87,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveResource(String, String, String, String, String)
      */
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-        LOG.debug("Resolving '"+type+"','"+namespaceURI+"','"+publicId+"','"+systemId+"','"+baseURI+"'");
+        LOG.debug("Resolving type='"+type+"', namespaceURI='"+namespaceURI+"', publicId='"+publicId+"', systemId='"+systemId+"', baseURI='"+baseURI+"'");
         LSInput retValue= super.resolveResource(type, namespaceURI, publicId, systemId, baseURI);
         
         LOG.debug("Resolved " + (retValue!=null));
@@ -103,7 +103,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(String, String, String, String)
      */
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
-        LOG.debug("Resolving '"+name+"','"+publicId+"','"+baseURI+"','"+systemId+"'");
+        LOG.debug("Resolving name='"+name+"', publicId='"+publicId+"', baseURI='"+baseURI+"', systemId='"+systemId+"'");
         InputSource retValue = super.resolveEntity(name, publicId, baseURI, systemId);
         
         LOG.debug("Resolved " + (retValue!=null));
@@ -126,7 +126,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
             // quick fail
             return null;
         }
-        LOG.debug("Resolving '"+xri.toString()+"'");
+        LOG.debug("Resolving XMLResourceIdentifier='"+xri.toString()+"'");
         
         String retValue = super.resolveIdentifier(xri);
         LOG.debug("Resolved " + (retValue!=null));
@@ -147,7 +147,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
             return null;
         }
         
-        LOG.debug("Resolving '"+xri.toString()+"'");
+        LOG.debug("Resolving XMLResourceIdentifier='"+xri.toString()+"'");
         XMLInputSource retValue = super.resolveEntity(xri);
         
         
