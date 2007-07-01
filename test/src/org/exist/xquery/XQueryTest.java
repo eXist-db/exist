@@ -28,6 +28,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XQueryService;
 
 /** I propose that we put here in XQueryTest the tests involving all the 
  * others constructs of the XQuery language, besides XPath expressions.
@@ -41,7 +42,9 @@ public class XQueryTest extends XMLTestCase {
 	private static final String MODULE2_NAME = "module2.xqm";
 	private static final String MODULE3_NAME = "module3.xqm";
 	private static final String MODULE4_NAME = "module4.xqm";
-	private static final String FATHER_MODULE_NAME = "father.xqm";
+    private static final String MODULE5_NAME = "module5.xqm";
+    private static final String MODULE6_NAME = "module6.xqm";
+    private static final String FATHER_MODULE_NAME = "father.xqm";
 	private static final String CHILD1_MODULE_NAME = "child1.xqm";
 	private static final String CHILD2_MODULE_NAME = "child2.xqm";
 	private static final String NAMESPACED_NAME = "namespaced.xml";
@@ -74,8 +77,17 @@ public class XQueryTest extends XMLTestCase {
 		+ "declare function foo:bar() {\n"
 	    + "$exist:bar\n"
 	    + "};";
-	
-	private final static String fatherModule =
+
+    private final static String module5 =
+        "module namespace foo=\"foo\";\n"
+		+ "declare variable $foo:bar := \"bar\";";
+
+    private final static String module6 =
+        "module namespace foo=\"foo\";\n"
+		+ "declare variable $foo:bar := \"bar\";"
+        + "declare variable $foo:bar := \"bar\";";
+
+    private final static String fatherModule =
 		"module namespace foo=\"foo\";\n"
 		+ "import module namespace foo1=\"foo1\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n"
 		+ "import module namespace foo2=\"foo2\" at \"" + URI + "/test/" + CHILD2_MODULE_NAME + "\";\n"
@@ -141,7 +153,6 @@ public class XQueryTest extends XMLTestCase {
 				(CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 			testCollection = service.createCollection("test");
 			assertNotNull(testCollection);
-
 		} catch (ClassNotFoundException e) {
 		} catch (InstantiationException e) {
 		} catch (IllegalAccessException e) {
@@ -1375,8 +1386,70 @@ public class XQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}	
-	
-	public void testFunctionDoc() {
+
+    public void testGlobalVars() {
+        try {
+            assertNotNull(testCollection);
+            Resource doc = testCollection.createResource(MODULE5_NAME, "BinaryResource");
+            doc.setContent(module5);
+            ((EXistResource) doc).setMimeType("application/xquery");
+            testCollection.storeResource(doc);
+
+            doc = testCollection.createResource(MODULE6_NAME, "BinaryResource");
+            doc.setContent(module6);
+            ((EXistResource) doc).setMimeType("application/xquery");
+            testCollection.storeResource(doc);
+            
+            System.out.println("testGlobalVars 1: ========" );
+            XQueryService service = (XQueryService) testCollection.getService("XPathQueryService", "1.0");
+            String query = "xquery version \"1.0\";\n"
+                    + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE5_NAME + "\";\n"
+                    + "$foo:bar";
+            ResourceSet result = service.query(query);
+            assertEquals(result.getSize(), 1);
+            assertEquals(result.getResource(0).getContent(), "bar");
+
+            System.out.println("testGlobalVars 2: ========" );
+            query = "xquery version \"1.0\";\n"
+                + "declare variable $local:a := 'abc';"
+                + "$local:a";
+            result = service.query(query);
+            assertEquals(result.getSize(), 1);
+            assertEquals(result.getResource(0).getContent(), "abc");
+
+            System.out.println("testGlobalVars 3: ========" );
+            boolean gotException = false;
+            try {
+                query = "xquery version \"1.0\";\n"
+                        + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE6_NAME + "\";\n"
+                        + "$foo:bar";
+                result = service.query(query);
+            } catch (XMLDBException e) {
+                assertTrue("Test should generate err:XQST0049, got: " + e.getMessage(), e.getMessage().indexOf("err:XQST0049") > -1);
+                gotException = true;
+            }
+            assertTrue("Duplicate global variable should generate error", gotException);
+
+            System.out.println("testGlobalVars 4: ========" );
+            gotException = false;
+            try {
+                query = "xquery version \"1.0\";\n"
+                        + "declare variable $local:a := 'abc';"
+                        + "declare variable $local:a := 'abc';"
+                        + "$local:a";
+                result = service.query(query);
+            } catch (XMLDBException e) {
+                assertTrue("Test should generate err:XQST0049, got: " + e.getMessage(), e.getMessage().indexOf("err:XQST0049") > -1);
+                gotException = true;
+            }
+            assertTrue("Duplicate global variable should generate error", gotException);
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
+    public void testFunctionDoc() {
 		ResourceSet result;
 		String query;
 		boolean exceptionThrown;
