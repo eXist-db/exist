@@ -31,6 +31,8 @@ header {
 	import java.util.List;
 	import java.util.Iterator;
 	import java.util.Map;
+	import java.util.Set;
+	import java.util.TreeSet;
 	import java.util.HashMap;
 	import java.util.Stack;
 	import org.exist.storage.BrokerPool;
@@ -68,6 +70,7 @@ options {
 	protected ArrayList exceptions= new ArrayList(2);
 	protected boolean foundError= false;
 	protected Map declaredNamespaces = new HashMap();
+	protected Set declaredGlobalVars = new TreeSet();
 	
 	public XQueryTreeParser(XQueryContext context) {
 		this();
@@ -268,6 +271,13 @@ throws PermissionDeniedException, EXistException, XPathException
 			{
 				PathExpr enclosed= new PathExpr(context);
 				SequenceType type= null;
+				QName qn = QName.parse(staticContext, qname.getText());
+				if (declaredGlobalVars.contains(qn))
+					throw new XPathException(qname, "err:XQST0049: It is a " +
+						"static error if more than one variable declared or " +
+						"imported by a module has the same expanded QName. " +
+						"Variable: " + qn.toString());
+				declaredGlobalVars.add(qn);
 			}
 			(
 				#(
@@ -284,7 +294,6 @@ throws PermissionDeniedException, EXistException, XPathException
 					decl.setASTNode(e);
 					path.add(decl);
 					if(myModule != null) {
-						QName qn = QName.parse(staticContext, qname.getText());
 						myModule.declareVariable(qn, decl);
 					}
 				}

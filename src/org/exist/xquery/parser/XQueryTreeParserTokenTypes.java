@@ -10,6 +10,8 @@
 	import java.util.List;
 	import java.util.Iterator;
 	import java.util.Map;
+	import java.util.Set;
+	import java.util.TreeSet;
 	import java.util.HashMap;
 	import java.util.Stack;
 	import org.exist.storage.BrokerPool;
