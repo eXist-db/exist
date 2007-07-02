@@ -60,8 +60,8 @@ import org.mortbay.http.SocketListener;
 import org.mortbay.http.SslListener;
 import org.mortbay.http.handler.ForwardHandler;
 import org.mortbay.http.handler.NotFoundHandler;
-import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
+import org.mortbay.jetty.servlet.WebApplicationHandler;
 import org.mortbay.util.MultiException;
 import org.mortbay.util.ThreadedServer;
 import org.w3c.dom.Document;
@@ -88,7 +88,7 @@ import org.xmldb.api.base.Database;
 public class StandaloneServer {
 
    public interface ServletBootstrap {
-      void bootstrap(Properties properties,ServletHandler handler);
+	   void bootstrap(Properties properties, WebApplicationHandler handler);
    }
     private final static Logger LOG = Logger.getLogger(StandaloneServer.class);
     
@@ -126,6 +126,7 @@ public class StandaloneServer {
     
     private Map forwarding = new HashMap();
     private Map listeners = new HashMap();
+    private Map filters = new HashMap();
     
     public StandaloneServer() {
     }
@@ -285,15 +286,14 @@ public class StandaloneServer {
         HttpContext context = new HttpContext();
         context.setContextPath("/");
         
-        ServletHandler servletHandler = new ServletHandler();
-        
+        WebApplicationHandler webappHandler = new WebApplicationHandler();
+                
         // TODO: this should be read from a configuration file
         Map bootstrappers = new HashMap();
         bootstrappers.put("rest", new ServletBootstrap() {
-           public void bootstrap(Properties props,ServletHandler servletHandler) {
+        	public void bootstrap(Properties props, WebApplicationHandler webappHandler) {
               String path = props.getProperty("rest.context", "/*");
-              ServletHolder restServlet =
-                      servletHandler.addServlet("EXistServlet", path, "org.exist.http.servlets.EXistServlet");
+              ServletHolder restServlet = webappHandler.addServlet("EXistServlet", path, "org.exist.http.servlets.EXistServlet");
               restServlet.setInitParameter("form-encoding", props.getProperty("rest.param.form-encoding"));
               restServlet.setInitParameter("container-encoding", props.getProperty("rest.param.container-encoding"));
               restServlet.setInitParameter("dynamic-content-type", props.getProperty("rest.param.dynamic-content-type"));
@@ -312,29 +312,29 @@ public class StandaloneServer {
            }
         });
         bootstrappers.put("webdav", new ServletBootstrap() {
-           public void bootstrap(Properties props,ServletHandler servletHandler) {
+        	public void bootstrap(Properties props, WebApplicationHandler webappHandler) {
               String path = props.getProperty("webdav.context", "/webdav/*");
-              ServletHolder davServlet =
-                      servletHandler.addServlet("WebDAV", path, "org.exist.http.servlets.WebDAVServlet");
+              ServletHolder davServlet = webappHandler.addServlet("WebDAV", path, "org.exist.http.servlets.WebDAVServlet");
               davServlet.setInitParameter("authentication", props.getProperty("webdav.param.authentication"));
            }
         });
         bootstrappers.put("xmlrpc", new ServletBootstrap() {
-           public void bootstrap(Properties props,ServletHandler servletHandler) {
+        	public void bootstrap(Properties props, WebApplicationHandler webappHandler) {
               String path = props.getProperty("xmlrpc.context", "/xmlrpc/*");
-              servletHandler.addServlet("RpcServlet", path, "org.exist.xmlrpc.RpcServlet");
+              webappHandler.addServlet("RpcServlet", path, "org.exist.xmlrpc.RpcServlet");
            }
         });
+        
         
         for (int i = 0 ; i < servlets.size() ; i++) {
         	String name = (String) servlets.get(i); 
            ServletBootstrap bootstrapper = (ServletBootstrap)bootstrappers.get(name);
            if (bootstrapper!=null) {
-              bootstrapper.bootstrap(props,servletHandler);
+        	   bootstrapper.bootstrap(props, webappHandler);
            } else {
               String path = props.getProperty(name+".context", "/"+name+"/*");
               String sname = props.getProperty(name+".name", name);
-              ServletHolder servlet = servletHandler.addServlet(sname, path, props.getProperty(name+".class"));
+              ServletHolder servlet = webappHandler.addServlet(sname, path, props.getProperty(name+".class"));
               String paramPrefix = name+".param.";
               for (Enumeration pnames = props.propertyNames(); pnames.hasMoreElements(); ) {
                  String pname = (String)pnames.nextElement();
@@ -345,6 +345,23 @@ public class StandaloneServer {
               }
            }
         }
+        
+        
+        //setup filters
+        Set filterClasses = filters.keySet();
+        for(Iterator itFilterClass = filterClasses.iterator(); itFilterClass.hasNext();)
+        {
+        	String filterClass = (String)itFilterClass.next();
+        	Properties filterProps = (Properties)filters.get(filterClass);
+        	
+        	org.mortbay.jetty.servlet.FilterHolder filterHolder = webappHandler.defineFilter(filterClass, filterClass);
+        	//TODO: putAll may be wrong??? check this
+        	filterHolder.putAll((Properties)filterProps.get("params"));
+        	
+        	//TODO: Dispatcher.__DEFAULY may be wrong??? check this
+        	webappHandler.addFilterPathMapping(filterProps.getProperty("path"), filterClass, org.mortbay.jetty.servlet.Dispatcher.__DEFAULT);
+        }
+        
         
         if (forwarding.size() > 0) {
             ForwardHandler forward = new ForwardHandler();
@@ -361,7 +378,7 @@ public class StandaloneServer {
             context.addHandler(forward);
         }
         
-        context.addHandler(servletHandler);
+        context.addHandler(webappHandler);
         context.addHandler(new NotFoundHandler());
         httpServer.addContext(context);
         httpServer.start();
@@ -417,8 +434,6 @@ public class StandaloneServer {
             LOG.warn("Configuration should have a root element <server>");
             return new ArrayList();
         }
-        
-        //configureListeners(root);
 
         List configurations = new ArrayList();
         NodeList cl = root.getChildNodes();
@@ -433,6 +448,10 @@ public class StandaloneServer {
                 else if ("listener".equals(name))
                 {
                 	configureListener(elem);
+                }
+                else if ("filter".equals(name))
+                {
+                	configureFilter(elem);
                 }
                 else if ("servlet".equals(name)) {
                     String className = elem.getAttribute("class");
@@ -469,6 +488,26 @@ public class StandaloneServer {
 			listenerProps.put("params", parseParams(listener, null));
 			
 			listeners.put(listenerProtocol.getNodeValue().toLowerCase(), listenerProps);
+		}
+    }
+    
+    private void configureFilter(Element filter)
+    {
+		NamedNodeMap filterAttrs = filter.getAttributes();
+		Node filterEnabled = filterAttrs.getNamedItem("enabled");
+		Node filterPath = filterAttrs.getNamedItem("path");
+		Node filterClass = filterAttrs.getNamedItem("class");
+		
+		if(filterEnabled != null && filterPath != null && filterClass != null)
+		{
+			if(filterEnabled.getNodeValue().equals("yes"))
+			{
+				Properties filterProps = new Properties();
+				filterProps.put("path", filterPath.getNodeValue());
+				filterProps.put("params", parseParams(filter, null));
+				
+				filters.put(filterClass.getNodeValue(), filterProps);
+			}
 		}
     }
     
