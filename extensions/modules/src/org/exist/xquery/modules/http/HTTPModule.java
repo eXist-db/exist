@@ -29,6 +29,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.ProxyHost;
 import org.apache.commons.httpclient.URIException;
 
 import org.exist.util.MimeTable;
@@ -104,7 +105,26 @@ public class HTTPModule extends AbstractInternalModule
         
 		//execute the request
 		HttpClient http = new HttpClient();
-		int result = http.executeMethod(method);
+		try
+		{	
+			//set the proxy server (if any)
+			String proxyHost = System.getProperty("http.proxyHost"); 
+			if(proxyHost != null)
+			{
+				//TODO: support for http.nonProxyHosts e.g. -Dhttp.nonProxyHosts="*.devonline.gov.uk|*.devon.gov.uk"
+				
+				ProxyHost proxy = new ProxyHost(proxyHost, Integer.parseInt(System.getProperty("http.proxyPort")));
+				http.getHostConfiguration().setProxyHost(proxy);
+			}
+			
+			//perform the request
+			int result = http.executeMethod(method);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			System.err.println(e.getMessage());
+		}
 		
 		//persist cookies?
 		if(persistCookies)
