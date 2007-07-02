@@ -215,48 +215,60 @@ public class Validation extends BasicFunction  {
         LOG.error("invoked with wrong function name");
         throw new XPathException("unknown function");
     }
+
     
     private NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
 
+        // start root element
         int nodeNr = builder.startElement("", "report", "report",null);
         
+        // validation status: valid or invalid
         builder.startElement("", "status", "status", null);
         if(report.isValid()){
             builder.characters("valid");
         } else {
             builder.characters("invalid");
         }
-        
         builder.endElement();
-        
+
+        // validation duration
         builder.startElement("", "time", "time", null);
         builder.characters(""+report.getValidationDuration());
         builder.endElement();
         
+        // print exceptions if any
         if(report.getThrowable()!=null){
             builder.startElement("", "exception", "exception", null);
             builder.characters(""+report.getThrowable().getMessage());
             builder.endElement();
         }
         
+        // reusable attributes
     	AttributesImpl attribs = new AttributesImpl();
 
+        // iterate validation report items, write message
         List cr = report.getValidationReportItemList();
         for (Iterator iter = cr.iterator(); iter.hasNext(); ) {
             ValidationReportItem vri = (ValidationReportItem) iter.next();
             
-            String level=vri.getTypeText();
-            
-            attribs.addAttribute("", "level", "level", "CDATA", level);
+            // construct attributes
+            attribs.addAttribute("", "level", "level", "CDATA", vri.getTypeText());
             attribs.addAttribute("", "line", "line", "CDATA", Integer.toString(vri.getLineNumber()));
             attribs.addAttribute("", "column", "column", "CDATA", Integer.toString(vri.getColumnNumber()));
+            
+            // write message
             builder.startElement("", "message", "message", attribs);
             builder.characters(vri.getMessage());
             builder.endElement();
+            
+            // Reuse attributes
             attribs.clear();
         }
         
+        // finish root element
         builder.endElement();
+        
+        // return result
         return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
         
     }
