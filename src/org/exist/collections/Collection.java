@@ -1560,7 +1560,7 @@ public  class Collection extends Observable
     throws SAXException, IOException {
         
         // TODO dizzzz remove later on
-        // LOG.debug("Resolve publicId='"+publicId+"', systemId='"+systemId+"'.");
+        LOG.debug("Resolve publicId='"+publicId+"', systemId='"+systemId+"'.");
         
         InputSource is = resolver.resolveEntity(publicId, systemId);
         // if resolution failed and publicId == null,
