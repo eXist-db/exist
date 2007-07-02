@@ -1561,13 +1561,15 @@ public  class Collection extends Observable
         
         // TODO dizzzz remove later on
         LOG.debug("Resolve publicId='"+publicId+"', systemId='"+systemId+"'.");
-        
         InputSource is = resolver.resolveEntity(publicId, systemId);
+        
         // if resolution failed and publicId == null,
         // try to make absolute file names relative and retry
         if (is == null) {
+            LOG.debug("Resolve failed, fallback scenario"); 
             if (publicId != null)
                 return null;
+            
             URL url = new URL(systemId);
             if (url.getProtocol().equals("file")) {
                 String path = url.getPath();
