@@ -171,10 +171,10 @@ public class Validator {
         try{
             InputSource source = new InputSource(reader);
             
-            SAXParser sax = saxFactory.newSAXParser();
-            sax.setProperty(XMLReaderObjectFactory.PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+            SAXParser saxParser = saxFactory.newSAXParser();
+            saxParser.setProperty(XMLReaderObjectFactory.PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             
-            XMLReader xmlReader = sax.getXMLReader();
+            XMLReader xmlReader = saxParser.getXMLReader();
             
             // repair path to local resource
             if(grammarPath!=null && grammarPath.startsWith("/")){

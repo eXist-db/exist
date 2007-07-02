@@ -131,7 +131,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             }
             
             SAXParser saxParser = saxFactory.newSAXParser();
-            XMLReader xmlReader = saxParser.getXMLReader();
             
             // Setup grammar cache
             GrammarPool grammarPool = 
@@ -140,10 +139,14 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
                 saxParser.setProperty(PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             }
             
+            XMLReader xmlReader = saxParser.getXMLReader();
+            
+            // Setup catalog resolver
             eXistXMLCatalogResolver resolver = (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
             if(resolver!=null){
                 xmlReader.setProperty(PROPERTIES_ENTITYRESOLVER, resolver);
             }
+            
             return xmlReader;
             
         } catch (ParserConfigurationException e) {
