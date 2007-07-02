@@ -129,21 +129,22 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             } catch (SAXNotSupportedException e1) {
                 // ignore: feature only recognized by xerces
             }
-            SAXParser sax = saxFactory.newSAXParser();
-            XMLReader parser = sax.getXMLReader();
+            
+            SAXParser saxParser = saxFactory.newSAXParser();
+            XMLReader xmlReader = saxParser.getXMLReader();
             
             // Setup grammar cache
             GrammarPool grammarPool = 
                (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
             if(grammarPool!=null){
-                sax.setProperty(PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+                saxParser.setProperty(PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             }
             
             eXistXMLCatalogResolver resolver = (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
             if(resolver!=null){
-                parser.setProperty(PROPERTIES_ENTITYRESOLVER, resolver);
+                xmlReader.setProperty(PROPERTIES_ENTITYRESOLVER, resolver);
             }
-            return parser;
+            return xmlReader;
             
         } catch (ParserConfigurationException e) {
             throw new EXistException(e);
