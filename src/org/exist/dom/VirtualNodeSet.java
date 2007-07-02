@@ -253,17 +253,15 @@ public class VirtualNodeSet extends AbstractNodeSet {
     private void addInternal(NodeProxy p) {
         if (realSet == null)
             realSet = new ExtArrayNodeSet(256);
-        knownIsEmptyCardinality = true;
-        if (isEmpty) {
-            isEmpty = false;
-            knownHasOneCardinality = true;
-            hasOne= true;
-        } else if (hasOne) {
-            hasOne = false;
-            knownHasManyCardinality = true;
-            hasMany = true;	
-        }
         realSet.add(p);
+
+        knownIsEmptyCardinality = true;
+        knownHasOneCardinality = true;
+        knownHasManyCardinality = true;
+        isEmpty = realSet.isEmpty();
+        hasOne = realSet.hasOne();
+        hasMany = !(isEmpty || hasOne);
+        
         //Reset the real document set
         //TODO : use realDocumentSet.add(p.getDocument()) ?
         realDocumentSet = null;
@@ -735,7 +733,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
         if (realSet == null)
             return "Virtual#unknown";
         StringBuffer result = new StringBuffer();
-        result.append("Virtual#").append(super.toString());
+//        result.append("Virtual#").append(super.toString());
         return result.toString();
     }      
 }

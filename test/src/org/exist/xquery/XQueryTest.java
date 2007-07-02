@@ -2326,9 +2326,10 @@ public class XQueryTest extends XMLTestCase {
     }
     
     // http://sourceforge.net/support/tracker.php?aid=1740886
-    public void bugtestCardinalityIssues_1740886(){
+    public void testCardinalityIssues_1740886(){
         String xmldoc = "<Foo><Bar/><Bar/><Bar/></Foo>";
         String query=
+            "declare option exist:serialize 'indent=no';" +
             "declare namespace tst = \"urn:test\"; "+
             //======
             "declare function tst:bar( $foo as element(Foo) ) as element(Foo) { "+
@@ -2343,9 +2344,9 @@ public class XQueryTest extends XMLTestCase {
             ResourceSet result = service.query(query);
             
             assertEquals(1,result.getSize());
-            assertEquals("Oops", xmldoc, result.getResource(0).getContent().toString());
+            assertXMLEqual("Oops", xmldoc, result.getResource(0).getContent().toString());
             
-        } catch (XMLDBException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             fail(ex.getMessage());
         }

@@ -215,7 +215,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     	if (size > 0) {
             if (hasOne) {
                 if (isSorted) {
-                    hasOne = get(proxy) == null;
+                    hasOne = get(proxy) != null;
                 } else {
                     hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
                 }
