@@ -13,7 +13,14 @@
     </xs:simpleType>
     <xs:attributeGroup name="service">
         <xs:attribute name="enabled" type="yes_no" default="yes"/>
-        <xs:attribute name="context" type="xs:string"/>
+        <xs:attribute name="context" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The context path of the service. Specify an url-pattern as for a servlet-mapping.
+                    Example: /xmlrpc/* forwards all paths beginning with /xmlrpc to the xmlrpc service
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:attributeGroup>
     <xs:element name="param">
         <xs:complexType>
@@ -28,6 +35,13 @@
         <xs:attributeGroup ref="service"/>
     </xs:complexType>
     <xs:element name="server">
+        <xs:annotation>
+            <xs:documentation>
+                Configures the stand-alone server: the stand-alone server is a minimal
+                webserver with just three services enabled by default:
+                WebDAV, XML-RPC, REST
+            </xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="listener" minOccurs="1" maxOccurs="unbounded">
@@ -50,18 +64,56 @@
                         <xs:attribute name="class" type="xs:string"/>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="filter" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="enabled" type="yes_no" default="yes"/>
+                        <xs:attribute name="path" type="xs:string"/>
+                        <xs:attribute name="class" type="xs:string"/>
+                    </xs:complexType>
+                </xs:element>
                 <xs:element name="forwarding">
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element name="root" minOccurs="0">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Define a forwarding for requests to the server root, i.e.
+                                        if you access the server without specifying a path
+                                    </xs:documentation>
+                                </xs:annotation>
                                 <xs:complexType>
-                                    <xs:attribute name="destination" type="xs:string"/>
+                                    <xs:attribute name="destination" type="xs:string">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                The destination path to which the request will be
+                                                forwarded.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="forward" minOccurs="0" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Define URL forwardings
+                                    </xs:documentation>
+                                </xs:annotation>
                                 <xs:complexType>
-                                    <xs:attribute name="path" type="xs:string"/>
-                                    <xs:attribute name="destination" type="xs:string"/>
+                                    <xs:attribute name="path" type="xs:string">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Requests to the given path will be forwarded
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="destination" type="xs:string">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                The destination path to which the request will be
+                                                forwarded
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>

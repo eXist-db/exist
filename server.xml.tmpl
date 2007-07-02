@@ -48,6 +48,12 @@
     <servlet enabled="no"
              context="/atom/*"
              class="org.exist.atom.http.AtomServlet"/>
+
+	<!--
+		Define Server Filters 
+	-->
+	<filter enabled="no" path="/*" class="uk.gov.devonline.www.xforms.XFormsFilter">
+
     <!--
         Define URL forwardings
     -->
