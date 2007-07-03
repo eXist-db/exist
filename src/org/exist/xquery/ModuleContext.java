@@ -20,8 +20,9 @@ import org.exist.xquery.value.AnyURIValue;
 public class ModuleContext extends XQueryContext {
 
 	private final XQueryContext parentContext;
-	
-	/**
+	private boolean initializing = true;
+
+    /**
 	 * @param parentContext
 	 */
 	public ModuleContext(XQueryContext parentContext) {
@@ -31,7 +32,8 @@ public class ModuleContext extends XQueryContext {
 		baseURI = parentContext.baseURI;
 		moduleLoadPath = parentContext.moduleLoadPath;
 		loadDefaults(broker.getConfiguration());
-	}
+        initializing = false;
+    }
 
     public XQueryContext copyContext() {
         ModuleContext ctx = new ModuleContext(this.parentContext);
@@ -55,8 +57,26 @@ public class ModuleContext extends XQueryContext {
 			module = parentContext.getModule(namespaceURI);
 		return module;
 	}
-	
-	/* (non-Javadoc)
+
+    /**
+     * Overwritten method: the module will be loaded by the parent context, but
+     * we need to declare its namespace in the module context. 
+     */
+    public Module loadBuiltInModule(String namespaceURI, String moduleClass) {
+        Module module = getModule(namespaceURI);
+        if (module == null)
+            module = initBuiltInModule(namespaceURI, moduleClass);
+        if (module != null) {
+            try {
+                declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
+            } catch (XPathException e) {
+                LOG.warn("error while loading builtin module class " + moduleClass, e);
+            }
+        }
+        return module;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getModules()
 	 */
 	public Iterator getModules() {
