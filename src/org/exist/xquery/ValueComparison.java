@@ -94,7 +94,7 @@ public class ValueComparison extends GeneralComparison {
                     if (!rs.hasOne())
                         throw new XPathException(getASTNode(),
                                 "Type error: sequence with less or more than one item is not allowed here");                    
-                    if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), Constants.TRUNC_NONE, Constants.EQ))
+                    if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), Constants.TRUNC_NONE, relation))
                         result.add(current);
                 } while ((context = context.getNextDirect()) != null);
             }
