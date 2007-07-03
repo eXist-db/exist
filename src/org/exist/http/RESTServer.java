@@ -378,28 +378,28 @@ public class RESTServer {
     
     //writes out a resource, uses asMimeType as the specified mime-type or if null uses the type of the resource
     private void writeResourceAs(DocumentImpl resource, DBBroker broker, String stylesheet, String encoding, String asMimeType, Properties outputProperties, HttpServletResponse response) throws BadRequestException, PermissionDeniedException, IOException {
-    	//Do we have permission to read the resource
-    	if (!resource.getPermissions().validate(broker.getUser(), Permission.READ)) {
-	    throw new PermissionDeniedException("Not allowed to read resource");
-	}
-    	
+        //Do we have permission to read the resource
+        if (!resource.getPermissions().validate(broker.getUser(), Permission.READ)) {
+            throw new PermissionDeniedException("Not allowed to read resource");
+        }
+
         if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-	    // binary resource
-	    if(asMimeType != null)  { //was a mime-type specified?
-		
-		response.setContentType(asMimeType);
-	    } else {
-		response.setContentType(resource.getMetadata().getMimeType());
-	    }
-	    OutputStream os = response.getOutputStream();
-	    broker.readBinaryResource((BinaryDocument) resource, os);
-	    os.flush();
+            // binary resource
+            if(asMimeType != null)  { //was a mime-type specified?
+
+                response.setContentType(asMimeType);
+            } else {
+                response.setContentType(resource.getMetadata().getMimeType());
+            }
+            OutputStream os = response.getOutputStream();
+            broker.readBinaryResource((BinaryDocument) resource, os);
+            os.flush();
         } else {
             // xml resource
             Serializer serializer = broker.getSerializer();
             serializer.reset();
-            
-	    
+
+
             //Serialize the document
             try {
                 //use a stylesheet if specified in query parameters
@@ -409,17 +409,24 @@ public class RESTServer {
                 serializer.setProperties(outputProperties);
                 serializer.prepareStylesheets(resource);
                 if(asMimeType != null) { //was a mime-type specified?
-		    response.setContentType(asMimeType+"; charset="+encoding);
+                    response.setContentType(asMimeType+"; charset="+encoding);
                 } else {
-		    if (serializer.isStylesheetApplied() || serializer.hasXSLPi(resource) != null) {
-			asMimeType = serializer.getStylesheetProperty(OutputKeys.MEDIA_TYPE);
-			if (!useDynamicContentType || asMimeType == null)
-			    asMimeType = MimeType.HTML_TYPE.getName();
-			LOG.debug("media-type: " + asMimeType);
-			response.setContentType(asMimeType + "; charset="+encoding);
-		    } else {
-			response.setContentType(resource.getMetadata().getMimeType() + "; charset=" + encoding);
-		    }
+                    if (serializer.isStylesheetApplied() || serializer.hasXSLPi(resource) != null) {
+                        asMimeType = serializer.getStylesheetProperty(OutputKeys.MEDIA_TYPE);
+                        if (!useDynamicContentType || asMimeType == null)
+                            asMimeType = MimeType.HTML_TYPE.getName();
+                        LOG.debug("media-type: " + asMimeType);
+                        response.setContentType(asMimeType + "; charset="+encoding);
+                    } else {
+                        asMimeType = resource.getMetadata().getMimeType();
+                        response.setContentType(asMimeType + "; charset=" + encoding);
+                    }
+                }
+                if (asMimeType.equals(MimeType.HTML_TYPE.getName())){
+                    serializer.setProperty("method", "xhtml");
+                    serializer.setProperty("media-type", "text/html");
+                    serializer.setProperty("ident", "yes");
+                    serializer.setProperty("omit-xml-declaration", "no");
                 }
                 OutputStream is = response.getOutputStream();
                 Writer w = new OutputStreamWriter(is, encoding);
