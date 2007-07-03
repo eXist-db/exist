@@ -418,6 +418,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 throw new XMLDBException(
                         ErrorCodes.INVALID_RESOURCE,
                         "unknown resource type");
+            ((AbstractEXistResource)r).setMimeType(document.getMetadata().getMimeType());
             return r;
         } catch (EXistException e) {
             throw new XMLDBException(
@@ -753,6 +754,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 LOG.debug("Converting HTML to XML using NekoHTML parser.");
                 Class clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
                 XMLReader htmlReader = (XMLReader) clazz.newInstance();
+                //do not modify the case of elements and attributes
+                htmlReader.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
+                htmlReader.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");
                 collection.setReader( htmlReader );
             } catch ( Exception e) {
                 LOG.error("Error while involing NekoHTML parser. ("+e.getMessage()
