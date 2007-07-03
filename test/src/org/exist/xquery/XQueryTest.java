@@ -2257,7 +2257,7 @@ public class XQueryTest extends XMLTestCase {
 
     
     // http://sourceforge.net/support/tracker.php?aid=1740885
-    public void bugtestNeOperatorDoesNotWork_1740885(){
+    public void testNeOperatorDoesNotWork_1740885(){
         
         try {
             String query="let $foo := <Foo> <Bar>A</Bar> <Bar>B</Bar> <Bar>C</Bar> </Foo>"+
