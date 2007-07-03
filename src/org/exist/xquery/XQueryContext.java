@@ -110,13 +110,13 @@ public class XQueryContext {
     private static final HashMap moduleClasses = new HashMap();
     
 	// Static namespace/prefix mappings
-	protected HashMap namespaces;
+	protected HashMap namespaces = new HashMap();
 	
 	// Local in-scope namespace/prefix mappings in the current context
 	protected HashMap inScopeNamespaces = new HashMap();
 
 	// Static prefix/namespace mappings
-	protected HashMap prefixes;
+	protected HashMap prefixes = new HashMap();
 	
 	// Local prefix/namespace mappings in the current context
 	protected final HashMap inScopePrefixes = new HashMap();
@@ -157,7 +157,7 @@ public class XQueryContext {
 	/**
 	 * Loaded modules.
 	 */
-	protected final HashMap modules = new HashMap();
+	protected HashMap modules = new HashMap();
 
 	/** 
 	 * The set of statically known documents specified as
@@ -286,21 +286,22 @@ public class XQueryContext {
 	}
 	
 	public XQueryContext(XQueryContext copyFrom) {
-           this(copyFrom.getBroker(),copyFrom.getAccessContext());
-           Iterator prefixes = copyFrom.namespaces.keySet().iterator();
-           while (prefixes.hasNext()) {
-              String prefix = (String)prefixes.next();
-              if (prefix.equals("xml") || prefix.equals("xmlns")) {
-                 continue;
-              }
-               try {
-                  declareNamespace(prefix,(String)copyFrom.namespaces.get(prefix));
-               } catch (XPathException ex) {
-                  ex.printStackTrace();
-               }
-           }
-           
-	}
+        this(copyFrom.getAccessContext());
+        this.broker = copyFrom.broker;
+        loadDefaultNS();
+        Iterator prefixes = copyFrom.namespaces.keySet().iterator();
+        while (prefixes.hasNext()) {
+            String prefix = (String)prefixes.next();
+            if (prefix.equals("xml") || prefix.equals("xmlns")) {
+                continue;
+            }
+            try {
+                declareNamespace(prefix,(String)copyFrom.namespaces.get(prefix));
+            } catch (XPathException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
 
     public XQueryContext copyContext() {
         XQueryContext ctx = new XQueryContext(this);
@@ -318,10 +319,12 @@ public class XQueryContext {
         ctx.defaultCollation = this.defaultCollation;
         ctx.defaultCollator = this.defaultCollator;
         ctx.backwardsCompatible = this.backwardsCompatible;
+        ctx.enableOptimizer = this.enableOptimizer;
         ctx.stripWhitespace = this.stripWhitespace;
 
         ctx.declaredFunctions = new TreeMap(this.declaredFunctions);
         ctx.globalVariables = new TreeMap(this.globalVariables);
+        ctx.modules = new HashMap(this.modules);
         ctx.watchdog = this.watchdog;
 
         ctx.lastVar = this.lastVar;
@@ -1893,8 +1896,6 @@ public class XQueryContext {
 	protected void loadDefaults(Configuration config) {
 		this.watchdog = new XQueryWatchDog(this);
 		
-		namespaces = new HashMap();
-		prefixes = new HashMap();
 		/*
 		SymbolTable syms = broker.getSymbols();
 		String[] pfx = syms.defaultPrefixList();
@@ -1908,22 +1909,7 @@ public class XQueryContext {
 		}	
 		*/			
 
-		try {
-			// default namespaces
-			namespaces.put("xml", Namespaces.XML_NS);
-			prefixes.put(Namespaces.XML_NS, "xml");			
-			declareNamespace("xs", Namespaces.SCHEMA_NS);
-			declareNamespace("xsi", Namespaces.SCHEMA_INSTANCE_NS);	
-			//required for backward compatibility
-			declareNamespace("xdt", Namespaces.XPATH_DATATYPES_NS);
-			declareNamespace("fn", Function.BUILTIN_FUNCTION_NS);
-			declareNamespace("local", XQUERY_LOCAL_NS);
-			//*not* as standard NS
-			declareNamespace("exist", Namespaces.EXIST_NS);
-			//TODO : include "err" namespace ?
-		} catch (XPathException e) {
-			//TODO : ignored because it should never happen
-		}
+		loadDefaultNS();
 
         String param = (String) getBroker().getConfiguration().getProperty(PROPERTY_ENABLE_QUERY_REWRITING);
         enableOptimizer = param != null && param.equals("yes");
@@ -1945,11 +1931,29 @@ public class XQueryContext {
 				//LOG.debug("Loading module " + modules[i][0]);
 				loadBuiltInModule(modules[i][0], modules[i][1]);
 			}
-		}
-		
+		}		
 	}
-	
-	public void registerUpdateListener(UpdateListener listener) {
+
+    protected void loadDefaultNS() {
+        try {
+			// default namespaces
+			namespaces.put("xml", Namespaces.XML_NS);
+			prefixes.put(Namespaces.XML_NS, "xml");
+			declareNamespace("xs", Namespaces.SCHEMA_NS);
+			declareNamespace("xsi", Namespaces.SCHEMA_INSTANCE_NS);
+			//required for backward compatibility
+			declareNamespace("xdt", Namespaces.XPATH_DATATYPES_NS);
+			declareNamespace("fn", Function.BUILTIN_FUNCTION_NS);
+			declareNamespace("local", XQUERY_LOCAL_NS);
+			//*not* as standard NS
+			declareNamespace("exist", Namespaces.EXIST_NS);
+			//TODO : include "err" namespace ?
+		} catch (XPathException e) {
+			//TODO : ignored because it should never happen
+		}
+    }
+    
+    public void registerUpdateListener(UpdateListener listener) {
 		if (updateListener == null) {
 			updateListener = new ContextUpdateListener();
 			broker.getBrokerPool().getNotificationService().subscribe(updateListener);
