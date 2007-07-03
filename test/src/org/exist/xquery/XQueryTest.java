@@ -2211,7 +2211,7 @@ public class XQueryTest extends XMLTestCase {
     }
     
     // http://sourceforge.net/support/tracker.php?aid=1740880
-    public void bugtestElementConstructionWithNamespace_1740880(){
+    public void testElementConstructionWithNamespace_1740880(){
         
         try {
             String query="let $a := <foo:Bar xmlns:foo=\"urn:foo\"/> " +
