@@ -103,7 +103,8 @@ public class XQueryContext {
     
     public final static String XQUERY_LOCAL_NS =
 		"http://www.w3.org/2003/08/xquery-local-functions";
-	private final static Logger LOG = Logger.getLogger(XQueryContext.class);
+
+    protected final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
 	private static final String TEMP_STORE_ERROR = "Error occurred while storing temporary data";
 	
@@ -862,8 +863,12 @@ public class XQueryContext {
 //			LOG.debug("module " + namespaceURI + " is already present");
 			return module;
 		}
-		
-		try {
+        return initBuiltInModule(namespaceURI, moduleClass);
+    }
+
+    protected Module initBuiltInModule(String namespaceURI, String moduleClass) {
+        Module module = null;
+        try {
             Class mClass = (Class) moduleClasses.get(moduleClass);
             if (mClass == null) {
     			mClass = Class.forName(moduleClass);
