@@ -43,6 +43,7 @@ import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.Namespaces;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -238,16 +239,35 @@ public class FunDeepEqual extends CollatingFunction {
 	
 	private boolean compareAttributes(Node a, Node b) {
 		NamedNodeMap nnma = a.getAttributes(), nnmb = b.getAttributes();
-		if (nnma.getLength() != nnmb.getLength()) return false;
-		for (int i=0; i<nnma.getLength(); i++) {
+		if (getAttrCount(nnma) != getAttrCount(nnmb)) return false;
+        for (int i=0; i<nnma.getLength(); i++) {
 			Node ta = nnma.item(i);
-			Node tb = ta.getLocalName() == null ? nnmb.getNamedItem(ta.getNodeName()) : nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());
+            if (Namespaces.XMLNS_NS.equals(ta.getNamespaceURI()))
+                continue;
+            Node tb = ta.getLocalName() == null ? nnmb.getNamedItem(ta.getNodeName()) : nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());
 			if (tb == null || !safeEquals(ta.getNodeValue(), tb.getNodeValue())) return false;
 		}
 		return true;
 	}
-	
-	private boolean compareNames(Node a, Node b) {
+
+    /**
+     * Return the number of real attributes in the map. Filter out
+     * xmlns namespace attributes.
+     *
+     * @param nnm
+     * @return
+     */
+    private int getAttrCount(NamedNodeMap nnm) {
+        int count = 0;
+        for (int i=0; i<nnm.getLength(); i++) {
+            Node n = nnm.item(i);
+            if (!Namespaces.XMLNS_NS.equals(n.getNamespaceURI()))
+                ++count;
+        }
+        return count;
+    }
+
+    private boolean compareNames(Node a, Node b) {
 		if (a.getLocalName() != null || b.getLocalName() != null) {
 			return safeEquals(a.getNamespaceURI(), b.getNamespaceURI()) && safeEquals(a.getLocalName(), b.getLocalName());
 		}
