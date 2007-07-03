@@ -1,6 +1,7 @@
 package org.exist.xquery;
 
 import java.util.Iterator;
+import java.util.TreeMap;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
@@ -31,8 +32,14 @@ public class ModuleContext extends XQueryContext {
 		moduleLoadPath = parentContext.moduleLoadPath;
 		loadDefaults(broker.getConfiguration());
 	}
-    
-	/* (non-Javadoc)
+
+    public XQueryContext copyContext() {
+        ModuleContext ctx = new ModuleContext(this.parentContext);
+        copyFields(ctx);
+        return ctx;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getStaticallyKnownDocuments()
 	 */
 	public DocumentSet getStaticallyKnownDocuments() throws XPathException {
