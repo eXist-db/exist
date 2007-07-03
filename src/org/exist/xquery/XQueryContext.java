@@ -304,6 +304,11 @@ public class XQueryContext {
 
     public XQueryContext copyContext() {
         XQueryContext ctx = new XQueryContext(this);
+        copyFields(ctx);
+        return ctx;
+    }
+
+    protected void copyFields(XQueryContext ctx) {
         ctx.baseURI = this.baseURI;
         ctx.baseURISetInProlog = this.baseURISetInProlog;
         ctx.staticDocumentPaths = this.staticDocumentPaths;
@@ -322,9 +327,8 @@ public class XQueryContext {
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
         ctx.contextStack = this.contextStack;
-        return ctx;
     }
-
+    
     /**
 	 * Prepares the current context before xquery execution
 	 */

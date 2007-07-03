@@ -2280,7 +2280,7 @@ public class XQueryTest extends XMLTestCase {
     
     
     // http://sourceforge.net/support/tracker.php?aid=1740891
-    public void bugtestEvalLoosesContext_1740891(){
+    public void testEvalLoosesContext_1740891(){
         String module="module namespace tst = \"urn:test\"; "+
             "declare namespace util = \"http://exist-db.org/xquery/util\";" +
             "declare function tst:bar() as element(Bar)* { "+
