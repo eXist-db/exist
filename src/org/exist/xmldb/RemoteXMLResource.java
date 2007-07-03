@@ -58,6 +58,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	
     protected String id;
     protected XmldbURI path = null ;
+    private String mimeType = MimeType.XML_TYPE.getName();
     protected int handle = -1;
     protected int pos = -1;
     protected RemoteCollection parent;
@@ -406,14 +407,16 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     /* (non-Javadoc)
      * @see org.exist.xmldb.EXistResource#setMimeType(java.lang.String)
      */
-    public void setMimeType(String mime) {
+    public void setMimeType(String mime)
+    {
+    	this.mimeType = mime;
     }
 
     /* (non-Javadoc)
      * @see org.exist.xmldb.EXistResource#getMimeType()
      */
     public String getMimeType() {
-        return MimeType.XML_TYPE.getName();
+        return mimeType;
     }
 
 

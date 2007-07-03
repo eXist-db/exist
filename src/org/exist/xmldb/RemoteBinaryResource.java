@@ -32,6 +32,7 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
@@ -47,7 +48,7 @@ import org.xmldb.api.modules.BinaryResource;
 public class RemoteBinaryResource implements BinaryResource, EXistResource {
 
 	private XmldbURI path;
-    private String mimeType = "application/octet-stream";
+    private String mimeType = MimeType.BINARY_TYPE.getName();
 	private RemoteCollection parent;
 	private byte[] data = null;
 	
