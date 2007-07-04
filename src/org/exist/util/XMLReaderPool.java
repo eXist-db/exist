@@ -23,6 +23,7 @@ package org.exist.util;
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
 import org.exist.Namespaces;
+import org.exist.validation.GrammarPool;
 import org.exist.storage.BrokerPool;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DefaultHandler2;
@@ -36,7 +37,9 @@ import org.xml.sax.ext.DefaultHandler2;
 public class XMLReaderPool extends StackObjectPool {
 
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
-    
+
+    private Configuration config;
+
     /**
      * 
      * 
@@ -44,13 +47,21 @@ public class XMLReaderPool extends StackObjectPool {
      * @param maxIdle 
      * @param initIdleCapacity 
      */
-    public XMLReaderPool(PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {
+    public XMLReaderPool(Configuration config, PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {
         super(factory, maxIdle, initIdleCapacity);
+        this.config = config;
     }
 
     public synchronized XMLReader borrowXMLReader() {
         try {
-            return (XMLReader) borrowObject();
+            XMLReader reader = (XMLReader) borrowObject();
+            // Setup grammar cache
+            GrammarPool grammarPool =
+               (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+            if(grammarPool!=null){
+                reader.setProperty(XMLReaderObjectFactory.PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+            }
+            return reader;
         } catch (Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage());
         }
@@ -64,6 +75,7 @@ public class XMLReaderPool extends StackObjectPool {
             reader.setContentHandler(DUMMY_HANDLER);
             reader.setErrorHandler(DUMMY_HANDLER);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, DUMMY_HANDLER);
+            reader.setProperty(XMLReaderObjectFactory.PROPERTIES_INTERNAL_GRAMMARPOOL, null);
             returnObject(reader);
         } catch (Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage());

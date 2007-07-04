@@ -667,7 +667,7 @@ public class BrokerPool {
         //REFACTOR : construct then... configure
         xQueryMonitor = new XQueryMonitor();
         //REFACTOR : construct then... configure
-        xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
+        xmlReaderPool = new XMLReaderPool(conf, new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
         int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
         if(bufferSize == -1)

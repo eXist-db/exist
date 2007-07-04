@@ -852,7 +852,7 @@ public  class Collection extends Observable
      * @throws SAXException
      * @throws LockException
      */
-    public void store(Txn transaction, DBBroker broker, final IndexInfo info, final InputSource source, boolean privileged)
+    public void store(Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             public void run() throws EXistException, SAXException {
@@ -868,10 +868,14 @@ public  class Collection extends Observable
                 } catch (IOException e) {
                     LOG.debug("could not reset input source", e);
                 }
+                XMLReader reader = getReader(broker);
+                info.setReader(reader, Collection.this);
                 try {
-                    info.getReader().parse(source);
+                    reader.parse(source);
                 } catch (IOException e) {
                     throw new EXistException(e);
+                } finally {
+                    releaseReader(broker, reader);
                 }
             }
         });
@@ -890,14 +894,18 @@ public  class Collection extends Observable
      * @throws SAXException
      * @throws LockException
      */
-    public void store(Txn transaction, DBBroker broker, final IndexInfo info, final String data, boolean privileged)
+    public void store(Txn transaction, final DBBroker broker, final IndexInfo info, final String data, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             public void run() throws SAXException, EXistException {
+                XMLReader reader = getReader(broker);
+                info.setReader(reader, Collection.this);
                 try {
-                    info.getReader().parse(new InputSource(new StringReader(data)));
+                    reader.parse(new InputSource(new StringReader(data)));
                 } catch (IOException e) {
                     throw new EXistException(e);
+                } finally {
+                    releaseReader(broker, reader);
                 }
             }
         });
@@ -966,7 +974,6 @@ public  class Collection extends Observable
         } finally {
         	//This lock has been acquired in validateXMLResourceInternal()
             document.getUpdateLock().release(Lock.WRITE_LOCK);
-            releaseReader(broker, info.getReader());
         }
         
         collectionConfEnabled = true;
@@ -1031,11 +1038,14 @@ public  class Collection extends Observable
             SAXException, LockException, IOException {
         return validateXMLResourceInternal(transaction, broker, docUri, new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException, EXistException {
-                info.setReader(getReader(broker), Collection.this);
+                XMLReader reader = getReader(broker);
+                info.setReader(reader, Collection.this);
                 try {
-                    info.getReader().parse(source);
+                    reader.parse(source);
                 } catch (IOException e) {
                     throw new EXistException(e);
+                } finally {
+                    releaseReader(broker, reader);
                 }
             }
         });
