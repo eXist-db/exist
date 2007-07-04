@@ -46,7 +46,6 @@ import org.xml.sax.ext.LexicalHandler;
 public class IndexInfo {
 
 	private Indexer indexer;
-	private XMLReader reader;
 	private DOMStreamer streamer;
 	private DocumentTrigger trigger;
 	private int event;
@@ -64,17 +63,12 @@ public class IndexInfo {
 	}
 	
 	void setReader(XMLReader reader, EntityResolver entityResolver) throws SAXException {
-		this.reader = reader;
 		reader.setEntityResolver(entityResolver);
 		LexicalHandler lexicalHandler = trigger == null ? indexer : trigger.getLexicalInputHandler();
 		ContentHandler contentHandler = trigger == null ? indexer : trigger.getInputHandler();
 		reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
 		reader.setContentHandler(contentHandler);
 		reader.setErrorHandler(indexer);
-	}
-	
-	public XMLReader getReader() {
-		return this.reader;
 	}
 	
 	void setDOMStreamer(DOMStreamer streamer) {
