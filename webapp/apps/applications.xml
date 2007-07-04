@@ -2,6 +2,38 @@
     xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:html="http://www.w3.org/1999/xhtml">
 
     <application>
+        <dc:creator>IT Innovation Centre</dc:creator>
+        <creator-site>http://www.gria.org/</creator-site>
+        <dc:identifier>http://www.gria.org/</dc:identifier>
+        <dc:rights>LGPL</dc:rights>
+        <dc:title>Service-Oriented Contextualised Business Registry</dc:title>
+        <dc:subject>service-oriented infrastructure</dc:subject>
+        <dc:subject>SOA</dc:subject>
+        <dc:subject>registry</dc:subject>
+        <dc:subject>service discovery</dc:subject>
+        <dc:subject>SLA</dc:subject>
+        <dc:subject>business context</dc:subject>
+        <dc:description> 
+            GRIA is a service-oriented infrastructure (SOI) designed to support B2B collaborations through service provision across organisational boundaries in a secure, interoperable and flexible manner. GRIA's business registry service is part of the Client Management package supporting contextualised service discovery, allowing querying for resources within dynanmic management contexts. The registry allows clients to submit queries such as "Find SLAs for providing Application X where the CPU seconds in the  SLA is greater than 1000 and the Usage of the SLA with respect to the used disk space is lower than 500MB". The registry is able to cope with any business context or resource as far as its metadata can be represented in XML. It supports the dynamic addition of new business contexts and new relationships between these contexts.
+        </dc:description><!-- top level description -->
+        <dc:publisher>IT Innovation Centre</dc:publisher>
+        <dc:format>
+            Service-oriented contextualised business registry as part of the service-oriented infrastracture GRIA.
+        </dc:format><!-- type of application -->
+        <dev-site>http://www.gria.org/</dev-site>
+        <production-site>http://www.gria.org/</production-site>
+        <status>production</status>
+        <feature-used>Tomcat</feature-used>
+        <!-- <database size="30Mb" documents="1" updates="rare" security='read for all' /> -->
+        <dev-notes>
+            Supported query languages: XQuery, ooXmlQL 
+            (Contextualised query language for service discovery 
+            ooXmlQL is automatically translated into XQuery)
+        </dev-notes>
+        <submitter />
+    </application>
+    
+    <application>
         <dc:creator>Dr. Klaus E. Werner</dc:creator>
         <creator-site>http://collectio.org/</creator-site>
         <creator-site>http://hyperrecord.net/</creator-site>
