@@ -11,6 +11,7 @@ import org.exist.dom.QName;
 public interface Namespaces {
 
 	public final static String SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";	
+    public final static String DTD_NS = "http://www.w3.org/TR/REC-xml";	
 	public final static String SCHEMA_DATATYPES_NS = "http://www.w3.org/2001/XMLSchema-datatypes";	
 	public final static String SCHEMA_INSTANCE_NS = "http://www.w3.org/2001/XMLSchema-instance";	
 	public final static String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";	
