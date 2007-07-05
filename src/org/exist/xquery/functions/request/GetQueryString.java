@@ -51,7 +51,7 @@ public class GetQueryString extends BasicFunction {
 				RequestModule.PREFIX),
 			"Returns the full query string passed to the servlet (without the initial question mark).",
 			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 
 	public GetQueryString(XQueryContext context)
 	{
@@ -75,7 +75,17 @@ public class GetQueryString extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 
 		if (value.getObject() instanceof RequestWrapper)
-			return new StringValue(((RequestWrapper) value.getObject()).getQueryString());
+		{
+			String queryString = ((RequestWrapper) value.getObject()).getQueryString();
+			if(queryString != null)
+			{
+				return new StringValue(queryString);
+			}
+			else
+			{
+				return Sequence.EMPTY_SEQUENCE;
+			}
+		}
 		else
 			throw new XPathException("Variable $request is not bound to a Request object.");
 	}
