@@ -56,7 +56,7 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class GrammarTooling extends BasicFunction  {
     
-    private static final String TYPE_DTD="http://www.w3.org/TR/REC-xml";
+    private static final String TYPE_DTD=Namespaces.DTD_NS;
     private static final String TYPE_XSD=Namespaces.SCHEMA_NS;
     
     private final Configuration config;
