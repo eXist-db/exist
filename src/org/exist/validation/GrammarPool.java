@@ -27,6 +27,7 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
+import org.exist.Namespaces;
 
 /**
  *  Wrapper around the Xerces XMLGrammarPoolImpl, so debugging of
@@ -154,5 +155,25 @@ public class GrammarPool implements XMLGrammarPool {
         logger.debug("Clear grammarpool.");
         pool.clear();
     }
+    
+    /**
+     *  Removes all grammars from the pool.
+     *
+     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#clear
+     */
+    public void clearDTDs() {
+        logger.debug("Removing DTD's from grammarpool.");
+        Grammar dtds[] = retrieveInitialGrammarSet(Namespaces.DTD_NS);
+        
+        if(dtds.length>0){
+            logger.debug("Removing "+dtds.length+" DTDs.");
+            Grammar schemas[] = retrieveInitialGrammarSet(Namespaces.SCHEMA_NS);
+            clear();
+            cacheGrammars(Namespaces.SCHEMA_NS, schemas);
+        } else {
+            logger.debug("No DTDs to be removed.");
+        }
+    }
+    
     
 }
