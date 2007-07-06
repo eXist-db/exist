@@ -71,8 +71,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	protected Properties properties = null;
 	protected boolean lockDocuments = false;
 	protected LockedDocumentMap lockedDocuments = null;
-	
-	protected AccessContext accessCtx;
+	protected DBBroker reservedBroker = null;
+
+    protected AccessContext accessCtx;
 	
 	private LocalXPathQueryService() {}
 	
@@ -322,6 +323,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	        lockedDocuments.unlock();
 	    }
 	    lockedDocuments = null;
+
+        if (reservedBroker != null)
+            brokerPool.release(reservedBroker);
+        reservedBroker = null;
     }
 	
 	public void removeNamespace(String ns) throws XMLDBException {
@@ -366,7 +371,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     	    context.releaseLockedDocuments();
     	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} finally {
-    		brokerPool.release(broker);
+            if (lockDocuments)
+                reservedBroker = broker;
+            else
+                brokerPool.release(broker);
     	}
     	LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
     	if(result != null)
