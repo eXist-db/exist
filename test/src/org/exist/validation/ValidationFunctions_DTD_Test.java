@@ -99,7 +99,7 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             // DTD for hamlet_valid.xml is registered in system catalog.
             // result should be "document is valid"
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/tmp/hamlet_valid.xml') )");
+                "validation:validate( xs:anyURI('"+TestTools.VALIDATION_TMP+"/hamlet_valid.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals( "hamlet_valid.xml in systemcatalog", "true", r );
             
@@ -123,7 +123,7 @@ public class ValidationFunctions_DTD_Test extends TestCase {
         try {
             logger.info("Test1");
             result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml') ,"
+                "validation:validate( xs:anyURI('"+TestTools.VALIDATION_HOME+"/hamlet_valid.xml') ,"
                 +" xs:anyURI('/db/validation/dtd/catalog.xml') )");
             r = (String) result.getResource(0).getContent();
             assertEquals("valid document", "true", r );
