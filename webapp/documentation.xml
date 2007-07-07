@@ -107,6 +107,11 @@
             </tr>
 
             <tr>
+              <td class="doclink"><ulink url="jmx.xml">JMX</ulink></td>
+              <td>Experimental support for Java Management Extensions (JMX)</td>
+            </tr>
+            
+            <tr>
               <td class="doclink"><ulink url="developper.html">Developer's
               Notes</ulink>:</td>
 
