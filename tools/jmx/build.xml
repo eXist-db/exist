@@ -1,0 +1,42 @@
+<project basedir="." default="jar" name="JMX">
+
+    <property name="src" value="./src"/>
+    <property name="classes" value="./classes"/>
+    <property name="server.dir" value="../.."/>
+
+    <path id="classpath.jmx">
+        <pathelement path="${server.dir}/exist.jar"/>
+        <fileset dir="${server.dir}/lib/core">
+            <include name="excalibur-cli-*.jar"/>
+            <include name="log4j-*.jar"/>
+        </fileset>
+    </path>
+
+    <available classname="javax.management.MBeanServer" property="jmx.present"/>
+    
+    <target name="prepare">
+        <mkdir dir="${classes}"/>
+    </target>
+
+    <target name="compile" depends="prepare">
+        <echo message="Compiling JMX agent and client tools"/>
+        <echo message="-----------------------------------------"/>
+        <javac debug="true" destdir="${classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${src}"
+            source="1.5" target="1.5">
+            <classpath>
+                <path refid="classpath.jmx"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${server.dir}/exist.jar" basedir="${classes}"
+            keepcompression="true" update="true"/>
+    </target>
+
+    <target name="jmx-check" unless="jmx.present">
+        <echo message="The javax.managment package does not seem to be available."/>
+        <echo message="You are probably using a Java version &lt; 1.5. JMX will be disabled."/>
+    </target>
+</project>
