@@ -19,17 +19,15 @@
  *  
  *  $Id$
  */
-
 package org.exist.storage.lock;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Deadlock detection for resource and collection locks. The static methods in this class
