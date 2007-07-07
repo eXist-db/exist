@@ -10,13 +10,10 @@
 
 package org.exist.storage.lock;
 
-import java.util.Stack;
-import java.util.Map;
-import java.util.Collections;
-import java.util.HashMap;
-
 import org.apache.log4j.Logger;
 import org.exist.util.LockException;
+
+import java.util.Stack;
 
 /**
  * A lock with the same semantics as builtin
@@ -334,4 +331,8 @@ public class ReentrantReadWriteLock implements Lock {
 		return holds_;
 	}
 
+    public synchronized LockInfo getLockInfo() {
+        String lockType = mode_ == Lock.WRITE_LOCK ? LockInfo.WRITE_LOCK : LockInfo.READ_LOCK;
+        return new LockInfo(LockInfo.COLLECTION_LOCK, lockType, new String[] { owner_.getName() });
+    }
 }

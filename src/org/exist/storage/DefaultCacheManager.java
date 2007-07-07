@@ -21,13 +21,15 @@
  */
 package org.exist.storage;
 
+import org.apache.log4j.Logger;
+import org.exist.management.Agent;
+import org.exist.management.AgentFactory;
+import org.exist.storage.cache.Cache;
+import org.exist.util.DatabaseConfigurationException;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.log4j.Logger;
-import org.exist.storage.cache.Cache;
-import org.exist.util.Configuration;
 
 /**
  * CacheManager maintains a global memory pool available
@@ -80,7 +82,9 @@ public class DefaultCacheManager implements CacheManager {
     
     /** Caches maintained by this class */
     private List caches = new ArrayList();
-    
+
+    private long totalMem;
+
     /**
      * The total maximum amount of pages shared between
      * all caches. 
@@ -105,16 +109,19 @@ public class DefaultCacheManager implements CacheManager {
      * next sync event.
      */
     private Cache lastRequest = null;
-    
-    public DefaultCacheManager(Configuration config) {
+
+    private String instanceName;
+
+    public DefaultCacheManager(BrokerPool pool) {
+        this.instanceName = pool.getId();
         int pageSize, cacheSize;
-        if ((pageSize = config.getInteger(NativeBroker.PROPERTY_PAGE_SIZE)) < 0)
+        if ((pageSize = pool.getConfiguration().getInteger(NativeBroker.PROPERTY_PAGE_SIZE)) < 0)
         	//TODO : should we share the page size with the native broker ?
             pageSize = NativeBroker.DEFAULT_PAGE_SIZE;
-        if ((cacheSize = config.getInteger(PROPERTY_CACHE_SIZE)) < 0) {
+        if ((cacheSize = pool.getConfiguration().getInteger(PROPERTY_CACHE_SIZE)) < 0) {
             cacheSize = DEFAULT_CACHE_SIZE;
         }
-        long totalMem = cacheSize * 1024 * 1024;
+        totalMem = cacheSize * 1024 * 1024;
         int buffers = (int) (totalMem / pageSize);
         
         this.totalPageCount = buffers;
@@ -122,12 +129,14 @@ public class DefaultCacheManager implements CacheManager {
         NumberFormat nf = NumberFormat.getNumberInstance();
         LOG.info("Cache settings: totalPages: " + nf.format(totalPageCount) + 
         		"; maxCacheSize: " + nf.format(maxCacheSize));
+        registerMBean();
     }
 
     public void registerCache(Cache cache) {
         currentPageCount += cache.getBuffers();
         caches.add(cache);
         cache.setCacheManager(this);
+        registerMBean(cache);
     }
     
     public void deregisterCache(Cache cache) {
@@ -147,6 +156,7 @@ public class DefaultCacheManager implements CacheManager {
             if (cache.getBuffers() < maxCacheSize)
                 lastRequest = cache;
             // no free pages available
+//            LOG.debug("Cache " + cache.getFileName() + " cannot be resized");
             return -1;
         }
         if (cache.getGrowthFactor() > 1.0
@@ -232,6 +242,22 @@ public class DefaultCacheManager implements CacheManager {
         }
         lastRequest = null;
     }
+
+    public long getMaxTotal() {
+        return totalPageCount;
+    }
+
+    public long getCurrentSize() {
+        return currentPageCount;
+    }
+
+    public long getMaxSingle() {
+        return maxCacheSize;
+    }
+
+    public long getTotalMem() {
+        return totalMem;
+    }
     
     /**
      * Returns the default initial size for all caches.
@@ -240,5 +266,27 @@ public class DefaultCacheManager implements CacheManager {
      */
     public int getDefaultInitialSize() {
         return DEFAULT_CACHE_SIZE;
+    }
+
+    private void registerMBean() {
+        Agent agent = AgentFactory.getInstance();
+        try {
+            agent.addMBean("org.exist.management." + instanceName +
+                ":type=CacheManager",
+                    new org.exist.management.CacheManager(this));
+        } catch (DatabaseConfigurationException e) {
+            LOG.warn("Exception while registering cache mbean.", e);
+        }
+    }
+
+    private void registerMBean(Cache cache) {
+        Agent agent = AgentFactory.getInstance();
+        try {
+            agent.addMBean("org.exist.management." + instanceName + ":type=CacheManager.Cache,name=" +
+                cache.getFileName() + ",cache-type=" + cache.getType(),
+                    new org.exist.management.Cache(cache));
+        } catch (DatabaseConfigurationException e) {
+            LOG.warn("Exception while registering cache mbean.", e);
+        }
     }
 }

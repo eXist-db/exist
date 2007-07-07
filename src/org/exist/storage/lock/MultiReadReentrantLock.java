@@ -36,10 +36,11 @@
  */
 package org.exist.storage.lock;
 
-import java.util.*;
-
 import org.apache.log4j.Logger;
 import org.exist.util.LockException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A reentrant read/write lock, which allows multiple readers to acquire a lock.
@@ -471,6 +472,26 @@ public class MultiReadReentrantLock implements Lock {
             }
         }
         return true;
+    }
+
+    public synchronized LockInfo getLockInfo() {
+        LockInfo info;
+        if (writeLockedThread != null)
+            info = new LockInfo(LockInfo.RESOURCE_LOCK, LockInfo.WRITE_LOCK, new String[] { writeLockedThread.getName() });
+        else {
+            String[] readers = new String[outstandingReadLocks.size()];
+            for (int i = 0; i < outstandingReadLocks.size(); i++) {
+                LockOwner owner = (LockOwner) outstandingReadLocks.get(i);
+                readers[i] = owner.getOwner().getName();
+            }
+            info = new LockInfo(LockInfo.RESOURCE_LOCK, LockInfo.READ_LOCK, readers);
+        }
+        String waitingForWrite[] = new String[waitingForWriteLock.size()];
+        for (int i = 0; i < waitingForWriteLock.size(); i++) {
+            waitingForWrite[i] = ((WaitingThread) waitingForWriteLock.get(i)).getThread().getName();
+        }
+        info.setWaitingForWrite(waitingForWrite);
+        return info;
     }
 
     private void debugReadLocks(String msg) {

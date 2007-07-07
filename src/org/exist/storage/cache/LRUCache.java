@@ -48,14 +48,17 @@ public class LRUCache implements Cache {
     private String fileName;
     
     private CacheManager cacheManager = null;
-    
-	public LRUCache(int size, double growthFactor, double growthThreshold) {
+
+    private String type;
+
+    public LRUCache(int size, double growthFactor, double growthThreshold, String type) {
 		max = size;
         this.growthFactor = growthFactor;
 		map = new SequencedLongHashMap(size * 2);
         accounting = new Accounting(growthThreshold);
         accounting.setTotalSize(max);
-	}
+        this.type = type;
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cache#add(org.exist.storage.cache.Cacheable, int)
@@ -63,8 +66,12 @@ public class LRUCache implements Cache {
 	public void add(Cacheable item, int initialRefCount) {
 		add(item);
 	}
-		
-	/* (non-Javadoc)
+
+    public String getType() {
+        return type;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cache#add(org.exist.storage.cache.Cacheable)
 	 */
 	public void add(Cacheable item) {
