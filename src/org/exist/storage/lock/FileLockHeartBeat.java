@@ -21,15 +21,15 @@
  */
 package org.exist.storage.lock;
 
+import java.io.IOException;
+import java.util.Map;
+
 import org.exist.scheduler.JobDescription;
 import org.exist.scheduler.SystemJob;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * Provides a Scheduled HeartBeat for the FileLock

@@ -26,10 +26,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.text.DateFormat;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;

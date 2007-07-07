@@ -1,7 +1,7 @@
 package org.exist.storage.lock;
 
-import org.exist.util.LockException;
 import org.apache.log4j.Logger;
+import org.exist.util.LockException;
 
 /**
  * Wraps around a thread in order to be able to suspend it completely while it is waiting
