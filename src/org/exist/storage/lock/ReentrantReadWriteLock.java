@@ -1,19 +1,40 @@
 /*
-  File: ReentrantLock.java
-
-  Originally written by Doug Lea and released into the public domain.
-  This may be used for any purposes whatsoever without acknowledgment.
-  Thanks for the assistance and support of Sun Microsystems Labs,
-  and everyone contributing, testing, and using this code.
-
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2005-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *
+ * File: ReentrantLock.java
+ *
+ * Originally written by Doug Lea and released into the public domain.
+ * This may be used for any purposes whatsoever without acknowledgment.
+ * Thanks for the assistance and support of Sun Microsystems Labs,
+ * and everyone contributing, testing, and using this code.
+ *
+ * $Id$
+ *
 */
 
 package org.exist.storage.lock;
 
+import java.util.Stack;
+
 import org.apache.log4j.Logger;
 import org.exist.util.LockException;
-
-import java.util.Stack;
 
 /**
  * A lock with the same semantics as builtin

@@ -1,8 +1,8 @@
 package org.exist.storage.lock;
 
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 
 /**
  * This map is used by the XQuery engine to track how many read locks were
