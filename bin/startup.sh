@@ -5,6 +5,21 @@
 # $Id$
 # -----------------------------------------------------------------------------
 
+#
+# Pass -j to enable JMX agent. The port for it can be specified with -p
+#
+usage="startup.sh [-j] [-p jmx-port]\n"
+
+JMX_ENABLED=0
+JMX_PORT=1099
+while getopts ":jp:" option
+do 
+  case $option in
+      j ) JMX_ENABLED=1 ;;
+      p ) JMX_PORT=$OPTARG;;
+  esac
+done
+
 exist_home () {
 	case "$0" in
 		/*)
@@ -41,11 +56,22 @@ fi
 LANG=en_US.UTF-8
 
 if [ -z "$JAVA_OPTIONS" ]; then
-	JAVA_OPTIONS="-Xms16000k -Xmx128000k -Dfile.encoding=UTF-8"
+	JAVA_OPTIONS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8"
 fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
+
 #DEBUG_START="-Dexist.start.debug=true"
+
+#Comment in the following lines to enable the JMX agent:
+
+if [ $JMX_ENABLED -gt 0 ]; then
+	JMX_OPTS="-Dcom.sun.management.jmxremote \
+		-Dcom.sun.management.jmxremote.port=$JMX_PORT \
+		-Dcom.sun.management.jmxremote.authenticate=false \
+		-Dcom.sun.management.jmxremote.ssl=false"
+	JAVA_OPTIONS="$JAVA_OPTIONS $JMX_OPTS"
+fi
 
 $JAVA_HOME/bin/java $JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
 	$DEBUG_START $OPTIONS -jar "$EXIST_HOME/start.jar" \
