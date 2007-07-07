@@ -1,0 +1,39 @@
+JMX management interface for eXist
+----------------------------------
+
+NOTE: This is work in progress and incomplete. Needs Java 5
+or newer.
+
+The classes in this package provide access to various
+management interfaces (so called MBeans) available within 
+a running eXist database. The service is based on Java 
+Management eXtensions (JMX). It can be used with
+standard JMX tools like jconsole. We also provide a
+simple command-line utility included in this package.
+
+To enable the JMX agent in eXist, call
+
+./build.sh -f tools/jmx/build.xml
+
+to compile the part of the source code which depends
+on the javax.management packages. This will add a bunch
+of classes to exist.jar.
+
+Next, you have to tell the Java vm which is running the server
+to open a port for JMX. This is done through a set of properties
+passed on the command line. For example:
+
+-Dcom.sun.management.jmxremote
+-Dcom.sun.management.jmxremote.port=1099
+-Dcom.sun.management.jmxremote.authenticate=false
+-Dcom.sun.management.jmxremote.ssl=false
+
+The shell and .bat scripts that ship with eXist do already include
+the necessary lines. You just have to uncomment them.
+
+Once the server process is restarted, you can use any JMX client
+to access the JMX services. The included command line client is
+useful to get a quick overview of certain server statistics. For
+example, to view the current cache usage, run
+
+java -jar start.jar org.exist.management.JMXClient -s
