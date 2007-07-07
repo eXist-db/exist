@@ -28,7 +28,6 @@
  * $Id$
  *
 */
-
 package org.exist.storage.lock;
 
 import java.util.Stack;
