@@ -80,6 +80,7 @@ import java.text.NumberFormat;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.DefaultCacheManager;
+import org.exist.storage.CacheManager;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
@@ -227,7 +228,8 @@ public class BTree extends Paged {
 	}
 
 	private void initCache() {
-        cache = new LRDCache(cacheManager.getDefaultInitialSize(), 1.5, growthThreshold);
+        cache = new LRDCache(cacheManager.getDefaultInitialSize(), 1.5,
+            growthThreshold, CacheManager.BTREE_CACHE);
         cache.setFileName(getFile().getName());
         cacheManager.registerCache(cache);
 	}

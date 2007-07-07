@@ -435,7 +435,7 @@ public class BrokerPool {
 	 */
 	private Stack waitingSystemTasks = new Stack();
 
-	/**
+    /**
 	 * The cache in which the database instance may store items.
 	 */	
 	
@@ -476,7 +476,7 @@ public class BrokerPool {
 
     private User serviceModeUser = null;
     private boolean inServiceMode = false;
-    
+
     /** Creates and configures the database instance.
 	 * @param instanceName A name for the database instance.
 	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
@@ -660,7 +660,7 @@ public class BrokerPool {
         status = INITIALIZING;
         
 		//REFACTOR : construct then configure
-        cacheManager = new DefaultCacheManager(conf);
+        cacheManager = new DefaultCacheManager(this);
 
         //REFACTOR : construct then configure
         xQueryPool = new XQueryPool(conf);
@@ -1447,6 +1447,8 @@ public class BrokerPool {
         shutdownListener = null;
         securityManager = null;
         notificationService = null;
+
+        status = OPERATING;
 	}
 
 	//TODO : move this elsewhere

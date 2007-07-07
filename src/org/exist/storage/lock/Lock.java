@@ -99,4 +99,11 @@ public interface Lock {
      * Currently used to rerun deadlock detection.
      */
     public void wakeUp();
+
+    /**
+     * Create a LockInfo entry for the given lock.
+     * 
+     * @return the lock info
+     */
+    public LockInfo getLockInfo();
 }

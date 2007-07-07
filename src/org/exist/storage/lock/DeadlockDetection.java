@@ -1,8 +1,8 @@
 package org.exist.storage.lock;
 
-import java.util.Map;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * Deadlock detection for resource and collection locks. The static methods in this class
@@ -112,5 +112,19 @@ public class DeadlockDetection {
 
     public static Lock isWaitingFor(Thread waiter) {
         return (Lock) waitForCollection.get(waiter);
+    }
+
+    public static Map getWaitingThreads() {
+        Map table = new HashMap();
+        for (Iterator i = waitForResource.values().iterator(); i.hasNext(); ) {
+            WaitingThread waitingThread = (WaitingThread) i.next();
+            table.put(waitingThread.getThread().getName(), waitingThread.getLock().getLockInfo());
+        }
+        for (Iterator i = waitForCollection.entrySet().iterator(); i.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) i.next();
+            Thread thread = (Thread) entry.getKey();
+            table.put(thread.getName(), ((Lock)entry.getValue()).getLockInfo());
+        }
+        return table;
     }
 }

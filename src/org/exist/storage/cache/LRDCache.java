@@ -47,8 +47,8 @@ public class LRDCache extends GClockCache {
 	private int maxReferences;
 	private int ageingPeriod;
 	
-	public LRDCache(int size, double growthFactor, double growthThreshold) {
-		super(size, growthFactor, growthThreshold);
+	public LRDCache(int size, double growthFactor, double growthThreshold, String type) {
+		super(size, growthFactor, growthThreshold, type);
 		maxReferences = size * 10000;
 		ageingPeriod = size * 5000;
 	}

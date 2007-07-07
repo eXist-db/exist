@@ -1,6 +1,7 @@
 package org.exist.collections;
 
 import org.exist.storage.BrokerPool;
+import org.exist.storage.CacheManager;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
 import org.exist.storage.lock.Lock;
@@ -22,7 +23,7 @@ public class CollectionCache extends LRDCache {
 	private BrokerPool pool;
 
 	public CollectionCache(BrokerPool pool, int blockBuffers, double growthThreshold) {
-		super(blockBuffers, 1.8, growthThreshold);
+		super(blockBuffers, 1.8, growthThreshold, CacheManager.DATA_CACHE);
         this.names = new Object2LongHashMap(blockBuffers);
 		this.pool = pool;
         setFileName("collections.dbx");

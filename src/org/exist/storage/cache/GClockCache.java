@@ -55,17 +55,24 @@ public class GClockCache implements Cache {
 
 	protected CacheManager cacheManager = null;
     private String fileName = "unknown";
-    
-	public GClockCache(int size, double growthFactor, double growthThreshold) {
+
+    private String type;
+
+    public GClockCache(int size, double growthFactor, double growthThreshold, String type) {
 		this.size = size;
         this.growthFactor = growthFactor;
 		this.items = new Cacheable[size];
 		this.map = new Long2ObjectHashMap(size * 2);
         accounting = new Accounting(growthThreshold);
         accounting.setTotalSize(size);
-	}
+        this.type = type;
+    }
 
-	public void add(Cacheable item) {
+    public String getType() {
+        return type;
+    }
+
+    public void add(Cacheable item) {
 		add(item, 1);
 	}
 

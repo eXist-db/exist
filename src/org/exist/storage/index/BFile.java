@@ -29,10 +29,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BufferStats;
-import org.exist.storage.DefaultCacheManager;
-import org.exist.storage.StorageAddress;
+import org.exist.storage.*;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
@@ -147,7 +144,7 @@ public class BFile extends BTree {
             double cacheGrowth, double thresholdBTree, double thresholdData) throws DBException {
         super(pool, fileId, transactional, cacheManager, file, thresholdBTree);
         fileHeader = (BFileHeader) getFileHeader();
-        dataCache = new LRUCache(64, cacheGrowth, thresholdData);
+        dataCache = new LRUCache(64, cacheGrowth, thresholdData, CacheManager.DATA_CACHE);
         dataCache.setFileName(file.getName());
         cacheManager.registerCache(dataCache);
         minFree = PAGE_MIN_FREE;

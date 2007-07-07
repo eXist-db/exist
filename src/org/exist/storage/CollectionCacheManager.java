@@ -77,4 +77,16 @@ public class CollectionCacheManager implements CacheManager {
 
     public void checkDistribution() {
     }
+
+    public long getMaxTotal() {
+        return maxCacheSize;
+    }
+
+    public long getMaxSingle() {
+        return maxCacheSize;
+    }
+
+    public long getCurrentSize() {
+        return collectionCache.getRealSize();
+    }
 }

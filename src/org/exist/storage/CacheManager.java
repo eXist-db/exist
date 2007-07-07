@@ -25,6 +25,9 @@ import org.exist.storage.cache.Cache;
 */
 public interface CacheManager {
 
+    public final static String BTREE_CACHE = "BTREE";
+    public final static String DATA_CACHE = "DATA";
+    
     /**
      * Register a cache, i.e. put it under control of
      * the cache manager.
@@ -63,4 +66,10 @@ public interface CacheManager {
      * room for the smaller cache to grow.
      */
     void checkDistribution();
+
+    long getMaxTotal();
+
+    long getMaxSingle();
+
+    long getCurrentSize();
 }

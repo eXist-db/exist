@@ -32,8 +32,16 @@ import org.exist.storage.CacheManager;
  * @author Wolfgang <wolfgang@exist-db.org>
  */
 public interface Cache {
-	
-	/**
+
+    /**
+     * Returns the type of this cache. Should be one of the
+     * constants defined in {@link org.exist.storage.CacheManager}.
+     *
+     * @return the type of this cache
+     */
+    public String getType();
+
+    /**
 	 * Add the item to the cache. If it is already in the cache,
 	 * update the references.
 	 * 
