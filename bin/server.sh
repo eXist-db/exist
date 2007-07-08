@@ -16,15 +16,19 @@ JMX_PORT=1099
 
 declare -a JAVA_OPTS
 NR_JAVA_OPTS=0
-NON_JAVA_OPTS=`getopt -a -o h,j,d,p:,t: --long help,jmx,debug,http-port:,threads: \
-     -n 'server.sh' -- "$@"`
+if `getopt -T >/dev/null 2>&1` ; [ $? = 4 ] ; then
+    NON_JAVA_OPTS=`getopt -a -o h,j,d,p:,t: --long help,jmx,debug,http-port:,threads: \
+	-n 'server.sh' -- "$@"`
+else
+    NON_JAVA_OPTS=`getopt h,j,d,p:,t: $*`
+fi
 
 eval set -- "$NON_JAVA_OPTS"
 while true ; do
     case "$1" in
         -j|--jmx) JMX_ENABLED=1; shift ;;
         --jmx-port) JMX_PORT="$2"; shift 2 ;;
-        -p|--http-port|-t|--threads) JAVA_OPTS[$NR_JAVA_OPTS]="'$1 $2'"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
+        -p|--http-port|-t|--threads) JAVA_OPTS[$NR_JAVA_OPTS]="$1 $2"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
         --) shift ; break ;;
         *) JAVA_OPTS[$NR_JAVA_OPTS]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
     esac
