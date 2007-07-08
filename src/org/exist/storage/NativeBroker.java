@@ -128,7 +128,9 @@ public class NativeBroker extends DBBroker {
     public static final byte DOM_DBX_ID = 4;
     //Note : no ID for symbols ? Too bad...
 
+    public static final String PAGE_SIZE_ATTRIBUTE = "pageSize";
     public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
+    public static final String MIN_FREE_MEMORY_ATTRIBUTE = "free_mem_min";
     public static final String PROPERTY_MIN_FREE_MEMORY = "db-connection.min_free_memory";
     public static final String PROPERTY_INDEX_DEPTH = "indexer.index-depth";
     

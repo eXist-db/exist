@@ -529,7 +529,7 @@ public class Configuration implements ErrorHandler {
         }
         
         // directory for database files
-        String dataFiles = con.getAttribute("files");
+        String dataFiles = con.getAttribute(BrokerPool.DATA_DIR_ATTRIBUTE);
         if (dataFiles != null) {
             File df = ConfigurationHelper.lookup(dataFiles, dbHome);
             if (!df.canRead())
@@ -540,7 +540,7 @@ public class Configuration implements ErrorHandler {
             LOG.debug(BrokerPool.PROPERTY_DATA_DIR + ": " + config.get(BrokerPool.PROPERTY_DATA_DIR));
         }
         
-        String cacheMem = con.getAttribute("cacheSize");
+        String cacheMem = con.getAttribute(DefaultCacheManager.CACHE_SIZE_ATTRIBUTE);
         if (cacheMem != null) {
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
                 cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
@@ -552,7 +552,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String collectionCache = con.getAttribute("collectionCache");
+        String collectionCache = con.getAttribute(CollectionCacheManager.CACHE_SIZE_ATTRIBUTE);
         if (collectionCache != null) {
             if (collectionCache.endsWith("M") || collectionCache.endsWith("m"))
                 collectionCache = collectionCache.substring(0, collectionCache.length() - 1);
@@ -564,7 +564,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String pageSize = con.getAttribute("pageSize");
+        String pageSize = con.getAttribute(NativeBroker.PAGE_SIZE_ATTRIBUTE);
         if (pageSize != null) {
             try {
                 config.put(NativeBroker.PROPERTY_PAGE_SIZE, new Integer(pageSize));
@@ -574,7 +574,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String freeMem = con.getAttribute("free_mem_min");
+        String freeMem = con.getAttribute(NativeBroker.MIN_FREE_MEMORY_ATTRIBUTE);
         if (freeMem != null) {
             try {
                 config.put(NativeBroker.PROPERTY_MIN_FREE_MEMORY, new Integer(freeMem));
@@ -585,7 +585,7 @@ public class Configuration implements ErrorHandler {
         }
         
         //Not clear : rather looks like a buffers count
-        String collCacheSize = con.getAttribute("collectionCacheSize");
+        String collCacheSize = con.getAttribute(BrokerPool.COLLECTION_CACHE_SIZE_ATTRIBUTE);
         if (collCacheSize != null) {
             try {
                 config.put(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE, new Integer(collCacheSize));
@@ -639,7 +639,7 @@ public class Configuration implements ErrorHandler {
         }
 
         NodeList securityConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_SECURITY_ELEMENT_NAME);
-        String securityManagerClassName = "org.exist.security.XMLSecurityManager";
+        String securityManagerClassName = BrokerPool.DEFAULT_SECURITY_CLASS;
         if (securityConf.getLength()>0) {
             Element security = (Element)securityConf.item(0);
             securityManagerClassName = security.getAttribute("class");
