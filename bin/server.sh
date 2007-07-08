@@ -6,18 +6,33 @@
 # -----------------------------------------------------------------------------
 
 #
-# Pass -j to enable JMX agent. The port for it can be specified with -p
+# In addition to the other parameter options for the standalone server 
+# pass -j or --jmx to enable JMX agent. The port for it can be specified 
+# with --jmx-port=1099
 #
-usage="server.sh [-j] [-p jmx-port]\n"
 
 JMX_ENABLED=0
 JMX_PORT=1099
-while getopts ":jp:" option
-do 
-  case $option in
-      j ) JMX_ENABLED=1 ;;
-      p ) JMX_PORT=$OPTARG;;
-  esac
+
+declare -a JAVA_OPTS
+NR_JAVA_OPTS=0
+NON_JAVA_OPTS=`getopt -a -o h,j,d,p:,t: --long help,jmx,debug,http-port:,threads: \
+     -n 'server.sh' -- "$@"`
+
+eval set -- "$NON_JAVA_OPTS"
+while true ; do
+    case "$1" in
+        -j|--jmx) JMX_ENABLED=1; shift ;;
+        --jmx-port) JMX_PORT="$2"; shift 2 ;;
+        -p|--http-port|-t|--threads) JAVA_OPTS[$NR_JAVA_OPTS]="'$1 $2'"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
+        --) shift ; break ;;
+        *) JAVA_OPTS[$NR_JAVA_OPTS]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
+    esac
+done
+# Collect the remaining arguments
+for arg; do
+    JAVA_OPTS[$NR_JAVA_OPTS]="$arg";
+    let "NR_JAVA_OPTS += 1";
 done
 
 exist_home () {
@@ -69,7 +84,7 @@ if [ $JMX_ENABLED -gt 0 ]; then
 fi
 
 
-$JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone $*
+$JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone ${JAVA_OPTS[@]}
 
 if [ -n "$OLD_LANG" ]; then
 	LANG="$OLD_LANG"
