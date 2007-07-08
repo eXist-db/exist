@@ -346,19 +346,19 @@ public class Configuration implements ErrorHandler {
     private void configureXQuery(Element xquery) throws DatabaseConfigurationException {
         
         //java binding
-        String javabinding = xquery.getAttribute("enable-java-binding");
+        String javabinding = xquery.getAttribute(FunctionFactory.ENABLE_JAVA_BINDING_ATTRIBUTE);
         if(javabinding != null) {
             config.put(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING, javabinding);
             LOG.debug(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING + ": " + config.get(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING));
         }
         
-        String optimize = xquery.getAttribute("enable-query-rewriting");
+        String optimize = xquery.getAttribute(XQueryContext.ENABLE_QUERY_REWRITING_ATTRIBUTE);
         if (optimize != null && optimize.length() > 0) {
             config.put(XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING, optimize);
             LOG.debug(XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING + ": " + config.get(XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING));
         }
         
-        String backwardCompatible = xquery.getAttribute("backwardCompatible");
+        String backwardCompatible = xquery.getAttribute(XQueryContext.XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE);
         if (backwardCompatible != null && backwardCompatible.length() > 0) {
             config.put(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible);
             LOG.debug(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": " + config.get(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE));
@@ -369,20 +369,22 @@ public class Configuration implements ErrorHandler {
         if (builtins.getLength() > 0) {
             Element elem = (Element) builtins.item(0);
             NodeList modules = elem.getElementsByTagName(XQueryContext.CONFIGURATION_MODULE_ELEMENT_NAME);
-            String moduleList[][] = new String[modules.getLength()][2];
-            for (int i = 0; i < modules.getLength(); i++) {
-                elem = (Element) modules.item(i);
-                String uri = elem.getAttribute("uri");
-                String clazz = elem.getAttribute("class");
-                if (uri == null)
-                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'uri'");
-                if (clazz == null)
-                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
-                moduleList[i][0] = uri;
-                moduleList[i][1] = clazz;
-                LOG.debug("Configured module '" + uri + "' implemented in '" + clazz + "'");
+            if (modules.getLength() > 0) {
+	            String moduleList[][] = new String[modules.getLength()][2];
+	            for (int i = 0; i < modules.getLength(); i++) {
+	                elem = (Element) modules.item(i);
+	                String uri = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE);
+	                String clazz = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE);
+	                if (uri == null)
+	                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'uri'");
+	                if (clazz == null)
+	                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
+	                moduleList[i][0] = uri;
+	                moduleList[i][1] = clazz;
+	                LOG.debug("Configured module '" + uri + "' implemented in '" + clazz + "'");
+	            }
+	            config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, moduleList);
             }
-            config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, moduleList);
         }
     }
     
@@ -1041,11 +1043,11 @@ public class Configuration implements ErrorHandler {
         eXistURLStreamHandlerFactory.init();
         
         // Determine validation mode
-        String mode = validation.getAttribute("mode");
+        String mode = validation.getAttribute(XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE);
         if (mode != null) {
-            config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION, mode);
-            LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " 
-                + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION));
+            config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, mode);
+            LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE + ": " 
+                + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE));
         }
         
         

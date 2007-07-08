@@ -34,6 +34,7 @@ import org.exist.xquery.value.Type;
 
 public class FunctionFactory {
 
+	public static final String ENABLE_JAVA_BINDING_ATTRIBUTE = "enable-java-binding";
 	public static final String PROPERTY_ENABLE_JAVA_BINDING = "xquery.enable-java-binding";
 	
 	/**

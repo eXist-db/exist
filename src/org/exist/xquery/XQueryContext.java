@@ -93,10 +93,17 @@ public class XQueryContext {
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "xquery";
 	public static final String CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
+	public static final String ENABLE_QUERY_REWRITING_ATTRIBUTE = "enable-query-rewriting";
+	public static final String XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE = "backwardCompatible";
+	//TODO : move elsewhere ?
 	public static final String CONFIGURATION_MODULE_ELEMENT_NAME = "module";
-	public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
+	public static final String BUILT_IN_MODULE_URI_ATTRIBUTE = "uri";
+	public static final String BUILT_IN_MODULE_CLASS_ATTRIBUTE = "class";	
+
 	public static final String PROPERTY_XQUERY_BACKWARD_COMPATIBLE = "xquery.backwardCompatible";
 	public static final String PROPERTY_ENABLE_QUERY_REWRITING = "xquery.enable-query-rewriting";
+	//TODO : move elsewhere ?
+	public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
 	
 	private static final String JAVA_URI_START = "java:";
     //private static final String XMLDB_URI_START = "xmldb:exist://";

@@ -53,7 +53,9 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     public final static String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";
     public final static String CONFIGURATION_ELEMENT_NAME = "validation";
     
-    public final static String PROPERTY_VALIDATION = "validation.mode";
+    //TOO : move elsewhere ?
+    public final static String VALIDATION_MODE_ATTRIBUTE = "mode";
+    public final static String PROPERTY_VALIDATION_MODE = "validation.mode";
     public final static String CATALOG_RESOLVER = "validation.resolver";
     public final static String CATALOG_URIS = "validation.catalog_uris";
     public final static String GRAMMER_POOL = "validation.grammar_pool";
@@ -87,7 +89,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         Configuration config = pool.getConfiguration();
         // get validation settings
         int validation = VALIDATION_AUTO;
-        String option = (String) config.getProperty(PROPERTY_VALIDATION);
+        String option = (String) config.getProperty(PROPERTY_VALIDATION_MODE);
         if (option != null) {
             if (option.equals("true") || option.equals("yes"))
                 validation = VALIDATION_ENABLED;
