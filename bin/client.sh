@@ -30,8 +30,8 @@ while true ; do
     case "$1" in
         -j|--jmx) JMX_ENABLED=1; shift ;;
         --jmx-port) JMX_PORT="$2"; shift 2 ;;
-        -o|--option) JAVA_OPTS[$NR_JAVA_OPTS]="'$1 $2'"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
-        -u|--user|-P|--password|-p|--parse|-C|--config|-r|--remove|-c|--collection|-f|--resource|-g|--get|-m|--mkcol|-R|--rmcol|-x|--xpath|-n|--howmany|-O|--output|-F|--file|-t|--threads|-X|--xupdate|-T|--trace) JAVA_OPTS[$NR_JAVA_OPTS]="'$1 $2'"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
+        -o|--option) JAVA_OPTS[$NR_JAVA_OPTS]="$1 $2"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
+        -u|--user|-P|--password|-p|--parse|-C|--config|-r|--remove|-c|--collection|-f|--resource|-g|--get|-m|--mkcol|-R|--rmcol|-x|--xpath|-n|--howmany|-O|--output|-F|--file|-t|--threads|-X|--xupdate|-T|--trace) JAVA_OPTS[$NR_JAVA_OPTS]="$1 $2"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
         --) shift ; break ;;
         *) JAVA_OPTS[$NR_JAVA_OPTS]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
     esac
