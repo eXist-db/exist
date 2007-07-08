@@ -21,22 +21,11 @@
  */
 package org.exist.validation;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import org.apache.log4j.Logger;
-
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
@@ -68,7 +57,7 @@ public class DatabaseInsertResources_NoValidation_Test extends TestCase {
     protected BrokerPool startDB() {
         try {
             config = new Configuration();
-            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION, "auto");
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
         } catch (Exception e) {
@@ -97,7 +86,7 @@ public class DatabaseInsertResources_NoValidation_Test extends TestCase {
         System.out.println(this.getName());
         
         try{
-            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION, "no");
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
             
             String addressbook=eXistHome+"/samples/validation/addressbook";
             

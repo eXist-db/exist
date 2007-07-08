@@ -68,7 +68,7 @@ public class DatabaseInsertResources_WithValidation_Test extends TestCase {
     protected BrokerPool startDB() {
         try {
             config = new Configuration();
-            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION, "auto");
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
         } catch (Exception e) {
