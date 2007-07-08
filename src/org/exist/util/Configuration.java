@@ -935,43 +935,49 @@ public class Configuration implements ErrorHandler {
      * @throws IOException
      */
     private void configureIndexer(String dbHome, Document doc, Element indexer) throws DatabaseConfigurationException, MalformedURLException {
-        String parseNum = indexer.getAttribute("parseNumbers");
+        String parseNum = indexer.getAttribute(TextSearchEngine.INDEX_NUMBERS_ATTRIBUTE);
         if (parseNum != null) {
             config.put(TextSearchEngine.PROPERTY_INDEX_NUMBERS, Boolean.valueOf(parseNum.equals("yes")));
             LOG.debug(TextSearchEngine.PROPERTY_INDEX_NUMBERS + ": " + config.get(TextSearchEngine.PROPERTY_INDEX_NUMBERS));
         }
         
-        String stemming = indexer.getAttribute("stemming");
+        String stemming = indexer.getAttribute(TextSearchEngine.STEM_ATTRIBUTE);
         if (stemming != null) {
             config.put(TextSearchEngine.PROPERTY_STEM, Boolean.valueOf(stemming.equals("yes")));
             LOG.debug(TextSearchEngine.PROPERTY_STEM + ": " + config.get(TextSearchEngine.PROPERTY_STEM));
         }
         
-        String termFreq = indexer.getAttribute("track-term-freq");
+        String termFreq = indexer.getAttribute(TextSearchEngine.STORE_TERM_FREQUENCY_ATTRIBUTE);
         if (termFreq != null) {
             config.put(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY, Boolean.valueOf(termFreq.equals("yes")));
             LOG.debug(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY + ": " + config.get(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY));
         }
         
+        String tokenizer = indexer.getAttribute(TextSearchEngine.TOKENIZER_ATTRIBUTE);
+        if (tokenizer != null) {
+            config.put(TextSearchEngine.PROPERTY_TOKENIZER, tokenizer);
+            LOG.debug(TextSearchEngine.PROPERTY_TOKENIZER + ": " + config.get(TextSearchEngine.PROPERTY_TOKENIZER));
+        }
+
         String caseSensitive = indexer.getAttribute("caseSensitive");
         if (caseSensitive != null) {
             config.put(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, Boolean.valueOf(caseSensitive.equals("yes")));
             LOG.debug(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE + ": " + config.get(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE));
         }
         
-        String suppressWS = indexer.getAttribute("suppress-whitespace");
-        if (suppressWS != null) {
-            config.put(Indexer.PROPERTY_SUPPRESS_WHITESPACE, suppressWS);
-            LOG.debug(Indexer.PROPERTY_SUPPRESS_WHITESPACE + ": " + config.get(Indexer.PROPERTY_SUPPRESS_WHITESPACE));
+        // stopwords
+        NodeList stopwords = indexer.getElementsByTagName(Indexer.CONFIGURATION_STOPWORDS_ELEMENT_NAME);
+        if (stopwords.getLength() > 0) {
+            String stopwordFile = ((Element) stopwords.item(0)).getAttribute(TextSearchEngine.STOPWORD_FILE_ATTRIBUTE);
+            File sf = ConfigurationHelper.lookup(stopwordFile, dbHome);
+            if (sf.canRead()) {
+                config.put(TextSearchEngine.PROPERTY_STOPWORD_FILE, stopwordFile);
+                LOG.debug(TextSearchEngine.PROPERTY_STOPWORD_FILE + ": " + config.get(TextSearchEngine.PROPERTY_STOPWORD_FILE));
+            }
         }
-        
-        String tokenizer = indexer.getAttribute("tokenizer");
-        if (tokenizer != null) {
-            config.put(TextSearchEngine.PROPERTY_TOKENIZER, tokenizer);
-            LOG.debug(TextSearchEngine.PROPERTY_TOKENIZER + ": " + config.get(TextSearchEngine.PROPERTY_TOKENIZER));
-        }
+
         int depth = 3;
-        String indexDepth = indexer.getAttribute("index-depth");
+        String indexDepth = indexer.getAttribute(NativeBroker.INDEX_DEPTH_ATTRIBUTE);
         if (indexDepth != null) {
             try {
                 depth = Integer.parseInt(indexDepth);
@@ -987,7 +993,13 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String suppressWSmixed = indexer.getAttribute("preserve-whitespace-mixed-content");
+        String suppressWS = indexer.getAttribute(Indexer.SUPPRESS_WHITESPACE_ATTRIBUTE);
+        if (suppressWS != null) {
+            config.put(Indexer.PROPERTY_SUPPRESS_WHITESPACE, suppressWS);
+            LOG.debug(Indexer.PROPERTY_SUPPRESS_WHITESPACE + ": " + config.get(Indexer.PROPERTY_SUPPRESS_WHITESPACE));
+        }
+        
+        String suppressWSmixed = indexer.getAttribute(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE);
         if (suppressWSmixed != null) {
             config.put(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.valueOf(suppressWSmixed.equals("yes")));
             LOG.debug(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT + ": " + config.get(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT));
@@ -1002,17 +1014,6 @@ public class Configuration implements ErrorHandler {
             //LOG.debug(Indexer.PROPERTY_INDEXER_CONFIG + ": " + config.get(Indexer.PROPERTY_INDEXER_CONFIG));
         }
         
-        // stopwords
-        NodeList stopwords = indexer.getElementsByTagName(Indexer.CONFIGURATION_STOPWORDS_ELEMENT_NAME);
-        if (stopwords.getLength() > 0) {
-            String stopwordFile = ((Element) stopwords.item(0)).getAttribute("file");
-            File sf = ConfigurationHelper.lookup(stopwordFile, dbHome);
-            if (sf.canRead()) {
-                config.put(TextSearchEngine.PROPERTY_STOPWORD_FILE, stopwordFile);
-                LOG.debug(TextSearchEngine.PROPERTY_STOPWORD_FILE + ": " + config.get(TextSearchEngine.PROPERTY_STOPWORD_FILE));
-            }
-        }
-        
         // index modules
         NodeList modules = indexer.getElementsByTagName(IndexManager.CONFIGURATION_ELEMENT_NAME);
         if (modules.getLength() > 0) {
@@ -1020,8 +1021,8 @@ public class Configuration implements ErrorHandler {
             IndexModuleConfig modConfig[] = new IndexModuleConfig[modules.getLength()];
             for (int i = 0; i < modules.getLength(); i++) {
                 Element elem = (Element) modules.item(i);
-                String className = elem.getAttribute("class");
-                String id = elem.getAttribute("id");
+                String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
+                String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
                 if (className == null || className.length() == 0)
                     throw new DatabaseConfigurationException("Required attribute class is missing for module");
                 if (id == null || id.length() == 0)

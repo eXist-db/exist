@@ -41,6 +41,9 @@ public class IndexManager {
     
     public static final String CONFIGURATION_ELEMENT_NAME = "modules";
     public static final String CONFIGURATION_MODULE_ELEMENT_NAME = "module";
+    public static final String INDEXER_MODULES_CLASS_ATTRIBUTE = "class";
+    public static final String INDEXER_MODULES_ID_ATTRIBUTE = "id";
+    
     public final static String PROPERTY_INDEXER_MODULES = "indexer.modules";
 
     private BrokerPool pool;

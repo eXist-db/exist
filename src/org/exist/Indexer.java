@@ -21,9 +21,25 @@
  */
 package org.exist;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Stack;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Logger;
-import org.exist.dom.*;
-import org.exist.indexing.IndexManager;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.CDATASectionImpl;
+import org.exist.dom.CommentImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentTypeImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
 import org.exist.indexing.StreamListener;
 import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
@@ -39,15 +55,15 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Stack;
 
 /**
  * Parses a given input document via SAX, stores it to
@@ -67,6 +83,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     public static final String CONFIGURATION_ELEMENT_NAME = "indexer";    
     public static final String CONFIGURATION_INDEX_ELEMENT_NAME = "index";
     public static final String CONFIGURATION_STOPWORDS_ELEMENT_NAME = "stopwords";
+    public static final String SUPPRESS_WHITESPACE_ATTRIBUTE = "suppress-whitespace";
+    public static final String PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE = "preserve-whitespace-mixed-content";
+    
     public static final String PROPERTY_INDEXER_CONFIG = "indexer.config";
     public final static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
     public static final String PROPERTY_PRESERVE_WS_MIXED_CONTENT = 
@@ -664,17 +683,17 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     }
 
     public void startPrefixMapping(String prefix, String uri) {
-	// skip the eXist namespace
-	//		if (uri.equals(Namespaces.EXIST_NS)) {
-	//			ignorePrefix = prefix;
-	//			return;
-	//		}
-	nsMappings.put(prefix, uri);
+		// skip the eXist namespace
+		//		if (uri.equals(Namespaces.EXIST_NS)) {
+		//			ignorePrefix = prefix;
+		//			return;
+		//		}
+		nsMappings.put(prefix, uri);
     }
 
     public void warning(SAXParseException e) throws SAXException {
-	LOG.debug("warning at line " + e.getLineNumber(), e);
-	throw new SAXException(
+    	LOG.debug("warning at line " + e.getLineNumber(), e);
+    	throw new SAXException(
 			       "warning at line " + e.getLineNumber() + ": " + e.getMessage(),
 			       e);
     }
@@ -682,20 +701,20 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     private void setPrevious(StoredNode previous) {
         if (prevNode != null) {
             switch (prevNode.getNodeType()) {
-	    case Node.ATTRIBUTE_NODE :
-		prevNode.release();
-		break;
-	    case Node.ELEMENT_NODE :
-		if (prevNode != rootNode) {
-		    prevNode.clear();
-		    usedElements.push(prevNode);
-		}
-		break;
-	    case Node.TEXT_NODE :
-		prevNode.clear();
-		break;
-            }
-        }
+		    case Node.ATTRIBUTE_NODE :
+		    	prevNode.release();
+		    	break;
+		    case Node.ELEMENT_NODE :
+				if (prevNode != rootNode) {
+				    prevNode.clear();
+				    usedElements.push(prevNode);
+				}
+				break;
+		    case Node.TEXT_NODE :
+		    	prevNode.clear();
+		    	break;
+	            }
+	        }
         prevNode = previous;
     }
 }
