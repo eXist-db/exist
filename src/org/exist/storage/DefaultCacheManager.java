@@ -78,6 +78,7 @@ public class DefaultCacheManager implements CacheManager {
     public final static int SHRINK_THRESHOLD = 10000;
     
     public static int DEFAULT_CACHE_SIZE = 64;
+    public static final String CACHE_SIZE_ATTRIBUTE = "cacheSize";
     public static final String PROPERTY_CACHE_SIZE = "db-connection.cache-size";
     
     /** Caches maintained by this class */

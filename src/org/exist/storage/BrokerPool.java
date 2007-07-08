@@ -87,13 +87,19 @@ public class BrokerPool {
 	public static final String CONFIGURATION_POOL_ELEMENT_NAME = "pool";
 	public static final String CONFIGURATION_SECURITY_ELEMENT_NAME = "security";
 	public static final String CONFIGURATION_RECOVERY_ELEMENT_NAME = "recovery";
+	public static final String DATA_DIR_ATTRIBUTE = "files";
+	//TODO : move elsewhere ?
+	public final static String COLLECTION_CACHE_SIZE_ATTRIBUTE = "collectionCacheSize";
 	//Various configuration property keys (set by the configuration manager)
 	public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";
 	public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";
 	public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.max";
 	public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
 	public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
+	//TODO : move elsewhere ?
 	public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
+	//TODO : move elsewhere ? Get fully qualified class name ?
+	public final static String DEFAULT_SECURITY_CLASS = "org.exist.security.XMLSecurityManager";
 	public final static String PROPERTY_SECURITY_CLASS = "db-connection.security.class";
 	public final static String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
 	public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";

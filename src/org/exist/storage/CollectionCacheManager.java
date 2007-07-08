@@ -30,6 +30,7 @@ public class CollectionCacheManager implements CacheManager {
 
     private static final Logger LOG = Logger.getLogger(CollectionCacheManager.class);
 
+    public static final String CACHE_SIZE_ATTRIBUTE = "collectionCache";
     public static final String PROPERTY_CACHE_SIZE = "db-connection.collection-cache-mem";
 
     private static final int DEFAULT_CACHE_SIZE = 8;
