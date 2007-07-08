@@ -81,8 +81,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     private final static Logger LOG = Logger.getLogger(Indexer.class);
     
     public static final String CONFIGURATION_ELEMENT_NAME = "indexer";    
-    public static final String CONFIGURATION_INDEX_ELEMENT_NAME = "index";
-    public static final String CONFIGURATION_STOPWORDS_ELEMENT_NAME = "stopwords";
+    public static final String CONFIGURATION_INDEX_ELEMENT_NAME = "index";    
     public static final String SUPPRESS_WHITESPACE_ATTRIBUTE = "suppress-whitespace";
     public static final String PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE = "preserve-whitespace-mixed-content";
     

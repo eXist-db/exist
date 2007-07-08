@@ -961,14 +961,14 @@ public class Configuration implements ErrorHandler {
             LOG.debug(TextSearchEngine.PROPERTY_TOKENIZER + ": " + config.get(TextSearchEngine.PROPERTY_TOKENIZER));
         }
 
-        String caseSensitive = indexer.getAttribute("caseSensitive");
+        String caseSensitive = indexer.getAttribute(NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE);
         if (caseSensitive != null) {
             config.put(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, Boolean.valueOf(caseSensitive.equals("yes")));
             LOG.debug(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE + ": " + config.get(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE));
         }
         
         // stopwords
-        NodeList stopwords = indexer.getElementsByTagName(Indexer.CONFIGURATION_STOPWORDS_ELEMENT_NAME);
+        NodeList stopwords = indexer.getElementsByTagName(TextSearchEngine.CONFIGURATION_STOPWORDS_ELEMENT_NAME);
         if (stopwords.getLength() > 0) {
             String stopwordFile = ((Element) stopwords.item(0)).getAttribute(TextSearchEngine.STOPWORD_FILE_ATTRIBUTE);
             File sf = ConfigurationHelper.lookup(stopwordFile, dbHome);

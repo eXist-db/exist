@@ -73,6 +73,7 @@ public abstract class TextSearchEngine extends Observable {
 	public final static String STEM_ATTRIBUTE = "stemming";
 	public final static String STORE_TERM_FREQUENCY_ATTRIBUTE = "track-term-freq";
 	public final static String TOKENIZER_ATTRIBUTE = "tokenizer";
+	public static final String CONFIGURATION_STOPWORDS_ELEMENT_NAME = "stopwords";
 	public final static String STOPWORD_FILE_ATTRIBUTE = "file";
 	
 	public final static String PROPERTY_INDEX_NUMBERS = "indexer.indexNumbers";
