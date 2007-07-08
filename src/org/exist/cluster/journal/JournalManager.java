@@ -26,6 +26,10 @@ import org.exist.xquery.Constants;
  */
 public class JournalManager {
 	
+	public static final String JOURNAL_DIR_ATTRIBUTE = "journalDir";
+	public static final String CLUSTER_JOURNAL_MAXSTORE_ATTRIBUTE = "journalMaxItem";
+	public static final String CLUSTER_JOURNAL_SHIFT_ATTRIBUTE = "journalIndexShift";
+	
 	public static final String PROPERTY_JOURNAL_DIR = "cluster.journalDir";
 	public static final String PROPERTY_CLUSTER_JOURNAL_MAXSTORE = "cluster.journal.maxStore";
 	public static final String PROPERTY_CLUSTER_JOURNAL_SHIFT = "cluster.journal.shift";

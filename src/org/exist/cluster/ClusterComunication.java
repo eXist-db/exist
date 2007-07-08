@@ -32,10 +32,15 @@ import org.jgroups.util.RspList;
 public class ClusterComunication implements MembershipListener {
 
 	public static final String CONFIGURATION_ELEMENT_NAME = "cluster";
+	public static final String CLUSTER_PROTOCOL_ATTRIBUTE = "protocol";
+	public static final String CLUSTER_USER_ATTRIBUTE = "dbaUser";	
+	public static final String CLUSTER_PWD_ATTRIBUTE = "dbaPassword";
+	public static final String CLUSTER_EXCLUDED_COLLECTIONS_ATTRIBUTE = "exclude"; 
+	
 	public static final String PROPERTY_CLUSTER_PROTOCOL = "cluster.protocol";
 	public static final String PROPERTY_CLUSTER_USER = "cluster.user";
 	public static final String PROPERTY_CLUSTER_PWD = "cluster.pwd";
-	public static final String PROPERTY_CLUSTER_EXCLUDE = "cluster.exclude";
+	public static final String PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS = "cluster.exclude";
 	
 	private static Logger log = Logger.getLogger(ClusterComunication.class);
 
@@ -110,7 +115,7 @@ public class ClusterComunication implements MembershipListener {
             String protocol = (String) conf.getProperty(PROPERTY_CLUSTER_PROTOCOL);
             dbaUser = (String) conf.getProperty(PROPERTY_CLUSTER_USER);
             dbaPwd = (String) conf.getProperty(PROPERTY_CLUSTER_PWD);
-            excludedCollection = (ArrayList) conf.getProperty(PROPERTY_CLUSTER_EXCLUDE);
+            excludedCollection = (ArrayList) conf.getProperty(PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS);
 
             if (protocol == null)
                 protocol = DEFAULT_PROTOCOL_STACK;

@@ -293,49 +293,48 @@ public class Configuration implements ErrorHandler {
     }
     
     private void configureCluster(Element cluster) {
-        String protocol = cluster.getAttribute("protocol");
+        String protocol = cluster.getAttribute(ClusterComunication.CLUSTER_PROTOCOL_ATTRIBUTE);
         if(protocol != null) {
             config.put(ClusterComunication.PROPERTY_CLUSTER_PROTOCOL, protocol);
             LOG.debug(ClusterComunication.PROPERTY_CLUSTER_PROTOCOL + ": " + config.get(ClusterComunication.PROPERTY_CLUSTER_PROTOCOL));
         }
-        String user = cluster.getAttribute("dbaUser");
+        String user = cluster.getAttribute(ClusterComunication.CLUSTER_USER_ATTRIBUTE);
         if(user != null) {
             config.put(ClusterComunication.PROPERTY_CLUSTER_USER, user);
             LOG.debug(ClusterComunication.PROPERTY_CLUSTER_USER + ": " + config.get(ClusterComunication.PROPERTY_CLUSTER_USER));
         }
-        String pwd = cluster.getAttribute("dbaPassword");
+        String pwd = cluster.getAttribute(ClusterComunication.CLUSTER_PWD_ATTRIBUTE);
         if(pwd != null) {
             config.put(ClusterComunication.PROPERTY_CLUSTER_PWD, pwd);
             LOG.debug(ClusterComunication.PROPERTY_CLUSTER_PWD + ": " + config.get(ClusterComunication.PROPERTY_CLUSTER_PWD));
         }
-        String dir = cluster.getAttribute("journalDir");
+        String dir = cluster.getAttribute(JournalManager.JOURNAL_DIR_ATTRIBUTE);
         if(dir != null) {
             config.put(JournalManager.PROPERTY_JOURNAL_DIR, dir);
             LOG.debug(JournalManager.PROPERTY_JOURNAL_DIR + ": " + config.get(JournalManager.PROPERTY_JOURNAL_DIR));
         }
-        String excludedColl = cluster.getAttribute("exclude");
+        String excludedColl = cluster.getAttribute(ClusterComunication.CLUSTER_EXCLUDED_COLLECTIONS_ATTRIBUTE);
         ArrayList list = new ArrayList();
         if(excludedColl != null) {
             String[] excl = excludedColl.split(",");
             for(int i=0;i<excl.length;i++){
-                list.add(excl[i]);
-                
+                list.add(excl[i]);                
             }
         }
         if(!list.contains(NativeBroker.TEMP_COLLECTION))
             list.add(NativeBroker.TEMP_COLLECTION);
-        config.put(ClusterComunication.PROPERTY_CLUSTER_EXCLUDE, list);
-        LOG.debug(ClusterComunication.PROPERTY_CLUSTER_EXCLUDE + ": " + config.get(ClusterComunication.PROPERTY_CLUSTER_EXCLUDE));
+        config.put(ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS, list);
+        LOG.debug(ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS + ": " + config.get(ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS));
         
         /*Cluster parameters for test*/
-        String maxStore = cluster.getAttribute("journalMaxItem");
+        String maxStore = cluster.getAttribute(JournalManager.CLUSTER_JOURNAL_MAXSTORE_ATTRIBUTE);
         if(maxStore == null || maxStore.trim().length()==0) {
             maxStore = "65000";
         }
         config.put(JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE, Integer.valueOf(maxStore));
         LOG.debug(JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE + ": " + config.get(JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE));
         
-        String shift = cluster.getAttribute("journalIndexShift");
+        String shift = cluster.getAttribute(JournalManager.CLUSTER_JOURNAL_SHIFT_ATTRIBUTE);
         if(shift == null || shift.trim().length()==0 ) {
             shift = "100";
         }
@@ -344,7 +343,7 @@ public class Configuration implements ErrorHandler {
     }
     
     private void configureXQuery(Element xquery) throws DatabaseConfigurationException {
-        
+    	
         //java binding
         String javabinding = xquery.getAttribute(FunctionFactory.ENABLE_JAVA_BINDING_ATTRIBUTE);
         if(javabinding != null) {
