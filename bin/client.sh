@@ -66,7 +66,7 @@ if [ ! -f "${EXIST_HOME}/start.jar" ]; then
 fi
 
 OPTIONS="-Dexist.home=$EXIST_HOME"
-#DEBUG_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=4444"
+DEBUG_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=4444"
 
 # set java options
 if [ -z "${CLIENT_JAVA_OPTIONS}" ]; then
