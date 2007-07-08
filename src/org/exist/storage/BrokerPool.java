@@ -34,6 +34,8 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.management.Agent;
+import org.exist.management.AgentFactory;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.indexing.IndexManager;
@@ -443,6 +445,8 @@ public class BrokerPool {
 
     private CollectionCacheManager collectionCacheMgr;
 
+    private long reservedMem;
+
     /**
 	 * The pool in which the database instance's <strong>compiled</strong> XQueries are stored.
 	 */
@@ -648,8 +652,8 @@ public class BrokerPool {
        }
        return null;
     }
-	
-	/**Initializes the database instance.
+
+    /**Initializes the database instance.
 	 * @throws EXistException
 	 */
 	protected void initialize() throws EXistException, DatabaseConfigurationException {
@@ -674,7 +678,10 @@ public class BrokerPool {
         	bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
         collectionCache = new CollectionCache(this, bufferSize, 0.001);
         collectionCacheMgr = new CollectionCacheManager(conf, collectionCache);
-        
+
+        // compute how much memory should be reserved for caches to grow
+        reservedMem = (cacheManager.getTotalMem() / 4) * 5 + collectionCacheMgr.getMaxTotal();
+
         notificationService = new NotificationService();
 
         //REFACTOR : construct then... configure
@@ -775,7 +782,17 @@ public class BrokerPool {
 		//Create the minimal number of brokers required by the configuration 
 		for (int i = 1; i < minBrokers; i++)
 			createBroker();        
-        
+
+        // register an MBean to provide access to this instance
+        Agent agent = AgentFactory.getInstance();
+        try {
+            agent.addMBean("org.exist.management." + instanceName +
+                ":type=Database",
+                    new org.exist.management.Database(this));
+        } catch (DatabaseConfigurationException e) {
+            LOG.warn("Exception while registering database mbean.", e);
+        }
+
         if (LOG.isDebugEnabled())
             LOG.debug("database instance '" + instanceName + "' initialized");
 	}
@@ -799,6 +816,10 @@ public class BrokerPool {
         }
     }  	
 
+    public long getReservedMem() {
+        return reservedMem;
+    }
+    
     /**
 	 * Whether or not the database instance is being initialized. 
 	 * 
@@ -942,6 +963,10 @@ public class BrokerPool {
 	 */	
     public DefaultCacheManager getCacheManager() {
         return cacheManager;
+    }
+
+    public CollectionCacheManager getCollectionCacheMgr() {
+        return collectionCacheMgr;
     }
 
     /**
@@ -1447,8 +1472,6 @@ public class BrokerPool {
         shutdownListener = null;
         securityManager = null;
         notificationService = null;
-
-        status = OPERATING;
 	}
 
 	//TODO : move this elsewhere

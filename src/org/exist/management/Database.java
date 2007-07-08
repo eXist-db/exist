@@ -21,35 +21,41 @@
  */
 package org.exist.management;
 
-public class Cache implements CacheMBean {
+import org.exist.storage.BrokerPool;
 
-    private org.exist.storage.cache.Cache cache;
+public class Database implements DatabaseMBean {
 
-    public Cache(org.exist.storage.cache.Cache cache) {
-        this.cache = cache;
+    private BrokerPool pool;
+
+    public Database(BrokerPool pool) {
+        this.pool = pool;
     }
 
-    public String getType() {
-        return cache.getType();
+    public String getInstanceId() {
+        return pool.getId();
     }
 
-    public int getSize() {
-        return cache.getBuffers();
+    public int getMaxBrokers() {
+        return pool.getMax();
     }
 
-    public int getUsed() {
-        return cache.getUsedBuffers();
+    public int getAvailableBrokers() {
+        return pool.available();
     }
 
-    public int getHits() {
-        return cache.getHits();
+    public int getActiveBrokers() {
+        return pool.active();
     }
 
-    public int getFails() {
-        return cache.getFails();
+    public long getReservedMem() {
+        return pool.getReservedMem();
     }
 
-    public String getFileName() {
-        return cache.getFileName();
+    public long getCacheMem() {
+        return pool.getCacheManager().getTotalMem();
+    }
+
+    public long getCollectionCacheMem() {
+        return pool.getCollectionCacheMgr().getMaxTotal();
     }
 }
