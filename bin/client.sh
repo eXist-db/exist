@@ -17,8 +17,12 @@ JMX_PORT=1099
 
 declare -a JAVA_OPTS
 NR_JAVA_OPTS=0
-NON_JAVA_OPTS=`getopt -a -o h,j,l,C:,u:,P:,p:,o:,r:,c:,f:,g:,m:,R:,n:,O:,F:,t:,X:,T:,v,q,d,s,i,Q,N,x:: --long help,port:,jmx,local,config:,user:,password:,parse:,option:,remove:,collection:,resource:,get:,mkcol:,rmcol:,howmany:,output:,file:,threads:,xupdate:,trace:,verbose,quiet,recurse-dirs,no-gui,reindex,query,no-embedded-mode,xpath:: \
+if `getopt -T >/dev/null 2>&1` ; [ $? = 4 ] ; then
+    NON_JAVA_OPTS=`getopt -a -o h,j,l,C:,u:,P:,p:,o:,r:,c:,f:,g:,m:,R:,n:,O:,F:,t:,X:,T:,v,q,d,s,i,Q,N,x:: --long help,port:,jmx,local,config:,user:,password:,parse:,option:,remove:,collection:,resource:,get:,mkcol:,rmcol:,howmany:,output:,file:,threads:,xupdate:,trace:,verbose,quiet,recurse-dirs,no-gui,reindex,query,no-embedded-mode,xpath:: \
      -n 'client.sh' -- "$@"`
+else
+    NON_JAVA_OPTS=`getopt h,j,l,C:,u:,P:,p:,o:,r:,c:,f:,g:,m:,R:,n:,O:,F:,t:,X:,T:,v,q,d,s,i,Q,N,x:: $*`
+fi
 # fixme! option -p|--parse takes 1..n arguments!
 
 eval set -- "$NON_JAVA_OPTS"
