@@ -87,10 +87,19 @@ public abstract class DBBroker extends Observable {
 	public static final String CONFIGURATION_ELEMENT_NAME = "xupdate";
 	
     //TODO : move elsewhere
+    public final static String XUPDATE_GROWTH_FACTOR_ATTRIBUTE = "growth-factor";
+
+    //TODO : move elsewhere
     public final static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";
+    
+    //TODO : move elsewhere
+    public final static String XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE = "allowed-fragmentation";
 
     //TODO : move elsewhere
     public final static String PROPERTY_XUPDATE_FRAGMENTATION_FACTOR = "xupdate.fragmentation";
+
+    //TODO : move elsewhere
+    public final static String XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE = "enable-consistency-checks";
 
     //TODO : move elsewhere
     public final static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";

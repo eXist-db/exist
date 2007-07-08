@@ -43,6 +43,7 @@ public class TransformerFactoryAllocator
     private final static Logger LOG = Logger.getLogger(TransformerFactoryAllocator.class);
     
     public static final String CONFIGURATION_ELEMENT_NAME = "transformer";
+    public final static String PROPERTY_TRANSFORMER_ATTRIBUTE = "class";
     public final static String PROPERTY_TRANSFORMER_CLASS = "transformer.class";
     
     //private constructor

@@ -401,21 +401,21 @@ public class Configuration implements ErrorHandler {
      * @throws NumberFormatException
      */
     private void configureXUpdate(Element xupdate) throws NumberFormatException {
-        String growth = xupdate.getAttribute("growth-factor");
+        String growth = xupdate.getAttribute(DBBroker.XUPDATE_GROWTH_FACTOR_ATTRIBUTE);
         if (growth != null) {
             config.put(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR, new Integer(growth));
             LOG.debug(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR + ": "
                 + config.get(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR));
         }
         
-        String fragmentation = xupdate.getAttribute("allowed-fragmentation");
+        String fragmentation = xupdate.getAttribute(DBBroker.XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE);
         if (fragmentation != null) {
             config.put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, new Integer(fragmentation));
             LOG.debug(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR + ": "
                 + config.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR));
         }
         
-        String consistencyCheck = xupdate.getAttribute("enable-consistency-checks");
+        String consistencyCheck = xupdate.getAttribute(DBBroker.XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE);
         if (consistencyCheck != null) {
             config.put(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS, Boolean.valueOf(consistencyCheck.equals("yes")));
             LOG.debug(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS + ": "
@@ -424,7 +424,7 @@ public class Configuration implements ErrorHandler {
     }
     
     private void configureTransformer(Element transformer) {
-        String className = transformer.getAttribute("class");
+        String className = transformer.getAttribute(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_ATTRIBUTE);
         if (className != null) {
             config.put(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, className);
             LOG.debug(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS + ": " + 
