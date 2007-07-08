@@ -63,17 +63,7 @@ JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
 #DEBUG_START="-Dexist.start.debug=true"
 
-#Comment in the following lines to enable the JMX agent:
-
-if [ $JMX_ENABLED -gt 0 ]; then
-	JMX_OPTS="-Dcom.sun.management.jmxremote \
-		-Dcom.sun.management.jmxremote.port=$JMX_PORT \
-		-Dcom.sun.management.jmxremote.authenticate=false \
-		-Dcom.sun.management.jmxremote.ssl=false"
-	JAVA_OPTIONS="$JAVA_OPTIONS $JMX_OPTS"
-fi
-
-# The following lines enables the JMX agent:
+# The following lines enable the JMX agent:
 if [ $JMX_ENABLED -gt 0 ]; then
     JMX_OPTS="-Dcom.sun.management.jmxremote \
 		-Dcom.sun.management.jmxremote.port=$JMX_PORT \
