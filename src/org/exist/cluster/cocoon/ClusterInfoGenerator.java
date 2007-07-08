@@ -165,7 +165,7 @@ public class ClusterInfoGenerator extends AbstractGenerator {
 
             inner = new AttributesImpl();
             inner.addAttribute("", "name", "name", "CDATA", "exclude-dir");
-            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty(ClusterComunication.PROPERTY_CLUSTER_EXCLUDE));
+            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty(ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS));
             this.contentHandler.startElement(NAMESPACE, "data", PREFIX + ":data", inner);
             this.contentHandler.endElement(NAMESPACE, "data", PREFIX + ":data");
 
