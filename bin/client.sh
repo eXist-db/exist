@@ -5,6 +5,44 @@
 # $Id$
 # -----------------------------------------------------------------------------
 
+#
+# In addition to the other parameter options for the interactive client 
+# pass -j or --jmx to enable JMX agent. The port for it can be specified 
+# with --port=1099
+#
+# Maybe we should refactor this to avoid using two options?
+
+JMX_ENABLED=0
+JMX_PORT=1099
+
+declare -a JAVA_OPTS
+NR_JAVA_OPTS=0
+NON_JAVA_OPTS=`getopt -a -o h,j,l,C:,u:,P:,p:,o:,r:,c:,f:,g:,m:,R:,n:,O:,F:,t:,X:,T:,v,q,d,s,i,Q,N,x:: --long help,port:,jmx,local,config:,user:,password:,parse:,option:,remove:,collection:,resource:,get:,mkcol:,rmcol:,howmany:,output:,file:,threads:,xupdate:,trace:,verbose,quiet,recurse-dirs,no-gui,reindex,query,no-embedded-mode,xpath:: \
+     -n 'client.sh' -- "$@"`
+# fixme! option -p|--parse takes 1..n arguments!
+
+eval set -- "$NON_JAVA_OPTS"
+while true ; do
+    case "$1" in
+        -j|--jmx) JMX_ENABLED=1; shift ;;
+        -p|--port) JMX_PORT="$2"; shift 2 ;;
+        -o|--option) JAVA_OPTS[$NR_JAVA_OPTS]="'$1 $2'"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
+        -u|--user|-P|--password|-p|--parse|-C|--config|-r|--remove|-c|--collection|-f|--resource|-g|--get|-m|--mkcol|-R|--rmcol|-x|--xpath|-n|--howmany|-O|--output|-F|--file|-t|--threads|-X|--xupdate|-T|--trace) JAVA_OPTS[$NR_JAVA_OPTS]="'$1 $2'"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
+        --) shift ; break ;;
+        *) JAVA_OPTS[$NR_JAVA_OPTS]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
+    esac
+done
+# Collect the remaining arguments
+for arg; do
+    JAVA_OPTS[$NR_JAVA_OPTS]="$arg";
+    let "NR_JAVA_OPTS += 1";
+done
+
+echo ${JAVA_OPTS[@]};
+
+
+# fixme! refactor
+# . functions.d/*.sh
 exist_home () {
 	case "$0" in
 		/*)
@@ -18,16 +56,17 @@ exist_home () {
 }
 
 if [ -z "${EXIST_HOME}" ]; then
-	EXIST_HOME_1=`exist_home`;
-	EXIST_HOME="$EXIST_HOME_1/..";
+    EXIST_HOME_1=`exist_home`;
+    EXIST_HOME="$EXIST_HOME_1/..";
 fi
 
 if [ ! -f "${EXIST_HOME}/start.jar" ]; then
-	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory.";
-	exit 1;
+    echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory.";
+    exit 1;
 fi
 
 OPTIONS="-Dexist.home=$EXIST_HOME"
+DEBUG_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=4444"
 
 # set java options
 if [ -z "${CLIENT_JAVA_OPTIONS}" ]; then
@@ -37,6 +76,15 @@ fi
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
 JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
+
+# The following lines enables the JMX agent:
+if [ $JMX_ENABLED -gt 0 ]; then
+    JMX_OPTS="-Dcom.sun.management.jmxremote \
+		-Dcom.sun.management.jmxremote.port=$JMX_PORT \
+		-Dcom.sun.management.jmxremote.authenticate=false \
+		-Dcom.sun.management.jmxremote.ssl=false"
+    JAVA_OPTIONS="$JAVA_OPTIONS $JMX_OPTS"
+fi
 
 # save LANG
 if [ -n "$LANG" ]; then
@@ -65,7 +113,7 @@ fi
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${EXIST_HOME}/lib/core";
 export LD_LIBRARY_PATH;
 
-${JAVA_HOME}/bin/java ${JAVA_OPTIONS} ${OPTIONS} -jar "$EXIST_HOME/start.jar" client $*
+${JAVA_HOME}/bin/java ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" client ${JAVA_OPTS[@]}
 
 if [ -n "${OLD_LIBRARY_PATH}" ]; then
 	LD_LIBRARY_PATH="${OLD_LIBRARY_PATH}";
