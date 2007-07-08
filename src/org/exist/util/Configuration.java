@@ -497,14 +497,14 @@ public class Configuration implements ErrorHandler {
             Element job = (Element)nlJobs.item(i);
             
             //get the job resource
-            jobResource = job.getAttribute("class");
+            jobResource = job.getAttribute(Scheduler.JOB_CLASS_ATTRIBUTE);
             if(jobResource == null)
-                jobResource = job.getAttribute("xquery");
+                jobResource = job.getAttribute(Scheduler.JOB_XQUERY_ATTRIBUTE);
             
             //get the job schedule
-            jobSchedule = job.getAttribute("cron-trigger");
+            jobSchedule = job.getAttribute(Scheduler.JOB_CRON_TRIGGER_ATTRIBUTE);
             if(jobSchedule == null)
-                jobSchedule = job.getAttribute("period");
+                jobSchedule = job.getAttribute(Scheduler.JOB_PERIOD_ATTRIBUTE);
             
             //check we have both a resource and a schedule
             if(jobResource == null | jobSchedule == null)
@@ -695,7 +695,7 @@ public class Configuration implements ErrorHandler {
         if (recoveries.getLength() > 0) {
             configureRecovery((Element)recoveries.item(0));
         }
-        NodeList defaultPermissions = con.getElementsByTagName("default-permissions"); 
+        NodeList defaultPermissions = con.getElementsByTagName(XMLSecurityManager.CONFIGURATION_ELEMENT_NAME); 
         if (defaultPermissions.getLength() > 0) {
             configurePermissions((Element)defaultPermissions.item(0));
         }
@@ -746,8 +746,8 @@ public class Configuration implements ErrorHandler {
         }
     }
     
-    private void configurePermissions(Element defautPermission) throws DatabaseConfigurationException {
-        String option = defautPermission.getAttribute("collection");
+    private void configurePermissions(Element defaultPermission) throws DatabaseConfigurationException {
+        String option = defaultPermission.getAttribute(XMLSecurityManager.COLLECTION_ATTRIBUTE);
         if (option != null && option.length() > 0) {
             try {
                 Integer perms = new Integer(Integer.parseInt(option, 8));
@@ -758,7 +758,7 @@ public class Configuration implements ErrorHandler {
                     "to be an octal number");
             }
         }
-        option = defautPermission.getAttribute("resource");
+        option = defaultPermission.getAttribute(XMLSecurityManager.RESOURCE_ATTRIBUTE);
         if (option != null && option.length() > 0) {
             try {
                 Integer perms = new Integer(Integer.parseInt(option, 8));

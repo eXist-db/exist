@@ -53,6 +53,10 @@ public class Scheduler
 {
 	public static final String CONFIGURATION_ELEMENT_NAME = "scheduler";
 	public static final String CONFIGURATION_JOB_ELEMENT_NAME = "job";
+	public static final String JOB_CLASS_ATTRIBUTE = "class";
+	public static final String JOB_XQUERY_ATTRIBUTE = "xquery";
+	public static final String JOB_CRON_TRIGGER_ATTRIBUTE = "cron-trigger";
+	public static final String JOB_PERIOD_ATTRIBUTE = "period";
 	public static final String PROPERTY_SCHEDULER_JOBS = "scheduler.jobs";
 	
 	//the scheduler
