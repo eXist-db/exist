@@ -10,21 +10,24 @@
 # pass -j or --jmx to enable JMX agent. The port for it can be specified 
 # with --jmx-port=1099
 #
-usage="startup.sh [-j|--jmx] [--jmx-port=jmx-port]\n"
+usage="startup.sh [-j|--jmx] [-p|--jmx-port=jmx-port]\n"
 
 JMX_ENABLED=0
 JMX_PORT=1099
 
 declare -a JAVA_OPTS
 NR_JAVA_OPTS=0
-NON_JAVA_OPTS=`getopt -a -o h,j,d,p:,t: --long help,jmx,debug,http-port:,threads: \
-     -n 'startup.sh' -- "$@"`
-
+if `getopt -T >/dev/null 2>&1` ; [ $? = 4 ] ; then
+    NON_JAVA_OPTS=`getopt -a -o j,p: --long jmx,jmx-port: \
+	-n 'startup.sh' -- "$@"`
+else
+    NON_JAVA_OPTS=`getopt j,p: $*`
+fi
 eval set -- "$NON_JAVA_OPTS"
 while true ; do
     case "$1" in
         -j|--jmx) JMX_ENABLED=1; shift ;;
-        --jmx-port) JMX_PORT="$2"; shift 2 ;;
+        -p|--jmx-port) JMX_PORT="$2"; shift 2 ;;
         --) shift ; break ;;
         *) JAVA_OPTS[$NR_JAVA_OPTS]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
     esac
