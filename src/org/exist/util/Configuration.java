@@ -424,7 +424,7 @@ public class Configuration implements ErrorHandler {
     }
     
     private void configureTransformer(Element transformer) {
-        String className = transformer.getAttribute(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_ATTRIBUTE);
+        String className = transformer.getAttribute(TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRIBUTE);
         if (className != null) {
             config.put(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, className);
             LOG.debug(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS + ": " + 
@@ -436,43 +436,43 @@ public class Configuration implements ErrorHandler {
      * @param serializers
      */
     private void configureSerializer(Element serializer) {
-        String xinclude = serializer.getAttribute("enable-xinclude");
+        String xinclude = serializer.getAttribute(Serializer.ENABLE_XINCLUDE_ATTRIBUTE);
         if (xinclude != null) {
             config.put(Serializer.PROPERTY_ENABLE_XINCLUDE, xinclude);
             LOG.debug(Serializer.PROPERTY_ENABLE_XINCLUDE + ": " + config.get(Serializer.PROPERTY_ENABLE_XINCLUDE));
         }
         
-        String xsl = serializer.getAttribute("enable-xsl");
+        String xsl = serializer.getAttribute(Serializer.ENABLE_XSL_ATTRIBUTE);
         if (xsl != null) {
             config.put(Serializer.PROPERTY_ENABLE_XSL, xsl);
             LOG.debug(Serializer.PROPERTY_ENABLE_XSL + ": " + config.get(Serializer.PROPERTY_ENABLE_XSL));
         }
         
-        String indent = serializer.getAttribute("indent");
+        String indent = serializer.getAttribute(Serializer.INDENT_ATTRIBUTE);
         if (indent != null) {
             config.put(Serializer.PROPERTY_INDENT, indent);
             LOG.debug(Serializer.PROPERTY_INDENT + ": " + config.get(Serializer.PROPERTY_INDENT));
         }
         
-        String compress = serializer.getAttribute("compress-output");
+        String compress = serializer.getAttribute(Serializer.COMPRESS_OUTPUT_ATTRIBUTE);
         if (compress != null) {
             config.put(Serializer.PROPERTY_COMPRESS_OUTPUT, compress);
 	        LOG.debug(Serializer.PROPERTY_COMPRESS_OUTPUT + ": " + config.get(Serializer.PROPERTY_COMPRESS_OUTPUT));
 	    }
         
-        String internalId = serializer.getAttribute("add-exist-id");
+        String internalId = serializer.getAttribute(Serializer.ADD_EXIST_ID_ATTRIBUTE);
         if (internalId != null) {
             config.put(Serializer.PROPERTY_ADD_EXIST_ID, internalId);
             LOG.debug(Serializer.PROPERTY_ADD_EXIST_ID + ": " + config.get(Serializer.PROPERTY_ADD_EXIST_ID));
         }
         
-        String tagElementMatches = serializer.getAttribute("match-tagging-elements");
+        String tagElementMatches = serializer.getAttribute(Serializer.TAG_MATCHING_ELEMENTS_ATTRIBUTE);
         if (tagElementMatches != null) {
             config.put(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS, tagElementMatches);
             LOG.debug(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS + ": " + config.get(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS));
         }
         
-        String tagAttributeMatches = serializer.getAttribute("match-tagging-attributes");
+        String tagAttributeMatches = serializer.getAttribute(Serializer.TAG_MATCHING_ATTRIBUTES_ATTRIBUTE);
         if (tagAttributeMatches != null) {
             config.put(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES, tagAttributeMatches);
             LOG.debug(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES + ": " + config.get(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES));
