@@ -69,6 +69,12 @@ public abstract class TextSearchEngine extends Observable {
 	protected PorterStemmer stemmer = null;
 	protected int trackMatches = Serializer.TAG_ELEMENT_MATCHES;
 	
+	public final static String INDEX_NUMBERS_ATTRIBUTE = "parseNumbers";
+	public final static String STEM_ATTRIBUTE = "stemming";
+	public final static String STORE_TERM_FREQUENCY_ATTRIBUTE = "track-term-freq";
+	public final static String TOKENIZER_ATTRIBUTE = "tokenizer";
+	public final static String STOPWORD_FILE_ATTRIBUTE = "file";
+	
 	public final static String PROPERTY_INDEX_NUMBERS = "indexer.indexNumbers";
 	public final static String PROPERTY_STEM = "indexer.stem";
 	public final static String PROPERTY_STORE_TERM_FREQUENCY = "indexer.store-term-freq";
