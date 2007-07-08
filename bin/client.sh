@@ -8,7 +8,7 @@
 #
 # In addition to the other parameter options for the interactive client 
 # pass -j or --jmx to enable JMX agent. The port for it can be specified 
-# with --port=1099
+# with --jmx-port=1099
 #
 # Maybe we should refactor this to avoid using two options?
 
@@ -25,7 +25,7 @@ eval set -- "$NON_JAVA_OPTS"
 while true ; do
     case "$1" in
         -j|--jmx) JMX_ENABLED=1; shift ;;
-        -p|--port) JMX_PORT="$2"; shift 2 ;;
+        --jmx-port) JMX_PORT="$2"; shift 2 ;;
         -o|--option) JAVA_OPTS[$NR_JAVA_OPTS]="'$1 $2'"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
         -u|--user|-P|--password|-p|--parse|-C|--config|-r|--remove|-c|--collection|-f|--resource|-g|--get|-m|--mkcol|-R|--rmcol|-x|--xpath|-n|--howmany|-O|--output|-F|--file|-t|--threads|-X|--xupdate|-T|--trace) JAVA_OPTS[$NR_JAVA_OPTS]="'$1 $2'"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
         --) shift ; break ;;
@@ -66,7 +66,6 @@ if [ ! -f "${EXIST_HOME}/start.jar" ]; then
 fi
 
 OPTIONS="-Dexist.home=$EXIST_HOME"
-DEBUG_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=4444"
 
 # set java options
 if [ -z "${CLIENT_JAVA_OPTIONS}" ]; then
