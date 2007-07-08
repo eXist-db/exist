@@ -89,6 +89,8 @@ public class BrokerPool {
 	public static final String CONFIGURATION_RECOVERY_ELEMENT_NAME = "recovery";
 	public static final String DATA_DIR_ATTRIBUTE = "files";
 	//TODO : move elsewhere ?
+	public final static String RECOVERY_ENABLED_ATTRIBUTE = "enabled";
+	//TODO : move elsewhere ?
 	public final static String COLLECTION_CACHE_SIZE_ATTRIBUTE = "collectionCacheSize";
 	//Various configuration property keys (set by the configuration manager)
 	public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";

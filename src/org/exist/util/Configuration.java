@@ -701,7 +701,7 @@ public class Configuration implements ErrorHandler {
     }
     
     private void configureRecovery(Element recovery) throws DatabaseConfigurationException {
-        String option = recovery.getAttribute("enabled");
+        String option = recovery.getAttribute(BrokerPool.RECOVERY_ENABLED_ATTRIBUTE);
         boolean value = true;
         if (option != null) {
             value = option.equals("yes");
@@ -709,7 +709,7 @@ public class Configuration implements ErrorHandler {
         setProperty(BrokerPool.PROPERTY_RECOVERY_ENABLED, new Boolean(value));
         LOG.debug(BrokerPool.PROPERTY_RECOVERY_ENABLED + ": " + config.get(BrokerPool.PROPERTY_RECOVERY_ENABLED));
         
-        option = recovery.getAttribute("sync-on-commit");
+        option = recovery.getAttribute(Journal.RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE);
         value = true;
         if (option != null) {
             value = option.equals("yes");
@@ -717,7 +717,7 @@ public class Configuration implements ErrorHandler {
         setProperty(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, new Boolean(value));
         LOG.debug(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": " + config.get(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT));
         
-        option = recovery.getAttribute("group-commit");
+        option = recovery.getAttribute(TransactionManager.RECOVERY_GROUP_COMMIT_ATTRIBUTE);
         value = false;
         if (option != null) {
             value = option.equals("yes");
@@ -725,13 +725,13 @@ public class Configuration implements ErrorHandler {
         setProperty(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT, new Boolean(value));
         LOG.debug(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT));
         
-        option = recovery.getAttribute("journal-dir");
+        option = recovery.getAttribute(Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE);
         if (option != null) {
             setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, option);
             LOG.debug(Journal.PROPERTY_RECOVERY_JOURNAL_DIR + ": " + config.get(Journal.PROPERTY_RECOVERY_JOURNAL_DIR));
         }
         
-        option = recovery.getAttribute("size");
+        option = recovery.getAttribute(Journal.RECOVERY_SIZE_LIMIT_ATTRIBUTE);
         if (option != null) {
             if (option.endsWith("M") || option.endsWith("m"))
                 option = option.substring(0, option.length() - 1);
