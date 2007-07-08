@@ -111,12 +111,19 @@ public abstract class Serializer implements XMLReader {
 	protected final static Logger LOG = Logger.getLogger(Serializer.class);
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "serializer";
+	public static final String ENABLE_XINCLUDE_ATTRIBUTE = "enable-xinclude";
 	public static final String PROPERTY_ENABLE_XINCLUDE = "serialization.enable-xinclude";
+	public static final String ENABLE_XSL_ATTRIBUTE = "enable-xsl";
 	public static final String PROPERTY_ENABLE_XSL = "serialization.enable-xsl";
+	public static final String INDENT_ATTRIBUTE = "indent";
 	public static final String PROPERTY_INDENT = "serialization.indent";
+	public static final String COMPRESS_OUTPUT_ATTRIBUTE = "compress-output";
 	public static final String PROPERTY_COMPRESS_OUTPUT = "serialization.compress-output";
+	public static final String ADD_EXIST_ID_ATTRIBUTE = "add-exist-id";
 	public static final String PROPERTY_ADD_EXIST_ID = "serialization.add-exist-id";
+	public static final String TAG_MATCHING_ELEMENTS_ATTRIBUTE = "match-tagging-elements";
 	public static final String PROPERTY_TAG_MATCHING_ELEMENTS = "serialization.match-tagging-elements";
+	public static final String TAG_MATCHING_ATTRIBUTES_ATTRIBUTE = "match-tagging-attributes";
 	public static final String PROPERTY_TAG_MATCHING_ATTRIBUTES = "serialization.match-tagging-attributes";
 
 	// constants to configure the highlighting of matches in text and attributes
