@@ -73,6 +73,15 @@ if [ $JMX_ENABLED -gt 0 ]; then
 	JAVA_OPTIONS="$JAVA_OPTIONS $JMX_OPTS"
 fi
 
+# The following lines enables the JMX agent:
+if [ $JMX_ENABLED -gt 0 ]; then
+    JMX_OPTS="-Dcom.sun.management.jmxremote \
+		-Dcom.sun.management.jmxremote.port=$JMX_PORT \
+		-Dcom.sun.management.jmxremote.authenticate=false \
+		-Dcom.sun.management.jmxremote.ssl=false"
+    JAVA_OPTIONS="$JAVA_OPTIONS $JMX_OPTS"
+fi
+
 $JAVA_HOME/bin/java $JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
 	$DEBUG_START $OPTIONS -jar "$EXIST_HOME/start.jar" \
 	jetty $*
