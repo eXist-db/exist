@@ -46,6 +46,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public class TransactionManager {
 	
+	public final static String RECOVERY_GROUP_COMMIT_ATTRIBUTE = "group-commit";
 	public final static String PROPERTY_RECOVERY_GROUP_COMMIT = "db-connection.recovery.group-commit";
 	
     /**

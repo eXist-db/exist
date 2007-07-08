@@ -71,6 +71,10 @@ public class Journal {
      */
     private static final Logger LOG = Logger.getLogger(Journal.class);
     
+    public final static String RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE = "sync-on-commit";
+    public final static String RECOVERY_JOURNAL_DIR_ATTRIBUTE = "journal-dir";
+    public final static String RECOVERY_SIZE_LIMIT_ATTRIBUTE = "size"; 
+    
     public final static String PROPERTY_RECOVERY_SIZE_LIMIT = "db-connection.recovery.size-limit";
     public final static String PROPERTY_RECOVERY_JOURNAL_DIR = "db-connection.recovery.journal-dir";
     public final static String PROPERTY_RECOVERY_SYNC_ON_COMMIT = "db-connection.recovery.sync-on-commit";
