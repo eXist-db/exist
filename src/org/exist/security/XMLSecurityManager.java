@@ -62,8 +62,12 @@ import org.xml.sax.SAXException;
  */
 public class XMLSecurityManager implements SecurityManager {
 	
-	public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";
+	public static final String CONFIGURATION_ELEMENT_NAME = "default-permissions";
+	public static final String COLLECTION_ATTRIBUTE = "collection";
+	public static final String RESOURCE_ATTRIBUTE = "resource";
+	
 	public static final String PROPERTY_PERMISSIONS_COLLECTIONS = "indexer.permissions.collection";
+	public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";	
 
 	public final static String DBA_GROUP = "dba";
 	public final static String DBA_USER = "admin";
