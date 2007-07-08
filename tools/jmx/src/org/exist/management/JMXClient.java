@@ -40,8 +40,10 @@ import java.util.*;
 public class JMXClient {
 
     private MBeanServerConnection connection;
+    private String instance;
 
-    public JMXClient() {
+    public JMXClient(String instanceName) {
+        this.instance = instanceName;
     }
 
     public void connect(int port) throws IOException {
@@ -56,29 +58,58 @@ public class JMXClient {
         echo("Connected to MBean server.");
     }
 
-    public void generalStats() {
+    public void memoryStats() {
         try {
             ObjectName name = new ObjectName("java.lang:type=Memory");
             CompositeData composite = (CompositeData) connection.getAttribute(name, "HeapMemoryUsage");
             if (composite != null) {
-                echo(String.format("Current heap size: %,12d kbytes", ((Long)composite.get("used")) / 1024));
-                echo(String.format("Committed memory:  %,12d kbytes", ((Long)composite.get("committed")) / 1024));
-                echo(String.format("Max memory:       %,12d kbytes", ((Long)composite.get("max")) / 1024));
+                echo("\nMEMORY:");
+                echo(String.format("Current heap: %,12d k        Committed memory:  %,12d k",
+                        ((Long)composite.get("used")) / 1024, ((Long)composite.get("committed")) / 1024));
+                echo(String.format("Max memory:   %,12d k", ((Long)composite.get("max")) / 1024));
             }
         } catch (Exception e) {
             error(e);
         }
     }
 
-    public void cacheStats() {
-        String cols[] = {"Type", "FileName", "Size", "Used", "Hits", "Fails"};
-        echo(String.format("\n%10s %20s %10s %10s %10s %10s", cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]));
+    public void instanceStats() {
         try {
-            Set beans = connection.queryNames(new ObjectName("org.exist.management.*:type=CacheManager.Cache,*"), null);
+            echo("\nINSTANCE:");
+            ObjectName name = new ObjectName("org.exist.management." + instance + ":type=Database");
+            Long memReserved = (Long) connection.getAttribute(name, "ReservedMem");
+            echo(String.format("%25s: %10d k", "Reserved memory", memReserved.longValue() / 1024));
+            Long memCache = (Long) connection.getAttribute(name, "CacheMem");
+            echo(String.format("%25s: %10d k", "Cache memory", memCache.longValue() / 1024));
+            Long memCollCache = (Long) connection.getAttribute(name, "CollectionCacheMem");
+            echo(String.format("%25s: %10d k", "Collection cache memory", memCollCache.longValue() / 1024));
+
+            String cols[] = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
+            echo(String.format("\n%17s %17s %17s", cols[0], cols[1], cols[2]));
+            AttributeList attrs = connection.getAttributes(name, cols);
+            Object values[] = getValues(attrs);
+            echo(String.format("%17d %17d %17d", values[0], values[1], values[2]));
+
+        } catch (Exception e) {
+            error(e);
+        }
+    }
+
+    public void cacheStats() {
+        try {
+            ObjectName name = new ObjectName("org.exist.management." + instance + ":type=CacheManager");
+            String cols[] = { "MaxTotal", "CurrentSize" };
+            AttributeList attrs = connection.getAttributes(name, cols);
+            Object values[] = getValues(attrs);
+            echo(String.format("\nCACHE [%8d pages max. / %8d pages allocated]", values[0], values[1]));
+
+            Set beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
+            cols = new String[] {"Type", "FileName", "Size", "Used", "Hits", "Fails"};
+            echo(String.format("%10s %20s %10s %10s %10s %10s", cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]));
             for (Iterator i = beans.iterator(); i.hasNext();) {
-                ObjectName name = (ObjectName) i.next();
-                AttributeList attrs = connection.getAttributes(name, cols);
-                Object values[] = getValues(attrs);
+                name = (ObjectName) i.next();
+                attrs = connection.getAttributes(name, cols);
+                values = getValues(attrs);
                 echo(String.format("%10s %20s %,10d %,10d %,10d %,10d", values[0], values[1], values[2], values[3], values[4], values[5]));
            }
         } catch (IOException e) {
@@ -145,44 +176,54 @@ public class JMXClient {
     }
 
     private final static int HELP_OPT = 'h';
-    private final static int STATS_OPT = 's';
+    private final static int CACHE_OPT = 'c';
+    private final static int DB_OPT = 'd';
     private final static int WAIT_OPT = 'w';
     private final static int LOCK_OPT = 'l';
+    private final static int MEMORY_OPT = 'm';
     private final static int PORT_OPT = 'p';
+    private final static int INSTANCE_OPT = 'i';
     
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
             HELP_OPT, "print help on command line options and exit." ),
-        new CLOptionDescriptor( "stats", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            STATS_OPT, "displays server statistics on cache and memory usage." ),
+        new CLOptionDescriptor( "cache", CLOptionDescriptor.ARGUMENT_DISALLOWED,
+                CACHE_OPT, "displays server statistics on cache and memory usage." ),
+        new CLOptionDescriptor( "db", CLOptionDescriptor.ARGUMENT_DISALLOWED,
+            DB_OPT, "display general info about the db instance." ),
         new CLOptionDescriptor( "wait", CLOptionDescriptor.ARGUMENT_REQUIRED,
             WAIT_OPT, "while displaying server statistics: keep retrieving statistics, but wait the " +
-                "specified number of ms. between calls." ),
+                "specified number of seconds between calls." ),
         new CLOptionDescriptor( "locks", CLOptionDescriptor.ARGUMENT_DISALLOWED,
             LOCK_OPT, "lock manager: display locking information on all threads currently waiting for a lock on a resource " +
                 "or collection. Useful to debug deadlocks. During normal operation, the list will usually be empty (means: no " +
                 "blocked threads)." ),
+        new CLOptionDescriptor( "memory", CLOptionDescriptor.ARGUMENT_DISALLOWED,
+            MEMORY_OPT, "display info on free and total memory. Can be combined with other parameters." ),
         new CLOptionDescriptor( "port", CLOptionDescriptor.ARGUMENT_REQUIRED,
-            PORT_OPT, "RMI port of the server")
+            PORT_OPT, "RMI port of the server"),
+        new CLOptionDescriptor( "instance", CLOptionDescriptor.ARGUMENT_REQUIRED,
+            INSTANCE_OPT, "the ID of the database instance to connect to")
     };
 
     private final static int MODE_STATS = 0;
     private final static int MODE_LOCKS = 1;
     
     public static void main(String[] args) {
-        JMXClient stats = new JMXClient();
-
         CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
         if(optParser.getErrorString() != null) {
             System.err.println( "ERROR: " + optParser.getErrorString());
             return;
         }
+        String dbInstance = "exist";
         long waitTime = 0;
         List opt = optParser.getArguments();
         int size = opt.size();
         CLOption option;
         int mode = -1;
         int port = 1099;
+        boolean displayMem = false;
+        boolean displayInstance = false;
         for(int i = 0; i < size; i++) {
             option = (CLOption)opt.get(i);
             switch(option.getId()) {
@@ -191,13 +232,13 @@ public class JMXClient {
                     return;
                 case WAIT_OPT :
                     try {
-                        waitTime = Integer.parseInt( option.getArgument() );
+                        waitTime = Integer.parseInt( option.getArgument() ) * 1000;
                     } catch( NumberFormatException e ) {
                         System.err.println("option -w|--wait requires a numeric argument");
                         return;
                     }
                     break;
-                case STATS_OPT :
+                case CACHE_OPT:
                     mode = MODE_STATS;
                     break;
                 case LOCK_OPT :
@@ -211,11 +252,21 @@ public class JMXClient {
                         return;
                     }
                     break;
+                case MEMORY_OPT :
+                    displayMem = true;
+                    break;
+                case DB_OPT :
+                    displayInstance = true;
+                    break;
+                case INSTANCE_OPT :
+                    dbInstance = option.getArgument();
+                    break;
             }
         }
         try {
+            JMXClient stats = new JMXClient(dbInstance);
             stats.connect(port);
-            stats.generalStats();
+            stats.memoryStats();
             while (true) {
                 switch (mode) {
                     case MODE_STATS :
@@ -225,7 +276,8 @@ public class JMXClient {
                         stats.lockTable();
                         break;
                 }
-
+                if (displayInstance) stats.instanceStats();
+                if (displayMem) stats.memoryStats();
                 if (waitTime > 0) {
                     synchronized (stats) {
                         try {

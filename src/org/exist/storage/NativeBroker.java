@@ -150,7 +150,7 @@ public class NativeBroker extends DBBroker {
     /** default buffer size setting */
     public static final int BUFFERS = 256;
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
-    public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 10000;
+    public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 500;
     
     public static int OFFSET_COLLECTION_ID = 0;
     public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
@@ -174,8 +174,6 @@ public class NativeBroker extends DBBroker {
     protected Serializer xmlSerializer;		
 	
     protected boolean readOnly = false;
-	
-    protected int memMinFree;
 	
     /** used to count the nodes inserted after the last memory check */
     protected int nodesCount = 0;
@@ -218,11 +216,7 @@ public class NativeBroker extends DBBroker {
 		if (defaultIndexDepth < 0)
 		    defaultIndexDepth = DEFAULT_INDEX_DEPTH;
         
-        memMinFree = config.getInteger(PROPERTY_MIN_FREE_MEMORY);
-		if (memMinFree < 0)
-		    memMinFree = DEFAULT_MIN_MEMORY;
-        
-        indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);         
+        indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
         xmlSerializer = new NativeSerializer(this, config);
         user = SecurityManager.SYSTEM_USER;            
         
@@ -2995,8 +2989,8 @@ public class NativeBroker extends DBBroker {
 		//              System.gc();
                 NumberFormat nf = NumberFormat.getNumberInstance();
                 LOG.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
-			 nf.format(run.maxMemory() / 1024) + "K max; " +
-			 nf.format(run.freeMemory() / 1024) + "K free");              
+                        nf.format(run.maxMemory() / 1024) + "K max; " +
+                        nf.format(run.freeMemory() / 1024) + "K free");
                 
                 domDb.printStatistics();
                 collectionsDb.printStatistics();
@@ -3024,14 +3018,14 @@ public class NativeBroker extends DBBroker {
     /** check available memory */
     public void checkAvailableMemory() {
         if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
-            final double percent = ((double) run.freeMemory() / (double) run.maxMemory()) * 100;
-            if (percent < memMinFree) {
+            if (run.totalMemory() >= run.maxMemory() && run.freeMemory() < pool.getReservedMem()) {
                 flush();
-		//                System.gc();
+                System.gc();
                 NumberFormat nf = NumberFormat.getNumberInstance();
-                LOG.info("total memory: " + nf.format(run.totalMemory()) + 
-			 "; free: " + nf.format(run.freeMemory()));
+                LOG.info("total memory: " + nf.format(run.totalMemory()) +
+                        "; free: " + nf.format(run.freeMemory()));
             }
+            nodesCount = 0;
         }
     }
 
@@ -3299,16 +3293,14 @@ public class NativeBroker extends DBBroker {
         /** check available memory */
         private void checkAvailableMemory() {
             if (mode != MODE_REMOVE && nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
-                final int percent = (int) (run.freeMemory() /
-					   (run.totalMemory() / 100));
-                if (percent < memMinFree) {
+                if (run.totalMemory() >= run.maxMemory() && run.freeMemory() < pool.getReservedMem()) {
                     //LOG.info(
                     //  "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
                     flush();
-		    //                    System.gc();
-                    LOG.info(
-			     "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
+                    System.gc();
+                    LOG.info("total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
                 }
+                nodesCount = 0;
             }
         }
         
