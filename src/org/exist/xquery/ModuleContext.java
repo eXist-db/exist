@@ -1,7 +1,6 @@
 package org.exist.xquery;
 
 import java.util.Iterator;
-import java.util.TreeMap;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
@@ -68,7 +67,9 @@ public class ModuleContext extends XQueryContext {
             module = initBuiltInModule(namespaceURI, moduleClass);
         if (module != null) {
             try {
-                declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
+            	String defaultPrefix = module.getDefaultPrefix();
+            	if (!"".equals(defaultPrefix))
+            		declareNamespace(defaultPrefix, module.getNamespaceURI());
             } catch (XPathException e) {
                 LOG.warn("error while loading builtin module class " + moduleClass, e);
             }
