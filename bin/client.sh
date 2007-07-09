@@ -1,6 +1,6 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
-# startup.sh - Start Script for Jetty + eXist
+# client.sh - Start Script for eXist interactive client
 #
 # $Id$
 # -----------------------------------------------------------------------------
