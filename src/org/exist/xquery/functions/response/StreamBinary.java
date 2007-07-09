@@ -46,12 +46,15 @@ public class StreamBinary extends BasicFunction {
         new FunctionSignature(
             new QName("stream-binary", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
             "Streams the binary data passed in $a to the current servlet response output stream. The ContentType " +
-            "HTTP header is set to the value given in $b. This function only works within a servlet context, not within " +
+            "HTTP header is set to the value given in $b. The filename is set to the value given in $c, if no filename is specified then" +
+            "that of the current request is used." +
+            "This function only works within a servlet context, not within " +
             "Cocoon. Note: the servlet output stream will be closed afterwards and mime-type settings in the prolog " +
             "will not be passed.",
             new SequenceType[] {
                 new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
             },
             new SequenceType(Type.ITEM, Cardinality.EMPTY),
             true
@@ -83,6 +86,11 @@ public class StreamBinary extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         Base64Binary binary = (Base64Binary) args[0].itemAt(0);
         String contentType = args[1].getStringValue();
+        String filename = null;
+        if(!args[2].isEmpty())
+        {
+        	filename = args[2].getStringValue();
+        }
         
         ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
         // request object is read from global variable $response
@@ -98,6 +106,10 @@ public class StreamBinary extends BasicFunction {
                     " can only be used within the EXistServlet or XQueryServlet");
         ResponseWrapper response = (ResponseWrapper) respValue.getObject();
         response.setHeader("Content-Type", contentType);
+        if(filename != null)
+        {
+        	response.setHeader("Content-Disposition","inline; filename=" + filename);
+        }
         try {
             OutputStream os = new BufferedOutputStream(response.getOutputStream());
             os.write(binary.getBinaryData());
