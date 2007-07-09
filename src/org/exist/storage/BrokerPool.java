@@ -92,6 +92,11 @@ public class BrokerPool {
 	public final static String RECOVERY_ENABLED_ATTRIBUTE = "enabled";
 	//TODO : move elsewhere ?
 	public final static String COLLECTION_CACHE_SIZE_ATTRIBUTE = "collectionCacheSize";
+	public final static String MIN_CONNECTIONS_ATTRIBUTE = "min";
+	public final static String MAX_CONNECTIONS_ATTRIBUTE = "max";
+	public final static String SYNC_PERIOD_ATTRIBUTE = "sync-period";
+	public final static String SHUTDOWN_DELAY_ATTRIBUTE = "wait-before-shutdown";
+	
 	//Various configuration property keys (set by the configuration manager)
 	public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";
 	public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";

@@ -644,8 +644,8 @@ public class Configuration implements ErrorHandler {
         if (securityConf.getLength()>0) {
             Element security = (Element)securityConf.item(0);
             securityManagerClassName = security.getAttribute("class");
-            String encoding = security.getAttribute("password-encoding");
             //Unused
+            String encoding = security.getAttribute("password-encoding");
             config.put("db-connection.security.password-encoding",encoding);
             if (encoding!=null) {
                 LOG.info("db-connection.security.password-encoding: " + config.get("db-connection.security.password-encoding"));
@@ -653,8 +653,8 @@ public class Configuration implements ErrorHandler {
             } else {
                 LOG.info("No password encoding set, defaulting.");
             }
-            String realm = security.getAttribute("password-realm");
             //Unused
+            String realm = security.getAttribute("password-realm");            
             config.put("db-connection.security.password-realm",realm);
             if (realm!=null) {
                 LOG.info("db-connection.security.password-realm: " + config.get("db-connection.security.password-realm"));
@@ -841,7 +841,7 @@ public class Configuration implements ErrorHandler {
      * @param queryPoolConf
      */
     private void configureXQueryPool(Element queryPool) {
-        String maxStackSize = queryPool.getAttribute("max-stack-size");
+        String maxStackSize = queryPool.getAttribute(XQueryPool.MAX_STACK_SIZE_ATTRIBUTE);
         if (maxStackSize != null) {
             try {
                 config.put(XQueryPool.PROPERTY_MAX_STACK_SIZE, new Integer(maxStackSize));
@@ -851,7 +851,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String maxPoolSize = queryPool.getAttribute("size");
+        String maxPoolSize = queryPool.getAttribute(XQueryPool.POOL_SIZE_ATTTRIBUTE);
         if (maxPoolSize != null) {
             try {
                 config.put(XQueryPool.PROPERTY_POOL_SIZE, new Integer(maxPoolSize));
@@ -861,7 +861,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String timeout = queryPool.getAttribute("timeout");
+        String timeout = queryPool.getAttribute(XQueryPool.TIMEOUT_ATTRIBUTE);
         if (timeout != null) {
             try {
                 config.put(XQueryPool.PROPERTY_TIMEOUT, new Long(timeout));
@@ -871,7 +871,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String timeoutCheckInterval = queryPool.getAttribute("timeout-check-interval");
+        String timeoutCheckInterval = queryPool.getAttribute(XQueryPool.TIMEOUT_CHECK_INTERVAL_ATTRIBUTE);
         if (timeoutCheckInterval != null) {
             try {
                 config.put(XQueryPool.PROPERTY_TIMEOUT_CHECK_INTERVAL, new Long(timeoutCheckInterval));
@@ -886,7 +886,7 @@ public class Configuration implements ErrorHandler {
      * @param poolConf
      */
     private void configurePool(Element pool) {
-        String min = pool.getAttribute("min");
+        String min = pool.getAttribute(BrokerPool.MIN_CONNECTIONS_ATTRIBUTE);
         if (min != null) {
             try {
                 config.put(BrokerPool.PROPERTY_MIN_CONNECTIONS, new Integer(min));
@@ -896,7 +896,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String max = pool.getAttribute("max");
+        String max = pool.getAttribute(BrokerPool.MAX_CONNECTIONS_ATTRIBUTE);
         if (max != null) {
             try {
                 config.put(BrokerPool.PROPERTY_MAX_CONNECTIONS, new Integer(max));
@@ -906,7 +906,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String sync = pool.getAttribute("sync-period");
+        String sync = pool.getAttribute(BrokerPool.SYNC_PERIOD_ATTRIBUTE);
         if (sync != null) {
             try {
                 config.put(BrokerPool.PROPERTY_SYNC_PERIOD, new Long(sync));
@@ -916,7 +916,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String maxShutdownWait = pool.getAttribute("wait-before-shutdown");
+        String maxShutdownWait = pool.getAttribute(BrokerPool.SHUTDOWN_DELAY_ATTRIBUTE);
         if (maxShutdownWait != null) {
             try {
                 config.put(BrokerPool.PROPERTY_SHUTDOWN_DELAY, new Long(maxShutdownWait));
