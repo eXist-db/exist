@@ -23,19 +23,19 @@ get_client_getopts() {
     fi
 # fixme! option -p|--parse takes 1..n arguments!
 
-    eval set -- "$ALL_OPTS"
+    eval set -- "${ALL_OPTS}"
     while true ; do
 	case "$1" in
             -j|--jmx) JMX_ENABLED=1; [ "x$2" != "x" ] && JMX_PORT="$2"; shift ;;
-            -u|--user|-P|--password|-p|--parse|-C|--config|-r|--remove|-c|--collection|-f|--resource|-g|--get|-m|--mkcol|-R|--rmcol|-x|--xpath|-n|--howmany|-o|--option|-O|--output|-F|--file|-t|--threads|-X|--xupdate|-T|--trace) JAVA_OPTS[$NR_JAVA_OPTS]="$1 $2"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
+            -u|--user|-P|--password|-p|--parse|-C|--config|-r|--remove|-c|--collection|-f|--resource|-g|--get|-m|--mkcol|-R|--rmcol|-x|--xpath|-n|--howmany|-o|--option|-O|--output|-F|--file|-t|--threads|-X|--xupdate|-T|--trace) JAVA_OPTS[${NR_JAVA_OPTS}]="$1 $2"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
             --) shift ; break ;;
-            *) JAVA_OPTS[$NR_JAVA_OPTS]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
+            *) JAVA_OPTS[${NR_JAVA_OPTS}]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
 	esac
     done
 
 # Collect the remaining arguments
     for arg; do
-	JAVA_OPTS[$NR_JAVA_OPTS]="$arg";
+	JAVA_OPTS[${NR_JAVA_OPTS}]="$arg";
 	let "NR_JAVA_OPTS += 1";
     done
     
@@ -44,7 +44,7 @@ get_client_getopts() {
 
 get_standaloneserver_getopts() {
 if `getopt -T >/dev/null 2>&1` ; [ $? = 4 ] ; then
-    NON_JAVA_OPTS=`getopt -a -o ${SHORT_STANDALONESERVER_OPTS} --long ${LONG_STANDALONESERVER_OPTS} \
+    ALL_OPTS=`getopt -a -o ${SHORT_STANDALONESERVER_OPTS} --long ${LONG_STANDALONESERVER_OPTS} \
 	-n 'server.sh' -- "$@"`
 else
     ALL_OPTS=`getopt ${SHORT_STANDALONESERVER_OPTS} $*`
@@ -54,36 +54,36 @@ eval set -- "${ALL_OPTS}"
 while true ; do
     case "$1" in
         -j|--jmx) JMX_ENABLED=1; [ "x$2" != "x" ] && JMX_PORT="$2"; shift ;;
-        -p|--http-port|-t|--threads) JAVA_OPTS[$NR_JAVA_OPTS]="$1 $2"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
+        -p|--http-port|-t|--threads) JAVA_OPTS[${NR_JAVA_OPTS}]="$1 $2"; let "NR_JAVA_OPTS += 1"; shift 2 ;;
         --) shift ; break ;;
-        *) JAVA_OPTS[$NR_JAVA_OPTS]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
+        *) JAVA_OPTS[${NR_JAVA_OPTS}]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
     esac
 done
 # Collect the remaining arguments
 for arg; do
-    JAVA_OPTS[$NR_JAVA_OPTS]="$arg";
+    JAVA_OPTS[${NR_JAVA_OPTS}]="$arg";
     let "NR_JAVA_OPTS += 1";
 done
 }
 
 get_jettycontainer_getopts() {
 if `getopt -T >/dev/null 2>&1` ; [ $? = 4 ] ; then
-    NON_JAVA_OPTS=`getopt -a -o ${SHORT_JETTYCONTAINER_OPTS} --long ${LONG_JETTYCONTAINER_OPTS} \
+    ALL_OPTS=`getopt -a -o ${SHORT_JETTYCONTAINER_OPTS} --long ${LONG_JETTYCONTAINER_OPTS} \
 	-n 'startup.sh' -- "$@"`
 else
-    NON_JAVA_OPTS=`getopt ${SHORT_JETTYCONTAINER_OPTS} $*`
+    ALL_OPTS=`getopt ${SHORT_JETTYCONTAINER_OPTS} $*`
 fi
-eval set -- "$NON_JAVA_OPTS"
+eval set -- "${ALL_OPTS}"
 while true ; do
     case "$1" in
         -j|--jmx) JMX_ENABLED=1; [ "x$2" != "x" ] && JMX_PORT="$2"; shift ;;
         --) shift ; break ;;
-        *) JAVA_OPTS[$NR_JAVA_OPTS]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
+        *) JAVA_OPTS[${NR_JAVA_OPTS}]="$1"; let "NR_JAVA_OPTS += 1"; shift ;;
     esac
 done
 # Collect the remaining arguments
 for arg; do
-    JAVA_OPTS[$NR_JAVA_OPTS]="$arg";
+    JAVA_OPTS[${NR_JAVA_OPTS}]="$arg";
     let "NR_JAVA_OPTS += 1";
 done
 }
