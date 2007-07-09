@@ -7,8 +7,8 @@
 
 #
 # In addition to the other parameter options for the standalone server 
-# pass -j or --jmx to enable JMX agent. The port for it can be specified 
-# with -k1099 or --jmx-port=1099
+# pass -j or --jmx to enable JMX agent.  The port for it can be specified 
+# with optional port number e.g. -j1099 or --jmx=1099.
 #
 
 SCRIPTPATH=$(dirname `/bin/pwd`/$0)
