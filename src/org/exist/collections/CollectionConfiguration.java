@@ -99,7 +99,8 @@ public class CollectionConfiguration {
      * @param doc collection configuration document
      * @throws CollectionConfigurationException
      */
-    protected void read(DBBroker broker, Document doc, XmldbURI srcCollectionURI, XmldbURI docName) throws CollectionConfigurationException {
+    protected void read(DBBroker broker, DocumentImpl doc, XmldbURI srcCollectionURI, XmldbURI docName) throws CollectionConfigurationException {
+        doc.setBroker(broker);
         Element root = doc.getDocumentElement();
         if (root == null)
             throw new CollectionConfigurationException("Configuration document can not be parsed"); 
