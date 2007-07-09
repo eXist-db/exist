@@ -66,6 +66,10 @@ public class XQueryPool extends Object2ObjectHashMap {
     private long timeoutCheckInterval;
     
     public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
+    public static final String MAX_STACK_SIZE_ATTRIBUTE = "max-stack-size";
+    public static final String POOL_SIZE_ATTTRIBUTE = "size";
+    public static final String TIMEOUT_ATTRIBUTE = "timeout";
+    public static final String TIMEOUT_CHECK_INTERVAL_ATTRIBUTE = "timeout-check-interval";
     
     public static final String PROPERTY_MAX_STACK_SIZE = "db-connection.query-pool.max-stack-size";
     public static final String PROPERTY_POOL_SIZE = "db-connection.query-pool.size";
