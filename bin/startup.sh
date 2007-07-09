@@ -8,9 +8,9 @@
 #
 # In addition to the other parameter options for the jetty container 
 # pass -j or --jmx to enable JMX agent. The port for it can be specified 
-# with -k1099 or --jmx-port=1099
+# with optional port number e.g. -j1099 or --jmx=1099.
 #
-usage="startup.sh [-j|--jmx] [-k1099|--jmx-port=jmx-port]\n"
+usage="startup.sh [-j[jmx-port]|--jmx[=jmx-port]]\n"
 
 #DEBUG_OPTS="-Dexist.start.debug=true"
 

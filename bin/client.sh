@@ -7,10 +7,9 @@
 
 #
 # In addition to the other parameter options for the interactive client 
-# pass -j or --jmx to enable JMX agent. The port for it can be specified 
-# with -k1099 or --jmx-port=1099
+# pass -j or --jmx to enable JMX agent.  The port for it can be specified 
+# with optional port number e.g. -j1099 or --jmx=1099.
 #
-# todo: Maybe we should refactor this to avoid using two options?
 
 SCRIPTPATH=$(dirname `/bin/pwd`/$0)
 # source common functions and settings
