@@ -20,7 +20,7 @@ SCRIPTPATH=$(dirname `/bin/pwd`/$0)
 . ${SCRIPTPATH}/functions.d/jmx-settings.sh
 . ${SCRIPTPATH}/functions.d/getopt-settings.sh
 
-get_jettycontainer_getopts $*;
+get_opts "$*" "${JETTYCONTAINER_OPTS}";
 
 check_exist_home $0;
 
