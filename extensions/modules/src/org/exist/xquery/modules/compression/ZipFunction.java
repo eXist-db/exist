@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: EchoFunction.java 3063 2006-04-05 20:49:44Z brihaye $
+ *  $Id$
  */
 package org.exist.xquery.modules.compression;
 
@@ -26,9 +26,11 @@ import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
-import org.exist.util.Base64Encoder;
+import org.exist.storage.serializers.Serializer;
+import org.exist.util.LockException;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -41,12 +43,19 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Type;
 
+import org.xml.sax.SAXException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
+ * Compresses a sequence of resources and/or collections
+ * into a Zip file
+ * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @version 1.0
  */
@@ -57,8 +66,11 @@ public class ZipFunction extends BasicFunction
 		new FunctionSignature(
 			new QName("zip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
 			"Zip's resources and/or collections. $a is a sequence of URI's, if a URI points to a collection" +
-			"then the collection, its resources and sub-collections are zipped recursively.",
-			new SequenceType[] { new SequenceType(Type.ANY_URI, Cardinality.ONE_OR_MORE)},
+			"then the collection, its resources and sub-collections are zipped recursively. $b indicates whether to use the collection hierarchy in the zip file.",
+			new SequenceType[] {
+				new SequenceType(Type.ANY_URI, Cardinality.ONE_OR_MORE),
+				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+			},
 			new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE));
 
 	public ZipFunction(XQueryContext context)
@@ -68,9 +80,12 @@ public class ZipFunction extends BasicFunction
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		// is argument the empty sequence?
+		//are there some uri's to zip?
 		if (args[0].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
+		
+		//use a hierarchy in the zip file?
+		boolean useHierarchy = args[1].effectiveBooleanValue();
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipOutputStream zos = new ZipOutputStream(baos);
@@ -87,23 +102,24 @@ public class ZipFunction extends BasicFunction
 				
 				if(doc == null)
 				{
-					//try for a collection
+					//no doc, try for a collection
 					Collection col = context.getBroker().getCollection(uri.toXmldbURI());
 					
 					if(col != null)
 					{
 						//got a collection
-						zipCollection(zos, col);
+						zipCollection(zos, col, useHierarchy);
 					}
 					else
 					{
+						//no doc or collection
 						throw new XPathException(getASTNode(), "Invalid URI: " + uri.toString());
 					}
 				}
 				else
 				{
 					//got a doc
-					zipResource(zos, doc);
+					zipResource(zos, doc, useHierarchy);
 				}
 			}
 			catch(PermissionDeniedException pde)
@@ -113,6 +129,14 @@ public class ZipFunction extends BasicFunction
 			catch(IOException ioe)
 			{
 				throw new XPathException(getASTNode(), ioe.getMessage());
+			}
+			catch(SAXException se)
+			{
+				throw new XPathException(getASTNode(), se.getMessage());
+			}
+			catch(LockException le)
+			{
+				throw new XPathException(getASTNode(), le.getMessage());
 			}
 			finally
 			{
@@ -135,14 +159,36 @@ public class ZipFunction extends BasicFunction
 		return new Base64Binary(baos.toByteArray());
 	}
 	
-	private void zipResource(ZipOutputStream zos, DocumentImpl doc) throws IOException
+	/**
+	 * Adds a document to a Zip
+	 * 
+	 * @param zos The Zip Output Stream to add the document to
+	 * @param doc The document to add to the Zip
+	 * @param useHierarchy Whether to use a folder hierarchy in the Zip file that reflects the collection hierarchy
+	 */
+	private void zipResource(ZipOutputStream zos, DocumentImpl doc, boolean useHierarchy) throws IOException, SAXException
 	{
-		ZipEntry entry = new ZipEntry(doc.getFileURI().toString());
+		//create an entry in the Zip for the document
+		ZipEntry entry = null;
+		if(useHierarchy)
+		{
+			entry = new ZipEntry(doc.getCollection().getURI().append(doc.getFileURI()).toString());
+		}
+		else
+		{
+			entry = new ZipEntry(doc.getFileURI().toString());
+		}
 		zos.putNextEntry(entry);
 		
+		//add the document to the Zip
 		if(doc.getResourceType() == DocumentImpl.XML_FILE)
 		{
-			//xml resource
+			//xml file
+			Serializer serializer = context.getBroker().getSerializer();
+			serializer.setUser(context.getUser());
+			serializer.setProperty("omit-xml-declaration", "no");
+			String strDoc = serializer.serialize(doc);
+			zos.write(strDoc.getBytes());
 		}
 		else if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
 		{
@@ -151,11 +197,45 @@ public class ZipFunction extends BasicFunction
 			zos.write(data);
 		}
 		
+		//close the entry in the Zip
 		zos.closeEntry();
 	}
 
-	private void zipCollection(ZipOutputStream zos, Collection col) throws IOException
+	/**
+	 * Adds a Collection and its child collections and resources recursively to a Zip
+	 * 
+	 * @param zos The Zip Output Stream to add the document to
+	 * @param col The Collection to add to the Zip
+	 * @param useHierarchy Whether to use a folder hierarchy in the Zip file that reflects the collection hierarchy
+	 */
+	private void zipCollection(ZipOutputStream zos, Collection col, boolean useHierarchy) throws IOException, SAXException, LockException
 	{
-		
+		//iterate over child documents
+		DocumentSet childDocs = new DocumentSet(); 
+		col.getDocuments(context.getBroker(), childDocs, true);
+		for(Iterator itChildDocs = childDocs.iterator(); itChildDocs.hasNext();)
+		{
+			DocumentImpl childDoc = (DocumentImpl)itChildDocs.next();
+			childDoc.getUpdateLock().acquire(Lock.READ_LOCK);
+			try
+			{
+				//zip the resource
+				zipResource(zos, childDoc, useHierarchy);
+			}
+			finally
+			{
+				childDoc.getUpdateLock().release(Lock.READ_LOCK);
+			}
+		}
+
+		//iterate over child collections
+		List childCollections = col.getDescendants(context.getBroker(), context.getUser());
+		for(Iterator itChildCols = childCollections.iterator(); itChildCols.hasNext();)
+		{
+			Collection childCol = (Collection)itChildCols.next();
+			
+			//recurse
+			zipCollection(zos, childCol, useHierarchy);
+		}
 	}
 }
