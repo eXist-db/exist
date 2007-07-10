@@ -17,7 +17,7 @@ SCRIPTPATH=$(dirname `/bin/pwd`/$0)
 . ${SCRIPTPATH}/functions.d/jmx-settings.sh
 . ${SCRIPTPATH}/functions.d/getopt-settings.sh
 
-get_standaloneserver_getopts $*;
+get_opts "$*" "${STANDALONESERVER_OPTS}";
 
 check_exist_home $0;
 

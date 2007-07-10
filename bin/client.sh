@@ -17,7 +17,7 @@ SCRIPTPATH=$(dirname `/bin/pwd`/$0)
 . ${SCRIPTPATH}/functions.d/jmx-settings.sh
 . ${SCRIPTPATH}/functions.d/getopt-settings.sh
 
-get_client_getopts $*;
+get_opts "$*" "${CLIENT_OPTS}";
 
 check_exist_home $0;
 
