@@ -25,6 +25,7 @@ package org.exist.xquery.modules.sql;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.HashMap;
+import java.util.Properties;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -33,9 +34,14 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Element;
 
 /**
  * eXist SQL Module Extension GetConnectionFunction 
@@ -43,8 +49,8 @@ import org.exist.xquery.value.Type;
  * Get a connection to a SQL Database
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-09-24
- * @version 1.0
+ * @serial 2007-07-10
+ * @version 1.1
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
@@ -66,17 +72,33 @@ public class GetConnectionFunction extends BasicFunction
 		),
 		
 		new FunctionSignature(
-				new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
-				"Open's a connection to a SQL Database. Expects a JDBC Driver class name in $a, a JDBC URL in $b, a username in $c and a password in $d. Returns an xs:long representing the connection handle.",
-				new SequenceType[]
-				{
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-				},
-				new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)
-			),
+			new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
+			"Open's a connection to a SQL Database. Expects " +
+			"a JDBC Driver class name in $a and a JDBC URL in $b." +
+			" Additional JDBC properties may be set in $c in the" +
+			" form <properties><property name=\"\" value=\"\"/></properties>. " +
+			"Returns an xs:long representing the connection handle.",
+			new SequenceType[]
+			{
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE)
+			},
+			new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)
+		),
+		
+		new FunctionSignature(
+			new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
+			"Open's a connection to a SQL Database. Expects a JDBC Driver class name in $a, a JDBC URL in $b, a username in $c and a password in $d. Returns an xs:long representing the connection handle.",
+			new SequenceType[]
+			{
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)
+		)
 	};
 	/**
 	 * GetConnectionFunction Constructor
@@ -115,18 +137,24 @@ public class GetConnectionFunction extends BasicFunction
 			//load the driver
 			Class.forName(dbDriver).newInstance();
 			
-			if(args.length > 2)
+			if(args.length == 2)
+			{
+				//try and get the connection
+				con = DriverManager.getConnection(dbURL);
+			}
+			else if(args.length == 3)
+			{
+				//try and get the connection
+				Properties props = parseProperties(((NodeValue)args[2].itemAt(0)).getNode());
+				con = DriverManager.getConnection(dbURL, props);
+			}
+			else if(args.length == 4)
 			{
 				String dbUser = args[2].getStringValue();
 				String dbPassword = args[3].getStringValue();
 				
 				//try and get the connection
 				con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			}
-			else
-			{
-				//try and get the connection
-				con = DriverManager.getConnection(dbURL);
 			}
 			
 			//get the existing connections map from the context
@@ -153,6 +181,40 @@ public class GetConnectionFunction extends BasicFunction
 		{
 			throw new XPathException(e.getMessage());
 		}
+	}
+	
+	/**
+	 * Parses property parameters
+	 * 
+	 * @param properties The properties node e.g. <properties><property name="encoding" value="UTF-8"/></properties>
+	 * @return the properties
+	 */
+	private final static Properties parseProperties(Node properties) throws XPathException
+	{
+		Properties props = new Properties();
+		
+		if(properties.getNodeType() == Node.ELEMENT_NODE && properties.getLocalName().equals("properties"))
+		{
+			NodeList propertiesList = properties.getChildNodes();
+			
+			for(int i = 0; i < propertiesList.getLength(); i++)
+			{
+				Node property = propertiesList.item(i);
+				if(property.getNodeType() == Node.ELEMENT_NODE && property.getLocalName().equals("property"))
+				{
+					String name = ((Element)property).getAttribute("name");
+					String value = ((Element)property).getAttribute("value");
+					if(name == null || value == null)
+					{
+						throw new XPathException("Name or value attribute missing for property parameter");
+					}
+					
+					props.put(name, value);
+				}
+			}
+		}
+		
+		return props;
 	}
 	
 	/**
