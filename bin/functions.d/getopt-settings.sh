@@ -22,6 +22,16 @@ substring() {
   return 0
 }
 
+is_integer() {
+ [ $JMX_PORT -eq 1 ] 2> /dev/null; 
+ if [ $? -eq 2 ]; then
+     echo "Port need to be an integer"
+     exit 1
+ else
+     return 1;
+ fi
+}
+
 is_jmx_switch() {
     if substring ${JMX_OPTS} "|$1|"; then
 	JMX_ENABLED=1;
@@ -29,18 +39,19 @@ is_jmx_switch() {
 	return 2;
     elif substring "|$1|" $JMX_SHORT_EQUAL; then
 	JMX_ENABLED=1;
-	[ "x$2" != "x" ] && JMX_PORT="${1#${JMX_SHORT_EQUAL}}";
+	JMX_PORT="${1#${JMX_SHORT_EQUAL}}";
 	return 1;
     elif substring "|$1|" ${JMX_LONG_EQUAL}; then
-	JMX_ENABLED=1; [ "x$2" != "x" ] && JMX_PORT="${1#${JMX_LONG_EQUAL}}";
+	JMX_ENABLED=1;
+	JMX_PORT="${1#${JMX_LONG_EQUAL}}";
 	return 1;
     elif substring "|$1|" ${JMX_SHORT}; then
 	JMX_ENABLED=1;
-	[ "x$2" != "x" ] && JMX_PORT="${1#${JMX_SHORT}}";
+	JMX_PORT="${1#${JMX_SHORT}}";
 	return 1;
     elif substring "|$1|" $${JMX_LONG}; then
 	JMX_ENABLED=1;
-	[ "x$2" != "x" ] && JMX_PORT="${1#${JMX_LONG}}";
+	JMX_PORT="${1#${JMX_LONG}}";
 	return 1;
     fi
     return 0;
@@ -54,23 +65,24 @@ get_opts() {
     while true; do
 	if substring ${JMX_OPTS} "|$1|"; then
 	    JMX_ENABLED=1;
-	    [ "x$2" != "x" ] && ! substring "${2}" $"-" && JMX_PORT="$2";
+	    [ "x$2" != "x" ] && ! substring "${2}" $"-" && JMX_PORT="$2" \
+		&& is_integer ${JMX_PORT};
 	    shift 2;
 	elif substring "|$1|" ${JMX_SHORT_EQUAL}; then
 	    JMX_ENABLED=1;
-	    [ "x$2" != "x" ] && JMX_PORT="${1#${JMX_SHORT_EQUAL}}";
+	    JMX_PORT="${1#${JMX_SHORT_EQUAL}}" && is_integer ${JMX_PORT};
 	    shift;
 	elif substring "|$1|" ${JMX_LONG_EQUAL}; then
 	    JMX_ENABLED=1;
-	    [ "x$2" != "x" ] && JMX_PORT="${1#${JMX_LONG_EQUAL}}";
+	    JMX_PORT="${1#${JMX_LONG_EQUAL}}" && is_integer ${JMX_PORT};
 	    shift;
 	elif substring "|$1|" ${JMX_SHORT}; then
 	    JMX_ENABLED=1;
-	    [ "x$2" != "x" ] && JMX_PORT="${1#${JMX_SHORT}}";
+	    JMX_PORT="${1#${JMX_SHORT}}" && is_integer ${JMX_PORT};
 	    shift; 
 	elif substring "|$1|" ${JMX_LONG}; then
 	    JMX_ENABLED=1;
-	    [ "x$2" != "x" ] && JMX_PORT="${1#${JMX_LONG}}";
+	    JMX_PORT="${1#${JMX_LONG}}" && is_integer ${JMX_PORT};
 	    shift;
 	elif substring ${ARG_OPTS} "|$1|"; then
             JAVA_OPTS[${NR_JAVA_OPTS}]="$1 $2";
