@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id$
  */
 package org.exist.xquery.modules.http;
 
@@ -30,6 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -38,19 +39,20 @@ import java.io.IOException;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 20070418
- * @version 1.0
+ * @serial 20070710
+ * @version 1.1
  */
 public class GETFunction extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get", HTTPModule.NAMESPACE_URI, HTTPModule.PREFIX),
-			"Performs a HTTP GET request. $a is the URL, $b determines if cookies persist for the query lifetime."
+			"Performs a HTTP GET request. $a is the URL, $b determines if cookies persist for the query lifetime. $c defines any HTTP Request Headers to set in the form <headers><header name=\"\" value=\"\"/></headers>."
 			+ " XML data will be returned as a Node, HTML data will be tidied into an XML compatible form, any other content will be returned as xs:base64Binary encoded data.",
 			new SequenceType[] {
 				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE));
 
@@ -72,6 +74,12 @@ public class GETFunction extends BasicFunction {
 		
 		//setup GET request
 		GetMethod get = new GetMethod(url);
+		
+		//setup GET Request Headers
+		if(!args[2].isEmpty())
+		{
+			HTTPModule.parseHeaders(get, ((NodeValue)args[2].itemAt(0)).getNode());
+		}
 		
 		try
 		{
