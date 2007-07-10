@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: ExampleModule.java 1173 2005-04-20 11:15:18Z wolfgang_m $
+ *  $Id$
  */
 package org.exist.xquery.modules.http;
 
@@ -41,13 +41,18 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.Sequence;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk
- * @serial 20070428
- * @version 1.0
+ * @serial 20070710
+ * @version 1.1
  */
 public class HTTPModule extends AbstractInternalModule
 {
@@ -295,5 +300,35 @@ public class HTTPModule extends AbstractInternalModule
 		}
 		
 		return merged;
+	}
+	
+	/**
+	 * Parses header parameters and sets them on the Request
+	 * 
+	 * @param method The Http Method to set the request headers on
+	 * @param headers The headers node e.g. <headers><header name="Content-Type" value="text/xml"/></headers>
+	 */
+	protected static void parseHeaders(HttpMethod method, Node headers) throws XPathException
+	{
+		if(headers.getNodeType() == Node.ELEMENT_NODE && headers.getLocalName().equals("headers"))
+		{
+			NodeList headerList = headers.getChildNodes();
+			
+			for(int i = 0; i < headerList.getLength(); i++)
+			{
+				Node header = headerList.item(i);
+				if(header.getNodeType() == Node.ELEMENT_NODE && header.getLocalName().equals("header"))
+				{
+					String name = ((Element)header).getAttribute("name");
+					String value = ((Element)header).getAttribute("value");
+					if(name == null || value == null)
+					{
+						throw new XPathException("Name or value attribute missing for request header parameter");
+					}
+					
+					method.addRequestHeader(new Header(name, value));
+				}
+			}
+		}
 	}
 }

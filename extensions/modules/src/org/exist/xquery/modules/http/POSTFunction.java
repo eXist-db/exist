@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id$
  */
 package org.exist.xquery.modules.http;
 
@@ -33,6 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -46,19 +47,20 @@ import java.util.Properties;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 20070428
- * @version 1.0
+ * @serial 20070710
+ * @version 1.1
  */
 public class POSTFunction extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("post", HTTPModule.NAMESPACE_URI, HTTPModule.PREFIX),
-			"Performs a HTTP POST request. $a is the URL, $b is the XML POST, $c determines if cookies persist for the query lifetime.",
+			"Performs a HTTP POST request. $a is the URL, $b is the XML POST, $c determines if cookies persist for the query lifetime. $d defines any HTTP Request Headers to set in the form <headers><header name=\"\" value=\"\"/></headers>.",
 			new SequenceType[] {
 				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
 
@@ -100,8 +102,14 @@ public class POSTFunction extends BasicFunction {
 		//setup POST request
 		PostMethod post = new PostMethod(url);
 		RequestEntity entity = new ByteArrayRequestEntity(baos.toByteArray(), "text/xml; utf-8");
-        post.setRequestEntity(entity);
-       
+		post.setRequestEntity(entity);
+        
+		//setup POST Request Headers
+		if(!args[3].isEmpty())
+		{
+			HTTPModule.parseHeaders(post, ((NodeValue)args[3].itemAt(0)).getNode());
+		}
+		
 		try
 		{
 			//execute the request
