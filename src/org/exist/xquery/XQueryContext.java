@@ -1407,7 +1407,11 @@ public class XQueryContext {
      *
      */
     public void functionEnd() {
-        callStack.pop();
+        if (callStack.isEmpty()) {
+            LOG.warn("Function call stack is empty, but XQueryContext.functionEnd() was called. This " +
+                "could indicate a concurrency issue (shared XQueryContext?)");
+        } else
+            callStack.pop();
     }
     
     /**
