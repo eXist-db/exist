@@ -65,6 +65,9 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	/**
 	 * Compiles the specified XQuery and returns a handle to the compiled
 	 * code, which can then be passed to {@link #execute(CompiledExpression)}.
+     *
+     * Note: {@link CompiledExpression} is not thread safe. Please make sure you don't
+     * call the same compiled expression from two threads at the same time.
 	 *  
 	 * @param query
 	 * @throws XMLDBException
@@ -87,7 +90,9 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	 * 
 	 * The implementation should pass all namespaces and variables declared through
 	 * {@link XQueryService} to the compiled XQuery code.
-	 * 
+	 *
+     * Note: {@link CompiledExpression} is not thread safe. Please make sure you don't
+     * call the same compiled expression from two threads at the same time.
 	 * @param expression
 	 * @throws XMLDBException
 	 */
