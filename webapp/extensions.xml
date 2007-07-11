@@ -53,6 +53,20 @@
       </para>
     </section>
     
+    <section id="module_compression">
+      <title>Compression Module</title>
+      <para>Provides additional operations for compression</para> 		    		
+      <para>
+	<command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator>
+	<command>Licence:</command>&#160;LGPL
+	<command>Status:</command>&#160;production
+      </para>
+      <para>
+	<command>Class:</command>&#160;org.exist.xquery.modules.compression.CompressionModule
+	<command>Namespace:</command>&#160;http://exist-db.org/xquery/compression
+      </para>
+    </section>
+    
     <section id="module_datetime">
       <title>Date Time Module</title>
       <para>Provides additional operations on date and time types</para> 		    		
