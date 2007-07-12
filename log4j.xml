@@ -2,6 +2,7 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
 <!-- This is the configuration for LOG4J -->
+<!-- $Id$ -->
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
     
