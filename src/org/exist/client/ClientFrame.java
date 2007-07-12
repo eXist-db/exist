@@ -1445,7 +1445,7 @@ public class ClientFrame extends JFrame
                 sysProperties.getProperty("product-name") + " version " 
                 + sysProperties.getProperty("product-version")
                 + " (revision " + sysProperties.getProperty("svn-revision") + ") \n\n"
-                + "Copyright (C) 2001-2006 Wolfgang Meier\n\n"
+                + "Copyright (C) 2001-2007 Wolfgang Meier\n\n"
                 + "eXist comes with ABSOLUTELY NO WARRANTY.\n"
                 + "This is free software, and you are welcome to\n"
                 + "redistribute it under certain conditions;\n"
