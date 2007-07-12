@@ -74,7 +74,7 @@ public class DeadlockDetection {
      * Deregister a waiting thread.
      *  
      * @param thread
-     * @return
+     * @return lock
      */
     public static Lock clearResourceWaiter(Thread thread) {
         WaitingThread waiter = (WaitingThread) waitForResource.remove(thread);
@@ -92,7 +92,7 @@ public class DeadlockDetection {
      *
      * @param threadA
      * @param threadB
-     * @return
+     * @return waiting thread
      */
     public static WaitingThread deadlockCheckResource(Thread threadA, Thread threadB) {
         // check if threadB is waiting for a resource lock
