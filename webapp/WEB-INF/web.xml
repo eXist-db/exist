@@ -5,6 +5,8 @@
     |
     | Provides XMLRPC + SOAP access to eXist and configures Cocoon2. If you don't need
     | XMLRPC or SOAP or Cocoon, remove the corresponding servlets and servlet-mappings.
+    |
+    | $Id$
     +-->
 
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee"
