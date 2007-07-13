@@ -1,5 +1,5 @@
 declare namespace atom="http://www.w3.org/2005/Atom";
-<service xmlns="http://purl.org/atom/app#">
+<service xmlns="http://www.w3.org/2007/app">
   {
    if (/atom:feed)
    then

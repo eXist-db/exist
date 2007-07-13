@@ -7,7 +7,7 @@
    <method type="GET" query="/org/exist/atom/modules/topic.xq" from-classpath="true"/>
 </module>
 <module name="introspect">
-   <method type="GET" query="/org/exist/atom/modules/introspect.xq" content-type="application/atomserv+xml" from-classpath="true"/>
+   <method type="GET" query="/org/exist/atom/modules/introspect.xq" content-type="application/atomsvc+xml" from-classpath="true"/>
 </module>
 <module name="example">
    <method type="GET" query="atom-example.xq"/>
