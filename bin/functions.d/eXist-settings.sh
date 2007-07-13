@@ -28,11 +28,12 @@ check_exist_home() {
 }
 
 set_locale_lang() {
-    if [ -n "$LANG" ]; then
-	OLD_LANG="$LANG";
+    if [ -n "${LANG}" ]; then
+	OLD_LANG="${LANG}";
     fi
 # set LANG to UTF-8
-    if [ `locale -a | grep -Ei "(UTF-8|utf8)" | head -n 1` ]; then
+    if [ `locale -a | grep -i "UTF-8" | head -n 1` ] || \
+       [ `locale -a | grep -i "utf8" | head -n 1` ]; then
 	if [ `echo ${LANG} |grep "\."` ]; then
 	    LANG=$(echo ${LANG} | cut -f1 -d'.')
 	    LANG=${LANG}.UTF-8
