@@ -45,6 +45,21 @@ import org.xml.sax.SAXException;
  */
 public class eXistXMLCatalogResolver extends XMLCatalogResolver {
     
+    public eXistXMLCatalogResolver(){
+        super();
+        LOG.debug("Initializing");
+    }
+    
+    public eXistXMLCatalogResolver(java.lang.String[] catalogs){
+        super(catalogs);
+        LOG.debug("Initializing using catalogs");
+    }
+    
+    eXistXMLCatalogResolver(java.lang.String[] catalogs, boolean preferPublic){
+        super(catalogs, preferPublic);
+        LOG.debug("Initializing using catalogs, preferPublic="+preferPublic);
+    }
+    
     private final static Logger LOG = Logger.getLogger(eXistXMLCatalogResolver.class);
     
     /**
@@ -160,6 +175,14 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         
         return retValue;
     }
+
+    /**
+     * @see org.apache.xerces.util.XMLCatalogResolver#getExternalSubset(String, String)
+     */
+    public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
+        LOG.debug("name='"+name+"' baseURI='"+baseURI+"'");
+        return super.getExternalSubset(name, baseURI);
+    }
     
-    
+
 }
