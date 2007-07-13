@@ -52,7 +52,7 @@ public class StreamBinary extends BasicFunction {
             "Cocoon. Note: the servlet output stream will be closed afterwards and mime-type settings in the prolog " +
             "will not be passed.",
             new SequenceType[] {
-                new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE),
+                new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
             },
@@ -82,7 +82,7 @@ public class StreamBinary extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-        if (args[0].isEmpty())
+        if(args[0].isEmpty() || args[1].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         Base64Binary binary = (Base64Binary) args[0].itemAt(0);
         String contentType = args[1].getStringValue();
