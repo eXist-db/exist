@@ -23,7 +23,7 @@ substring() {
 }
 
 is_integer() {
- [ $JMX_PORT -eq 1 ] 2> /dev/null; 
+ [ $1 -eq 1 ] 2> /dev/null; 
  if [ $? -eq 2 ]; then
      echo "Port need to be an integer"
      exit 1
