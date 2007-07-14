@@ -43,7 +43,8 @@ import org.junit.runners.Suite;
         UpdateTest.class,
         UpdateAttributeTest.class,
         UpdateRecoverTest.class,
-        ResourceTest.class
+        ResourceTest.class,
+        RangeIndexUpdateTest.class
 })
 public class AllStorageTests {
 
