@@ -24,14 +24,14 @@ package org.exist.storage;
 //import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.indexing.AbstractStreamListener;
+import org.exist.indexing.IndexWorker;
+import org.exist.indexing.IndexUtils;
+import org.exist.indexing.StreamListener;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.numbering.NodeId;
@@ -45,6 +45,7 @@ import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
@@ -59,6 +60,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 
 /**
  * Maintains an index on typed node values.
@@ -258,7 +260,33 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 pending[indexType].put(key, null);
         }
     }
-    
+
+    public StoredNode getReindexRoot(StoredNode node, NodePath nodePath) {
+        doc = node.getDocument();
+        NodePath path = new NodePath(nodePath);
+        StoredNode root = null;
+        StoredNode currentNode = (StoredNode) ((node.getNodeType() == Node.ELEMENT_NODE || node.getNodeType() == Node.ATTRIBUTE_NODE)
+                        ? node : node.getParentNode());
+        while (currentNode != null) {
+            GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
+            QNameRangeIndexSpec qSpec = doc.getCollection().getIndexByQNameConfiguration(broker, currentNode.getQName());
+            if (rSpec != null || qSpec != null)
+                root = currentNode;
+            if (doc.getCollection().isTempCollection() && currentNode.getNodeId().getTreeLevel() == 2)
+                break;
+            currentNode = (StoredNode) currentNode.getParentNode();
+            path.removeLastComponent();
+        }
+        return root;
+    }
+
+    public void reindex(StoredNode node) {
+        if (node == null)
+            return;
+        StreamListener listener = new ValueIndexStreamListener();
+        IndexUtils.scanNode(null, node, listener);
+    }
+
     public void storeText(TextImpl node, NodePath currentPath, int indexingHint) {
         // TODO Auto-generated method stub      
     }
@@ -686,10 +714,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return result;
     }
     
-    public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet, Indexable start) {        
+    public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet, Indexable start) {
         final int type = start.getType();
         final boolean stringType = Type.subTypeOf(type, Type.STRING);
-        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type);
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type, false);
         final Lock lock = dbValues.getLock();
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             try {
@@ -723,6 +751,72 @@ public class NativeValueIndex implements ContentLoadingObserver {
         Map map = cb.map;
         ValueOccurrences[] result = new ValueOccurrences[map.size()];        
         return (ValueOccurrences[]) map.values().toArray(result);
+    }
+
+    /**
+     * Scan all index keys indexed by the given QName. Return {@link org.exist.util.ValueOccurrences}
+     * for those index entries pointing to descendants of the specified context set. The first argument specifies
+     * the set of documents to include in the scan. Nodes which are not in this document set will be ignored.
+     *
+     * @param docs set of documents to scan
+     * @param contextSet if != null, return only index entries pointing to nodes which are descendants of nodes in the context set
+     * @param qnames an array of QNames: defines the index entries to be scanned.
+     * @param start an optional start value: only index keys starting with or being greater than this start value
+     *  (depends on the type of the index key) will be scanned
+     * @return a list of ValueOccurrences
+     */
+    public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet, QName[] qnames, Indexable start) {
+        if (qnames == null)
+            qnames = getDefinedIndexes(docs);
+        final int type = start.getType();
+        final boolean stringType = Type.subTypeOf(type, Type.STRING);
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type, true);
+        final Lock lock = dbValues.getLock();
+        for (int j = 0; j < qnames.length; j++) {
+            for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+                try {
+                    lock.acquire(Lock.READ_LOCK);
+                    final  short collectionId = ((Collection) i.next()).getId();
+                    //Compute a key for the start value in the collection
+                    if (stringType) {
+                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getSymbols());
+                        IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
+                        dbValues.query(query, cb);
+                    } else {
+                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getSymbols());
+                        final Value prefixKey = new QNamePrefixValue(collectionId, qnames[j], start.getType(), broker.getSymbols());
+                        final IndexQuery query = new IndexQuery(IndexQuery.GEQ, startKey);
+                        dbValues.query(query, prefixKey, cb);
+                    }
+                } catch (EXistException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (BTreeException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (TerminatedException e) {
+                    LOG.warn(e.getMessage(), e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
+                }
+            }
+        }
+        Map map = cb.map;
+        ValueOccurrences[] result = new ValueOccurrences[map.size()];
+        return (ValueOccurrences[]) map.values().toArray(result);
+    }
+
+    protected QName[] getDefinedIndexes(DocumentSet docs) {
+        List qnames = new ArrayList();
+        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = (Collection) i.next();
+            IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            qnames.addAll(idxConf.getIndexedQNames());
+        }
+        QName[] result = new QName[qnames.size()];
+        return (QName[]) qnames.toArray(result);
     }
 
     protected int checkRelationOp(int relation) {
@@ -906,11 +1000,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
         private NodeSet contextSet;
         private Map map = new TreeMap();
         private int type;
-        
-        IndexScanCallback(DocumentSet docs, NodeSet contextSet, int type) {
+        private boolean byQName;
+
+        IndexScanCallback(DocumentSet docs, NodeSet contextSet, int type, boolean byQName) {
             this.docs = docs;
             this.contextSet = contextSet;
             this.type = type;
+            this.byQName = byQName;
         }
         
         /* (non-Javadoc)
@@ -919,14 +1015,21 @@ public class NativeValueIndex implements ContentLoadingObserver {
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {            
             AtomicValue atomic;
             try {
-                atomic = (AtomicValue) SimpleValue.deserialize(key.data(), key.start(), key.getLength());
+                if (byQName)
+                    atomic = (AtomicValue) QNameValue.deserialize(key.data(), key.start(), key.getLength());
+                else
+                    atomic = (AtomicValue) SimpleValue.deserialize(key.data(), key.start(), key.getLength());
                 if (atomic.getType() != type)
                     return false;
             } catch (EXistException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
             }
-            
+            try {
+                LOG.debug(atomic.getStringValue());
+            } catch (XPathException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
             VariableByteInput is;
             try {
                 is = dbValues.getAsStream(pointer);
@@ -955,25 +1058,27 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     for (int j = 0; j < gidsCount; j++) {
                         nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                         previous = nodeId;
-                        if (contextSet != null) {
+                        if (contextSet != null)
                             parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
-                            if (parentNode != null) {                                
-                                if (oc == null) {
-                                    oc = new ValueOccurrences(atomic);
-                                    map.put(atomic, oc);
-                                }
-                                //Handle this very special case : /item[foo = "bar"] vs. /item[@foo = "bar"]
-                                //Same value, same parent but different nodes !
-                                //Not sure if we should track the contextSet's parentId... (just like we do)
-                                //... or the way the contextSet is created (thus keeping track of the NodeTest)
-                            	if (lastParentId == null || !lastParentId.equals(parentNode.getNodeId()))
-                            		oc.addOccurrences(1);
-                                if (!docAdded) {                                
-                                    oc.addDocument(storedDocument);
-                                    docAdded = true;
-                                }  
-                                lastParentId = parentNode.getNodeId();
+                        else
+                            parentNode = new NodeProxy(storedDocument, nodeId);
+
+                        if (parentNode != null) {
+                            if (oc == null) {
+                                oc = new ValueOccurrences(atomic);
+                                map.put(atomic, oc);
                             }
+                            //Handle this very special case : /item[foo = "bar"] vs. /item[@foo = "bar"]
+                            //Same value, same parent but different nodes !
+                            //Not sure if we should track the contextSet's parentId... (just like we do)
+                            //... or the way the contextSet is created (thus keeping track of the NodeTest)
+                            if (lastParentId == null || !lastParentId.equals(parentNode.getNodeId()))
+                                oc.addOccurrences(1);
+                            if (!docAdded) {
+                                oc.addDocument(storedDocument);
+                                docAdded = true;
+                            }
+                            lastParentId = parentNode.getNodeId();
                         }
                         //TODO : what if contextSet == null ? -pb
                         //See above where we have this behaviour :
@@ -1081,6 +1186,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
             ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
             ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);
         }
+
+        public static Indexable deserialize(byte[] data, int start, int len) throws EXistException {
+            return ValueIndexFactory.deserialize(data, start + OFFSET_VALUE, len - OFFSET_VALUE);
+        }
     }
 
     private static class QNamePrefixValue extends Value {
@@ -1099,6 +1208,63 @@ public class NativeValueIndex implements ContentLoadingObserver {
             ByteConversion.shortToByte(localNameId, data, QNameValue.OFFSET_LOCAL_NAME);
             data[QNameValue.OFFSET_VALUE] = (byte) type;
             pos = QNameValue.OFFSET_IDX_TYPE;
+        }
+    }
+
+    private class ValueIndexStreamListener extends AbstractStreamListener {
+
+        private Stack contentStack = null;
+
+        public ValueIndexStreamListener() {
+            super();
+        }
+
+        public void startElement(Txn transaction, ElementImpl element, NodePath path) {
+            GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
+            QNameRangeIndexSpec qSpec = doc.getCollection().getIndexByQNameConfiguration(broker, element.getQName());
+            if (rSpec != null || qSpec != null) {
+                if (contentStack == null) contentStack = new Stack();
+                XMLString contentBuf = new XMLString();
+                contentStack.push(contentBuf);
+            }
+            super.startElement(transaction, element, path);
+        }
+
+        public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
+            GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
+            QNameRangeIndexSpec qSpec = doc.getCollection().getIndexByQNameConfiguration(broker, attrib.getQName());
+            if (rSpec != null)
+                storeAttribute(attrib, path, NativeValueIndex.WITHOUT_PATH, rSpec, false);
+            if (qSpec != null)
+                storeAttribute(attrib, path, NativeValueIndex.WITHOUT_PATH, qSpec, false);
+            super.attribute(transaction, attrib, path);
+        }
+
+        public void endElement(Txn transaction, ElementImpl element, NodePath path) {
+            GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
+            QNameRangeIndexSpec qSpec = doc.getCollection().getIndexByQNameConfiguration(broker, element.getQName());
+            if (rSpec != null || qSpec != null) {
+                XMLString content = (XMLString) contentStack.pop();
+                if (rSpec != null)
+                    storeElement(element, content.toString(), RangeIndexSpec.indexTypeToXPath(rSpec.getIndexType()), NativeValueIndex.IDX_GENERIC, false);
+                if (qSpec != null)
+                    storeElement(element, content.toString(), RangeIndexSpec.indexTypeToXPath(qSpec.getIndexType()), NativeValueIndex.IDX_QNAME, false);
+            }
+            super.endElement(transaction, element, path);
+        }
+
+        public void characters(Txn transaction, TextImpl text, NodePath path) {
+            if (contentStack != null && !contentStack.isEmpty()) {
+                for (int i = 0; i < contentStack.size(); i++) {
+                    XMLString next = (XMLString) contentStack.get(i);
+                    next.append(text.getXMLString());
+                }
+            }
+            super.characters(transaction, text, path);
+        }
+
+        public IndexWorker getWorker() {
+            return null;
         }
     }
 }

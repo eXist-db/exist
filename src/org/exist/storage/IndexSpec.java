@@ -21,10 +21,7 @@
  */
 package org.exist.storage;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -159,6 +156,15 @@ public class IndexSpec {
     
     public QNameRangeIndexSpec getIndexByQName(QName name) {
     	return (QNameRangeIndexSpec) qnameSpecs.get(name);
+    }
+
+    public List getIndexedQNames() {
+        ArrayList qnames = new ArrayList(8);
+        for (Iterator i = qnameSpecs.keySet().iterator(); i.hasNext(); ) {
+            QName qname = (QName) i.next();
+            qnames.add(qname);
+        }
+        return qnames;
     }
     
     /**

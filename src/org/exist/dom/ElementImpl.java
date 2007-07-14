@@ -1124,7 +1124,10 @@ public class ElementImpl extends NamedNode implements Element {
         } else {
             getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
         }
-
+        // TODO: fix once range index has been moved to new architecture
+        StoredNode valueReindexRoot = getBroker().getValueIndex().getReindexRoot(this, path);
+        getBroker().getValueIndex().reindex(valueReindexRoot);
+        
         StoredNode last = this;
         int i = nodes.getLength();
         for (; i > 0; i--) {
@@ -1150,6 +1153,7 @@ public class ElementImpl extends NamedNode implements Element {
         appendChildren(transaction, newNodeId, new NodeImplRef(last), path, newContent, listener);
         getBroker().updateNode(transaction, this, false);
         getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+        getBroker().getValueIndex().reindex(valueReindexRoot);
         getBroker().flush();
     }
 
@@ -1195,6 +1199,9 @@ public class ElementImpl extends NamedNode implements Element {
         if (reindexRoot == null)
             reindexRoot = oldNode;
         getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
+        // TODO: fix once range index has been moved to new architecture
+        StoredNode valueReindexRoot = getBroker().getValueIndex().getReindexRoot(this, oldPath);
+        getBroker().getValueIndex().reindex(valueReindexRoot);
 
         // Remove the actual node data
         getBroker().removeNode(transaction, oldNode, oldPath, null);
@@ -1210,6 +1217,7 @@ public class ElementImpl extends NamedNode implements Element {
         getBroker().updateNode(transaction, this, true);
         // Recreate indexes on ancestor nodes
         getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+        getBroker().getValueIndex().reindex(valueReindexRoot);
         getBroker().flush();
         return newNode;
     }
