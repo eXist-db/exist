@@ -145,7 +145,7 @@ public abstract class RangeIndexSpec {
 	 * @return True if the index type bit mask has a range index bit set.
 	 */
 	public static final boolean hasRangeIndex(int type) {
-		return (type & RANGE_INDEX_MASK) > 0;
+		return (type & RANGE_INDEX_MASK) > 0 && !hasQNameIndex(type);
 	}
 
 	public static final boolean hasQNameIndex(int type) {
