@@ -97,6 +97,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     private LocationStep contextStep = null;
     private QName contextQName = null;
+    protected boolean optimizeSelf = false;
+    
     private int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
 
@@ -177,13 +179,29 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if (!steps.isEmpty()) {
             LocationStep firstStep = (LocationStep) steps.get(0);
             LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
-            NodeTest test = lastStep.getTest();
-            if (!test.isWildcardTest() && test.getName() != null) {
-                contextQName = new QName(test.getName());
-                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                    contextQName.setNameType(ElementValue.ATTRIBUTE);
-                axis = firstStep.getAxis();
-                contextStep = lastStep;
+            if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
+                Expression outerExpr = contextInfo.getContextStep();
+                if (outerExpr != null && outerExpr instanceof LocationStep) {
+                    LocationStep outerStep = (LocationStep) outerExpr;
+                    NodeTest test = outerStep.getTest();
+                    if (!test.isWildcardTest() && test.getName() != null) {
+                        contextQName = new QName(test.getName());
+                        if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                            contextQName.setNameType(ElementValue.ATTRIBUTE);
+                        contextStep = firstStep;
+                        axis = outerStep.getAxis();
+                        optimizeSelf = true;
+                    }
+                }
+            } else {
+                NodeTest test = lastStep.getTest();
+                if (!test.isWildcardTest() && test.getName() != null) {
+                    contextQName = new QName(test.getName());
+                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                        contextQName.setNameType(ElementValue.ATTRIBUTE);
+                    axis = firstStep.getAxis();
+                    contextStep = lastStep;
+                }
             }
         }
     }
@@ -195,7 +213,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     }
 
     public boolean optimizeOnSelf() {
-        return false;
+        return optimizeSelf;
     }
 
     public int getOptimizeAxis() {
