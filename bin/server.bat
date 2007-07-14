@@ -1,4 +1,15 @@
+rem $Id$
+rem
+rem In addition to the other parameter options for the standalone server 
+rem pass -j or --jmx to enable JMX agent.  The port for it can be specified 
+rem with optional port number e.g. -j1099 or --jmx=1099.
+rem
+
 @echo off
+
+set JMX_ENABLED=0
+set JMX_PORT=1099
+set JAVA_ARGS=
 
 if not "%JAVA_HOME%" == "" goto gotJavaHome
 echo Java environment not found. Please set
@@ -24,5 +35,9 @@ goto :eof
 set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
 set JAVA_OPTS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 
-"%JAVA_HOME%\bin\java" "%JAVA_OPTS%" -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" standalone %1 %2 %3 %4 %5 %6 %7 %8
+set BATCH.D=%EXIST_HOME%/bin/batch.d
+call %BATCH.D%/get_opts.bat %*
+call %BATCH.D%/check_jmx_status.bat
+
+"%JAVA_HOME%\bin\java" "%JAVA_OPTS%" -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" standalone %JAVA_ARGS%
 :eof
