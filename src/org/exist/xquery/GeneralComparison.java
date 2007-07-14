@@ -619,7 +619,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
                             try {
 								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR,
-                                        getRegexp(key.getStringValue()).toString(), null, DBBroker.MATCH_REGEXP);
+                                        getRegexp(key.getStringValue()).toString(), contextQName, DBBroker.MATCH_REGEXP);
 								hasUsedIndex = true;
 
 								if (result == null)
