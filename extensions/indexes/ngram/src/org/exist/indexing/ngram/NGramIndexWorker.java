@@ -486,6 +486,8 @@ public class NGramIndexWorker implements IndexWorker {
                 while (currentNode != null) {
                     if (config.get(currentNode.getQName()) != null)
                     	topMost = currentNode;
+                    if (currentNode.getDocument().getCollection().isTempCollection() && currentNode.getNodeId().getTreeLevel() == 2)
+                        break;
                     currentNode = (StoredNode) currentNode.getParentNode();
                 }
                 return topMost;
