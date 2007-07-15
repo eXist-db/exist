@@ -341,11 +341,15 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     	NodeSet contextSet, CompiledExpression expression, String sortExpr) 
     throws XMLDBException {
     	long start = System.currentTimeMillis();
-    	CompiledXQuery expr = (CompiledXQuery)expression;
+        if (reservedBroker != null)
+            // if a previous broker was not properly released, do it now (just to be sure)
+            brokerPool.release(reservedBroker);
+        CompiledXQuery expr = (CompiledXQuery)expression;
     	DBBroker broker = null;
     	Sequence result;
     	XQueryContext context = expr.getContext();
-    	try {
+        boolean keepLocks = lockDocuments;
+        try {
     		broker = brokerPool.get(user);
 
     		//context.setBackwardsCompatibility(xpathCompatible);
@@ -354,24 +358,27 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     		checkPragmas(context);
     		    
     		XQuery xquery = broker.getXQueryService();
-    		if(lockDocuments)
+    		if(keepLocks)
     		    context.setLockDocumentsOnLoad(true);
     		result = xquery.execute(expr, contextSet);
-    		if(lockDocuments) {
+    		if(keepLocks) {
     		    lockedDocuments = context.releaseUnusedDocuments(result);
     		}
     	} catch (EXistException e) {
     	    context.releaseLockedDocuments();
-    		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            keepLocks = false;
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} catch (XPathException e) {
     	    context.releaseLockedDocuments();
-    		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            keepLocks = false;
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} catch (Exception e) {
     	    // need to catch all runtime exceptions here to be able to release locked documents
     	    context.releaseLockedDocuments();
-    	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            keepLocks = false;
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} finally {
-            if (lockDocuments)
+            if (keepLocks)
                 reservedBroker = broker;
             else
                 brokerPool.release(broker);
