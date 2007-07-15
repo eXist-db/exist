@@ -84,8 +84,11 @@ public class Handler extends URLStreamHandler {
             int seperator = spec.indexOf("//");
             super.parseURL(url, spec, seperator, limit);
             
+        } else if(spec.startsWith("xmldb:/")){  // very dirty
+            super.parseURL(url, spec, start, limit);
+            
         } else {
-            LOG.error("Expected xmldb: URL, found "+spec);
+            LOG.error("Expected 'xmldb:'-like URL, found "+spec);
             super.parseURL(url, spec, start, limit);
         }
         
