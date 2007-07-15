@@ -6,16 +6,22 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
     
-    <!-- writes log messages to the console. It outputs file name,
+    <!-- Section: APPENDERS -->
+    
+    <!-- 
+         writes log messages to the console. It outputs file name,
          method name and line number of the caller. This is slow,
-         so just use it for debugging. -->
+         so just use it for debugging. 
+    -->
     <appender name="console" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{DATE} [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
     
-    <!-- the following appenders write to files  -->
+    <!-- 
+         the following appenders write to files  
+    -->
     <appender name="exist.ehcache" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/cocoon-ehcache.log"/>
         <param name="MaxFileSize" value="500KB"/>
@@ -67,6 +73,14 @@
         </layout>
     </appender>
     
+    <!--appender name="exist.webdav" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/webdav.log"/>
+        <param name="MaxFileSize" value="500KB"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender-->
+    
     <appender name="exist.scheduler" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/scheduler.log"/>
         <param name="MaxFileSize" value="500KB"/>
@@ -74,21 +88,26 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-    
-    
-    <!-- the following appenders write to NULL  -->
+       
+    <!-- 
+         the following appender write to NULL  
+    -->
     <appender name="null" class="org.apache.log4j.varia.NullAppender">
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
     
-    <!-- LF5 appender. Using this appender in an appender-ref will
+    <!-- 
+        LF5 appender. Using this appender in an appender-ref will
         pop up the LogFactor5 gui.
     -->
     <appender name="lf5" class="org.apache.log4j.lf5.LF5Appender">
         <param name="MaxNumberOfRecords" value="1000"/>
     </appender>
+    
+    
+    <!-- Section: CATEGORIES -->
     
     <category name="xquery.profiling" additivity="false">
         <priority value="debug"/>
@@ -120,26 +139,39 @@
         <appender-ref ref="exist.validation"/>
     </category>
     
+    <!--category name="org.exist.http.webdav" additivity="false">
+        <priority value="debug"/>
+        <appender-ref ref="exist.webdav"/>
+    </category-->
+    
     <category name="net.sf.ehcache" additivity="false">
         <priority value="debug"/>
         <appender-ref ref="exist.ehcache"/>
     </category>
     
-    <!-- Axis produces a large amount of debugging output if
-        priority is set to debug -->
+    <!--
+        Axis produces a large amount of debugging output if
+        priority is set to debug 
+    -->
     <category name="org.apache" additivity="false">
         <priority value="info"/>
         <appender-ref ref="console"/>
     </category>
     
-    <!-- Scheduler -->
+    <!-- 
+         quartz scheduler 
+    -->
     <category name="org.quartz" additivity="false">
         <priority value="info"/>
         <appender-ref ref="exist.scheduler"/>
     </category>
 
+    
+    <!-- Section: ROOT logger -->
+    
     <root>
         <priority value="debug"/>
         <appender-ref ref="exist.core"/>
     </root>
+    
 </log4j:configuration>
