@@ -22,9 +22,14 @@
 package org.exist.management;
 
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.storage.BrokerPool;
 
 /**
  */
 public interface Agent {
+
+    void initDBInstance(BrokerPool instance);
+
     void addMBean(String name, Object mbean) throws DatabaseConfigurationException;
+
 }

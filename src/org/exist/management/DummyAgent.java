@@ -22,12 +22,17 @@
 package org.exist.management;
 
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.storage.BrokerPool;
 
 /**
  * A dummy agent which will be used if JMX is disabled. It just acts as an empty
  * placeholder.
  */
 public class DummyAgent implements Agent {
+
+    public void initDBInstance(BrokerPool instance) {
+        // do nothing
+    }
 
     public void addMBean(String name, Object mbean) throws DatabaseConfigurationException {
         // just do nothing

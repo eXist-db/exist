@@ -90,6 +90,13 @@ public class JMXClient {
             Object values[] = getValues(attrs);
             echo(String.format("%17d %17d %17d", values[0], values[1], values[2]));
 
+            TabularData table = (TabularData) connection.getAttribute(name, "ActiveBrokersMap");
+            if (table.size() > 0)
+                echo("\nCurrently active threads:");
+            for (Iterator i = table.values().iterator(); i.hasNext(); ) {
+                CompositeData data = (CompositeData) i.next();
+                echo(String.format("Thread %20s: %3d", data.get("owner"), data.get("referenceCount")));
+            }
         } catch (Exception e) {
             error(e);
         }
