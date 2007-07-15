@@ -182,8 +182,12 @@ public class Propfind extends AbstractWebDAVMethod {
                     throw new ServletException(WebDAVUtil.XML_CONFIGURATION_ERR, e1);
                 }
                 Document doc = WebDAVUtil.parseRequestContent(request, response, docBuilder);
+                
                 int type = FIND_ALL_PROPERTIES;
                 DAVProperties searchedProperties = new DAVProperties();
+                
+//                LOG.debug("input:\n"+xmlToString(doc));
+                
                 if(doc != null) {
                     Element propfind = doc.getDocumentElement();
                     if(!(propfind.getLocalName().equals("propfind") &&
@@ -217,6 +221,8 @@ public class Propfind extends AbstractWebDAVMethod {
                         }
                     }
                 }
+                
+                // write response
                 String servletPath = getServletPath(request);
                 int depth = getDepth(request);
                 StringWriter os = new StringWriter();
@@ -578,6 +584,23 @@ public class Propfind extends AbstractWebDAVMethod {
             }
         }
     }
+    
+//    public static String xmlToString(Node node) {
+//        try {
+//            Source source = new DOMSource(node);
+//            StringWriter stringWriter = new StringWriter();
+//            Result result = new StreamResult(stringWriter);
+//            TransformerFactory factory = TransformerFactory.newInstance();
+//            Transformer transformer = factory.newTransformer();
+//            transformer.transform(source, result);
+//            return stringWriter.getBuffer().toString();
+//        } catch (TransformerConfigurationException e) {
+//            e.printStackTrace();
+//        } catch (TransformerException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
     
     private static class Visited {
         
