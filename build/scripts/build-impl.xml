@@ -161,6 +161,7 @@
         
         <filter token="version" value="${project.version}-${DSTAMP}"/>
         <filter token="database" value="native"/>
+
         <copy file="${src.webapp}/header.xml.tmpl"
             tofile="${src.webapp}/header.xml" filtering="true" overwrite="true" />
         <copy file="${src.webapp}/header.xml.tmpl"
@@ -408,14 +409,15 @@
         </jar>
         
         <ant antfile="build.xml" dir="extensions/indexes" target="jar"/>
-
-        <antcall target="sign"/>
     </target>
         
     <!-- ================================================================== -->
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
-    <target name="all" depends="jar,wrapper,extension-modules,extension-indexes,extension-fluent,test-compile" description="Build all"/>
+    <target name="all" depends="jar,wrapper,extension-modules,extension-indexes,extension-fluent,test-compile" 
+	        description="Build all">
+		<antcall target="sign"/>
+	</target>
 
     <!-- ================================================================== -->
     <!-- Rebuild all                                                        -->
