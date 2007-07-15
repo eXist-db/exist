@@ -343,10 +343,10 @@
 
         <modules>
             <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
-	            file="ngram.dbx" n="3"/>
+                file="ngram.dbx" n="3"/>
             <!--
             <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
-				connectionTimeout="10000" flushAfter="300" />            
+                connectionTimeout="10000" flushAfter="300" />            
             -->
         </modules>
 
@@ -506,6 +506,7 @@
     -->
     <xquery enable-java-binding="no" enable-query-rewriting="no"  backwardCompatible="no">
         <builtin-modules>
+            <!-- Default Modules -->
             <module class="org.exist.xquery.functions.util.UtilModule"
                 uri="http://exist-db.org/xquery/util" />
             <module class="org.exist.xquery.functions.transform.TransformModule"
@@ -522,19 +523,24 @@
                 uri="http://exist-db.org/xquery/text" />
             <module class="org.exist.xquery.modules.example.ExampleModule"
                 uri="http://exist-db.org/xquery/examples" />
-            <module
-                class="org.exist.xquery.functions.validation.ValidationModule"
+            <module class="org.exist.xquery.functions.validation.ValidationModule"
                 uri="http://exist-db.org/xquery/validation" />
             <module class="org.exist.xquery.functions.system.SystemModule"
                 uri="http://exist-db.org/xquery/system" />
-			<module class="org.exist.xquery.modules.ngram.NGramModule"
-				uri="http://exist-db.org/xquery/ngram" />
-			<!--
-			<module class="org.exist.xquery.modules.spatial.SpatialModule"
-				uri="http://exist-db.org/xquery/spatial" />
-			-->
+
+            <!-- New Modularized Indexes -->
+            <module class="org.exist.xquery.modules.ngram.NGramModule"
+                uri="http://exist-db.org/xquery/ngram" />
+            <!--
+            <module class="org.exist.xquery.modules.spatial.SpatialModule"
+                uri="http://exist-db.org/xquery/spatial" />
+            -->
+
             <!-- Optional Modules -->
-            <!--module class="org.exist.xquery.modules.datetime.DateTimeModule"
+            <!--
+            <module class="org.exist.xquery.modules.compression.CompressionModule"
+                    uri="http://exist-db.org/xquery/compression" />
+            <module class="org.exist.xquery.modules.datetime.DateTimeModule"
                     uri="http://exist-db.org/xquery/datetime" />
             <module class="org.exist.xquery.modules.example.ExampleModule"
                     uri="http://exist-db.org/xquery/examples" />
@@ -553,7 +559,8 @@
             <module class="org.exist.xquery.modules.sql.SQLModule"
                     uri="http://exist-db.org/xquery/sql" />
             <module class="org.exist.xquery.modules.xmldiff.XmlDiffModule"
-                    uri="http://exist-db.org/xquery/xmldiff" /-->
+                    uri="http://exist-db.org/xquery/xmldiff" />
+            -->
         </builtin-modules>
     </xquery>
 
