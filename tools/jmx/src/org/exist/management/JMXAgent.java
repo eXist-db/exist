@@ -23,6 +23,7 @@ package org.exist.management;
 
 import org.apache.log4j.Logger;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.storage.BrokerPool;
 
 import javax.management.*;
 import java.util.ArrayList;
@@ -76,6 +77,15 @@ public class JMXAgent implements Agent {
             LOG.warn("Exception while registering cache mbean.", e);
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Exception while registering cache mbean.", e);
+        }
+    }
+
+    public void initDBInstance(BrokerPool instance) {
+        try {
+            addMBean("org.exist.management." + instance.getId() + ":type=Database",
+                    new org.exist.management.Database(instance));
+        } catch (DatabaseConfigurationException e) {
+            LOG.warn("Exception while registering database mbean.", e);
         }
     }
 

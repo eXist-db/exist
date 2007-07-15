@@ -796,16 +796,9 @@ public class BrokerPool {
 		for (int i = 1; i < minBrokers; i++)
 			createBroker();        
 
-        // register an MBean to provide access to this instance
-        Agent agent = AgentFactory.getInstance();
-        try {
-            agent.addMBean("org.exist.management." + instanceName +
-                ":type=Database",
-                    new org.exist.management.Database(this));
-        } catch (DatabaseConfigurationException e) {
-            LOG.warn("Exception while registering database mbean.", e);
-        }
-
+        // register some MBeans to provide access to this instance
+        AgentFactory.getInstance().initDBInstance(this);
+        
         if (LOG.isDebugEnabled())
             LOG.debug("database instance '" + instanceName + "' initialized");
 	}
@@ -861,7 +854,11 @@ public class BrokerPool {
 		return activeBrokers.size();
 	}
 
-	/**
+    public Map getActiveBrokers() {
+        return new HashMap(activeBrokers);
+    }
+
+    /**
 	 * Returns the number of inactive brokers for the database instance.
 	 *@return The brokers count
 	 */
@@ -1102,7 +1099,8 @@ public class BrokerPool {
 			broker.incReferenceCount();
             broker.setUser(user);
             //Inform the other threads that we have a new-comer
-			this.notifyAll();
+            // TODO: do they really need to be informed here???????
+            this.notifyAll();
 			return broker;
 		}
 	}

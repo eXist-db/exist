@@ -470,6 +470,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             //Write (variable) length of node IDs
                             os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
                         }
+//                        if(os.data().size() == 0)
+//                            dbValues.remove(value);
                         if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
                             LOG.error("Could not update index data for value '" +  searchKey + "'");
                             //TODO: throw exception ?

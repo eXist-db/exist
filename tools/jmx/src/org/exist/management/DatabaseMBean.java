@@ -1,5 +1,7 @@
 package org.exist.management;
 
+import javax.management.openmbean.TabularData;
+
 /*
 *  eXist Open Source Native XML Database
 *  Copyright (C) 2001-07 The eXist Project
@@ -19,7 +21,7 @@ package org.exist.management;
 *  License along with this library; if not, write to the Free Software
 *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 *
-* $Id$
+* $Id: DatabaseMBean.java 6177 2007-07-08 14:42:37Z wolfgang_m $
 */
 public interface DatabaseMBean {
 
@@ -36,4 +38,6 @@ public interface DatabaseMBean {
     long getCacheMem();
 
     long getCollectionCacheMem();
+
+    TabularData getActiveBrokersMap();
 }
