@@ -223,7 +223,7 @@
                             <xs:element name="entity-resolver">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="catalog">
+                                        <xs:element name="catalog" minOccurs="1" maxOccurs="unbounded">
                                             <xs:complexType>
                                                 <xs:attribute name="uri" type="xs:string" default="webapp/WEB-INF/catalog.xml"/>
                                             </xs:complexType>
