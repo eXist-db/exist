@@ -3,7 +3,9 @@
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
     <public publicId="-//PLAY//EN" uri="entities/play.dtd"/>
     <system systemId="play.dtd" uri="entities/play.dtd"/>
-    <system systemId="mondial.dtd" uri="entities/mondial.dtd"/>
+    <system systemId="mondial.dtd" uri="entities/mondial.dtd"/>    
+    
+    <uri name="http://exist-db.org/samples/hamlet" uri="entities/play.xsd"/>
     
     <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
     <!--uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" /-->

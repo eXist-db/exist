@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- DTD for Shakespeare    J. Bosak    1994.03.01, 1997.01.02 -->
+<!-- Revised for case sensitivity 1997.09.10 -->
+<!-- Revised for XML 1.0 conformity 1998.01.27 (thanks to Eve Maler) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="PLAY">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="TITLE"/>
+        <xs:element ref="FM"/>
+        <xs:element ref="PERSONAE"/>
+        <xs:element ref="SCNDESCR"/>
+        <xs:element ref="PLAYSUBT"/>
+        <xs:element minOccurs="0" ref="INDUCT"/>
+        <xs:element minOccurs="0" ref="PROLOGUE"/>
+        <xs:element maxOccurs="unbounded" ref="ACT"/>
+        <xs:element minOccurs="0" ref="EPILOGUE"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="TITLE" type="xs:string"/>
+  <xs:element name="FM">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="P"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="P" type="xs:string"/>
+  <xs:element name="PERSONAE">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="TITLE"/>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element ref="PERSONA"/>
+          <xs:element ref="PGROUP"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PGROUP">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="PERSONA"/>
+        <xs:element ref="GRPDESCR"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PERSONA" type="xs:string"/>
+  <xs:element name="GRPDESCR" type="xs:string"/>
+  <xs:element name="SCNDESCR" type="xs:string"/>
+  <xs:element name="PLAYSUBT" type="xs:string"/>
+  <xs:element name="INDUCT">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="TITLE"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="SUBTITLE"/>
+        <xs:choice>
+          <xs:element maxOccurs="unbounded" ref="SCENE"/>
+          <xs:choice maxOccurs="unbounded">
+            <xs:element ref="SPEECH"/>
+            <xs:element ref="STAGEDIR"/>
+            <xs:element ref="SUBHEAD"/>
+          </xs:choice>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ACT">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="TITLE"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="SUBTITLE"/>
+        <xs:element minOccurs="0" ref="PROLOGUE"/>
+        <xs:element maxOccurs="unbounded" ref="SCENE"/>
+        <xs:element minOccurs="0" ref="EPILOGUE"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SCENE">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="TITLE"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="SUBTITLE"/>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element ref="SPEECH"/>
+          <xs:element ref="STAGEDIR"/>
+          <xs:element ref="SUBHEAD"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PROLOGUE">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="TITLE"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="SUBTITLE"/>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element ref="STAGEDIR"/>
+          <xs:element ref="SPEECH"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EPILOGUE">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="TITLE"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="SUBTITLE"/>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element ref="STAGEDIR"/>
+          <xs:element ref="SPEECH"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SPEECH">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="SPEAKER"/>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element ref="LINE"/>
+          <xs:element ref="STAGEDIR"/>
+          <xs:element ref="SUBHEAD"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SPEAKER" type="xs:string"/>
+  <xs:element name="LINE">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="STAGEDIR"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="STAGEDIR" type="xs:string"/>
+  <xs:element name="SUBTITLE" type="xs:string"/>
+  <xs:element name="SUBHEAD" type="xs:string"/>
+</xs:schema>
