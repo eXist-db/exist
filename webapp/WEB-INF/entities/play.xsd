@@ -2,7 +2,7 @@
 <!-- DTD for Shakespeare    J. Bosak    1994.03.01, 1997.01.02 -->
 <!-- Revised for case sensitivity 1997.09.10 -->
 <!-- Revised for XML 1.0 conformity 1998.01.27 (thanks to Eve Maler) -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://exist-db.org/samples/shakespeare" xmlns="http://exist-db.org/samples/shakespeare" >
   <xs:element name="PLAY">
     <xs:complexType>
       <xs:sequence>
