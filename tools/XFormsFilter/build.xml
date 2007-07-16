@@ -74,7 +74,7 @@
     </path>
 	
 	<!-- proxy -->
-	<setproxy proxyhost="proxy-staff.devon.gov.uk" proxyport="80"/>
+	<!-- setproxy proxyhost="proxy-staff.devon.gov.uk" proxyport="80" /-->
 	
 	<!-- targets -->
 	
