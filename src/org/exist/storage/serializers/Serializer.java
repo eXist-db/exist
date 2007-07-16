@@ -721,7 +721,6 @@ public abstract class Serializer implements XMLReader {
                 ftmatch.reset(root);
                 ftmatch.setNextInChain(receiver);
                 receiver = ftmatch;
-                LOG.debug("Applying FTMatchListener");
             }
             if (listener != null) {
                 MatchListener last = (MatchListener) listener.getLastInChain();
