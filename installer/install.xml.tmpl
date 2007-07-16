@@ -120,6 +120,12 @@
                 <exclude name="build.bat"/>
                 <exclude name="build.sh"/>
             </fileset>
+			<fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
+				<include name="*.sh"/>
+			</fileset>
+			<fileset dir="bin/batch.d" targetdir="$INSTALL_PATH/bin/batch.d">
+				<include name="*.bat"/>
+			</fileset>
             <file src="installer/build.sh" targetdir="$INSTALL_PATH"/>
             <file src="installer/build.bat" targetdir="$INSTALL_PATH"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>

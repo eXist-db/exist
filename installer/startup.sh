@@ -2,8 +2,15 @@
 # -----------------------------------------------------------------------------
 # startup.sh - Start Script for Jetty + eXist
 #
-# $Id: startup.sh,v 1.6 2002/12/28 17:37:22 wolfgang_m Exp $
+# $Id: startup.sh 6208 2007-07-10 21:15:31Z ellefj $
 # -----------------------------------------------------------------------------
+
+#
+# In addition to the other parameter options for the jetty container 
+# pass -j or --jmx to enable JMX agent. The port for it can be specified 
+# with optional port number e.g. -j1099 or --jmx=1099.
+#
+usage="startup.sh [-j[jmx-port]|--jmx[=jmx-port]]\n"
 
 # will be set by the installer
 if [ -z "$EXIST_HOME" ]; then
@@ -14,41 +21,32 @@ if [ -z "$JAVA_HOME" ]; then
     JAVA_HOME="%{JAVA_HOME}"
 fi
 
-JETTY_HOME="%{JETTY_HOME}"
+#DEBUG_OPTS="-Dexist.start.debug=true"
 
-JAVA_CMD="$JAVA_HOME/bin/java"
+SCRIPTPATH=$(dirname `/bin/pwd`/$0)
+# source common functions and settings
+. ${SCRIPTPATH}/functions.d/eXist-settings.sh
+. ${SCRIPTPATH}/functions.d/jmx-settings.sh
+. ${SCRIPTPATH}/functions.d/getopt-settings.sh
 
-OPTIONS=
+get_opts "$*" "${JETTYCONTAINER_OPTS}";
 
-if [ ! -f "$EXIST_HOME/start.jar" ]; then
-	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory."
-	exit 1
-fi
+check_exist_home $0;
 
-OPTIONS="-Dexist.home=$EXIST_HOME"
+set_exist_options;
+set_jetty_home;
 
-if [ -n "$JETTY_HOME" ]; then
-	OPTIONS="-Djetty.home=$JETTY_HOME $OPTIONS"
-fi
+# set java options
+set_java_options;
 
 # save LANG
-if [ -n "$LANG" ]; then
-	OLD_LANG="$LANG"
-fi
-# set LANG to UTF-8
-LANG=en_US.UTF-8
+set_locale_lang;
 
-if [ -z "$JAVA_OPTIONS" ]; then
-	JAVA_OPTIONS="-Xms16000k -Xmx128000k -Dfile.encoding=UTF-8"
-fi
-JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
+# enable the JMX agent? If so, concat to $JAVA_OPTIONS:
+check_jmx_status;
 
-cd $EXIST_HOME
+$JAVA_HOME/bin/java $JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
+	$DEBUG_OPTS $OPTIONS -jar "$EXIST_HOME/start.jar" \
+	jetty ${JAVA_OPTS[@]}
 
-$JAVA_CMD $JAVA_OPTIONS $OPTIONS \
-    -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
-    -jar "$EXIST_HOME/start.jar" jetty $*
-
-if [ -n "$OLD_LANG" ]; then
-	LANG="$OLD_LANG"
-fi
+restore_locale_lang;
