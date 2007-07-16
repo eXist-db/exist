@@ -90,7 +90,8 @@ public class NodePath {
 	}
 	
     public void removeLastComponent() {
-        components[--pos] = null;
+        if (pos > 0)
+            components[--pos] = null;
     }
 
     public int length() {
