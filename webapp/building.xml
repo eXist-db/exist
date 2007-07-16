@@ -114,7 +114,7 @@
 
         <para>The repository root URL is:</para>
 
-        <synopsis>https://svn.sourceforge.net/svnroot/exist</synopsis>
+        <synopsis>https://exist.svn.sourceforge.net/svnroot/exist</synopsis>
 
         <important>
             <para>Please note you have to use https, not http.</para>
@@ -122,7 +122,7 @@
 
         <para>The current development trunk is at:</para>
 
-        <synopsis>https://svn.sourceforge.net/svnroot/exist/trunk/eXist</synopsis>
+        <synopsis>https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist</synopsis>
 
         <para>This is the URL you will normally use for a checkout of the main eXist development
             tree.</para>
@@ -137,7 +137,7 @@
                 the following command checks out the main development trunk into a directory called
                 eXist-trunk:</para>
 
-            <synopsis>svn co https://svn.sourceforge.net/svnroot/exist/trunk/eXist eXist-trunk</synopsis>
+            <synopsis>svn co https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist eXist-trunk</synopsis>
 
             <para>A good choice on the Windows platform is <ulink
                     url="http://tortoisesvn.tigris.org/">Tortoise SVN</ulink>. Tortoise is an
