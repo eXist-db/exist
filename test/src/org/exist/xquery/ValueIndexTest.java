@@ -212,6 +212,40 @@ public class ValueIndexTest extends TestCase {
         }
     }
 
+    public void testStrFunctionsQName() {
+        try {
+            configureCollection(CONFIG_QNAME);
+            XMLResource resource = (XMLResource) testCollection.createResource("mondial-test.xml", "XMLResource");
+            resource.setContent(CITY);
+            testCollection.storeResource(resource);
+
+            XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            queryResource(service, "mondial-test.xml", "//city[starts-with(name, 'Berl')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[starts-with(name, 'Berlin')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[starts-with(name, 'erlin')]", 0);
+            queryResource(service, "mondial-test.xml", "//city[starts-with(name, 'Erl')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[contains(name, 'erl')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[contains(name, 'Berlin')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[contains(name, 'Erl')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[ends-with(name, 'Berlin')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[ends-with(name, 'erlin')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[ends-with(name, 'Ber')]", 0);
+
+            queryResource(service, "mondial-test.xml", "//city[matches(name, 'erl', 'i')]", 2);
+            queryResource(service, "mondial-test.xml", "//city[matches(name, 'Erl')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[matches(name, 'Berlin', 'i')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[matches(name, 'berlin', 'i')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[matches(name, 'berlin')]", 0);
+            queryResource(service, "mondial-test.xml", "//city[matches(name, '^Berlin$')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[matches(name, 'lin$', 'i')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[matches(name, '.*lin$', 'i')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[matches(name, '^lin$', 'i')]", 0);
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
     public void testQNameIndex() {
         try {
             configureCollection(CONFIG_QNAME);
