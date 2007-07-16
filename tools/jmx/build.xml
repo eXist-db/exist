@@ -31,6 +31,10 @@
     </target>
 
     <target name="jar" depends="compile">
+        <echo message="Don't forget to resign the jar files when needed:"/>
+        <echo message="./build.sh -f build/scripts/jarsigner.xml jnlp-sign-exist"/>
+        <echo message="-----------------------------------------"/>
+
         <jar destfile="${server.dir}/exist.jar" basedir="${classes}"
             keepcompression="true" update="true"/>
     </target>
