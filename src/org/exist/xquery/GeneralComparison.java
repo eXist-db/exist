@@ -617,6 +617,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             if (LOG.isTraceEnabled())
 			        			LOG.trace("Using range index for key: " + key.getStringValue());
 
+                            if (!checkForQNameIndex(contextSequence)) {
+                                if (LOG.isTraceEnabled())
+                                    LOG.trace("Cannot use QName index");
+                                contextQName = null;
+                            }
+                            
                             try {
 								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR,
                                         getRegexp(key.getStringValue()).toString(), contextQName, DBBroker.MATCH_REGEXP);
