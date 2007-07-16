@@ -16,7 +16,7 @@ JAVA_CMD="$JAVA_HOME/bin/java"
 OPTIONS=
 
 if [ ! -f "$EXIST_HOME/start.jar" ]; then
-	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory."
+	echo "Unable to find start.jar. EXIST_HOME = $EXIST_HOME"
 	exit 1
 fi
 
