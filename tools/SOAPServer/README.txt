@@ -35,7 +35,7 @@ Examples
 ========
  
 For an example see $EXIST_HOME/tools/SOAPServer/echo.xqws, to use this you will need to store it anywhere in the db,
-and call it from the REST e.g. http://localhost:8080/exist/servlet/db/mycollection/echo.xqws
+and call it from the REST e.g. http://localhost:8080/exist/rest/db/mycollection/echo.xqws
  
 The WSDL document for an XQWS is available by appending ?WSDL onto the Request URL.
  
