@@ -22,6 +22,7 @@
  */
 package org.exist.http.servlets;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -228,7 +229,8 @@ public class EXistServlet extends HttpServlet {
                    // put may send a lot of data, so save it
                    // to a temporary file first.
                    tempFile = File.createTempFile("existSRV", ".tmp");
-                   OutputStream os = new FileOutputStream(tempFile);
+                   FileOutputStream fos = new FileOutputStream(tempFile);
+                   BufferedOutputStream os = new BufferedOutputStream(fos);
                    byte[] buffer = new byte[4096];
                    int count, l = 0;
                    do {
