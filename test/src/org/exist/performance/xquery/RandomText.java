@@ -44,14 +44,14 @@ import java.util.Random;
 public class RandomText extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
-            new QName("random-text", PerfTestModule.NAMESPACE_URI, PerfTestModule   .PREFIX),
+            new QName("random-text", PerfTestModule.NAMESPACE_URI, PerfTestModule.PREFIX),
                 "",
                 new SequenceType[] {
                     new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
                 },
             new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 
-    private String[] words = null;
+    private static String[] words = null;
 
     private Random random = new Random();
 
