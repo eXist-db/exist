@@ -21,11 +21,11 @@
  */
 package org.exist.http.webdav.methods;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -209,7 +209,8 @@ public class Put extends AbstractWebDAVMethod {
         // put may send a lot of data, so save it
         // to a temporary file first.
         File tempFile = File.createTempFile("existSRC", ".tmp");
-        OutputStream os = new FileOutputStream(tempFile);
+        FileOutputStream fos = new FileOutputStream(tempFile);
+        BufferedOutputStream os = new BufferedOutputStream(fos);
         
         if(len!=0){
             byte[] buffer = new byte[4096];
@@ -221,6 +222,7 @@ public class Put extends AbstractWebDAVMethod {
                 l += count;
             } while (l < len);
             os.close();
+            is.close(); // DIZ: sure about this?
         }
         
         return tempFile;
