@@ -115,9 +115,10 @@
                     <exclude name="**/http/*.java"/>
                     <exclude name="**/storage/*.java"/>
                     <exclude name="**/storage/serializers/*.java"/>
+                    <exclude name="**/storage/lock/*.java"/>
                     <exclude name="**/soap/*.java"/>
                     <exclude name="**/numbering/*.java"/>
-					<exclude name="org/exist/*.java"/>
+                    <exclude name="org/exist/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
