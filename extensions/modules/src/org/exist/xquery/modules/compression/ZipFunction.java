@@ -30,6 +30,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -47,7 +48,6 @@ import org.xml.sax.SAXException;
 import java.io.ByteArrayOutputStream;  // DIZZZZ: The common-io implementation is far more efficient
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -228,11 +228,12 @@ public class ZipFunction extends BasicFunction
 		}
 
 		//iterate over child collections
-		List childCollections = col.getDescendants(context.getBroker(), context.getUser());
-		for(Iterator itChildCols = childCollections.iterator(); itChildCols.hasNext();)
+		for(Iterator itChildCols = col.collectionIterator(); itChildCols.hasNext();)
 		{
-			Collection childCol = (Collection)itChildCols.next();
-			
+			//get the child collection
+			XmldbURI childColURI = (XmldbURI)itChildCols.next();
+			Collection childCol = context.getBroker().getCollection(col.getURI().append(childColURI));
+						
 			//recurse
 			zipCollection(zos, childCol, useHierarchy);
 		}
