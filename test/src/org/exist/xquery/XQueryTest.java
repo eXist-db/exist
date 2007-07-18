@@ -2354,6 +2354,32 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
+    
+    // http://sourceforge.net/support/tracker.php?aid=1755910 
+    public void bugtestQNameString_1755910(){
+        
+        try {
+            String query="let $qname1 := QName(\"http://www.w3.org/2001/XMLSchema\", \"xs:element\") "
+                +"let $qname2 := QName(\"http://foo.com\", \"foo:bar\") "
+                +"return (xs:string($qname1), xs:string($qname2))";
+            
+            XPathQueryService service
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            assertEquals(2,result.getSize());
+            
+            assertEquals("First", "xs:element", result.getResource(0).getContent().toString());
+            assertEquals("Second", "foo:bar", result.getResource(1).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
+    
+    
     // ======================================
     
 	/**
