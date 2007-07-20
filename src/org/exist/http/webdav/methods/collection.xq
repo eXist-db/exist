@@ -52,7 +52,7 @@ as element()* {
             <td>{xdb:get-group($collection, $child)}</td>
             <td>{f:format-dateTime(xdb:created($collection, $child))}</td>
             <td>{f:format-dateTime(xdb:last-modified($collection, $child))}</td>
-            <td>{xdb:size($collection, $child) div 1024}</td>
+            <td>{fn:ceiling(xdb:size($collection, $child) div 1024)}</td>
         </tr>
 };
 
