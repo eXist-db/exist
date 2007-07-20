@@ -185,8 +185,8 @@ public class Get extends AbstractWebDAVMethod {
                 context = compiled.getContext();
             }
             
-            context.declareVariable("collection", collection.getURI());
-            context.declareVariable("uri", request.getRequestURI());
+            context.declareVariable("collection", collection.getURI().toString() );
+            context.declareVariable("uri", request.getRequestURI().toString() );
             
             if(compiled == null){
                 compiled = xquery.compile(
