@@ -210,9 +210,11 @@ public class Get extends AbstractWebDAVMethod {
             os.flush();
             
         } catch (XPathException e) {
+            LOG.error("Failed to compile xquery", e);
             throw new ServletException("Failed to compile xquery", e);
             
         } catch (SAXException e) {
+            LOG.error("Failed to serialize query results", e);
             throw new ServletException("Failed to serialize query results", e);
         }
     }
