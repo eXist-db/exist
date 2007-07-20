@@ -16,9 +16,9 @@ declare variable $f:months {
 
 declare function f:format-date($date as xs:dateTime) as xs:string {
 	string-join((
-		item-at($f:months, month-from-date($date)),
-		day-from-date($date),
-		year-from-date($date)), " ")
+		xs:string(item-at($f:months, month-from-date($date))),
+		xs:string(day-from-date($date)),
+		xs:string(year-from-date($date))), " ")
 };
 
 declare function f:format-int($component as xs:integer) as xs:string {
