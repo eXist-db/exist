@@ -160,6 +160,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 					resource = collection.createResource(docName, "XMLResource");
 				if(Type.subTypeOf(item.getType(), Type.STRING)) {
 					resource.setContent(item.getStringValue());
+				} if(item.getType() == Type.BASE64_BINARY) {
+					resource.setContent(item.toJavaObject(byte[].class));
 				} else if(Type.subTypeOf(item.getType(), Type.NODE)) {
 					if(binary) {
 						StringWriter writer = new StringWriter();
