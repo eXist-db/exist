@@ -82,7 +82,7 @@ public class Base64Binary extends BinaryValue {
     public Object toJavaObject(Class target) throws XPathException {
         if(target.isAssignableFrom(Base64Binary.class))
             return this;
-        if (target.isArray() && target == Byte.class)
+        if (target == byte[].class)
             return data;
         throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
             " to Java object of type " + target.getName());
