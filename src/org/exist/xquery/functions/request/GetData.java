@@ -35,12 +35,15 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -64,7 +67,7 @@ public class GetData extends BasicFunction {
 				"get-data",
 				RequestModule.NAMESPACE_URI,
 				RequestModule.PREFIX),
-			"Returns the content of a POST request as an XML document or a string representaion. Returns an empty sequence if there is no data.",
+			"Returns the content of a POST request.If its a binary document xs:base64Binary is returned or if its an XML document a node() is returned. All other data is returned as an xs:string representaion. Returns an empty sequence if there is no data.",
 			null,
 			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
 	
@@ -74,7 +77,7 @@ public class GetData extends BasicFunction {
 				"get-request-data",
 				RequestModule.NAMESPACE_URI,
 				RequestModule.PREFIX),
-			"Returns the content of a POST request as an XML document or a string representaion. Returns an empty sequence if there is no data.",
+			"Returns the content of a POST request. If its a binary document xs:base64Binary is returned or if its an XML document a node() is returned. All other data is returned as an xs:string representaion. Returns an empty sequence if there is no data.",
 			null,
 			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE),
 			"Renamed to get-data.");
@@ -86,17 +89,21 @@ public class GetData extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException {
-		
+	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException
+	{
 		RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		
 		if(var == null)
 			throw new XPathException("No request object found in the current XQuery context.");
+		
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
 			throw new XPathException("Variable $request is not bound to an Java object.");
+		
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		
 		
 		if(value.getObject() instanceof RequestWrapper)
 		{
@@ -127,10 +134,30 @@ public class GetData extends BasicFunction {
 				throw new XPathException("An IO exception ocurred: " + ioe.getMessage(), ioe);
 			}
 			
-			//if the POST content is not null, it may be an xml document, so we first try to return the xml document
+			//was there any POST content
 			if(bufRequestData != null)
 			{
-                context.pushDocumentContext();
+				//determine if exists mime database considers this binary data
+				String contentType = request.getContentType();
+				if(contentType != null)
+				{
+					//strip off any charset encoding info
+					if(contentType.indexOf(";") > -1)
+						contentType = contentType.substring(0, contentType.indexOf(";"));
+					
+					MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
+					if(mimeType != null)
+					{
+						if(!mimeType.isXMLType())
+						{
+							//binary data
+							return new Base64Binary(bufRequestData);
+						}
+					}
+				}
+				
+				//try and parse as an XML documemnt, otherwise fallback to returning the data as a string
+				context.pushDocumentContext();
 				try
 				{ 
 					//try and construct xml document from input stream, we use eXist's in-memory DOM implementation
@@ -147,38 +174,43 @@ public class GetData extends BasicFunction {
 					Document doc = receiver.getDocument();
 					return (NodeValue)doc.getDocumentElement();
 				}
-				catch (ParserConfigurationException e)
+				catch(ParserConfigurationException e)
 				{				
 					//do nothing, we will default to trying to return a string below
 				}
-				catch (SAXException e)
+				catch(SAXException e)
 				{
 					//do nothing, we will default to trying to return a string below
 				}
-				catch (IOException e)
+				catch(IOException e)
 				{
 					//do nothing, we will default to trying to return a string below
-				} finally {
+				}
+				finally
+				{
                     context.popDocumentContext();
                 }
+				
+				//not a valid XML document, return a string representation of the document
+				String encoding = request.getCharacterEncoding();
+				if(encoding == null)
+				{
+					encoding = "UTF-8";
+				}
+				try
+				{
+					String s = new String(bufRequestData, encoding);
+					return new StringValue(s);
+				}
+				catch (IOException e)
+				{
+					throw new XPathException("An IO exception ocurred: " + e.getMessage(), e);
+				}
 			}
-			
-			//else, return a string representation of the xml document
-			String encoding = request.getCharacterEncoding();
-			if(encoding == null)
+			else
 			{
-				encoding = "UTF-8";
-			}
-			
-			try
-			{
-				String s = new String(bufRequestData, encoding);
-				return new StringValue(s);
-			
-			}
-			catch (IOException e)
-			{
-				throw new XPathException("An IO exception ocurred: " + e.getMessage(), e);
+				//no post data
+				return Sequence.EMPTY_SEQUENCE;
 			}
 		}
 		else
