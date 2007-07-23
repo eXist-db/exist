@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
  * <code>xxx:eventType</code> : the type of event for the Trigger. Either "prepare" or "finish"
  * <code>xxx:collectionName</code> : the name of the collection from which the event is triggered
  * <code>xxx:documentName</code> : the name of the document from wich the event is triggered
- * <code>xxx:triggeredEvent</code> : the kind of triggered event
+ * <code>xxx:triggerEvent</code> : the kind of triggered event
  * <code>xxx:document</code> : the document from wich the event is triggered
  * xxx is the namespace prefix within the XQuery
  * 
