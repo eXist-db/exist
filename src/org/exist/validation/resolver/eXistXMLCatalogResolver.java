@@ -135,8 +135,8 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      */
     public String resolveIdentifier(XMLResourceIdentifier xri) throws IOException, XNIException {
         
-        if(xri.getBaseSystemId()==null && xri.getExpandedSystemId()==null &&
-           xri.getLiteralSystemId()==null && xri.getNamespace()==null && xri.getPublicId()==null){
+        if(xri.getExpandedSystemId()==null && xri.getLiteralSystemId()==null && 
+           xri.getNamespace()==null && xri.getPublicId()==null){
             
             // quick fail
             return null;
@@ -155,8 +155,8 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(XMLResourceIdentifier)
      */
     public XMLInputSource resolveEntity(XMLResourceIdentifier xri) throws XNIException, IOException {
-        if(xri.getBaseSystemId()==null && xri.getExpandedSystemId()==null &&
-           xri.getLiteralSystemId()==null && xri.getNamespace()==null && xri.getPublicId()==null){
+        if(xri.getExpandedSystemId()==null && xri.getLiteralSystemId()==null && 
+           xri.getNamespace()==null && xri.getPublicId()==null){
             
             // quick fail
             return null;
