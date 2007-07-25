@@ -75,8 +75,10 @@ public class DeadlockTest {
 	private static final int TEST_SINGLE_COLLECTION = 1;
 	/** query the root collection */
 	private static final int TEST_ALL_COLLECTIONS = 2;
+	/** query a single document */
+	private static final int TEST_SINGLE_DOC = 3;
 	/** apply a random mixture of the other modes */
-	private static final int TEST_MIXED = 3;
+	private static final int TEST_MIXED = 4;
 	
 	/** Use 4 test runs, querying different collections */
 	@Parameters 
@@ -85,6 +87,7 @@ public class DeadlockTest {
 		params.add(new Integer[] { TEST_RANDOM_COLLECTION });
 		params.add(new Integer[] { TEST_SINGLE_COLLECTION });
 		params.add(new Integer[] { TEST_ALL_COLLECTIONS });
+		params.add(new Integer[] { TEST_SINGLE_DOC });
 		params.add(new Integer[] { TEST_MIXED });
 		return params;
 	}
@@ -134,7 +137,7 @@ public class DeadlockTest {
 		DBBroker broker = null;
 		try {
 			Configuration config = new Configuration();
-			BrokerPool.configure(1, 5, config);
+			BrokerPool.configure(1, 10, config);
 			pool = BrokerPool.getInstance();
 
 			broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
@@ -197,9 +200,9 @@ public class DeadlockTest {
 
 	@Test
 	public void runTasks() {
-		ExecutorService executor = Executors.newFixedThreadPool(8);
+		ExecutorService executor = Executors.newFixedThreadPool(20);
 		new StoreTask("store", COLL_COUNT, DOC_COUNT).run();
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 200; i++) {
 			executor.submit(new QueryTask(COLL_COUNT));
 		}
 		executor.shutdown();
@@ -283,7 +286,7 @@ public class DeadlockTest {
 			String collection = "/db";
 			int currentMode = mode;
 			if (mode == TEST_MIXED)
-				currentMode = random.nextInt(3);
+				currentMode = random.nextInt(4);
 			if (currentMode == TEST_SINGLE_COLLECTION) {
 				int collectionId = random.nextInt(collectionCount);
 				collection = "/db/test/" + collectionId;
@@ -307,6 +310,10 @@ public class DeadlockTest {
 				}
 				buf.append(")//chapter/section[@id = 'sect1']");
 				collection = "/db/test";
+			} else if (currentMode == TEST_SINGLE_DOC) {
+				int collectionId = random.nextInt(collectionCount);
+				collection = "/db/test/" + collectionId;
+				buf.append("doc('").append(collection).append("/test1.xml')//chapter/section[@id = 'sect1']");
 			} else {
 				buf.append("//chapter/section[@id = 'sect1']");
 			}
