@@ -23,6 +23,7 @@ package org.exist.storage.lock;
 
 import org.apache.log4j.Logger;
 import org.exist.util.LockException;
+import org.exist.util.DeadlockException;
 
 /**
  * Wraps around a thread in order to be able to suspend it completely while it is waiting
@@ -38,6 +39,8 @@ public class WaitingThread implements LockListener {
     private Thread thread;
 
     private boolean suspended = false;
+
+    private boolean deadlocked = false;
 
     public WaitingThread(Thread thread, Object monitor, MultiReadReentrantLock lock) {
         this.monitor = monitor;
@@ -60,7 +63,18 @@ public class WaitingThread implements LockListener {
                     throw new LockException("Interrupted while waiting for read lock");
                 }
             }
+            if (deadlocked) {
+                LOG.warn("Deadlock detected: cancelling wait...");
+                throw new DeadlockException();
+            }
         } while (suspended);
+    }
+
+    public void signalDeadlock() {
+        deadlocked = true;
+        synchronized (monitor) {
+            monitor.notify();
+        }
     }
 
     /**

@@ -32,6 +32,7 @@ import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
@@ -118,7 +119,36 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		}
 	}
 
-	public void addCollection(Collection collection) {
+    /**
+     * Fast method to add a bunch of documents from a Java collection.
+     * A lock will be acquired on each document. The locked document is added to the
+     * specified LockedDocumentMap in order to keep track of the locks..
+     *
+     * @param broker
+     * @param docs
+     * @param lockMap
+     * @param lockType
+     * @throws LockException
+     */
+    public void addAll(DBBroker broker, java.util.Collection docs, LockedDocumentMap lockMap, int lockType) throws LockException {
+        DocumentImpl doc;
+        Lock lock;
+        for(Iterator i = docs.iterator(); i.hasNext(); ) {
+			doc = (DocumentImpl)i.next();
+//			    if(doc.isLockedForWrite())
+//			        continue;
+            if(doc.getPermissions().validate(broker.getUser(), Permission.WRITE)) {
+                doc.setBroker(broker);
+                lock = doc.getUpdateLock();
+
+                lock.acquire(Lock.WRITE_LOCK);
+                put(doc.getDocId(), doc);
+                lockMap.add(doc);
+            }
+		}
+    }
+
+    public void addCollection(Collection collection) {
 		collections.add(collection);
 	}
 
@@ -256,13 +286,13 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	public void lock(boolean exclusive, boolean checkExisting) throws LockException {
 	    DocumentImpl d;
 	    Lock dlock;
-        final Thread thread = Thread.currentThread();
+//        final Thread thread = Thread.currentThread();
         for(int idx = 0; idx < tabSize; idx++) {
 	        if(values[idx] == null || values[idx] == REMOVED)
 	            continue;
 	        d = (DocumentImpl)values[idx];
             dlock = d.getUpdateLock();
-//            if (checkExisting && dlock.isLockedForRead(thread))
+//            if (checkExisting && dlock.hasLock(thread))
 //                continue;
             if(exclusive)
                 dlock.acquire(Lock.WRITE_LOCK);
