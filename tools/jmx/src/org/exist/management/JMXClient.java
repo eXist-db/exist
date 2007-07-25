@@ -95,7 +95,7 @@ public class JMXClient {
                 echo("\nCurrently active threads:");
             for (Iterator i = table.values().iterator(); i.hasNext(); ) {
                 CompositeData data = (CompositeData) i.next();
-                echo(String.format("Thread %20s: %3d", data.get("owner"), data.get("referenceCount")));
+                echo(String.format("\t%20s: %3d", data.get("owner"), data.get("referenceCount")));
             }
         } catch (Exception e) {
             error(e);
@@ -140,6 +140,7 @@ public class JMXClient {
                 echo("Thread " + data.get("waitingThread"));
                 echo(String.format("%20s: %s", "Lock type", data.get("lockType")));
                 echo(String.format("%20s: %s", "Lock mode", data.get("lockMode")));
+                echo(String.format("%20s: %s", "Lock id", data.get("id")));
                 echo(String.format("%20s: %s", "Held by", Arrays.toString((String[]) data.get("owner"))));
                 String[] readers = (String[]) data.get("waitingForRead");
                 if (readers.length > 0) {
