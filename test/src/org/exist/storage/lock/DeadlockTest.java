@@ -21,8 +21,23 @@
  */
 package org.exist.storage.lock;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import org.exist.TestDataGenerator;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -34,10 +49,6 @@ import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,16 +61,6 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
-import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.LinkedList;
-import java.util.Random;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-
 /**
  * Test deadlock detection and resolution.
  * 
@@ -68,23 +69,37 @@ import java.util.ArrayList;
 @RunWith(Parameterized.class)
 public class DeadlockTest {
 
+	/** pick a set of random collections to query */
 	private static final int TEST_RANDOM_COLLECTION = 0;
+	/** pick a single collection to query */
 	private static final int TEST_SINGLE_COLLECTION = 1;
+	/** query the root collection */
 	private static final int TEST_ALL_COLLECTIONS = 2;
+	/** apply a random mixture of the other modes */
+	private static final int TEST_MIXED = 3;
 	
-	/** Use 3 test runs, querying different collections */
+	/** Use 4 test runs, querying different collections */
 	@Parameters 
 	public static LinkedList<Integer[]> data() {
 		LinkedList<Integer[]> params = new LinkedList<Integer[]>();
 		params.add(new Integer[] { TEST_RANDOM_COLLECTION });
 		params.add(new Integer[] { TEST_SINGLE_COLLECTION });
 		params.add(new Integer[] { TEST_ALL_COLLECTIONS });
+		params.add(new Integer[] { TEST_MIXED });
 		return params;
 	}
 	
 	private static final int COLL_COUNT = 10;
 
 	private static final int DOC_COUNT = 20;
+	
+	private final static String COLLECTION_CONFIG =
+		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+		"	<index>" +
+		"		<fulltext default=\"all\" attributes=\"false\"/>" +
+		"		<create path=\"//section/@id\" type=\"xs:string\"/>" +
+		"	</index>" +
+		"</collection>";
 	
 	private final static String generateXQ = "<book id=\"{$filename}\" n=\"{$count}\">"
 			+ "   <chapter>"
@@ -109,6 +124,7 @@ public class DeadlockTest {
 	
 	public DeadlockTest(int mode) {
 		this.mode = mode;
+		System.out.println("MODE: " + mode);
 	}
 	
 	@BeforeClass
@@ -135,6 +151,9 @@ public class DeadlockTest {
 			assertNotNull(test);
 			broker.saveCollection(transaction, test);
 
+			CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
+            
 			InputSource is = new InputSource(new File(
 					"samples/shakespeare/hamlet.xml").toURI().toASCIIString());
 			assertNotNull(is);
@@ -180,14 +199,13 @@ public class DeadlockTest {
 	public void runTasks() {
 		ExecutorService executor = Executors.newFixedThreadPool(8);
 		new StoreTask("store", COLL_COUNT, DOC_COUNT).run();
-		for (int i = 0; i < 70; i++) {
+		for (int i = 0; i < 100; i++) {
 			executor.submit(new QueryTask(COLL_COUNT));
 		}
 		executor.shutdown();
 		boolean terminated = false;
 		try {
-			terminated = executor.awaitTermination(60 * 60 * 1,
-					TimeUnit.SECONDS);
+			terminated = executor.awaitTermination(60 * 60 * 1, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 		}
 		assertTrue(terminated);
@@ -217,8 +235,7 @@ public class DeadlockTest {
 
 				transaction = transact.beginTransaction();
 
-				TestDataGenerator generator = new TestDataGenerator("xdb",
-						docCount);
+				TestDataGenerator generator = new TestDataGenerator("xdb", docCount);
 				Collection coll;
 				int fileCount = 0;
 				for (int i = 0; i < collectionCount; i++) {
@@ -246,7 +263,7 @@ public class DeadlockTest {
 			} catch (Exception e) {
 				transact.abort(transaction);
 				e.printStackTrace();
-				fail(e.getMessage());
+//				fail(e.getMessage());
 			} finally {
 				pool.release(broker);
 			}
@@ -264,12 +281,15 @@ public class DeadlockTest {
 		public void run() {
 			StringBuilder buf = new StringBuilder();
 			String collection = "/db";
-			if (mode == TEST_SINGLE_COLLECTION) {
+			int currentMode = mode;
+			if (mode == TEST_MIXED)
+				currentMode = random.nextInt(3);
+			if (currentMode == TEST_SINGLE_COLLECTION) {
 				int collectionId = random.nextInt(collectionCount);
 				collection = "/db/test/" + collectionId;
 				buf.append("collection('").append(collection)
 					.append("')//chapter/section[@id = 'sect1']");
-			} else if (mode == TEST_RANDOM_COLLECTION) {
+			} else if (currentMode == TEST_RANDOM_COLLECTION) {
 				List<Integer> collIds = new ArrayList<Integer>(7);
 				for (int i = 0; i < 7; i++) {
 					int r;
@@ -301,7 +321,7 @@ public class DeadlockTest {
 				service.beginProtected();
 				try {
 					ResourceSet result = service.query(query);
-					assertEquals(result.getSize(), DOC_COUNT );
+					System.out.println("Result: " + result.getSize());
 				} finally {
 					service.endProtected();
 				}
