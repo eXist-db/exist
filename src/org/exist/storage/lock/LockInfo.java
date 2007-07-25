@@ -37,15 +37,18 @@ public class LockInfo {
 
     private String lockMode;
 
+    private String id;
+
     private String[] owners;
 
     private String[] waitingForWrite = new String[0];
 
     private String[] waitingForRead = new String[0];
 
-    public LockInfo(String lockType, String lockMode, String[] owners) {
+    public LockInfo(String lockType, String lockMode, String id, String[] owners) {
         this.lockType = lockType;
         this.lockMode = lockMode;
+        this.id = id;
         this.owners = owners;
     }
 
@@ -57,6 +60,10 @@ public class LockInfo {
         return lockMode;
     }
 
+    public String getId() {
+        return id;
+    }
+    
     public String[] getOwners() {
         return owners;
     }

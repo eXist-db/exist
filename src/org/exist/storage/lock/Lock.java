@@ -100,6 +100,8 @@ public interface Lock {
      */
     public void wakeUp();
 
+    public String getId();
+
     /**
      * Create a LockInfo entry for the given lock.
      * 

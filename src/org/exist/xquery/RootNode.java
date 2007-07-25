@@ -69,30 +69,24 @@ public class RootNode extends Step {
         if (cachedDocs != null && cachedDocs.equals(ds)) return cached;
         
         // check if the loaded documents should remain locked
-        boolean lockOnLoad = context.lockDocumentsOnLoad();
         NodeSet result = new ExtArrayNodeSet(2);
         try {
             // wait for pending updates
-            ds.lock(lockOnLoad, true);
-            
+            ds.lock(false, true);
 	        DocumentImpl doc;
 	        for (Iterator i = ds.iterator(); i.hasNext();) {
 	            doc = (DocumentImpl) i.next();
 	            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
 	            	result.add(new NodeProxy(doc));
 	            }
-                if(lockOnLoad) {
-                    context.addLockedDocument(doc);
-                }
             }
 	        cached = result;
 	        cachedDocs = ds;            
         } catch (LockException e) {
             throw new XPathException(getASTNode(), "Failed to acquire lock on the context document set");
         } finally {
-            if(!lockOnLoad)
-                // release all locks
-                ds.unlock(false);
+            // release all locks
+            ds.unlock(false);
         }
         
         if (context.getProfiler().isEnabled()) 

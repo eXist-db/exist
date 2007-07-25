@@ -112,10 +112,7 @@ public class ExtCollection extends Function {
 		    return cached;
         }
         
-		// check if the loaded documents should remain locked
-        boolean lockOnLoad = context.lockDocumentsOnLoad();
-        
-         // build the document set
+		// build the document set
 		DocumentSet docs = new DocumentSet(521);
 	    try {
 			for (int i = 0; i < args.size(); i++) {
@@ -135,17 +132,17 @@ public class ExtCollection extends Function {
 		for (Iterator i = docs.iterator(); i.hasNext();) {
 		    doc = (DocumentImpl)i.next();
 		    dlock = doc.getUpdateLock();
-		    try {
-		        dlock.acquire(lockOnLoad ? Lock.WRITE_LOCK : Lock.READ_LOCK);
-		        result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
-                if (lockOnLoad) {
-                    LOG.debug("Locking document: " + doc.getURI());
-                    context.addLockedDocument(doc);
+            boolean lockAcquired = false;
+            try {
+                if (!dlock.hasLock()) {
+                    dlock.acquire(Lock.READ_LOCK);
+                    lockAcquired = true;
                 }
+                result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
 		    } catch (LockException e) {
-                LOG.info("Could not acquire read lock on document " + doc.getURI());
+                LOG.info("Could not acquire lock on document " + doc.getURI());
             } finally {
-                if (!lockOnLoad)
+                if (lockAcquired)
                     dlock.release(Lock.READ_LOCK);
 		    }
 		}

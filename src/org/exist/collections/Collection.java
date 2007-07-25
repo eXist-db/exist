@@ -68,13 +68,10 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
+import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
-import org.exist.util.MimeType;
-import org.exist.util.SyntaxException;
-import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.*;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
@@ -168,7 +165,7 @@ public  class Collection extends Observable
     
     public Collection(XmldbURI path) {
         setPath(path);
-        lock = new ReentrantReadWriteLock(getURI().getRawCollectionPath());
+        lock = new ReentrantReadWriteLock(path);
     }
     
     public void setPath(XmldbURI path) {
@@ -345,44 +342,37 @@ public  class Collection extends Observable
         return docs;
     }
 
-//    public DocumentSet allDocs(DBBroker broker, DocumentSet docs,
-//            boolean recursive, boolean checkPermissions) {
-//        if (permissions.validate(broker.getUser(), Permission.READ)) {
-//            CollectionCache cache = broker.getBrokerPool().getCollectionsCache();
-//            synchronized (cache) {
-//                getDocuments(broker, docs, checkPermissions);
-//                if (recursive)
-//                    allDocs(broker, docs, checkPermissions);
-//            }
-//        }
-//        return docs;
-//    }
-//
-//    private DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean checkPermissions) {
-//        try {
-//            getLock().acquire(Lock.READ_LOCK);
-//            Collection child;
-//            XmldbURI childName;
-//            Iterator i = subcollections.iterator();
-//            while (i.hasNext() ) {
-//                childName = (XmldbURI) i.next();
-//                child = broker.getCollection(path.appendInternal(childName));
-//                if(child == null) {
-//                    LOG.warn("child collection " + path.appendInternal(childName) + " not found. Skipping ...");
-//                    // we always check if we have permissions to read the child collection
-//                } else if (child.permissions.validate(broker.getUser(), Permission.READ)) {
-//                    child.getDocuments(broker, docs, checkPermissions);
-//                    if (child.getChildCollectionCount() > 0)
-//                        child.allDocs(broker, docs, checkPermissions);
-//                }
-//            }
-//        } catch (LockException e) {
-//            LOG.warn(e.getMessage(), e);
-//        } finally {
-//            getLock().release();
-//        }
-//        return docs;
-//    }
+    public DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean recursive, LockedDocumentMap lockMap, int lockType) throws LockException {
+        if (permissions.validate(broker.getUser(), Permission.READ)) {
+            List subColls = null;
+            try {
+                // acquire a lock on the collection
+                getLock().acquire(Lock.READ_LOCK);
+                // add all docs in this collection to the returned set
+                getDocuments(broker, docs, lockMap, lockType);
+                // get a list of subcollection URIs. We will process them after unlocking this collection.
+                // otherwise we may deadlock ourselves
+                subColls = subcollections.keys();
+            } catch (LockException e) {
+                LOG.warn(e.getMessage(), e);
+                throw e;
+            } finally {
+                getLock().release(Lock.READ_LOCK);
+            }
+            if (recursive && subColls != null) {
+                // process the child collections
+                for (int i = 0; i < subColls.size(); i++) {
+                    XmldbURI childName = (XmldbURI) subColls.get(i);
+                    //TODO : resolve URI !
+                    Collection child = broker.openCollection(path.appendInternal(childName), Lock.NO_LOCK);
+                    // a collection may have been removed in the meantime, so check first
+                    if (child != null)
+                        child.allDocs(broker, docs, recursive, lockMap, lockType);
+                }
+            }
+        }
+        return docs;
+    }
 
     /**
      * Add all documents to the specified document set.
@@ -401,7 +391,21 @@ public  class Collection extends Observable
         }
         return docs;
     }
-    
+
+    public DocumentSet getDocuments(DBBroker broker, DocumentSet docs, LockedDocumentMap lockMap, int lockType) throws LockException {
+        try {
+            getLock().acquire(Lock.READ_LOCK);
+            docs.addCollection(this);
+            docs.addAll(broker, documents.values(), lockMap, lockType);
+        } catch (LockException e) {
+            LOG.warn(e.getMessage(), e);
+            throw e;
+        } finally {
+            getLock().release(Lock.READ_LOCK);
+        }
+        return docs;
+    }
+
     /**
      * Check if this collection may be safely removed from the
      * cache. Returns false if there are ongoing write operations,

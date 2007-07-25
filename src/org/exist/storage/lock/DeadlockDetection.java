@@ -25,10 +25,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+
+import org.apache.log4j.Logger;
 
 /**
  * Deadlock detection for resource and collection locks. The static methods in this class
@@ -57,7 +56,8 @@ import java.util.Map;
  */
 public class DeadlockDetection {
 
-    private final static Map waitForResource = Collections.synchronizedMap(new HashMap());
+
+    private final static Map waitForResource = new HashMap();
     private final static Map waitForCollection = Collections.synchronizedMap(new HashMap());
 
     /**
@@ -67,7 +67,9 @@ public class DeadlockDetection {
      * @param waiter the WaitingThread object which wraps around the thread
      */
     public static void addResourceWaiter(Thread thread, WaitingThread waiter) {
-        waitForResource.put(thread, waiter);
+        synchronized (waitForResource) {
+            waitForResource.put(thread, waiter);
+        }
     }
 
     /**
@@ -77,12 +79,20 @@ public class DeadlockDetection {
      * @return lock
      */
     public static Lock clearResourceWaiter(Thread thread) {
-        WaitingThread waiter = (WaitingThread) waitForResource.remove(thread);
-        if (waiter != null)
-            return waiter.getLock();
-        return null;
+        synchronized (waitForResource) {
+            WaitingThread waiter = (WaitingThread) waitForResource.remove(thread);
+            if (waiter != null)
+                return waiter.getLock();
+            return null;
+        }
     }
 
+    public static WaitingThread getResourceWaiter(Thread thread) {
+        synchronized (waitForResource) {
+            return (WaitingThread) waitForResource.get(thread);
+        }
+    }
+    
     /**
      * Check if there's a risk for a circular wait between threadA and threadB. The method tests if
      * threadB is currently waiting for a resource lock (read or write). It then checks
@@ -95,13 +105,16 @@ public class DeadlockDetection {
      * @return waiting thread
      */
     public static WaitingThread deadlockCheckResource(Thread threadA, Thread threadB) {
-        // check if threadB is waiting for a resource lock
-        WaitingThread waitingThread = (WaitingThread) waitForResource.get(threadB);
-        // if lock != null, check if thread B waits for a resource lock currently held by thread A
-        if (waitingThread != null) {
-            return waitingThread.getLock().hasLock(threadA) ? waitingThread : null;
+        synchronized (waitForResource) {
+            // check if threadB is waiting for a resource lock
+            WaitingThread waitingThread = (WaitingThread) waitForResource.get(threadB);
+            // if lock != null, check if thread B waits for a resource lock currently held by thread A
+            if (waitingThread != null) {
+//            	LOG.debug("deadlockCheck: " + threadB.getName() + " -> " + waitingThread.getLock().hasLock(threadA));
+                return waitingThread.getLock().hasLock(threadA) ? waitingThread : null;
+            }
+            return null;
         }
-        return null;
     }
 
     /**
@@ -113,13 +126,54 @@ public class DeadlockDetection {
      * @return true if threadB is currently blocked by a lock held by threadA
      */
     public static boolean isBlockedBy(Thread threadA, Thread threadB) {
-        // check if threadB is waiting for a resource lock
-        WaitingThread waitingThread = (WaitingThread) waitForResource.get(threadB);
-        // if lock != null, check if thread B waits for a resource lock currently held by thread A
-        if (waitingThread != null) {
-            return waitingThread.getLock().hasLock(threadA);
+        synchronized (waitForResource) {
+            // check if threadB is waiting for a resource lock
+            WaitingThread waitingThread = (WaitingThread) waitForResource.get(threadB);
+            // if lock != null, check if thread B waits for a resource lock currently held by thread A
+            if (waitingThread != null) {
+                return waitingThread.getLock().hasLock(threadA);
+            }
+            return false;
         }
-        return false;
+    }
+
+    public static boolean wouldDeadlock(Thread waiter, Thread owner, List waiters) {
+        synchronized (waitForResource) {
+            WaitingThread wt = (WaitingThread) waitForResource.get(owner);
+            if (wt != null) {
+                waiters.add(wt);
+                Lock l = wt.getLock();
+                owner = ((MultiReadReentrantLock) l).getWriteLockedThread();
+                if (owner != null) {
+                    if (owner == waiter)
+                        return true;
+                    return wouldDeadlock(waiter, owner, waiters);
+                } else
+                    return false;
+            }
+            return false;
+        }
+    }
+
+    public static boolean circularWait(Thread waiter, Thread owner, List waiters) {
+        synchronized (waitForResource) {
+            // check if threadB is waiting for a resource lock
+            WaitingThread wt = (WaitingThread) waitForResource.get(owner);
+            while (wt != null) {
+//                if (wt.getLock().hasLock(waiter))
+//                    return true;
+                Thread t = ((MultiReadReentrantLock)wt.getLock()).getWriteLockedThread();
+                if (t == null)
+                    return false;
+                System.out.println("wt.thread: " + wt.getThread().getName() + "; writeLock: " + t.getName());
+                if (t == waiter) {
+                    return true;
+                }
+                waiters.add(wt);
+                wt = (WaitingThread) waitForResource.get(t);
+            }
+            return false;
+        }
     }
 
     /**

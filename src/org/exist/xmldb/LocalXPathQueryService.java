@@ -31,6 +31,8 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.util.LockException;
+import org.exist.util.DeadlockException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
@@ -43,6 +45,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.LockedDocumentMap;
+import org.exist.storage.lock.Lock;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
@@ -308,9 +311,34 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	 * query or the result set are not modified by other threads
 	 * until {@link #endProtected} is called.
 	 */
-	public void beginProtected() {
-	    lockDocuments = true;
-	}
+	public void beginProtected() throws XMLDBException {
+//	    lockDocuments = true;
+//		if (reservedBroker != null)
+            // if a previous broker was not properly released, do it now (just to be sure)
+//            brokerPool.release(reservedBroker);
+		try {
+			reservedBroker = brokerPool.get(user);
+	        boolean deadlockCaught;
+	        do {
+	        	deadlockCaught = false;
+	        	DocumentSet docs = null;
+	            try {
+	                org.exist.collections.Collection coll = collection.getCollection();
+	                lockedDocuments = new LockedDocumentMap();
+	                docs = new DocumentSet();
+	                coll.allDocs(reservedBroker, docs, true, lockedDocuments, Lock.WRITE_LOCK);
+	            } catch (LockException e) {
+	                LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getLength() + "; locked: " +
+	                		lockedDocuments.size());
+					lockedDocuments.unlock();
+					deadlockCaught = true;
+	            }
+	        } while (deadlockCaught);
+		} catch (EXistException e) {
+			brokerPool.release(reservedBroker);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+		}
+    }
 	
 	/**
 	 * Close the protected environment. All locks held
@@ -341,9 +369,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     	NodeSet contextSet, CompiledExpression expression, String sortExpr) 
     throws XMLDBException {
     	long start = System.currentTimeMillis();
-        if (reservedBroker != null)
-            // if a previous broker was not properly released, do it now (just to be sure)
-            brokerPool.release(reservedBroker);
         CompiledXQuery expr = (CompiledXQuery)expression;
     	DBBroker broker = null;
     	Sequence result;
@@ -378,9 +403,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
             keepLocks = false;
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} finally {
-            if (keepLocks)
-                reservedBroker = broker;
-            else
+//            if (keepLocks)
+//                reservedBroker = broker;
+//            else
                 brokerPool.release(broker);
     	}
     	LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");

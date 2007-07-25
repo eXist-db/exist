@@ -228,7 +228,7 @@ public class DefaultCacheManager implements CacheManager {
         Cache cache;
         for (int i = 0; i < caches.size(); i++) {
             cache = (Cache) caches.get(i);
-            if (cache.getBuffers() >= minSize) {
+            if (cache.getBuffers() >= minSize || cache.getType() == CacheManager.DATA_CACHE) {
                 int newSize = (int) (cache.getBuffers() * SHRINK_FACTOR);
                 if (LOG.isDebugEnabled()) {
 	                NumberFormat nf = NumberFormat.getNumberInstance();
