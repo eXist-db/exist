@@ -141,7 +141,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
             // quick fail
             return null;
         }
-        LOG.debug("Resolving XMLResourceIdentifier='"+xri.toString()+"'");
+        LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
         
         String retValue = super.resolveIdentifier(xri);
         LOG.debug("Resolved " + (retValue!=null));
@@ -162,7 +162,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
             return null;
         }
         
-        LOG.debug("Resolving XMLResourceIdentifier='"+xri.toString()+"'");
+        LOG.debug("Resolving XMLResourceIdentifier: " + getXriDetails(xri));
         XMLInputSource retValue = super.resolveEntity(xri);
         
         
@@ -184,5 +184,14 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         return super.getExternalSubset(name, baseURI);
     }
     
+    private String getXriDetails(XMLResourceIdentifier xrid){
+        StringBuffer sb = new StringBuffer();
+        sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
+        sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
+        sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");
+        sb.append("LiteralSystemId='").append(xrid.getLiteralSystemId()).append("' ");
+        sb.append("Namespace='").append(xrid.getNamespace()).append("' ");
+        return sb.toString();
+    }
 
 }
