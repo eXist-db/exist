@@ -81,6 +81,8 @@ public class CollectionCache extends LRDCache {
 					}
 			}
 		}
+		if (bucket < 0)
+			bucket = 0;
 		old = (Collection)items[bucket];
 		if (old != null) {
 			pool.getConfigurationManager().invalidate(old.getURI());
