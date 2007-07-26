@@ -1560,6 +1560,8 @@ reservedKeywords returns [String name]
 	"gt" { name = "gt"; }
 	|
 	"ge" { name = "ge"; }
+	|
+	"xpointer" { name = "xpointer"; }
 	;
 
 /**
