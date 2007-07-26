@@ -421,6 +421,7 @@ public XQueryParser(ParserSharedInputState state) {
 		
 		{
 		switch ( LA(1)) {
+		case LITERAL_xpointer:
 		case LPAREN:
 		case NCNAME:
 		case LITERAL_xquery:
@@ -1840,6 +1841,7 @@ public XQueryParser(ParserSharedInputState state) {
 			ncnameOrKeyword_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case LITERAL_xpointer:
 		case LITERAL_xquery:
 		case LITERAL_version:
 		case LITERAL_module:
@@ -3772,6 +3774,7 @@ public XQueryParser(ParserSharedInputState state) {
 			astFactory.addASTChild(currentAST, returnAST);
 			break;
 		}
+		case LITERAL_xpointer:
 		case NCNAME:
 		case LITERAL_xquery:
 		case LITERAL_version:
@@ -4674,6 +4677,7 @@ public XQueryParser(ParserSharedInputState state) {
 			unaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case LITERAL_xpointer:
 		case LPAREN:
 		case NCNAME:
 		case LITERAL_xquery:
@@ -5102,6 +5106,7 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST valueExpr_AST = null;
 		
 		switch ( LA(1)) {
+		case LITERAL_xpointer:
 		case LPAREN:
 		case NCNAME:
 		case LITERAL_xquery:
@@ -5240,6 +5245,7 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST relPath2_AST = null;
 		
 		switch ( LA(1)) {
+		case LITERAL_xpointer:
 		case LPAREN:
 		case NCNAME:
 		case LITERAL_xquery:
@@ -5789,6 +5795,7 @@ public XQueryParser(ParserSharedInputState state) {
 								match(DOLLAR);
 								break;
 							}
+							case LITERAL_xpointer:
 							case NCNAME:
 							case LITERAL_xquery:
 							case LITERAL_version:
@@ -6341,6 +6348,7 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST abbrevStep_AST = null;
 		
 		switch ( LA(1)) {
+		case LITERAL_xpointer:
 		case NCNAME:
 		case LITERAL_xquery:
 		case LITERAL_version:
@@ -6447,6 +6455,7 @@ public XQueryParser(ParserSharedInputState state) {
 				match(AT);
 				break;
 			}
+			case LITERAL_xpointer:
 			case NCNAME:
 			case LITERAL_xquery:
 			case LITERAL_version:
@@ -6587,6 +6596,7 @@ public XQueryParser(ParserSharedInputState state) {
 			try {
 				{
 				switch ( LA(1)) {
+				case LITERAL_xpointer:
 				case NCNAME:
 				case LITERAL_xquery:
 				case LITERAL_version:
@@ -7178,6 +7188,7 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		{
 		switch ( LA(1)) {
+		case LITERAL_xpointer:
 		case LPAREN:
 		case NCNAME:
 		case LITERAL_xquery:
@@ -7346,6 +7357,7 @@ public XQueryParser(ParserSharedInputState state) {
 		match(LPAREN);
 		{
 		switch ( LA(1)) {
+		case LITERAL_xpointer:
 		case LPAREN:
 		case NCNAME:
 		case LITERAL_xquery:
@@ -7626,6 +7638,7 @@ public XQueryParser(ParserSharedInputState state) {
 		match(LPAREN);
 		{
 		switch ( LA(1)) {
+		case LITERAL_xpointer:
 		case NCNAME:
 		case LITERAL_xquery:
 		case LITERAL_version:
@@ -7788,6 +7801,7 @@ public XQueryParser(ParserSharedInputState state) {
 		match(LPAREN);
 		{
 		switch ( LA(1)) {
+		case LITERAL_xpointer:
 		case NCNAME:
 		case LITERAL_xquery:
 		case LITERAL_version:
@@ -8073,6 +8087,7 @@ public XQueryParser(ParserSharedInputState state) {
 			elementNameOrWildcard_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case LITERAL_xpointer:
 		case NCNAME:
 		case LITERAL_xquery:
 		case LITERAL_version:
@@ -8233,6 +8248,7 @@ public XQueryParser(ParserSharedInputState state) {
 			attributeNameOrWildcard_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case LITERAL_xpointer:
 		case NCNAME:
 		case LITERAL_xquery:
 		case LITERAL_version:
@@ -8477,6 +8493,7 @@ public XQueryParser(ParserSharedInputState state) {
 			match(LCURLY);
 			{
 			switch ( LA(1)) {
+			case LITERAL_xpointer:
 			case LPAREN:
 			case NCNAME:
 			case LITERAL_xquery:
@@ -8621,6 +8638,7 @@ public XQueryParser(ParserSharedInputState state) {
 			match(LCURLY);
 			{
 			switch ( LA(1)) {
+			case LITERAL_xpointer:
 			case LPAREN:
 			case NCNAME:
 			case LITERAL_xquery:
@@ -8805,6 +8823,7 @@ public XQueryParser(ParserSharedInputState state) {
 			match(LCURLY);
 			{
 			switch ( LA(1)) {
+			case LITERAL_xpointer:
 			case LPAREN:
 			case NCNAME:
 			case LITERAL_xquery:
@@ -8950,6 +8969,7 @@ public XQueryParser(ParserSharedInputState state) {
 			match(LCURLY);
 			{
 			switch ( LA(1)) {
+			case LITERAL_xpointer:
 			case LPAREN:
 			case NCNAME:
 			case LITERAL_xquery:
@@ -11210,6 +11230,18 @@ public XQueryParser(ParserSharedInputState state) {
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case LITERAL_xpointer:
+		{
+			org.exist.xquery.parser.XQueryAST tmp495_AST = null;
+			tmp495_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp495_AST);
+			match(LITERAL_xpointer);
+			if ( inputState.guessing==0 ) {
+				name = "xpointer";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
@@ -11452,7 +11484,7 @@ public XQueryParser(ParserSharedInputState state) {
 	
 	private static final long[] mk_tokenSet_0() {
 		long[] data = new long[8];
-		data[0]=-1310547491564814336L;
+		data[0]=-1308295691751129088L;
 		data[1]=-1594274281210036241L;
 		data[2]=2305737454718320351L;
 		data[3]=1536L;
@@ -11461,7 +11493,7 @@ public XQueryParser(ParserSharedInputState state) {
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
 		long[] data = new long[8];
-		data[0]=-3620894100405878784L;
+		data[0]=-3618642300592193536L;
 		data[1]=-1594274332766421009L;
 		data[2]=287671247197470303L;
 		data[3]=1536L;
@@ -11470,7 +11502,7 @@ public XQueryParser(ParserSharedInputState state) {
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
 		long[] data = new long[8];
-		data[0]=-3620894100405878784L;
+		data[0]=-3618642300592193536L;
 		data[1]=-1594274332766421009L;
 		data[2]=287671796953284191L;
 		data[3]=1536L;
@@ -11499,7 +11531,7 @@ public XQueryParser(ParserSharedInputState state) {
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
 		long[] data = new long[8];
-		data[0]=-3620894100405878784L;
+		data[0]=-3618642300592193536L;
 		data[1]=-1594274315586551825L;
 		data[2]=288094009418350175L;
 		data[3]=1536L;
@@ -11508,7 +11540,7 @@ public XQueryParser(ParserSharedInputState state) {
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
 		long[] data = new long[8];
-		data[0]=-1310547491564814336L;
+		data[0]=-1308295691751129088L;
 		data[1]=-1594274332749643793L;
 		data[2]=2305315216340844255L;
 		data[3]=1536L;
@@ -11527,7 +11559,7 @@ public XQueryParser(ParserSharedInputState state) {
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
 	private static final long[] mk_tokenSet_11() {
 		long[] data = new long[8];
-		data[0]=-3620894100405878784L;
+		data[0]=-3618642300592193536L;
 		data[1]=-1594274315586551825L;
 		data[2]=287671247197470303L;
 		data[3]=1536L;
