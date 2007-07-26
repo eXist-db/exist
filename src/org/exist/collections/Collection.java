@@ -726,18 +726,16 @@ public  class Collection extends Observable
      */
     public void removeXMLResource(Txn transaction, DBBroker broker, XmldbURI docUri)
     throws PermissionDeniedException, TriggerException, LockException {
-    	
+    	DocumentImpl doc = null;
     	try {
-       
 	    	//Doh ! READ lock ?
 	        getLock().acquire(Lock.READ_LOCK);        
 	        
-	        DocumentImpl doc = getDocument(broker, docUri);
+	        doc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
 	        if (doc == null)
 	            return;
-	        if(doc.isLockedForWrite())
-	            throw new PermissionDeniedException("Document " + doc.getFileURI() +
-	                    " is locked for write");
+	        doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+	        
 	        if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException(
 	                    "Write access to collection denied; user=" + broker.getUser().getName());
@@ -772,6 +770,8 @@ public  class Collection extends Observable
 	        
 	        broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
     	} finally {
+    		if (doc != null)
+    			doc.getUpdateLock().release(Lock.WRITE_LOCK);
     		//Doh ! A READ lock ?
     		getLock().release(Lock.READ_LOCK);
     	}
