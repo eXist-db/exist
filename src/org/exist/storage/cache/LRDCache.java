@@ -102,6 +102,8 @@ public class LRDCache extends GClockCache {
 				}
 			}
 		}
+		if (bucket < 0)
+			bucket = 0;
 		old = items[bucket];
 		if (old != null) {
 			map.remove(old.getKey());
