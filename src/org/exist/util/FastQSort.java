@@ -49,7 +49,7 @@ import org.exist.util.InsertionSort;
 	http://www.cs.rpi.edu/~musser/gp/introsort.ps
 	http://www.michael-maniscalco.com/sorting.htm
 	
-	@author Jose Maria Fernandez
+	@author José María Fernández
 */
 public final class FastQSort {
 	private final static int M = 10;
@@ -106,6 +106,70 @@ public final class FastQSort {
 			l=i;
 		}
 		InsertionSort.sort(a,l,r);
+	}
+
+	private final static void IntroSort(Comparable a[], int l, int r, int b[], int maxdepth)
+	//----------------------------------------------------
+	{
+		while ( (r - l) > M ) {
+			if(maxdepth<=0) {
+				HeapSort.sort(a,l,r,b);
+				return;
+			}
+			
+			int i = ( l + r ) / 2;
+			int j;
+
+			Comparable partionElement;
+			// Arbitrarily establishing partition element as the midpoint of
+			// the array.
+			if (a[l].compareTo(a[i]) > 0) {
+				SwapVals.swap(a, l, i); // Tri-Median Methode!
+				if(b!=null)
+					SwapVals.swap(b, l, i); // Tri-Median Methode!
+			}
+			if (a[l].compareTo(a[r]) > 0) {
+				SwapVals.swap(a, l, r);
+				if(b!=null)
+					SwapVals.swap(b, l, r);
+			}
+			if (a[i].compareTo(a[r]) > 0) {
+				SwapVals.swap(a, i, r);
+				if(b!=null)
+					SwapVals.swap(b, i, r);
+			}
+			partionElement = a[i];
+			// loop through the array until indices cross
+			i = l+1;
+			j = r-1;
+			while( i <= j ) {
+				// find the first element that is greater than or equal to
+				// the partionElement starting from the leftIndex.
+				while( ( i < r ) && ( partionElement.compareTo(a[i])>0 ) )
+					++i;
+				// find an element that is smaller than or equal to
+				// the partionElement starting from the rightIndex.
+				while( ( j > l ) && ( partionElement.compareTo(a[j])<0 ) )
+					--j;
+				// if the indexes have not crossed, swap
+				if( i <= j ) {
+					SwapVals.swap(a, i, j);
+					if(b!=null)
+						SwapVals.swap(b, i, j);
+					++i;
+					--j;
+				}
+			}
+			// If the right index has not reached the left side of array
+			// must now sort the left partition.
+			if( l < j )
+				IntroSort( a, l, j, b, maxdepth );
+			// If the left index has not reached the right side of array
+			// must now sort the right partition.
+			if( i >= r )  break;
+			l=i;
+		}
+		InsertionSort.sort(a,l,r,b);
 	}
 
 	private final static void IntroSort(Object a[], Comparator comp, int l, int r, int maxdepth)
@@ -385,14 +449,26 @@ public final class FastQSort {
 	}
 	
 	public static void sort(Comparable[] a, int lo, int hi) {
+		if (lo == hi)
+			return; // just one item, doesn't need sorting
 		IntroSort(a, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 
+	public static void sort(Comparable[] a, int lo, int hi, int[] b) {
+		if (lo == hi)
+			return; // just one item, doesn't need sorting
+		IntroSort(a, lo, hi, b, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
+	}
+
 	public static void sort(Object[] a, Comparator c, int lo, int hi) {
+		if (lo == hi)
+			return; // just one item, doesn't need sorting
 		IntroSort(a, c, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 	
 	public static void sort(List a, int lo, int hi) {
+		if (lo == hi)
+			return; // just one item, doesn't need sorting
 		IntroSort(a, lo, hi, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 	
@@ -409,6 +485,8 @@ public final class FastQSort {
 	}
 
 	public static void sort(long[] a, int lo, int hi, Object b[]) {
+		if (lo == hi)
+			return; // just one item, doesn't need sorting
 		IntroSort(a, lo, hi, b, 2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 	}
 
