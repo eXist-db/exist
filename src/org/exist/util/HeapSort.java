@@ -37,7 +37,7 @@ import org.exist.util.SwapVals;
 	based on the implementation of a sorting
 	framework by Cay Horstmann.
 
-	@author Jose Maria Fernandez
+	@author José María Fernández
 */
 public final class HeapSort {
 	public static void sort(Comparable[] a, int lo, int hi) {
@@ -55,6 +55,31 @@ public final class HeapSort {
 
 			// Heap shrinks by 1 element.
 			fixHeap(a,lo,i-1,a[lo]);
+		}
+	}
+	
+	public static void sort(Comparable[] a, int lo, int hi, int[] b) {
+		// Establish the heap property.
+		int i;
+		
+		for (i=hi/2; i>=lo; i--)
+			// The parameter must be set to something
+			// compatible with the type
+			fixHeap(a,b,i,hi,a[i],(b!=null)?b[i]:0);
+      
+		// Now place the largest element last,
+		// 2nd largest 2nd last, etc.
+		for (i=hi; i>lo; i--) {
+			// a[1] is the next-biggest element.
+			SwapVals.swap(a,lo,i);
+			if(b!=null)
+				SwapVals.swap(b,lo,i);
+
+			// Heap shrinks by 1 element.
+			
+			// The parameter must be set to something
+			// compatible with the type
+			fixHeap(a,b,lo,i-1,a[lo],(b!=null)?b[lo]:0);
 		}
 	}
 	
@@ -170,6 +195,34 @@ public final class HeapSort {
 				root=child;
 			} else {
 				a[root] = key;
+			}
+		} while(itera);
+	}
+	
+	private static void fixHeap(Comparable[] a, int[] b, int root, int end, Comparable key, int keyb) {
+		boolean itera;
+		do {
+			int child=2*root; // left child
+
+			// Find the larger child.
+			if(child<end && a[child].compareTo(a[child+1])<0) {
+				child++;  // right child is larger
+			}
+
+			// If the larger child is larger than the
+			// element at the root, move the larger child
+			// to the root and filter the former root 
+			// element down into the "larger" subtree.
+			itera = child<=end && key.compareTo(a[child])<0;
+			if(itera) {
+				a[root] = a[child];
+				if(b!=null)
+					b[root] = b[child];
+				root=child;
+			} else {
+				a[root] = key;
+				if(b!=null)
+					b[root] = keyb;
 			}
 		} while(itera);
 	}

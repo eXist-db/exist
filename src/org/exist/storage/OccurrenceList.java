@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 import org.exist.numbering.NodeId;
+import org.exist.util.FastQSort;
 
 /**
  * Simple list of node ids and their offsets within the text sequence. Mainly used by
@@ -91,48 +92,6 @@ public class OccurrenceList {
     }
 
     public void sort() {
-        sort(0, position - 1);
-    }
-
-    /** Standard quicksort */
-    //TODO : use methods in org.exist.util ?
-    private void sort(int lo0, int hi0) {
-        int lo = lo0;
-        int hi = hi0;
-
-        if ( hi0 > lo0) {
-            int mid = ( lo0 + hi0 ) / 2;
-
-            while ( lo <= hi ) {
-                while (( lo < hi0 ) && ( nodes[lo].compareTo(nodes[mid]) < 0 ))
-                    ++lo;
-                while (( hi > lo0 ) && ( nodes[hi].compareTo(nodes[mid]) > 0))
-                    --hi;
-                if ( lo <= hi ) {
-                    if (lo!=hi) {
-                        // swap
-                        NodeId id = nodes[lo];
-                        nodes[lo] = nodes[hi];
-                        nodes[hi] = id;
-
-                        int i = offsets[lo];
-                        offsets[lo] = offsets[hi];
-                        offsets[hi] = i;
-
-                        if (lo==mid) {
-                            mid=hi;
-                        } else if (hi==mid) {
-                            mid=lo;
-                        }
-                    }
-                    ++lo;
-                    --hi;
-                }
-            }
-            if ( lo0 < hi )
-                sort( lo0, hi );
-            if ( lo < hi0 )
-                sort( lo, hi0 );
-        }
+        FastQSort.sort(nodes,0,position - 1,offsets);
     }
 }

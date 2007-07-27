@@ -75,6 +75,40 @@ public final class InsertionSort {
 		}
 	}
 
+	public final static void sort(Comparable[] a, int lo0, int hi0, int b[])
+	//------------------------------------------------------------
+	{
+		// First case, no element or only one!
+		if(lo0>=hi0)  return;
+		
+		// Second case, at least two elements
+		if(a[lo0].compareTo(a[lo0+1]) > 0) {
+			SwapVals.swap(a,lo0,lo0+1);
+			if(b!=null)  SwapVals.swap(b,lo0,lo0+1);
+		}
+		
+		// 2b, just two elements
+		if(lo0+1 == hi0)  return;
+		
+		// Last case, the general one
+		for (int i = lo0 + 1; i < hi0; i++) {
+			Comparable tempa = a[i+1];
+			if(tempa.compareTo(a[i]) < 0) {
+				int j;
+				// Avoiding warnings
+				int tempb=0;
+				
+				if(b!=null)  tempb=b[i+1];
+				for(j=i;j>=lo0 && tempa.compareTo(a[j]) < 0;j--) {
+					a[j+1]=a[j];
+					if(b!=null)  b[j+1]=b[j];
+				}
+				a[j+1]=tempa;
+				if(b!=null)  b[j+1]=tempb;
+			}
+		}
+	}
+
 	public final static void sort(Object[] a, Comparator comp, int lo0, int hi0)
 	//------------------------------------------------------------
 	{
