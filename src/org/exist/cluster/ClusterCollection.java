@@ -398,10 +398,10 @@ public final class ClusterCollection extends Collection {
         collection.setReader(reader);
     }
 
-    public InputSource resolveEntity(String publicId, String systemId)
+    /*public InputSource resolveEntity(String publicId, String systemId)
             throws SAXException, IOException {
         return collection.resolveEntity(publicId, systemId);
-    }
+    }*/
 
     /* (non-Javadoc)
 	 * @see java.util.Observable#addObserver(java.util.Observer)

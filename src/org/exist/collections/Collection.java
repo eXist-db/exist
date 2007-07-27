@@ -22,12 +22,11 @@
 package org.exist.collections;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -78,7 +77,6 @@ import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.w3c.dom.Node;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -93,10 +91,8 @@ import org.xml.sax.XMLReader;
  *
  * @author wolf
  */
-public  class Collection extends Observable
-        
-        implements Comparable, EntityResolver, Cacheable {
-    
+public  class Collection extends Observable implements Comparable, Cacheable
+{    
 	public static int LENGTH_COLLECTION_ID = 2; //sizeof short
     
     public Collection(){
@@ -873,7 +869,8 @@ public  class Collection extends Observable
                     LOG.debug("could not reset input source", e);
                 }
                 XMLReader reader = getReader(broker);
-                info.setReader(reader, Collection.this);
+                //info.setReader(reader, Collection.this);
+                info.setReader(reader, null);
                 try {
                     reader.parse(source);
                 } catch (IOException e) {
@@ -903,7 +900,8 @@ public  class Collection extends Observable
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             public void run() throws SAXException, EXistException {
                 XMLReader reader = getReader(broker);
-                info.setReader(reader, Collection.this);
+                //info.setReader(reader, Collection.this);
+                info.setReader(reader, null);
                 try {
                     reader.parse(new InputSource(new StringReader(data)));
                 } catch (IOException e) {
@@ -1043,7 +1041,8 @@ public  class Collection extends Observable
         return validateXMLResourceInternal(transaction, broker, docUri, new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException, EXistException {
                 XMLReader reader = getReader(broker);
-                info.setReader(reader, Collection.this);
+                //info.setReader(reader, Collection.this);
+                info.setReader(reader, null);
                 try {
                     reader.parse(source);
                 } catch (IOException e) {
@@ -1558,44 +1557,6 @@ public  class Collection extends Observable
         if (userReader != null )
             return;
         broker.getBrokerPool().getParserPool().returnXMLReader(reader);
-    }
-    
-    /**
-     * Try to resolve external entities.
-     *
-     * This method forwards the request to the resolver. If that fails,
-     * the method replaces absolute file names with relative ones
-     * and retries to resolve. This makes it possible to use relative
-     * file names in the catalog.
-     *
-     * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String, java.lang.String)
-     */
-    public InputSource resolveEntity(String publicId, String systemId)
-    throws SAXException, IOException {
-        
-        // TODO dizzzz remove later on
-        LOG.debug("Resolve publicId='"+publicId+"', systemId='"+systemId+"'.");
-        InputSource is = resolver.resolveEntity(publicId, systemId);
-        
-        // if resolution failed and publicId == null,
-        // try to make absolute file names relative and retry
-        if (is == null) {
-            LOG.debug("Resolve failed, fallback scenario"); 
-            if (publicId != null)
-                return null;
-            
-            URL url = new URL(systemId);
-            if (url.getProtocol().equals("file")) {
-                String path = url.getPath();
-                File f = new File(path);
-                if (!f.canRead())
-                    return resolver.resolveEntity(null, f.getName());
-                else
-                    return new InputSource(f.getAbsolutePath());
-            } else
-                return new InputSource(url.openStream());
-        }
-        return is;
     }
     
     /* (non-Javadoc)
