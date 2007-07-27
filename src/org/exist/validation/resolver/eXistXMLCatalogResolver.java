@@ -22,7 +22,9 @@
 
 package org.exist.validation.resolver;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
@@ -83,19 +85,54 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         }
     }
     
-
-    
     /**
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(String, String)
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         LOG.debug("Resolving publicId='"+publicId+"', systemId='"+systemId+"'");
         InputSource retValue = super.resolveEntity(publicId, systemId);
+        
+        if(retValue == null)
+        {
+        	retValue =  resolveEntityFallback(publicId, systemId);
+        }
+        
         LOG.debug("Resolved " + (retValue!=null));
         if(retValue!=null){
             LOG.debug("PublicId='" + retValue.getPublicId() + "' SystemId=" + retValue.getSystemId());
         }
         return retValue;
+    }
+    
+    /** moved from Collection.resolveEntity() revision 6144 */
+    private InputSource resolveEntityFallback(String publicId, String systemId) throws SAXException, IOException
+    {
+        //if resolution failed and publicId == null,
+        // try to make absolute file names relative and retry
+    	LOG.debug("Resolve failed, fallback scenario");
+    	if(publicId != null)
+    	{
+    		return null;
+    	}
+    
+    	URL url = new URL(systemId);
+    	if(url.getProtocol().equals("file"))
+    	{
+    		String path = url.getPath();
+    		File f = new File(path);
+    		if(!f.canRead())
+    		{
+    			return resolveEntity(null, f.getName());
+    		}
+    		else
+    		{
+    			return new InputSource(f.getAbsolutePath());
+    		}
+    	}
+    	else
+    	{
+    		return new InputSource(url.openStream());
+    	}
     }
     
     /**

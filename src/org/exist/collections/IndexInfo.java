@@ -63,7 +63,8 @@ public class IndexInfo {
 	}
 	
 	void setReader(XMLReader reader, EntityResolver entityResolver) throws SAXException {
-		reader.setEntityResolver(entityResolver);
+		if(entityResolver != null)
+			reader.setEntityResolver(entityResolver);
 		LexicalHandler lexicalHandler = trigger == null ? indexer : trigger.getLexicalInputHandler();
 		ContentHandler contentHandler = trigger == null ? indexer : trigger.getInputHandler();
 		reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
