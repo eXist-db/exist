@@ -450,4 +450,40 @@
         <dev-notes> XSLT styles, java classes, medium-sized xml meta documents, heavy queries </dev-notes>
         <submitter />
     </application>
+
+	<application>
+        <dc:creator>Jeff Wallman</dc:creator>
+        <dc:creator>Chris Tomlinson</dc:creator>
+        <creator-site>http://tbrc.org</creator-site>
+        <dc:identifier>http://tbrc.org</dc:identifier>
+        <dc:rights>GPL</dc:rights>
+        <dc:title>TBRC Digital Library Management System (DLMS)</dc:title>
+        <dc:subject>Tibet</dc:subject>
+        <dc:subject>Buddhism</dc:subject>
+        <dc:subject>texts</dc:subject>
+        <dc:description> Online reference tool for accessing scanned Tibetan texts and 
+            information about the historical, social, cultural geographic and biographic context of the writings. Each text has a bibliographic entry
+            that has been designed specifically for Tibetan bibliography as well as its corresponding MARC/MODS document (when available).  
+            To provide deep access to the texts, an outline is created that provides title, authorship, subject and keyword 
+            access to individual writings within the texts.
+            There are currently over 6000 volumes online with over 300 outlines 
+            (covering approximately 1000 volumes). This represents 4.5 million pages of scanned texts.
+            The total size of the library will be approximately 15,000 volumes and 10 million pages of scanned pages.
+            Knowledge entry is performed using an Eclipse 
+            application with EMF generated models of each object/document type. </dc:description>
+        <dc:publisher>Tibetan Buddhist Resource Center</dc:publisher>
+        <dc:format>eXist running in Apache Tomcat with supporting Java Servlets.</dc:format>
+        <dev-site>http://tbrc.org</dev-site>
+        <production-site>http://tbrc.org</production-site>
+        <status>production</status>
+        <feature-used>XQuery</feature-used>
+        <feature-used>Cocoon</feature-used>
+        <database size="500Mb" documents="100000" updates="frequent" security="read for all"/>
+        <dev-notes>XSLT style sheets, CSS presentation, XQuery database interaction, 
+            on-the-fly PDF generation and image conversion of scanned Tibetan texts, 
+            eXist extensions for translating Wylie Tibetan transliteration to Unicode and Web fonts</dev-notes>
+        <submitter>jeffwallman@tbrc.org</submitter>
+        <third-party-feature-used>PDFlib</third-party-feature-used>
+        <third-party-feature-used>ImageJ</third-party-feature-used>
+    </application>
 </applications>
