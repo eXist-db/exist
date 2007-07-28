@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
@@ -392,24 +394,43 @@ public class User {
         // security management is disabled if in repair mode
         if (!CHECK_PASSWORDS)
             return true;
-
-       if (password==null && digestPassword==null) {
+        
+        if (password==null && digestPassword==null) {
             return true;
-       }
-       if ( passwd == null ) {
+        }
+        if ( passwd == null ) {
             return false;
-       }
-       if (password!=null) {
-          if (MD5.md(passwd,true).equals( password )) {
-             return true;
-          }
-       }
-       if (digestPassword!=null) {
-           if (digest( passwd ).equals( digestPassword )) {
-              return true;
-           }
-       }
-       return false;
+        }
+        
+        
+        // [ 1557095 ] LDAP passwords patch
+        SecurityManager sm;
+        //Try to authenticate using LDAP
+        try {
+            sm=BrokerPool.getInstance().getSecurityManager();
+        } catch (EXistException e) {
+            LOG.warn("Failed to get security manager in validate: ",e);
+            return false;
+        }
+        if(sm instanceof LDAPbindSecurityManager ) {
+            if( ((LDAPbindSecurityManager)sm).bind(user,passwd))
+                return true;
+            else
+                return false;
+        }
+        
+        
+        if (password!=null) {
+            if (MD5.md(passwd,true).equals( password )) {
+                return true;
+            }
+        }
+        if (digestPassword!=null) {
+            if (digest( passwd ).equals( digestPassword )) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public final boolean validateDigest( String passwd ) {
