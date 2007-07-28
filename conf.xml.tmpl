@@ -266,14 +266,14 @@
 
                 -->
         <!--system-task class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
-
-                        <parameter name="dir" value="backup"/>
-                        <parameter name="suffix" value=".zip"/>
-                        <parameter name="prefix" value="backup-"/>
-                        <parameter name="collection" value="/db"/>
-                        <parameter name="user" value="admin"/>
+            <parameter name="dir" value="backup"/>
+            <parameter name="suffix" value=".zip"/>
+            <parameter name="prefix" value="backup-"/>
+            <parameter name="collection" value="/db"/>
+            <parameter name="user" value="admin"/>
             <parameter name="password" value=""/>
-                </system-task-->
+            <parameter name='zip-files-max' value='28'/>
+        </system-task-->
 
         <!--
             This is the global configuration for the query watchdog. The 
