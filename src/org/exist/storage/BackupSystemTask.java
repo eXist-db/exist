@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.Date;
 import java.util.Properties;
 
@@ -65,6 +69,8 @@ public class BackupSystemTask implements SystemTask {
     private String suffix;
     private XmldbURI collection;
     private String prefix;
+    // purge old zip backup files
+    private int zipFilesMax = -1;
 
     public void configure(Configuration config, Properties properties) throws EXistException {
         user = properties.getProperty("user", "guest");
@@ -86,6 +92,17 @@ public class BackupSystemTask implements SystemTask {
             directory = new File(dir);
         }
         directory.mkdirs();
+
+        // check for max zip files
+        String filesMaxStr = properties.getProperty("zip-files-max");
+        if (LOG.isDebugEnabled()) LOG.debug("zip-files-max: " + filesMaxStr);
+        if (null != filesMaxStr)
+            try
+            {
+                zipFilesMax = new Integer(filesMaxStr).intValue();
+            }
+            catch (NumberFormatException e) {LOG.debug("zip-files-max property error", e);}
+
     }
 
 
@@ -106,5 +123,46 @@ public class BackupSystemTask implements SystemTask {
             LOG.debug(e.getMessage(), e);
             throw new EXistException(e.getMessage(), e);
         }
+
+        // see if old zip files need to be purged
+        if (suffix.equals(".zip") && zipFilesMax > 0) purgeZipFiles();
     }
+
+    public void purgeZipFiles()
+    {
+        if (LOG.isDebugEnabled()) LOG.debug("starting purgeZipFiles()");
+
+        // get all files in target directory
+        File[] files = directory.listFiles();
+
+        if (files.length > 0)
+        {
+            Map sorted = new TreeMap();
+            for (int i=0; i < files.length; i++)
+            {
+                //check for prefix and suffix match
+                if (files[i].getName().startsWith(prefix) && files[i].getName().endsWith(suffix))
+                {
+                    sorted.put(Long.toString(files[i].lastModified()), files[i]);
+                }
+            }
+            if (sorted.size() > zipFilesMax)
+            {
+               Set keys = sorted.keySet();
+                Iterator ki = keys.iterator();
+                int i = sorted.size() - zipFilesMax;
+                while (ki.hasNext())
+                {
+                    File f = (File) sorted.get(ki.next());
+                    if (i > 0)
+                    {
+                        if (LOG.isDebugEnabled()) LOG.debug("Purging backup : " + f.getName());
+                        f.delete();
+                    }
+                    i--;
+                }
+            }
+        }
+    }
+
 }
