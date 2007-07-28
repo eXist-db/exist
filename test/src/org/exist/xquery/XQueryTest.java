@@ -2379,6 +2379,31 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
+    // http://sourceforge.net/support/tracker.php?aid=1665215 
+    public void bugtestPredicateMinLast_1665215(){
+        
+        try {
+            String query= "declare option exist:serialize 'indent=no';" +
+                "let $data :=<parent><child>1</child><child>2</child><child>3</child><child>4</child></parent>"+
+                "return <result>{$data/child[min((last(),3))]}</result>";
+            
+            XPathQueryService service
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            assertEquals(1,result.getSize());
+            
+            assertEquals("First", "<result><child>3</child></result>", result.getResource(0).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
+    
+   
+    
     
     // ======================================
     
