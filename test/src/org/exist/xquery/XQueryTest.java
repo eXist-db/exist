@@ -2402,7 +2402,60 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
-   
+       // http://sourceforge.net/support/tracker.php?aid=1665213 
+    public void bugtestPredicatePositionLast_1665213(){
+        
+        // OK, regression
+        try {
+            String query= "(1, 2, 3)[ position() = last() ]";
+            
+            XPathQueryService service
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            assertEquals(1,result.getSize());
+            
+            assertEquals("First", "3", result.getResource(0).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+        try {
+            String query= "(1, 2, 3)[(position()=last() and position() < 4)]";
+            
+            XPathQueryService service
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            assertEquals(1,result.getSize());
+            
+            assertEquals("First", "3", result.getResource(0).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+       
+        try {
+            String query= "(1, 2, 3)[(position()=last())]";
+            
+            XPathQueryService service
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            assertEquals(1,result.getSize());
+            
+            assertEquals("First", "3", result.getResource(0).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
+
     
     
     // ======================================
