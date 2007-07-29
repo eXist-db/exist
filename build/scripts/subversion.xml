@@ -13,8 +13,36 @@
   <property name="svn.svnkitcli.jar" value="${tools.ant}/lib/svnkit-cli.jar"/>
   <property name="svn.download.zip" value="${tools.ant}/lib/download.zip"/>
 
-  <property name="svn.patch.file" value="exist.patch"/>
+  <property name="svn.patch.file" value="exist-${svn.revision}.patch"/>
 
+  <property name="javasvn.jar" location="${svn.svnkit.jar}"/>
+  <available file="${javasvn.jar}" property="svn-present"/>
+
+  <!-- 
+    Try to read SVN info from entries-file (if file exist).
+    Fallback to VERSION.txt if subversion is not available.
+  -->
+  <target name="svn-prepare" if="svn-present">
+    <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask">
+      <classpath refid="classpath.core"/>
+    </taskdef>
+
+    <tstamp/>
+
+    <svninfo url="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist" username="anonymous"
+      password="anonymous"/>
+
+    <propertyfile file="VERSION.txt" comment="eXist build info (updated using svnkit)">
+      <entry key="project.version" value="${project.version}"/>
+      <entry key="project.build" value="${DSTAMP}"/>
+      <entry key="svn.revision" value="${svn.revision}"/>
+    </propertyfile>
+  </target>
+
+  <!-- 
+    Download jar files from maven2 repository. Typically this is an older version
+    of the library, but the download size is significantly smaller.
+  -->
   <target name="svn-download" description="Download SVN library from maven.">
     <get src="http://repo1.maven.org/maven2/com/svnkit/svnkit/1.1.0/svnkit-1.1.0.jar"
       dest="${svn.svnkit.jar}" verbose="true"/>
@@ -22,6 +50,10 @@
       dest="${svn.svnkitcli.jar}" verbose="true"/>
   </target>
 
+  <!-- 
+    Download jar files the author website. This is newest version of the library, 
+    if the URL is updated in time. The download size is significantly larger.
+  -->
   <target name="svn-download2" description="Download latest SVN library.">
     <get src="http://www.svnkit.com/org.tmatesoft.svn_1.1.4.standalone.zip"
       dest="${svn.download.zip}" verbose="true"/>
@@ -37,6 +69,9 @@
     <delete file="${svn.download.zip}"/>
   </target>
 
+  <!-- 
+    Create patch; unfortunately VERSION.txt is included as well.
+  -->
   <target name="svn-diff" description="Make diff.">
 
     <echo>Generating patch file '${svn.patch.file}'....</echo>
