@@ -13,7 +13,7 @@
   <property name="svn.svnkitcli.jar" value="${tools.ant}/lib/svnkit-cli.jar"/>
   <property name="svn.download.zip" value="${tools.ant}/lib/download.zip"/>
 
-  <property name="svn.patch.file" value="exist-${svn.revision}.patch"/>
+  <property name="svn.patch.file" value="exist.patch"/>
 
   <property name="javasvn.jar" location="${svn.svnkit.jar}"/>
   <available file="${javasvn.jar}" property="svn-present"/>
