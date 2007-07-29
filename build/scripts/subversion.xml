@@ -7,13 +7,50 @@
 
 <project basedir="../.." name="SubVersion">
 
-    <description>Subversion tasks</description>
+  <description>Subversion tasks</description>
 
-    <target name="svn-download" description="Download SVN library.">
-    
-      <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/org/tmatesoft/svnkit/1.1.2/svnkit-1.1.2.jar"
-                  dest="${tools.ant}/lib/svnkit-1.1.2.jar" verbose="true" />
+  <property name="svn.svnkit.jar" value="${tools.ant}/lib/svnkit.jar"/>
+  <property name="svn.svnkitcli.jar" value="${tools.ant}/lib/svnkit-cli.jar"/>
+  <property name="svn.download.zip" value="${tools.ant}/lib/download.zip"/>
 
-    </target>
+  <property name="svn.patch.file" value="exist.patch"/>
+
+  <target name="svn-download" description="Download SVN library from maven.">
+    <get src="http://repo1.maven.org/maven2/com/svnkit/svnkit/1.1.0/svnkit-1.1.0.jar"
+      dest="${svn.svnkit.jar}" verbose="true"/>
+    <get src="http://repo1.maven.org/maven2/com/svnkit/svnkit-cli/1.1.0/svnkit-cli-1.1.0.jar"
+      dest="${svn.svnkitcli.jar}" verbose="true"/>
+  </target>
+
+  <target name="svn-download2" description="Download latest SVN library.">
+    <get src="http://www.svnkit.com/org.tmatesoft.svn_1.1.4.standalone.zip"
+      dest="${svn.download.zip}" verbose="true"/>
+
+    <unzip src="${svn.download.zip}" dest="${tools.ant}/lib">
+      <patternset>
+        <include name="**/svnkit.jar"/>
+        <include name="**/svnkit-cli.jar"/>
+      </patternset>
+      <mapper type="flatten"/>
+    </unzip>
+
+    <delete file="${svn.download.zip}"/>
+  </target>
+
+  <target name="svn-diff" description="Make diff.">
+
+    <echo>Generating patch file '${svn.patch.file}'....</echo>
+    <java classname="org.tmatesoft.svn.cli.SVN" dir="." fork="true" output="eXist.patch">
+      <arg value="diff"/>
+      <arg value="."/>
+      <classpath>
+        <pathelement location="${svn.svnkit.jar}"/>
+        <pathelement location="${svn.svnkitcli.jar}"/>
+      </classpath>
+    </java>
+    <echo>Reminder: please remove all VERSION.txt diffs from the file '${svn.patch.file}'.</echo>
+  </target>
+
+
 
 </project>
