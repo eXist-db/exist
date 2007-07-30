@@ -5,33 +5,26 @@
 # $Id$
 # -----------------------------------------------------------------------------
 
-exist_home () {
-	case "$0" in
-		/*)
-			p=$0
+case "$0" in
+	/*)
+		SCRIPTPATH=$(dirname "$0")
 		;;
-		*)
-			p=`/bin/pwd`/$0
+	*)
+		SCRIPTPATH=$(dirname "$PWD/$0")
 		;;
-	esac
-		(cd `/usr/bin/dirname $p` ; /bin/pwd)
-}
+esac
 
-unset LANG
-OPTIONS=
+# source common functions and settings
+source "${SCRIPTPATH}"/functions.d/eXist-settings.sh
+source "${SCRIPTPATH}"/functions.d/jmx-settings.sh
+source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
 
-if [ -z "$EXIST_HOME" ]; then
-	EXIST_HOME_1=`exist_home`
-	EXIST_HOME="$EXIST_HOME_1/.."
-fi
+check_exist_home "$0";
 
-if [ ! -f "$EXIST_HOME/start.jar" ]; then
-	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory."
-	exit 1
-fi
+set_exist_options;
 
-OPTIONS="-Dexist.home=$EXIST_HOME"
+# set java options
+set_java_options;
 
-JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
-$JAVA_HOME/bin/java $OPTIONS -jar "$EXIST_HOME/start.jar" \
+"${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} -jar "$EXIST_HOME/start.jar" \
 	shutdown $*

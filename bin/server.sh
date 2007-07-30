@@ -11,15 +11,23 @@
 # with optional port number e.g. -j1099 or --jmx=1099.
 #
 
-SCRIPTPATH=$(dirname `/bin/pwd`/$0)
+case "$0" in
+	/*)
+		SCRIPTPATH=$(dirname "$0")
+		;;
+	*)
+		SCRIPTPATH=$(dirname "$PWD/$0")
+		;;
+esac
+
 # source common functions and settings
-. ${SCRIPTPATH}/functions.d/eXist-settings.sh
-. ${SCRIPTPATH}/functions.d/jmx-settings.sh
-. ${SCRIPTPATH}/functions.d/getopt-settings.sh
+source "${SCRIPTPATH}"/functions.d/eXist-settings.sh
+source "${SCRIPTPATH}"/functions.d/jmx-settings.sh
+source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
 
-get_opts "$*" "${STANDALONESERVER_OPTS}";
+get_opts "${STANDALONESERVER_OPTS}" "$@";
 
-check_exist_home $0;
+check_exist_home "$0";
 
 set_exist_options;
 
@@ -32,6 +40,6 @@ check_jmx_status;
 # save LANG
 set_locale_lang;
 
-$JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone ${JAVA_OPTS[@]}
+"$JAVA_HOME"/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
 
 restore_locale_lang;

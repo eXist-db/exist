@@ -5,18 +5,18 @@
 get_exist_home() {
 	case "$1" in
 		/*)
-			p=$1
+			p="$1"
 		;;
 		*)
-			p=`/bin/pwd`/$1
+			p="$PWD/$1"
 		;;
 	esac
-		(cd `/usr/bin/dirname $p` ; /bin/pwd)
+		(cd $(/usr/bin/dirname "$p") ; /bin/pwd)
 }
 
 check_exist_home() {
     if [ -z "${EXIST_HOME}" ]; then
-	EXIST_HOME_1=`get_exist_home $1`;
+	EXIST_HOME_1=$(get_exist_home "$1");
 	EXIST_HOME="$EXIST_HOME_1/..";
     fi
 
@@ -32,13 +32,13 @@ set_locale_lang() {
 	OLD_LANG="${LANG}";
     fi
 # set LANG to UTF-8
-    if [ `locale -a | grep -i "UTF-8" | head -n 1` ] || \
-       [ `locale -a | grep -i "utf8" | head -n 1` ]; then
-	if [ `echo ${LANG} |grep "\."` ]; then
-	    LANG=$(echo ${LANG} | cut -f1 -d'.')
-	    LANG=${LANG}.UTF-8
+    if [ $(locale -a | grep -i "UTF-8" | head -n 1) ] || \
+       [ $(locale -a | grep -i "utf8" | head -n 1) ]; then
+	if [ $(echo "${LANG}" |grep "\.") ]; then
+	    LANG=$(echo "${LANG}" | cut -f1 -d'.')
+	    LANG="${LANG}".UTF-8
 	else
-	    LANG=${LANG}.UTF-8
+	    LANG="${LANG}".UTF-8
 	fi
     else
     # UTF-8 char map is unfortunately not available but we set it anyway...

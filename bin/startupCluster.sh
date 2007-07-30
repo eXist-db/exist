@@ -1,56 +1,52 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
-# startup.sh - Start Script for Jetty + eXist
+# startup.sh - Start Script for clustered Jetty + eXist
 #
 # $Id$
 # -----------------------------------------------------------------------------
+# todo: Should not this file be removed since it is now identical to startup.sh?
+#
 
-exist_home () {
-	case "$0" in
-		/*)
-			p=$0
+# In addition to the other parameter options for the jetty container 
+# pass -j or --jmx to enable JMX agent. The port for it can be specified 
+# with optional port number e.g. -j1099 or --jmx=1099.
+#
+usage="startupCluster.sh [-j[jmx-port]|--jmx[=jmx-port]]\n"
+
+#DEBUG_OPTS="-Dexist.start.debug=true"
+
+case "$0" in
+	/*)
+		SCRIPTPATH=$(dirname "$0")
 		;;
-		*)
-			p=`/bin/pwd`/$0
+	*)
+		SCRIPTPATH=$(dirname "$PWD/$0")
 		;;
-	esac
-		(cd `/usr/bin/dirname $p` ; /bin/pwd)
-}
+esac
 
-if [ -z "$EXIST_HOME" ]; then
-	EXIST_HOME_1=`exist_home`
-	EXIST_HOME="$EXIST_HOME_1/.."
-fi
+# source common functions and settings
+source "${SCRIPTPATH}"/functions.d/eXist-settings.sh
+source "${SCRIPTPATH}"/functions.d/jmx-settings.sh
+source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
 
-if [ ! -f "$EXIST_HOME/start.jar" ]; then
-	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory."
-	exit 1
-fi
+get_opts "${JETTYCONTAINER_OPTS}" "$@";
 
-OPTIONS="-Dexist.home=$EXIST_HOME"
+check_exist_home "$0";
 
-if [ -n "$JETTY_HOME" ]; then
-	OPTIONS="-Djetty.home=$JETTY_HOME $OPTIONS"
-fi
+set_exist_options;
+set_jetty_home;
+
+# set java options
+set_java_options;
 
 # save LANG
-if [ -n "$LANG" ]; then
-	OLD_LANG="$LANG"
-fi
-# set LANG to UTF-8
-LANG=en_US.UTF-8
+set_locale_lang;
 
-if [ -z "$JAVA_OPTIONS" ]; then
-	JAVA_OPTIONS="-Xms16000k -Xmx128000k -Dfile.encoding=UTF-8"
-fi
+# enable the JMX agent? If so, concat to $JAVA_OPTIONS:
+check_jmx_status;
 
-JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
-#DEBUG_START="-Dexist.start.debug=true"
+"${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} \
+	${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" \
+	jetty ${JAVA_OPTS[@]}
 
-$JAVA_HOME/bin/java $JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
-	$DEBUG_START $OPTIONS -jar "$EXIST_HOME/start.jar" \
-	cluster $*
-
-if [ -n "$OLD_LANG" ]; then
-	LANG="$OLD_LANG"
-fi
+restore_locale_lang;

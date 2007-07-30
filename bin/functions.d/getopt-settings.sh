@@ -8,6 +8,8 @@ STANDALONESERVER_OPTS="|-p|--http-port|-t|--threads|"
 
 JETTYCONTAINER_OPTS=""
 
+BACKUP_OPTS="|-u|--user|-p|--password|-P|--dba-password|-b|--backup|-d|--dir|-r|--restore|-o|--option|"
+
 JMX_OPTS="|-j|--jmx|"
 JMX_SHORT="-j"
 JMX_SHORT_EQUAL="-j="
@@ -23,80 +25,79 @@ substring() {
 }
 
 is_integer() {
- [ $1 -eq 1 ] 2> /dev/null; 
+ [ $1 -eq 1 ] 2> /dev/null;
  if [ $? -eq 2 ]; then
      echo "Port need to be an integer"
      exit 1
- else
-     return 1;
  fi
+ return 0
 }
 
 is_jmx_switch() {
-    if substring ${JMX_OPTS} "|$1|"; then
+    if substring "${JMX_OPTS}" "|$1|"; then
 	JMX_ENABLED=1;
-	[ "x$2" != "x" ] && ! substring "${2}" $"-" && JMX_PORT="$2";
-	return 2;
-    elif substring "|$1|" $JMX_SHORT_EQUAL; then
+	return 0;
+    elif substring "|$1|" "$JMX_SHORT_EQUAL"; then
 	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_SHORT_EQUAL}}";
-	return 1;
-    elif substring "|$1|" ${JMX_LONG_EQUAL}; then
+	JMX_PORT="${1#${JMX_SHORT_EQUAL}}" && is_integer "${JMX_PORT}";
+	return 0;
+    elif substring "|$1|" "${JMX_LONG_EQUAL}"; then
 	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_LONG_EQUAL}}";
-	return 1;
-    elif substring "|$1|" ${JMX_SHORT}; then
+	JMX_PORT="${1#${JMX_LONG_EQUAL}}" && is_integer "${JMX_PORT}";
+	return 0;
+    elif substring "|$1|" "${JMX_SHORT}"; then
 	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_SHORT}}";
-	return 1;
-    elif substring "|$1|" $${JMX_LONG}; then
+	JMX_PORT="${1#${JMX_SHORT}}" && is_integer "${JMX_PORT}";
+	return 0;
+    elif substring "|$1|" "${JMX_LONG}"; then
 	JMX_ENABLED=1;
-	JMX_PORT="${1#${JMX_LONG}}";
-	return 1;
+	JMX_PORT="${1#${JMX_LONG}}" && is_integer "${JMX_PORT}";
+	return 0;
     fi
-    return 0;
+    return 1;
 }
 
 get_opts() {
-    ALL_OPTS="$1 --"
-    ARG_OPTS=$2
-
-    eval set -- "${ALL_OPTS}"
-    while true; do
-	if substring ${JMX_OPTS} "|$1|"; then
-	    JMX_ENABLED=1;
-	    [ "x$2" != "x" ] && ! substring "${2}" $"-" && JMX_PORT="$2" \
-		&& is_integer ${JMX_PORT};
-	    shift 2;
-	elif substring "|$1|" ${JMX_SHORT_EQUAL}; then
-	    JMX_ENABLED=1;
-	    JMX_PORT="${1#${JMX_SHORT_EQUAL}}" && is_integer ${JMX_PORT};
-	    shift;
-	elif substring "|$1|" ${JMX_LONG_EQUAL}; then
-	    JMX_ENABLED=1;
-	    JMX_PORT="${1#${JMX_LONG_EQUAL}}" && is_integer ${JMX_PORT};
-	    shift;
-	elif substring "|$1|" ${JMX_SHORT}; then
-	    JMX_ENABLED=1;
-	    JMX_PORT="${1#${JMX_SHORT}}" && is_integer ${JMX_PORT};
-	    shift; 
-	elif substring "|$1|" ${JMX_LONG}; then
-	    JMX_ENABLED=1;
-	    JMX_PORT="${1#${JMX_LONG}}" && is_integer ${JMX_PORT};
-	    shift;
-	elif substring ${ARG_OPTS} "|$1|"; then
-            JAVA_OPTS[${NR_JAVA_OPTS}]="$1 $2";
-	    let "NR_JAVA_OPTS += 1";
-	    shift 2 ;
-	elif substring $"--" $1; then
-	    break;
-	else
-            JAVA_OPTS[${NR_JAVA_OPTS}]="$1";
-	    let "NR_JAVA_OPTS += 1";
-	    shift;
-	    
+	local ARG_OPTS="$1"
+	local -a ALL_OPTS=( "$@" )
+	ALL_OPTS=( "${ALL_OPTS[@]:1}" )
+	
+	local found_jmx_opt
+	local delayed_opt
+	
+	for OPT in "${ALL_OPTS[@]}" ; do
+		if [ -n "$found_jmx_opt" ] ; then
+			unset found_jmx_opt
+			local found_jmx_opt
+			if ! substring "${OPT}" $"-" && is_integer "${OPT}"; then
+				JMX_PORT="$OPT"
+				continue
+			fi
+		fi
+		if [ -n "$delayed_opt" ] ; then
+			JAVA_OPTS[${NR_JAVA_OPTS}]="$delayed_opt $OPT"
+			let "NR_JAVA_OPTS += 1"
+			
+			unset delayed_opt
+			local delayed_opt
+			
+			continue
+		fi
+		if is_jmx_switch "$OPT"; then
+			found_jmx_opt=1
+		elif substring "${ARG_OPTS}" "|$OPT|"; then
+			delayed_opt="$OPT"
+		else
+			JAVA_OPTS[${NR_JAVA_OPTS}]="$OPT";
+			let "NR_JAVA_OPTS += 1";
+		fi
+	done
+	
+	# Last loop
+	if [ -n "$delayed_opt" ] ; then
+		JAVA_OPTS[${NR_JAVA_OPTS}]="$delayed_opt"
+		let "NR_JAVA_OPTS += 1"
 	fi
-    done
-    
-    echo ${JAVA_OPTS[@]};
+	
+	echo "${JAVA_OPTS[@]}";
 }
