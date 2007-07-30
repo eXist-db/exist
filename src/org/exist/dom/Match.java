@@ -158,6 +158,35 @@ public abstract class Match implements Comparable {
         return m;
     }
 
+    /**
+     * Return true if there's a match starting at the given
+     * character position.
+     *
+     * @param pos the position
+     * @return true if a match starts at the given position
+     */
+    public boolean hasMatchAt(int pos) {
+    	for (int i = 0; i < currentOffset; i++) {
+    		if (offsets[i] == pos)
+    			return true;
+    	}
+    	return false;
+    }
+
+    /**
+     * Returns true if the given position is within a match.
+     *
+     * @param pos the position
+     * @return true if the given position is within a match
+     */
+    public boolean hasMatchAround(int pos) {
+    	for (int i = 0; i < currentOffset; i++) {
+    		if (offsets[i] + lengths[i] >= pos)
+    			return true;
+    	}
+    	return false;
+    }
+    
     public Match getNextMatch() {
 		return nextMatch;
 	}

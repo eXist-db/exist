@@ -34,7 +34,9 @@ public class NGramModule extends AbstractInternalModule {
     public static final String PREFIX = "ngram";
 
     public static final FunctionDef[] functions = {
-        new FunctionDef(NGramSearch.signature, NGramSearch.class)
+        new FunctionDef(NGramSearch.signatures[0], NGramSearch.class),
+        new FunctionDef(NGramSearch.signatures[1], NGramSearch.class),
+        new FunctionDef(NGramSearch.signatures[2], NGramSearch.class)
     };
 
     public NGramModule() {
