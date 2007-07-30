@@ -255,7 +255,7 @@ public class NGramSearch extends Function implements Optimizable {
             int len = data.length();
             Match mn = next.getMatches();
             while (mn != null) {
-            	if (mn.hasMatchEndingAt(len)) {
+            	if (mn.hasMatchAround(len)) {
             		temp.add(next);
             		break;
             	}
