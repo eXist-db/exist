@@ -6,7 +6,7 @@ JMX_ENABLED=0
 JMX_PORT=1099
 
 check_jmx_status() {
-    if [ ${JMX_ENABLED} -gt 0 ]; then
+    if [ "${JMX_ENABLED}" -gt 0 ]; then
 	JMX_OPTS="-Dcom.sun.management.jmxremote \
 		-Dcom.sun.management.jmxremote.port=$JMX_PORT \
 		-Dcom.sun.management.jmxremote.authenticate=false \

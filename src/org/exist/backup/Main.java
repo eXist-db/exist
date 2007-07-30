@@ -74,7 +74,7 @@ public class Main {
 				"to specify the new password. Otherwise you will get a permission denied"),
 			new CLOptionDescriptor(
 				"backup",
-				CLOptionDescriptor.ARGUMENT_OPTIONAL,
+				CLOptionDescriptor.ARGUMENT_REQUIRED,
 				BACKUP_OPT,
 				"backup the specified collection."),
 			new CLOptionDescriptor(
