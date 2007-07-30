@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>XML Validation</title>
+        <author>
+            <firstname>Dannes</firstname>
+            <surname>Wessels</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>dizzzz at exist-db.org</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+
+    <chapter>
+        <title>XML Validation</title>
+        <section id="sect1">
+            <title>Introduction</title>
+            <para>The database supports validation of XML in two different ways. The first one is automagic 
+                validation of XML documents while they are inserted into the database, the second way is validation
+                of XML documents (either stored in database or in constructed memory) using an xquery extension 
+                function. </para>
+        </section>
+        <section id="sect2">
+            <title>System catalogs</title>
+            <para>Bla <ulink url="http://link#aa">txt</ulink> bla de bla <filename>.jar</filename>
+                bladibla.</para>
+            <para>Once the download has completed, start the eXist installation by doing
+                    <emphasis>ONE</emphasis> of the following:</para>
+            <procedure>
+                <step>
+                    <para>Bla bla: <filename> eXist-[version]-build-XXXX.jar</filename></para>
+                </step>
+                <step>
+                    <para>Bla bla <command>-jar</command> option:</para>
+                </step>
+            </procedure>
+            <synopsis format="linespecific">java -jar eXist-[Version].jar</synopsis>
+
+            <para>This will launch the installer. Simply follow the steps to complete the
+                installation process.</para>
+            <note>
+                <para>Bladibla.</para>
+            </note>
+        </section>
+        
+        <section id="sect3">
+            <title>Validation while inserting documents</title>
+        </section>
+        
+        <section id="sect4">
+            <title>xQuery extension functions</title>
+        </section>        
+    </chapter>
+</book>
