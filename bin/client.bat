@@ -10,8 +10,6 @@ set JMX_ENABLED=0
 set JMX_PORT=1099
 set JAVA_ARGS=
 
-
-
 if not "%JAVA_HOME%" == "" goto gotJavaHome
 echo Java environment not found. Please set
 echo your JAVA_HOME environment variable to
@@ -42,4 +40,3 @@ call %BATCH.D%/check_jmx_status.bat
 
 "%JAVA_HOME%\bin\java" "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" client %JAVA_ARGS%
 :eof
-
