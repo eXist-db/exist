@@ -17,16 +17,35 @@ import java.util.List;
 
 public class NGramSearch extends Function implements Optimizable {
 
-    public final static FunctionSignature signature =
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("contains", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
             "",
-            new SequenceType[]{
+            new SequenceType[] {
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
-        );
+        ),
+        new FunctionSignature(
+            new QName("ends-with", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
+            "",
+            new SequenceType[] {
+                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        ),
+        new FunctionSignature(
+            new QName("starts-with", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
+            "",
+            new SequenceType[] {
+                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        )
+    };
 
     private LocationStep contextStep = null;
     protected QName contextQName = null;
@@ -34,7 +53,7 @@ public class NGramSearch extends Function implements Optimizable {
     private NodeSet preselectResult = null;
     protected boolean optimizeSelf = false;
     
-    public NGramSearch(XQueryContext context) {
+    public NGramSearch(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -164,9 +183,12 @@ public class NGramSearch extends Function implements Optimizable {
             if (LOG.isTraceEnabled())
                 LOG.trace("Found " + nodes.getLength() + " for " + ngram + " in " +
                     (System.currentTimeMillis() - start));
-            if (result == null)
-                result = nodes;
-            else {
+            if (result == null) {
+            	if (isCalledAs("starts-with"))
+            		result = startsWith(nodes);
+            	else
+            		result = nodes;
+            } else {
                 NodeSet temp = new ExtArrayNodeSet();
                 for (NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
                     NodeProxy next = (NodeProxy) iterator.next();
@@ -201,10 +223,49 @@ public class NGramSearch extends Function implements Optimizable {
                 result = temp;
             }
         }
+        if (isCalledAs("starts-with"))
+        	result = startsWith(result);
+        else if (isCalledAs("ends-with"))
+        	result = endsWith(result);
         return result;
     }
 
-    public int getDependencies() {
+    private NodeSet startsWith(NodeSet nodes) {
+    	NodeSet temp = new ExtArrayNodeSet();
+        for (NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
+            NodeProxy next = (NodeProxy) iterator.next();
+            Match mn = next.getMatches();
+            while (mn != null) {
+            	if (mn.hasMatchAt(0)) {
+            		temp.add(next);
+            		break;
+            	}
+            	mn = mn.getNextMatch();
+            }
+        }
+		return temp;
+	}
+
+    private NodeSet endsWith(NodeSet nodes) {
+    	NodeSet temp = new ExtArrayNodeSet();
+        LOG.debug("Filtering " + nodes.getLength());
+        for (NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
+            NodeProxy next = (NodeProxy) iterator.next();
+            String data = next.getNodeValue();
+            int len = data.length();
+            Match mn = next.getMatches();
+            while (mn != null) {
+            	if (mn.hasMatchEndingAt(len)) {
+            		temp.add(next);
+            		break;
+            	}
+            	mn = mn.getNextMatch();
+            }
+        }
+		return temp;
+    }
+    
+	public int getDependencies() {
         final Expression stringArg = getArgument(0);
         if (Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
             !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM)) {
