@@ -693,7 +693,9 @@ public class BrokerPool {
         collectionCacheMgr = new CollectionCacheManager(conf, collectionCache);
 
         // compute how much memory should be reserved for caches to grow
-        reservedMem = (cacheManager.getTotalMem() / 4) * 5 + collectionCacheMgr.getMaxTotal();
+        Runtime rt = Runtime.getRuntime();
+        reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() +
+        	(rt.maxMemory() / 5);
 
         notificationService = new NotificationService();
 
