@@ -70,7 +70,7 @@ public class ReentrantReadWriteLock implements Lock {
     
     protected int holds_ = 0;
 	public int mode_ = Lock.NO_LOCK;
-	private long timeOut_ = 240000L;
+//	private long timeOut_ = 240000L;
 	private Stack modeStack = new Stack();
 	private int writeLocks = 0;
 	private boolean DEBUG = false;
@@ -141,7 +141,6 @@ public class ReentrantReadWriteLock implements Lock {
                 listener = waitingOnResource;
                 return true;
             } else {
-				long waitTime = timeOut_;
 				long start = System.currentTimeMillis();
                 DeadlockDetection.addCollectionWaiter(caller, this);
 //                LOG.warn(caller.getName() + " waiting on lock held by " + owner_.getName());
@@ -187,48 +186,48 @@ public class ReentrantReadWriteLock implements Lock {
 							mode_ = mode;
                             DeadlockDetection.clearCollectionWaiter(owner_);
                             return true;
-						} else {
-							waitTime = timeOut_ - (System.currentTimeMillis() - start);
-							if (waitTime <= 0) {
-								// blocking thread found: if the lock is read only, remove it
-								if (writeLocks == 0) {
-									System.out.println("releasing blocking thread " + owner_.getName() + " on " + id_ + " (" + modeStack.size() + " acquisitions)");
-									if (DEBUG) {
-										LOG.debug("Lock was acquired by :");
-										while (!seStack.isEmpty()) {
-											StackTraceElement[] se = (StackTraceElement[])seStack.pop();
-											LOG.debug(se);
-									    	se = null;
-										}
-									}
-									owner_ = caller;
-									while (!modeStack.isEmpty()) {
-								    	Integer top = (Integer)modeStack.pop();
-								    	top = null;
-									}									
-									holds_ = 1;
-									modeStack.push(new Integer(mode));
-									if (DEBUG) {
-										Throwable t = new Throwable();
-										seStack.push(t.getStackTrace());
-									}
-									mode_ = mode;
-                                    DeadlockDetection.clearCollectionWaiter(owner_);
-                                    return true;
-								} else
-									LOG.warn("Write lock timed out");
-									if (DEBUG) {
-										LOG.debug("Lock was acquired by :");
-										while (!seStack.isEmpty()) {
-											StackTraceElement[] se = (StackTraceElement[])seStack.pop();
-											LOG.debug(se);
-									    	se = null;
-										}
-									}
-                                DeadlockDetection.clearCollectionWaiter(owner_);
-                                throw new LockException("time out while acquiring a lock");
-							}
-						}
+						} // else {
+//							long waitTime = timeOut_ - (System.currentTimeMillis() - start);
+//							if (waitTime <= 0) {
+//								// blocking thread found: if the lock is read only, remove it
+//								if (writeLocks == 0) {
+//						our			System.out.println("releasing blocking thread " + owner_.getName() + " on " + id_ + " (" + modeStack.size() + " acquisitions)");
+//									if (DEBUG) {
+//										LOG.debug("Lock was acquired by :");
+//										while (!seStack.isEmpty()) {
+//											StackTraceElement[] se = (StackTraceElement[])seStack.pop();
+//											LOG.debug(se);
+//									    	se = null;
+//										}
+//									}
+//									owner_ = caller;
+//									while (!modeStack.isEmpty()) {
+//								    	Integer top = (Integer)modeStack.pop();
+//								    	top = null;
+//									}
+//									holds_ = 1;
+//									modeStack.push(new Integer(mode));
+//									if (DEBUG) {
+//										Throwable t = new Throwable();
+//										seStack.push(t.getStackTrace());
+//									}
+//									mode_ = mode;
+//                                    DeadlockDetection.clearCollectionWaiter(owner_);
+//                                    return true;
+//								} else
+//									LOG.warn("Write lock timed out");
+//									if (DEBUG) {
+//										LOG.debug("Lock was acquired by :");
+//										while (!seStack.isEmpty()) {
+//											StackTraceElement[] se = (StackTraceElement[])seStack.pop();
+//											LOG.debug(se);
+//									    	se = null;
+//										}
+//									}
+//                                DeadlockDetection.clearCollectionWaiter(owner_);
+//                                throw new LockException("time out while acquiring a lock");
+//							}
+//						}
 					}
 				} catch (InterruptedException ex) {
 					notify();
