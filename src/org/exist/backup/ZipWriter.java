@@ -25,14 +25,14 @@ public class ZipWriter implements BackupWriter {
     }
 
     public void closeContents() throws IOException {
-        ZipEntry entry = new ZipEntry(currentPath + "/__contents__.xml");
+        ZipEntry entry = new ZipEntry(mkRelative(currentPath) + "/__contents__.xml");
         out.putNextEntry(entry);
         out.write(contents.toString().getBytes("UTF-8"));
         out.closeEntry();
     }
 
     public OutputStream newEntry(String name) throws IOException {
-        ZipEntry entry = new ZipEntry(currentPath + '/' + name);
+        ZipEntry entry = new ZipEntry(mkRelative(currentPath) + '/' + name);
         out.putNextEntry(entry);
         return out;
     }
@@ -53,5 +53,11 @@ public class ZipWriter implements BackupWriter {
 
     public void close() throws IOException {
         out.close();
+    }
+    
+    private String mkRelative(String path) {
+    	if (path.length() > 0 && path.charAt(0) == '/')
+    		return path.substring(1);
+    	return path;
     }
 }
