@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+
 import org.exist.xquery.GroupSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;

@@ -20,13 +20,13 @@
  */
 package org.exist.xquery.value;
 
+import java.util.Iterator;
+
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
-
-import java.util.Iterator;
 
 /**
  * This interface represents a sequence as defined in the XPath 2.0 specification.

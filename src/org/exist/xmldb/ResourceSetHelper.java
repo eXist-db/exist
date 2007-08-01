@@ -20,14 +20,14 @@
  */
 package org.exist.xmldb;
 
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.XMLDBException;
-
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Iterator;
+
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author jmv

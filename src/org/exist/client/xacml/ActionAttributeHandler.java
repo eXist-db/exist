@@ -1,15 +1,15 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.attr.AttributeDesignator;
-import com.sun.xacml.attr.AttributeValue;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.exist.security.xacml.XACMLConstants;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.attr.AttributeDesignator;
+import com.sun.xacml.attr.AttributeValue;
 
 public class ActionAttributeHandler implements AttributeHandler
 {

@@ -24,10 +24,10 @@ package org.exist.scheduler;
 import java.util.Map;
 
 import org.exist.storage.BrokerPool;
+import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.Job;
 
 /**
  * Class to represent a System Job

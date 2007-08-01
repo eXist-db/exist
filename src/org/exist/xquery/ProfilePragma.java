@@ -23,8 +23,6 @@ package org.exist.xquery;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
 
 public class ProfilePragma extends Pragma {
 

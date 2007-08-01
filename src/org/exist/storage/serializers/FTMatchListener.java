@@ -1,22 +1,27 @@
 package org.exist.storage.serializers;
 
-import org.exist.dom.*;
-import org.exist.numbering.NodeId;
-import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.indexing.AbstractMatchListener;
-import org.exist.util.serializer.AttrList;
-import org.exist.util.FastQSort;
-import org.exist.storage.NativeTextEngine;
-import org.xml.sax.SAXException;
-import org.apache.log4j.Logger;
-
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamException;
-import java.util.Stack;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
-import java.io.IOException;
+import java.util.Stack;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.apache.log4j.Logger;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.indexing.AbstractMatchListener;
+import org.exist.numbering.NodeId;
+import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.storage.NativeTextEngine;
+import org.exist.util.FastQSort;
+import org.exist.util.serializer.AttrList;
+import org.xml.sax.SAXException;
 
 /**
  * Implementation of {@link org.exist.indexing.MatchListener} for the fulltext index.

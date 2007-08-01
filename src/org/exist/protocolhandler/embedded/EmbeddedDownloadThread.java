@@ -25,9 +25,8 @@ package org.exist.protocolhandler.embedded;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
-
-import org.exist.storage.io.BlockingOutputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.storage.io.BlockingOutputStream;
 
 /**
  *  Wrap EmbeddedDownload class into a thread for EmbeddedInputStream.

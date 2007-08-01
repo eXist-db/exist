@@ -1,15 +1,15 @@
 package org.exist.client.xacml;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import com.sun.xacml.Policy;
 import com.sun.xacml.PolicyTreeElement;
 import com.sun.xacml.Rule;
 import com.sun.xacml.Target;
 import com.sun.xacml.combine.RuleCombiningAlgorithm;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class PolicyNode extends AbstractPolicyNode
 {

@@ -39,7 +39,6 @@ import org.exist.http.Descriptor;
 import org.exist.http.servlets.HttpServletRequestWrapper;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
-import org.exist.util.MimeType;
 
 public class RpcServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;

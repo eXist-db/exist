@@ -20,13 +20,17 @@
  */
 package org.exist.xmldb;
 
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
-import java.util.Vector;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Vector;
 
-import org.apache.xmlrpc.*;
+import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.XmlRpcException;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 public class RemoteResourceIterator implements ResourceIterator {
 

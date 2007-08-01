@@ -50,7 +50,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
-
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.backup.Backup;
@@ -74,8 +73,8 @@ import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.security.XMLSecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
@@ -100,7 +99,6 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
-
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Option;

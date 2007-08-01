@@ -2,6 +2,7 @@ package org.exist.client.xacml;
 
 import java.awt.Component;
 import java.awt.Dimension;
+
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;

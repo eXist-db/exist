@@ -32,8 +32,8 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cocoon.environment.Request;
 import org.apache.cocoon.environment.Session;

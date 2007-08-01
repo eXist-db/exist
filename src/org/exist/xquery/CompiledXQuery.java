@@ -24,9 +24,9 @@ package org.exist.xquery;
 
 import java.io.Writer;
 
-import org.xmldb.api.base.CompiledExpression;
 import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.value.Sequence;
+import org.xmldb.api.base.CompiledExpression;
 
 
 /**

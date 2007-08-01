@@ -1,9 +1,9 @@
 package org.exist.xquery;
 
-import org.exist.xquery.functions.ExtFulltext;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.exist.xquery.functions.ExtFulltext;
 
 /**
  * Basic implementation of the {@link ExpressionVisitor} interface.

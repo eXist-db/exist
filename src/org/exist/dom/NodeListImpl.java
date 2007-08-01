@@ -18,9 +18,10 @@
  */
 package org.exist.dom;
 
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
 import java.util.ArrayList;
+
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class NodeListImpl extends ArrayList implements NodeList {
 

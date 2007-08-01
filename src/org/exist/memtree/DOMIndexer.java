@@ -28,7 +28,6 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.util.pool.NodePool;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentTypeImpl;
@@ -41,6 +40,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
+import org.exist.util.pool.NodePool;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 

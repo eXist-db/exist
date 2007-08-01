@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.TimeZone;
-import java.nio.CharBuffer;
 
 import javax.xml.namespace.QName;
 import javax.xml.xquery.XQException;

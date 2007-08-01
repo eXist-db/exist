@@ -22,11 +22,15 @@
  */
 package org.exist.xquery;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
-
-import java.util.*;
 
 /**
  * Abstract base class for an {@link org.exist.xquery.InternalModule}. 

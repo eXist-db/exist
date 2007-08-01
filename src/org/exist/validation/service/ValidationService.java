@@ -21,7 +21,6 @@
  */
 package org.exist.validation.service;
 
-import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 

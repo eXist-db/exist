@@ -30,7 +30,6 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
-
 import org.exist.storage.io.ExistIOException;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;

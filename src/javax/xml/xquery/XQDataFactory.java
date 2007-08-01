@@ -1,11 +1,12 @@
 package javax.xml.xquery;
 
-import org.xml.sax.InputSource;
-import org.w3c.dom.Node;
+import java.io.IOException;
+import java.net.URI;
 
 import javax.xml.namespace.QName;
-import java.net.URI;
-import java.io.IOException;
+
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 
 /**
  * XQJ interfaces reconstructed from version 0.5 documentation

@@ -1,12 +1,12 @@
 //$Id$
 package org.exist.cluster;
 
+import java.io.Serializable;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-
-import java.io.Serializable;
 
 /**
  * Created by Francesco Mondora.

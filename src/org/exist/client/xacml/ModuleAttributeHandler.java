@@ -22,10 +22,6 @@
 
 package org.exist.client.xacml;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.attr.AttributeDesignator;
-import com.sun.xacml.attr.AttributeValue;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +29,10 @@ import java.util.Set;
 
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.xquery.Function;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.attr.AttributeDesignator;
+import com.sun.xacml.attr.AttributeValue;
 
 //TODO give user more help through this class
 //

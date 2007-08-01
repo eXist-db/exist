@@ -36,8 +36,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
-import org.apache.log4j.Logger;
 
+import org.apache.log4j.Logger;
 import org.exist.http.Descriptor;
 import org.exist.source.FileSource;
 import org.exist.source.Source;

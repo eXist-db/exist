@@ -11,7 +11,9 @@ package org.exist.atom.http;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+
 import javax.servlet.http.HttpServletResponse;
+
 import org.exist.atom.OutgoingMessage;
 
 /**

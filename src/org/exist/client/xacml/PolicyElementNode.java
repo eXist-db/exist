@@ -1,10 +1,10 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.PolicyTreeElement;
-
 import java.net.URI;
 
 import org.exist.security.xacml.XACMLUtil;
+
+import com.sun.xacml.PolicyTreeElement;
 
 public abstract class PolicyElementNode extends AbstractNodeContainer implements NodeContainer
 {

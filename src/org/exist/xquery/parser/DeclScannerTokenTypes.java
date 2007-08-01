@@ -2,8 +2,7 @@
 
 	package org.exist.xquery.parser;
 	
-	import org.exist.xquery.XPathException;
-
+	
 public interface DeclScannerTokenTypes {
 	int EOF = 1;
 	int NULL_TREE_LOOKAHEAD = 3;

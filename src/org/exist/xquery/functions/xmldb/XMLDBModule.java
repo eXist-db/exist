@@ -22,10 +22,10 @@
 
 package org.exist.xquery.functions.xmldb;
 
+import java.util.Arrays;
+
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
-
-import java.util.Arrays;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

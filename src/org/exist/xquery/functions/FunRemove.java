@@ -1,8 +1,21 @@
 package org.exist.xquery.functions;
 
-import org.exist.dom.*;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * Implements the fn:remove function.

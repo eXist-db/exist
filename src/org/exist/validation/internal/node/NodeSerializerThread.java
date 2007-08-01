@@ -28,7 +28,6 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
-
 import org.exist.storage.io.BlockingOutputStream;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.SequenceIterator;

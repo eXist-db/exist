@@ -1,6 +1,5 @@
 package javax.xml.xquery;
 
-import javax.xml.xquery.XQException;
 
 /**
  * XQJ interfaces reconstructed from version 0.5 documentation

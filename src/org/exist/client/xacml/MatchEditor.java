@@ -1,11 +1,5 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.attr.AttributeDesignator;
-import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.AttributeValue;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -32,6 +26,12 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.exist.client.ClientFrame;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.AttributeDesignator;
+import com.sun.xacml.attr.AttributeFactory;
+import com.sun.xacml.attr.AttributeValue;
 
 
 public class MatchEditor extends JPanel implements ActionListener, DocumentListener

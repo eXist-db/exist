@@ -1,10 +1,7 @@
 package org.exist.util;
 
-import org.exist.util.CharSlice;
-import org.exist.util.CompressedWhitespace;
-
-import java.io.Writer;
 import java.io.Serializable;
+import java.io.Writer;
 
 /**
  * A simple implementation of a class similar to StringBuffer. Unlike

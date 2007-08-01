@@ -9,6 +9,7 @@
 package org.exist.atom;
 
 import java.net.URI;
+
 import org.exist.dom.QName;
 
 /**

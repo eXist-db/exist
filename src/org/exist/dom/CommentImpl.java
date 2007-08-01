@@ -2,12 +2,12 @@ package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
 
+import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
 

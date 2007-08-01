@@ -21,22 +21,21 @@
  */
 package org.exist.xquery;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
-import org.exist.xmldb.XmldbURI;
 import org.exist.collections.Collection;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.QNameRangeIndexSpec;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.ExtFulltext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-
-import java.util.Iterator;
-import java.util.List;
 
 public class Optimize extends Pragma {
 

@@ -1,10 +1,10 @@
 package org.exist.client.xacml;
 
+import java.util.Set;
+
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.attr.AttributeDesignator;
 import com.sun.xacml.attr.AttributeValue;
-
-import java.util.Set;
 
 /**
  * This interface defines methods for restricting

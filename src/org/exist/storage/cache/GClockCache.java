@@ -22,8 +22,8 @@
  */
 package org.exist.storage.cache;
 
-import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.storage.CacheManager;
+import org.exist.util.hashtable.Long2ObjectHashMap;
 
 /**
  * Cache implementation based on the GClock algorithm. 

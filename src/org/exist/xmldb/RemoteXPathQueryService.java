@@ -13,12 +13,12 @@ import org.exist.source.Source;
 import org.exist.xmlrpc.RpcAPI;
 import org.exist.xquery.XPathException;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.base.CompiledExpression;
 
 public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQueryService {
 

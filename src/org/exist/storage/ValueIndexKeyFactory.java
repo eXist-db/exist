@@ -2,7 +2,6 @@
 $Id$ */
 package org.exist.storage;
 
-import org.exist.EXistException;
 
 /** Factory for Keys for Value Indices;
  * provides through serialize() the persistant storage key. */

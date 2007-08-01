@@ -1,5 +1,16 @@
 package org.exist.security.xacml;
 
+import java.net.URI;
+import java.util.Iterator;
+
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.security.XMLSecurityManager;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+
 import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
@@ -7,18 +18,6 @@ import com.sun.xacml.ParsingException;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
-
-import java.net.URI;
-import java.util.Iterator;
-
-import org.apache.log4j.Logger;
-
-import org.exist.EXistException;
-import org.exist.security.XMLSecurityManager;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 
 /*
 *Added new constructor to AnyURIValue to accept a URI

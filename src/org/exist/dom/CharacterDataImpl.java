@@ -22,9 +22,9 @@
 package org.exist.dom;
 
 import org.exist.numbering.NodeId;
-import org.exist.util.XMLString;
-import org.exist.util.UTF8;
 import org.exist.storage.btree.Value;
+import org.exist.util.UTF8;
+import org.exist.util.XMLString;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
 

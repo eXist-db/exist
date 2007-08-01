@@ -22,8 +22,8 @@
  */
 package org.exist.storage.cache;
 
-import org.exist.util.hashtable.SequencedLongHashMap;
 import org.exist.storage.CacheManager;
+import org.exist.util.hashtable.SequencedLongHashMap;
 
 /**
  * A simple cache implementing a Last Recently Used policy. This

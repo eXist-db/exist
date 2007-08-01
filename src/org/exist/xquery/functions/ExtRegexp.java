@@ -23,29 +23,39 @@
 package org.exist.xquery.functions;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
+import org.exist.collections.Collection;
+import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.DocumentSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.FulltextIndexSpec;
-import org.exist.storage.analysis.Tokenizer;
-import org.exist.xquery.*;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.BasicExpressionVisitor;
+import org.exist.xquery.CachedResult;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Expression;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.LocationStep;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.Optimizable;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.RegexTranslator;
-import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.EXistException;
-import org.exist.xmldb.XmldbURI;
-import org.exist.collections.Collection;
 
 /**
  * @author wolf

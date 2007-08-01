@@ -22,9 +22,9 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.numbering.NodeId;
 
 public class AncestorSelector implements NodeSelector {

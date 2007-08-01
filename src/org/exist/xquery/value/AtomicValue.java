@@ -26,9 +26,9 @@ import java.util.Properties;
 
 import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.EmptyNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
-import org.exist.dom.EmptyNodeSet;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;

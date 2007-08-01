@@ -22,7 +22,16 @@
  */
 package org.exist.memtree;
 
-import org.exist.dom.*;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.exist.dom.DocumentSet;
+import org.exist.dom.EmptyNodeSet;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.QNameable;
+import org.exist.dom.StoredNode;
+import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.DOMStreamer;
@@ -40,7 +49,6 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -49,9 +57,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.UserDataHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
-import java.util.Iterator;
-import java.util.Properties;
 
 public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 

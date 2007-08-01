@@ -26,7 +26,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.exist.dom.NodeProxy;
-import org.exist.util.SwapVals;
 
 /**
 	This class implements a simple version 

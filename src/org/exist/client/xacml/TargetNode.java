@@ -1,8 +1,8 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.Target;
-
 import org.exist.security.xacml.XACMLUtil;
+
+import com.sun.xacml.Target;
 
 public class TargetNode extends AbstractTreeNode
 {

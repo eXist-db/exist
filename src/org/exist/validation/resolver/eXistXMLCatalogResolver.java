@@ -33,9 +33,7 @@ import org.apache.xerces.util.XMLCatalogResolver;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLInputSource;
-
 import org.w3c.dom.ls.LSInput;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 

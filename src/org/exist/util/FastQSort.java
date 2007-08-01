@@ -26,9 +26,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.exist.dom.NodeProxy;
-import org.exist.util.SwapVals;
-import org.exist.util.HeapSort;
-import org.exist.util.InsertionSort;
 
 /**
 	This class implements a version 

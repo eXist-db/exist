@@ -1,9 +1,5 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.Target;
-import com.sun.xacml.attr.AttributeDesignator;
-import com.sun.xacml.attr.AttributeValue;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.net.URI;
@@ -20,6 +16,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import com.sun.xacml.Target;
+import com.sun.xacml.attr.AttributeDesignator;
+import com.sun.xacml.attr.AttributeValue;
 
 public class TargetEditor extends AbstractNodeEditor implements ChangeListener, ListSelectionListener
 {

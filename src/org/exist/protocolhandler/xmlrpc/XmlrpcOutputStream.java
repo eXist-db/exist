@@ -24,11 +24,12 @@ package org.exist.protocolhandler.xmlrpc;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
+import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.io.BlockingInputStream;
 import org.exist.storage.io.BlockingOutputStream;
-import org.exist.protocolhandler.xmldb.XmldbURL;
 
 /**
  * Write document to remote database (using xmlrpc) using output stream.

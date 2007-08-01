@@ -22,7 +22,10 @@
 package org.exist.storage;
 
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
 import org.exist.storage.btree.DBException;
 import org.exist.util.ReadOnlyException;
 

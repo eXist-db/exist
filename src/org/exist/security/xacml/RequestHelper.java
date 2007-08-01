@@ -22,13 +22,6 @@
 
 package org.exist.security.xacml;
 
-import com.sun.xacml.attr.AnyURIAttribute;
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.StringAttribute;
-import com.sun.xacml.ctx.Attribute;
-import com.sun.xacml.ctx.RequestCtx;
-import com.sun.xacml.ctx.Subject;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -40,6 +33,13 @@ import org.exist.security.User;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
+
+import com.sun.xacml.attr.AnyURIAttribute;
+import com.sun.xacml.attr.AttributeValue;
+import com.sun.xacml.attr.StringAttribute;
+import com.sun.xacml.ctx.Attribute;
+import com.sun.xacml.ctx.RequestCtx;
+import com.sun.xacml.ctx.Subject;
 
 /*
 * Source.getKey().toString() needs to be unique:

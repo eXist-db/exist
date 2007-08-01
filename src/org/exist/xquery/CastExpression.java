@@ -24,7 +24,10 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.QNameValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 /**
  * CastExpression represents cast expressions as well as all type 

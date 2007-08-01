@@ -22,9 +22,7 @@
  */
 package org.exist.storage.serializers;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -45,12 +43,8 @@ import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeTextEngine;
 import org.exist.util.Configuration;
-import org.exist.util.FastQSort;
-import org.exist.util.XMLString;
 import org.exist.util.serializer.AttrList;
-import org.exist.util.serializer.Receiver;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

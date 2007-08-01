@@ -24,10 +24,10 @@ package org.exist.scheduler;
 import java.util.Date;
 
 import org.quartz.CronTrigger;
-import org.quartz.SimpleTrigger;
-import org.quartz.Trigger;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
 
 /**
  * Information about a Scheduled Job

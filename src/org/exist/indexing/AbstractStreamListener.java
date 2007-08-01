@@ -21,10 +21,12 @@
  */
 package org.exist.indexing;
 
-import org.exist.storage.txn.Txn;
-import org.exist.storage.NodePath;
-import org.exist.dom.*;
 import org.apache.log4j.Logger;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.TextImpl;
+import org.exist.storage.NodePath;
+import org.exist.storage.txn.Txn;
 
 /**
  * Default implementation of a StreamListener. By default forwards all events to

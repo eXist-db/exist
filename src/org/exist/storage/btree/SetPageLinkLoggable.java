@@ -21,11 +21,11 @@
  */
 package org.exist.storage.btree;
 
-import org.exist.storage.txn.Txn;
+import java.nio.ByteBuffer;
+
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.LogException;
-
-import java.nio.ByteBuffer;
+import org.exist.storage.txn.Txn;
 
 /**
  * Created by IntelliJ IDEA.

@@ -22,16 +22,16 @@ package org.exist.xquery.value;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.EmptyNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
-import org.exist.dom.EmptyNodeSet;
+import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
-import org.exist.numbering.NodeId;
 
 /**
  * An abstract implementation of {@link org.exist.xquery.value.Sequence} with

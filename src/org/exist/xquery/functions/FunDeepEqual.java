@@ -22,6 +22,7 @@ package org.exist.xquery.functions;
 
 import java.text.Collator;
 
+import org.exist.Namespaces;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.memtree.NodeImpl;
@@ -43,7 +44,6 @@ import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.Namespaces;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 

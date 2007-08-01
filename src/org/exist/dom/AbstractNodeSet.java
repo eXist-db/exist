@@ -24,6 +24,7 @@ package org.exist.dom;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
@@ -33,7 +34,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
-import org.exist.collections.Collection;
 import org.w3c.dom.Node;
 
 /**

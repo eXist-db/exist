@@ -1,7 +1,5 @@
 package org.exist.util;
 
-import org.exist.util.FastStringBuffer;
-
 import java.io.Writer;
 
 /**

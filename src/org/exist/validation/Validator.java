@@ -30,7 +30,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
@@ -39,7 +38,6 @@ import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.resolver.SearchResourceResolver;
 import org.exist.validation.resolver.StoredResourceResolver;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;

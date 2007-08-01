@@ -1,15 +1,5 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.Policy;
-import com.sun.xacml.PolicySet;
-import com.sun.xacml.Rule;
-import com.sun.xacml.Target;
-import com.sun.xacml.combine.OrderedPermitOverridesPolicyAlg;
-import com.sun.xacml.combine.OrderedPermitOverridesRuleAlg;
-import com.sun.xacml.combine.PolicyCombiningAlgorithm;
-import com.sun.xacml.combine.RuleCombiningAlgorithm;
-import com.sun.xacml.ctx.Result;
-
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -38,6 +28,16 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.xmldb.api.base.Collection;
+
+import com.sun.xacml.Policy;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.Rule;
+import com.sun.xacml.Target;
+import com.sun.xacml.combine.OrderedPermitOverridesPolicyAlg;
+import com.sun.xacml.combine.OrderedPermitOverridesRuleAlg;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
+import com.sun.xacml.combine.RuleCombiningAlgorithm;
+import com.sun.xacml.ctx.Result;
 
 public class XACMLEditor extends JFrame implements ActionListener, TreeModelListener, TreeSelectionListener, WindowListener
 {

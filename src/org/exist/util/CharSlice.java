@@ -1,7 +1,7 @@
 package org.exist.util;
 
-import java.io.Writer;
 import java.io.Serializable;
+import java.io.Writer;
 
 /**
  * This is an implementation of the JDK 1.4 CharSequence interface: it implements

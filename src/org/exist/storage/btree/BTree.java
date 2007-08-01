@@ -91,8 +91,6 @@ import org.exist.storage.journal.Loggable;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
-import org.exist.util.UTF8;
-import org.exist.util.XMLString;
 import org.exist.xquery.TerminatedException;
 
 /**

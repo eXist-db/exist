@@ -22,17 +22,18 @@
  */
 package org.exist.xquery;
 
+import java.util.Iterator;
+
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.GroupedValueSequence; 
-import org.exist.xquery.value.GroupedValueSequenceTable; 
+import org.exist.xquery.value.GroupedValueSequence;
+import org.exist.xquery.value.GroupedValueSequenceTable;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
 import org.exist.xquery.value.PreorderedValueSequence;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import java.util.Iterator;
 
 /**
  * Implements an XQuery let-expression.

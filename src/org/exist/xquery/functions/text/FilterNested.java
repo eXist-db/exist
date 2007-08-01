@@ -21,20 +21,20 @@
  */
 package org.exist.xquery.functions.text;
 
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Sequence;
-import org.exist.dom.QName;
-import org.exist.dom.NodeSet;
+import java.util.Iterator;
+
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
-
-import java.util.Iterator;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 public class FilterNested extends BasicFunction {
 

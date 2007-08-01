@@ -3,11 +3,15 @@
 package org.exist.xmldb;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
-import java.util.Iterator;
 
-import org.xmldb.api.base.*;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  *  Implementation of ResourceSet (a container of Resource objects), using internally both a Map and a Vector.

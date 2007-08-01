@@ -3,10 +3,10 @@ package org.exist.dom;
 import java.util.Iterator;
 import java.util.Stack;
 
+import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.numbering.NodeId;
 
 public class AVLTreeNodeSet extends AbstractNodeSet {
 

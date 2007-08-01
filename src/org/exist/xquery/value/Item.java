@@ -20,15 +20,15 @@
  */
 package org.exist.xquery.value;
 
+import java.util.Properties;
+
+import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;
-import org.exist.numbering.NodeId;
-import org.exist.dom.StoredNode;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
-import java.util.Properties;
 
 /**
  * This class represents an item in a sequence as defined by the XPath 2.0 specification.

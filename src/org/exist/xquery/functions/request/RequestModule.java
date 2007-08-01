@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.functions.request;
 
+import java.util.Arrays;
+
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -37,8 +39,6 @@ import org.exist.xquery.functions.session.Invalidate;
 import org.exist.xquery.functions.session.SetAttribute;
 import org.exist.xquery.functions.session.SetCurrentUser;
 import org.exist.xquery.functions.util.FunUnEscapeURI;
-
-import java.util.Arrays;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

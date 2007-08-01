@@ -1,13 +1,12 @@
 package javax.xml.xquery;
 
+import java.io.OutputStream;
+import java.io.Writer;
+import java.net.URI;
+import java.util.Properties;
+
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
-
-//import javax.xml.stream.XMLStreamReader;
-import java.util.Properties;
-import java.io.Writer;
-import java.io.OutputStream;
-import java.net.URI;
 
 /**
  * XQJ interfaces reconstructed from version 0.5 documentation

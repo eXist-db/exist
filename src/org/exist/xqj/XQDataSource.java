@@ -23,7 +23,6 @@ import org.exist.EXistException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 

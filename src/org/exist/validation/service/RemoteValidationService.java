@@ -25,13 +25,10 @@ import java.io.IOException;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
-
 import org.exist.validation.Validator;
 import org.exist.xmldb.RemoteCollection;
-
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
