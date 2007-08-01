@@ -24,9 +24,9 @@ package org.exist.storage;
 import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.Namespaces;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;

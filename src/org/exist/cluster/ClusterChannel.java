@@ -1,9 +1,9 @@
 //$Id$
 package org.exist.cluster;
 
-import org.apache.log4j.Logger;
-
 import java.util.Vector;
+
+import org.apache.log4j.Logger;
 
 /**
  * Created by Francesco Mondora.

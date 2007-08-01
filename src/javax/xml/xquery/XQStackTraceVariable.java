@@ -1,7 +1,8 @@
 package javax.xml.xquery;
 
-import javax.xml.namespace.QName;
 import java.io.Serializable;
+
+import javax.xml.namespace.QName;
 
 /**
  * XQJ interfaces reconstructed from version 0.5 documentation

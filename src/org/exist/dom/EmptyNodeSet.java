@@ -21,10 +21,10 @@
  */
 package org.exist.dom;
 
+import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

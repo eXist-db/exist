@@ -26,8 +26,8 @@ import java.util.List;
 
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.storage.analysis.Tokenizer;
 import org.exist.storage.DBBroker;
+import org.exist.storage.analysis.Tokenizer;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;

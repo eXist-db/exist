@@ -21,8 +21,8 @@
 */
 package org.exist.util.serializer;
 
-import org.exist.dom.QName;
 import org.exist.dom.AttrImpl;
+import org.exist.dom.QName;
 
 /**
  * Represents a list of attributes. Each attribute is defined by

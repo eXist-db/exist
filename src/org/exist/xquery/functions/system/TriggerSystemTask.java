@@ -1,17 +1,21 @@
 package org.exist.xquery.functions.system;
 
-import org.exist.xquery.*;
+import java.util.Properties;
+
+import org.exist.EXistException;
+import org.exist.dom.QName;
+import org.exist.storage.SystemTask;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.NodeValue;
-import org.exist.dom.QName;
-import org.exist.storage.SystemTask;
-import org.exist.EXistException;
-import org.w3c.dom.Node;
 import org.w3c.dom.Element;
-
-import java.util.Properties;
+import org.w3c.dom.Node;
 
 /**
  * 

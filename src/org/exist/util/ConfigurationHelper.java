@@ -4,7 +4,6 @@ import java.io.File;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 
 public class ConfigurationHelper {

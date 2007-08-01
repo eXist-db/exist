@@ -26,14 +26,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
-
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
-import org.exist.validation.internal.DatabaseResources;
 import org.exist.xmldb.LocalCollection;
-
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;

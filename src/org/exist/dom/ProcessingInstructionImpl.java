@@ -24,10 +24,10 @@ package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
 
+import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
 import org.exist.util.pool.NodePool;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 

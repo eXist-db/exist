@@ -22,13 +22,13 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.util.Arrays;
+
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.system.GetVersion;
-
-import java.util.Arrays;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

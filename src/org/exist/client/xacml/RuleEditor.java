@@ -1,9 +1,9 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.ctx.Result;
-
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+
+import com.sun.xacml.ctx.Result;
 
 public class RuleEditor extends PolicyElementEditor
 {

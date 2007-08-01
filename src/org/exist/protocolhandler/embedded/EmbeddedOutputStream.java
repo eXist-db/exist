@@ -24,11 +24,11 @@ package org.exist.protocolhandler.embedded;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
-
-import org.exist.storage.io.BlockingInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.storage.io.BlockingInputStream;
 
 /**
  * Write document to local database (embedded) using output stream.

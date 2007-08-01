@@ -21,8 +21,8 @@
  */
 package org.exist.xquery;
 
-import java.util.Stack;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * An {@link org.exist.xquery.ExpressionVisitor} which traverses the entire

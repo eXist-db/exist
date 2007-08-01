@@ -22,14 +22,14 @@
  */
 package org.exist.dom;
 
+import java.util.Iterator;
+
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.NodeList;
-
-import java.util.Iterator;
 
 /**
  * @author wolf

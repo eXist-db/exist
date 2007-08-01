@@ -1,9 +1,5 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.Policy;
-import com.sun.xacml.PolicySet;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +20,10 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.Policy;
+import com.sun.xacml.PolicySet;
 
 public class DatabaseInterface
 {

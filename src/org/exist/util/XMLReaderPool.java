@@ -23,8 +23,8 @@ package org.exist.util;
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
 import org.exist.Namespaces;
-import org.exist.validation.GrammarPool;
 import org.exist.storage.BrokerPool;
+import org.exist.validation.GrammarPool;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DefaultHandler2;
 

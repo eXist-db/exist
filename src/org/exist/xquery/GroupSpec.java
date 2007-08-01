@@ -22,7 +22,7 @@
  */ 
 package org.exist.xquery; 
  
-import org.exist.xquery.util.ExpressionDumper; 
+import org.exist.xquery.util.ExpressionDumper;
  
 /** 
  * A XQuery grouping specifier as specified in an "group by" clause (based on 

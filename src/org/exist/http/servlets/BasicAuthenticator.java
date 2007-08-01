@@ -27,8 +27,8 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import org.apache.log4j.Logger;
 
+import org.apache.log4j.Logger;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;

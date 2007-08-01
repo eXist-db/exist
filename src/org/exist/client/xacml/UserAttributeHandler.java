@@ -1,9 +1,5 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.attr.AttributeDesignator;
-import com.sun.xacml.attr.AttributeValue;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +11,10 @@ import org.exist.security.xacml.XACMLConstants;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.attr.AttributeDesignator;
+import com.sun.xacml.attr.AttributeValue;
 
 public class UserAttributeHandler implements AttributeHandler
 {

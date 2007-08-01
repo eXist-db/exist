@@ -26,11 +26,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.dom.QName;
 
 
 /**

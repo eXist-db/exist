@@ -1,9 +1,10 @@
 package javax.xml.xquery;
 
-import org.w3c.dom.Node;
+import java.util.TimeZone;
 
 import javax.xml.namespace.QName;
-import java.util.TimeZone;
+
+import org.w3c.dom.Node;
 
 /**
  * XQJ interfaces reconstructed from version 0.5 documentation

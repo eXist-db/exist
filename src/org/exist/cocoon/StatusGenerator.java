@@ -11,7 +11,6 @@ import java.util.Locale;
 
 import org.apache.cocoon.ProcessingException;
 import org.apache.cocoon.generation.AbstractGenerator;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.report.XMLStatistics;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;

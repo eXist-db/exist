@@ -1,7 +1,7 @@
 package org.exist.util;
 
-import java.util.ArrayList;
 import java.io.File;
+import java.util.ArrayList;
 
 public class DirectoryScanner {
 

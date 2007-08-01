@@ -2,50 +2,28 @@
 
 	package org.exist.xquery.parser;
 
-	import antlr.debug.misc.*;
-	import java.io.StringReader;
-	import java.io.BufferedReader;
-	import java.io.InputStreamReader;
-	import java.util.ArrayList;
-	import java.util.List;
-	import java.util.Iterator;
-	import java.util.Stack;
-	import org.exist.storage.BrokerPool;
-	import org.exist.storage.DBBroker;
-	import org.exist.storage.analysis.Tokenizer;
-	import org.exist.EXistException;
-	import org.exist.dom.DocumentSet;
-	import org.exist.dom.DocumentImpl;
-	import org.exist.dom.QName;
-	import org.exist.security.PermissionDeniedException;
-	import org.exist.security.User;
-	import org.exist.xquery.*;
-	import org.exist.xquery.value.*;
-	import org.exist.xquery.functions.*;
+	import java.io.InputStream;
+import java.io.Reader;
+import java.util.Hashtable;
 
-import java.io.InputStream;
+import org.exist.xquery.XQueryContext;
+
+import antlr.ANTLRHashString;
+import antlr.ByteBuffer;
+import antlr.CharBuffer;
+import antlr.CharStreamException;
+import antlr.CharStreamIOException;
+import antlr.InputBuffer;
+import antlr.LexerSharedInputState;
+import antlr.NoViableAltForCharException;
+import antlr.RecognitionException;
+import antlr.SemanticException;
+import antlr.Token;
+import antlr.TokenStream;
 import antlr.TokenStreamException;
 import antlr.TokenStreamIOException;
 import antlr.TokenStreamRecognitionException;
-import antlr.CharStreamException;
-import antlr.CharStreamIOException;
-import antlr.ANTLRException;
-import java.io.Reader;
-import java.util.Hashtable;
-import antlr.CharScanner;
-import antlr.InputBuffer;
-import antlr.ByteBuffer;
-import antlr.CharBuffer;
-import antlr.Token;
-import antlr.CommonToken;
-import antlr.RecognitionException;
-import antlr.NoViableAltForCharException;
-import antlr.MismatchedCharException;
-import antlr.TokenStream;
-import antlr.ANTLRHashString;
-import antlr.LexerSharedInputState;
 import antlr.collections.impl.BitSet;
-import antlr.SemanticException;
 
 /**
  * The XQuery/XPath lexical analyzer.

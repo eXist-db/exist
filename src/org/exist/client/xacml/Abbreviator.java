@@ -1,9 +1,5 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.cond.FunctionBase;
-import com.sun.xacml.cond.FunctionFactory;
-import com.sun.xacml.cond.MatchFunction;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -12,10 +8,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.security.xacml.XACMLConstants;
 
-import org.apache.log4j.Logger;
+import com.sun.xacml.cond.FunctionBase;
+import com.sun.xacml.cond.FunctionFactory;
+import com.sun.xacml.cond.MatchFunction;
 
 /**
  * Abbreviates the constants used in XACML to something

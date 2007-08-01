@@ -29,7 +29,6 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.apache.log4j.Logger;
-
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.embedded.EmbeddedOutputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;

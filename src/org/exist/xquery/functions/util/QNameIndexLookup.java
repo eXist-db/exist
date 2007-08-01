@@ -24,12 +24,13 @@ package org.exist.xquery.functions.util;
 
 import java.util.List;
 
-import org.exist.dom.QName;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.storage.Indexable;
 import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.DynamicCardinalityCheck;
 import org.exist.xquery.Expression;
@@ -38,7 +39,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.RootNode;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.Constants;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.AtomicValue;

@@ -27,11 +27,9 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
-
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
-
 import org.apache.xerces.xni.parser.XMLInputSource;
 
 /**

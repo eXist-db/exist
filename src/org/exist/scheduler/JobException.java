@@ -21,7 +21,6 @@
  */
 package org.exist.scheduler;
 
-import java.lang.Exception;
 import org.quartz.JobExecutionException;
 
 /**

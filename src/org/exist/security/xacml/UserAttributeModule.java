@@ -1,5 +1,13 @@
 package org.exist.security.xacml;
 
+import java.net.URI;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.exist.security.User;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AttributeDesignator;
 import com.sun.xacml.attr.AttributeValue;
@@ -8,15 +16,6 @@ import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.cond.EvaluationResult;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.AttributeFinderModule;
-
-import java.net.URI;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
-import org.exist.security.User;
 
 /**
 * This class looks up attributes for a Subject with a subject-category

@@ -26,10 +26,8 @@ package org.exist.xquery.value;
 import java.math.BigDecimal;
 import java.text.Collator;
 import java.text.DecimalFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

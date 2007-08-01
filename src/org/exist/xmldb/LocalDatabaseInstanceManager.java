@@ -3,8 +3,8 @@ package org.exist.xmldb;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.exist.security.User;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;

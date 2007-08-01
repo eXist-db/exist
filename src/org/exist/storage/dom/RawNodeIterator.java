@@ -21,20 +21,20 @@
  */
 package org.exist.storage.dom;
 
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.storage.StorageAddress;
-import org.exist.storage.btree.Paged;
-import org.exist.storage.btree.Value;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.Paged;
+import org.exist.storage.btree.Value;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
-import org.exist.dom.StoredNode;
-import org.exist.dom.NodeProxy;
-
-import java.io.IOException;
 
 /**
  * An iterator that walks through the raw node data items in a document. The class

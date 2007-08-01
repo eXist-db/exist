@@ -1,10 +1,8 @@
 
 package org.exist.util;
 
-import java.io.FilenameFilter;
 import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.FilenameFilter;
 
 public class XMLFilenameFilter implements FilenameFilter {
 

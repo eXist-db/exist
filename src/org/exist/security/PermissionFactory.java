@@ -23,8 +23,6 @@
 package org.exist.security;
 
 import org.apache.log4j.Logger;
-import org.exist.security.Permission;
-import org.exist.security.UnixStylePermission;
 
 /**
  * Instatiates an appropriate Permission class based on the current configuration

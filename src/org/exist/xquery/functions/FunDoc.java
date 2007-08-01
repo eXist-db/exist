@@ -26,6 +26,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.Cardinality;
@@ -40,7 +41,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.numbering.NodeId;
 
 /**
  * Implements the built-in fn:doc() function.

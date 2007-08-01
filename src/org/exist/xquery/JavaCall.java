@@ -22,8 +22,6 @@
  */
 package org.exist.xquery;
 
-import com.sun.xacml.ctx.RequestCtx;
-
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -38,6 +36,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
+import com.sun.xacml.ctx.RequestCtx;
 
 /**
  * A special function call to a Java method or constructor.

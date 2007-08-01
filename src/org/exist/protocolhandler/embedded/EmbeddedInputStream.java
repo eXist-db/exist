@@ -27,10 +27,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
-
+import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.io.BlockingInputStream;
 import org.exist.storage.io.BlockingOutputStream;
-import org.exist.protocolhandler.xmldb.XmldbURL;
 
 /**
  * Read document from embedded database as a (input)stream.

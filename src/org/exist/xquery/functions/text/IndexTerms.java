@@ -21,6 +21,10 @@
  */
 package org.exist.xquery.functions.text;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Vector;
+
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -32,11 +36,15 @@ import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.*;
-
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.Vector;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.QNameValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author wolf

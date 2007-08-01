@@ -1,15 +1,15 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.Policy;
-import com.sun.xacml.PolicySet;
-import com.sun.xacml.PolicyTreeElement;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.Policy;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.PolicyTreeElement;
 
 public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 {

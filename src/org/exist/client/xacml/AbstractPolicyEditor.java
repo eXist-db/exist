@@ -1,16 +1,16 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.sun.xacml.combine.PolicyCombiningAlgorithm;
-import com.sun.xacml.combine.RuleCombiningAlgorithm;
-import com.sun.xacml.combine.StandardCombiningAlgFactory;
-
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Set;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+
+import com.sun.xacml.combine.CombiningAlgorithm;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
+import com.sun.xacml.combine.RuleCombiningAlgorithm;
+import com.sun.xacml.combine.StandardCombiningAlgFactory;
 
 public class AbstractPolicyEditor extends PolicyElementEditor
 {

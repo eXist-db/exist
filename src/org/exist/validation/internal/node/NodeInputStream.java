@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.log4j.Logger;
-
 import org.exist.storage.io.BlockingInputStream;
 import org.exist.storage.io.BlockingOutputStream;
 import org.exist.xquery.XQueryContext;

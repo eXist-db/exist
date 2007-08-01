@@ -46,7 +46,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
-
 import org.exist.http.webdav.WebDAV;
 import org.exist.http.webdav.WebDAVMethod;
 import org.exist.http.webdav.WebDAVMethodFactory;

@@ -1,8 +1,8 @@
 
 package org.exist.storage;
 
+import org.exist.util.ByteConversion;
 import org.w3c.dom.Node;
-import org.exist.util.*;
 
 /**
  *  Static methods to deal with the signature of a node stored

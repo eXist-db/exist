@@ -22,13 +22,13 @@
 
 package org.exist;
 
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.DatabaseManager;
-import org.exist.xmldb.UserManagementService;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.security.User;
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.UserManagementService;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * Initial database setup: called from the installer to set the admin password.

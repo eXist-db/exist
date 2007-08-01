@@ -21,21 +21,21 @@
  */
 package org.exist.dom;
 
-import java.util.Iterator;
 import java.io.IOException;
+import java.util.Iterator;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.exist.numbering.NodeId;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.util.pool.NodePool;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamException;
 
 /**
  *  The base class for all persistent DOM nodes in the database.

@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.storage.txn.TransactionException;
-import org.exist.xquery.XPathException;
 
 public class BatchTransactionPragma extends Pragma {
 

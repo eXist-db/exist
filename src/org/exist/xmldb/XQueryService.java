@@ -26,10 +26,10 @@ import java.io.Writer;
 
 import org.exist.source.Source;
 import org.exist.xquery.XPathException;
+import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.base.CompiledExpression;
 
 /**
  * Execute XQuery expressions on the database.

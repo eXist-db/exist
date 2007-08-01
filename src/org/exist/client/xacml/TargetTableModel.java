@@ -22,15 +22,6 @@
 
 package org.exist.client.xacml;
 
-import com.sun.xacml.TargetMatch;
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.attr.AttributeDesignator;
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.cond.Evaluatable;
-import com.sun.xacml.cond.Function;
-import com.sun.xacml.cond.FunctionFactory;
-import com.sun.xacml.cond.FunctionTypeException;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -43,6 +34,15 @@ import javax.swing.table.TableModel;
 import org.apache.log4j.Logger;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.security.xacml.XACMLUtil;
+
+import com.sun.xacml.TargetMatch;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.AttributeDesignator;
+import com.sun.xacml.attr.AttributeValue;
+import com.sun.xacml.cond.Evaluatable;
+import com.sun.xacml.cond.Function;
+import com.sun.xacml.cond.FunctionFactory;
+import com.sun.xacml.cond.FunctionTypeException;
 
 
 public class TargetTableModel implements TableModel

@@ -21,10 +21,10 @@
  */
 package org.exist.numbering;
 
+import java.io.IOException;
+
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-
-import java.io.IOException;
 
 /**
  * A factory for creating node ids. To support different numbering

@@ -1,9 +1,5 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.sun.xacml.combine.StandardCombiningAlgFactory;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -26,6 +22,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.exist.client.ClientFrame;
+
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.combine.CombiningAlgorithm;
+import com.sun.xacml.combine.StandardCombiningAlgFactory;
 
 public abstract class PolicyElementEditor extends AbstractNodeEditor implements ActionListener, DocumentListener
 {	

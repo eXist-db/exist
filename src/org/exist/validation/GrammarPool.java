@@ -22,11 +22,10 @@
 package org.exist.validation;
 
 import org.apache.log4j.Logger;
-
-import org.apache.xerces.xni.grammars.XMLGrammarPool;
+import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.util.XMLGrammarPoolImpl;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.exist.Namespaces;
 
 /**

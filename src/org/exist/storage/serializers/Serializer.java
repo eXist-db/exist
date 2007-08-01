@@ -49,12 +49,12 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
-import org.exist.indexing.IndexController;
-import org.exist.indexing.MatchListener;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
+import org.exist.indexing.IndexController;
+import org.exist.indexing.MatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;

@@ -22,8 +22,11 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.net.URISyntaxException;
+
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -36,11 +39,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
-
-import java.net.URISyntaxException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

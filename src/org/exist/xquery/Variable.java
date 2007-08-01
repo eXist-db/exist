@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.memtree.NodeImpl;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.Item;
@@ -32,7 +33,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.memtree.NodeImpl;
 
 /**
  * An XQuery/XPath variable, consisting of a QName and a value.

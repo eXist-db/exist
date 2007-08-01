@@ -22,6 +22,17 @@
 
 package org.exist.security.xacml;
 
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
+
 import com.sun.xacml.Indenter;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
@@ -33,17 +44,6 @@ import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.impl.CurrentEnvModule;
-
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.BrokerPool;
 
 /**
 * This class is responsible for creating the XACML Policy Decision Point (PDP)

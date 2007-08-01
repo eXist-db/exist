@@ -1,10 +1,10 @@
 package org.exist.client.xacml;
 
+import java.net.URI;
+
 import com.sun.xacml.PolicyTreeElement;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
-
-import java.net.URI;
 
 public class RuleNode extends PolicyElementNode
 {

@@ -1,10 +1,5 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.Policy;
-import com.sun.xacml.PolicySet;
-import com.sun.xacml.PolicyTreeElement;
-import com.sun.xacml.Rule;
-
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -39,6 +34,11 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+
+import com.sun.xacml.Policy;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.PolicyTreeElement;
+import com.sun.xacml.Rule;
 
 public class TreeMutator implements ActionListener, DragGestureListener, DragSourceListener, DropTargetListener, KeyListener, MouseListener, PopupMenuListener 
 {

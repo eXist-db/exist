@@ -21,6 +21,9 @@
  */
 package org.exist.dom;
 
+import java.util.Iterator;
+import java.util.Properties;
+
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -44,9 +47,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
-import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * Placeholder class for DOM nodes. 

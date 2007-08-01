@@ -24,8 +24,8 @@ package org.exist.storage;
 
 import java.util.Arrays;
 
-import org.exist.xquery.value.Type;
 import org.exist.dom.QName;
+import org.exist.xquery.value.Type;
 
 public abstract class RangeIndexSpec {
 

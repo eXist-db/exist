@@ -21,11 +21,11 @@
  */
 package org.exist.numbering;
 
+import java.io.IOException;
+
+import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.io.VariableByteArrayInput;
-
-import java.io.IOException;
 
 /**
  * Represents a node id in the form of a dynamic level number (DLN). DLN's are

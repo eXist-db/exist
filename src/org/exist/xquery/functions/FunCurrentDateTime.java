@@ -25,8 +25,18 @@ package org.exist.xquery.functions;
 import java.util.Date;
 
 import org.exist.dom.QName;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

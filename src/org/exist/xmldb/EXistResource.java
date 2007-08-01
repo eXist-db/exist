@@ -25,9 +25,9 @@ package org.exist.xmldb;
 import java.util.Date;
 
 import org.exist.security.Permission;
+import org.w3c.dom.DocumentType;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.XMLDBException;
-import org.w3c.dom.DocumentType;
 
 /**
  * Defines additional methods implemented by XML and binary 

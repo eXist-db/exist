@@ -27,7 +27,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
@@ -45,7 +52,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.numbering.NodeId;
 
 /**
  * @author wolf

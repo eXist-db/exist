@@ -1,8 +1,8 @@
 package org.exist.client.xacml;
 
-import com.sun.xacml.cond.Apply;
-
 import org.exist.security.xacml.XACMLUtil;
+
+import com.sun.xacml.cond.Apply;
 
 public class ConditionNode extends AbstractTreeNode 
 {

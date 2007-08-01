@@ -22,8 +22,6 @@
  */
 package org.exist.xquery;
 
-import com.sun.xacml.ctx.RequestCtx;
-
 import java.util.List;
 
 import org.exist.dom.QName;
@@ -34,6 +32,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import com.sun.xacml.ctx.RequestCtx;
 
 /**
  * Represents a call to a user-defined function 

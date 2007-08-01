@@ -21,8 +21,8 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.util.Base64Encoder;
 import org.exist.util.Base64Decoder;
+import org.exist.util.Base64Encoder;
 import org.exist.xquery.XPathException;
 
 public class Base64Binary extends BinaryValue {

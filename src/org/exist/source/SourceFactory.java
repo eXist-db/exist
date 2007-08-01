@@ -32,8 +32,8 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
-import org.exist.xquery.Constants;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Constants;
 
 /**
  * Factory to create a {@link org.exist.source.Source} object for a given

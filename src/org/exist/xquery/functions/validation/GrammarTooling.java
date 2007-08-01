@@ -24,7 +24,6 @@ package org.exist.xquery.functions.validation;
 
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;

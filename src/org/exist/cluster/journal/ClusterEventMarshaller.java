@@ -1,13 +1,13 @@
 //$Id$
 package org.exist.cluster.journal;
 
-import org.exist.cluster.ClusterEvent;
-
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.rmi.MarshalException;
+
+import org.exist.cluster.ClusterEvent;
 
 /**
  * Created by Nicola Breda.

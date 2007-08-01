@@ -27,6 +27,10 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
+import org.exist.security.User;
+import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -35,14 +39,8 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
-
-import org.exist.security.User;
-import org.exist.xmldb.LocalCollection;
-import org.exist.xmldb.UserManagementService;
-import org.exist.xmldb.XmldbURI;
 
 /**
  * @author wolf
