@@ -1,21 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -97,6 +97,7 @@ public class FtQueryTest extends XMLTestCase {
 	        result = service.query("//SPEECH[LINE &= 'fenny snake']/LINE[1]");
 	        assertEquals(1, result.getSize());
 	        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
+            //assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a <exist:match xmlns:exist='http://exist.sourceforge.net/NS/exist'>fenny</exist:match> <exist:match xmlns:exist='http://exist.sourceforge.net/NS/exist'>snake</exist:match>,</LINE>");
 	        result = service.query("//SPEECH[LINE &= 'god*']");
 	        assertEquals(79, result.getSize());
 	        result = service.query("//SPEECH[LINE &= 'god in heaven']");
@@ -142,11 +143,12 @@ public class FtQueryTest extends XMLTestCase {
             result = service.query("//SPEECH[match-all(LINE, 'fenny', 'snake')]/LINE[1]");
 	        assertEquals(1, result.getSize());
 	        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
+            //assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a <exist:match xmlns:exist='http://exist.sourceforge.net/NS/exist'>fenny</exist:match> <exist:match xmlns:exist='http://exist.sourceforge.net/NS/exist'>snake</exist:match>,</LINE>");
 
             result = service.query("//SPEECH[text:match-all(LINE, ('fenny', 'snake'))]/LINE[1]");
 	        assertEquals(1, result.getSize());
 	        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
-
+            //assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a <exist:match xmlns:exist='http://exist.sourceforge.net/NS/exist'>fenny</exist:match> <exist:match xmlns:exist='http://exist.sourceforge.net/NS/exist'>snake</exist:match>,</LINE>");
             result = service.query("//SPEECH[text:match-all(LINE, 'god.*')]");
 	        assertEquals(79, result.getSize());
 
