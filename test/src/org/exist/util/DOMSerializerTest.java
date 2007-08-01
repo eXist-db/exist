@@ -1,8 +1,23 @@
 /*
- * Created on Oct 26, 2003
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2003-2007 The eXist Project
+ * http://exist-db.org
  *
- * To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.util;
 
@@ -21,18 +36,15 @@ import junit.framework.TestCase;
 /**
  * @author wolf
  *
- * To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class DOMSerializerTest extends TestCase {
-
-        static File existDir;
-        static {
-           String existHome = System.getProperty("exist.home");
-           existDir = existHome==null ? new File(".") : new File(existHome);
-        }
-	private final static String file = (new File(existDir,"samples/biblio.rdf")).getAbsolutePath();
-	
+    
+    static File existDir;
+    static {
+        String existHome = System.getProperty("exist.home");
+        existDir = existHome==null ? new File(".") : new File(existHome);
+    }
+    private final static String file = (new File(existDir,"samples/biblio.rdf")).getAbsolutePath();
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(DOMSerializerTest.class);
 	}
@@ -53,8 +65,8 @@ public class DOMSerializerTest extends TestCase {
 			DOMSerializer serializer = new DOMSerializer(writer, null);
 			serializer.serialize(doc.getDocumentElement());
 			System.out.println(writer.toString());
-        } catch (Exception e) {            
-            fail(e.getMessage());  
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
 	}
 
