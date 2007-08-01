@@ -20,17 +20,17 @@ NR_JAVA_OPTS=0
 declare -a JAVA_OPTS
 
 substring() {
-  [ "${1#*$2*}" = "$1" ] && return 1
-  return 0
+    [ "${1#*$2*}" = "$1" ] && return 1
+    return 0
 }
 
 is_integer() {
- [ $1 -eq 1 ] 2> /dev/null;
- if [ $? -eq 2 ]; then
-     echo "Port need to be an integer"
-     exit 1
- fi
- return 0
+    [ $1 -eq 1 ] 2> /dev/null;
+    if [ $? -eq 2 ]; then
+	echo "Port need to be an integer"
+	exit 1
+    fi
+    return 0
 }
 
 is_jmx_switch() {
@@ -58,46 +58,28 @@ is_jmx_switch() {
 }
 
 get_opts() {
-	local ARG_OPTS="$1"
-	local -a ALL_OPTS=( "$@" )
-	ALL_OPTS=( "${ALL_OPTS[@]:1}" )
-	
-	local found_jmx_opt
-	local delayed_opt
-	
-	for OPT in "${ALL_OPTS[@]}" ; do
-		if [ -n "$found_jmx_opt" ] ; then
-			unset found_jmx_opt
-			local found_jmx_opt
-			if ! substring "${OPT}" $"-" && is_integer "${OPT}"; then
-				JMX_PORT="$OPT"
-				continue
-			fi
-		fi
-		if [ -n "$delayed_opt" ] ; then
-			JAVA_OPTS[${NR_JAVA_OPTS}]="$delayed_opt $OPT"
-			let "NR_JAVA_OPTS += 1"
-			
-			unset delayed_opt
-			local delayed_opt
-			
-			continue
-		fi
-		if is_jmx_switch "$OPT"; then
-			found_jmx_opt=1
-		elif substring "${ARG_OPTS}" "|$OPT|"; then
-			delayed_opt="$OPT"
-		else
-			JAVA_OPTS[${NR_JAVA_OPTS}]="$OPT";
-			let "NR_JAVA_OPTS += 1";
-		fi
-	done
-	
-	# Last loop
-	if [ -n "$delayed_opt" ] ; then
-		JAVA_OPTS[${NR_JAVA_OPTS}]="$delayed_opt"
-		let "NR_JAVA_OPTS += 1"
+    local ARG_OPTS="$1"
+    local -a ALL_OPTS=( "$@" )
+    ALL_OPTS=( "${ALL_OPTS[@]:1}" )
+    
+    local found_jmx_opt
+    
+    for OPT in "${ALL_OPTS[@]}" ; do
+	if [ -n "$found_jmx_opt" ] ; then
+	    unset found_jmx_opt
+	    local found_jmx_opt
+	    if ! substring "${OPT}" $"-" && is_integer "${OPT}"; then
+		JMX_PORT="$OPT"
+		continue
+	    fi
 	fi
+	if is_jmx_switch "$OPT"; then
+	    found_jmx_opt=1
+	else
+	    JAVA_OPTS[${NR_JAVA_OPTS}]="$OPT";
+	    let "NR_JAVA_OPTS += 1";
+	fi
+    done
 	
-	echo "${JAVA_OPTS[@]}";
+    echo "${JAVA_OPTS[@]}";
 }
