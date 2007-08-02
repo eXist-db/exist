@@ -51,6 +51,7 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -79,24 +80,28 @@ public class DeadlockTest {
 	private static final int TEST_SINGLE_DOC = 3;
 	/** apply a random mixture of the other modes */
 	private static final int TEST_MIXED = 4;
-	
-	/** Use 4 test runs, querying different collections */
+
+    /** Use 4 test runs, querying different collections */
 	@Parameters 
 	public static LinkedList<Integer[]> data() {
 		LinkedList<Integer[]> params = new LinkedList<Integer[]>();
-		params.add(new Integer[] { TEST_RANDOM_COLLECTION });
-		params.add(new Integer[] { TEST_SINGLE_COLLECTION });
+//		params.add(new Integer[] { TEST_RANDOM_COLLECTION });
+//		params.add(new Integer[] { TEST_SINGLE_COLLECTION });
 		params.add(new Integer[] { TEST_ALL_COLLECTIONS });
-		params.add(new Integer[] { TEST_SINGLE_DOC });
-		params.add(new Integer[] { TEST_MIXED });
+//		params.add(new Integer[] { TEST_SINGLE_DOC });
+//		params.add(new Integer[] { TEST_MIXED });
 		return params;
 	}
 	
-	private static final int COLL_COUNT = 10;
+	private static final int COLL_COUNT = 50;
 
-	private static final int DOC_COUNT = 20;
-	
-	private final static String COLLECTION_CONFIG =
+    private static final int QUERY_COUNT = 800;
+
+    private static final int DOC_COUNT = 20;
+
+    private static final int N_THREADS = 5;
+
+    private final static String COLLECTION_CONFIG =
 		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
 		"	<index>" +
 		"		<fulltext default=\"all\" attributes=\"false\"/>" +
@@ -137,7 +142,7 @@ public class DeadlockTest {
 		DBBroker broker = null;
 		try {
 			Configuration config = new Configuration();
-			BrokerPool.configure(1, 10, config);
+			BrokerPool.configure(1, 20, config);
 			pool = BrokerPool.getInstance();
 
 			broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
@@ -183,13 +188,9 @@ public class DeadlockTest {
 	public static void stopDB() {
 		try {
 			org.xmldb.api.base.Collection root = DatabaseManager.getCollection(
-					"xmldb:exist:///db/test", "admin", null);
-			CollectionManagementService service = (CollectionManagementService) root
-					.getService("CollectionManagementService", "1.0");
-			service.removeCollection(".");
+					"xmldb:exist:///db", "admin", null);
 
-			DatabaseInstanceManager dim = (DatabaseInstanceManager) root
-					.getService("DatabaseInstanceManager", "1.0");
+			DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
 			dim.shutdown();
 		} catch (XMLDBException e) {
 			e.printStackTrace();
@@ -198,11 +199,31 @@ public class DeadlockTest {
 		pool = null;
 	}
 
-	@Test
+    @After
+    public void clearDB() {
+        try {
+			org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", null);
+			CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+			service.removeCollection(".");
+        } catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+    }
+
+    @Test
 	public void runTasks() {
-		ExecutorService executor = Executors.newFixedThreadPool(20);
-		new StoreTask("store", COLL_COUNT, DOC_COUNT).run();
-		for (int i = 0; i < 200; i++) {
+		ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
+        executor.submit(new StoreTask("store", COLL_COUNT, DOC_COUNT));
+        synchronized (this) {
+            try {
+                wait(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+//        new StoreTask("store", COLL_COUNT, DOC_COUNT).run();
+		for (int i = 0; i < QUERY_COUNT; i++) {
 			executor.submit(new QueryTask(COLL_COUNT));
 		}
 		executor.shutdown();
@@ -236,13 +257,12 @@ public class DeadlockTest {
 				transact = pool.getTransactionManager();
 				assertNotNull(transact);
 
-				transaction = transact.beginTransaction();
-
 				TestDataGenerator generator = new TestDataGenerator("xdb", docCount);
 				Collection coll;
 				int fileCount = 0;
 				for (int i = 0; i < collectionCount; i++) {
-					coll = broker.getOrCreateCollection(transaction,
+                    transaction = transact.beginTransaction();
+                    coll = broker.getOrCreateCollection(transaction,
 							TestConstants.TEST_COLLECTION_URI.append(Integer
 									.toString(i)));
 					assertNotNull(coll);
@@ -259,10 +279,10 @@ public class DeadlockTest {
 										+ ".xml"), is);
 						assertNotNull(info);
 						coll.store(transaction, broker, info, is, false);
-					}
+                        transact.commit(transaction);
+                    }
 					generator.releaseAll();
 				}
-				transact.commit(transaction);
 			} catch (Exception e) {
 				transact.abort(transaction);
 				e.printStackTrace();
@@ -294,7 +314,7 @@ public class DeadlockTest {
 					.append("')//chapter/section[@id = 'sect1']");
 			} else if (currentMode == TEST_RANDOM_COLLECTION) {
 				List<Integer> collIds = new ArrayList<Integer>(7);
-				for (int i = 0; i < 7; i++) {
+				for (int i = 0; i < 3; i++) {
 					int r;
 					do {
 						r = random.nextInt(collectionCount);
@@ -302,7 +322,7 @@ public class DeadlockTest {
 					collIds.add(r);
 				}
 				buf.append("(");
-				for (int i = 0; i < 7; i++) {
+				for (int i = 0; i < 3; i++) {
 					if (i > 0)
 						buf.append(", ");
 					buf.append("collection('/db/test/").append(collIds.get(i))
