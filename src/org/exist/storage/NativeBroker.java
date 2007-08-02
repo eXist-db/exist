@@ -634,14 +634,14 @@ public class NativeBroker extends DBBroker {
                 for(int i=1;i<segments.length;i++) {
                     XmldbURI temp = segments[i];
                     path = path.append(temp);
-                    if (current.hasSubcollection(temp)) {
+                    if (current.hasSubcollectionNoLock(temp)) {
                         current = getCollection(path);
                         if (current == null)
                             LOG.debug("Collection '" + path + "' not found!");
                     } else {
                         if (readOnly)
                             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-                        if (!current.getPermissions().validate(user, Permission.WRITE)) {
+                        if (!current.getPermissionsNoLock().validate(user, Permission.WRITE)) {
                             LOG.error("Permission denied to create collection '" + path + "'");
                             throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to write to collection '" + current.getURI() + "'");
                         }

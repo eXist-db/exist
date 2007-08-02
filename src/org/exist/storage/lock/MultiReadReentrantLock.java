@@ -571,11 +571,13 @@ public class MultiReadReentrantLock implements Lock {
             }
             info = new LockInfo(LockInfo.RESOURCE_LOCK, LockInfo.READ_LOCK, getId(), readers);
         }
-        String waitingForWrite[] = new String[waitingForWriteLock.size()];
-        for (int i = 0; i < waitingForWriteLock.size(); i++) {
-            waitingForWrite[i] = ((WaitingThread) waitingForWriteLock.get(i)).getThread().getName();
+        if (waitingForWriteLock != null) {
+            String waitingForWrite[] = new String[waitingForWriteLock.size()];
+            for (int i = 0; i < waitingForWriteLock.size(); i++) {
+                waitingForWrite[i] = ((WaitingThread) waitingForWriteLock.get(i)).getThread().getName();
+            }
+            info.setWaitingForWrite(waitingForWrite);
         }
-        info.setWaitingForWrite(waitingForWrite);
         return info;
     }
 

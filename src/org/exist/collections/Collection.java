@@ -349,6 +349,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 // get a list of subcollection URIs. We will process them after unlocking this collection.
                 // otherwise we may deadlock ourselves
                 subColls = subcollections.keys();
+                XmldbURI uris[] = new XmldbURI[subColls.size()];
             } catch (LockException e) {
                 LOG.warn(e.getMessage(), e);
                 throw e;
@@ -627,7 +628,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
             getLock().release(Lock.READ_LOCK);
         }
     }
-    
+
+    public Permission getPermissionsNoLock() {
+        return permissions;
+    }
+
     /**
      *  Check if the collection has a child document.
      *
@@ -656,7 +661,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
             getLock().release(Lock.READ_LOCK);
         }
     }
-    
+
+    public boolean hasSubcollectionNoLock(XmldbURI name) {
+        return subcollections.contains(name);
+    }
+
     /**
      *  Returns an iterator on the child-documents in this collection.
      *
