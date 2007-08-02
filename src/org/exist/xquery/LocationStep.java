@@ -326,7 +326,6 @@ public class LocationStep extends Step {
 
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
-        
         //actualReturnType = result.getItemType();
         
         return result;
@@ -574,6 +573,7 @@ public class LocationStep extends Step {
             // test is one out of *, text(), node()
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
+            
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         } else if (preloadNodeSets()) {
@@ -894,12 +894,8 @@ public class LocationStep extends Step {
             NodeProxy p;
             for (Iterator i = temp.iterator(); i.hasNext(); ) {
                 p = (NodeProxy) i.next();
-                /* ljo's modification, currently breaks the test suite (in-memory vs stored nodes ?) :
-                   if (test.matches(p) && !(p.getNodeId().getParentId() == NodeId.DOCUMENT_NODE && test.getType() == Type.ELEMENT)) {
-                */
+
                 if (test.matches(p)) {
-                    // For NodeId.DOCUMENT_NODE add only if  
-                    // parent::node() not parent::element().  		
                     result.add(p);
                 }
             }

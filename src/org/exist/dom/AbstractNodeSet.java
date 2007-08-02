@@ -345,12 +345,20 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             NodeProxy current = (NodeProxy) i.next();
             NodeId parentID = current.getNodeId().getParentId();
             //Filter out the temporary nodes wrapper element 
-            if (parentID != NodeId.DOCUMENT_NODE &&
-                !(parentID.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())) {
+            // Removed this test for document nodes for /a/parent::node() to work 
+            // it passes the test suite so please report if it does not work for you,
+            // especially Adam who reported a recursivity problem with previous attempt. /ljo 
+            //if (parentID != NodeId.DOCUMENT_NODE && 
+            if (!(parentID.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())) {
                 if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() ||
                     !parent.getNodeId().equals(parentID)) {
+                    if (parentID != NodeId.DOCUMENT_NODE) {
                     parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE,
                                            StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+                    } else {
+                    parent = new NodeProxy(current.getDocument(), parentID, Node.DOCUMENT_NODE,
+                                           StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+                    }
                 }
                 if (Expression.NO_CONTEXT_ID != contextId) {
                     parent.addContextNode(contextId, current);
@@ -360,12 +368,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 parent.addMatches(current);
                 parents.add(parent);
             }
-            //if (parentID == NodeId.DOCUMENT_NODE &&
-            //  !current.getDocument().getCollection().isTempCollection()) {
-            // fixme! merge with above? Causing recursive failures reported by Adam /ljo
-            //	System.out.println("AbstractNodeSet::getParents() NodeId.DOCUMENT_NODE : type " + current.getNodeId());
-            //parents.add(current);
-            //}
         }
 
 	    return parents;

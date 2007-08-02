@@ -164,7 +164,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
          * in one of the iterations before.
          */
         NodeId parentOfSelfId = self.getNodeId().getParentId();
-
         // check if the start-node should be included, e.g. to process an
         // expression like *[. = 'xxx']
         //TODO : investigate on expression like *[.//* = 'xxx']
@@ -310,6 +309,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      */
     private final NodeSet getNodes() {
         ExtArrayNodeSet result = new ExtArrayNodeSet();
+
         for (Iterator i = context.iterator(); i.hasNext();) {
             NodeProxy proxy = (NodeProxy) i.next();            
             if (proxy.getNodeId() == NodeId.DOCUMENT_NODE) {
@@ -318,6 +318,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
                     continue;
                 }
 
+                // Add root node if axis is either self, ancestor-self or descendant-self /ljo
+                if (test.matches(proxy)) {
+                    if (axis == Constants.SELF_AXIS ||
+                        axis == Constants.ANCESTOR_SELF_AXIS || 
+                        axis == Constants.DESCENDANT_SELF_AXIS) {
+                        result.add(proxy);
+                    }
+                }
                 NodeList cl = proxy.getDocument().getChildNodes();
                 for (int j = 0; j < cl.getLength(); j++) {
                     StoredNode node = (StoredNode) cl.item(j);
