@@ -2,23 +2,45 @@
 
 	package org.exist.xquery.parser;
 
+	import antlr.debug.misc.*;
+	import java.io.StringReader;
+	import java.io.BufferedReader;
+	import java.io.InputStreamReader;
 	import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Stack;
+	import java.util.List;
+	import java.util.Iterator;
+	import java.util.Stack;
+	import org.exist.storage.BrokerPool;
+	import org.exist.storage.DBBroker;
+	import org.exist.storage.analysis.Tokenizer;
+	import org.exist.EXistException;
+	import org.exist.dom.DocumentSet;
+	import org.exist.dom.DocumentImpl;
+	import org.exist.dom.QName;
+	import org.exist.security.PermissionDeniedException;
+	import org.exist.security.User;
+	import org.exist.xquery.*;
+	import org.exist.xquery.value.*;
+	import org.exist.xquery.functions.*;
 
-import org.exist.xquery.XPathException;
-
+import antlr.TokenBuffer;
+import antlr.TokenStreamException;
+import antlr.TokenStreamIOException;
+import antlr.ANTLRException;
+import antlr.LLkParser;
+import antlr.Token;
+import antlr.TokenStream;
+import antlr.RecognitionException;
+import antlr.NoViableAltException;
+import antlr.MismatchedTokenException;
+import antlr.SemanticException;
+import antlr.ParserSharedInputState;
+import antlr.collections.impl.BitSet;
+import antlr.collections.AST;
+import java.util.Hashtable;
 import antlr.ASTFactory;
 import antlr.ASTPair;
-import antlr.NoViableAltException;
-import antlr.ParserSharedInputState;
-import antlr.RecognitionException;
-import antlr.Token;
-import antlr.TokenBuffer;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
 import antlr.collections.impl.ASTArray;
-import antlr.collections.impl.BitSet;
 
 /**
 eXist parses an XQuery expression in (currently) 4 phases:

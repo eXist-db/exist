@@ -345,18 +345,20 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             NodeProxy current = (NodeProxy) i.next();
             NodeId parentID = current.getNodeId().getParentId();
             //Filter out the temporary nodes wrapper element 
-            // Removed this test for document nodes for /a/parent::node() to work 
-            // it passes the test suite so please report if it does not work for you,
-            // especially Adam who reported a recursivity problem with previous attempt. /ljo 
-            //if (parentID != NodeId.DOCUMENT_NODE && 
-            if (!(parentID.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())) {
+            // Moved the parentID != NodeId.DOCUMENT_NODE test inside for /a/parent::node() to work 
+            // correctly.
+            // Added the needed test parentID != null, detected in org.exist.xquery.OptimizerTest
+            // "//node()[parent::mods:title &= 'ethnic']" which caused an NPE here 
+            // since I dont know when. /ljo 
+            if (parentID != null && 
+                !(parentID.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())) {
                 if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() ||
                     !parent.getNodeId().equals(parentID)) {
                     if (parentID != NodeId.DOCUMENT_NODE) {
-                    parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE,
+                        parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE,
                                            StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
                     } else {
-                    parent = new NodeProxy(current.getDocument(), parentID, Node.DOCUMENT_NODE,
+                        parent = new NodeProxy(current.getDocument(), parentID, Node.DOCUMENT_NODE,
                                            StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
                     }
                 }
