@@ -1294,12 +1294,26 @@ throws PermissionDeniedException, EXistException, XPathException
 			test= new TypeTest(Type.COMMENT); 
 		}
 		|
-		"processing-instruction"
+		#( "processing-instruction"
 		{
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				throw new XPathException(n, "Cannot test for processing-instruction() on the attribute axis");
 			test= new TypeTest(Type.PROCESSING_INSTRUCTION); 
 		}
+            (
+                ncpi:NCNAME
+                |
+                slpi:STRING_LITERAL
+                { 
+                    QName qname;
+                    if (slpi == null)
+                        qname= new QName(ncpi.getText(), null, null);
+                    else
+                        qname= new QName(slpi.getText(), null, null);                        
+                    test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
+                }
+            )?
+        )
 		|
 		"document-node"
 		{ test= new TypeTest(Type.DOCUMENT); }
