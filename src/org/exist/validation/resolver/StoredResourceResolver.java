@@ -55,11 +55,13 @@ public class StoredResourceResolver implements XMLEntityResolver {
      */
     public XMLInputSource resolveEntity(XMLResourceIdentifier xri) throws XNIException, IOException {
         
-        LOG.debug("BaseSystemId='" + xri.getBaseSystemId()
-        +"' ExpandedSystemId=" + xri.getExpandedSystemId()
-        +"' LiteralSystemId=" + xri.getLiteralSystemId()
-        +"' Namespace=" + xri.getNamespace()
-        +"' PublicId=" + xri.getPublicId() +"'");
+        if(xri.getExpandedSystemId()==null && xri.getLiteralSystemId()==null && 
+           xri.getNamespace()==null && xri.getPublicId()==null){
+            
+            // quick fail
+            return null;
+        }
+        LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
         
         String resourcePath=null;
         
@@ -73,14 +75,25 @@ public class StoredResourceResolver implements XMLEntityResolver {
             resourcePath = xri.getExpandedSystemId();
         }
         
-        LOG.debug("resourcePath="+resourcePath);
+        LOG.debug("resourcePath='"+resourcePath+"'");
+        
         // DWES set systemid?
         
         InputStream is = new URL(resourcePath).openStream();
         XMLInputSource retVal = new XMLInputSource(xri.getPublicId(), xri.getExpandedSystemId(),
-            xri.getBaseSystemId(), is, null); //UTF-8?
+            xri.getBaseSystemId(), is, "UTF-8"); //UTF-8?
         return retVal;
         
+    }
+    
+    private String getXriDetails(XMLResourceIdentifier xrid){
+        StringBuffer sb = new StringBuffer();
+        sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
+        sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
+        sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");
+        sb.append("LiteralSystemId='").append(xrid.getLiteralSystemId()).append("' ");
+        sb.append("Namespace='").append(xrid.getNamespace()).append("' ");
+        return sb.toString();
     }
     
 }
