@@ -60,11 +60,14 @@ public class SearchResourceResolver implements XMLEntityResolver {
      */
     public XMLInputSource resolveEntity(XMLResourceIdentifier xri) throws XNIException, IOException {
         
-        LOG.debug("BaseSystemId='" + xri.getBaseSystemId()
-        +"' ExpandedSystemId=" + xri.getExpandedSystemId()
-        +"' LiteralSystemId=" + xri.getLiteralSystemId()
-        +"' Namespace=" + xri.getNamespace()
-        +"' PublicId=" + xri.getPublicId() +"'");
+        if(xri.getExpandedSystemId()==null && xri.getLiteralSystemId()==null && 
+           xri.getNamespace()==null && xri.getPublicId()==null){
+            
+            // quick fail
+            return null;
+        }
+        LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
+        
         
         String documentName = null;
         String resourcePath = null;
@@ -76,19 +79,23 @@ public class SearchResourceResolver implements XMLEntityResolver {
         if( xri.getNamespace() !=null ){
             
             // XML Schema search
-            LOG.debug("Searching namespace '"+xri.getNamespace()+"'.");
+            LOG.debug("Searching namespace '"+xri.getNamespace()+"' in database from "+collection+"...");
+            
             resourcePath = databaseResources.findXSD(collection, xri.getNamespace(), user);
-            // set systemid?
+            
+            // DIZZZ: set systemid?
             
         } else if ( xri.getPublicId() !=null ){
             
             // Catalog search
-            LOG.debug("Searching publicId '"+xri.getPublicId()+"'.");
+            LOG.debug("Searching publicId '"+xri.getPublicId()+"' in catalogs in database from "+collection+"...");
+            
             String catalogPath = databaseResources.findCatalogWithDTD(collection, xri.getPublicId(), user);
-            LOG.info("Found catalog='"+catalogPath+"'");
+            LOG.info("Found publicId in catalog '"+catalogPath+"'");
             if(catalogPath!=null && catalogPath.startsWith("/")){
                 catalogPath="xmldb:exist://"+catalogPath;
             }
+            
             eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
             resolver.setCatalogList(new String[]{catalogPath});
             try {
@@ -108,23 +115,33 @@ public class SearchResourceResolver implements XMLEntityResolver {
             return null;
         }
         
-
+        // Another escape route
         if(resourcePath==null){
-            LOG.debug("resourcePath="+resourcePath);
+            LOG.debug("resourcePath=null");
             return null;
         }
         
         if(resourcePath!=null && resourcePath.startsWith("/")){
             resourcePath="xmldb:exist://"+resourcePath;
         }
-        LOG.debug("resourcePath="+resourcePath);
         
+        LOG.debug("resourcePath='"+resourcePath+"'");
         
         InputStream is = new URL(resourcePath).openStream();
+        
         XMLInputSource retVal = new XMLInputSource(xri.getPublicId(), 
             xri.getExpandedSystemId(), xri.getBaseSystemId(), is, "UTF-8");
         return retVal;
-        
+    }
+    
+    private String getXriDetails(XMLResourceIdentifier xrid){
+        StringBuffer sb = new StringBuffer();
+        sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
+        sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
+        sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");
+        sb.append("LiteralSystemId='").append(xrid.getLiteralSystemId()).append("' ");
+        sb.append("Namespace='").append(xrid.getNamespace()).append("' ");
+        return sb.toString();
     }
     
 }
