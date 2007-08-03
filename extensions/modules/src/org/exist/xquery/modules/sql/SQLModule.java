@@ -50,6 +50,7 @@ public class SQLModule extends AbstractInternalModule {
 	private final static FunctionDef[] functions = {
 		new FunctionDef(GetConnectionFunction.signatures[0], GetConnectionFunction.class),
 		new FunctionDef(GetConnectionFunction.signatures[1], GetConnectionFunction.class),
+		new FunctionDef(GetConnectionFunction.signatures[2], GetConnectionFunction.class),
 		new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class)
 	};
 	
