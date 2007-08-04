@@ -72,6 +72,7 @@ public class Put extends AbstractWebDAVMethod {
             HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
         LOG.debug("PUT start");
         File tempFile = saveRequestContent(request);
+       
         
         String url = tempFile.toURI().toASCIIString();
         String contentType = request.getContentType();
@@ -103,15 +104,7 @@ public class Put extends AbstractWebDAVMethod {
                         "Cannot overwrite an existing collection with a resource");
                 return;
             }
-            
-//            MimeType mime = MimeTable.getInstance().getContentTypeFor(path);
-//            if (mime == null){
-//                mime = MimeType.BINARY_TYPE;
-//            }
-            
-            // TODO why is content type involved here? would not like to use it,
-            // as it seems to block binary file upload by MS office.
-            
+                        
             MimeType mime;
             if(contentType == null) {
                 mime = MimeTable.getInstance().getContentTypeFor(pathUri);
@@ -124,27 +117,39 @@ public class Put extends AbstractWebDAVMethod {
                 mime = MimeTable.getInstance().getContentType(contentType);
             }
             
-            if (mime == null)
+            if (mime == null){
                 mime = MimeType.BINARY_TYPE;
+            }
             
             
-            LOG.debug("storing document " + pathUri
-                    + "; content-type='" + contentType+"'");
+            LOG.debug("Storing document " + pathUri + "; content-type='" + contentType+"'");
             
             DocumentImpl doc = null;
             if(mime.isXMLType()) {
-                LOG.debug("storing XML resource");
-                InputSource is = new InputSource(url);
-                IndexInfo info = collection.validateXMLResource(txn, broker, pathUri, is);
-                doc = info.getDocument();
-                doc.getMetadata().setMimeType(contentType);
-                //TODO : put this in a finally clause.
-                collection.release(Lock.READ_LOCK);
-                collectionLocked = false;
-                collection.store(txn, broker, info, is, false);
+                LOG.debug("Storing XML resource");           
+                
+                // 0 byte XML files cannot exist, create place colder
+                if(tempFile.length()==0L){
+                    LOG.debug("Create '0 byte' place for XML resource");
+                    String txt="<!-- place holder for null byte sized XML document --><null/>";
+                    
+                    InputSource is = new InputSource(url);
+                    IndexInfo info = collection.validateXMLResource(txn, broker, pathUri, txt);
+                    doc = info.getDocument();
+                    doc.getMetadata().setMimeType(contentType);
+                    collection.store(txn, broker, info, txt, false);
+                    
+                } else {
+                    InputSource is = new InputSource(url);
+                    IndexInfo info = collection.validateXMLResource(txn, broker, pathUri, is);
+                    doc = info.getDocument();
+                    doc.getMetadata().setMimeType(contentType);
+                    collection.store(txn, broker, info, is, false);
+                }
                 LOG.debug("done");
+                
             } else {
-                LOG.debug("storing Binary resource"); 
+                LOG.debug("Storing binary resource"); 
                 FileInputStream is = new FileInputStream(tempFile);
                 doc = collection.addBinaryResource(txn, broker, pathUri, is, contentType, (int) tempFile.length());
                 is.close();

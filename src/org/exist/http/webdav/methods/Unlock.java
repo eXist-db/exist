@@ -123,6 +123,9 @@ public class Unlock extends AbstractWebDAVMethod {
 	                if(isNullResource){
 	                    LOG.debug("Unlock NullResource");
 	                    try {
+                                XmldbURI collUri = path.removeLastSegment();
+                                collection = broker.openCollection(collUri, Lock.READ_LOCK);
+                            
 	                    	//TODO : if the collection lock has been released
 	                    	//Reacquire one here
 	                        if(resource.getResourceType() == DocumentImpl.BINARY_FILE)

@@ -40,6 +40,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -251,7 +259,7 @@ public class Propfind extends AbstractWebDAVMethod {
                     SerializerPool.getInstance().returnObject(serializer);
                 }
                 String content = os.toString();
-//				LOG.debug("response:\n" + content);
+//                LOG.debug("response:\n" + content);
                 writeResponse(response, content);
             }
         } catch (EXistException e) {
@@ -585,22 +593,22 @@ public class Propfind extends AbstractWebDAVMethod {
         }
     }
     
-//    public static String xmlToString(Node node) {
-//        try {
-//            Source source = new DOMSource(node);
-//            StringWriter stringWriter = new StringWriter();
-//            Result result = new StreamResult(stringWriter);
-//            TransformerFactory factory = TransformerFactory.newInstance();
-//            Transformer transformer = factory.newTransformer();
-//            transformer.transform(source, result);
-//            return stringWriter.getBuffer().toString();
-//        } catch (TransformerConfigurationException e) {
-//            e.printStackTrace();
-//        } catch (TransformerException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
+    public static String xmlToString(Node node) {
+        try {
+            Source source = new DOMSource(node);
+            StringWriter stringWriter = new StringWriter();
+            Result result = new StreamResult(stringWriter);
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Transformer transformer = factory.newTransformer();
+            transformer.transform(source, result);
+            return stringWriter.getBuffer().toString();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     
     private static class Visited {
         
