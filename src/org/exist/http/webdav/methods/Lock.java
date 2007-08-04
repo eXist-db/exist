@@ -116,20 +116,23 @@ public class Lock extends AbstractWebDAVMethod {
 	            
 	            if(mime.isXMLType()) {
 	                LOG.debug("Storing NULL xml resource");
+                        
+                        String txt="<!-- place holder for null byte sized "
+                                +"nullresource XML document --><nullresource/>";
 	                
-	                IndexInfo info = collection.validateXMLResource(txn, broker, docName, "<nullresource/>");
+	                IndexInfo info = collection.validateXMLResource(txn, broker, docName, txt);
 	                //TODO : unlock the collection here ?
 	                resource = info.getDocument();
 	                info.getDocument().getMetadata().setMimeType(contentType);
 	                
-	                collection.store(txn, broker, info,
-	                        "<nullresource/>", false);
+	                collection.store(txn, broker, info, txt, false);
 	                
 	            } else {
 	                LOG.debug("Storing NULL byte binary resource.");
 	                resource = collection.addBinaryResource(
 	                        txn, broker, docName, new byte[0], contentType);
 	            }
+                
             } finally {
                 collection.release(org.exist.storage.lock.Lock.READ_LOCK);
             	
