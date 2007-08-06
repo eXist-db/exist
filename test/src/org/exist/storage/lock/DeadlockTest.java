@@ -93,13 +93,13 @@ public class DeadlockTest {
 		return params;
 	}
 	
-	private static final int COLL_COUNT = 50;
+	private static final int COLL_COUNT = 30;
 
-    private static final int QUERY_COUNT = 800;
+    private static final int QUERY_COUNT = 900;
 
-    private static final int DOC_COUNT = 20;
+    private static final int DOC_COUNT = 30;
 
-    private static final int N_THREADS = 5;
+    private static final int N_THREADS = 4;
 
     private final static String COLLECTION_CONFIG =
 		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -229,7 +229,7 @@ public class DeadlockTest {
 		executor.shutdown();
 		boolean terminated = false;
 		try {
-			terminated = executor.awaitTermination(60 * 60 * 1, TimeUnit.SECONDS);
+			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 		}
 		assertTrue(terminated);
@@ -252,8 +252,7 @@ public class DeadlockTest {
 			Txn transaction = null;
 			DBBroker broker = null;
 			try {
-				broker = pool
-						.get(org.exist.security.SecurityManager.SYSTEM_USER);
+				broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 				transact = pool.getTransactionManager();
 				assertNotNull(transact);
 
@@ -267,8 +266,10 @@ public class DeadlockTest {
 									.toString(i)));
 					assertNotNull(coll);
 					broker.saveCollection(transaction, coll);
+                    transact.commit(transaction);
 
-					System.out.println("Generating " + docCount + " files...");
+                    transaction = transact.beginTransaction();
+                    System.out.println("Generating " + docCount + " files...");
 					File[] files = generator.generate(broker, coll, generateXQ);
 					for (int j = 0; j < files.length; j++, fileCount++) {
 						InputSource is = new InputSource(files[j].toURI()
@@ -343,7 +344,9 @@ public class DeadlockTest {
 			try {
 				org.xmldb.api.base.Collection testCollection = DatabaseManager
 						.getCollection("xmldb:exist://" + collection, "admin", null);
-				XPathQueryServiceImpl service = (XPathQueryServiceImpl) testCollection
+                if (testCollection == null)
+                    return;
+                XPathQueryServiceImpl service = (XPathQueryServiceImpl) testCollection
 						.getService("XQueryService", "1.0");
 				service.beginProtected();
 				try {
