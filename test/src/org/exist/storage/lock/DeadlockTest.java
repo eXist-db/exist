@@ -85,8 +85,8 @@ public class DeadlockTest {
 	@Parameters 
 	public static LinkedList<Integer[]> data() {
 		LinkedList<Integer[]> params = new LinkedList<Integer[]>();
-//		params.add(new Integer[] { TEST_RANDOM_COLLECTION });
-//		params.add(new Integer[] { TEST_SINGLE_COLLECTION });
+		params.add(new Integer[] { TEST_RANDOM_COLLECTION });
+		params.add(new Integer[] { TEST_SINGLE_COLLECTION });
 		params.add(new Integer[] { TEST_ALL_COLLECTIONS });
 //		params.add(new Integer[] { TEST_SINGLE_DOC });
 //		params.add(new Integer[] { TEST_MIXED });
