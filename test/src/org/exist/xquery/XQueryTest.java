@@ -2455,6 +2455,30 @@ public class XQueryTest extends XMLTestCase {
         }
         
     }
+    
+    
+    // http://sourceforge.net/support/tracker.php?aid=1769086 
+    public void testCce_IndexOf_1769086(){
+        
+        try {
+            String query= "(\"One\", \"Two\", \"Three\")[index-of((\"1\", \"2\", \"3\"), \"2\")]";
+            
+            XPathQueryService service
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            assertEquals(1,result.getSize());
+            
+            assertEquals("First", "Two", result.getResource(0).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
+    
+    
 
     
     
