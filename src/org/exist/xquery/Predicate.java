@@ -95,13 +95,14 @@ public class Predicate extends PathExpr {
         if (Type.subTypeOf(innerType, Type.NODE) && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
     		executionMode = NODE;
         // Case 2: predicate expression returns a unique number and has no dependency with the context item.
-    	} else if (Type.subTypeOf(innerType, Type.NUMBER) && 
+    	} else if (Type.subTypeOf(innerType, Type.NUMBER) && (
     			(inner.getCardinality() == Cardinality.EXACTLY_ONE && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM))
     			||
     			//TOTHINK :
     			//No context item dependency check for functions that return at most one number
     			(Cardinality.checkCardinality(inner.getCardinality(), Cardinality.EXACTLY_ONE) && inner instanceof Function)
-    			) 
+    			)
+    		)
     		executionMode = POSITIONAL;
         // Case 3: all other cases, boolean evaluation (that can be reevaluated later)
         else
