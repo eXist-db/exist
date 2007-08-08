@@ -88,14 +88,14 @@ public class DeadlockTest {
 		params.add(new Integer[] { TEST_RANDOM_COLLECTION });
 		params.add(new Integer[] { TEST_SINGLE_COLLECTION });
 		params.add(new Integer[] { TEST_ALL_COLLECTIONS });
-//		params.add(new Integer[] { TEST_SINGLE_DOC });
-//		params.add(new Integer[] { TEST_MIXED });
+		params.add(new Integer[] { TEST_SINGLE_DOC });
+		params.add(new Integer[] { TEST_MIXED });
 		return params;
 	}
 	
 	private static final int COLL_COUNT = 30;
 
-    private static final int QUERY_COUNT = 900;
+    private static final int QUERY_COUNT = 1000;
 
     private static final int DOC_COUNT = 30;
 
@@ -222,7 +222,6 @@ public class DeadlockTest {
                 e.printStackTrace();
             }
         }
-//        new StoreTask("store", COLL_COUNT, DOC_COUNT).run();
 		for (int i = 0; i < QUERY_COUNT; i++) {
 			executor.submit(new QueryTask(COLL_COUNT));
 		}
