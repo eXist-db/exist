@@ -55,8 +55,8 @@ public class Compare extends Function {
 					XmlDiffModule.PREFIX),
 			"Returns the differences between XML documents",
 			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
+					new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+					new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
 
 	public Compare(XQueryContext context) {
@@ -96,10 +96,13 @@ public class Compare extends Function {
 			return BooleanValue.valueOf(s2.isEmpty());
 		else if (s2.isEmpty())
 			return BooleanValue.valueOf(s1.isEmpty());
-		
+
+		if (s1.hasMany() || s2.hasMany())
+			return BooleanValue.valueOf(s1.getItemCount() == s2.getItemCount());
+
 		NodeValue node1 = (NodeValue) s1.itemAt(0);
 		NodeValue node2 = (NodeValue) s2.itemAt(0);
-		
+        
 		Sequence result = null;
 		try {
 			Diff d = new Diff(serialize(node1), serialize(node2));
