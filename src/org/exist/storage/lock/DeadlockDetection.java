@@ -211,7 +211,6 @@ public class DeadlockDetection {
     public static void debug(String name, LockInfo info) {
         StringWriter sout = new StringWriter();
         PrintWriter writer = new PrintWriter(sout);
-        writer.println("Die Sabine ist blöd");
         debug(writer, name, info);
         writer.close();
         System.out.println(sout.toString());
