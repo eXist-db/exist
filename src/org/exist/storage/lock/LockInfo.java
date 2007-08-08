@@ -45,6 +45,8 @@ public class LockInfo {
 
     private String[] waitingForRead = new String[0];
 
+    private String[] readLocks = new String[0];
+
     public LockInfo(String lockType, String lockMode, String id, String[] owners) {
         this.lockType = lockType;
         this.lockMode = lockMode;
@@ -82,5 +84,13 @@ public class LockInfo {
 
     public void setWaitingForRead(String[] waitingForRead) {
         this.waitingForRead = waitingForRead;
+    }
+
+    public String[] getReadLocks() {
+        return readLocks;
+    }
+
+    public void setReadLocks(String[] readLocks) {
+        this.readLocks = readLocks;
     }
 }

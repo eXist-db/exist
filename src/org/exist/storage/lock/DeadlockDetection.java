@@ -23,6 +23,7 @@ package org.exist.storage.lock;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.OutputStreamWriter;
 
 
 import java.util.*;
@@ -143,34 +144,33 @@ public class DeadlockDetection {
             if (wt != null) {
                 waiters.add(wt);
                 Lock l = wt.getLock();
-                owner = ((MultiReadReentrantLock) l).getWriteLockedThread();
-                if (owner != null) {
-                    if (owner == waiter)
+                Thread t = ((MultiReadReentrantLock) l).getWriteLockedThread();
+                if (t == owner) {
+                    System.out.println("Waiter: " + waiter.getName() + " Thread: " + t.getName() + " == " + owner.getName());
+                    debug(t.getName(), l.getLockInfo());
+                    return false;
+                }
+                if (t != null) {
+                    if (t == waiter)
                         return true;
-                    return wouldDeadlock(waiter, owner, waiters);
+                    return wouldDeadlock(waiter, t, waiters);
                 } else
                     return false;
-            }
-            return false;
-        }
-    }
-
-    public static boolean circularWait(Thread waiter, Thread owner, List waiters) {
-        synchronized (waitForResource) {
-            // check if threadB is waiting for a resource lock
-            WaitingThread wt = (WaitingThread) waitForResource.get(owner);
-            while (wt != null) {
-//                if (wt.getLock().hasLock(waiter))
-//                    return true;
-                Thread t = ((MultiReadReentrantLock)wt.getLock()).getWriteLockedThread();
-                if (t == null)
-                    return false;
-                System.out.println("wt.thread: " + wt.getThread().getName() + "; writeLock: " + t.getName());
-                if (t == waiter) {
-                    return true;
+            } else {
+                Lock l = (Lock) waitForCollection.get(owner);
+                if (l != null) {
+                    Thread t = ((ReentrantReadWriteLock) l).getOwner();
+                    if (t == owner) {
+                        System.out.println("Thread " + t.getName() + " == " + owner.getName());
+                        debug(t.getName(), l.getLockInfo());
+                        return false;
+                    }
+                    if (t != null) {
+                        if (t == waiter)
+                            return true;
+                        return wouldDeadlock(waiter, t, waiters);
+                    }
                 }
-                waiters.add(wt);
-                wt = (WaitingThread) waitForResource.get(t);
             }
             return false;
         }
@@ -206,5 +206,37 @@ public class DeadlockDetection {
             table.put(thread.getName(), ((Lock)entry.getValue()).getLockInfo());
         }
         return table;
+    }
+
+    public static void debug(String name, LockInfo info) {
+        StringWriter sout = new StringWriter();
+        PrintWriter writer = new PrintWriter(sout);
+        writer.println("Die Sabine ist blöd");
+        debug(writer, name, info);
+        writer.close();
+        System.out.println(sout.toString());
+    }
+
+    public static void debug(PrintWriter writer, String name, LockInfo info) {
+        writer.println(name);
+        writer.println("Lock type: " + info.getLockType());
+        writer.println("Lock mode: " + info.getLockMode());
+        writer.println("Lock id: " + info.getId());
+        writer.println("Held by: " + Arrays.toString(info.getOwners()));
+        writer.println("Read locks: " + Arrays.toString(info.getReadLocks()));
+        writer.println("Wait for read: " + Arrays.toString(info.getWaitingForRead()));
+        writer.println("Wait for write: " + Arrays.toString(info.getWaitingForWrite()));
+    }
+
+    public static void debug() {
+        StringWriter sout = new StringWriter();
+        PrintWriter writer = new PrintWriter(sout);
+        Map threads = getWaitingThreads();
+        for (Iterator i = threads.entrySet().iterator(); i.hasNext();) {
+            Map.Entry entry = (Map.Entry) i.next();
+            debug(writer, entry.getKey().toString(), (LockInfo) entry.getValue());
+        }
+        writer.close();
+        System.out.println(sout.toString());
     }
 }

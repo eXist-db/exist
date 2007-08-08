@@ -24,6 +24,9 @@ package org.exist.storage.lock;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.collections.Collection;
+
+import java.util.Iterator;
 
 /**
  * This map is used by the XQuery engine to track how many read locks were
@@ -42,6 +45,32 @@ public class LockedDocumentMap extends Int2ObjectHashMap {
             put(doc.getDocId(), entry);
         }
         entry.locksAcquired++;
+    }
+
+    public DocumentSet toDocumentSet() {
+        DocumentSet docs = new DocumentSet(size());
+        LockedDocument d;
+        for(int idx = 0; idx < tabSize; idx++) {
+	        if(values[idx] == null || values[idx] == REMOVED)
+	            continue;
+	        d = (LockedDocument) values[idx];
+            docs.add(d.document);
+        }
+        return docs;
+    }
+
+    public DocumentSet getDocsByCollection(Collection collection, boolean includeSubColls, DocumentSet targetSet) {
+        if (targetSet == null)
+            targetSet = new DocumentSet(size());
+        LockedDocument d;
+        for(int idx = 0; idx < tabSize; idx++) {
+	        if(values[idx] == null || values[idx] == REMOVED)
+	            continue;
+	        d = (LockedDocument) values[idx];
+            if (d.document.getCollection().getURI().startsWith(collection.getURI()))
+                targetSet.add(d.document);
+        }
+        return targetSet;
     }
 
     public void unlock() {

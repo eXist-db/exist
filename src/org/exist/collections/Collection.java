@@ -294,6 +294,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
         return cl;
     }
 
+    public DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean recursive,
+                                    boolean checkPermissions) {
+        return allDocs(broker, docs, recursive, checkPermissions, null);
+    }
+
     /**
      * Retrieve all documents contained in this collections.
      *
@@ -307,7 +312,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
      * @return The set of documents.
      */
     public DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean recursive,
-                                    boolean checkPermissions) {
+                                    boolean checkPermissions, LockedDocumentMap protectedDocs) {
         if (permissions.validate(broker.getUser(), Permission.READ)) {
             List subColls = null;
             try {
@@ -331,7 +336,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                     Collection child = broker.openCollection(path.appendInternal(childName), Lock.NO_LOCK);
                     // a collection may have been removed in the meantime, so check first
                     if (child != null)
-                        child.allDocs(broker, docs, recursive, checkPermissions);
+                        child.allDocs(broker, docs, recursive, checkPermissions, protectedDocs);
                 }
             }
         }

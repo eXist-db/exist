@@ -77,21 +77,25 @@ public class RootNode extends Step {
         NodeSet result = new ExtArrayNodeSet(2);
         try {
             // wait for pending updates
-            ds.lock(false, true);
+            if (!context.inProtectedMode())
+                ds.lock(false, true);
 	        DocumentImpl doc;
 	        for (Iterator i = ds.iterator(); i.hasNext();) {
 	            doc = (DocumentImpl) i.next();
-	            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
+                if (context.inProtectedMode() && !context.getProtectedDocs().containsKey(doc.getDocId()))
+                    continue;
+                if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
 	            	result.add(new NodeProxy(doc));
 	            }
             }
 	        cached = result;
-	        cachedDocs = ds;            
+	        cachedDocs = ds;
         } catch (LockException e) {
             throw new XPathException(getASTNode(), "Failed to acquire lock on the context document set");
         } finally {
             // release all locks
-            ds.unlock(false);
+            if (!context.inProtectedMode())
+                ds.unlock(false);
         }
         
         if (context.getProfiler().isEnabled()) 
