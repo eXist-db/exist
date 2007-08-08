@@ -5427,6 +5427,11 @@ public XQueryTreeParser() {
 					ncpi = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,NCNAME);
 					_t = _t.getNextSibling();
+					
+					QName qname;
+					qname= new QName(ncpi.getText(), "", null);
+					test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
+					
 					break;
 				}
 				case STRING_LITERAL:
@@ -5436,10 +5441,7 @@ public XQueryTreeParser() {
 					_t = _t.getNextSibling();
 					
 					QName qname;
-					if (slpi == null)
-					qname= new QName(ncpi.getText(), null, null);
-					else
-					qname= new QName(slpi.getText(), null, null);                        
+					qname= new QName(slpi.getText(), "", null);                        
 					test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
 					
 					break;

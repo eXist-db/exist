@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-04,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2000-2007,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -315,7 +315,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	 */
 	public Node getPreviousSibling() {
         StoredNode parent = (StoredNode) getParentNode();
-        if (parent.getNodeType() == Node.DOCUMENT_NODE)
+        if (parent == null || parent.getNodeType() == Node.DOCUMENT_NODE)
             return null;
         if (parent.isDirty()) {
             try {

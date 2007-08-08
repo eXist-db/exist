@@ -232,7 +232,6 @@ public class LocationStep extends Step {
         }
 
         Sequence result;
-
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
@@ -342,7 +341,8 @@ public class LocationStep extends Step {
                 if (nodeTestType == null)
                     nodeTestType = new Integer(test.getType());
                 if (nodeTestType.intValue() != Type.NODE
-                    && nodeTestType.intValue() != Type.ELEMENT) {
+                    && nodeTestType.intValue() != Type.ELEMENT
+                    && nodeTestType.intValue() != Type.PROCESSING_INSTRUCTION) {
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this,
                                                       Profiler.OPTIMIZATIONS, "OPTIMIZATION",
@@ -362,6 +362,13 @@ public class LocationStep extends Step {
      * @return a <code>Sequence</code> value
      */
     protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
+        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
+                                                     contextSet);
+            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
+            return vset;
+        }
+
         if (test.isWildcardTest()) {
             if (nodeTestType == null) {
                 nodeTestType = new Integer(test.getType());
@@ -518,8 +525,8 @@ public class LocationStep extends Step {
      * @return a <code>NodeSet</code> value
      */
     protected NodeSet getChildren(XQueryContext context, NodeSet contextSet) {
-        if (test.isWildcardTest()) {
-            // test is one out of *, text(), node()
+        if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
+            // test is one out of *, text(), node() including processing-instruction(targetname)
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
@@ -569,11 +576,10 @@ public class LocationStep extends Step {
      * @return a <code>NodeSet</code> value
      */
     protected NodeSet getDescendants(XQueryContext context, NodeSet contextSet) {
-        if (test.isWildcardTest()) {
-            // test is one out of *, text(), node()
+        if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
+            // test is one out of *, text(), node() including processing-instruction(targetname)
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
-            
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         } else if (preloadNodeSets()) {
@@ -618,6 +624,7 @@ public class LocationStep extends Step {
                     throw new IllegalArgumentException(
                                                        "Unsupported axis specified");
             }
+
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled()) {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -628,7 +635,7 @@ public class LocationStep extends Step {
             	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
                                                       docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
-            	return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
+                return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
             }
 
         }
@@ -642,6 +649,13 @@ public class LocationStep extends Step {
      * @return a <code>NodeSet</code> value
      */
     protected NodeSet getSiblings(XQueryContext context, NodeSet contextSet) {
+        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
+                                                     contextSet);
+            
+            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
+            return vset;
+        }
         if (test.isWildcardTest()) {
             ExtArrayNodeSet result = new ExtArrayNodeSet(contextSet.getLength());
             SiblingVisitor visitor = new SiblingVisitor(result);
@@ -728,6 +742,13 @@ public class LocationStep extends Step {
      */
     protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet)
         throws XPathException {
+        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
+                                                     contextSet);
+            
+            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
+            return vset;
+        }
         if (test.isWildcardTest()) {
             // TODO : throw an exception here ! Don't let this pass through
             return NodeSet.EMPTY_SET;
@@ -759,7 +780,14 @@ public class LocationStep extends Step {
      */
     protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet)
         throws XPathException {
-        if (test.isWildcardTest()) {
+        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
+                                                     contextSet);
+            
+            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
+            return vset;
+        }
+        if (test.isWildcardTest() && test.getType() != Type.PROCESSING_INSTRUCTION) {
             // TODO : throw an exception here ! Don't let this pass through
             return NodeSet.EMPTY_SET;
         } else {

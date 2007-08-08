@@ -30,6 +30,7 @@ import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -159,7 +160,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     private NodeProxy getFirstParent(NodeProxy self, NodeProxy candidateFirstParent,
                                      boolean includeSelf, boolean restrictToDirectParent, int recursions) {
         
-        /* if the node has is a doument node we still need to 
+        /* if the node is a doument node we still need to 
          * complete this method to check if we have found a potential parent
          * in one of the iterations before.
          */
@@ -309,7 +310,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
      */
     private final NodeSet getNodes() {
         ExtArrayNodeSet result = new ExtArrayNodeSet();
-
         for (Iterator i = context.iterator(); i.hasNext();) {
             NodeProxy proxy = (NodeProxy) i.next();            
             if (proxy.getNodeId() == NodeId.DOCUMENT_NODE) {
@@ -344,8 +344,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
                         (axis == Constants.DESCENDANT_AXIS ||
                          axis == Constants.DESCENDANT_SELF_AXIS ||
                          axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
-                        // note: we create a copy of the docElemProxy here to be used
-                        // as context when traversing the tree.
+                        // note: we create a copy of the docElemProxy here to 
+                        // be used as context when traversing the tree.
                         NodeProxy contextNode = new NodeProxy(p);
                         contextNode.deepCopyContext(proxy);
                         //TODO : is this StoredNode construction necessary ?
@@ -353,6 +353,18 @@ public class VirtualNodeSet extends AbstractNodeSet {
                         domIter.next();
                         contextNode.setMatches(proxy.getMatches());
                         addChildren(contextNode, result, node, domIter, 0);
+                    }
+                    if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
+                        && (axis == Constants.CHILD_AXIS ||
+                            axis == Constants.DESCENDANT_AXIS ||
+                            axis == Constants.DESCENDANT_SELF_AXIS ||
+                            // fixme! self axis probably not needed /ljo
+                            axis == Constants.SELF_AXIS ||
+                            axis == Constants.PRECEDING_AXIS ||
+                            axis == Constants.FOLLOWING_AXIS)) {
+                        if (test.matches(node)) {
+                            result.add(p);
+                        }
                     }
                 }
                 continue;
@@ -366,7 +378,37 @@ public class VirtualNodeSet extends AbstractNodeSet {
                         }
                         result.add(proxy);
                     }
-                } 
+                }
+                if (test.getType() == Type.PROCESSING_INSTRUCTION ||
+                    test.getType() == Type.COMMENT ||
+                    test.getType() == Type.CDATA_SECTION) {
+                    DocumentImpl doc = proxy.getDocument();
+                    if (axis == Constants.PRECEDING_AXIS) {
+                        StoredNode ps = (StoredNode) doc.getFirstChild();
+                        StoredNode pe = (StoredNode) doc.getDocumentElement();
+                        while (ps != null && !ps.equals(pe)) {
+                            if (test.matches(ps)) {
+                                result.add(new NodeProxy(ps));
+                            }
+                            ps = (StoredNode) doc.getFollowingSibling(ps);
+                        }
+                    }
+                    if (axis == Constants.FOLLOWING_AXIS) {
+                        StoredNode pe = (StoredNode) doc.getDocumentElement();
+                        StoredNode pf = (StoredNode) doc.getFollowingSibling(pe); 
+                        while (pf != null) {
+                            if (test.matches(pf)) {
+                                result.add(new NodeProxy(pf));
+                            }
+                            pf = (StoredNode) doc.getFollowingSibling(pf);
+                        }
+                    }
+                    if (axis == Constants.SELF_AXIS ||
+                        axis == Constants.ANCESTOR_SELF_AXIS || 
+                        axis == Constants.DESCENDANT_SELF_AXIS) {
+                        result.add(proxy);
+                    }
+                }
                 if (axis != Constants.SELF_AXIS) {
                     //TODO : is this StroredNode construction necessary ?
                     Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(new StoredNode(proxy));

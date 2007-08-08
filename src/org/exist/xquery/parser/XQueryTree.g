@@ -1302,14 +1302,16 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
             (
                 ncpi:NCNAME
+                { 
+                    QName qname;
+                    qname= new QName(ncpi.getText(), "", null);
+                    test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
+                }
                 |
                 slpi:STRING_LITERAL
                 { 
                     QName qname;
-                    if (slpi == null)
-                        qname= new QName(ncpi.getText(), null, null);
-                    else
-                        qname= new QName(slpi.getText(), null, null);                        
+                    qname= new QName(slpi.getText(), "", null);                        
                     test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
                 }
             )?

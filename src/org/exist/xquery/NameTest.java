@@ -43,8 +43,8 @@ public class NameTest extends TypeTest {
 	}
 	
 	public boolean matchesName(Node other) {
-		if (nodeName.getNamespaceURI() != null) {
-			if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI()))
+        if (nodeName.getNamespaceURI() != null) {
+            if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI()))
 				return false;
 		}
 		if (nodeName.getLocalName() != null) {
@@ -76,7 +76,7 @@ public class NameTest extends TypeTest {
             result.append(nodeName.getPrefix() + ":*");
         else
             result.append(nodeName.getStringValue());            
-        return result.toString();	    
+        return result.toString();
 	}
 
 }
