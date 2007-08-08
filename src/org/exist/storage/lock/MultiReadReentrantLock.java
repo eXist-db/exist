@@ -225,6 +225,7 @@ public class MultiReadReentrantLock implements Lock {
                         LOG.debug(buf.toString());
                         debugReadLocks("WAIT");
                     }
+//                    checkForDeadlock();
                     try {
                         waiter.doWait();
                     } catch (LockException e) {
@@ -255,6 +256,8 @@ public class MultiReadReentrantLock implements Lock {
 
     public void release(int mode) {
         switch (mode) {
+            case Lock.NO_LOCK:
+                break;
             case Lock.WRITE_LOCK:
                 releaseWrite(1);
                 break;
@@ -424,22 +427,15 @@ public class MultiReadReentrantLock implements Lock {
      *
      * @return true if the write lock should be granted to the current thread
      */
-    private boolean handleDeadlockOnWrite() throws DeadlockException {
-        if (writeLockedThread == null)
-            return true;
-        else {
-            Thread waiter = Thread.currentThread();
-            ArrayList waiters = new ArrayList(10);
-            if (DeadlockDetection.wouldDeadlock(waiter, writeLockedThread, waiters)) {
-                LOG.warn("Deadlock detected on lock " + getId());
-                for (int i = 0; i < waiters.size(); i++) {
-                    WaitingThread wt = (WaitingThread) waiters.get(i);
-                    LOG.warn("Sending deadlock exception to lock on " + wt.getLock().getId());
-                    wt.signalDeadlock();
-                }
-                return false;
+    private void checkForDeadlock() throws DeadlockException {
+        Thread waiter = Thread.currentThread();
+        ArrayList waiters = new ArrayList(10);
+        if (DeadlockDetection.wouldDeadlock(waiter, writeLockedThread, waiters)) {
+            LOG.warn("Deadlock detected on lock " + getId());
+            for (int i = 0; i < waiters.size(); i++) {
+                WaitingThread wt = (WaitingThread) waiters.get(i);
+                LOG.debug("Waiter: " + wt.getThread().getName() + " -> " + wt.getLock().getId());
             }
-            return false;
         }
     }
 
@@ -561,14 +557,18 @@ public class MultiReadReentrantLock implements Lock {
 
     public synchronized LockInfo getLockInfo() {
         LockInfo info;
-        if (writeLockedThread != null)
-            info = new LockInfo(LockInfo.RESOURCE_LOCK, LockInfo.WRITE_LOCK, getId(), new String[] { writeLockedThread.getName() });
-        else {
-            String[] readers = new String[outstandingReadLocks.size()];
+        String[] readers = new String[0];
+        if (outstandingReadLocks != null) {
+            readers = new String[outstandingReadLocks.size()];
             for (int i = 0; i < outstandingReadLocks.size(); i++) {
                 LockOwner owner = (LockOwner) outstandingReadLocks.get(i);
                 readers[i] = owner.getOwner().getName();
             }
+        }
+        if (writeLockedThread != null) {
+            info = new LockInfo(LockInfo.RESOURCE_LOCK, LockInfo.WRITE_LOCK, getId(), new String[] { writeLockedThread.getName() });
+            info.setReadLocks(readers);
+        } else {
             info = new LockInfo(LockInfo.RESOURCE_LOCK, LockInfo.READ_LOCK, getId(), readers);
         }
         if (waitingForWriteLock != null) {

@@ -257,12 +257,14 @@ public class XQueryContext {
 	 * If set to true, it is the responsibility of the calling client
 	 * code to unlock documents after the query has completed.
 	 */
-	private boolean lockDocumentsOnLoad = false;
-    
+//	private boolean lockDocumentsOnLoad = false;
+
     /**
      * Documents locked during the query.
      */
-	private LockedDocumentMap lockedDocuments = null;
+//	private LockedDocumentMap lockedDocuments = null;
+
+    private LockedDocumentMap protectedDocuments = null;
     
     /**
      * The profiler instance used by this context.
@@ -671,7 +673,11 @@ public class XQueryContext {
 		if(staticDocuments != null)
             // the document set has already been built, return it
 			return staticDocuments;
-		staticDocuments = new DocumentSet(1031);
+        if (protectedDocuments != null) {
+            staticDocuments = protectedDocuments.toDocumentSet();
+            return staticDocuments;
+        }
+        staticDocuments = new DocumentSet(1031);
 		if(staticDocumentPaths == null)
             // no path defined: return all documents in the db 
 			broker.getAllXMLResources(staticDocuments);
@@ -699,15 +705,27 @@ public class XQueryContext {
 		}
 		return staticDocuments;
 	}
-	
-	/**
+
+    public void setProtectedDocs(LockedDocumentMap map) {
+        this.protectedDocuments = map;
+    }
+
+    public LockedDocumentMap getProtectedDocs() {
+        return this.protectedDocuments;
+    }
+
+    public boolean inProtectedMode() {
+        return protectedDocuments != null;
+    }
+
+    /**
 	 * Should loaded documents be locked?
 	 * 
-         * @see #setLockDocumentsOnLoad(boolean)
-         * 
+     * @see #setLockDocumentsOnLoad(boolean)
+     *
 	 */
 	public boolean lockDocumentsOnLoad() {
-	    return lockDocumentsOnLoad;
+	    return false;
 	}
 	
 	/**
@@ -722,28 +740,29 @@ public class XQueryContext {
 	 * 
 	 * @param lock
 	 */
-	public void setLockDocumentsOnLoad(boolean lock) {
-	    lockDocumentsOnLoad = lock;
-	    if(lock)
-	        lockedDocuments = new LockedDocumentMap();
-	}
+//	public void setLockDocumentsOnLoad(boolean lock) {
+//	    lockDocumentsOnLoad = lock;
+//	    if(lock)
+//	        lockedDocuments = new LockedDocumentMap();
+//	}
 
     public void addLockedDocument(DocumentImpl doc) {
-        if (lockedDocuments != null)
-           lockedDocuments.add(doc);
+//        if (lockedDocuments != null)
+//           lockedDocuments.add(doc);
     }
+
     /**
      * Release all locks on documents that have been locked
      * during query execution.
      *
      *@see #setLockDocumentsOnLoad(boolean)
      */
-	public void releaseLockedDocuments() {
-        if(lockedDocuments != null)
-	        lockedDocuments.unlock();
-	    lockDocumentsOnLoad = false;
-		lockedDocuments = null;
-	}
+//	public void releaseLockedDocuments() {
+//        if(lockedDocuments != null)
+//	        lockedDocuments.unlock();
+//	    lockDocumentsOnLoad = false;
+//		lockedDocuments = null;
+//	}
 	
     /**
      * Release all locks on documents not being referenced by the sequence.
@@ -754,27 +773,27 @@ public class XQueryContext {
      * @param seq
      * @throws XPathException 
      */
-	public LockedDocumentMap releaseUnusedDocuments(Sequence seq) throws XPathException {
-	    if(lockedDocuments == null)
-	        return null;
-        // determine the set of documents referenced by nodes in the sequence
-        DocumentSet usedDocs = new DocumentSet();
-        for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-            Item next = i.nextItem();
-            if(Type.subTypeOf(next.getType(), Type.NODE)) {
-                NodeValue node = (NodeValue) next;
-                if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                    DocumentImpl doc = ((NodeProxy)node).getDocument();
-                    if(!usedDocs.contains(doc.getDocId()))
-	                    usedDocs.add(doc, false);
-                }
-            }
-        }
-        LockedDocumentMap remaining = lockedDocuments.unlockSome(usedDocs);
-        lockDocumentsOnLoad = false;
-		lockedDocuments = null;
-        return remaining;
-    }
+//	public LockedDocumentMap releaseUnusedDocuments(Sequence seq) throws XPathException {
+//	    if(lockedDocuments == null)
+//	        return null;
+//        // determine the set of documents referenced by nodes in the sequence
+//        DocumentSet usedDocs = new DocumentSet();
+//        for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+//            Item next = i.nextItem();
+//            if(Type.subTypeOf(next.getType(), Type.NODE)) {
+//                NodeValue node = (NodeValue) next;
+//                if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+//                    DocumentImpl doc = ((NodeProxy)node).getDocument();
+//                    if(!usedDocs.contains(doc.getDocId()))
+//	                    usedDocs.add(doc, false);
+//                }
+//            }
+//        }
+//        LockedDocumentMap remaining = lockedDocuments.unlockSome(usedDocs);
+//        lockDocumentsOnLoad = false;
+//		lockedDocuments = null;
+//        return remaining;
+//    }
 
     public void reset() {
         reset(false);
@@ -792,7 +811,7 @@ public class XQueryContext {
 		lastVar = null;
 		fragmentStack = new Stack();
 		callStack.clear();
-
+        protectedDocuments = null;
         if (!keepGlobals)
             globalVariables.clear();
         

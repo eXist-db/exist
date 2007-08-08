@@ -373,34 +373,24 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     	DBBroker broker = null;
     	Sequence result;
     	XQueryContext context = expr.getContext();
-        boolean keepLocks = lockDocuments;
         try {
     		broker = brokerPool.get(user);
 
     		//context.setBackwardsCompatibility(xpathCompatible);
     		context.setStaticallyKnownDocuments(docs);
-    		setupContext(context);
+            if (lockedDocuments != null)
+                context.setProtectedDocs(lockedDocuments);
+            setupContext(context);
     		checkPragmas(context);
     		    
     		XQuery xquery = broker.getXQueryService();
-    		if(keepLocks)
-    		    context.setLockDocumentsOnLoad(true);
     		result = xquery.execute(expr, contextSet);
-    		if(keepLocks) {
-    		    lockedDocuments = context.releaseUnusedDocuments(result);
-    		}
     	} catch (EXistException e) {
-    	    context.releaseLockedDocuments();
-            keepLocks = false;
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} catch (XPathException e) {
-    	    context.releaseLockedDocuments();
-            keepLocks = false;
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} catch (Exception e) {
     	    // need to catch all runtime exceptions here to be able to release locked documents
-    	    context.releaseLockedDocuments();
-            keepLocks = false;
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} finally {
 //            if (keepLocks)

@@ -124,9 +124,13 @@ public class ExtCollection extends Function {
 			for (int i = 0; i < args.size(); i++) {
 				String next = (String)args.get(i);
 			    Collection coll = context.getBroker().getCollection(new AnyURIValue(next).toXmldbURI());            
-			    if(coll != null)
-			    	coll.allDocs(context.getBroker(), docs, includeSubCollections, true);          
-			}
+			    if(coll != null) {
+                    if (context.inProtectedMode())
+                        context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, docs);
+                    else
+                        coll.allDocs(context.getBroker(), docs, includeSubCollections, true, context.getProtectedDocs());
+                }
+            }
         } catch (XPathException e) { //From AnyURIValue constructor
         	e.setASTNode(getASTNode());
             throw e;
@@ -140,7 +144,7 @@ public class ExtCollection extends Function {
 		    dlock = doc.getUpdateLock();
             boolean lockAcquired = false;
             try {
-                if (!dlock.hasLock()) {
+                if (!context.inProtectedMode() && !dlock.hasLock()) {
                     dlock.acquire(Lock.READ_LOCK);
                     lockAcquired = true;
                 }

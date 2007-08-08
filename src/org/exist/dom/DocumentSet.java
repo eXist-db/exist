@@ -95,7 +95,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		for (int i = 0; i < other.getLength(); i++)
 			add(other.item(i));
 	}
-	
+
 	/**
 	 * Fast method to add a bunch of documents from a
 	 * Java collection.

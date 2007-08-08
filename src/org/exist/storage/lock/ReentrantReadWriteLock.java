@@ -293,6 +293,10 @@ public class ReentrantReadWriteLock implements Lock {
         return this.owner_ == owner;
     }
 
+    public Thread getOwner() {
+        return this.owner_;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.util.Lock#release(int)
      */
