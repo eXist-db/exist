@@ -58,10 +58,7 @@ is_jmx_switch() {
 }
 
 get_opts() {
-    local ARG_OPTS="$1"
     local -a ALL_OPTS=( "$@" )
-    ALL_OPTS=( "${ALL_OPTS[@]:1}" )
-    
     local found_jmx_opt
     
     for OPT in "${ALL_OPTS[@]}" ; do
