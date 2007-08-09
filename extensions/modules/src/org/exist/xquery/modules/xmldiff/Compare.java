@@ -1,21 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Team *  
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -97,15 +97,26 @@ public class Compare extends Function {
 		else if (s2.isEmpty())
 			return BooleanValue.valueOf(s1.isEmpty());
 
-		if (s1.hasMany() || s2.hasMany())
-			return BooleanValue.valueOf(s1.getItemCount() == s2.getItemCount());
-
-		NodeValue node1 = (NodeValue) s1.itemAt(0);
-		NodeValue node2 = (NodeValue) s2.itemAt(0);
-        
 		Sequence result = null;
+        StringBuffer v1 = new StringBuffer();
+        StringBuffer v2 = new StringBuffer(); 
 		try {
-			Diff d = new Diff(serialize(node1), serialize(node2));
+            if (s1.hasMany()){
+                for (int i = 0; i < s1.getItemCount(); i++) {
+                    v1.append(serialize((NodeValue) s1.itemAt(i)));
+                }
+            } else {
+                v1.append(serialize((NodeValue) s1.itemAt(0)));
+            }
+            if (s2.hasMany()) {
+                for (int i = 0; i < s2.getItemCount(); i++) {
+                    v2.append(serialize((NodeValue) s2.itemAt(i)));
+                }
+            } else {
+                v2.append(serialize((NodeValue) s2.itemAt(0)));
+            }
+
+			Diff d = new Diff(v1.toString(), v2.toString());
 			result = new BooleanValue(d.identical());
 		} catch (Exception e) {
 			throw new XPathException(getASTNode(), "An exception occurred while serializing node " +
