@@ -1,22 +1,23 @@
 /*
- *  eXist Native XML Database
- *  Copyright (C) 2001-06,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.xquery;
 
@@ -195,7 +196,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             //To prevent processing nodes after atomic values...
             //TODO : let the parser do it ? -pb
             boolean gotAtomicResult = false;  
-            
+
             for (Iterator iter = steps.iterator(); iter.hasNext();) {
                 
                 expr = (Expression) iter.next();
@@ -206,8 +207,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         && !(expr instanceof EnclosedExpr)) {
                     throw new XPathException("XPTY0019: left operand of '/' must be a node. Got '" + 
                             Type.getTypeName(result.getItemType()) + Cardinality.toString(result.getCardinality()) + "'");                    
-                }                 
-                
+                }
+
                 //contextDocs == null *is* significant
                 expr.setContextDocSet(contextDocs);
           
@@ -252,6 +253,15 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     // remove duplicate nodes if this is a path 
                     // expression with more than one step
                     result.removeDuplicates();                
+            }
+            // instanceof VariableDeclaration might be unneeded /ljo
+            if (gotAtomicResult &&
+                !(expr instanceof TextConstructor) &&
+                //!(expr instanceof VariableDeclaration) &&
+                !(expr instanceof VariableReference) &&
+                !(expr instanceof LetExpr) &&
+                !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
+                throw new XPathException("XPTY0018: Cannot mix nodes and atomic values in the result of a path expression.");                    
             }
         }
         
