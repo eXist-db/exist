@@ -91,9 +91,9 @@ public class SequenceConstructor extends PathExpr {
         dumper.startIndent();
     	boolean moreThanOne = false;
         for(Iterator i = steps.iterator(); i.hasNext(); ) {
-            ((Expression) i.next()).dump(dumper);
             if (moreThanOne) dumper.display(", ");
         	moreThanOne = true;
+            ((Expression) i.next()).dump(dumper);
         }
         dumper.endIndent();
         dumper.nl().display(")");
