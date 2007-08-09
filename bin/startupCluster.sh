@@ -29,7 +29,7 @@ source "${SCRIPTPATH}"/functions.d/eXist-settings.sh
 source "${SCRIPTPATH}"/functions.d/jmx-settings.sh
 source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
 
-get_opts "${JETTYCONTAINER_OPTS}" "$@";
+get_opts "$@";
 
 check_exist_home "$0";
 
