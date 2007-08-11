@@ -392,7 +392,7 @@ public XQueryParser(ParserSharedInputState state) {
 		exprSingle();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop101:
+		_loop106:
 		do {
 			if ((LA(1)==COMMA)) {
 				org.exist.xquery.parser.XQueryAST tmp51_AST = null;
@@ -403,7 +403,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop101;
+				break _loop106;
 			}
 			
 		} while (true);
@@ -420,133 +420,16 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST xpath_AST = null;
 		
 		{
-		switch ( LA(1)) {
-		case LITERAL_xpointer:
-		case LPAREN:
-		case NCNAME:
-		case LITERAL_xquery:
-		case LITERAL_version:
-		case LITERAL_module:
-		case LITERAL_namespace:
-		case STRING_LITERAL:
-		case LITERAL_declare:
-		case LITERAL_default:
-		case 64:
-		case LITERAL_ordering:
-		case LITERAL_construction:
-		case 67:
-		case LITERAL_option:
-		case LITERAL_function:
-		case LITERAL_variable:
-		case LITERAL_import:
-		case LITERAL_encoding:
-		case LITERAL_collation:
-		case LITERAL_element:
-		case LITERAL_order:
-		case LITERAL_empty:
-		case LITERAL_preserve:
-		case LITERAL_strip:
-		case LITERAL_ordered:
-		case LITERAL_unordered:
-		case 85:
-		case LITERAL_inherit:
-		case 87:
-		case DOLLAR:
-		case LITERAL_external:
-		case LITERAL_at:
-		case LITERAL_schema:
-		case LITERAL_as:
-		case STAR:
-		case PLUS:
-		case LITERAL_item:
-		case LITERAL_for:
-		case LITERAL_let:
-		case LITERAL_some:
-		case LITERAL_every:
-		case LITERAL_if:
-		case LITERAL_typeswitch:
-		case LITERAL_update:
-		case LITERAL_replace:
-		case LITERAL_value:
-		case LITERAL_insert:
-		case LITERAL_delete:
-		case LITERAL_rename:
-		case LITERAL_with:
-		case LITERAL_into:
-		case LITERAL_preceding:
-		case LITERAL_following:
-		case LITERAL_return:
-		case LITERAL_in:
-		case LITERAL_by:
-		case LITERAL_group:
-		case LITERAL_case:
-		case LITERAL_then:
-		case LITERAL_else:
-		case LITERAL_or:
-		case LITERAL_and:
-		case LITERAL_instance:
-		case LITERAL_of:
-		case LITERAL_treat:
-		case LITERAL_cast:
-		case LT:
-		case LITERAL_eq:
-		case LITERAL_ne:
-		case LITERAL_lt:
-		case LITERAL_le:
-		case LITERAL_gt:
-		case LITERAL_ge:
-		case LITERAL_is:
-		case LITERAL_isnot:
-		case LITERAL_to:
-		case MINUS:
-		case LITERAL_div:
-		case LITERAL_mod:
-		case PRAGMA_START:
-		case LITERAL_union:
-		case LITERAL_intersect:
-		case LITERAL_except:
-		case SLASH:
-		case DSLASH:
-		case LITERAL_text:
-		case LITERAL_node:
-		case LITERAL_attribute:
-		case LITERAL_comment:
-		case 167:
-		case 168:
-		case LITERAL_document:
-		case SELF:
-		case XML_COMMENT:
-		case XML_PI:
-		case AT:
-		case PARENT:
-		case LITERAL_child:
-		case LITERAL_self:
-		case LITERAL_descendant:
-		case 180:
-		case 181:
-		case LITERAL_parent:
-		case LITERAL_ancestor:
-		case 184:
-		case 185:
-		case DOUBLE_LITERAL:
-		case DECIMAL_LITERAL:
-		case INTEGER_LITERAL:
-		case LITERAL_collection:
-		case LITERAL_validate:
-		{
+		if ((_tokenSet_0.member(LA(1)))) {
 			module();
 			astFactory.addASTChild(currentAST, returnAST);
-			break;
 		}
-		case EOF:
-		{
-			break;
+		else if ((LA(1)==EOF)) {
 		}
-		default:
-		{
+		else {
 			throw new NoViableAltException(LT(1), getFilename());
 		}
-		}
+		
 		}
 		org.exist.xquery.parser.XQueryAST tmp52_AST = null;
 		tmp52_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
@@ -705,8 +588,135 @@ public XQueryParser(ParserSharedInputState state) {
 		
 		prolog();
 		astFactory.addASTChild(currentAST, returnAST);
-		queryBody();
-		astFactory.addASTChild(currentAST, returnAST);
+		{
+		switch ( LA(1)) {
+		case LITERAL_xpointer:
+		case LPAREN:
+		case NCNAME:
+		case LITERAL_xquery:
+		case LITERAL_version:
+		case LITERAL_module:
+		case LITERAL_namespace:
+		case STRING_LITERAL:
+		case LITERAL_declare:
+		case LITERAL_default:
+		case 64:
+		case LITERAL_ordering:
+		case LITERAL_construction:
+		case 67:
+		case LITERAL_option:
+		case LITERAL_function:
+		case LITERAL_variable:
+		case LITERAL_import:
+		case LITERAL_encoding:
+		case LITERAL_collation:
+		case LITERAL_element:
+		case LITERAL_order:
+		case LITERAL_empty:
+		case LITERAL_preserve:
+		case LITERAL_strip:
+		case LITERAL_ordered:
+		case LITERAL_unordered:
+		case 85:
+		case LITERAL_inherit:
+		case 87:
+		case DOLLAR:
+		case LITERAL_external:
+		case LITERAL_schema:
+		case LITERAL_as:
+		case LITERAL_at:
+		case STAR:
+		case PLUS:
+		case LITERAL_item:
+		case LITERAL_for:
+		case LITERAL_let:
+		case LITERAL_some:
+		case LITERAL_every:
+		case LITERAL_if:
+		case LITERAL_typeswitch:
+		case LITERAL_update:
+		case LITERAL_replace:
+		case LITERAL_value:
+		case LITERAL_insert:
+		case LITERAL_delete:
+		case LITERAL_rename:
+		case LITERAL_with:
+		case LITERAL_into:
+		case LITERAL_preceding:
+		case LITERAL_following:
+		case LITERAL_return:
+		case LITERAL_in:
+		case LITERAL_by:
+		case LITERAL_group:
+		case LITERAL_case:
+		case LITERAL_then:
+		case LITERAL_else:
+		case LITERAL_or:
+		case LITERAL_and:
+		case LITERAL_instance:
+		case LITERAL_of:
+		case LITERAL_treat:
+		case LITERAL_cast:
+		case LT:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
+		case LITERAL_is:
+		case LITERAL_isnot:
+		case LITERAL_to:
+		case MINUS:
+		case LITERAL_div:
+		case LITERAL_mod:
+		case PRAGMA_START:
+		case LITERAL_union:
+		case LITERAL_intersect:
+		case LITERAL_except:
+		case SLASH:
+		case DSLASH:
+		case LITERAL_text:
+		case LITERAL_node:
+		case LITERAL_attribute:
+		case LITERAL_comment:
+		case 167:
+		case 168:
+		case LITERAL_document:
+		case SELF:
+		case XML_COMMENT:
+		case XML_PI:
+		case AT:
+		case PARENT:
+		case LITERAL_child:
+		case LITERAL_self:
+		case LITERAL_descendant:
+		case 180:
+		case 181:
+		case LITERAL_parent:
+		case LITERAL_ancestor:
+		case 184:
+		case 185:
+		case DOUBLE_LITERAL:
+		case DECIMAL_LITERAL:
+		case INTEGER_LITERAL:
+		case LITERAL_collection:
+		case LITERAL_validate:
+		{
+			queryBody();
+			astFactory.addASTChild(currentAST, returnAST);
+			break;
+		}
+		case EOF:
+		{
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		}
 		mainModule_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		returnAST = mainModule_AST;
 	}
@@ -719,7 +729,7 @@ public XQueryParser(ParserSharedInputState state) {
 		boolean inSetters = true;
 		
 		{
-		_loop29:
+		_loop30:
 		do {
 			if ((LA(1)==LITERAL_declare||LA(1)==LITERAL_import)) {
 				{
@@ -728,10 +738,10 @@ public XQueryParser(ParserSharedInputState state) {
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					boolean synPredMatched20 = false;
+					boolean synPredMatched21 = false;
 					if (((LA(1)==LITERAL_declare))) {
-						int _m20 = mark();
-						synPredMatched20 = true;
+						int _m21 = mark();
+						synPredMatched21 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -777,12 +787,12 @@ public XQueryParser(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched20 = false;
+							synPredMatched21 = false;
 						}
-						rewind(_m20);
+						rewind(_m21);
 						inputState.guessing--;
 					}
-					if ( synPredMatched20 ) {
+					if ( synPredMatched21 ) {
 						setter();
 						astFactory.addASTChild(currentAST, returnAST);
 						if ( inputState.guessing==0 ) {
@@ -793,10 +803,10 @@ public XQueryParser(ParserSharedInputState state) {
 						}
 					}
 					else {
-						boolean synPredMatched22 = false;
+						boolean synPredMatched23 = false;
 						if (((LA(1)==LITERAL_declare))) {
-							int _m22 = mark();
-							synPredMatched22 = true;
+							int _m23 = mark();
+							synPredMatched23 = true;
 							inputState.guessing++;
 							try {
 								{
@@ -805,12 +815,12 @@ public XQueryParser(ParserSharedInputState state) {
 								}
 							}
 							catch (RecognitionException pe) {
-								synPredMatched22 = false;
+								synPredMatched23 = false;
 							}
-							rewind(_m22);
+							rewind(_m23);
 							inputState.guessing--;
 						}
-						if ( synPredMatched22 ) {
+						if ( synPredMatched23 ) {
 							namespaceDecl();
 							astFactory.addASTChild(currentAST, returnAST);
 							if ( inputState.guessing==0 ) {
@@ -818,10 +828,10 @@ public XQueryParser(ParserSharedInputState state) {
 							}
 						}
 						else {
-							boolean synPredMatched24 = false;
+							boolean synPredMatched25 = false;
 							if (((LA(1)==LITERAL_declare))) {
-								int _m24 = mark();
-								synPredMatched24 = true;
+								int _m25 = mark();
+								synPredMatched25 = true;
 								inputState.guessing++;
 								try {
 									{
@@ -830,12 +840,12 @@ public XQueryParser(ParserSharedInputState state) {
 									}
 								}
 								catch (RecognitionException pe) {
-									synPredMatched24 = false;
+									synPredMatched25 = false;
 								}
-								rewind(_m24);
+								rewind(_m25);
 								inputState.guessing--;
 							}
-							if ( synPredMatched24 ) {
+							if ( synPredMatched25 ) {
 								optionDecl();
 								astFactory.addASTChild(currentAST, returnAST);
 								if ( inputState.guessing==0 ) {
@@ -843,10 +853,10 @@ public XQueryParser(ParserSharedInputState state) {
 								}
 							}
 							else {
-								boolean synPredMatched26 = false;
+								boolean synPredMatched27 = false;
 								if (((LA(1)==LITERAL_declare))) {
-									int _m26 = mark();
-									synPredMatched26 = true;
+									int _m27 = mark();
+									synPredMatched27 = true;
 									inputState.guessing++;
 									try {
 										{
@@ -855,12 +865,12 @@ public XQueryParser(ParserSharedInputState state) {
 										}
 									}
 									catch (RecognitionException pe) {
-										synPredMatched26 = false;
+										synPredMatched27 = false;
 									}
-									rewind(_m26);
+									rewind(_m27);
 									inputState.guessing--;
 								}
-								if ( synPredMatched26 ) {
+								if ( synPredMatched27 ) {
 									functionDecl();
 									astFactory.addASTChild(currentAST, returnAST);
 									if ( inputState.guessing==0 ) {
@@ -868,10 +878,10 @@ public XQueryParser(ParserSharedInputState state) {
 									}
 								}
 								else {
-									boolean synPredMatched28 = false;
+									boolean synPredMatched29 = false;
 									if (((LA(1)==LITERAL_declare))) {
-										int _m28 = mark();
-										synPredMatched28 = true;
+										int _m29 = mark();
+										synPredMatched29 = true;
 										inputState.guessing++;
 										try {
 											{
@@ -880,12 +890,12 @@ public XQueryParser(ParserSharedInputState state) {
 											}
 										}
 										catch (RecognitionException pe) {
-											synPredMatched28 = false;
+											synPredMatched29 = false;
 										}
-										rewind(_m28);
+										rewind(_m29);
 										inputState.guessing--;
 									}
-									if ( synPredMatched28 ) {
+									if ( synPredMatched29 ) {
 										varDecl();
 										astFactory.addASTChild(currentAST, returnAST);
 										if ( inputState.guessing==0 ) {
@@ -900,7 +910,7 @@ public XQueryParser(ParserSharedInputState state) {
 									match(SEMICOLON);
 								}
 								else {
-									break _loop29;
+									break _loop30;
 								}
 								
 							} while (true);
@@ -963,10 +973,10 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST importDecl_AST = null;
 		
-		boolean synPredMatched32 = false;
+		boolean synPredMatched33 = false;
 		if (((LA(1)==LITERAL_import))) {
-			int _m32 = mark();
-			synPredMatched32 = true;
+			int _m33 = mark();
+			synPredMatched33 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -975,12 +985,12 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched32 = false;
+				synPredMatched33 = false;
 			}
-			rewind(_m32);
+			rewind(_m33);
 			inputState.guessing--;
 		}
-		if ( synPredMatched32 ) {
+		if ( synPredMatched33 ) {
 			moduleImport();
 			astFactory.addASTChild(currentAST, returnAST);
 			importDecl_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -1010,10 +1020,10 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST deff_AST = null;
 		
 		{
-		boolean synPredMatched38 = false;
+		boolean synPredMatched39 = false;
 		if (((LA(1)==LITERAL_declare))) {
-			int _m38 = mark();
-			synPredMatched38 = true;
+			int _m39 = mark();
+			synPredMatched39 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -1022,12 +1032,12 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched38 = false;
+				synPredMatched39 = false;
 			}
-			rewind(_m38);
+			rewind(_m39);
 			inputState.guessing--;
 		}
-		if ( synPredMatched38 ) {
+		if ( synPredMatched39 ) {
 			match(LITERAL_declare);
 			match(LITERAL_default);
 			{
@@ -1126,10 +1136,10 @@ public XQueryParser(ParserSharedInputState state) {
 			}
 		}
 		else {
-			boolean synPredMatched42 = false;
+			boolean synPredMatched43 = false;
 			if (((LA(1)==LITERAL_declare))) {
-				int _m42 = mark();
-				synPredMatched42 = true;
+				int _m43 = mark();
+				synPredMatched43 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1138,12 +1148,12 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched42 = false;
+					synPredMatched43 = false;
 				}
-				rewind(_m42);
+				rewind(_m43);
 				inputState.guessing--;
 			}
-			if ( synPredMatched42 ) {
+			if ( synPredMatched43 ) {
 				match(LITERAL_declare);
 				org.exist.xquery.parser.XQueryAST tmp74_AST = null;
 				tmp74_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
@@ -1175,10 +1185,10 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				boolean synPredMatched45 = false;
+				boolean synPredMatched46 = false;
 				if (((LA(1)==LITERAL_declare))) {
-					int _m45 = mark();
-					synPredMatched45 = true;
+					int _m46 = mark();
+					synPredMatched46 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -1187,12 +1197,12 @@ public XQueryParser(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched45 = false;
+						synPredMatched46 = false;
 					}
-					rewind(_m45);
+					rewind(_m46);
 					inputState.guessing--;
 				}
-				if ( synPredMatched45 ) {
+				if ( synPredMatched46 ) {
 					match(LITERAL_declare);
 					org.exist.xquery.parser.XQueryAST tmp78_AST = null;
 					tmp78_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
@@ -1204,10 +1214,10 @@ public XQueryParser(ParserSharedInputState state) {
 					match(STRING_LITERAL);
 				}
 				else {
-					boolean synPredMatched47 = false;
+					boolean synPredMatched48 = false;
 					if (((LA(1)==LITERAL_declare))) {
-						int _m47 = mark();
-						synPredMatched47 = true;
+						int _m48 = mark();
+						synPredMatched48 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -1216,12 +1226,12 @@ public XQueryParser(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched47 = false;
+							synPredMatched48 = false;
 						}
-						rewind(_m47);
+						rewind(_m48);
 						inputState.guessing--;
 					}
-					if ( synPredMatched47 ) {
+					if ( synPredMatched48 ) {
 						match(LITERAL_declare);
 						org.exist.xquery.parser.XQueryAST tmp81_AST = null;
 						tmp81_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
@@ -1253,10 +1263,10 @@ public XQueryParser(ParserSharedInputState state) {
 						}
 					}
 					else {
-						boolean synPredMatched50 = false;
+						boolean synPredMatched51 = false;
 						if (((LA(1)==LITERAL_declare))) {
-							int _m50 = mark();
-							synPredMatched50 = true;
+							int _m51 = mark();
+							synPredMatched51 = true;
 							inputState.guessing++;
 							try {
 								{
@@ -1265,12 +1275,12 @@ public XQueryParser(ParserSharedInputState state) {
 								}
 							}
 							catch (RecognitionException pe) {
-								synPredMatched50 = false;
+								synPredMatched51 = false;
 							}
-							rewind(_m50);
+							rewind(_m51);
 							inputState.guessing--;
 						}
-						if ( synPredMatched50 ) {
+						if ( synPredMatched51 ) {
 							match(LITERAL_declare);
 							org.exist.xquery.parser.XQueryAST tmp85_AST = null;
 							tmp85_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
@@ -1302,10 +1312,10 @@ public XQueryParser(ParserSharedInputState state) {
 							}
 						}
 						else {
-							boolean synPredMatched53 = false;
+							boolean synPredMatched54 = false;
 							if (((LA(1)==LITERAL_declare))) {
-								int _m53 = mark();
-								synPredMatched53 = true;
+								int _m54 = mark();
+								synPredMatched54 = true;
 								inputState.guessing++;
 								try {
 									{
@@ -1314,12 +1324,12 @@ public XQueryParser(ParserSharedInputState state) {
 									}
 								}
 								catch (RecognitionException pe) {
-									synPredMatched53 = false;
+									synPredMatched54 = false;
 								}
-								rewind(_m53);
+								rewind(_m54);
 								inputState.guessing--;
 							}
-							if ( synPredMatched53 ) {
+							if ( synPredMatched54 ) {
 								match(LITERAL_declare);
 								org.exist.xquery.parser.XQueryAST tmp89_AST = null;
 								tmp89_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
@@ -1608,7 +1618,7 @@ public XQueryParser(ParserSharedInputState state) {
 		returnAST = varDecl_AST;
 	}
 	
-	public final void moduleImport() throws RecognitionException, TokenStreamException {
+	public final void moduleImport() throws RecognitionException, TokenStreamException, XPathException {
 		
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
@@ -1646,11 +1656,8 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_at:
 		{
-			match(LITERAL_at);
-			org.exist.xquery.parser.XQueryAST tmp108_AST = null;
-			tmp108_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp108_AST);
-			match(STRING_LITERAL);
+			uriList();
+			astFactory.addASTChild(currentAST, returnAST);
 			break;
 		}
 		case SEMICOLON:
@@ -1678,7 +1685,7 @@ public XQueryParser(ParserSharedInputState state) {
 		returnAST = moduleImport_AST;
 	}
 	
-	public final void schemaImport() throws RecognitionException, TokenStreamException {
+	public final void schemaImport() throws RecognitionException, TokenStreamException, XPathException {
 		
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
@@ -1710,19 +1717,16 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		org.exist.xquery.parser.XQueryAST tmp110_AST = null;
-		tmp110_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp110_AST);
+		org.exist.xquery.parser.XQueryAST tmp108_AST = null;
+		tmp108_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp108_AST);
 		match(STRING_LITERAL);
 		{
 		switch ( LA(1)) {
 		case LITERAL_at:
 		{
-			match(LITERAL_at);
-			org.exist.xquery.parser.XQueryAST tmp112_AST = null;
-			tmp112_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp112_AST);
-			match(STRING_LITERAL);
+			uriList();
+			astFactory.addASTChild(currentAST, returnAST);
 			break;
 		}
 		case SEMICOLON:
@@ -1760,17 +1764,17 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_preserve:
 		{
-			org.exist.xquery.parser.XQueryAST tmp113_AST = null;
-			tmp113_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp113_AST);
+			org.exist.xquery.parser.XQueryAST tmp109_AST = null;
+			tmp109_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp109_AST);
 			match(LITERAL_preserve);
 			break;
 		}
 		case 85:
 		{
-			org.exist.xquery.parser.XQueryAST tmp114_AST = null;
-			tmp114_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp114_AST);
+			org.exist.xquery.parser.XQueryAST tmp110_AST = null;
+			tmp110_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp110_AST);
 			match(85);
 			break;
 		}
@@ -1794,17 +1798,17 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_inherit:
 		{
-			org.exist.xquery.parser.XQueryAST tmp115_AST = null;
-			tmp115_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp115_AST);
+			org.exist.xquery.parser.XQueryAST tmp111_AST = null;
+			tmp111_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp111_AST);
 			match(LITERAL_inherit);
 			break;
 		}
 		case 87:
 		{
-			org.exist.xquery.parser.XQueryAST tmp116_AST = null;
-			tmp116_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp116_AST);
+			org.exist.xquery.parser.XQueryAST tmp112_AST = null;
+			tmp112_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp112_AST);
 			match(87);
 			break;
 		}
@@ -1869,9 +1873,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_inherit:
 		case 87:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case LITERAL_item:
 		case LITERAL_for:
 		case LITERAL_let:
@@ -1960,10 +1964,10 @@ public XQueryParser(ParserSharedInputState state) {
 			String name2;
 		
 		
-		boolean synPredMatched325 = false;
+		boolean synPredMatched330 = false;
 		if (((_tokenSet_1.member(LA(1))))) {
-			int _m325 = mark();
-			synPredMatched325 = true;
+			int _m330 = mark();
+			synPredMatched330 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -1973,18 +1977,18 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched325 = false;
+				synPredMatched330 = false;
 			}
-			rewind(_m325);
+			rewind(_m330);
 			inputState.guessing--;
 		}
-		if ( synPredMatched325 ) {
+		if ( synPredMatched330 ) {
 			name=ncnameOrKeyword();
 			nc1_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 			astFactory.addASTChild(currentAST, returnAST);
-			org.exist.xquery.parser.XQueryAST tmp117_AST = null;
-			tmp117_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp117_AST);
+			org.exist.xquery.parser.XQueryAST tmp113_AST = null;
+			tmp113_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp113_AST);
 			match(COLON);
 			name2=ncnameOrKeyword();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -2016,9 +2020,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST typeDeclaration_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp118_AST = null;
-		tmp118_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp118_AST);
+		org.exist.xquery.parser.XQueryAST tmp114_AST = null;
+		tmp114_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp114_AST);
 		match(LITERAL_as);
 		sequenceType();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -2049,6 +2053,33 @@ public XQueryParser(ParserSharedInputState state) {
 		returnAST = moduleNamespace_AST;
 	}
 	
+	public final void uriList() throws RecognitionException, TokenStreamException, XPathException {
+		
+		returnAST = null;
+		ASTPair currentAST = new ASTPair();
+		org.exist.xquery.parser.XQueryAST uriList_AST = null;
+		
+		match(LITERAL_at);
+		uri();
+		astFactory.addASTChild(currentAST, returnAST);
+		{
+		_loop85:
+		do {
+			if ((LA(1)==COMMA)) {
+				match(COMMA);
+				uri();
+				astFactory.addASTChild(currentAST, returnAST);
+			}
+			else {
+				break _loop85;
+			}
+			
+		} while (true);
+		}
+		uriList_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+		returnAST = uriList_AST;
+	}
+	
 	public final void schemaPrefix() throws RecognitionException, TokenStreamException {
 		
 		returnAST = null;
@@ -2076,17 +2107,17 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_default:
 		{
+			org.exist.xquery.parser.XQueryAST tmp121_AST = null;
+			tmp121_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp121_AST);
+			match(LITERAL_default);
+			org.exist.xquery.parser.XQueryAST tmp122_AST = null;
+			tmp122_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp122_AST);
+			match(LITERAL_element);
 			org.exist.xquery.parser.XQueryAST tmp123_AST = null;
 			tmp123_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp123_AST);
-			match(LITERAL_default);
-			org.exist.xquery.parser.XQueryAST tmp124_AST = null;
-			tmp124_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp124_AST);
-			match(LITERAL_element);
-			org.exist.xquery.parser.XQueryAST tmp125_AST = null;
-			tmp125_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp125_AST);
 			match(LITERAL_namespace);
 			schemaPrefix_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
@@ -2109,7 +2140,7 @@ public XQueryParser(ParserSharedInputState state) {
 		param();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop79:
+		_loop80:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -2118,7 +2149,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop79;
+				break _loop80;
 			}
 			
 		} while (true);
@@ -2133,9 +2164,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST returnType_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp127_AST = null;
-		tmp127_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp127_AST);
+		org.exist.xquery.parser.XQueryAST tmp125_AST = null;
+		tmp125_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp125_AST);
 		match(LITERAL_as);
 		sequenceType();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -2150,9 +2181,9 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST functionBody_AST = null;
 		org.exist.xquery.parser.XQueryAST e_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp128_AST = null;
-		tmp128_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp128_AST);
+		org.exist.xquery.parser.XQueryAST tmp126_AST = null;
+		tmp126_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp126_AST);
 		match(LCURLY);
 		expr();
 		e_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
@@ -2168,10 +2199,10 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST sequenceType_AST = null;
 		
-		boolean synPredMatched85 = false;
+		boolean synPredMatched90 = false;
 		if (((LA(1)==LITERAL_empty))) {
-			int _m85 = mark();
-			synPredMatched85 = true;
+			int _m90 = mark();
+			synPredMatched90 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -2180,25 +2211,25 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched85 = false;
+				synPredMatched90 = false;
 			}
-			rewind(_m85);
+			rewind(_m90);
 			inputState.guessing--;
 		}
-		if ( synPredMatched85 ) {
-			org.exist.xquery.parser.XQueryAST tmp130_AST = null;
-			tmp130_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp130_AST);
+		if ( synPredMatched90 ) {
+			org.exist.xquery.parser.XQueryAST tmp128_AST = null;
+			tmp128_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp128_AST);
 			match(LITERAL_empty);
 			match(LPAREN);
 			match(RPAREN);
 			sequenceType_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched87 = false;
+			boolean synPredMatched92 = false;
 			if (((LA(1)==96))) {
-				int _m87 = mark();
-				synPredMatched87 = true;
+				int _m92 = mark();
+				synPredMatched92 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -2207,15 +2238,15 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched87 = false;
+					synPredMatched92 = false;
 				}
-				rewind(_m87);
+				rewind(_m92);
 				inputState.guessing--;
 			}
-			if ( synPredMatched87 ) {
-				org.exist.xquery.parser.XQueryAST tmp133_AST = null;
-				tmp133_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp133_AST);
+			if ( synPredMatched92 ) {
+				org.exist.xquery.parser.XQueryAST tmp131_AST = null;
+				tmp131_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp131_AST);
 				match(96);
 				match(LPAREN);
 				match(RPAREN);
@@ -2288,16 +2319,30 @@ public XQueryParser(ParserSharedInputState state) {
 		returnAST = param_AST;
 	}
 	
+	public final void uri() throws RecognitionException, TokenStreamException, XPathException {
+		
+		returnAST = null;
+		ASTPair currentAST = new ASTPair();
+		org.exist.xquery.parser.XQueryAST uri_AST = null;
+		
+		org.exist.xquery.parser.XQueryAST tmp135_AST = null;
+		tmp135_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp135_AST);
+		match(STRING_LITERAL);
+		uri_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+		returnAST = uri_AST;
+	}
+	
 	public final void itemType() throws RecognitionException, TokenStreamException, XPathException {
 		
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST itemType_AST = null;
 		
-		boolean synPredMatched92 = false;
+		boolean synPredMatched97 = false;
 		if (((LA(1)==LITERAL_item))) {
-			int _m92 = mark();
-			synPredMatched92 = true;
+			int _m97 = mark();
+			synPredMatched97 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -2306,25 +2351,25 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched92 = false;
+				synPredMatched97 = false;
 			}
-			rewind(_m92);
+			rewind(_m97);
 			inputState.guessing--;
 		}
-		if ( synPredMatched92 ) {
-			org.exist.xquery.parser.XQueryAST tmp137_AST = null;
-			tmp137_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp137_AST);
+		if ( synPredMatched97 ) {
+			org.exist.xquery.parser.XQueryAST tmp136_AST = null;
+			tmp136_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp136_AST);
 			match(LITERAL_item);
 			match(LPAREN);
 			match(RPAREN);
 			itemType_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched94 = false;
+			boolean synPredMatched99 = false;
 			if (((_tokenSet_4.member(LA(1))))) {
-				int _m94 = mark();
-				synPredMatched94 = true;
+				int _m99 = mark();
+				synPredMatched99 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -2333,12 +2378,12 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched94 = false;
+					synPredMatched99 = false;
 				}
-				rewind(_m94);
+				rewind(_m99);
 				inputState.guessing--;
 			}
-			if ( synPredMatched94 ) {
+			if ( synPredMatched99 ) {
 				kindTest();
 				astFactory.addASTChild(currentAST, returnAST);
 				itemType_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -2364,27 +2409,27 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case QUESTION:
 		{
-			org.exist.xquery.parser.XQueryAST tmp140_AST = null;
-			tmp140_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp140_AST);
+			org.exist.xquery.parser.XQueryAST tmp139_AST = null;
+			tmp139_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp139_AST);
 			match(QUESTION);
 			occurrenceIndicator_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case STAR:
 		{
-			org.exist.xquery.parser.XQueryAST tmp141_AST = null;
-			tmp141_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp141_AST);
+			org.exist.xquery.parser.XQueryAST tmp140_AST = null;
+			tmp140_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp140_AST);
 			match(STAR);
 			occurrenceIndicator_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case PLUS:
 		{
-			org.exist.xquery.parser.XQueryAST tmp142_AST = null;
-			tmp142_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp142_AST);
+			org.exist.xquery.parser.XQueryAST tmp141_AST = null;
+			tmp141_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp141_AST);
 			match(PLUS);
 			occurrenceIndicator_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
@@ -2494,9 +2539,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case QUESTION:
 		{
-			org.exist.xquery.parser.XQueryAST tmp143_AST = null;
-			tmp143_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp143_AST);
+			org.exist.xquery.parser.XQueryAST tmp142_AST = null;
+			tmp142_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp142_AST);
 			match(QUESTION);
 			break;
 		}
@@ -2576,10 +2621,10 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST exprSingle_AST = null;
 		
-		boolean synPredMatched105 = false;
+		boolean synPredMatched110 = false;
 		if (((LA(1)==LITERAL_for||LA(1)==LITERAL_let))) {
-			int _m105 = mark();
-			synPredMatched105 = true;
+			int _m110 = mark();
+			synPredMatched110 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -2605,21 +2650,21 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched105 = false;
+				synPredMatched110 = false;
 			}
-			rewind(_m105);
+			rewind(_m110);
 			inputState.guessing--;
 		}
-		if ( synPredMatched105 ) {
+		if ( synPredMatched110 ) {
 			flworExpr();
 			astFactory.addASTChild(currentAST, returnAST);
 			exprSingle_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched108 = false;
+			boolean synPredMatched113 = false;
 			if (((LA(1)==LITERAL_some||LA(1)==LITERAL_every))) {
-				int _m108 = mark();
-				synPredMatched108 = true;
+				int _m113 = mark();
+				synPredMatched113 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -2645,21 +2690,21 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched108 = false;
+					synPredMatched113 = false;
 				}
-				rewind(_m108);
+				rewind(_m113);
 				inputState.guessing--;
 			}
-			if ( synPredMatched108 ) {
+			if ( synPredMatched113 ) {
 				quantifiedExpr();
 				astFactory.addASTChild(currentAST, returnAST);
 				exprSingle_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			}
 			else {
-				boolean synPredMatched110 = false;
+				boolean synPredMatched115 = false;
 				if (((LA(1)==LITERAL_if))) {
-					int _m110 = mark();
-					synPredMatched110 = true;
+					int _m115 = mark();
+					synPredMatched115 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -2668,21 +2713,21 @@ public XQueryParser(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched110 = false;
+						synPredMatched115 = false;
 					}
-					rewind(_m110);
+					rewind(_m115);
 					inputState.guessing--;
 				}
-				if ( synPredMatched110 ) {
+				if ( synPredMatched115 ) {
 					ifExpr();
 					astFactory.addASTChild(currentAST, returnAST);
 					exprSingle_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				}
 				else {
-					boolean synPredMatched112 = false;
+					boolean synPredMatched117 = false;
 					if (((LA(1)==LITERAL_typeswitch))) {
-						int _m112 = mark();
-						synPredMatched112 = true;
+						int _m117 = mark();
+						synPredMatched117 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -2691,21 +2736,21 @@ public XQueryParser(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched112 = false;
+							synPredMatched117 = false;
 						}
-						rewind(_m112);
+						rewind(_m117);
 						inputState.guessing--;
 					}
-					if ( synPredMatched112 ) {
+					if ( synPredMatched117 ) {
 						typeswitchExpr();
 						astFactory.addASTChild(currentAST, returnAST);
 						exprSingle_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 					}
 					else {
-						boolean synPredMatched115 = false;
+						boolean synPredMatched120 = false;
 						if (((LA(1)==LITERAL_update))) {
-							int _m115 = mark();
-							synPredMatched115 = true;
+							int _m120 = mark();
+							synPredMatched120 = true;
 							inputState.guessing++;
 							try {
 								{
@@ -2746,17 +2791,17 @@ public XQueryParser(ParserSharedInputState state) {
 								}
 							}
 							catch (RecognitionException pe) {
-								synPredMatched115 = false;
+								synPredMatched120 = false;
 							}
-							rewind(_m115);
+							rewind(_m120);
 							inputState.guessing--;
 						}
-						if ( synPredMatched115 ) {
+						if ( synPredMatched120 ) {
 							updateExpr();
 							astFactory.addASTChild(currentAST, returnAST);
 							exprSingle_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 						}
-						else if ((_tokenSet_0.member(LA(1)))) {
+						else if ((_tokenSet_5.member(LA(1)))) {
 							orExpr();
 							astFactory.addASTChild(currentAST, returnAST);
 							exprSingle_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -2775,8 +2820,8 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST flworExpr_AST = null;
 		
 		{
-		int _cnt128=0;
-		_loop128:
+		int _cnt133=0;
+		_loop133:
 		do {
 			switch ( LA(1)) {
 			case LITERAL_for:
@@ -2793,19 +2838,19 @@ public XQueryParser(ParserSharedInputState state) {
 			}
 			default:
 			{
-				if ( _cnt128>=1 ) { break _loop128; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt133>=1 ) { break _loop133; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			}
-			_cnt128++;
+			_cnt133++;
 		} while (true);
 		}
 		{
 		switch ( LA(1)) {
 		case LITERAL_where:
 		{
-			org.exist.xquery.parser.XQueryAST tmp144_AST = null;
-			tmp144_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp144_AST);
+			org.exist.xquery.parser.XQueryAST tmp143_AST = null;
+			tmp143_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp143_AST);
 			match(LITERAL_where);
 			expr();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -2860,9 +2905,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		}
 		}
-		org.exist.xquery.parser.XQueryAST tmp145_AST = null;
-		tmp145_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp145_AST);
+		org.exist.xquery.parser.XQueryAST tmp144_AST = null;
+		tmp144_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp144_AST);
 		match(LITERAL_return);
 		exprSingle();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -2880,17 +2925,17 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_some:
 		{
-			org.exist.xquery.parser.XQueryAST tmp146_AST = null;
-			tmp146_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp146_AST);
+			org.exist.xquery.parser.XQueryAST tmp145_AST = null;
+			tmp145_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp145_AST);
 			match(LITERAL_some);
 			break;
 		}
 		case LITERAL_every:
 		{
-			org.exist.xquery.parser.XQueryAST tmp147_AST = null;
-			tmp147_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp147_AST);
+			org.exist.xquery.parser.XQueryAST tmp146_AST = null;
+			tmp146_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp146_AST);
 			match(LITERAL_every);
 			break;
 		}
@@ -2903,7 +2948,7 @@ public XQueryParser(ParserSharedInputState state) {
 		quantifiedInVarBinding();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop166:
+		_loop171:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -2911,7 +2956,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop166;
+				break _loop171;
 			}
 			
 		} while (true);
@@ -2929,9 +2974,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST ifExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp150_AST = null;
-		tmp150_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp150_AST);
+		org.exist.xquery.parser.XQueryAST tmp149_AST = null;
+		tmp149_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp149_AST);
 		match(LITERAL_if);
 		match(LPAREN);
 		expr();
@@ -2954,32 +2999,32 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST typeswitchExpr_AST = null;
 		String varName;
 		
-		org.exist.xquery.parser.XQueryAST tmp155_AST = null;
-		tmp155_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp155_AST);
+		org.exist.xquery.parser.XQueryAST tmp154_AST = null;
+		tmp154_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp154_AST);
 		match(LITERAL_typeswitch);
 		match(LPAREN);
 		expr();
 		astFactory.addASTChild(currentAST, returnAST);
 		match(RPAREN);
 		{
-		int _cnt171=0;
-		_loop171:
+		int _cnt176=0;
+		_loop176:
 		do {
 			if ((LA(1)==LITERAL_case)) {
 				caseClause();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				if ( _cnt171>=1 ) { break _loop171; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt176>=1 ) { break _loop176; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt171++;
+			_cnt176++;
 		} while (true);
 		}
-		org.exist.xquery.parser.XQueryAST tmp158_AST = null;
-		tmp158_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp158_AST);
+		org.exist.xquery.parser.XQueryAST tmp157_AST = null;
+		tmp157_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp157_AST);
 		match(LITERAL_default);
 		{
 		switch ( LA(1)) {
@@ -3012,9 +3057,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST updateExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp160_AST = null;
-		tmp160_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp160_AST);
+		org.exist.xquery.parser.XQueryAST tmp159_AST = null;
+		tmp159_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp159_AST);
 		match(LITERAL_update);
 		{
 		switch ( LA(1)) {
@@ -3067,18 +3112,18 @@ public XQueryParser(ParserSharedInputState state) {
 		andExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop180:
+		_loop185:
 		do {
 			if ((LA(1)==LITERAL_or)) {
-				org.exist.xquery.parser.XQueryAST tmp161_AST = null;
-				tmp161_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp161_AST);
+				org.exist.xquery.parser.XQueryAST tmp160_AST = null;
+				tmp160_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp160_AST);
 				match(LITERAL_or);
 				andExpr();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop180;
+				break _loop185;
 			}
 			
 		} while (true);
@@ -3093,9 +3138,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST replaceExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp162_AST = null;
-		tmp162_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp162_AST);
+		org.exist.xquery.parser.XQueryAST tmp161_AST = null;
+		tmp161_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp161_AST);
 		match(LITERAL_replace);
 		expr();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -3112,9 +3157,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST updateValueExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp164_AST = null;
-		tmp164_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp164_AST);
+		org.exist.xquery.parser.XQueryAST tmp163_AST = null;
+		tmp163_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp163_AST);
 		match(LITERAL_value);
 		expr();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -3131,9 +3176,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST insertExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp166_AST = null;
-		tmp166_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp166_AST);
+		org.exist.xquery.parser.XQueryAST tmp165_AST = null;
+		tmp165_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp165_AST);
 		match(LITERAL_insert);
 		exprSingle();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -3141,25 +3186,25 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_into:
 		{
-			org.exist.xquery.parser.XQueryAST tmp167_AST = null;
-			tmp167_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp167_AST);
+			org.exist.xquery.parser.XQueryAST tmp166_AST = null;
+			tmp166_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp166_AST);
 			match(LITERAL_into);
 			break;
 		}
 		case LITERAL_preceding:
 		{
-			org.exist.xquery.parser.XQueryAST tmp168_AST = null;
-			tmp168_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp168_AST);
+			org.exist.xquery.parser.XQueryAST tmp167_AST = null;
+			tmp167_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp167_AST);
 			match(LITERAL_preceding);
 			break;
 		}
 		case LITERAL_following:
 		{
-			org.exist.xquery.parser.XQueryAST tmp169_AST = null;
-			tmp169_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp169_AST);
+			org.exist.xquery.parser.XQueryAST tmp168_AST = null;
+			tmp168_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp168_AST);
 			match(LITERAL_following);
 			break;
 		}
@@ -3181,9 +3226,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST deleteExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp170_AST = null;
-		tmp170_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp170_AST);
+		org.exist.xquery.parser.XQueryAST tmp169_AST = null;
+		tmp169_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp169_AST);
 		match(LITERAL_delete);
 		exprSingle();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -3197,9 +3242,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST renameExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp171_AST = null;
-		tmp171_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp171_AST);
+		org.exist.xquery.parser.XQueryAST tmp170_AST = null;
+		tmp170_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp170_AST);
 		match(LITERAL_rename);
 		exprSingle();
 		astFactory.addASTChild(currentAST, returnAST);
@@ -3216,14 +3261,14 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST forClause_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp173_AST = null;
-		tmp173_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp173_AST);
+		org.exist.xquery.parser.XQueryAST tmp172_AST = null;
+		tmp172_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp172_AST);
 		match(LITERAL_for);
 		inVarBinding();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop134:
+		_loop139:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -3231,7 +3276,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop134;
+				break _loop139;
 			}
 			
 		} while (true);
@@ -3246,14 +3291,14 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST letClause_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp175_AST = null;
-		tmp175_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp175_AST);
+		org.exist.xquery.parser.XQueryAST tmp174_AST = null;
+		tmp174_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp174_AST);
 		match(LITERAL_let);
 		letVarBinding();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop137:
+		_loop142:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -3261,7 +3306,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop137;
+				break _loop142;
 			}
 			
 		} while (true);
@@ -3430,9 +3475,9 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST positionalVar_AST = null;
 		String varName;
 		
-		org.exist.xquery.parser.XQueryAST tmp187_AST = null;
-		tmp187_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp187_AST);
+		org.exist.xquery.parser.XQueryAST tmp186_AST = null;
+		tmp186_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp186_AST);
 		match(LITERAL_at);
 		match(DOLLAR);
 		varName=qName();
@@ -3458,7 +3503,7 @@ public XQueryParser(ParserSharedInputState state) {
 		orderSpec();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop147:
+		_loop152:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -3466,7 +3511,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop147;
+				break _loop152;
 			}
 			
 		} while (true);
@@ -3499,17 +3544,17 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_ascending:
 		{
-			org.exist.xquery.parser.XQueryAST tmp190_AST = null;
-			tmp190_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp190_AST);
+			org.exist.xquery.parser.XQueryAST tmp189_AST = null;
+			tmp189_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp189_AST);
 			match(LITERAL_ascending);
 			break;
 		}
 		case LITERAL_descending:
 		{
-			org.exist.xquery.parser.XQueryAST tmp191_AST = null;
-			tmp191_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp191_AST);
+			org.exist.xquery.parser.XQueryAST tmp190_AST = null;
+			tmp190_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp190_AST);
 			match(LITERAL_descending);
 			break;
 		}
@@ -3530,25 +3575,25 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_empty:
 		{
-			org.exist.xquery.parser.XQueryAST tmp192_AST = null;
-			tmp192_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp192_AST);
+			org.exist.xquery.parser.XQueryAST tmp191_AST = null;
+			tmp191_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp191_AST);
 			match(LITERAL_empty);
 			{
 			switch ( LA(1)) {
 			case LITERAL_greatest:
 			{
-				org.exist.xquery.parser.XQueryAST tmp193_AST = null;
-				tmp193_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp193_AST);
+				org.exist.xquery.parser.XQueryAST tmp192_AST = null;
+				tmp192_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp192_AST);
 				match(LITERAL_greatest);
 				break;
 			}
 			case LITERAL_least:
 			{
-				org.exist.xquery.parser.XQueryAST tmp194_AST = null;
-				tmp194_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp194_AST);
+				org.exist.xquery.parser.XQueryAST tmp193_AST = null;
+				tmp193_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp193_AST);
 				match(LITERAL_least);
 				break;
 			}
@@ -3576,13 +3621,13 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_collation:
 		{
+			org.exist.xquery.parser.XQueryAST tmp194_AST = null;
+			tmp194_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp194_AST);
+			match(LITERAL_collation);
 			org.exist.xquery.parser.XQueryAST tmp195_AST = null;
 			tmp195_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp195_AST);
-			match(LITERAL_collation);
-			org.exist.xquery.parser.XQueryAST tmp196_AST = null;
-			tmp196_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp196_AST);
 			match(STRING_LITERAL);
 			break;
 		}
@@ -3658,7 +3703,7 @@ public XQueryParser(ParserSharedInputState state) {
 		groupSpec();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop159:
+		_loop164:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -3666,7 +3711,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop159;
+				break _loop164;
 			}
 			
 		} while (true);
@@ -3762,9 +3807,9 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST caseClause_AST = null;
 		String varName;
 		
-		org.exist.xquery.parser.XQueryAST tmp204_AST = null;
-		tmp204_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp204_AST);
+		org.exist.xquery.parser.XQueryAST tmp203_AST = null;
+		tmp203_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp203_AST);
 		match(LITERAL_case);
 		{
 		switch ( LA(1)) {
@@ -3803,9 +3848,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_inherit:
 		case 87:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case 96:
 		case LITERAL_item:
 		case LITERAL_for:
@@ -3917,9 +3962,9 @@ public XQueryParser(ParserSharedInputState state) {
 		
 		match(DOLLAR);
 		varName=qName();
-		org.exist.xquery.parser.XQueryAST tmp208_AST = null;
-		tmp208_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp208_AST);
+		org.exist.xquery.parser.XQueryAST tmp207_AST = null;
+		tmp207_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp207_AST);
 		match(LITERAL_as);
 		if ( inputState.guessing==0 ) {
 			caseVar_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -3942,18 +3987,18 @@ public XQueryParser(ParserSharedInputState state) {
 		comparisonExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop183:
+		_loop188:
 		do {
 			if ((LA(1)==LITERAL_and)) {
-				org.exist.xquery.parser.XQueryAST tmp209_AST = null;
-				tmp209_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp209_AST);
+				org.exist.xquery.parser.XQueryAST tmp208_AST = null;
+				tmp208_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp208_AST);
 				match(LITERAL_and);
 				comparisonExpr();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop183;
+				break _loop188;
 			}
 			
 		} while (true);
@@ -3984,49 +4029,49 @@ public XQueryParser(ParserSharedInputState state) {
 			switch ( LA(1)) {
 			case LITERAL_eq:
 			{
-				org.exist.xquery.parser.XQueryAST tmp210_AST = null;
-				tmp210_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp210_AST);
+				org.exist.xquery.parser.XQueryAST tmp209_AST = null;
+				tmp209_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp209_AST);
 				match(LITERAL_eq);
 				break;
 			}
 			case LITERAL_ne:
 			{
-				org.exist.xquery.parser.XQueryAST tmp211_AST = null;
-				tmp211_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp211_AST);
+				org.exist.xquery.parser.XQueryAST tmp210_AST = null;
+				tmp210_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp210_AST);
 				match(LITERAL_ne);
 				break;
 			}
 			case LITERAL_lt:
 			{
-				org.exist.xquery.parser.XQueryAST tmp212_AST = null;
-				tmp212_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp212_AST);
+				org.exist.xquery.parser.XQueryAST tmp211_AST = null;
+				tmp211_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp211_AST);
 				match(LITERAL_lt);
 				break;
 			}
 			case LITERAL_le:
 			{
-				org.exist.xquery.parser.XQueryAST tmp213_AST = null;
-				tmp213_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp213_AST);
+				org.exist.xquery.parser.XQueryAST tmp212_AST = null;
+				tmp212_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp212_AST);
 				match(LITERAL_le);
 				break;
 			}
 			case LITERAL_gt:
 			{
-				org.exist.xquery.parser.XQueryAST tmp214_AST = null;
-				tmp214_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp214_AST);
+				org.exist.xquery.parser.XQueryAST tmp213_AST = null;
+				tmp213_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp213_AST);
 				match(LITERAL_gt);
 				break;
 			}
 			case LITERAL_ge:
 			{
-				org.exist.xquery.parser.XQueryAST tmp215_AST = null;
-				tmp215_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp215_AST);
+				org.exist.xquery.parser.XQueryAST tmp214_AST = null;
+				tmp214_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp214_AST);
 				match(LITERAL_ge);
 				break;
 			}
@@ -4049,17 +4094,17 @@ public XQueryParser(ParserSharedInputState state) {
 			switch ( LA(1)) {
 			case LITERAL_is:
 			{
-				org.exist.xquery.parser.XQueryAST tmp216_AST = null;
-				tmp216_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp216_AST);
+				org.exist.xquery.parser.XQueryAST tmp215_AST = null;
+				tmp215_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp215_AST);
 				match(LITERAL_is);
 				break;
 			}
 			case LITERAL_isnot:
 			{
-				org.exist.xquery.parser.XQueryAST tmp217_AST = null;
-				tmp217_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp217_AST);
+				org.exist.xquery.parser.XQueryAST tmp216_AST = null;
+				tmp216_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp216_AST);
 				match(LITERAL_isnot);
 				break;
 			}
@@ -4082,17 +4127,17 @@ public XQueryParser(ParserSharedInputState state) {
 			switch ( LA(1)) {
 			case ANDEQ:
 			{
-				org.exist.xquery.parser.XQueryAST tmp218_AST = null;
-				tmp218_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp218_AST);
+				org.exist.xquery.parser.XQueryAST tmp217_AST = null;
+				tmp217_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp217_AST);
 				match(ANDEQ);
 				break;
 			}
 			case OREQ:
 			{
-				org.exist.xquery.parser.XQueryAST tmp219_AST = null;
-				tmp219_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp219_AST);
+				org.exist.xquery.parser.XQueryAST tmp218_AST = null;
+				tmp218_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp218_AST);
 				match(OREQ);
 				break;
 			}
@@ -4138,10 +4183,10 @@ public XQueryParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched195 = false;
+			boolean synPredMatched200 = false;
 			if (((LA(1)==LT))) {
-				int _m195 = mark();
-				synPredMatched195 = true;
+				int _m200 = mark();
+				synPredMatched200 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -4150,12 +4195,12 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched195 = false;
+					synPredMatched200 = false;
 				}
-				rewind(_m195);
+				rewind(_m200);
 				inputState.guessing--;
 			}
-			if ( synPredMatched195 ) {
+			if ( synPredMatched200 ) {
 				match(LT);
 				match(LT);
 				rangeExpr();
@@ -4172,10 +4217,10 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				boolean synPredMatched197 = false;
+				boolean synPredMatched202 = false;
 				if (((LA(1)==GT))) {
-					int _m197 = mark();
-					synPredMatched197 = true;
+					int _m202 = mark();
+					synPredMatched202 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -4184,12 +4229,12 @@ public XQueryParser(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched197 = false;
+						synPredMatched202 = false;
 					}
-					rewind(_m197);
+					rewind(_m202);
 					inputState.guessing--;
 				}
-				if ( synPredMatched197 ) {
+				if ( synPredMatched202 ) {
 					match(GT);
 					match(GT);
 					rangeExpr();
@@ -4205,55 +4250,55 @@ public XQueryParser(ParserSharedInputState state) {
 						currentAST.advanceChildToEnd();
 					}
 				}
-				else if ((_tokenSet_5.member(LA(1)))) {
+				else if ((_tokenSet_6.member(LA(1)))) {
 					{
 					{
 					switch ( LA(1)) {
 					case EQ:
 					{
-						org.exist.xquery.parser.XQueryAST tmp224_AST = null;
-						tmp224_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp224_AST);
+						org.exist.xquery.parser.XQueryAST tmp223_AST = null;
+						tmp223_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp223_AST);
 						match(EQ);
 						break;
 					}
 					case NEQ:
 					{
-						org.exist.xquery.parser.XQueryAST tmp225_AST = null;
-						tmp225_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp225_AST);
+						org.exist.xquery.parser.XQueryAST tmp224_AST = null;
+						tmp224_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp224_AST);
 						match(NEQ);
 						break;
 					}
 					case GT:
 					{
-						org.exist.xquery.parser.XQueryAST tmp226_AST = null;
-						tmp226_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp226_AST);
+						org.exist.xquery.parser.XQueryAST tmp225_AST = null;
+						tmp225_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp225_AST);
 						match(GT);
 						break;
 					}
 					case GTEQ:
 					{
-						org.exist.xquery.parser.XQueryAST tmp227_AST = null;
-						tmp227_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp227_AST);
+						org.exist.xquery.parser.XQueryAST tmp226_AST = null;
+						tmp226_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp226_AST);
 						match(GTEQ);
 						break;
 					}
 					case LT:
 					{
-						org.exist.xquery.parser.XQueryAST tmp228_AST = null;
-						tmp228_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp228_AST);
+						org.exist.xquery.parser.XQueryAST tmp227_AST = null;
+						tmp227_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp227_AST);
 						match(LT);
 						break;
 					}
 					case LTEQ:
 					{
-						org.exist.xquery.parser.XQueryAST tmp229_AST = null;
-						tmp229_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-						astFactory.makeASTRoot(currentAST, tmp229_AST);
+						org.exist.xquery.parser.XQueryAST tmp228_AST = null;
+						tmp228_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+						astFactory.makeASTRoot(currentAST, tmp228_AST);
 						match(LTEQ);
 						break;
 					}
@@ -4288,9 +4333,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_instance:
 		{
-			org.exist.xquery.parser.XQueryAST tmp230_AST = null;
-			tmp230_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp230_AST);
+			org.exist.xquery.parser.XQueryAST tmp229_AST = null;
+			tmp229_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp229_AST);
 			match(LITERAL_instance);
 			match(LITERAL_of);
 			sequenceType();
@@ -4376,9 +4421,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_treat:
 		{
-			org.exist.xquery.parser.XQueryAST tmp232_AST = null;
-			tmp232_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp232_AST);
+			org.exist.xquery.parser.XQueryAST tmp231_AST = null;
+			tmp231_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp231_AST);
 			match(LITERAL_treat);
 			match(LITERAL_as);
 			sequenceType();
@@ -4465,9 +4510,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_castable:
 		{
-			org.exist.xquery.parser.XQueryAST tmp234_AST = null;
-			tmp234_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp234_AST);
+			org.exist.xquery.parser.XQueryAST tmp233_AST = null;
+			tmp233_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp233_AST);
 			match(LITERAL_castable);
 			match(LITERAL_as);
 			singleType();
@@ -4555,9 +4600,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_cast:
 		{
-			org.exist.xquery.parser.XQueryAST tmp236_AST = null;
-			tmp236_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp236_AST);
+			org.exist.xquery.parser.XQueryAST tmp235_AST = null;
+			tmp235_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp235_AST);
 			match(LITERAL_cast);
 			match(LITERAL_as);
 			singleType();
@@ -4709,9 +4754,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case 87:
 		case DOLLAR:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case STAR:
 		case LITERAL_item:
 		case LITERAL_for:
@@ -4813,9 +4858,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_to:
 		{
-			org.exist.xquery.parser.XQueryAST tmp240_AST = null;
-			tmp240_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp240_AST);
+			org.exist.xquery.parser.XQueryAST tmp239_AST = null;
+			tmp239_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp239_AST);
 			match(LITERAL_to);
 			additiveExpr();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -4886,24 +4931,24 @@ public XQueryParser(ParserSharedInputState state) {
 		multiplicativeExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop211:
+		_loop216:
 		do {
 			if ((LA(1)==PLUS||LA(1)==MINUS)) {
 				{
 				switch ( LA(1)) {
 				case PLUS:
 				{
-					org.exist.xquery.parser.XQueryAST tmp241_AST = null;
-					tmp241_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp241_AST);
+					org.exist.xquery.parser.XQueryAST tmp240_AST = null;
+					tmp240_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp240_AST);
 					match(PLUS);
 					break;
 				}
 				case MINUS:
 				{
-					org.exist.xquery.parser.XQueryAST tmp242_AST = null;
-					tmp242_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp242_AST);
+					org.exist.xquery.parser.XQueryAST tmp241_AST = null;
+					tmp241_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp241_AST);
 					match(MINUS);
 					break;
 				}
@@ -4917,7 +4962,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop211;
+				break _loop216;
 			}
 			
 		} while (true);
@@ -4935,40 +4980,40 @@ public XQueryParser(ParserSharedInputState state) {
 		unionExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop215:
+		_loop220:
 		do {
-			if ((_tokenSet_6.member(LA(1)))) {
+			if ((_tokenSet_7.member(LA(1)))) {
 				{
 				switch ( LA(1)) {
 				case STAR:
 				{
-					org.exist.xquery.parser.XQueryAST tmp243_AST = null;
-					tmp243_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp243_AST);
+					org.exist.xquery.parser.XQueryAST tmp242_AST = null;
+					tmp242_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp242_AST);
 					match(STAR);
 					break;
 				}
 				case LITERAL_div:
 				{
-					org.exist.xquery.parser.XQueryAST tmp244_AST = null;
-					tmp244_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp244_AST);
+					org.exist.xquery.parser.XQueryAST tmp243_AST = null;
+					tmp243_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp243_AST);
 					match(LITERAL_div);
 					break;
 				}
 				case LITERAL_idiv:
 				{
-					org.exist.xquery.parser.XQueryAST tmp245_AST = null;
-					tmp245_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp245_AST);
+					org.exist.xquery.parser.XQueryAST tmp244_AST = null;
+					tmp244_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp244_AST);
 					match(LITERAL_idiv);
 					break;
 				}
 				case LITERAL_mod:
 				{
-					org.exist.xquery.parser.XQueryAST tmp246_AST = null;
-					tmp246_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp246_AST);
+					org.exist.xquery.parser.XQueryAST tmp245_AST = null;
+					tmp245_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp245_AST);
 					match(LITERAL_mod);
 					break;
 				}
@@ -4982,7 +5027,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop215;
+				break _loop220;
 			}
 			
 		} while (true);
@@ -5138,9 +5183,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case 87:
 		case DOLLAR:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case STAR:
 		case LITERAL_item:
 		case LITERAL_for:
@@ -5277,9 +5322,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case 87:
 		case DOLLAR:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case STAR:
 		case LITERAL_item:
 		case LITERAL_for:
@@ -5360,9 +5405,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case DSLASH:
 		{
-			org.exist.xquery.parser.XQueryAST tmp249_AST = null;
-			tmp249_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp249_AST);
+			org.exist.xquery.parser.XQueryAST tmp248_AST = null;
+			tmp248_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp248_AST);
 			match(DSLASH);
 			relativePathExpr();
 			relPath2_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
@@ -5379,10 +5424,10 @@ public XQueryParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched233 = false;
+			boolean synPredMatched238 = false;
 			if (((LA(1)==SLASH))) {
-				int _m233 = mark();
-				synPredMatched233 = true;
+				int _m238 = mark();
+				synPredMatched238 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -5391,15 +5436,15 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched233 = false;
+					synPredMatched238 = false;
 				}
-				rewind(_m233);
+				rewind(_m238);
 				inputState.guessing--;
 			}
-			if ( synPredMatched233 ) {
-				org.exist.xquery.parser.XQueryAST tmp250_AST = null;
-				tmp250_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp250_AST);
+			if ( synPredMatched238 ) {
+				org.exist.xquery.parser.XQueryAST tmp249_AST = null;
+				tmp249_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp249_AST);
 				match(SLASH);
 				relativePathExpr();
 				relPath_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
@@ -5415,9 +5460,9 @@ public XQueryParser(ParserSharedInputState state) {
 				pathExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			}
 			else if ((LA(1)==SLASH)) {
-				org.exist.xquery.parser.XQueryAST tmp251_AST = null;
-				tmp251_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp251_AST);
+				org.exist.xquery.parser.XQueryAST tmp250_AST = null;
+				tmp250_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp250_AST);
 				match(SLASH);
 				if ( inputState.guessing==0 ) {
 					pathExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -5443,18 +5488,18 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST extensionExpr_AST = null;
 		
 		{
-		int _cnt222=0;
-		_loop222:
+		int _cnt227=0;
+		_loop227:
 		do {
 			if ((LA(1)==PRAGMA_START)) {
 				pragma();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				if ( _cnt222>=1 ) { break _loop222; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt227>=1 ) { break _loop227; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt222++;
+			_cnt227++;
 		} while (true);
 		}
 		match(LCURLY);
@@ -5474,9 +5519,9 @@ public XQueryParser(ParserSharedInputState state) {
 		
 		match(PRAGMA_START);
 		name=qName();
-		org.exist.xquery.parser.XQueryAST tmp255_AST = null;
-		tmp255_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp255_AST);
+		org.exist.xquery.parser.XQueryAST tmp254_AST = null;
+		tmp254_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp254_AST);
 		match(PRAGMA_END);
 		if ( inputState.guessing==0 ) {
 			pragma_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -5501,24 +5546,24 @@ public XQueryParser(ParserSharedInputState state) {
 		instanceofExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop230:
+		_loop235:
 		do {
 			if ((LA(1)==LITERAL_intersect||LA(1)==LITERAL_except)) {
 				{
 				switch ( LA(1)) {
 				case LITERAL_intersect:
 				{
-					org.exist.xquery.parser.XQueryAST tmp256_AST = null;
-					tmp256_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp256_AST);
+					org.exist.xquery.parser.XQueryAST tmp255_AST = null;
+					tmp255_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp255_AST);
 					match(LITERAL_intersect);
 					break;
 				}
 				case LITERAL_except:
 				{
-					org.exist.xquery.parser.XQueryAST tmp257_AST = null;
-					tmp257_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp257_AST);
+					org.exist.xquery.parser.XQueryAST tmp256_AST = null;
+					tmp256_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp256_AST);
 					match(LITERAL_except);
 					break;
 				}
@@ -5532,7 +5577,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop230;
+				break _loop235;
 			}
 			
 		} while (true);
@@ -5550,24 +5595,24 @@ public XQueryParser(ParserSharedInputState state) {
 		stepExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop237:
+		_loop242:
 		do {
 			if ((LA(1)==SLASH||LA(1)==DSLASH)) {
 				{
 				switch ( LA(1)) {
 				case SLASH:
 				{
-					org.exist.xquery.parser.XQueryAST tmp258_AST = null;
-					tmp258_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp258_AST);
+					org.exist.xquery.parser.XQueryAST tmp257_AST = null;
+					tmp257_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp257_AST);
 					match(SLASH);
 					break;
 				}
 				case DSLASH:
 				{
-					org.exist.xquery.parser.XQueryAST tmp259_AST = null;
-					tmp259_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.makeASTRoot(currentAST, tmp259_AST);
+					org.exist.xquery.parser.XQueryAST tmp258_AST = null;
+					tmp258_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.makeASTRoot(currentAST, tmp258_AST);
 					match(DSLASH);
 					break;
 				}
@@ -5581,7 +5626,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop237;
+				break _loop242;
 			}
 			
 		} while (true);
@@ -5596,10 +5641,10 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST stepExpr_AST = null;
 		
-		boolean synPredMatched241 = false;
-		if (((_tokenSet_7.member(LA(1))))) {
-			int _m241 = mark();
-			synPredMatched241 = true;
+		boolean synPredMatched246 = false;
+		if (((_tokenSet_8.member(LA(1))))) {
+			int _m246 = mark();
+			synPredMatched246 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -5650,21 +5695,21 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched241 = false;
+				synPredMatched246 = false;
 			}
-			rewind(_m241);
+			rewind(_m246);
 			inputState.guessing--;
 		}
-		if ( synPredMatched241 ) {
+		if ( synPredMatched246 ) {
 			axisStep();
 			astFactory.addASTChild(currentAST, returnAST);
 			stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched244 = false;
-			if (((_tokenSet_8.member(LA(1))))) {
-				int _m244 = mark();
-				synPredMatched244 = true;
+			boolean synPredMatched249 = false;
+			if (((_tokenSet_9.member(LA(1))))) {
+				int _m249 = mark();
+				synPredMatched249 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -5720,21 +5765,21 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched244 = false;
+					synPredMatched249 = false;
 				}
-				rewind(_m244);
+				rewind(_m249);
 				inputState.guessing--;
 			}
-			if ( synPredMatched244 ) {
+			if ( synPredMatched249 ) {
 				filterStep();
 				astFactory.addASTChild(currentAST, returnAST);
 				stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			}
 			else {
-				boolean synPredMatched247 = false;
-				if (((_tokenSet_8.member(LA(1))))) {
-					int _m247 = mark();
-					synPredMatched247 = true;
+				boolean synPredMatched252 = false;
+				if (((_tokenSet_9.member(LA(1))))) {
+					int _m252 = mark();
+					synPredMatched252 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -5771,21 +5816,21 @@ public XQueryParser(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched247 = false;
+						synPredMatched252 = false;
 					}
-					rewind(_m247);
+					rewind(_m252);
 					inputState.guessing--;
 				}
-				if ( synPredMatched247 ) {
+				if ( synPredMatched252 ) {
 					filterStep();
 					astFactory.addASTChild(currentAST, returnAST);
 					stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				}
 				else {
-					boolean synPredMatched250 = false;
-					if (((_tokenSet_8.member(LA(1))))) {
-						int _m250 = mark();
-						synPredMatched250 = true;
+					boolean synPredMatched255 = false;
+					if (((_tokenSet_9.member(LA(1))))) {
+						int _m255 = mark();
+						synPredMatched255 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -5824,9 +5869,9 @@ public XQueryParser(ParserSharedInputState state) {
 							case LITERAL_inherit:
 							case 87:
 							case LITERAL_external:
-							case LITERAL_at:
 							case LITERAL_schema:
 							case LITERAL_as:
+							case LITERAL_at:
 							case LITERAL_item:
 							case LITERAL_for:
 							case LITERAL_let:
@@ -5936,17 +5981,17 @@ public XQueryParser(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched250 = false;
+							synPredMatched255 = false;
 						}
-						rewind(_m250);
+						rewind(_m255);
 						inputState.guessing--;
 					}
-					if ( synPredMatched250 ) {
+					if ( synPredMatched255 ) {
 						filterStep();
 						astFactory.addASTChild(currentAST, returnAST);
 						stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 					}
-					else if ((_tokenSet_7.member(LA(1)))) {
+					else if ((_tokenSet_8.member(LA(1)))) {
 						axisStep();
 						astFactory.addASTChild(currentAST, returnAST);
 						stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -5997,9 +6042,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case STRING_LITERAL:
 		{
-			org.exist.xquery.parser.XQueryAST tmp260_AST = null;
-			tmp260_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp260_AST);
+			org.exist.xquery.parser.XQueryAST tmp259_AST = null;
+			tmp259_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp259_AST);
 			match(STRING_LITERAL);
 			literal_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
@@ -6027,10 +6072,10 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST forwardOrReverseStep_AST = null;
 		
-		boolean synPredMatched259 = false;
-		if (((_tokenSet_9.member(LA(1))))) {
-			int _m259 = mark();
-			synPredMatched259 = true;
+		boolean synPredMatched264 = false;
+		if (((_tokenSet_10.member(LA(1))))) {
+			int _m264 = mark();
+			synPredMatched264 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -6039,12 +6084,12 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched259 = false;
+				synPredMatched264 = false;
 			}
-			rewind(_m259);
+			rewind(_m264);
 			inputState.guessing--;
 		}
-		if ( synPredMatched259 ) {
+		if ( synPredMatched264 ) {
 			forwardAxis();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest();
@@ -6052,10 +6097,10 @@ public XQueryParser(ParserSharedInputState state) {
 			forwardOrReverseStep_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched261 = false;
-			if (((_tokenSet_10.member(LA(1))))) {
-				int _m261 = mark();
-				synPredMatched261 = true;
+			boolean synPredMatched266 = false;
+			if (((_tokenSet_11.member(LA(1))))) {
+				int _m266 = mark();
+				synPredMatched266 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -6064,19 +6109,19 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched261 = false;
+					synPredMatched266 = false;
 				}
-				rewind(_m261);
+				rewind(_m266);
 				inputState.guessing--;
 			}
-			if ( synPredMatched261 ) {
+			if ( synPredMatched266 ) {
 				reverseAxis();
 				astFactory.addASTChild(currentAST, returnAST);
 				nodeTest();
 				astFactory.addASTChild(currentAST, returnAST);
 				forwardOrReverseStep_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			}
-			else if ((_tokenSet_7.member(LA(1)))) {
+			else if ((_tokenSet_8.member(LA(1)))) {
 				abbrevStep();
 				astFactory.addASTChild(currentAST, returnAST);
 				forwardOrReverseStep_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -6095,14 +6140,14 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST predicates_AST = null;
 		
 		{
-		_loop255:
+		_loop260:
 		do {
 			if ((LA(1)==LPPAREN)) {
 				predicate();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop255;
+				break _loop260;
 			}
 			
 		} while (true);
@@ -6144,63 +6189,63 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_child:
 		{
-			org.exist.xquery.parser.XQueryAST tmp263_AST = null;
-			tmp263_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp263_AST);
+			org.exist.xquery.parser.XQueryAST tmp262_AST = null;
+			tmp262_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp262_AST);
 			match(LITERAL_child);
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case LITERAL_self:
 		{
-			org.exist.xquery.parser.XQueryAST tmp264_AST = null;
-			tmp264_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp264_AST);
+			org.exist.xquery.parser.XQueryAST tmp263_AST = null;
+			tmp263_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp263_AST);
 			match(LITERAL_self);
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case LITERAL_attribute:
 		{
-			org.exist.xquery.parser.XQueryAST tmp265_AST = null;
-			tmp265_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp265_AST);
+			org.exist.xquery.parser.XQueryAST tmp264_AST = null;
+			tmp264_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp264_AST);
 			match(LITERAL_attribute);
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case LITERAL_descendant:
 		{
-			org.exist.xquery.parser.XQueryAST tmp266_AST = null;
-			tmp266_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp266_AST);
+			org.exist.xquery.parser.XQueryAST tmp265_AST = null;
+			tmp265_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp265_AST);
 			match(LITERAL_descendant);
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case 180:
 		{
-			org.exist.xquery.parser.XQueryAST tmp267_AST = null;
-			tmp267_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp267_AST);
+			org.exist.xquery.parser.XQueryAST tmp266_AST = null;
+			tmp266_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp266_AST);
 			match(180);
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case 181:
 		{
-			org.exist.xquery.parser.XQueryAST tmp268_AST = null;
-			tmp268_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp268_AST);
+			org.exist.xquery.parser.XQueryAST tmp267_AST = null;
+			tmp267_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp267_AST);
 			match(181);
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case LITERAL_following:
 		{
-			org.exist.xquery.parser.XQueryAST tmp269_AST = null;
-			tmp269_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp269_AST);
+			org.exist.xquery.parser.XQueryAST tmp268_AST = null;
+			tmp268_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp268_AST);
 			match(LITERAL_following);
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
@@ -6233,10 +6278,10 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST nodeTest_AST = null;
 		
-		boolean synPredMatched270 = false;
+		boolean synPredMatched275 = false;
 		if (((_tokenSet_4.member(LA(1))))) {
-			int _m270 = mark();
-			synPredMatched270 = true;
+			int _m275 = mark();
+			synPredMatched275 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -6245,17 +6290,17 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched270 = false;
+				synPredMatched275 = false;
 			}
-			rewind(_m270);
+			rewind(_m275);
 			inputState.guessing--;
 		}
-		if ( synPredMatched270 ) {
+		if ( synPredMatched275 ) {
 			kindTest();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
-		else if ((_tokenSet_11.member(LA(1)))) {
+		else if ((_tokenSet_12.member(LA(1)))) {
 			nameTest();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -6276,45 +6321,45 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_parent:
 		{
-			org.exist.xquery.parser.XQueryAST tmp272_AST = null;
-			tmp272_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp272_AST);
+			org.exist.xquery.parser.XQueryAST tmp271_AST = null;
+			tmp271_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp271_AST);
 			match(LITERAL_parent);
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case LITERAL_ancestor:
 		{
-			org.exist.xquery.parser.XQueryAST tmp273_AST = null;
-			tmp273_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp273_AST);
+			org.exist.xquery.parser.XQueryAST tmp272_AST = null;
+			tmp272_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp272_AST);
 			match(LITERAL_ancestor);
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case 184:
 		{
-			org.exist.xquery.parser.XQueryAST tmp274_AST = null;
-			tmp274_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp274_AST);
+			org.exist.xquery.parser.XQueryAST tmp273_AST = null;
+			tmp273_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp273_AST);
 			match(184);
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case 185:
 		{
-			org.exist.xquery.parser.XQueryAST tmp275_AST = null;
-			tmp275_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp275_AST);
+			org.exist.xquery.parser.XQueryAST tmp274_AST = null;
+			tmp274_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp274_AST);
 			match(185);
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case LITERAL_preceding:
 		{
-			org.exist.xquery.parser.XQueryAST tmp276_AST = null;
-			tmp276_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp276_AST);
+			org.exist.xquery.parser.XQueryAST tmp275_AST = null;
+			tmp275_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp275_AST);
 			match(LITERAL_preceding);
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
@@ -6377,9 +6422,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_inherit:
 		case 87:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case STAR:
 		case LITERAL_item:
 		case LITERAL_for:
@@ -6449,9 +6494,9 @@ public XQueryParser(ParserSharedInputState state) {
 			switch ( LA(1)) {
 			case AT:
 			{
-				org.exist.xquery.parser.XQueryAST tmp279_AST = null;
-				tmp279_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp279_AST);
+				org.exist.xquery.parser.XQueryAST tmp278_AST = null;
+				tmp278_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp278_AST);
 				match(AT);
 				break;
 			}
@@ -6484,9 +6529,9 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_inherit:
 			case 87:
 			case LITERAL_external:
-			case LITERAL_at:
 			case LITERAL_schema:
 			case LITERAL_as:
+			case LITERAL_at:
 			case STAR:
 			case LITERAL_item:
 			case LITERAL_for:
@@ -6566,9 +6611,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case PARENT:
 		{
-			org.exist.xquery.parser.XQueryAST tmp280_AST = null;
-			tmp280_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp280_AST);
+			org.exist.xquery.parser.XQueryAST tmp279_AST = null;
+			tmp279_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp279_AST);
 			match(PARENT);
 			abbrevStep_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
@@ -6588,10 +6633,10 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST nameTest_AST = null;
 		String name= null;
 		
-		boolean synPredMatched274 = false;
-		if (((_tokenSet_11.member(LA(1))))) {
-			int _m274 = mark();
-			synPredMatched274 = true;
+		boolean synPredMatched279 = false;
+		if (((_tokenSet_12.member(LA(1))))) {
+			int _m279 = mark();
+			synPredMatched279 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -6625,9 +6670,9 @@ public XQueryParser(ParserSharedInputState state) {
 				case LITERAL_inherit:
 				case 87:
 				case LITERAL_external:
-				case LITERAL_at:
 				case LITERAL_schema:
 				case LITERAL_as:
+				case LITERAL_at:
 				case LITERAL_item:
 				case LITERAL_for:
 				case LITERAL_let:
@@ -6710,12 +6755,12 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched274 = false;
+				synPredMatched279 = false;
 			}
-			rewind(_m274);
+			rewind(_m279);
 			inputState.guessing--;
 		}
-		if ( synPredMatched274 ) {
+		if ( synPredMatched279 ) {
 			wildcard();
 			astFactory.addASTChild(currentAST, returnAST);
 			nameTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -6747,10 +6792,10 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST wildcard_AST = null;
 		String name= null;
 		
-		boolean synPredMatched277 = false;
+		boolean synPredMatched282 = false;
 		if (((LA(1)==STAR))) {
-			int _m277 = mark();
-			synPredMatched277 = true;
+			int _m282 = mark();
+			synPredMatched282 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -6759,12 +6804,12 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched277 = false;
+				synPredMatched282 = false;
 			}
-			rewind(_m277);
+			rewind(_m282);
 			inputState.guessing--;
 		}
-		if ( synPredMatched277 ) {
+		if ( synPredMatched282 ) {
 			match(STAR);
 			match(COLON);
 			name=ncnameOrKeyword();
@@ -6795,9 +6840,9 @@ public XQueryParser(ParserSharedInputState state) {
 			wildcard_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
 		else if ((LA(1)==STAR)) {
-			org.exist.xquery.parser.XQueryAST tmp285_AST = null;
-			tmp285_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp285_AST);
+			org.exist.xquery.parser.XQueryAST tmp284_AST = null;
+			tmp284_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp284_AST);
 			match(STAR);
 			if ( inputState.guessing==0 ) {
 				wildcard_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -6868,10 +6913,10 @@ public XQueryParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched282 = false;
-			if (((_tokenSet_12.member(LA(1))))) {
-				int _m282 = mark();
-				synPredMatched282 = true;
+			boolean synPredMatched287 = false;
+			if (((_tokenSet_13.member(LA(1))))) {
+				int _m287 = mark();
+				synPredMatched287 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -6917,21 +6962,21 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched282 = false;
+					synPredMatched287 = false;
 				}
-				rewind(_m282);
+				rewind(_m287);
 				inputState.guessing--;
 			}
-			if ( synPredMatched282 ) {
+			if ( synPredMatched287 ) {
 				computedConstructor();
 				astFactory.addASTChild(currentAST, returnAST);
 				primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			}
 			else {
-				boolean synPredMatched285 = false;
-				if (((_tokenSet_12.member(LA(1))))) {
-					int _m285 = mark();
-					synPredMatched285 = true;
+				boolean synPredMatched290 = false;
+				if (((_tokenSet_13.member(LA(1))))) {
+					int _m290 = mark();
+					synPredMatched290 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -6968,21 +7013,21 @@ public XQueryParser(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched285 = false;
+						synPredMatched290 = false;
 					}
-					rewind(_m285);
+					rewind(_m290);
 					inputState.guessing--;
 				}
-				if ( synPredMatched285 ) {
+				if ( synPredMatched290 ) {
 					computedConstructor();
 					astFactory.addASTChild(currentAST, returnAST);
 					primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				}
 				else {
-					boolean synPredMatched287 = false;
+					boolean synPredMatched292 = false;
 					if (((LA(1)==LITERAL_ordered))) {
-						int _m287 = mark();
-						synPredMatched287 = true;
+						int _m292 = mark();
+						synPredMatched292 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -6991,21 +7036,21 @@ public XQueryParser(ParserSharedInputState state) {
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched287 = false;
+							synPredMatched292 = false;
 						}
-						rewind(_m287);
+						rewind(_m292);
 						inputState.guessing--;
 					}
-					if ( synPredMatched287 ) {
+					if ( synPredMatched292 ) {
 						orderedExpr();
 						astFactory.addASTChild(currentAST, returnAST);
 						primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 					}
 					else {
-						boolean synPredMatched289 = false;
+						boolean synPredMatched294 = false;
 						if (((LA(1)==LITERAL_unordered))) {
-							int _m289 = mark();
-							synPredMatched289 = true;
+							int _m294 = mark();
+							synPredMatched294 = true;
 							inputState.guessing++;
 							try {
 								{
@@ -7014,12 +7059,12 @@ public XQueryParser(ParserSharedInputState state) {
 								}
 							}
 							catch (RecognitionException pe) {
-								synPredMatched289 = false;
+								synPredMatched294 = false;
 							}
-							rewind(_m289);
+							rewind(_m294);
 							inputState.guessing--;
 						}
-						if ( synPredMatched289 ) {
+						if ( synPredMatched294 ) {
 							unorderedExpr();
 							astFactory.addASTChild(currentAST, returnAST);
 							primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -7220,9 +7265,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case 87:
 		case DOLLAR:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case STAR:
 		case PLUS:
 		case LITERAL_item:
@@ -7339,9 +7384,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST contextItemExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp293_AST = null;
-		tmp293_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp293_AST);
+		org.exist.xquery.parser.XQueryAST tmp292_AST = null;
+		tmp292_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp292_AST);
 		match(SELF);
 		contextItemExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		returnAST = contextItemExpr_AST;
@@ -7389,9 +7434,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case 87:
 		case DOLLAR:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case STAR:
 		case PLUS:
 		case LITERAL_item:
@@ -7534,27 +7579,27 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case DOUBLE_LITERAL:
 		{
-			org.exist.xquery.parser.XQueryAST tmp297_AST = null;
-			tmp297_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp297_AST);
+			org.exist.xquery.parser.XQueryAST tmp296_AST = null;
+			tmp296_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp296_AST);
 			match(DOUBLE_LITERAL);
 			numericLiteral_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case DECIMAL_LITERAL:
 		{
-			org.exist.xquery.parser.XQueryAST tmp298_AST = null;
-			tmp298_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp298_AST);
+			org.exist.xquery.parser.XQueryAST tmp297_AST = null;
+			tmp297_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp297_AST);
 			match(DECIMAL_LITERAL);
 			numericLiteral_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
 		case INTEGER_LITERAL:
 		{
-			org.exist.xquery.parser.XQueryAST tmp299_AST = null;
-			tmp299_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp299_AST);
+			org.exist.xquery.parser.XQueryAST tmp298_AST = null;
+			tmp298_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp298_AST);
 			match(INTEGER_LITERAL);
 			numericLiteral_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
@@ -7576,7 +7621,7 @@ public XQueryParser(ParserSharedInputState state) {
 		exprSingle();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop301:
+		_loop306:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -7584,7 +7629,7 @@ public XQueryParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop301;
+				break _loop306;
 			}
 			
 		} while (true);
@@ -7599,9 +7644,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST textTest_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp301_AST = null;
-		tmp301_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp301_AST);
+		org.exist.xquery.parser.XQueryAST tmp300_AST = null;
+		tmp300_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp300_AST);
 		match(LITERAL_text);
 		match(LPAREN);
 		match(RPAREN);
@@ -7615,9 +7660,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST anyKindTest_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp304_AST = null;
-		tmp304_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp304_AST);
+		org.exist.xquery.parser.XQueryAST tmp303_AST = null;
+		tmp303_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp303_AST);
 		match(LITERAL_node);
 		match(LPAREN);
 		match(RPAREN);
@@ -7631,9 +7676,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST elementTest_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp307_AST = null;
-		tmp307_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp307_AST);
+		org.exist.xquery.parser.XQueryAST tmp306_AST = null;
+		tmp306_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp306_AST);
 		match(LITERAL_element);
 		match(LPAREN);
 		{
@@ -7667,9 +7712,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_inherit:
 		case 87:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case STAR:
 		case LITERAL_item:
 		case LITERAL_for:
@@ -7746,9 +7791,9 @@ public XQueryParser(ParserSharedInputState state) {
 				switch ( LA(1)) {
 				case QUESTION:
 				{
-					org.exist.xquery.parser.XQueryAST tmp310_AST = null;
-					tmp310_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.addASTChild(currentAST, tmp310_AST);
+					org.exist.xquery.parser.XQueryAST tmp309_AST = null;
+					tmp309_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.addASTChild(currentAST, tmp309_AST);
 					match(QUESTION);
 					break;
 				}
@@ -7830,9 +7875,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_inherit:
 		case 87:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case STAR:
 		case LITERAL_item:
 		case LITERAL_for:
@@ -7909,9 +7954,9 @@ public XQueryParser(ParserSharedInputState state) {
 				switch ( LA(1)) {
 				case QUESTION:
 				{
-					org.exist.xquery.parser.XQueryAST tmp315_AST = null;
-					tmp315_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-					astFactory.addASTChild(currentAST, tmp315_AST);
+					org.exist.xquery.parser.XQueryAST tmp314_AST = null;
+					tmp314_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+					astFactory.addASTChild(currentAST, tmp314_AST);
 					match(QUESTION);
 					break;
 				}
@@ -7968,9 +8013,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST commentTest_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp317_AST = null;
-		tmp317_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp317_AST);
+		org.exist.xquery.parser.XQueryAST tmp316_AST = null;
+		tmp316_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp316_AST);
 		match(LITERAL_comment);
 		match(LPAREN);
 		match(RPAREN);
@@ -7984,26 +8029,26 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST piTest_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp320_AST = null;
-		tmp320_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp320_AST);
+		org.exist.xquery.parser.XQueryAST tmp319_AST = null;
+		tmp319_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp319_AST);
 		match(167);
 		match(LPAREN);
 		{
 		switch ( LA(1)) {
 		case NCNAME:
 		{
-			org.exist.xquery.parser.XQueryAST tmp322_AST = null;
-			tmp322_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp322_AST);
+			org.exist.xquery.parser.XQueryAST tmp321_AST = null;
+			tmp321_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp321_AST);
 			match(NCNAME);
 			break;
 		}
 		case STRING_LITERAL:
 		{
-			org.exist.xquery.parser.XQueryAST tmp323_AST = null;
-			tmp323_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp323_AST);
+			org.exist.xquery.parser.XQueryAST tmp322_AST = null;
+			tmp322_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp322_AST);
 			match(STRING_LITERAL);
 			break;
 		}
@@ -8028,9 +8073,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST documentTest_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp325_AST = null;
-		tmp325_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp325_AST);
+		org.exist.xquery.parser.XQueryAST tmp324_AST = null;
+		tmp324_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp324_AST);
 		match(168);
 		match(LPAREN);
 		{
@@ -8072,9 +8117,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case STAR:
 		{
-			org.exist.xquery.parser.XQueryAST tmp328_AST = null;
-			tmp328_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp328_AST);
+			org.exist.xquery.parser.XQueryAST tmp327_AST = null;
+			tmp327_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp327_AST);
 			match(STAR);
 			if ( inputState.guessing==0 ) {
 				elementNameOrWildcard_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -8116,9 +8161,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_inherit:
 		case 87:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case LITERAL_item:
 		case LITERAL_for:
 		case LITERAL_let:
@@ -8233,9 +8278,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case STAR:
 		{
-			org.exist.xquery.parser.XQueryAST tmp329_AST = null;
-			tmp329_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp329_AST);
+			org.exist.xquery.parser.XQueryAST tmp328_AST = null;
+			tmp328_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp328_AST);
 			match(STAR);
 			if ( inputState.guessing==0 ) {
 				attributeNameOrWildcard_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -8277,9 +8322,9 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_inherit:
 		case 87:
 		case LITERAL_external:
-		case LITERAL_at:
 		case LITERAL_schema:
 		case LITERAL_as:
+		case LITERAL_at:
 		case LITERAL_item:
 		case LITERAL_for:
 		case LITERAL_let:
@@ -8369,9 +8414,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST schemaElementTest_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp330_AST = null;
-		tmp330_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp330_AST);
+		org.exist.xquery.parser.XQueryAST tmp329_AST = null;
+		tmp329_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp329_AST);
 		match(189);
 		match(LPAREN);
 		qName();
@@ -8390,27 +8435,27 @@ public XQueryParser(ParserSharedInputState state) {
 			String name= null;
 		
 		
-		boolean synPredMatched357 = false;
+		boolean synPredMatched362 = false;
 		if (((LA(1)==LT))) {
-			int _m357 = mark();
-			synPredMatched357 = true;
+			int _m362 = mark();
+			synPredMatched362 = true;
 			inputState.guessing++;
 			try {
 				{
 				match(LT);
 				qName();
 				{
-				match(_tokenSet_13);
+				match(_tokenSet_14);
 				}
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched357 = false;
+				synPredMatched362 = false;
 			}
-			rewind(_m357);
+			rewind(_m362);
 			inputState.guessing--;
 		}
-		if ( synPredMatched357 ) {
+		if ( synPredMatched362 ) {
 			elementWithAttributes();
 			astFactory.addASTChild(currentAST, returnAST);
 			elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -8433,9 +8478,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST xmlComment_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp333_AST = null;
-		tmp333_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp333_AST);
+		org.exist.xquery.parser.XQueryAST tmp332_AST = null;
+		tmp332_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp332_AST);
 		match(XML_COMMENT);
 		match(XML_COMMENT_END);
 		xmlComment_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -8448,9 +8493,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST xmlPI_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp335_AST = null;
-		tmp335_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp335_AST);
+		org.exist.xquery.parser.XQueryAST tmp334_AST = null;
+		tmp334_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp334_AST);
 		match(XML_PI);
 		match(XML_PI_END);
 		xmlPI_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -8467,10 +8512,10 @@ public XQueryParser(ParserSharedInputState state) {
 			String qn;
 		
 		
-		boolean synPredMatched330 = false;
+		boolean synPredMatched335 = false;
 		if (((LA(1)==LITERAL_element))) {
-			int _m330 = mark();
-			synPredMatched330 = true;
+			int _m335 = mark();
+			synPredMatched335 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -8479,12 +8524,12 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched330 = false;
+				synPredMatched335 = false;
 			}
-			rewind(_m330);
+			rewind(_m335);
 			inputState.guessing--;
 		}
-		if ( synPredMatched330 ) {
+		if ( synPredMatched335 ) {
 			match(LITERAL_element);
 			match(LCURLY);
 			expr();
@@ -8525,9 +8570,9 @@ public XQueryParser(ParserSharedInputState state) {
 			case 87:
 			case DOLLAR:
 			case LITERAL_external:
-			case LITERAL_at:
 			case LITERAL_schema:
 			case LITERAL_as:
+			case LITERAL_at:
 			case STAR:
 			case PLUS:
 			case LITERAL_item:
@@ -8670,9 +8715,9 @@ public XQueryParser(ParserSharedInputState state) {
 			case 87:
 			case DOLLAR:
 			case LITERAL_external:
-			case LITERAL_at:
 			case LITERAL_schema:
 			case LITERAL_as:
+			case LITERAL_at:
 			case STAR:
 			case PLUS:
 			case LITERAL_item:
@@ -8796,10 +8841,10 @@ public XQueryParser(ParserSharedInputState state) {
 			String qn;
 		
 		
-		boolean synPredMatched344 = false;
+		boolean synPredMatched349 = false;
 		if (((LA(1)==LITERAL_attribute))) {
-			int _m344 = mark();
-			synPredMatched344 = true;
+			int _m349 = mark();
+			synPredMatched349 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -8808,12 +8853,12 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched344 = false;
+				synPredMatched349 = false;
 			}
-			rewind(_m344);
+			rewind(_m349);
 			inputState.guessing--;
 		}
-		if ( synPredMatched344 ) {
+		if ( synPredMatched349 ) {
 			match(LITERAL_attribute);
 			match(LCURLY);
 			expr();
@@ -8855,9 +8900,9 @@ public XQueryParser(ParserSharedInputState state) {
 			case 87:
 			case DOLLAR:
 			case LITERAL_external:
-			case LITERAL_at:
 			case LITERAL_schema:
 			case LITERAL_as:
+			case LITERAL_at:
 			case STAR:
 			case PLUS:
 			case LITERAL_item:
@@ -9001,9 +9046,9 @@ public XQueryParser(ParserSharedInputState state) {
 			case 87:
 			case DOLLAR:
 			case LITERAL_external:
-			case LITERAL_at:
 			case LITERAL_schema:
 			case LITERAL_as:
+			case LITERAL_at:
 			case STAR:
 			case PLUS:
 			case LITERAL_item:
@@ -9122,9 +9167,9 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST compTextConstructor_AST = null;
 		org.exist.xquery.parser.XQueryAST e_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp353_AST = null;
-		tmp353_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp353_AST);
+		org.exist.xquery.parser.XQueryAST tmp352_AST = null;
+		tmp352_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp352_AST);
 		match(LITERAL_text);
 		match(LCURLY);
 		expr();
@@ -9150,9 +9195,9 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST compDocumentConstructor_AST = null;
 		org.exist.xquery.parser.XQueryAST e_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp356_AST = null;
-		tmp356_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp356_AST);
+		org.exist.xquery.parser.XQueryAST tmp355_AST = null;
+		tmp355_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp355_AST);
 		match(LITERAL_document);
 		match(LCURLY);
 		expr();
@@ -9183,10 +9228,10 @@ public XQueryParser(ParserSharedInputState state) {
 			String qn;
 		
 		
-		boolean synPredMatched351 = false;
+		boolean synPredMatched356 = false;
 		if (((LA(1)==167))) {
-			int _m351 = mark();
-			synPredMatched351 = true;
+			int _m356 = mark();
+			synPredMatched356 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -9195,12 +9240,12 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched351 = false;
+				synPredMatched356 = false;
 			}
-			rewind(_m351);
+			rewind(_m356);
 			inputState.guessing--;
 		}
-		if ( synPredMatched351 ) {
+		if ( synPredMatched356 ) {
 			match(167);
 			match(LCURLY);
 			expr();
@@ -9255,9 +9300,9 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST compXmlComment_AST = null;
 		org.exist.xquery.parser.XQueryAST e_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp367_AST = null;
-		tmp367_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp367_AST);
+		org.exist.xquery.parser.XQueryAST tmp366_AST = null;
+		tmp366_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp366_AST);
 		match(LITERAL_comment);
 		match(LCURLY);
 		expr();
@@ -9283,10 +9328,10 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST compElemBody_AST = null;
 		
 		{
-		boolean synPredMatched336 = false;
+		boolean synPredMatched341 = false;
 		if (((LA(1)==LITERAL_namespace))) {
-			int _m336 = mark();
-			synPredMatched336 = true;
+			int _m341 = mark();
+			synPredMatched341 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -9296,16 +9341,16 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched336 = false;
+				synPredMatched341 = false;
 			}
-			rewind(_m336);
+			rewind(_m341);
 			inputState.guessing--;
 		}
-		if ( synPredMatched336 ) {
+		if ( synPredMatched341 ) {
 			localNamespaceDecl();
 			astFactory.addASTChild(currentAST, returnAST);
 		}
-		else if ((_tokenSet_0.member(LA(1)))) {
+		else if ((_tokenSet_5.member(LA(1)))) {
 			exprSingle();
 			astFactory.addASTChild(currentAST, returnAST);
 		}
@@ -9315,15 +9360,15 @@ public XQueryParser(ParserSharedInputState state) {
 		
 		}
 		{
-		_loop341:
+		_loop346:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
 				{
-				boolean synPredMatched340 = false;
+				boolean synPredMatched345 = false;
 				if (((LA(1)==LITERAL_namespace))) {
-					int _m340 = mark();
-					synPredMatched340 = true;
+					int _m345 = mark();
+					synPredMatched345 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -9333,16 +9378,16 @@ public XQueryParser(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched340 = false;
+						synPredMatched345 = false;
 					}
-					rewind(_m340);
+					rewind(_m345);
 					inputState.guessing--;
 				}
-				if ( synPredMatched340 ) {
+				if ( synPredMatched345 ) {
 					localNamespaceDecl();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
-				else if ((_tokenSet_0.member(LA(1)))) {
+				else if ((_tokenSet_5.member(LA(1)))) {
 					exprSingle();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
@@ -9353,7 +9398,7 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop341;
+				break _loop346;
 			}
 			
 		} while (true);
@@ -9496,9 +9541,9 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST qn_AST = null;
 		String name= null;
 		
-		org.exist.xquery.parser.XQueryAST tmp380_AST = null;
-		tmp380_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp380_AST);
+		org.exist.xquery.parser.XQueryAST tmp379_AST = null;
+		tmp379_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp379_AST);
 		match(LT);
 		name=qName();
 		q_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
@@ -9586,14 +9631,14 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST mixedElementContent_AST = null;
 		
 		{
-		_loop382:
+		_loop387:
 		do {
-			if ((_tokenSet_14.member(LA(1)))) {
+			if ((_tokenSet_15.member(LA(1)))) {
 				elementContent();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop382;
+				break _loop387;
 			}
 			
 		} while (true);
@@ -9609,18 +9654,18 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST attributeList_AST = null;
 		
 		{
-		int _cnt368=0;
-		_loop368:
+		int _cnt373=0;
+		_loop373:
 		do {
 			if ((_tokenSet_1.member(LA(1)))) {
 				attributeDef();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				if ( _cnt368>=1 ) { break _loop368; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt373>=1 ) { break _loop373; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt368++;
+			_cnt373++;
 		} while (true);
 		}
 		attributeList_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -9675,14 +9720,14 @@ public XQueryParser(ParserSharedInputState state) {
 					
 			}
 			{
-			_loop372:
+			_loop377:
 			do {
-				if ((_tokenSet_15.member(LA(1)))) {
+				if ((_tokenSet_16.member(LA(1)))) {
 					quotAttrValueContent();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop372;
+					break _loop377;
 				}
 				
 			} while (true);
@@ -9707,14 +9752,14 @@ public XQueryParser(ParserSharedInputState state) {
 					
 			}
 			{
-			_loop374:
+			_loop379:
 			do {
-				if ((_tokenSet_16.member(LA(1)))) {
+				if ((_tokenSet_17.member(LA(1)))) {
 					aposAttrValueContent();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop374;
+					break _loop379;
 				}
 				
 			} while (true);
@@ -9865,10 +9910,10 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST attrCommonContent_AST = null;
 		
-		boolean synPredMatched379 = false;
+		boolean synPredMatched384 = false;
 		if (((LA(1)==LCURLY))) {
-			int _m379 = mark();
-			synPredMatched379 = true;
+			int _m384 = mark();
+			synPredMatched384 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -9877,19 +9922,19 @@ public XQueryParser(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched379 = false;
+				synPredMatched384 = false;
 			}
-			rewind(_m379);
+			rewind(_m384);
 			inputState.guessing--;
 		}
-		if ( synPredMatched379 ) {
+		if ( synPredMatched384 ) {
+			org.exist.xquery.parser.XQueryAST tmp390_AST = null;
+			tmp390_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp390_AST);
+			match(LCURLY);
 			org.exist.xquery.parser.XQueryAST tmp391_AST = null;
 			tmp391_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp391_AST);
-			match(LCURLY);
-			org.exist.xquery.parser.XQueryAST tmp392_AST = null;
-			tmp392_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp392_AST);
 			match(LCURLY);
 			if ( inputState.guessing==0 ) {
 				attrCommonContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -9906,13 +9951,13 @@ public XQueryParser(ParserSharedInputState state) {
 			attrCommonContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
 		else if ((LA(1)==RCURLY)) {
+			org.exist.xquery.parser.XQueryAST tmp392_AST = null;
+			tmp392_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp392_AST);
+			match(RCURLY);
 			org.exist.xquery.parser.XQueryAST tmp393_AST = null;
 			tmp393_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp393_AST);
-			match(RCURLY);
-			org.exist.xquery.parser.XQueryAST tmp394_AST = null;
-			tmp394_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp394_AST);
 			match(RCURLY);
 			if ( inputState.guessing==0 ) {
 				attrCommonContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -9942,9 +9987,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST attributeEnclosedExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp395_AST = null;
-		tmp395_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp395_AST);
+		org.exist.xquery.parser.XQueryAST tmp394_AST = null;
+		tmp394_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp394_AST);
 		match(LCURLY);
 		if ( inputState.guessing==0 ) {
 			
@@ -9983,13 +10028,13 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case RCURLY:
 		{
+			org.exist.xquery.parser.XQueryAST tmp396_AST = null;
+			tmp396_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp396_AST);
+			match(RCURLY);
 			org.exist.xquery.parser.XQueryAST tmp397_AST = null;
 			tmp397_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp397_AST);
-			match(RCURLY);
-			org.exist.xquery.parser.XQueryAST tmp398_AST = null;
-			tmp398_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp398_AST);
 			match(RCURLY);
 			if ( inputState.guessing==0 ) {
 				elementContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -10034,10 +10079,10 @@ public XQueryParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched385 = false;
+			boolean synPredMatched390 = false;
 			if (((LA(1)==LCURLY))) {
-				int _m385 = mark();
-				synPredMatched385 = true;
+				int _m390 = mark();
+				synPredMatched390 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -10046,19 +10091,19 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched385 = false;
+					synPredMatched390 = false;
 				}
-				rewind(_m385);
+				rewind(_m390);
 				inputState.guessing--;
 			}
-			if ( synPredMatched385 ) {
+			if ( synPredMatched390 ) {
+				org.exist.xquery.parser.XQueryAST tmp398_AST = null;
+				tmp398_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp398_AST);
+				match(LCURLY);
 				org.exist.xquery.parser.XQueryAST tmp399_AST = null;
 				tmp399_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 				astFactory.addASTChild(currentAST, tmp399_AST);
-				match(LCURLY);
-				org.exist.xquery.parser.XQueryAST tmp400_AST = null;
-				tmp400_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp400_AST);
 				match(LCURLY);
 				if ( inputState.guessing==0 ) {
 					elementContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -10091,9 +10136,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST cdataSection_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp401_AST = null;
-		tmp401_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp401_AST);
+		org.exist.xquery.parser.XQueryAST tmp400_AST = null;
+		tmp400_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp400_AST);
 		match(XML_CDATA);
 		cdataSection_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		returnAST = cdataSection_AST;
@@ -10105,9 +10150,9 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST enclosedExpr_AST = null;
 		
-		org.exist.xquery.parser.XQueryAST tmp402_AST = null;
-		tmp402_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp402_AST);
+		org.exist.xquery.parser.XQueryAST tmp401_AST = null;
+		tmp401_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp401_AST);
 		match(LCURLY);
 		if ( inputState.guessing==0 ) {
 			
@@ -10140,9 +10185,9 @@ public XQueryParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_element:
 		{
-			org.exist.xquery.parser.XQueryAST tmp404_AST = null;
-			tmp404_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp404_AST);
+			org.exist.xquery.parser.XQueryAST tmp403_AST = null;
+			tmp403_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp403_AST);
 			match(LITERAL_element);
 			if ( inputState.guessing==0 ) {
 				name = "element";
@@ -10152,9 +10197,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_to:
 		{
-			org.exist.xquery.parser.XQueryAST tmp405_AST = null;
-			tmp405_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp405_AST);
+			org.exist.xquery.parser.XQueryAST tmp404_AST = null;
+			tmp404_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp404_AST);
 			match(LITERAL_to);
 			if ( inputState.guessing==0 ) {
 				name = "to";
@@ -10164,9 +10209,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_div:
 		{
-			org.exist.xquery.parser.XQueryAST tmp406_AST = null;
-			tmp406_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp406_AST);
+			org.exist.xquery.parser.XQueryAST tmp405_AST = null;
+			tmp405_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp405_AST);
 			match(LITERAL_div);
 			if ( inputState.guessing==0 ) {
 				name= "div";
@@ -10176,9 +10221,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_mod:
 		{
-			org.exist.xquery.parser.XQueryAST tmp407_AST = null;
-			tmp407_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp407_AST);
+			org.exist.xquery.parser.XQueryAST tmp406_AST = null;
+			tmp406_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp406_AST);
 			match(LITERAL_mod);
 			if ( inputState.guessing==0 ) {
 				name= "mod";
@@ -10188,9 +10233,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_text:
 		{
-			org.exist.xquery.parser.XQueryAST tmp408_AST = null;
-			tmp408_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp408_AST);
+			org.exist.xquery.parser.XQueryAST tmp407_AST = null;
+			tmp407_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp407_AST);
 			match(LITERAL_text);
 			if ( inputState.guessing==0 ) {
 				name= "text";
@@ -10200,9 +10245,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_node:
 		{
-			org.exist.xquery.parser.XQueryAST tmp409_AST = null;
-			tmp409_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp409_AST);
+			org.exist.xquery.parser.XQueryAST tmp408_AST = null;
+			tmp408_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp408_AST);
 			match(LITERAL_node);
 			if ( inputState.guessing==0 ) {
 				name= "node";
@@ -10212,9 +10257,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_or:
 		{
-			org.exist.xquery.parser.XQueryAST tmp410_AST = null;
-			tmp410_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp410_AST);
+			org.exist.xquery.parser.XQueryAST tmp409_AST = null;
+			tmp409_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp409_AST);
 			match(LITERAL_or);
 			if ( inputState.guessing==0 ) {
 				name= "or";
@@ -10224,9 +10269,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_and:
 		{
-			org.exist.xquery.parser.XQueryAST tmp411_AST = null;
-			tmp411_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp411_AST);
+			org.exist.xquery.parser.XQueryAST tmp410_AST = null;
+			tmp410_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp410_AST);
 			match(LITERAL_and);
 			if ( inputState.guessing==0 ) {
 				name= "and";
@@ -10236,9 +10281,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_child:
 		{
-			org.exist.xquery.parser.XQueryAST tmp412_AST = null;
-			tmp412_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp412_AST);
+			org.exist.xquery.parser.XQueryAST tmp411_AST = null;
+			tmp411_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp411_AST);
 			match(LITERAL_child);
 			if ( inputState.guessing==0 ) {
 				name= "child";
@@ -10248,9 +10293,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_parent:
 		{
-			org.exist.xquery.parser.XQueryAST tmp413_AST = null;
-			tmp413_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp413_AST);
+			org.exist.xquery.parser.XQueryAST tmp412_AST = null;
+			tmp412_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp412_AST);
 			match(LITERAL_parent);
 			if ( inputState.guessing==0 ) {
 				name= "parent";
@@ -10260,9 +10305,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_self:
 		{
-			org.exist.xquery.parser.XQueryAST tmp414_AST = null;
-			tmp414_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp414_AST);
+			org.exist.xquery.parser.XQueryAST tmp413_AST = null;
+			tmp413_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp413_AST);
 			match(LITERAL_self);
 			if ( inputState.guessing==0 ) {
 				name= "self";
@@ -10272,9 +10317,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_attribute:
 		{
-			org.exist.xquery.parser.XQueryAST tmp415_AST = null;
-			tmp415_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp415_AST);
+			org.exist.xquery.parser.XQueryAST tmp414_AST = null;
+			tmp414_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp414_AST);
 			match(LITERAL_attribute);
 			if ( inputState.guessing==0 ) {
 				name= "attribute";
@@ -10284,9 +10329,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_comment:
 		{
-			org.exist.xquery.parser.XQueryAST tmp416_AST = null;
-			tmp416_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp416_AST);
+			org.exist.xquery.parser.XQueryAST tmp415_AST = null;
+			tmp415_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp415_AST);
 			match(LITERAL_comment);
 			if ( inputState.guessing==0 ) {
 				name= "comment";
@@ -10296,9 +10341,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_document:
 		{
-			org.exist.xquery.parser.XQueryAST tmp417_AST = null;
-			tmp417_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp417_AST);
+			org.exist.xquery.parser.XQueryAST tmp416_AST = null;
+			tmp416_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp416_AST);
 			match(LITERAL_document);
 			if ( inputState.guessing==0 ) {
 				name= "document";
@@ -10308,9 +10353,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case 168:
 		{
-			org.exist.xquery.parser.XQueryAST tmp418_AST = null;
-			tmp418_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp418_AST);
+			org.exist.xquery.parser.XQueryAST tmp417_AST = null;
+			tmp417_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp417_AST);
 			match(168);
 			if ( inputState.guessing==0 ) {
 				name= "document-node";
@@ -10320,9 +10365,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_collection:
 		{
-			org.exist.xquery.parser.XQueryAST tmp419_AST = null;
-			tmp419_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp419_AST);
+			org.exist.xquery.parser.XQueryAST tmp418_AST = null;
+			tmp418_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp418_AST);
 			match(LITERAL_collection);
 			if ( inputState.guessing==0 ) {
 				name= "collection";
@@ -10332,9 +10377,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_ancestor:
 		{
-			org.exist.xquery.parser.XQueryAST tmp420_AST = null;
-			tmp420_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp420_AST);
+			org.exist.xquery.parser.XQueryAST tmp419_AST = null;
+			tmp419_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp419_AST);
 			match(LITERAL_ancestor);
 			if ( inputState.guessing==0 ) {
 				name= "ancestor";
@@ -10344,9 +10389,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_descendant:
 		{
-			org.exist.xquery.parser.XQueryAST tmp421_AST = null;
-			tmp421_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp421_AST);
+			org.exist.xquery.parser.XQueryAST tmp420_AST = null;
+			tmp420_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp420_AST);
 			match(LITERAL_descendant);
 			if ( inputState.guessing==0 ) {
 				name= "descendant";
@@ -10356,9 +10401,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case 180:
 		{
-			org.exist.xquery.parser.XQueryAST tmp422_AST = null;
-			tmp422_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp422_AST);
+			org.exist.xquery.parser.XQueryAST tmp421_AST = null;
+			tmp421_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp421_AST);
 			match(180);
 			if ( inputState.guessing==0 ) {
 				name= "descendant-or-self";
@@ -10368,9 +10413,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case 184:
 		{
-			org.exist.xquery.parser.XQueryAST tmp423_AST = null;
-			tmp423_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp423_AST);
+			org.exist.xquery.parser.XQueryAST tmp422_AST = null;
+			tmp422_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp422_AST);
 			match(184);
 			if ( inputState.guessing==0 ) {
 				name= "ancestor-or-self";
@@ -10380,9 +10425,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case 185:
 		{
-			org.exist.xquery.parser.XQueryAST tmp424_AST = null;
-			tmp424_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp424_AST);
+			org.exist.xquery.parser.XQueryAST tmp423_AST = null;
+			tmp423_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp423_AST);
 			match(185);
 			if ( inputState.guessing==0 ) {
 				name= "preceding-sibling";
@@ -10392,9 +10437,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case 181:
 		{
-			org.exist.xquery.parser.XQueryAST tmp425_AST = null;
-			tmp425_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp425_AST);
+			org.exist.xquery.parser.XQueryAST tmp424_AST = null;
+			tmp424_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp424_AST);
 			match(181);
 			if ( inputState.guessing==0 ) {
 				name= "following-sibling";
@@ -10404,9 +10449,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_following:
 		{
-			org.exist.xquery.parser.XQueryAST tmp426_AST = null;
-			tmp426_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp426_AST);
+			org.exist.xquery.parser.XQueryAST tmp425_AST = null;
+			tmp425_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp425_AST);
 			match(LITERAL_following);
 			if ( inputState.guessing==0 ) {
 				name = "following";
@@ -10416,9 +10461,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_preceding:
 		{
-			org.exist.xquery.parser.XQueryAST tmp427_AST = null;
-			tmp427_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp427_AST);
+			org.exist.xquery.parser.XQueryAST tmp426_AST = null;
+			tmp426_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp426_AST);
 			match(LITERAL_preceding);
 			if ( inputState.guessing==0 ) {
 				name = "preceding";
@@ -10428,9 +10473,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_item:
 		{
-			org.exist.xquery.parser.XQueryAST tmp428_AST = null;
-			tmp428_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp428_AST);
+			org.exist.xquery.parser.XQueryAST tmp427_AST = null;
+			tmp427_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp427_AST);
 			match(LITERAL_item);
 			if ( inputState.guessing==0 ) {
 				name= "item";
@@ -10440,9 +10485,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_empty:
 		{
-			org.exist.xquery.parser.XQueryAST tmp429_AST = null;
-			tmp429_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp429_AST);
+			org.exist.xquery.parser.XQueryAST tmp428_AST = null;
+			tmp428_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp428_AST);
 			match(LITERAL_empty);
 			if ( inputState.guessing==0 ) {
 				name= "empty";
@@ -10452,9 +10497,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_version:
 		{
-			org.exist.xquery.parser.XQueryAST tmp430_AST = null;
-			tmp430_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp430_AST);
+			org.exist.xquery.parser.XQueryAST tmp429_AST = null;
+			tmp429_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp429_AST);
 			match(LITERAL_version);
 			if ( inputState.guessing==0 ) {
 				name= "version";
@@ -10464,9 +10509,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_xquery:
 		{
-			org.exist.xquery.parser.XQueryAST tmp431_AST = null;
-			tmp431_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp431_AST);
+			org.exist.xquery.parser.XQueryAST tmp430_AST = null;
+			tmp430_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp430_AST);
 			match(LITERAL_xquery);
 			if ( inputState.guessing==0 ) {
 				name= "xquery";
@@ -10476,9 +10521,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_variable:
 		{
-			org.exist.xquery.parser.XQueryAST tmp432_AST = null;
-			tmp432_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp432_AST);
+			org.exist.xquery.parser.XQueryAST tmp431_AST = null;
+			tmp431_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp431_AST);
 			match(LITERAL_variable);
 			if ( inputState.guessing==0 ) {
 				name= "variable";
@@ -10488,9 +10533,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_namespace:
 		{
-			org.exist.xquery.parser.XQueryAST tmp433_AST = null;
-			tmp433_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp433_AST);
+			org.exist.xquery.parser.XQueryAST tmp432_AST = null;
+			tmp432_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp432_AST);
 			match(LITERAL_namespace);
 			if ( inputState.guessing==0 ) {
 				name= "namespace";
@@ -10500,9 +10545,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_if:
 		{
-			org.exist.xquery.parser.XQueryAST tmp434_AST = null;
-			tmp434_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp434_AST);
+			org.exist.xquery.parser.XQueryAST tmp433_AST = null;
+			tmp433_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp433_AST);
 			match(LITERAL_if);
 			if ( inputState.guessing==0 ) {
 				name= "if";
@@ -10512,9 +10557,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_then:
 		{
-			org.exist.xquery.parser.XQueryAST tmp435_AST = null;
-			tmp435_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp435_AST);
+			org.exist.xquery.parser.XQueryAST tmp434_AST = null;
+			tmp434_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp434_AST);
 			match(LITERAL_then);
 			if ( inputState.guessing==0 ) {
 				name= "then";
@@ -10524,9 +10569,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_else:
 		{
-			org.exist.xquery.parser.XQueryAST tmp436_AST = null;
-			tmp436_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp436_AST);
+			org.exist.xquery.parser.XQueryAST tmp435_AST = null;
+			tmp435_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp435_AST);
 			match(LITERAL_else);
 			if ( inputState.guessing==0 ) {
 				name= "else";
@@ -10536,9 +10581,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_for:
 		{
-			org.exist.xquery.parser.XQueryAST tmp437_AST = null;
-			tmp437_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp437_AST);
+			org.exist.xquery.parser.XQueryAST tmp436_AST = null;
+			tmp436_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp436_AST);
 			match(LITERAL_for);
 			if ( inputState.guessing==0 ) {
 				name= "for";
@@ -10548,9 +10593,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_in:
 		{
-			org.exist.xquery.parser.XQueryAST tmp438_AST = null;
-			tmp438_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp438_AST);
+			org.exist.xquery.parser.XQueryAST tmp437_AST = null;
+			tmp437_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp437_AST);
 			match(LITERAL_in);
 			if ( inputState.guessing==0 ) {
 				name = "in";
@@ -10560,9 +10605,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_let:
 		{
-			org.exist.xquery.parser.XQueryAST tmp439_AST = null;
-			tmp439_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp439_AST);
+			org.exist.xquery.parser.XQueryAST tmp438_AST = null;
+			tmp438_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp438_AST);
 			match(LITERAL_let);
 			if ( inputState.guessing==0 ) {
 				name= "let";
@@ -10572,9 +10617,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_default:
 		{
-			org.exist.xquery.parser.XQueryAST tmp440_AST = null;
-			tmp440_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp440_AST);
+			org.exist.xquery.parser.XQueryAST tmp439_AST = null;
+			tmp439_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp439_AST);
 			match(LITERAL_default);
 			if ( inputState.guessing==0 ) {
 				name= "default";
@@ -10584,9 +10629,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_function:
 		{
-			org.exist.xquery.parser.XQueryAST tmp441_AST = null;
-			tmp441_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp441_AST);
+			org.exist.xquery.parser.XQueryAST tmp440_AST = null;
+			tmp440_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp440_AST);
 			match(LITERAL_function);
 			if ( inputState.guessing==0 ) {
 				name= "function";
@@ -10596,9 +10641,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_external:
 		{
-			org.exist.xquery.parser.XQueryAST tmp442_AST = null;
-			tmp442_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp442_AST);
+			org.exist.xquery.parser.XQueryAST tmp441_AST = null;
+			tmp441_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp441_AST);
 			match(LITERAL_external);
 			if ( inputState.guessing==0 ) {
 				name = "external";
@@ -10608,9 +10653,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_as:
 		{
-			org.exist.xquery.parser.XQueryAST tmp443_AST = null;
-			tmp443_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp443_AST);
+			org.exist.xquery.parser.XQueryAST tmp442_AST = null;
+			tmp442_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp442_AST);
 			match(LITERAL_as);
 			if ( inputState.guessing==0 ) {
 				name = "as";
@@ -10620,9 +10665,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_union:
 		{
-			org.exist.xquery.parser.XQueryAST tmp444_AST = null;
-			tmp444_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp444_AST);
+			org.exist.xquery.parser.XQueryAST tmp443_AST = null;
+			tmp443_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp443_AST);
 			match(LITERAL_union);
 			if ( inputState.guessing==0 ) {
 				name = "union";
@@ -10632,9 +10677,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_intersect:
 		{
-			org.exist.xquery.parser.XQueryAST tmp445_AST = null;
-			tmp445_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp445_AST);
+			org.exist.xquery.parser.XQueryAST tmp444_AST = null;
+			tmp444_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp444_AST);
 			match(LITERAL_intersect);
 			if ( inputState.guessing==0 ) {
 				name = "intersect";
@@ -10644,9 +10689,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_except:
 		{
-			org.exist.xquery.parser.XQueryAST tmp446_AST = null;
-			tmp446_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp446_AST);
+			org.exist.xquery.parser.XQueryAST tmp445_AST = null;
+			tmp445_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp445_AST);
 			match(LITERAL_except);
 			if ( inputState.guessing==0 ) {
 				name = "except";
@@ -10656,9 +10701,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_order:
 		{
-			org.exist.xquery.parser.XQueryAST tmp447_AST = null;
-			tmp447_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp447_AST);
+			org.exist.xquery.parser.XQueryAST tmp446_AST = null;
+			tmp446_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp446_AST);
 			match(LITERAL_order);
 			if ( inputState.guessing==0 ) {
 				name = "order";
@@ -10668,9 +10713,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_by:
 		{
-			org.exist.xquery.parser.XQueryAST tmp448_AST = null;
-			tmp448_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp448_AST);
+			org.exist.xquery.parser.XQueryAST tmp447_AST = null;
+			tmp447_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp447_AST);
 			match(LITERAL_by);
 			if ( inputState.guessing==0 ) {
 				name = "by";
@@ -10680,9 +10725,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_group:
 		{
-			org.exist.xquery.parser.XQueryAST tmp449_AST = null;
-			tmp449_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp449_AST);
+			org.exist.xquery.parser.XQueryAST tmp448_AST = null;
+			tmp448_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp448_AST);
 			match(LITERAL_group);
 			if ( inputState.guessing==0 ) {
 				name = "group";
@@ -10692,9 +10737,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_some:
 		{
-			org.exist.xquery.parser.XQueryAST tmp450_AST = null;
-			tmp450_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp450_AST);
+			org.exist.xquery.parser.XQueryAST tmp449_AST = null;
+			tmp449_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp449_AST);
 			match(LITERAL_some);
 			if ( inputState.guessing==0 ) {
 				name = "some";
@@ -10704,9 +10749,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_every:
 		{
-			org.exist.xquery.parser.XQueryAST tmp451_AST = null;
-			tmp451_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp451_AST);
+			org.exist.xquery.parser.XQueryAST tmp450_AST = null;
+			tmp450_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp450_AST);
 			match(LITERAL_every);
 			if ( inputState.guessing==0 ) {
 				name = "every";
@@ -10716,9 +10761,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_is:
 		{
-			org.exist.xquery.parser.XQueryAST tmp452_AST = null;
-			tmp452_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp452_AST);
+			org.exist.xquery.parser.XQueryAST tmp451_AST = null;
+			tmp451_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp451_AST);
 			match(LITERAL_is);
 			if ( inputState.guessing==0 ) {
 				name = "is";
@@ -10728,9 +10773,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_isnot:
 		{
-			org.exist.xquery.parser.XQueryAST tmp453_AST = null;
-			tmp453_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp453_AST);
+			org.exist.xquery.parser.XQueryAST tmp452_AST = null;
+			tmp452_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp452_AST);
 			match(LITERAL_isnot);
 			if ( inputState.guessing==0 ) {
 				name = "isnot";
@@ -10740,9 +10785,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_module:
 		{
-			org.exist.xquery.parser.XQueryAST tmp454_AST = null;
-			tmp454_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp454_AST);
+			org.exist.xquery.parser.XQueryAST tmp453_AST = null;
+			tmp453_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp453_AST);
 			match(LITERAL_module);
 			if ( inputState.guessing==0 ) {
 				name = "module";
@@ -10752,9 +10797,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_import:
 		{
-			org.exist.xquery.parser.XQueryAST tmp455_AST = null;
-			tmp455_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp455_AST);
+			org.exist.xquery.parser.XQueryAST tmp454_AST = null;
+			tmp454_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp454_AST);
 			match(LITERAL_import);
 			if ( inputState.guessing==0 ) {
 				name = "import";
@@ -10764,9 +10809,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_at:
 		{
-			org.exist.xquery.parser.XQueryAST tmp456_AST = null;
-			tmp456_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp456_AST);
+			org.exist.xquery.parser.XQueryAST tmp455_AST = null;
+			tmp455_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp455_AST);
 			match(LITERAL_at);
 			if ( inputState.guessing==0 ) {
 				name = "at";
@@ -10776,9 +10821,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_cast:
 		{
-			org.exist.xquery.parser.XQueryAST tmp457_AST = null;
-			tmp457_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp457_AST);
+			org.exist.xquery.parser.XQueryAST tmp456_AST = null;
+			tmp456_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp456_AST);
 			match(LITERAL_cast);
 			if ( inputState.guessing==0 ) {
 				name = "cast";
@@ -10788,9 +10833,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_return:
 		{
-			org.exist.xquery.parser.XQueryAST tmp458_AST = null;
-			tmp458_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp458_AST);
+			org.exist.xquery.parser.XQueryAST tmp457_AST = null;
+			tmp457_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp457_AST);
 			match(LITERAL_return);
 			if ( inputState.guessing==0 ) {
 				name = "return";
@@ -10800,9 +10845,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_instance:
 		{
-			org.exist.xquery.parser.XQueryAST tmp459_AST = null;
-			tmp459_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp459_AST);
+			org.exist.xquery.parser.XQueryAST tmp458_AST = null;
+			tmp458_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp458_AST);
 			match(LITERAL_instance);
 			if ( inputState.guessing==0 ) {
 				name = "instance";
@@ -10812,9 +10857,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_of:
 		{
-			org.exist.xquery.parser.XQueryAST tmp460_AST = null;
-			tmp460_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp460_AST);
+			org.exist.xquery.parser.XQueryAST tmp459_AST = null;
+			tmp459_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp459_AST);
 			match(LITERAL_of);
 			if ( inputState.guessing==0 ) {
 				name = "of";
@@ -10824,9 +10869,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_declare:
 		{
-			org.exist.xquery.parser.XQueryAST tmp461_AST = null;
-			tmp461_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp461_AST);
+			org.exist.xquery.parser.XQueryAST tmp460_AST = null;
+			tmp460_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp460_AST);
 			match(LITERAL_declare);
 			if ( inputState.guessing==0 ) {
 				name = "declare";
@@ -10836,9 +10881,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_collation:
 		{
-			org.exist.xquery.parser.XQueryAST tmp462_AST = null;
-			tmp462_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp462_AST);
+			org.exist.xquery.parser.XQueryAST tmp461_AST = null;
+			tmp461_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp461_AST);
 			match(LITERAL_collation);
 			if ( inputState.guessing==0 ) {
 				name = "collation";
@@ -10848,9 +10893,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case 64:
 		{
-			org.exist.xquery.parser.XQueryAST tmp463_AST = null;
-			tmp463_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp463_AST);
+			org.exist.xquery.parser.XQueryAST tmp462_AST = null;
+			tmp462_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp462_AST);
 			match(64);
 			if ( inputState.guessing==0 ) {
 				name = "boundary-space";
@@ -10860,9 +10905,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_preserve:
 		{
-			org.exist.xquery.parser.XQueryAST tmp464_AST = null;
-			tmp464_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp464_AST);
+			org.exist.xquery.parser.XQueryAST tmp463_AST = null;
+			tmp463_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp463_AST);
 			match(LITERAL_preserve);
 			if ( inputState.guessing==0 ) {
 				name = "preserve";
@@ -10872,9 +10917,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_strip:
 		{
-			org.exist.xquery.parser.XQueryAST tmp465_AST = null;
-			tmp465_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp465_AST);
+			org.exist.xquery.parser.XQueryAST tmp464_AST = null;
+			tmp464_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp464_AST);
 			match(LITERAL_strip);
 			if ( inputState.guessing==0 ) {
 				name = "strip";
@@ -10884,9 +10929,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_ordering:
 		{
-			org.exist.xquery.parser.XQueryAST tmp466_AST = null;
-			tmp466_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp466_AST);
+			org.exist.xquery.parser.XQueryAST tmp465_AST = null;
+			tmp465_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp465_AST);
 			match(LITERAL_ordering);
 			if ( inputState.guessing==0 ) {
 				name = "ordering";
@@ -10896,9 +10941,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_construction:
 		{
-			org.exist.xquery.parser.XQueryAST tmp467_AST = null;
-			tmp467_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp467_AST);
+			org.exist.xquery.parser.XQueryAST tmp466_AST = null;
+			tmp466_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp466_AST);
 			match(LITERAL_construction);
 			if ( inputState.guessing==0 ) {
 				name = "construction";
@@ -10908,9 +10953,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_ordered:
 		{
-			org.exist.xquery.parser.XQueryAST tmp468_AST = null;
-			tmp468_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp468_AST);
+			org.exist.xquery.parser.XQueryAST tmp467_AST = null;
+			tmp467_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp467_AST);
 			match(LITERAL_ordered);
 			if ( inputState.guessing==0 ) {
 				name = "ordered";
@@ -10920,9 +10965,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_unordered:
 		{
-			org.exist.xquery.parser.XQueryAST tmp469_AST = null;
-			tmp469_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp469_AST);
+			org.exist.xquery.parser.XQueryAST tmp468_AST = null;
+			tmp468_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp468_AST);
 			match(LITERAL_unordered);
 			if ( inputState.guessing==0 ) {
 				name = "unordered";
@@ -10932,9 +10977,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_typeswitch:
 		{
-			org.exist.xquery.parser.XQueryAST tmp470_AST = null;
-			tmp470_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp470_AST);
+			org.exist.xquery.parser.XQueryAST tmp469_AST = null;
+			tmp469_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp469_AST);
 			match(LITERAL_typeswitch);
 			if ( inputState.guessing==0 ) {
 				name = "typeswitch";
@@ -10944,9 +10989,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_encoding:
 		{
-			org.exist.xquery.parser.XQueryAST tmp471_AST = null;
-			tmp471_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp471_AST);
+			org.exist.xquery.parser.XQueryAST tmp470_AST = null;
+			tmp470_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp470_AST);
 			match(LITERAL_encoding);
 			if ( inputState.guessing==0 ) {
 				name = "encoding";
@@ -10956,9 +11001,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case 67:
 		{
-			org.exist.xquery.parser.XQueryAST tmp472_AST = null;
-			tmp472_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp472_AST);
+			org.exist.xquery.parser.XQueryAST tmp471_AST = null;
+			tmp471_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp471_AST);
 			match(67);
 			if ( inputState.guessing==0 ) {
 				name = "base-uri";
@@ -10968,9 +11013,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_update:
 		{
-			org.exist.xquery.parser.XQueryAST tmp473_AST = null;
-			tmp473_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp473_AST);
+			org.exist.xquery.parser.XQueryAST tmp472_AST = null;
+			tmp472_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp472_AST);
 			match(LITERAL_update);
 			if ( inputState.guessing==0 ) {
 				name = "update";
@@ -10980,9 +11025,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_replace:
 		{
-			org.exist.xquery.parser.XQueryAST tmp474_AST = null;
-			tmp474_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp474_AST);
+			org.exist.xquery.parser.XQueryAST tmp473_AST = null;
+			tmp473_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp473_AST);
 			match(LITERAL_replace);
 			if ( inputState.guessing==0 ) {
 				name = "replace";
@@ -10992,9 +11037,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_delete:
 		{
-			org.exist.xquery.parser.XQueryAST tmp475_AST = null;
-			tmp475_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp475_AST);
+			org.exist.xquery.parser.XQueryAST tmp474_AST = null;
+			tmp474_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp474_AST);
 			match(LITERAL_delete);
 			if ( inputState.guessing==0 ) {
 				name = "delete";
@@ -11004,9 +11049,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_value:
 		{
-			org.exist.xquery.parser.XQueryAST tmp476_AST = null;
-			tmp476_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp476_AST);
+			org.exist.xquery.parser.XQueryAST tmp475_AST = null;
+			tmp475_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp475_AST);
 			match(LITERAL_value);
 			if ( inputState.guessing==0 ) {
 				name = "value";
@@ -11016,9 +11061,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_insert:
 		{
-			org.exist.xquery.parser.XQueryAST tmp477_AST = null;
-			tmp477_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp477_AST);
+			org.exist.xquery.parser.XQueryAST tmp476_AST = null;
+			tmp476_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp476_AST);
 			match(LITERAL_insert);
 			if ( inputState.guessing==0 ) {
 				name = "insert";
@@ -11028,9 +11073,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_with:
 		{
-			org.exist.xquery.parser.XQueryAST tmp478_AST = null;
-			tmp478_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp478_AST);
+			org.exist.xquery.parser.XQueryAST tmp477_AST = null;
+			tmp477_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp477_AST);
 			match(LITERAL_with);
 			if ( inputState.guessing==0 ) {
 				name = "with";
@@ -11040,9 +11085,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_into:
 		{
-			org.exist.xquery.parser.XQueryAST tmp479_AST = null;
-			tmp479_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp479_AST);
+			org.exist.xquery.parser.XQueryAST tmp478_AST = null;
+			tmp478_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp478_AST);
 			match(LITERAL_into);
 			if ( inputState.guessing==0 ) {
 				name = "into";
@@ -11052,9 +11097,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_rename:
 		{
-			org.exist.xquery.parser.XQueryAST tmp480_AST = null;
-			tmp480_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp480_AST);
+			org.exist.xquery.parser.XQueryAST tmp479_AST = null;
+			tmp479_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp479_AST);
 			match(LITERAL_rename);
 			if ( inputState.guessing==0 ) {
 				name = "rename";
@@ -11064,9 +11109,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_option:
 		{
-			org.exist.xquery.parser.XQueryAST tmp481_AST = null;
-			tmp481_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp481_AST);
+			org.exist.xquery.parser.XQueryAST tmp480_AST = null;
+			tmp480_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp480_AST);
 			match(LITERAL_option);
 			if ( inputState.guessing==0 ) {
 				name = "option";
@@ -11076,9 +11121,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_case:
 		{
-			org.exist.xquery.parser.XQueryAST tmp482_AST = null;
-			tmp482_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp482_AST);
+			org.exist.xquery.parser.XQueryAST tmp481_AST = null;
+			tmp481_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp481_AST);
 			match(LITERAL_case);
 			if ( inputState.guessing==0 ) {
 				name = "case";
@@ -11088,9 +11133,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_validate:
 		{
-			org.exist.xquery.parser.XQueryAST tmp483_AST = null;
-			tmp483_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp483_AST);
+			org.exist.xquery.parser.XQueryAST tmp482_AST = null;
+			tmp482_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp482_AST);
 			match(LITERAL_validate);
 			if ( inputState.guessing==0 ) {
 				name = "validate";
@@ -11100,9 +11145,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_schema:
 		{
-			org.exist.xquery.parser.XQueryAST tmp484_AST = null;
-			tmp484_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp484_AST);
+			org.exist.xquery.parser.XQueryAST tmp483_AST = null;
+			tmp483_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp483_AST);
 			match(LITERAL_schema);
 			if ( inputState.guessing==0 ) {
 				name = "schema";
@@ -11112,9 +11157,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_treat:
 		{
-			org.exist.xquery.parser.XQueryAST tmp485_AST = null;
-			tmp485_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp485_AST);
+			org.exist.xquery.parser.XQueryAST tmp484_AST = null;
+			tmp484_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp484_AST);
 			match(LITERAL_treat);
 			if ( inputState.guessing==0 ) {
 				name = "treat";
@@ -11124,9 +11169,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case 85:
 		{
-			org.exist.xquery.parser.XQueryAST tmp486_AST = null;
-			tmp486_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp486_AST);
+			org.exist.xquery.parser.XQueryAST tmp485_AST = null;
+			tmp485_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp485_AST);
 			match(85);
 			if ( inputState.guessing==0 ) {
 				name = "no-preserve";
@@ -11136,9 +11181,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_inherit:
 		{
-			org.exist.xquery.parser.XQueryAST tmp487_AST = null;
-			tmp487_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp487_AST);
+			org.exist.xquery.parser.XQueryAST tmp486_AST = null;
+			tmp486_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp486_AST);
 			match(LITERAL_inherit);
 			if ( inputState.guessing==0 ) {
 				name = "inherit";
@@ -11148,9 +11193,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case 87:
 		{
-			org.exist.xquery.parser.XQueryAST tmp488_AST = null;
-			tmp488_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp488_AST);
+			org.exist.xquery.parser.XQueryAST tmp487_AST = null;
+			tmp487_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp487_AST);
 			match(87);
 			if ( inputState.guessing==0 ) {
 				name = "no-inherit";
@@ -11160,9 +11205,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_eq:
 		{
-			org.exist.xquery.parser.XQueryAST tmp489_AST = null;
-			tmp489_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp489_AST);
+			org.exist.xquery.parser.XQueryAST tmp488_AST = null;
+			tmp488_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp488_AST);
 			match(LITERAL_eq);
 			if ( inputState.guessing==0 ) {
 				name="eq";
@@ -11172,9 +11217,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_ne:
 		{
-			org.exist.xquery.parser.XQueryAST tmp490_AST = null;
-			tmp490_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp490_AST);
+			org.exist.xquery.parser.XQueryAST tmp489_AST = null;
+			tmp489_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp489_AST);
 			match(LITERAL_ne);
 			if ( inputState.guessing==0 ) {
 				name = "ne";
@@ -11184,9 +11229,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_lt:
 		{
-			org.exist.xquery.parser.XQueryAST tmp491_AST = null;
-			tmp491_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp491_AST);
+			org.exist.xquery.parser.XQueryAST tmp490_AST = null;
+			tmp490_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp490_AST);
 			match(LITERAL_lt);
 			if ( inputState.guessing==0 ) {
 				name = "lt";
@@ -11196,9 +11241,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_le:
 		{
-			org.exist.xquery.parser.XQueryAST tmp492_AST = null;
-			tmp492_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp492_AST);
+			org.exist.xquery.parser.XQueryAST tmp491_AST = null;
+			tmp491_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp491_AST);
 			match(LITERAL_le);
 			if ( inputState.guessing==0 ) {
 				name = "le";
@@ -11208,9 +11253,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_gt:
 		{
-			org.exist.xquery.parser.XQueryAST tmp493_AST = null;
-			tmp493_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp493_AST);
+			org.exist.xquery.parser.XQueryAST tmp492_AST = null;
+			tmp492_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp492_AST);
 			match(LITERAL_gt);
 			if ( inputState.guessing==0 ) {
 				name = "gt";
@@ -11220,9 +11265,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_ge:
 		{
-			org.exist.xquery.parser.XQueryAST tmp494_AST = null;
-			tmp494_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp494_AST);
+			org.exist.xquery.parser.XQueryAST tmp493_AST = null;
+			tmp493_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp493_AST);
 			match(LITERAL_ge);
 			if ( inputState.guessing==0 ) {
 				name = "ge";
@@ -11232,9 +11277,9 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		case LITERAL_xpointer:
 		{
-			org.exist.xquery.parser.XQueryAST tmp495_AST = null;
-			tmp495_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp495_AST);
+			org.exist.xquery.parser.XQueryAST tmp494_AST = null;
+			tmp494_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp494_AST);
 			match(LITERAL_xpointer);
 			if ( inputState.guessing==0 ) {
 				name = "xpointer";
@@ -11346,9 +11391,9 @@ public XQueryParser(ParserSharedInputState state) {
 		"closing curly brace '{'",
 		"COLON",
 		"\"external\"",
-		"\"at\"",
 		"\"schema\"",
 		"\"as\"",
+		"\"at\"",
 		"\"empty-sequence\"",
 		"question mark '?'",
 		"wildcard '*'",
@@ -11484,7 +11529,7 @@ public XQueryParser(ParserSharedInputState state) {
 	
 	private static final long[] mk_tokenSet_0() {
 		long[] data = new long[8];
-		data[0]=-1308295691751129088L;
+		data[0]=-1308295691751129086L;
 		data[1]=-1594274281210036241L;
 		data[2]=2305737454718320351L;
 		data[3]=1536L;
@@ -11510,7 +11555,7 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { -7917328144917331966L, -4684306095373536256L, 70376931458951L, 0L, 0L, 0L};
+		long[] data = { -7917328144917331966L, -4684306094836665344L, 70376931458951L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
@@ -11520,16 +11565,25 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { 1152921504606846976L, 0L, 229760L, 0L, 0L, 0L};
+		long[] data = new long[8];
+		data[0]=-1308295691751129088L;
+		data[1]=-1594274281210036241L;
+		data[2]=2305737454718320351L;
+		data[3]=1536L;
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
-		long[] data = { 0L, 17179869184L, 117440512L, 0L, 0L, 0L};
+		long[] data = { 1152921504606846976L, 0L, 229760L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
+		long[] data = { 0L, 17179869184L, 117440512L, 0L, 0L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
+	private static final long[] mk_tokenSet_8() {
 		long[] data = new long[8];
 		data[0]=-3618642300592193536L;
 		data[1]=-1594274315586551825L;
@@ -11537,8 +11591,8 @@ public XQueryParser(ParserSharedInputState state) {
 		data[3]=1536L;
 		return data;
 	}
-	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
-	private static final long[] mk_tokenSet_8() {
+	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
+	private static final long[] mk_tokenSet_9() {
 		long[] data = new long[8];
 		data[0]=-1308295691751129088L;
 		data[1]=-1594274332749643793L;
@@ -11546,18 +11600,18 @@ public XQueryParser(ParserSharedInputState state) {
 		data[3]=1536L;
 		return data;
 	}
-	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
-	private static final long[] mk_tokenSet_9() {
-		long[] data = { 0L, 4503599627370496L, 17451585995014144L, 0L, 0L, 0L};
-		return data;
-	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { 0L, 2251799813685248L, 270215977642229760L, 0L, 0L, 0L};
+		long[] data = { 0L, 4503599627370496L, 17451585995014144L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
 	private static final long[] mk_tokenSet_11() {
+		long[] data = { 0L, 2251799813685248L, 270215977642229760L, 0L, 0L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
+	private static final long[] mk_tokenSet_12() {
 		long[] data = new long[8];
 		data[0]=-3618642300592193536L;
 		data[1]=-1594274315586551825L;
@@ -11565,13 +11619,13 @@ public XQueryParser(ParserSharedInputState state) {
 		data[3]=1536L;
 		return data;
 	}
-	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
-	private static final long[] mk_tokenSet_12() {
+	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
+	private static final long[] mk_tokenSet_13() {
 		long[] data = { 0L, 2048L, 3195455668224L, 0L, 0L, 0L};
 		return data;
 	}
-	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
-	private static final long[] mk_tokenSet_13() {
+	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
+	private static final long[] mk_tokenSet_14() {
 		long[] data = new long[12];
 		data[0]=-16L;
 		data[1]=-1L;
@@ -11579,28 +11633,28 @@ public XQueryParser(ParserSharedInputState state) {
 		data[3]=2147483647L;
 		return data;
 	}
-	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
-	private static final long[] mk_tokenSet_14() {
+	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
+	private static final long[] mk_tokenSet_15() {
 		long[] data = new long[8];
 		data[1]=100663296L;
 		data[2]=8796093022336L;
 		data[3]=288L;
 		return data;
 	}
-	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
-	private static final long[] mk_tokenSet_15() {
+	public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
+	private static final long[] mk_tokenSet_16() {
 		long[] data = new long[8];
 		data[1]=100663296L;
 		data[3]=6L;
 		return data;
 	}
-	public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
-	private static final long[] mk_tokenSet_16() {
+	public static final BitSet _tokenSet_16 = new BitSet(mk_tokenSet_16());
+	private static final long[] mk_tokenSet_17() {
 		long[] data = new long[8];
 		data[1]=100663296L;
 		data[3]=24L;
 		return data;
 	}
-	public static final BitSet _tokenSet_16 = new BitSet(mk_tokenSet_16());
+	public static final BitSet _tokenSet_17 = new BitSet(mk_tokenSet_17());
 	
 	}

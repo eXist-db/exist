@@ -176,13 +176,14 @@ throws XPathException
 module [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 { Expression step = null; }:
-	#(
-		m:MODULE_DECL uri:STRING_LITERAL
-		{
-			myModule = new ExternalModuleImpl(uri.getText(), m.getText());
-			context.declareNamespace(m.getText(), uri.getText());
-                        staticContext.declareNamespace(m.getText(), uri.getText());
-		}
+
+    #(
+            m:MODULE_DECL uri:STRING_LITERAL
+            {
+                myModule = new ExternalModuleImpl(uri.getText(), m.getText());
+                context.declareNamespace(m.getText(), uri.getText());
+                staticContext.declareNamespace(m.getText(), uri.getText());
+            }
 	)
 	prolog [path]
 	|
@@ -320,7 +321,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			}
 		)
 		|
-		functionDecl [path]
+        functionDecl [path]
 		|
 		importDecl [path]
 	)*
@@ -334,10 +335,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		{ 
 			String modulePrefix = null;
 			String location = null;
+            List uriList= new ArrayList(2);
 		}
 		( pfx:NCNAME { modulePrefix = pfx.getText(); } )? 
 		moduleURI:STRING_LITERAL 
-		( at:STRING_LITERAL { location = at.getText(); } )?
+		( uriList [uriList] )?
 		{
 			if (modulePrefix != null) {
 				if (declaredNamespaces.get(modulePrefix) != null)
@@ -346,8 +348,22 @@ throws PermissionDeniedException, EXistException, XPathException
 				declaredNamespaces.put(modulePrefix, moduleURI.getText());
 			}
             try {
-				context.importModule(moduleURI.getText(), modulePrefix, location);
-                staticContext.declareNamespace(modulePrefix, moduleURI.getText());
+                if (uriList.size() > 0) {
+			    for (Iterator j= uriList.iterator(); j.hasNext();) {
+                    try {
+                        location= ((AnyURIValue) j.next()).getStringValue();
+                       context.importModule(moduleURI.getText(), modulePrefix, location);
+                        staticContext.declareNamespace(modulePrefix, moduleURI.getText());
+                    } catch(XPathException xpe) {
+                        if (!j.hasNext()) {
+                            throw xpe;
+                        }
+                    }
+                }
+                } else {
+                    context.importModule(moduleURI.getText(), modulePrefix, location);
+                    staticContext.declareNamespace(modulePrefix, moduleURI.getText());
+                }
             } catch(XPathException xpe) {
                 xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
                 throw xpe;
@@ -356,18 +372,35 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	|
 	#(
-		SCHEMA_IMPORT
+		s:SCHEMA_IMPORT
 		{
 			String nsPrefix = null;
 			String location = null;
+            List uriList= new ArrayList(2);
 		}
 		( pfx1:NCNAME { nsPrefix = pfx1.getText(); } )?
 		targetURI:STRING_LITERAL
-		( at1:STRING_LITERAL { location = at1.getText(); } )?
+		( uriList [uriList] )?
 		{
-			context.declareNamespace(nsPrefix, targetURI.getText());
-			staticContext.declareNamespace(nsPrefix, targetURI.getText());
-			declaredNamespaces.put(nsPrefix, targetURI.getText());
+            if ("".equals(targetURI.getText()) && nsPrefix != null) {
+                    throw new XPathException(s, "err:XQST0057: A schema without target namespace (zero-length string target namespace) may not bind a namespace prefix: " + nsPrefix);
+            }
+            if (nsPrefix != null) {
+                if (declaredNamespaces.get(nsPrefix) != null)
+                    throw new XPathException(s, "err:XQST0033: Prolog contains " +
+                                             "multiple declarations for namespace prefix: " + nsPrefix);
+                declaredNamespaces.put(nsPrefix, targetURI.getText());
+            }
+            try {
+                context.declareNamespace(nsPrefix, targetURI.getText());
+                staticContext.declareNamespace(nsPrefix, targetURI.getText());
+                // We currently do nothing with eventual location hints. /ljo
+            } catch(XPathException xpe) {
+                xpe.prependMessage("err:XQST0059: Error found while loading schema " + nsPrefix + ": ");
+                throw xpe;
+            }
+            // We ought to do this for now until Dannes can say it works. /ljo
+            //throw new XPathException(s, "err:XQST0009: the eXist XQuery implementation does not support the Schema Import Feature quite yet.");
 		}
 	)
 	;
@@ -459,6 +492,30 @@ throws XPathException
 			)
 			{ var.type= type; }
 		)?
+	)
+	;
+
+/**
+ * Parse uris in schema and module declarations.
+ */
+uriList [List uris]
+throws XPathException
+:
+    uri [uris] ( uri [uris] )*
+	;
+
+/**
+ * Single uri.
+ */
+uri [List uris]
+throws XPathException
+:
+	#(
+		uri:STRING_LITERAL
+		{
+			AnyURIValue any= new AnyURIValue(uri.getText());
+			uris.add(any);
+		}
 	)
 	;
 
@@ -577,6 +634,12 @@ throws PermissionDeniedException, EXistException, XPathException
 	step= null;
 }
 :
+    EOF
+        {
+            // System.out.println("EMPTY EXPR");
+            // Added for handling empty mainModule /ljo
+        }
+    |
 	step=typeCastExpr [path]
 	|
 	// sequence constructor:

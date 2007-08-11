@@ -195,10 +195,10 @@ module throws XPathException:
 	;
 
 mainModule throws XPathException: 
-	prolog queryBody ;
+	prolog ( queryBody )? ;
 
 libraryModule throws XPathException: 
-	moduleDecl prolog;
+    moduleDecl prolog;
 
 moduleDecl throws XPathException: 
 	"module"! "namespace"! prefix:NCNAME EQ! uri:STRING_LITERAL SEMICOLON!
@@ -335,9 +335,9 @@ optionDecl
 	}
 	;
 	
-moduleImport
+moduleImport throws XPathException
 :
-	i:"import"! "module"! ( moduleNamespace )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	i:"import"! "module"! ( moduleNamespace )? STRING_LITERAL ( uriList )?
 	{
 		#moduleImport = #(#[MODULE_IMPORT, "module"], #moduleImport);
 		#moduleImport.copyLexInfo(#i);
@@ -351,10 +351,10 @@ moduleNamespace
 	{ #moduleNamespace = #[NCNAME, prefix]; }
 	;
 
-schemaImport
+schemaImport throws XPathException
 { String prefix = null; }
 :
-	i:"import"! "schema"! ( schemaPrefix )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	i:"import"! "schema"! ( schemaPrefix )? STRING_LITERAL ( uriList )?
 	{
 		#schemaImport = #(#[SCHEMA_IMPORT, "schema"], #schemaImport);
 		#schemaImport.copyLexInfo(#i);
@@ -407,6 +407,16 @@ param throws XPathException
 	{ #param= #(#[VARIABLE_BINDING, varName], #t); }
 	;
 
+uriList throws XPathException
+:
+	"at"! uri ( COMMA! uri )*
+	;
+
+uri throws XPathException
+:
+	STRING_LITERAL
+	;
+
 typeDeclaration throws XPathException: 
 	"as"^ sequenceType ;
 
@@ -450,7 +460,7 @@ queryBody throws XPathException: expr ;
 
 expr throws XPathException
 :
-	exprSingle ( COMMA^ exprSingle )*
+    exprSingle ( COMMA^ exprSingle )*
 	;
 
 exprSingle throws XPathException

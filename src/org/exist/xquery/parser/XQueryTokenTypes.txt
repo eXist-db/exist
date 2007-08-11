@@ -89,9 +89,9 @@ LCURLY("opening curly brace '{'")=89
 RCURLY("closing curly brace '{'")=90
 COLON=91
 LITERAL_external="external"=92
-LITERAL_at="at"=93
-LITERAL_schema="schema"=94
-LITERAL_as="as"=95
+LITERAL_schema="schema"=93
+LITERAL_as="as"=94
+LITERAL_at="at"=95
 "empty-sequence"=96
 QUESTION("question mark '?'")=97
 STAR("wildcard '*'")=98
