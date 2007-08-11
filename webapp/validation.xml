@@ -81,7 +81,37 @@
 
 
             <section>
-                <title>System Catalog</title>
+                <title>Catalog Entity Resolver</title>
+                <para>All grammar (XML schema, DTD) files that must be used in the validation
+                    process (when an XML document is inserted into the database) must be registered
+                    using <ulink
+                        url="http://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html"
+                        >OASIS catalog</ulink> files. These catalog files can be stored on disk and
+                    in the database.</para>
+                <para>In the upper example the ${WEBAPP_HOME} is substituted by 'webapp'-directory
+                    of eXist or the corresponding directory of a WAR file when eXist is deployed in
+                    a servlet container (e.g. '${CATALINA_HOME}/webapps/exist/')</para>
+                <para>A catalog which is stored in the database can be addressed by
+                    'xmldb:exist:///db/mycollection/catalog.xml' (note the 3 slashes) or
+                    '/db/mycollection/catalog.xml</para>
+                <para>
+                    <example>
+                        <title>OASIS catalog file</title>
+                        <programlisting format="linespecific"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <public publicId="-//PLAY//EN" uri="entities/play.dtd"/>
+    <system systemId="play.dtd" uri="entities/play.dtd"/>
+    <system systemId="mondial.dtd" uri="entities/mondial.dtd"/>    
+    
+    <uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/>
+    
+    <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
+	<uri name="http://www.w3.org/2001/XMLSchema" uri="entities/XMLSchema.xsd"/>
+
+    <uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" />
+</catalog>]]></programlisting>
+                    </example>
+                </para>
             </section>
 
 
