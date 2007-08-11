@@ -10,7 +10,9 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";
 import module namespace request="http://exist-db.org/xquery/request";
 declare namespace system="http://exist-db.org/xquery/system";
 
-(:~ ----------------------------------------------------------------------------------------
+(: $Id$ :)
+
+(:~  ----------------------------------------------------------------------------
      W3C XQuery Test Suite
      
      This is the main module for running the XQTS on eXist. You can either
@@ -32,7 +34,7 @@ declare namespace system="http://exist-db.org/xquery/system";
      in /db/XQTS/TestSources.
      
      * Run this script with the client.
-     ------------------------------------------------------------------------------------------- :)
+     -------------------------------------------------------------------------- :)
 declare variable $xqts:CONFIG := xqts:initialize();
 declare variable $xqts:XQTS_HOME := xqts:path-to-uri($xqts:CONFIG/basedir/text());
 
@@ -76,7 +78,7 @@ declare function xqts:path-to-uri($path as xs:string) as xs:string {
 
 declare function xqts:create-progress-file($testCount as xs:int) as empty() {
     let $results := xdb:store("/db/XQTS", "progress.xml", 
-        <progress total="{$testCount}" done="0" failed="0" passed="0"/>)
+        <progress total="{$testCount}" done="0" failed="0" passed="0" error="0"/>)
     return ()
 };
 
@@ -88,6 +90,8 @@ declare function xqts:report-progress($test-case as element()) as empty() {
         update value $counter with xs:int($counter + 1),
         if ($result eq 'fail') then
             update value $progress/@failed with xs:int($progress/@failed + 1)
+        else if ($result eq 'error') then
+            update value $progress/@error with xs:int($progress/@error + 1)
         else
             update value $progress/@passed with xs:int($progress/@passed + 1)
     )
@@ -97,7 +101,7 @@ declare function xqts:create-collections($group as element(catalog:test-group)) 
     let $rootColl := xdb:create-collection("/db/XQTS", "test-results")
     let $ancestors := reverse(($group/ancestor::catalog:test-group, $group))
     let $collection := xqts:create-collections($rootColl, $ancestors, "/db/XQTS/test-results")
-    let $results := xdb:store($collection, "results.xml", <test-result failed="0" passed="0"/>)
+    let $results := xdb:store($collection, "results.xml", <test-result failed="0" passed="0" error="0"/>)
     return
         doc($results)
 };
@@ -152,10 +156,11 @@ declare function xqts:normalize-and-expand($text as item()*) as xs:string {
 };
 
 declare function xqts:check-output($query as xs:string, $result as item()*, $case as element(catalog:test-case)) {
-    let $output := $case/catalog:output-file[last()]
+  let $all-results :=
+    for $output in $case/catalog:output-file
     return
-        (: Expected an error, but got a result :)
-        if (exists($case/catalog:expected-error)) then
+        (: Expected only an error, but still got a result :)
+        if (fn:exists($case/catalog:expected-error) and fn:empty($case/catalog:output-file)) then
             <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
                    <expected-error>{string-join($case/catalog:expected-error/text(), ";")}</expected-error>
                    <result>{$result}</result>
@@ -189,9 +194,11 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath, $output/text())
                 let $expectedFrag := util:file-read($filePath, "UTF-8")
                 let $xmlFrag := concat("<f>", $expectedFrag, "</f>")
+                let $expected := doc(xdb:store("/db", "temp.xml", $xmlFrag, "text/xml"))
+                (:
                 let $log := util:log("DEBUG", ("Frag stored: ", $xmlFrag))
-                let $expected := doc(xdb:store("/db", "temp.xml", $xmlFrag, "text/xml")) 
-                let $doh := doc(xdb:store("/db", $case/@name, $xmlFrag, "text/xml")) 
+                let $doh := doc(xdb:store("/db", $output, $xmlFrag, "text/xml"))
+		:)
                 let $test := xdiff:compare($expected, <f>{$result}</f>)
                 return
                     xqts:print-result($case/@name, $test, $query, <f>{$result}</f>, $expected, $case),
@@ -211,8 +218,42 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 xqts:print-result($case/@name, $test, $query, $result, $text, $case)
             
         (: Don't know how to compare :)
-        else
-            <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
+      else
+        <test-case name="{$case/@name}" result="error" dateRun="{util:system-time()}">
+          <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
+          <query>{$query}</query>
+	</test-case>
+    (: Use this let clause to get an update insert failure from the 5314th 
+       test and onward in xqts:report-progress(). in-memory-temp-frag corrpution
+       reproducible in xqts, who could imagine... /ljo :)
+    (: let $passed := $all-results//test-case[@result eq 'pass'] :)
+    let $passed :=
+      if (fn:exists($all-results[2])) then
+	let $result-frag := concat("<f>", $all-results, "</f>")
+	let $results-doc := doc(xdb:store("/db", "temp-res.xml", $result-frag, "text/xml"))
+        return $results-doc//test-case[@result eq 'pass']
+      else ()
+    return
+      if (fn:exists($passed)) then
+	$passed[1]
+      else if (fn:exists($all-results[1])) then
+	$all-results[1]
+      else
+        (: Expected runtime-exception, but got a result :)
+      if (fn:exists($case/catalog:expected-error) and $case/@scenario eq "runtime-error") then
+        <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
+          <expected-error>{string-join($case/catalog:expected-error/text(), ";")}</expected-error>
+          <result>{$result}</result>
+          <query>{$query}</query>
+        </test-case>
+      else
+	let $log-all := util:log("DEBUG", ("Unhandled error, no result for: ", xs:string($case/@name)))
+	return 
+	  <test-case name="{$case/@name}" result="error" dateRun="{util:system-time()}">
+    	    <error test="{$case/@name}">Cannot handle: {$case/@name}.</error>
+            <query>{$query}</query>
+          </test-case>
+
 };
 
 declare function xqts:get-variable($case as element(catalog:test-case), 
@@ -255,20 +296,29 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
                </test-case>
            else
                <test-case name="{$testCase/@name}" result="fail" dateRun="{util:system-time()}">
-                   <exception>{$util:exception-message}</exception>                  
-					<!-- TODO : insert expected result here -->    
+                   <exception>{$util:exception-message}</exception>
+		   {
+		     for $output in $testCase/catalog:output-file
+		     return <expected>{
+                     let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $testCase/@FilePath, $output/text())
+                     return util:file-read($filePath, "UTF-8")
+                     }</expected>
+		   }
                    <query>{$query}</query>
                </test-case>
        )
+       let $log := if (fn:empty($result)) then util:log("DEBUG", ("FAILURE in-memory-frag in test: ", xs:string($testCase/@name))) else ()
    return $result
 };
 
 declare function xqts:finish($result as element()) as empty() {
     let $passed := count($result//test-case[@result = 'pass'])
     let $failed := count($result//test-case[@result = 'fail'])
+    let $error := count($result//test-case[@result = 'error'])
     return (
         update value $result/@passed with xs:int($passed),
-        update value $result/@failed with xs:int($failed)
+        update value $result/@failed with xs:int($failed),
+        update value $result/@error with xs:int($error)
     )
 };
 
@@ -278,6 +328,7 @@ declare function xqts:run-single-test-case($case as element(catalog:test-case),
     return (
         update insert $result into $resultRoot,
         let $added := $resultRoot/test-case[@name = $case/@name]
+       let $log := if (fn:empty($added)) then util:log("DEBUG", ("FAILURE in-memory-frag in test: ", xs:string($case/@name))) else ()
         return
             if ($added) then xqts:report-progress($added)
             else ()
@@ -288,6 +339,7 @@ declare function xqts:run-test-group($group as element(catalog:test-group)) as e
     (: Create the collection hierarchy for this group and get the results.xml doc to 
         append to. :)
     let $resultsDoc := xqts:create-collections($group)
+    let $log-resdoc := util:log("DEBUG", ("Creating resdoc collection: ", $resultsDoc))
     let $tests := $group/catalog:test-case
 (:
 [
@@ -302,7 +354,7 @@ declare function xqts:run-test-group($group as element(catalog:test-group)) as e
         let $log := util:log("DEBUG", ("Running test case: ", string($test/@name)))
         return
             xqts:run-single-test-case($test, $resultsDoc/test-result),
-        if ($tests) then 
+        if (fn:exists($tests) and fn:exists($resultsDoc/test-result)) then 
             xqts:finish($resultsDoc/test-result)
         else
             xdb:remove(util:collection-name($resultsDoc), util:document-name($resultsDoc)),
@@ -369,8 +421,10 @@ declare function xqts:get-context-item($input as element(catalog:contextItem)?) 
 declare function xqts:overall-result() {
     let $passed := count(//test-case[@result = "pass"])
     let $failed := count(//test-case[@result = "fail"])
+    let $error := count(//test-case[@result = "error"])
     return
         <test-result failed="{$failed}" passed="{$passed}"
+	    error="{$error}"
             percentage="{$passed div ($passed + $failed)}"/>
 };
 
