@@ -96,9 +96,9 @@ public interface DeclScannerTokenTypes {
 	int RCURLY = 90;
 	int COLON = 91;
 	int LITERAL_external = 92;
-	int LITERAL_at = 93;
-	int LITERAL_schema = 94;
-	int LITERAL_as = 95;
+	int LITERAL_schema = 93;
+	int LITERAL_as = 94;
+	int LITERAL_at = 95;
 	// "empty-sequence" = 96
 	int QUESTION = 97;
 	int STAR = 98;
