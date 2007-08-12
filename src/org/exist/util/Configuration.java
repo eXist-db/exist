@@ -194,7 +194,7 @@ public class Configuration implements ErrorHandler {
                 if (configFile == null)
                     configFile = ConfigurationHelper.lookup(configFilename);
                 if (!configFile.exists() || !configFile.canRead())
-                    throw new DatabaseConfigurationException("Unable to read configuration file at " + config);
+                    throw new DatabaseConfigurationException("Unable to read configuration file at " + configFile);
                 configFilePath = configFile.getAbsolutePath();
                 is = new FileInputStream(configFile);
                 // set dbHome to parent of the conf file found, to resolve relative
