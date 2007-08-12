@@ -1,7 +1,5 @@
 xquery version "1.0";
 
-declare option exist:output-size-limit "-1";
-
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
@@ -13,6 +11,8 @@ declare namespace catalog="http://www.w3.org/2005/02/query-test-XQTSCatalog";
 declare variable $xqts:XML_HIGHLIGHT_STYLE := "/db/XQTS/xml-highlight.xsl";
 declare variable $xqts:CONFIG := xqts:initialize();
 declare variable $xqts:XQTS_HOME := $xqts:CONFIG/basedir/text();
+
+declare option exist:output-size-limit "-1";
 
 declare function xqts:initialize() as element() {
     let $collection := xdb:create-collection("/db", "XQTS")
