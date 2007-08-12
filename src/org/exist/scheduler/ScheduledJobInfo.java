@@ -125,7 +125,7 @@ public class ScheduledJobInfo
 	/**
 	 * Get the Final Time the Job will be Fired
 	 * 
-	 * @return the time the Job will be Fired for the Final time, or null of the job is Scheduled forever
+	 * @return the time the Job will be Fired for the Final time, or null if the job is Scheduled forever
 	 */
 	public Date getFinalFireTime()
 	{
