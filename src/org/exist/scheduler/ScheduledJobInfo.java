@@ -129,7 +129,7 @@ public class ScheduledJobInfo
 	 */
 	public Date getFinalFireTime()
 	{
-		return trigger.getNextFireTime();
+		return trigger.getFinalFireTime();
 	}
 
 	/**
