@@ -11,6 +11,11 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
+import org.xmldb.api.modules.XQueryService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.base.CompiledExpression;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.ResourceIterator;
 
 import javax.xml.transform.OutputKeys;
 import java.io.File;
@@ -23,6 +28,11 @@ import java.util.Properties;
  * Helper class to generate test documents from a given XQuery.
  */
 public class TestDataGenerator {
+
+    private final static Properties outputProps = new Properties();
+    static {
+        outputProps.setProperty(OutputKeys.INDENT, "yes");
+    }
 
     private final static String IMPORT =
             "import module namespace pt='http://exist-db.org/xquery/test/performance' " +
@@ -49,9 +59,6 @@ public class TestDataGenerator {
             context.declareVariable("count", "0");
             context.setStaticallyKnownDocuments(docs);
 
-            Properties outputProps = new Properties();
-            outputProps.setProperty(OutputKeys.INDENT, "yes");
-
             String query = IMPORT + xqueryContent;
             System.out.println("query: " + query);
 
@@ -74,6 +81,37 @@ public class TestDataGenerator {
                     if (!Type.subTypeOf(item.getType(), Type.NODE))
                         continue;
                     serializer.toSAX((NodeValue) item);
+                }
+                out.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new SAXException(e.getMessage(), e);
+        }
+        return generatedFiles;
+    }
+
+    public File[] generate(org.xmldb.api.base.Collection collection, String xqueryContent) throws SAXException {
+        String query = IMPORT + xqueryContent;
+        System.out.println("query: " + query);
+        try {
+            XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+            service.declareVariable("filename", "");
+            service.declareVariable("count", "0");
+            CompiledExpression compiled = service.compile(query);
+
+            for (int i = 0; i < count; i++) {
+                generatedFiles[i] = File.createTempFile(prefix, ".xml");
+
+                service.declareVariable("filename", generatedFiles[i].getName());
+                service.declareVariable("count", new IntegerValue(i));
+                ResourceSet result = service.execute(compiled);
+
+                Writer out = new OutputStreamWriter(new FileOutputStream(generatedFiles[i]), "UTF-8");
+                SAXSerializer sax = new SAXSerializer(out, outputProps);
+                for (ResourceIterator iter = result.getIterator(); iter.hasMoreResources(); ) {
+                    XMLResource r = (XMLResource) iter.nextResource();
+                    r.getContentAsSAX(sax);
                 }
                 out.close();
             }

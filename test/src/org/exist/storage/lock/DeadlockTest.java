@@ -60,6 +60,7 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
 
 /**
@@ -81,6 +82,10 @@ public class DeadlockTest {
 	/** apply a random mixture of the other modes */
 	private static final int TEST_MIXED = 4;
 
+    private static final int TEST_REMOVE = 5;
+
+    private static final int DELAY = 7000;
+
     /** Use 4 test runs, querying different collections */
 	@Parameters 
 	public static LinkedList<Integer[]> data() {
@@ -90,16 +95,19 @@ public class DeadlockTest {
 		params.add(new Integer[] { TEST_ALL_COLLECTIONS });
 		params.add(new Integer[] { TEST_SINGLE_DOC });
 		params.add(new Integer[] { TEST_MIXED });
-		return params;
+        params.add(new Integer[] { TEST_REMOVE });
+        return params;
 	}
 	
-	private static final int COLL_COUNT = 30;
+	private static final int COLL_COUNT = 20;
 
     private static final int QUERY_COUNT = 1000;
 
-    private static final int DOC_COUNT = 30;
+    private static final int DOC_COUNT = 70;
 
-    private static final int N_THREADS = 4;
+    private static final int REMOVE_COUNT = 50;
+    
+    private static final int N_THREADS = 40;
 
     private final static String COLLECTION_CONFIG =
 		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -142,7 +150,7 @@ public class DeadlockTest {
 		DBBroker broker = null;
 		try {
 			Configuration config = new Configuration();
-			BrokerPool.configure(1, 20, config);
+			BrokerPool.configure(1, 40, config);
 			pool = BrokerPool.getInstance();
 
 			broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
@@ -217,7 +225,7 @@ public class DeadlockTest {
         executor.submit(new StoreTask("store", COLL_COUNT, DOC_COUNT));
         synchronized (this) {
             try {
-                wait(5000);
+                wait(DELAY);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -225,7 +233,12 @@ public class DeadlockTest {
 		for (int i = 0; i < QUERY_COUNT; i++) {
 			executor.submit(new QueryTask(COLL_COUNT));
 		}
-		executor.shutdown();
+        if (mode == TEST_REMOVE) {
+            for (int i = 0; i < REMOVE_COUNT; i++) {
+                executor.submit(new RemoveDocumentTask(COLL_COUNT, DOC_COUNT));
+            }
+        }
+        executor.shutdown();
 		boolean terminated = false;
 		try {
 			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
@@ -305,9 +318,9 @@ public class DeadlockTest {
 			StringBuilder buf = new StringBuilder();
 			String collection = "/db";
 			int currentMode = mode;
-			if (mode == TEST_MIXED)
+			if (mode == TEST_MIXED || currentMode == TEST_REMOVE)
 				currentMode = random.nextInt(4);
-			if (currentMode == TEST_SINGLE_COLLECTION) {
+            if (currentMode == TEST_SINGLE_COLLECTION) {
 				int collectionId = random.nextInt(collectionCount);
 				collection = "/db/test/" + collectionId;
 				buf.append("collection('").append(collection)
@@ -361,4 +374,35 @@ public class DeadlockTest {
 		}
 	}
 
+    private class RemoveDocumentTask implements Runnable {
+
+        private int collectionCount;
+        private int documentCount;
+
+        public RemoveDocumentTask(int collectionCount, int documentCount) {
+            this.collectionCount = collectionCount;
+            this.documentCount = documentCount;
+        }
+
+        public void run() {
+            boolean removed = false;
+            do {
+                int collectionId = random.nextInt(collectionCount);
+                String collection = "/db/test/" + collectionId;
+                int docId = random.nextInt(documentCount) * collectionId;
+                String document = "test" + docId + ".xml";
+                try {
+                    org.xmldb.api.base.Collection testCollection = DatabaseManager.getCollection("xmldb:exist://" + collection, "admin", null);
+                    Resource resource = testCollection.getResource(document);
+                    if (resource != null) {
+                        testCollection.removeResource(resource);
+                        removed = true;
+                    }
+                } catch (XMLDBException e) {
+                    e.printStackTrace();
+                    fail(e.getMessage());
+                }
+            } while (!removed);
+        }
+    }
 }
