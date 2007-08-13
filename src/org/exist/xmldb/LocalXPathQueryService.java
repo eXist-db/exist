@@ -317,10 +317,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
             // if a previous broker was not properly released, do it now (just to be sure)
 //            brokerPool.release(reservedBroker);
 		try {
-			reservedBroker = brokerPool.get(user);
 	        boolean deadlockCaught;
-	        do {
-	        	deadlockCaught = false;
+            do {
+                reservedBroker = brokerPool.get(user);
+                deadlockCaught = false;
 	        	DocumentSet docs = null;
 	            try {
 	                org.exist.collections.Collection coll = collection.getCollection();
@@ -331,12 +331,13 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	                LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getLength() + "; locked: " +
 	                		lockedDocuments.size());
 					lockedDocuments.unlock();
-					deadlockCaught = true;
+                    brokerPool.release(reservedBroker);
+                    deadlockCaught = true;
 	            }
-	        } while (deadlockCaught);
-		} catch (EXistException e) {
-			brokerPool.release(reservedBroker);
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+            } while (deadlockCaught);
+        } catch (EXistException e) {
+            brokerPool.release(reservedBroker);
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
 		}
     }
 	

@@ -36,16 +36,19 @@ public class WaitingThread implements LockListener {
     private Object monitor;
     private MultiReadReentrantLock lock;
 
+    private int lockType;
+
     private Thread thread;
 
     private boolean suspended = false;
 
     private boolean deadlocked = false;
 
-    public WaitingThread(Thread thread, Object monitor, MultiReadReentrantLock lock) {
+    public WaitingThread(Thread thread, Object monitor, MultiReadReentrantLock lock, int lockType) {
         this.monitor = monitor;
         this.lock = lock;
         this.thread = thread;
+        this.lockType = lockType;
     }
 
     /**
@@ -58,7 +61,7 @@ public class WaitingThread implements LockListener {
         do {
             synchronized (monitor) {
                 try {
-                    monitor.wait();
+                    monitor.wait(500);
                 } catch (InterruptedException e) {
                     throw new LockException("Interrupted while waiting for read lock");
                 }
@@ -106,5 +109,13 @@ public class WaitingThread implements LockListener {
 
     public Lock getLock() {
         return lock;
+    }
+
+    public int getLockType() {
+        return lockType;
+    }
+
+    public boolean equals(Object obj) {
+        return thread == ((WaitingThread)obj).getThread();
     }
 }

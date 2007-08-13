@@ -84,7 +84,7 @@ public class MultiReadReentrantLock implements Lock {
      * ensure that write locks are issued in the same order they are requested.
      */
     private List waitingForWriteLock = null;
-
+    
     protected Stack suspendedThreads = new Stack();
 
     private class SuspendedWaiter {
@@ -161,7 +161,7 @@ public class MultiReadReentrantLock implements Lock {
         deadlockCheck();
         waitingForReadLock++;
         if (writeLockedThread != null) {
-            WaitingThread waiter = new WaitingThread(thisThread, this, this);
+            WaitingThread waiter = new WaitingThread(thisThread, this, this, Lock.READ_LOCK);
             DeadlockDetection.addResourceWaiter(thisThread, waiter);
             while (writeLockedThread != null) {
 //                LOG.debug("readLock wait by " + thisThread.getName() + " for " + getId());
@@ -207,13 +207,14 @@ public class MultiReadReentrantLock implements Lock {
             deadlockCheck();
             if (waitingForWriteLock == null)
                 waitingForWriteLock = new ArrayList(3);
-            waiter = new WaitingThread(thisThread, thisThread, this);
-            waitingForWriteLock.add(waiter);
+            waiter = new WaitingThread(thisThread, thisThread, this, Lock.WRITE_LOCK);
+            addWaitingWrite(waiter);
             DeadlockDetection.addResourceWaiter(thisThread, waiter);
         }
+        List deadlockedThreads = null;
         synchronized (thisThread) {
             if (thisThread != writeLockedThread) {
-                while (thisThread != writeLockedThread) {
+                while (thisThread != writeLockedThread && deadlockedThreads == null) {
 //                	LOG.debug("writeLock wait on " + getId() + ". held by " + (writeLockedThread == null ? "null" : writeLockedThread.getName())
 //                            + ". outstanding: " + outstandingWriteLocks);
                     if (LockOwner.DEBUG) {
@@ -225,26 +226,48 @@ public class MultiReadReentrantLock implements Lock {
                         LOG.debug(buf.toString());
                         debugReadLocks("WAIT");
                     }
-//                    checkForDeadlock();
-                    try {
-                        waiter.doWait();
-                    } catch (LockException e) {
-                        DeadlockDetection.clearResourceWaiter(thisThread);
-                        int i = waitingForWriteLock.indexOf(waiter);
-                        waitingForWriteLock.remove(i);
-                        throw e;
+                    deadlockedThreads = checkForDeadlock(thisThread);
+                    if (deadlockedThreads == null) {
+                        try {
+                            waiter.doWait();
+                        } catch (LockException e) {
+                            DeadlockDetection.clearResourceWaiter(thisThread);
+                            removeWaitingWrite(waiter);
+                            throw e;
+                        }
                     }
                 }
             }
-            outstandingWriteLocks++; //testing
+            if (deadlockedThreads == null)
+                outstandingWriteLocks++; //testing
 //            LOG.debug( "writeLock on " + getId() + " acquired by " + writeLockedThread.getName());
         }
         synchronized (this) {
             DeadlockDetection.clearResourceWaiter(thisThread);
-            int i = waitingForWriteLock.indexOf(waiter);
-            waitingForWriteLock.remove(i);
+            removeWaitingWrite(waiter);
+        }
+        if (deadlockedThreads != null) {
+            for (int i = 0; i < deadlockedThreads.size(); i++) {
+                WaitingThread wt = (WaitingThread) deadlockedThreads.get(i);
+                wt.signalDeadlock();
+            }
+            throw new DeadlockException();
         }
         return true;
+    }
+
+    private void addWaitingWrite(WaitingThread waiter) {
+        waitingForWriteLock.add(waiter);
+    }
+
+    private void removeWaitingWrite(WaitingThread waiter) {
+        for (int i = 0; i < waitingForWriteLock.size(); i++) {
+            WaitingThread next = (WaitingThread) waitingForWriteLock.get(i);
+            if (next.getThread() == waiter.getThread()) {
+                waitingForWriteLock.remove(i);
+                break;
+            }
+        }
     }
 
     /* @deprecated : use other method
@@ -297,6 +320,8 @@ public class MultiReadReentrantLock implements Lock {
             // no further checks should be required here.
             if (suspendedThreads.empty() && grantWriteLockAfterRead()) {
                 WaitingThread waiter = (WaitingThread) waitingForWriteLock.get(0);
+                removeWaitingWrite(waiter);
+                DeadlockDetection.clearResourceWaiter(waiter.getThread());
                 writeLockedThread = waiter.getThread();
 //                if (LOG.isDebugEnabled()) {
 //                    LOG.debug("writeLock released and before notifying a write lock waiting thread " + writeLockedThread);
@@ -350,6 +375,8 @@ public class MultiReadReentrantLock implements Lock {
 //            }
             if (writeLockedThread == null && grantWriteLockAfterRead()) {
                 WaitingThread waiter = (WaitingThread) waitingForWriteLock.get(0);
+                removeWaitingWrite(waiter);
+                DeadlockDetection.clearResourceWaiter(waiter.getThread());
                 writeLockedThread = waiter.getThread();
 //                if (LOG.isDebugEnabled()) {
 //                    LOG.debug("readLock released and before notifying a write lock waiting thread " + writeLockedThread);
@@ -427,16 +454,17 @@ public class MultiReadReentrantLock implements Lock {
      *
      * @return true if the write lock should be granted to the current thread
      */
-    private void checkForDeadlock() throws DeadlockException {
-        Thread waiter = Thread.currentThread();
+    private List checkForDeadlock(Thread waiter) {
         ArrayList waiters = new ArrayList(10);
         if (DeadlockDetection.wouldDeadlock(waiter, writeLockedThread, waiters)) {
-            LOG.warn("Deadlock detected on lock " + getId());
-            for (int i = 0; i < waiters.size(); i++) {
-                WaitingThread wt = (WaitingThread) waiters.get(i);
-                LOG.debug("Waiter: " + wt.getThread().getName() + " -> " + wt.getLock().getId());
-            }
+            LOG.warn("Potential deadlock detected on lock " + getId() + "; killing threads: " + waiters.size());
+//            for (int i = 0; i < waiters.size(); i++) {
+//                WaitingThread wt = (WaitingThread) waiters.get(i);
+//                LOG.debug("Waiter: " + wt.getThread().getName() + " -> " + wt.getLock().getId());
+//            }
+            return waiters.size() > 0 ? waiters : null;
         }
+        return null;
     }
 
     /**
