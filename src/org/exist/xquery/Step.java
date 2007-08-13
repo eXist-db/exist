@@ -161,7 +161,7 @@ public abstract class Step extends AbstractExpression {
     	//Polysemy of "." which might be atomic if the context sequence is atomic itself
     	if (axis == Constants.SELF_AXIS) {
     		//Type.ITEM by default : this may change *after* evaluation
-            LOG.debug("My static type: " + Type.getTypeName(staticReturnType));
+//            LOG.debug("My static type: " + Type.getTypeName(staticReturnType));
             return staticReturnType;
         } else
     		return Type.NODE;
