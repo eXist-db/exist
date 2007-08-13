@@ -143,6 +143,11 @@ public class DeadlockDetection {
         synchronized (latch) {
             WaitingThread wt = (WaitingThread) waitForResource.get(owner);
             if (wt != null) {
+                if (waiters.contains(wt)) {
+                    // probably a deadlock, but not directly connected to the current thread
+                    // return to avoid endless loop
+                    return false;
+                }
                 waiters.add(wt);
                 Lock l = wt.getLock();
                 Thread t = ((MultiReadReentrantLock) l).getWriteLockedThread();
