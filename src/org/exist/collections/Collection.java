@@ -356,7 +356,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 subColls = subcollections.keys();
                 XmldbURI uris[] = new XmldbURI[subColls.size()];
             } catch (LockException e) {
-                LOG.warn(e.getMessage(), e);
+                LOG.warn(e.getMessage());
                 throw e;
             } finally {
                 getLock().release(Lock.READ_LOCK);
@@ -400,7 +400,6 @@ public  class Collection extends Observable implements Comparable, Cacheable
             docs.addCollection(this);
             docs.addAll(broker, documents.values(), lockMap, lockType);
         } catch (LockException e) {
-            LOG.warn(e.getMessage(), e);
             throw e;
         } finally {
             getLock().release(Lock.READ_LOCK);

@@ -57,9 +57,10 @@ import org.apache.log4j.Logger;
  */
 public class DeadlockDetection {
 
+    private final static Object latch = new Object();
 
     private final static Map waitForResource = new HashMap();
-    private final static Map waitForCollection = Collections.synchronizedMap(new HashMap());
+    private final static Map waitForCollection = new HashMap();
 
     /**
      * Register a thread as waiting for a resource lock.
@@ -68,7 +69,7 @@ public class DeadlockDetection {
      * @param waiter the WaitingThread object which wraps around the thread
      */
     public static void addResourceWaiter(Thread thread, WaitingThread waiter) {
-        synchronized (waitForResource) {
+        synchronized (latch) {
             waitForResource.put(thread, waiter);
         }
     }
@@ -80,7 +81,7 @@ public class DeadlockDetection {
      * @return lock
      */
     public static Lock clearResourceWaiter(Thread thread) {
-        synchronized (waitForResource) {
+        synchronized (latch) {
             WaitingThread waiter = (WaitingThread) waitForResource.remove(thread);
             if (waiter != null)
                 return waiter.getLock();
@@ -89,7 +90,7 @@ public class DeadlockDetection {
     }
 
     public static WaitingThread getResourceWaiter(Thread thread) {
-        synchronized (waitForResource) {
+        synchronized (latch) {
             return (WaitingThread) waitForResource.get(thread);
         }
     }
@@ -106,7 +107,7 @@ public class DeadlockDetection {
      * @return waiting thread
      */
     public static WaitingThread deadlockCheckResource(Thread threadA, Thread threadB) {
-        synchronized (waitForResource) {
+        synchronized (latch) {
             // check if threadB is waiting for a resource lock
             WaitingThread waitingThread = (WaitingThread) waitForResource.get(threadB);
             // if lock != null, check if thread B waits for a resource lock currently held by thread A
@@ -127,7 +128,7 @@ public class DeadlockDetection {
      * @return true if threadB is currently blocked by a lock held by threadA
      */
     public static boolean isBlockedBy(Thread threadA, Thread threadB) {
-        synchronized (waitForResource) {
+        synchronized (latch) {
             // check if threadB is waiting for a resource lock
             WaitingThread waitingThread = (WaitingThread) waitForResource.get(threadB);
             // if lock != null, check if thread B waits for a resource lock currently held by thread A
@@ -139,15 +140,17 @@ public class DeadlockDetection {
     }
 
     public static boolean wouldDeadlock(Thread waiter, Thread owner, List waiters) {
-        synchronized (waitForResource) {
+        synchronized (latch) {
             WaitingThread wt = (WaitingThread) waitForResource.get(owner);
             if (wt != null) {
                 waiters.add(wt);
                 Lock l = wt.getLock();
                 Thread t = ((MultiReadReentrantLock) l).getWriteLockedThread();
                 if (t == owner) {
-                    System.out.println("Waiter: " + waiter.getName() + " Thread: " + t.getName() + " == " + owner.getName());
-                    debug(t.getName(), l.getLockInfo());
+    //                System.out.println("Waiter: " + waiter.getName() + " Thread: " + t.getName() + " == " + owner.getName() +
+    //                    " type: " + wt.getLockType());
+    //                debug(t.getName(), l.getLockInfo());
+                    // the thread acquired the lock in the meantime
                     return false;
                 }
                 if (t != null) {
@@ -161,8 +164,9 @@ public class DeadlockDetection {
                 if (l != null) {
                     Thread t = ((ReentrantReadWriteLock) l).getOwner();
                     if (t == owner) {
-                        System.out.println("Thread " + t.getName() + " == " + owner.getName());
-                        debug(t.getName(), l.getLockInfo());
+    //                    System.out.println("Thread " + t.getName() + " == " + owner.getName());
+    //                    debug(t.getName(), l.getLockInfo());
+                        // the thread acquired the lock in the meantime
                         return false;
                     }
                     if (t != null) {
@@ -183,15 +187,21 @@ public class DeadlockDetection {
      * @param lock the lock object
      */
     public static void addCollectionWaiter(Thread waiter, Lock lock) {
-        waitForCollection.put(waiter, lock);
+        synchronized (latch) {
+            waitForCollection.put(waiter, lock);
+        }
     }
 
     public static Lock clearCollectionWaiter(Thread waiter) {
-        return (Lock) waitForCollection.remove(waiter);
+        synchronized (latch) {
+            return (Lock) waitForCollection.remove(waiter);
+        }
     }
 
     public static Lock isWaitingFor(Thread waiter) {
-        return (Lock) waitForCollection.get(waiter);
+        synchronized (latch) {
+            return (Lock) waitForCollection.get(waiter);
+        }
     }
 
     public static Map getWaitingThreads() {
@@ -212,19 +222,22 @@ public class DeadlockDetection {
         StringWriter sout = new StringWriter();
         PrintWriter writer = new PrintWriter(sout);
         debug(writer, name, info);
+        writer.flush();
         writer.close();
         System.out.println(sout.toString());
     }
 
     public static void debug(PrintWriter writer, String name, LockInfo info) {
-        writer.println(name);
-        writer.println("Lock type: " + info.getLockType());
-        writer.println("Lock mode: " + info.getLockMode());
-        writer.println("Lock id: " + info.getId());
-        writer.println("Held by: " + Arrays.toString(info.getOwners()));
-        writer.println("Read locks: " + Arrays.toString(info.getReadLocks()));
-        writer.println("Wait for read: " + Arrays.toString(info.getWaitingForRead()));
-        writer.println("Wait for write: " + Arrays.toString(info.getWaitingForWrite()));
+        writer.println("THREAD: " + name);
+        if (info != null) {
+            writer.println("Lock type: " + info.getLockType());
+            writer.println("Lock mode: " + info.getLockMode());
+            writer.println("Lock id: " + info.getId());
+            writer.println("Held by: " + Arrays.toString(info.getOwners()));
+            writer.println("Read locks: " + Arrays.toString(info.getReadLocks()));
+            writer.println("Wait for read: " + Arrays.toString(info.getWaitingForRead()));
+            writer.println("Wait for write: " + Arrays.toString(info.getWaitingForWrite()));
+        }
     }
 
     public static void debug() {
