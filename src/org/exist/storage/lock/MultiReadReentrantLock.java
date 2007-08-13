@@ -212,6 +212,7 @@ public class MultiReadReentrantLock implements Lock {
             DeadlockDetection.addResourceWaiter(thisThread, waiter);
         }
         List deadlockedThreads = null;
+        LockException exceptionCaught = null;
         synchronized (thisThread) {
             if (thisThread != writeLockedThread) {
                 while (thisThread != writeLockedThread && deadlockedThreads == null) {
@@ -231,14 +232,14 @@ public class MultiReadReentrantLock implements Lock {
                         try {
                             waiter.doWait();
                         } catch (LockException e) {
-                            DeadlockDetection.clearResourceWaiter(thisThread);
-                            removeWaitingWrite(waiter);
-                            throw e;
+                            // Don't throw the exception now, leave the synchronized block and clean up first
+                            exceptionCaught = e;
+                            break;
                         }
                     }
                 }
             }
-            if (deadlockedThreads == null)
+            if (deadlockedThreads == null && exceptionCaught == null)
                 outstandingWriteLocks++; //testing
 //            LOG.debug( "writeLock on " + getId() + " acquired by " + writeLockedThread.getName());
         }
@@ -246,6 +247,8 @@ public class MultiReadReentrantLock implements Lock {
             DeadlockDetection.clearResourceWaiter(thisThread);
             removeWaitingWrite(waiter);
         }
+        if (exceptionCaught != null)
+            throw exceptionCaught;
         if (deadlockedThreads != null) {
             for (int i = 0; i < deadlockedThreads.size(); i++) {
                 WaitingThread wt = (WaitingThread) deadlockedThreads.get(i);
