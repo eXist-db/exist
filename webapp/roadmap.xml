@@ -9,7 +9,7 @@
         <name>Document Storage</name>
         <part>
             <name>File size/complexity limits</name>
-            <status>Beta</status>
+            <status>Stable</status>
             <priority>Highest</priority>
             <test_coverage>Tested</test_coverage>
             <progress>100</progress>
@@ -119,6 +119,12 @@
                 example, statistical information about the frequency of index
                 items. The redesign of the indexing system thus presents a
                 necessary foundation for the query optimizer.</p>
+            <p>Update: as of July 2007, the main redesign phase has been completed. There are
+                now alternative index configuration methods which support the optimizer
+                in rewriting a query for best performance. A new modularized indexing
+                architecture allows to plug in arbitrary new indexes into the indexing pipeline.
+                A N-gram and a spatial index module were added as prototypes to test the
+                new architecture.</p>
         </remark>
         <part>
             <name>Full text indexing</name>
@@ -154,10 +160,10 @@
         </part>
         <part>
             <name>Combined range and qname index</name>
-            <status>Alpha</status>
+            <status>Beta</status>
             <priority>Avg</priority>
             <test_coverage>x</test_coverage>
-            <progress>50</progress>
+            <progress>90</progress>
             <who/>
             <remark><p>Works, but special functions need to be used.</p> </remark>
         </part>
@@ -175,10 +181,10 @@
         </part>
         <part>
             <name>N-gram</name>
-            <status>Open</status>
+            <status>Beta</status>
             <priority>High</priority>
             <test_coverage>x</test_coverage>
-            <progress>0</progress>
+            <progress>85</progress>
             <who/>
             <remark>
                 <p>When dealing with texts in many non-European languages, the
@@ -194,19 +200,20 @@
                     be implemented, e.g. to deal with varying spellings. The
                     main question is how the N-gram index would integrate
                     conceptually with the existing full-text functions.</p>
+                <p>A N-gram index based on the new modularized
+                    indexing architecture is now available in SVN trunk.</p>
             </remark>
         </part>
         <part>
             <name>Integration of other index types (e.g. Spatial indexes,
                 external indexes)</name>
-            <status>Open</status>
+            <status>Beta</status>
             <priority>Avg</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
+            <progress>75</progress>
             <who/>
             <remark>
-                <p>For some types of data, e.g.. spatial information,
-                    specialized indexes might be provided by other systems.</p>
+                <p>eXist now offers spatial indexes in SVN trunk.</p>
             </remark>
         </part>
         <part>
@@ -311,7 +318,7 @@
             <status>Stable_redesign</status>
             <priority>x</priority>
             <test_coverage>Tested</test_coverage>
-            <progress>50</progress>
+            <progress>75</progress>
             <who/>
             <remark>
                 <p>W3C is working on an update extension, but no draft released
@@ -412,7 +419,7 @@
             <status>Beta</status>
             <priority>High</priority>
             <test_coverage>x</test_coverage>
-            <progress>75</progress>
+            <progress>90</progress>
             <who/>
             <remark></remark>
         </part>
@@ -421,7 +428,7 @@
             <status>Beta</status>
             <priority>High</priority>
             <test_coverage>x</test_coverage>
-            <progress>75</progress>
+            <progress>90</progress>
             <who/>
             <remark></remark>
         </part>
@@ -538,10 +545,10 @@
         </part>
         <part>
             <name>XQTS XQuery test suite</name>
-            <status>Beta</status>
+            <status>Stable</status>
             <priority>High</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>93</progress>
+            <progress>100</progress>
             <who/>
             <remark>
                 <p>Should be implemented to avoid future regressions and ensure
@@ -550,10 +557,10 @@
         </part>
         <part>
             <name>XQuery Optimizer</name>
-            <status>Stable_redesign</status>
+            <status>Beta</status>
             <priority>High</priority>
             <test_coverage>No tests</test_coverage>
-            <progress>75</progress>
+            <progress>80</progress>
             <who/>
             <remark>
                 <p>Most query optimizations are currently hard-coded into the
@@ -692,7 +699,7 @@
             <status>Open</status>
             <priority>Low</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>10</progress>
+            <progress>70</progress>
             <who/>
             <remark>
                 <p>Could be a simpler alternative to the now somewhat bloated
