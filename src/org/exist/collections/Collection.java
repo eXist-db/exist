@@ -346,6 +346,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     public DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean recursive, LockedDocumentMap lockMap, int lockType) throws LockException {
         if (permissions.validate(broker.getUser(), Permission.READ)) {
             List subColls = null;
+            XmldbURI uris[] = null;
             try {
                 // acquire a lock on the collection
                 getLock().acquire(Lock.READ_LOCK);
@@ -354,19 +355,24 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 // get a list of subcollection URIs. We will process them after unlocking this collection.
                 // otherwise we may deadlock ourselves
                 subColls = subcollections.keys();
-                XmldbURI uris[] = new XmldbURI[subColls.size()];
+                if (subColls != null) {
+                    uris = new XmldbURI[subColls.size()];
+                    for (int i = 0; i < subColls.size(); i++) {
+                        XmldbURI childName = (XmldbURI) subColls.get(i);
+                        uris[i] = path.appendInternal(childName);
+                    }
+                }
             } catch (LockException e) {
                 LOG.warn(e.getMessage());
                 throw e;
             } finally {
                 getLock().release(Lock.READ_LOCK);
             }
-            if (recursive && subColls != null) {
+            if (recursive && uris != null) {
                 // process the child collections
-                for (int i = 0; i < subColls.size(); i++) {
-                    XmldbURI childName = (XmldbURI) subColls.get(i);
+                for (int i = 0; i < uris.length; i++) {
                     //TODO : resolve URI !
-                    Collection child = broker.openCollection(path.appendInternal(childName), Lock.NO_LOCK);
+                    Collection child = broker.openCollection(uris[i], Lock.NO_LOCK);
                     // a collection may have been removed in the meantime, so check first
                     if (child != null)
                         child.allDocs(broker, docs, recursive, lockMap, lockType);
