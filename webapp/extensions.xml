@@ -33,7 +33,7 @@
     <para>The source code for extension modules should be placed in their own folder inside 
     <filename>$EXIST_HOME/extensions/modules/src/org/exist/xquery/modules</filename>. 
     They may then be compiled in place using either <command>$EXIST_HOME/build.sh extension-modules</command> or 
-    <command>%EXIST_HOME%\build.bat extensions</command> depending on the platform.</para>
+    <command>%EXIST_HOME%\build.bat extension-modules</command> depending on the platform.</para>
     <para>Modules associated to modularized indexes should be placed in the <filename>$EXIST_HOME/extensions/indexes/*/xquery/modules/*</filename> hierarchy.
     They will be compiled automatically by the standard build targets or as indicated above.</para>
     <para>eXist must also be told which modules to load, this is done in <filename>conf.xml</filename> and the Class name and Namespace for each module is listed below. Note - eXist will require a restart to load the new module.
