@@ -24,6 +24,7 @@ package org.exist.xquery.modules.sql;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.XQueryContext;
 
 /**
  * eXist SQL Module Extension
@@ -39,8 +40,8 @@ import org.exist.xquery.FunctionDef;
  */
 
 
-public class SQLModule extends AbstractInternalModule {
-
+public class SQLModule extends AbstractInternalModule
+{
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/sql";
 	
 	public final static String PREFIX = "sql";
@@ -68,5 +69,19 @@ public class SQLModule extends AbstractInternalModule {
 
 	public String getDescription() {
 		return "A module for performing SQL queries against Databases, returning XML representations of the result sets.";
+	}
+	
+	/**
+	 * Resets the Module Context and closes any JDBC connections for the XQueryContext
+	 * 
+	 * @param xqueryContext The XQueryContext
+	 */
+	public void reset(XQueryContext xqueryContext)
+	{
+		//reset the module context
+		super.reset(xqueryContext);
+		
+		//close any open connections
+		GetConnectionFunction.closeAll(xqueryContext);
 	}
 }

@@ -183,7 +183,7 @@ public class ExternalModuleImpl implements ExternalModule {
 		return mContext.checkModulesValid();
 	}
 	
-	public void reset() {
+	public void reset(XQueryContext xqueryContext) {
         mContext.reset();
         mStaticVariables.clear();
     }

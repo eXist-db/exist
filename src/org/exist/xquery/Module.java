@@ -100,5 +100,5 @@ public interface Module {
 	 * Reset the module's internal state for being reused.
 	 *
 	 */
-	public void reset();
+	public void reset(XQueryContext xqueryContext);
 }
