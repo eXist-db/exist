@@ -181,6 +181,6 @@ public abstract class AbstractInternalModule implements InternalModule {
         return mGlobalVariables.get(qname) != null;
     }
 
-    public void reset() {
+    public void reset(XQueryContext xqueryContext){
 	}
 }

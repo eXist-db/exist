@@ -110,6 +110,9 @@ public class ExecuteFunction extends BasicFunction
 		if(con == null)
 			return Sequence.EMPTY_SEQUENCE;
 		
+		Statement stmt = null;
+		ResultSet rs = null;
+		
 		try
 		{
 			StringBuffer xmlBuf = new StringBuffer();
@@ -118,7 +121,7 @@ public class ExecuteFunction extends BasicFunction
 			String sql = args[1].getStringValue();
 			
 			//execute the sql statement
-			Statement stmt = con.createStatement();
+			stmt = con.createStatement();
 			
 			//execute the query statement
 			if(stmt.execute(sql))
@@ -126,7 +129,7 @@ public class ExecuteFunction extends BasicFunction
 				/* SQL Query returned results */
 				
 				//iterate through the result set building an xml document
-				ResultSet rs = stmt.getResultSet();
+				rs = stmt.getResultSet();
 				ResultSetMetaData rsmd = rs.getMetaData();
 				int iColumns = rsmd.getColumnCount();
 				int iRows = 0;
@@ -184,6 +187,26 @@ public class ExecuteFunction extends BasicFunction
 		catch(SQLException e)
 		{
 			throw new XPathException(e);
+		}
+		finally
+		{
+			//close any recordset or statement
+			try
+			{
+				if(rs != null)
+					rs.close();
+				
+				if(stmt != null)
+					stmt.close();
+			}
+			catch(SQLException se)
+			{
+				LOG.debug("Unable to cleanup JDBC results", se);
+			}
+			
+			//explicitly ready for gc
+			rs = null;
+			stmt = null;
 		}
 	}
 	

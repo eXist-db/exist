@@ -24,8 +24,11 @@ package org.exist.xquery.modules.sql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -165,7 +168,7 @@ public class GetConnectionFunction extends BasicFunction
 				connections = new HashMap();
 			}
 			
-			//gent an id for the connection
+			//get an id for the connection
 			long conID = getUID();
 
 			//place the connection in the connections map 
@@ -225,5 +228,42 @@ public class GetConnectionFunction extends BasicFunction
 	private static synchronized long getUID()
 	{
 	    return current++;
+	}
+	
+	/**
+	 * Closes all the open JDBC connections for the specificed XQueryContext 
+	 * 
+	 * @param xqueryContext The context to close JDBC connections for
+	 */
+	protected final static void closeAll(XQueryContext xqueryContext)
+	{
+		//get the existing connections map from the context
+		HashMap connections = (HashMap)xqueryContext.getXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR);
+		if(connections != null)
+		{
+			//iterate over each connection
+			Set keys = connections.keySet();
+			for(Iterator itKeys = keys.iterator(); itKeys.hasNext();)
+			{
+				//get the connection
+				Long conID = (Long)itKeys.next();
+				Connection con = (Connection)connections.get(conID);
+				try
+				{
+					//close the connection
+					con.close();
+					
+					//remove it from the connections map
+					connections.remove(conID);
+				}
+				catch(SQLException se)
+				{
+					LOG.debug("Unable to close JDBC connection", se);
+				}
+			}
+
+			//update the context
+			xqueryContext.setXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR, connections);
+		}
 	}
 }

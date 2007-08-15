@@ -824,7 +824,7 @@ public class XQueryContext {
         profiler.reset();
 		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
 			Module module = (Module)i.next();
-			module.reset();
+			module.reset(this);
 		}
 		clearUpdateListeners();
 	}
