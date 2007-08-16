@@ -41,7 +41,7 @@ public class Optimize extends Pragma {
 
     public  final static QName OPTIMIZE_PRAGMA = new QName("optimize", Namespaces.EXIST_NS, "exist");
 
-    private final static Logger LOG = Logger.getLogger(TimerPragma.class);
+    private final static Logger LOG = Logger.getLogger(Optimize.class);
 
     private boolean enabled = true;
     private XQueryContext context;

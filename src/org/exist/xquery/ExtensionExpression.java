@@ -101,7 +101,12 @@ public class ExtensionExpression extends AbstractExpression {
     }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        innerExpression.analyze(contextInfo);
+        AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
+        for (int i = 0; i < pragmas.size(); i++) {
+            Pragma pragma = (Pragma) pragmas.get(i);
+            pragma.analyze(newContext);
+        }
+        innerExpression.analyze(newContext);
     }
 
     public void dump(ExpressionDumper dumper) {

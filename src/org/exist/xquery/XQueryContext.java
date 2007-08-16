@@ -1812,7 +1812,8 @@ public class XQueryContext {
             contents = StringValue.trimWhitespace(contents);
             if (TimerPragma.TIMER_PRAGMA.equalsSimple(qname)) {
                 return new TimerPragma(qname, contents);
-            } else if (Optimize.OPTIMIZE_PRAGMA.equalsSimple(qname)) {
+            }
+            if (Optimize.OPTIMIZE_PRAGMA.equalsSimple(qname)) {
                 return new Optimize(this, qname, contents, true);
             }
             if (BatchTransactionPragma.BATCH_TRANSACTION_PRAGMA.equalsSimple(qname)) {
@@ -1823,6 +1824,9 @@ public class XQueryContext {
             }
             if (ProfilePragma.PROFILIE_PRAGMA.equalsSimple(qname)) {
             	return new ProfilePragma(qname, contents);
+            }
+            if (NoIndexPragma.NO_INDEX_PRAGMA.equalsSimple(qname)) {
+                return new NoIndexPragma(qname, contents);
             }
         }
         return null;
