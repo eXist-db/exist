@@ -1,23 +1,24 @@
-/* eXist Native XML Database
- * Copyright (C) 2000-2006, The eXist team
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2000-2007 The eXist Project
+ * http://exist-db.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ *  
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * GNU Lesser General Public License for more details.
  * 
- * $Id: FunEndsWith.java 4163 2006-08-24 14:23:13Z wolfgang_m $
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import java.net.URI;
@@ -50,7 +51,7 @@ public class FunResolveURI extends Function {
 	    ),
 	    new FunctionSignature (
 	  	      new QName("resolve-uri", Function.BUILTIN_FUNCTION_NS),
-		      "The purpose of this function is to enable a relative URI $a to be resolved against the absolute URI $b.",
+		      "The purpose of this function is to enable a relative URI $a to be resolved against the absolute URI $b. If $a is the empty sequence, the empty sequence is returned.",
 		      new SequenceType[] {
 		    	  new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 		    	  new SequenceType(Type.STRING, Cardinality.ONE)
@@ -77,49 +78,50 @@ public class FunResolveURI extends Function {
 		
 		AnyURIValue base;		
 		if (getArgumentCount() == 1) {
-			if (context.getBaseURI() == null || context.getBaseURI().equals(AnyURIValue.EMPTY_URI))
-				throw new XPathException("FONS0005: static context has no base URI.");
+			if (!context.isBaseURIDeclared())
+				throw new XPathException("err:FONS0005: base URI of the static context has not been assigned a value.");
 			base = context.getBaseURI();
 		} else {
 			try {
 				Item item = getArgument(1).eval(contextSequence).itemAt(0).convertTo(Type.ANY_URI);
-				base = (AnyURIValue)item;	
-			} catch (XPathException e) {				
-	        	throw new XPathException(getASTNode(), "FORG0002: " + e.getMessage(), e);
-			}	
-		}	
+				base = (AnyURIValue)item;
+			} catch (XPathException e) {
+	        	throw new XPathException(getASTNode(), "err:FORG0002: invalid argument to fn:resolve-uri(): " + e.getMessage(), e);
+			}
+		}
 		
 		Sequence result;
 
 		Sequence seq = getArgument(0).eval(contextSequence);
-		if (seq.isEmpty())			
+		if (seq.isEmpty()) {			
 			result = Sequence.EMPTY_SEQUENCE;
-		else {
-			AnyURIValue relative;		
+		} else {
+			AnyURIValue relative;
 			try {
 				Item item = seq.itemAt(0).convertTo(Type.ANY_URI);
 				relative = (AnyURIValue)item;
 			} catch (XPathException e) {				
-	        	throw new XPathException(getASTNode(), "FORG0002: " + e.getMessage(), e);
+	        	throw new XPathException(getASTNode(), "err:FORG0002: invalid argument to fn:resolve-uri(): " + e.getMessage(), e);
 			}			
 			URI relativeURI;
 			URI baseURI;
 			try {
 				relativeURI = new URI(relative.getStringValue());
-				baseURI = new URI(base.getStringValue());
+				baseURI = new URI(base.getStringValue() + "/");
 			} catch (URISyntaxException e) {
-				throw new XPathException(getASTNode(), "FORG0009: " + e.getMessage(), e);				
+				throw new XPathException(getASTNode(), "err:FORG0009: unable to resolve a relative URI against a base URI in fn:resolve-uri(): " + e.getMessage(), e);				
 			}
-			if (relativeURI.isAbsolute())
+			if (relativeURI.isAbsolute()) {
 				result = relative;
-			else
+            } else {
 				result = new AnyURIValue(baseURI.resolve(relativeURI));
+            }
         }
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
-        
-        return result;        
+
+        return result;
     }
 
 }

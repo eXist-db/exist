@@ -25,6 +25,7 @@ package org.exist.xquery;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -200,6 +201,8 @@ public class XQueryContext {
 	protected String moduleLoadPath = ".";
 	
 	protected String defaultFunctionNamespace = Function.BUILTIN_FUNCTION_NS;
+	protected AnyURIValue defaultElementNamespace = AnyURIValue.EMPTY_URI;
+	protected AnyURIValue defaultElementNamespaceSchema = AnyURIValue.EMPTY_URI;
 
 	/**
 	 * The default collation URI
@@ -333,6 +336,7 @@ public class XQueryContext {
         ctx.staticDocuments = this.staticDocuments;
         ctx.moduleLoadPath = this.moduleLoadPath;
         ctx.defaultFunctionNamespace = this.defaultFunctionNamespace;
+        ctx.defaultElementNamespace = this.defaultElementNamespace;
         ctx.defaultCollation = this.defaultCollation;
         ctx.defaultCollator = this.defaultCollator;
         ctx.backwardsCompatible = this.backwardsCompatible;
@@ -535,8 +539,57 @@ public class XQueryContext {
 		//Not sure for the 2nd clause : eXist forces the function NS as default.
 		if (defaultFunctionNamespace != null && !defaultFunctionNamespace.equals(Function.BUILTIN_FUNCTION_NS) 
 				&& !defaultFunctionNamespace.equals(uri))
-			throw new XPathException("XQST0066: default function namespace is already set to: '" + defaultFunctionNamespace + "'");
+			throw new XPathException("err:XQST0066: default function namespace is already set to: '" + defaultFunctionNamespace + "'");
 		defaultFunctionNamespace = uri;
+	}
+
+	/**
+	 * Returns the current default element namespace.
+	 * 
+	 * @return current default element namespace schema
+	 */
+	public String getDefaultElementNamespaceSchema() throws XPathException {
+		return defaultElementNamespaceSchema.getStringValue();
+	}
+
+	/**
+	 * Set the default element namespace. By default, this
+	 * points to the empty uri.
+	 * 
+	 * @param uri
+	 */
+	public void setDefaultElementNamespaceSchema(String uri) throws XPathException  {
+		// eXist forces the empty element NS as default.
+		if (!defaultElementNamespaceSchema.equals(AnyURIValue.EMPTY_URI))
+			throw new XPathException("err:XQST0066: default function namespace schema is already set to: '" + defaultElementNamespaceSchema.getStringValue() + "'");
+		defaultElementNamespaceSchema = new AnyURIValue(uri);
+	}
+
+	/**
+	 * Returns the current default element namespace.
+	 * 
+	 * @return current default element namespace
+	 */
+	public String getDefaultElementNamespace() throws XPathException {
+		return defaultElementNamespace.getStringValue();
+	}
+
+	/**
+     * Set the default element namespace. By default, this
+	 * points to the empty uri.
+	 * 
+     * @param uri a <code>String</code> value
+     * @param schema a <code>String</code> value
+     * @exception XPathException if an error occurs
+     */
+    public void setDefaultElementNamespace(String uri, String schema) throws XPathException  {
+		// eXist forces the empty element NS as default.
+		if (!defaultElementNamespace.equals(AnyURIValue.EMPTY_URI))
+			throw new XPathException("err:XQST0066: default element namespace is already set to: '" + defaultElementNamespace.getStringValue() + "'");
+        defaultElementNamespace = new AnyURIValue(uri);
+        if (schema != null) {
+            defaultElementNamespaceSchema = new AnyURIValue(schema);
+        }
 	}
 
 	/**
@@ -551,10 +604,25 @@ public class XQueryContext {
 			defaultCollation = Collations.CODEPOINT;
 			defaultCollator = null;
 		}
-		defaultCollator = Collations.getCollationFromURI(this, uri);
-		defaultCollation = uri;
+
+        URI uriTest;
+        try {
+            uriTest = new URI(uri);
+        } catch(URISyntaxException e) {
+            throw new XPathException("err:XQST0038: Unknown collation : '" + uri + "'");              
+        }
+        if (uri.startsWith(Collations.EXIST_COLLATION_URI) 
+            || uri.startsWith("?")
+            || uriTest.isAbsolute()) {
+            defaultCollator = Collations.getCollationFromURI(this, uri);
+            defaultCollation = uri;
+        } else {
+            String absUri = getBaseURI().getStringValue() + uri;
+            defaultCollator = Collations.getCollationFromURI(this, absUri);
+            defaultCollation = absUri;
+        }
 	}
-	
+
 	public String getDefaultCollation() {
 		return defaultCollation;
 	}
@@ -1317,14 +1385,48 @@ public class XQueryContext {
 		return moduleLoadPath;
 	}
 	
+
+    /**
+     * The method <code>isBaseURIDeclared</code>
+     *
+     * @return a <code>boolean</code> value
+     */
+    public boolean isBaseURIDeclared() {
+        if (baseURI == null 
+            || baseURI.equals(AnyURIValue.EMPTY_URI)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 	/**
-	 * Get the base URI of the evaluation context.
+     * Get the base URI of the evaluation context.
 	 * 
 	 * This is the URI returned by the fn:base-uri() function.
 	 * 
-	 * @return base URI of the evaluation context
-	 */
-	public AnyURIValue getBaseURI() {
+     * @return base URI of the evaluation context
+     * @exception XPathException if an error occurs
+     */
+    public AnyURIValue getBaseURI()
+        throws XPathException {
+        // the base URI in the static context is established according to the 
+        // principles outlined in [RFC3986] Section 5.1—that is, it defaults 
+        // first to the base URI of the encapsulating entity, then to the URI 
+        // used to retrieve the entity, and finally to an implementation-defined
+        // default. If the URILiteral in the base URI declaration is a relative
+        // URI, then it is made absolute by resolving it with respect to this 
+        // same hierarchy.
+
+        // It is not intrinsically an error if this process fails to establish 
+        // an absolute base URI; however, the base URI in the static context 
+        // is then undefined, and any attempt to use its value may result in 
+        // an error [err:XPST0001].
+        if (baseURI == null || baseURI.equals(AnyURIValue.EMPTY_URI)) {
+            //throw new XPathException("err:XPST0001: base URI of the static context  has not been assigned a value.");
+            // We catch and resolve this to the XmlDbURI.ROOT_COLLECTION_URI
+            // at least in DocumentImpl so maybe we should do it here./ljo
+        }
 		return baseURI;
 	}
     

@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2004-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.util;
 
 import java.net.URI;
@@ -106,13 +127,13 @@ public class Collations {
                             "The specified collator class is not a subclass of java.text.Collator");
                 return (Collator) collatorClass.newInstance();
             } catch (Exception e) {
-                throw new XPathException("The specified collator class " + uri
+                throw new XPathException("err:XQST0038: The specified collator class " + uri
                         + " could not be found", e);
             }
         } else if (CODEPOINT.equals(uri)) {
         	return null;
         } else
-            throw new XPathException("FOCH0002: Unknown collation : '" + uri + "'");           
+            throw new XPathException("err:XQST0038: Unknown collation : '" + uri + "'");           
     }
 
     public final static boolean equals(Collator collator, String s1, String s2) {

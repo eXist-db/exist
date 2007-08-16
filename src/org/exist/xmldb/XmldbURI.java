@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2006 The eXist team
+ *  Copyright (C) 2006 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or

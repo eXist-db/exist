@@ -1,23 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
  *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.memtree;
@@ -74,6 +73,38 @@ public class ProcessingInstructionImpl
 	public void setData(String arg0) throws DOMException {
 	}
 	
+    /** ? @see org.w3c.dom.Node#getBaseURI()
+	 */
+    public String getBaseURI() {
+        String baseURI = "";
+        int parent = -1;
+        int test = -1;
+        test = document.getParentNodeFor(nodeNumber);
+
+        if (document.nodeKind[test] != Node.DOCUMENT_NODE) {
+            parent = test;
+        } 
+        // fixme! Testa med 0/ljo
+        while (parent != -1 && document.getNode(parent).getBaseURI() != null) {
+            if ("".equals(baseURI)) {
+                baseURI = document.getNode(parent).getBaseURI();
+            } else {
+                baseURI = document.getNode(parent).getBaseURI() + "/" + baseURI;
+            }
+
+            test = document.getParentNodeFor(parent);
+            if (document.nodeKind[test] == Node.DOCUMENT_NODE) {
+                return baseURI;
+            } else {
+                parent = test;
+            }
+        }
+        if ("".equals(baseURI)) {
+            baseURI = getDocument().getBaseURI();
+        }
+        return baseURI;
+    }
+
 	public Node getFirstChild() {
 		//No child
 		return null;

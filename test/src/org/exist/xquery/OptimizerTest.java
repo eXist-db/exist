@@ -265,11 +265,11 @@ public class OptimizerTest {
         try {
             System.out.println("--- Query: " + query + "; Optimize: " + Boolean.toString(optimize));
             XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
-            query = NAMESPACES + query;
             if (optimize)
                 query = OPTIMIZE + query;
             else
                 query = NO_OPTIMIZE + query;
+            query = NAMESPACES + query;
             ResourceSet result = service.query(query);
             System.out.println("-- Found: " + result.getSize());
             return (int) result.getSize();

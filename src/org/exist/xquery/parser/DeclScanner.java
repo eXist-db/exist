@@ -217,6 +217,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"\"return\"",
 		"\"in\"",
 		"\"by\"",
+		"\"stable\"",
 		"\"ascending\"",
 		"\"descending\"",
 		"\"group\"",

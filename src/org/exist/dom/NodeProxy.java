@@ -329,7 +329,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
 
     /* Gets the node from the broker, i.e. fom the underlying file system
-     * Call this method <string>only</strong> <hen necessary
+     * Call this method <string>only</strong> when necessary
      * @see org.exist.xquery.value.NodeValue#getNode()
      */
     public Node getNode() {

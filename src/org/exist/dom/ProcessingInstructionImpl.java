@@ -114,6 +114,35 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         this.data = data;
     }
 
+	/** ? @see org.w3c.dom.Node#getBaseURI()
+	 */
+	public String getBaseURI() {
+        String baseURI = "";
+
+        StoredNode parent = null;
+        Node test = getParentNode();
+        if (!(test instanceof DocumentImpl)) {
+                parent = (StoredNode) test;
+        } 
+        while (parent != null && parent.getBaseURI() != null) {
+            if ("".equals(baseURI)) {
+                baseURI = parent.getBaseURI();
+            } else {
+                baseURI = parent.getBaseURI() + "/" + baseURI;
+            }
+            test = parent.getParentNode();
+            if (test instanceof DocumentImpl) {
+                return baseURI;
+            } else {
+                parent = (StoredNode) test;
+            }
+        }
+        if ("".equals(baseURI)) {
+            baseURI = getDocument().getBaseURI();
+        }
+        return baseURI;
+	}
+
     /**
      *  Description of the Method
      *

@@ -44,6 +44,7 @@ header {
 	import org.exist.dom.QName;
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.security.User;
+	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
 	import org.exist.xquery.value.*;
 	import org.exist.xquery.functions.*;
@@ -195,14 +196,35 @@ throws PermissionDeniedException, EXistException, XPathException
  */
 prolog [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
-{ Expression step = null; }:
+{ Expression step = null;
+  boolean boundaryspace = false;
+  boolean defaultcollation = false;
+  boolean orderempty = false;
+  boolean copynamespaces = false;
+  boolean baseuri = false;
+  boolean ordering = false;
+  boolean construction = false;
+
+}:
 	(
 		#(
 			v:VERSION_DECL
 			{
 				if (!v.getText().equals("1.0"))
-					throw new XPathException(v, "Wrong XQuery version: require 1.0");
+					throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0");
 			}
+            ( enc:STRING_LITERAL )?
+            {
+                if (enc != null) {
+                    if (!XMLChar.isValidIANAEncoding(enc.getText())) {
+                        throw new XPathException(enc, "err:XQST0087: Unknown or wrong encoding not adhering to required XML 1.0 EncName.");
+                    }
+                    if (!enc.getText().equals("UTF-8")) {
+                    //util.serializer.encodings.CharacterSet
+                    //context.setEncoding(enc.getText());
+                    }
+                }
+            }
 		)
 	)?
 	(
@@ -221,50 +243,102 @@ throws PermissionDeniedException, EXistException, XPathException
 		#(
 			"boundary-space"
 			(
-				"preserve" { context.setStripWhitespace(false); }
+				"preserve" 
+                {
+                if (boundaryspace)
+					throw new XPathException("err:XQST0068: Boundary-space already declared.");
+                boundaryspace = true;
+                context.setStripWhitespace(false);
+                }
 				|
-				"strip" { context.setStripWhitespace(true); }
+				"strip" 
+                {
+                if (boundaryspace)
+					throw new XPathException("err:XQST0068: Boundary-space already declared.");
+                boundaryspace = true;
+                context.setStripWhitespace(true);
+                }
 			)
 		)
 		|
 		#(
 			"order" ( "greatest" | "least" )	// ignored
+            {
+                // ignored
+                if (orderempty)
+                    throw new XPathException("err:XQST0065: Ordering mode already declared.");
+                orderempty = true;
+            }
 		)
 		|
 		#(
-			"copy-namespaces" ( "preserve" | "no-preserve" ) ( "inherit" | "no-inherit" ) // ignored
+			"copy-namespaces" ( "preserve" | "no-preserve" ) ( "inherit" | "no-inherit" )
+            {
+                // ignored
+                if (copynamespaces)
+                    throw new XPathException("err:XQST0055: Copy-namespaces mode already declared.");
+                copynamespaces = true;
+            }
 		)
 		|
 		#(
 			"base-uri" base:STRING_LITERAL
-			{ context.setBaseURI(new AnyURIValue(base.getText()), true); }
+			{ 
+                context.setBaseURI(new AnyURIValue(base.getText()), true);
+                if (baseuri)
+                    throw new XPathException(base, "err:XQST0032: Base URI is already declared.");
+                baseuri = true;
+            }
 		)
 		|
 		#(
-			"ordering" ( "ordered" | "unordered" )	// ignored
+			"ordering" ( "ordered" | "unordered" )	
+            {
+                // ignored
+                if (ordering)
+                    throw new XPathException("err:XQST0065: Ordering already declared.");
+                ordering = true;
+            }
 		)
 		|
 		#(
 			"construction" ( "preserve" | "strip" )	// ignored
+            {
+                // ignored
+                if (construction)
+                    throw new XPathException("err:XQST0069: Construction already declared.");
+                construction = true;
+            }
 		)
 		|
 		#(
 			DEF_NAMESPACE_DECL defu:STRING_LITERAL
-			{ context.declareNamespace("", defu.getText());
-                          staticContext.declareNamespace("",defu.getText());
-                        }
+            { // Use setDefaultElementNamespace()
+                context.declareNamespace("", defu.getText());
+                staticContext.declareNamespace("",defu.getText());
+            }
 		)
 		|
 		#(
 			DEF_FUNCTION_NS_DECL deff:STRING_LITERAL
-			{ context.setDefaultFunctionNamespace(deff.getText()); 
-                          staticContext.setDefaultFunctionNamespace(deff.getText());
-                        }
+			{
+                context.setDefaultFunctionNamespace(deff.getText()); 
+                staticContext.setDefaultFunctionNamespace(deff.getText());
+            }
 		)
 		|
 		#(
 			DEF_COLLATION_DECL defc:STRING_LITERAL
-			{ context.setDefaultCollation(defc.getText()); }
+			{
+                if (defaultcollation)
+                    throw new XPathException("err:XQST0038: Default collation already declared.");
+                defaultcollation = true;
+                try {
+                    context.setDefaultCollation(defc.getText());
+                } catch (XPathException xp) {
+                    throw new XPathException(defc, "err:XQST0038: the value specified by a default collation declaration is not present in statically known collations.");
+                }
+            }
 		)
 		|
 		#(
@@ -376,9 +450,13 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			String nsPrefix = null;
 			String location = null;
+			boolean defaultElementNS = false;
             List uriList= new ArrayList(2);
 		}
-		( pfx1:NCNAME { nsPrefix = pfx1.getText(); } )?
+		( pfx1:NCNAME { nsPrefix = pfx1.getText(); }
+          | 
+          "default" "element" "namespace" { defaultElementNS = true; }
+        )?
 		targetURI:STRING_LITERAL
 		( uriList [uriList] )?
 		{

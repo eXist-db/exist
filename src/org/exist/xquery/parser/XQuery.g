@@ -212,20 +212,17 @@ moduleDecl throws XPathException:
 prolog throws XPathException
 { boolean inSetters = true; }
 :
-	(
+    (
 		(
 			importDecl
 			|
-			( "declare" ( "default" | "boundary-space" | "ordering" | "construction" | "base-uri" | "copy-namespaces" ) ) =>
+			( "declare" ( "default" | "boundary-space" | "ordering" | "construction" | "base-uri" | "copy-namespaces" | "namespace" ) ) =>
 			setter
 			{
 				if(!inSetters)
 					throw new TokenStreamException("Default declarations have to come first");
 			}
-			|
-			( "declare" "namespace" )
-			=> namespaceDecl { inSetters = false; }
-			|
+            |
 			( "declare" "option" )
 			=> optionDecl { inSetters = false; }
 			|
@@ -234,9 +231,9 @@ prolog throws XPathException
 			|
 			( "declare" "variable" )
 			=> varDecl { inSetters = false; }
-		)
+        ) 
 		SEMICOLON!
-	)*
+    )*
 	;
 
 importDecl throws XPathException
@@ -248,10 +245,8 @@ importDecl throws XPathException
 
 versionDecl throws XPathException
 :
-	"xquery" "version" v:STRING_LITERAL { #versionDecl = #(#[VERSION_DECL, v.getText()]); }
-	( 
-		"encoding"! enc:STRING_LITERAL!
-	)?
+	"xquery" "version" v:STRING_LITERAL ( "encoding"! enc:STRING_LITERAL )?
+        { #versionDecl = #(#[VERSION_DECL, v.getText()], enc); }
 	;
 
 setter:
@@ -285,6 +280,9 @@ setter:
 		|
 		( "declare" "copy-namespaces" ) =>
 		"declare"! "copy-namespaces"^ preserveMode COMMA! inheritMode
+		|
+		( "declare" "namespace" ) =>
+        namespaceDecl
 	)
 	;
 
@@ -556,7 +554,7 @@ letVarBinding throws XPathException
 
 orderByClause throws XPathException
 :
-	"order"! "by"! orderSpecList
+    ( "order"! "by"! | "stable"! "order"! "by"! ) orderSpecList
 	{ #orderByClause= #([ORDER_BY, "order by"], #orderByClause); }
 	;
 

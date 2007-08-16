@@ -1,3 +1,5 @@
+xquery version "1.0";
+
 declare namespace xqts="http://exist-db.org/xquery/xqts";
 declare namespace catalog="http://www.w3.org/2005/02/query-test-XQTSCatalog";
 
@@ -128,7 +130,7 @@ declare function xqts:get-query($case as element(catalog:test-case)) {
 
 declare function xqts:print-result($test-name as xs:string, $passed as xs:boolean, $query as xs:string, 
     $result as item()*, $expected as item()*, $case as element(catalog:test-case)) as element() {
-    <test-case name="{$test-name}" result="{if ($passed) then 'pass' else 'fail'}" dateRun="{util:system-time()}">
+    <test-case name="{$test-name}" result="{if ($passed) then 'pass' else 'fail'}" dateRun="{util:system-time()}" print="print-result">
     {
         if (not($passed)) then (
             <result>{$result}</result>,
@@ -161,7 +163,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
     return
         (: Expected only an error, but still got a result :)
         if (fn:exists($case/catalog:expected-error) and fn:empty($case/catalog:output-file)) then
-            <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
+            <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="expected-error-and-no-output">
                    <expected-error>{string-join($case/catalog:expected-error/text(), ";")}</expected-error>
                    <result>{$result}</result>
                    <query>{$query}</query>
@@ -183,7 +185,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 return
                     xqts:print-result($case/@name, $test, $query, $result, $expected, $case),
                 (: Handle unexpected exceptions :)
-                <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
+                <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="xml-compare-unexpected-exception">
                    <exception>Exception while loading expected result: {$util:exception-message}</exception>
                    <query>{$query}</query>
                 </test-case>
@@ -203,7 +205,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 return
                     xqts:print-result($case/@name, $test, $query, <f>{$result}</f>, $expected, $case),
                 (: Handle unexpected exceptions :)
-                <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
+                <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="fragment-compare-unexpected-exception">
                    <exception>Exception while loading expected result fragment: {$util:exception-message}</exception>
                    <query>{$query}</query>
                 </test-case>
@@ -219,7 +221,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
             
         (: Don't know how to compare :)
       else
-        <test-case name="{$case/@name}" result="error" dateRun="{util:system-time()}">
+        <test-case name="{$case/@name}" result="error" dateRun="{util:system-time()}" print="unknown-comparison-method">
           <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
           <query>{$query}</query>
 	</test-case>
@@ -229,7 +231,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
     (: let $passed := $all-results//test-case[@result eq 'pass'] :)
     let $passed :=
       if (fn:exists($all-results[2])) then
-	let $result-frag := concat("<f>", $all-results, "</f>")
+	let $result-frag := concat("<f>", fn:string-join($all-results, ""), "</f>")
 	let $results-doc := doc(xdb:store("/db", "temp-res.xml", $result-frag, "text/xml"))
         return $results-doc//test-case[@result eq 'pass']
       else ()
@@ -240,8 +242,8 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
 	$all-results[1]
       else
         (: Expected runtime-exception, but got a result :)
-      if (fn:exists($case/catalog:expected-error) and $case/@scenario eq "runtime-error") then
-        <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
+      if (fn:exists($case//catalog:expected-error) and fn:empty($case//catalog:output-file) and $case/@scenario eq "runtime-error") then
+        <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="expected-error-and-no-output">
           <expected-error>{string-join($case/catalog:expected-error/text(), ";")}</expected-error>
           <result>{$result}</result>
           <query>{$query}</query>
@@ -249,7 +251,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
       else
 	let $log-all := util:log("DEBUG", ("Unhandled error, no result for: ", xs:string($case/@name)))
 	return 
-	  <test-case name="{$case/@name}" result="error" dateRun="{util:system-time()}">
+	  <test-case name="{$case/@name}" result="error" dateRun="{util:system-time()}" print="unhandled-error">
     	    <error test="{$case/@name}">Cannot handle: {$case/@name}.</error>
             <query>{$query}</query>
           </test-case>
@@ -288,21 +290,55 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
                util:eval-with-context($query, $context, false(), xqts:get-context-item($testCase/catalog:contextItem))
            return
                xqts:check-output($query, $result, $testCase),
-           if ($testCase//catalog:expected-error) then
-               <test-case name="{$testCase/@name}" result="pass" dateRun="{util:system-time()}">
+	     (: Only expected exception and got exception.
+	        No check on if it is the right exception, though. :)
+           if ($testCase//catalog:expected-error and fn:empty($testCase//catalog:output-file)) then
+               <test-case name="{$testCase/@name}" result="pass" dateRun="{util:system-time()}" print="expected-exception-got-exception">
                    <exception>{$util:exception-message}</exception>
                    <expected-error>{string-join($testCase//catalog:expected-error/text(),";")}</expected-error>
                    <query>{$query}</query>
                </test-case>
            else
-               <test-case name="{$testCase/@name}" result="fail" dateRun="{util:system-time()}">
+	     (: Expected either output or exception. :)
+	     if ($testCase//catalog:expected-error and $testCase//catalog:output-file) then
+               <test-case name="{$testCase/@name}" result="pass" dateRun="{util:system-time()}" print="exception-or-output">
                    <exception>{$util:exception-message}</exception>
+                   <expected-error>{string-join($testCase//catalog:expected-error/text(),";")}</expected-error>
 		   {
-		     for $output in $testCase/catalog:output-file
+		     for $output in $testCase//catalog:output-file
 		     return <expected>{
                      let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $testCase/@FilePath, $output/text())
                      return util:file-read($filePath, "UTF-8")
                      }</expected>
+		   }
+                   <query>{$query}</query>
+               </test-case>
+           else if (fn:empty($testCase//catalog:expected-error) and $testCase//catalog:output-file) then
+ 	     (: Expected output, but got exception. :)
+               <test-case name="{$testCase/@name}" result="fail" dateRun="{util:system-time()}" print="expected-output-got-exception">
+                   <exception>{$util:exception-message}</exception>
+		   {
+		     for $output in $testCase//catalog:output-file
+		     return <expected>{
+                     let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $testCase/@FilePath, $output/text())
+                     return util:file-read($filePath, "UTF-8")
+                     }</expected>
+		   }
+                   <query>{$query}</query>
+               </test-case>
+	     else 
+ 	     (: Don't know what is expected but got here anyway. :)
+               <test-case name="{$testCase/@name}" result="fail" dateRun="{util:system-time()}" print="unhandled-result">
+                   <exception>{$util:exception-message}</exception>
+                   <expected-error>{string-join($testCase//catalog:expected-error/text(),";")}</expected-error>
+		   {
+		     if ( $testCase//catalog:output-file) then
+		     for $output in $testCase//catalog:output-file
+		     return <expected>{
+                     let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $testCase/@FilePath, $output/text())
+                     return util:file-read($filePath, "UTF-8")
+                     }</expected>
+		     else ()
 		   }
                    <query>{$query}</query>
                </test-case>

@@ -312,7 +312,7 @@ public class RpcConnection extends Thread {
         	} catch(URISyntaxException e) {
         		throw new XPathException(e);
         	}
-        } else if(context.getBaseURI() != null) {
+        } else if(context.isBaseURIDeclared()) {
             context.setStaticallyKnownDocuments(new XmldbURI[] { context.getBaseURI().toXmldbURI() });
         }
         if(compiled == null)
