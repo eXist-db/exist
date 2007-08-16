@@ -85,7 +85,41 @@ public class HashtableTest extends TestCase {
 		assertEquals(table.size(), c);
 	}
 
-	public void testSequencedMap() {
+    public void testObjectHashMap() {
+        String keys[] = new String[tabSize];
+        long values[] = new long[tabSize];
+        Object2LongHashMap table = new Object2LongHashMap(tabSize / 4);
+		Random rand = new Random(System.currentTimeMillis());
+		System.out.println("Generating " + tabSize + " random keys...");
+		for(int i = 0; i < tabSize; i++) {
+			do {
+				keys[i] = "/db/" + rand.nextInt(Integer.MAX_VALUE);
+			} while(table.get(keys[i]) != -1);
+            values[i] = rand.nextInt(Integer.MAX_VALUE);
+            table.put(keys[i], values[i]);
+		}
+        System.out.println("Testing get(key) ...");
+		for(int i = 0; i < tabSize; i++) {
+			long k = table.get(keys[i]);
+			assertEquals( values[i], k );
+		}
+        System.out.println("Remove/add keys ...");
+        for(int i = 0; i < tabSize * 10; i++) {
+            int idx0 = rand.nextInt(tabSize);
+            table.remove(keys[idx0]);
+            int idx1 = rand.nextInt(tabSize);
+            table.remove(keys[idx1]);
+            table.put(keys[idx0], values[idx0]);
+            table.put(keys[idx1], values[idx1]);
+        }
+        System.out.println("Testing get(key) ...");
+		for(int i = 0; i < tabSize; i++) {
+			long k = table.get(keys[i]);
+			assertEquals( values[i], k );
+		}
+    }
+
+    public void testSequencedMap() {
 		long keys[] = new long[tabSize];
 		SequencedLongHashMap table = new SequencedLongHashMap(tabSize);
 		Random rand = new Random(System.currentTimeMillis());
