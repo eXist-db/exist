@@ -726,6 +726,10 @@ public class NativeBroker extends DBBroker {
 				    lock.release(Lock.READ_LOCK);
 				}
     		} else {
+                if (!collection.getURI().equalsInternal(uri)) {
+                    LOG.error("The collection received from the cache is not the requested: " + uri +
+                        "; received: " + collection.getURI());
+                }
                 collectionsCache.add(collection);
     		}
         }
