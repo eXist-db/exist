@@ -1212,10 +1212,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     /** ? @see org.w3c.dom.Node#getBaseURI()
      */
     public String getBaseURI() {
-        //TODO : read it from broker's context -pb
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getBaseURI not implemented on class " + getClass().getName());
+        try {
+            return getURI() + "";
+        } catch (Exception e) {
+            System.out.println("dom/DocumentImpl::getBaseURI() 2 exception catched: ");
+        }
+        return XmldbURI.ROOT_COLLECTION_URI + "";
     }
-
+    
     /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
      */
     public short compareDocumentPosition(Node other) throws DOMException {

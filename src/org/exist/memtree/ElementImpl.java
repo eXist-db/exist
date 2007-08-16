@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -380,8 +379,40 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		return getAttributeNS(namespaceURI, localName) != null;
 	}
 
+    
+    /** ? @see org.w3c.dom.Node#getBaseURI()
+	 */
     public String getBaseURI() {
-        return getAttributeNS(Namespaces.XML_NS, "base");
+        String baseURI = getAttributeNS(Namespaces.XML_NS, "base");
+        if ( baseURI == null) {
+            baseURI = "";
+        }
+        int parent = -1;
+        int test = -1;
+        test = document.getParentNodeFor(nodeNumber);
+
+        if (document.nodeKind[test] != Node.DOCUMENT_NODE) {
+            parent = test;
+        } 
+        // fixme! UNDEFINED instead of all the -1s in this file./ljo
+        while (parent != -1 && document.getNode(parent).getBaseURI() != null) {
+            if ("".equals(baseURI)) {
+                baseURI = document.getNode(parent).getBaseURI();
+            } else {
+                baseURI = document.getNode(parent).getBaseURI() + "/" + baseURI;
+            }
+
+            test = document.getParentNodeFor(parent);
+            if (document.nodeKind[test] == Node.DOCUMENT_NODE) {
+                return baseURI;
+            } else {
+                parent = test;
+            }
+        }
+        if ("".equals(baseURI)) {
+            baseURI = getDocument().getBaseURI();
+        }
+        return baseURI;
     }
     
 	/** ? @see org.w3c.dom.Element#getSchemaTypeInfo()

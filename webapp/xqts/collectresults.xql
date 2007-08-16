@@ -1,7 +1,9 @@
-declare option exist:serialize "method=xml indent=yes";
-declare option exist:output-size-limit "-1";
+xquery version "1.0";
+(: $Id$ :)
 declare namespace response="http://exist-db.org/xquery/response";
 declare namespace empty="";
+declare option exist:serialize "method=xml indent=yes";
+declare option exist:output-size-limit "-1";
 
 let $product-version := util:system-property("product-version")
 let $product-build := util:system-property("product-build")

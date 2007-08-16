@@ -1,22 +1,23 @@
 /*
- * eXist Open Source Native XML Database Copyright (C) 2001-06 Wolfgang M. Meier
- * wolfgang@exist-db.org http://exist.sourceforge.net
- * 
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation, Inc.,
- * 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- * $Id$
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.memtree;
 
@@ -34,6 +35,7 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.NamePool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Attr;
@@ -500,6 +502,12 @@ public class DocumentImpl extends NodeImpl implements Document {
         return nextNr < nodeNumber ? -1 : nextNr;
     }
     
+    /**
+     * The method <code>getParentNodeFor</code>
+     *
+     * @param nodeNumber an <code>int</code> value
+     * @return an <code>int</code> value
+     */
     public int getParentNodeFor(int nodeNumber) {
         int nextNode = next[nodeNumber];
         while (nextNode > nodeNumber) {
@@ -1115,6 +1123,21 @@ public class DocumentImpl extends NodeImpl implements Document {
 		this.context = context;
 	}
 	
+
+    /** ? @see org.w3c.dom.Node#getBaseURI()
+     */
+    public String getBaseURI() {
+        if (context.isBaseURIDeclared()) {
+            try {
+                return context.getBaseURI() + "";
+            } catch (Exception e) {
+                System.out.println("memtree/DocumentImpl::getBaseURI() exception catched: ");   
+            }
+        }
+        return XmldbURI.EMPTY_URI.toString();
+        //return XmldbURI.ROOT_COLLECTION_URI.toString();
+    }
+
    public String toString() {
     	StringBuffer result = new StringBuffer();
     	result.append("in-memory#");

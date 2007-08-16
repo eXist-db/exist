@@ -1,29 +1,34 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions;
 
+import java.net.URI;
+import java.net.URISyntaxException
+;
+import org.exist.Namespaces;
+import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -59,8 +64,9 @@ public class FunBaseURI extends BasicFunction {
                 new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
                 "Returns the value of the base-uri property for $a. If $a is the empty " +
                 "sequence, the empty sequence is returned.",
-                new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-                new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+                new SequenceType[] {
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
+                    new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
             ),
             new FunctionSignature(
                 new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
@@ -95,37 +101,55 @@ public class FunBaseURI extends BasicFunction {
         Sequence result = null;
         NodeValue node = null;
         if (isCalledAs("static-base-uri")) {
-            result = context.getBaseURI();
+            if (context.isBaseURIDeclared()) {
+                result = context.getBaseURI();
+            } else {
+                result = Sequence.EMPTY_SEQUENCE;
+            }
         } else {
             if (args.length == 0) {
                 if (contextSequence == null || contextSequence.isEmpty())
-                    throw new XPathException(getASTNode(), "XPDY0002: context sequence is empty and no argument specified");
+                    throw new XPathException(getASTNode(), "err:XPDY0002: context sequence is empty and no argument specified");
                 Item item = contextSequence.itemAt(0);
                 if (!Type.subTypeOf(item.getType(), Type.NODE))
-                    throw new XPathException(getASTNode(), "XPTY0004: context item is not a node");
+                    throw new XPathException(getASTNode(), "err:XPTY0004: context item is not a node");
                 node = (NodeValue) item;
             } else {
-                if (args[0].isEmpty())
+                if (args[0].isEmpty()) {
                     result = Sequence.EMPTY_SEQUENCE;
-                else
+                } else {
                     node = (NodeValue) args[0].itemAt(0);
+                }
             }
         }
         if (result == null && node != null) {
+            // This is implemented to be a recursive ascent according to
+            // section 2.5 in www.w3.org/TR/xpath-functions 
+            // see memtree/ElementImpl and dom/ElementImpl. /ljo
             if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-                NodeImpl domNode = (NodeImpl) node.getNode(); 
+                NodeImpl domNode = (NodeImpl) node.getNode();
                 short type = domNode.getNodeType();
                 // Only elements, document nodes and processing instructions have a base-uri
                 if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
                         type == Node.PROCESSING_INSTRUCTION_NODE) {
-                	String base = domNode.getBaseURI();
-                	if (base == null)
-                		if (context.getBaseURI() != null)
-                			result = context.getBaseURI();
-                		else
-                			result = Sequence.EMPTY_SEQUENCE;
-                	else
-                		result = new AnyURIValue(base);                	
+                    URI relativeURI;
+                    URI baseURI;
+                    try {
+                        relativeURI = new URI(domNode.getBaseURI());
+                        baseURI = new URI(context.getBaseURI() + "/");
+                    } catch (URISyntaxException e) {
+                        throw new XPathException(e.getMessage(), e);
+                    }
+                    if (!"".equals(relativeURI.toString())) {
+                        if (relativeURI.isAbsolute()) {
+                            result = new AnyURIValue(relativeURI);
+                        } else {
+                            result = new AnyURIValue(baseURI.resolve(relativeURI));
+                        }
+                    } else {
+                        result = Sequence.EMPTY_SEQUENCE;
+                    }
+
                 } else
                     result = Sequence.EMPTY_SEQUENCE;
             } else {
@@ -133,16 +157,29 @@ public class FunBaseURI extends BasicFunction {
                 short type = proxy.getNodeType();
                 // Only elements, document nodes and processing instructions have a base-uri
                 if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
-                        type == Node.PROCESSING_INSTRUCTION_NODE)
-                    result = new AnyURIValue(proxy.getDocument().getURI());
-                else
+                    type == Node.PROCESSING_INSTRUCTION_NODE) {
+                    URI relativeURI;
+                    URI baseURI;
+                    try {
+                        relativeURI = new URI(((ElementImpl)proxy.getNode()).getBaseURI());
+                        baseURI = new URI(context.getBaseURI() + "/");
+                    } catch (URISyntaxException e) {
+                        throw new XPathException(e.getMessage(), e);
+                    }
+                    if (relativeURI.isAbsolute()) {
+                        result = new AnyURIValue(relativeURI);
+                    } else {
+                        result = new AnyURIValue(baseURI.resolve(relativeURI));
+                    }
+                } else {
                     result = Sequence.EMPTY_SEQUENCE;
+                }
             }
         }
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        
         
-        return result;        
+        return result;
     }
 }

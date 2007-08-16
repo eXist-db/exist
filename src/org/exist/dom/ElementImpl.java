@@ -1450,7 +1450,32 @@ public class ElementImpl extends NamedNode implements Element {
 	/** ? @see org.w3c.dom.Node#getBaseURI()
 	 */
 	public String getBaseURI() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getBaseURI() not implemented on class " + getClass().getName());
+        String baseURI = getAttributeNS(Namespaces.XML_NS, "base");
+        if ( baseURI == null) {
+            baseURI = "";
+        }
+        StoredNode parent = null;
+        Node test = getParentNode();
+        if (!(test instanceof DocumentImpl)) {
+                parent = (StoredNode) test;
+        } 
+        while (parent != null && parent.getBaseURI() != null) {
+            if ("".equals(baseURI)) {
+                baseURI = parent.getBaseURI();
+            } else {
+                baseURI = parent.getBaseURI() + "/" + baseURI;
+            }
+            test = parent.getParentNode();
+            if (test instanceof DocumentImpl) {
+                return baseURI;
+            } else {
+                parent = (StoredNode) test;
+            }
+        }
+        if ("".equals(baseURI)) {
+            baseURI = getDocument().getBaseURI();
+        }
+        return baseURI;
 	}
 
 	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
