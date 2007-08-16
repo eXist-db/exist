@@ -34,7 +34,10 @@ public abstract class Pragma {
         this.qname = qname;
         this.contents = contents;
     }
-    
+
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    }
+
     public Sequence eval(Sequence contextSequence, Item contextItem)
     throws XPathException {
         return null;

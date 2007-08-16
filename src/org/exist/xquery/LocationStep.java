@@ -72,6 +72,8 @@ public class LocationStep extends Step {
 
     protected boolean useDirectAttrSelect = true;
 
+    protected boolean useDirectChildSelect = false;
+    
     // Cache for the current NodeTest type
     private Integer nodeTestType = null;
 
@@ -154,7 +156,7 @@ public class LocationStep extends Step {
         this.currentDocs = docs;
         this.currentSet = nodes;
     }
-    
+
     /**
      * The method <code>applyPredicate</code>
      *
@@ -198,7 +200,9 @@ public class LocationStep extends Step {
         if ((contextInfo.getFlags() & NEED_INDEX_INFO) > 0) {
             useDirectAttrSelect = false;
         }
-        
+        if ((contextInfo.getFlags() & USE_TREE_TRAVERSAL) > 0) {
+            useDirectChildSelect = true;
+        }
         // Mark ".", which is expanded as self::node() by the parser
         //even though it may *also* be relevant with atomic sequences
         if (this.axis == Constants.SELF_AXIS && this.test.getType()== Type.NODE)
@@ -531,6 +535,13 @@ public class LocationStep extends Step {
                                                      contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
+        } else if (useDirectChildSelect) {
+            ExtArrayNodeSet result = new ExtArrayNodeSet();
+            for (Iterator i = contextSet.iterator(); i.hasNext(); ) {
+                NodeProxy p = (NodeProxy) i.next();
+                result.addAll(p.directSelectChild(test.getName(), contextId));
+            }
+            return result;
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones

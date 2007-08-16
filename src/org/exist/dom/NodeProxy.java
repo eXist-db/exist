@@ -45,6 +45,7 @@ import org.exist.xquery.value.UntypedAtomicValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -1292,7 +1293,33 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             child.copyContext(this);
         return child;
     }
-    
+
+    public NodeSet directSelectChild(QName qname, int contextId) {
+        if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
+            return NodeSet.EMPTY_SET;
+        NodeImpl node = (NodeImpl) getNode();
+        if (node.getNodeType() != Node.ELEMENT_NODE)
+            return NodeSet.EMPTY_SET;
+        NodeList children = node.getChildNodes();
+        if (children.getLength() == 0)
+            return NodeSet.EMPTY_SET;
+//        System.out.println("Retrieving child nodes for " + node + ": " + children.getLength());
+        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        StoredNode child;
+        for (int i = 0; i < children.getLength(); i++) {
+            child = (StoredNode) children.item(i);
+            if (child.getQName().equals(qname)) {
+                NodeProxy p = new NodeProxy(doc, child.getNodeId(), Node.ELEMENT_NODE, child.getInternalAddress());
+                if (Expression.NO_CONTEXT_ID != contextId)
+                    p.addContextNode(contextId, this);
+                else
+                    p.copyContext(this);
+                result.add(p);
+            }
+        }
+        return result;
+    }
+
     /**
      * The method <code>toString</code>
      *
