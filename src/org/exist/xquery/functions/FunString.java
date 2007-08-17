@@ -32,6 +32,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
@@ -80,13 +81,13 @@ public class FunString extends Function {
 			contextSequence = getArgument(0).eval(contextSequence);
 		
 		if (contextSequence == null)
-			throw new XPathException(getASTNode(), "XPDY0002 : undefined context sequence for '" + this.toString() + "'");
+			throw new XPathException(getASTNode(), "err:XPDY0002 : undefined context sequence for '" + this.toString() + "'");
         
         Sequence result;        
 		if(contextSequence.isEmpty())
-			//result = StringValue.EMPTY_STRING;
+			result = StringValue.EMPTY_STRING;
 			//Despite : fn:string($arg as item()?) as xs:string in the specs
-			result = Sequence.EMPTY_SEQUENCE;
+			//result = Sequence.EMPTY_SEQUENCE;
         else
             result = contextSequence.convertTo(Type.STRING);        
 

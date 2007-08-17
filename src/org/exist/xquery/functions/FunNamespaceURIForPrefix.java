@@ -8,6 +8,7 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -68,11 +69,11 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 				proxy = (NodeProxy) i.next();
 				FunInScopePrefixes.collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);
 			}
-		} else {
-			Node next = (Node) node;
+		} else { // In-memory node
+			NodeImpl next = (NodeImpl) node;
 			do {
-				FunInScopePrefixes.collectNamespacePrefixes((Element) next, prefixes);
-				next = next.getParentNode();
+				FunInScopePrefixes.collectNamespacePrefixes((org.exist.memtree.ElementImpl) next, prefixes);
+				next = (NodeImpl) next.getParentNode();
 			} while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
 		}
         
