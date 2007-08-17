@@ -1,7 +1,7 @@
 
 package org.exist.xquery.functions;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -51,7 +51,7 @@ public class FunInScopePrefixes extends BasicFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
         }
         
-		Map prefixes = new HashMap();
+		Map prefixes = new LinkedHashMap();
 		NodeValue node = (NodeValue) args[0].itemAt(0);
 		if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy) node;

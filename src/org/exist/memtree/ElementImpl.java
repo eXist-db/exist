@@ -23,6 +23,8 @@ package org.exist.memtree;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
@@ -400,6 +402,25 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
             }
         }
 		return null;
+	}
+
+	/**
+     * The method <code>getPrefixes</code>
+     *
+     * @return a <code>String</code> value
+     */
+    public Set getPrefixes() {
+        HashSet set = new HashSet();
+        int ns = document.alphaLen[nodeNumber];
+        if (-1 < ns) {
+            while (ns < document.nextNamespace
+                   && document.namespaceParent[ns] == nodeNumber) {
+                QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+                set.add(nsQName.getStringValue());
+                ++ns;
+            }
+        }
+		return set;
 	}
 
     /**
