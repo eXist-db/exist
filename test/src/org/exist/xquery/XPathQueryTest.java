@@ -993,6 +993,9 @@ public class XPathQueryTest extends XMLTestCase {
             query = "(1,2,3)[xs:decimal(.)]";
             result = queryResource(service, "numbers.xml", query, 3);
 
+            query = "(1,2,3)[number()]";
+            result = queryResource(service, "numbers.xml", query, 3);
+            
             query = " 	let $c := (<a/>,<b/>), $i := 1 return $c[$i]";
             result = queryResource(service, "numbers.xml", query, 1);
             assertXMLEqual("<a/>", result.getResource(0)
@@ -1001,6 +1004,12 @@ public class XPathQueryTest extends XMLTestCase {
             query = "(1,2,3)[position() = last()]";
             result = queryResource(service, "numbers.xml", query, 1);
             assertEquals("3", result.getResource(0).getContent().toString());
+
+            query = "(1,2,3)[max(.)]";
+            result = queryResource(service, "numbers.xml", query, 3);
+
+            query = "(1,2,3)[.]";
+            result = queryResource(service, "numbers.xml", query, 3);
             
             query = "declare function local:f ($n) { " +
 				"$n " +
@@ -1038,7 +1047,15 @@ public class XPathQueryTest extends XMLTestCase {
             "collection(\"/db/lease\")//Lease/Events/Type/Event[(When/Date<=$checkDate or " +
             "When/EstimateDate<=$checkDate) and not(Status='Complete')] " +
             "return $x";
-            result = queryResource(service, "numbers.xml", query, 0);           
+            result = queryResource(service, "numbers.xml", query, 0);
+
+            query = "let $res := <test><element name='A'/><element name='B'/></test> " +
+            	"return " +
+            	"for $name in ('A', 'B') return " +
+            	"$res/element[@name=$name][1]";
+            result = queryResource(service, "numbers.xml", query, 2);
+            assertXMLEqual("<element name='A'/>", result.getResource(0).getContent().toString());
+            assertXMLEqual("<element name='B'/>", result.getResource(1).getContent().toString());
 
         } catch (XMLDBException e) {
             e.printStackTrace();
