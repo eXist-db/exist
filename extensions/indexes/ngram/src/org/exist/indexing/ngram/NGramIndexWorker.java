@@ -21,35 +21,13 @@
  */
 package org.exist.indexing.ngram;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
+import org.exist.indexing.*;
 import org.exist.numbering.NodeId;
-import org.exist.storage.DBBroker;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
-import org.exist.storage.OccurrenceList;
+import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.storage.*;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.IndexQuery;
@@ -60,19 +38,20 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
-import org.exist.indexing.*;
 import org.exist.util.serializer.AttrList;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 /**
  *
@@ -823,39 +802,45 @@ public class NGramIndexWorker implements IndexWorker {
         }
     }
 
-    private class NGramQNameKey extends Value {
+    private static class NGramQNameKey extends Value {
+
+        private final static int COLLECTION_ID_OFFSET = 1;
+        private final static int NAMETYPE_OFFSET = COLLECTION_ID_OFFSET + Collection.LENGTH_COLLECTION_ID;   // 5
+        private final static int NAMESPACE_OFFSET = NAMETYPE_OFFSET + ElementValue.LENGTH_TYPE; // 6
+        private final static int LOCALNAME_OFFSET = NAMESPACE_OFFSET + SymbolTable.LENGTH_NS_URI; // 8
+        private final static int NGRAM_OFFSET = LOCALNAME_OFFSET + SymbolTable.LENGTH_LOCAL_NAME; // 10
 
         public NGramQNameKey(int collectionId) {
-            len = 5;
+            len = Collection.LENGTH_COLLECTION_ID + 1;
             data = new byte[len];
             data[0] = IDX_QNAME;
-            ByteConversion.intToByte(collectionId, data, 1);
+            ByteConversion.intToByte(collectionId, data, COLLECTION_ID_OFFSET);
         }
 
         public NGramQNameKey(int collectionId, QName qname, SymbolTable symbols) {
-            len = 10;
+            len = NGRAM_OFFSET;
             data = new byte[len];
             data[0] = IDX_QNAME;
-            ByteConversion.intToByte(collectionId, data, 1);
+            ByteConversion.intToByte(collectionId, data, COLLECTION_ID_OFFSET);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
 			final short localNameId = symbols.getSymbol(qname.getLocalName());
-            data[5] = qname.getNameType();
-            ByteConversion.shortToByte(namespaceId, data, 6);
-			ByteConversion.shortToByte(localNameId, data, 8);
+            data[NAMETYPE_OFFSET] = qname.getNameType();
+            ByteConversion.shortToByte(namespaceId, data, NAMESPACE_OFFSET);
+			ByteConversion.shortToByte(localNameId, data, LOCALNAME_OFFSET);
         }
 
         public NGramQNameKey(int collectionId, QName qname, SymbolTable symbols, String ngram) {
-            len = UTF8.encoded(ngram) + 10;
+            len = UTF8.encoded(ngram) + NGRAM_OFFSET;
             data = new byte[len];
             data[0] = IDX_QNAME;
-            ByteConversion.intToByte(collectionId, data, 1);
+            ByteConversion.intToByte(collectionId, data, COLLECTION_ID_OFFSET);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
 			final short localNameId = symbols.getSymbol(qname.getLocalName());
-            data[5] = qname.getNameType();
-            ByteConversion.shortToByte(namespaceId, data, 6);
-			ByteConversion.shortToByte(localNameId, data, 8);
+            data[NAMETYPE_OFFSET] = qname.getNameType();
+            ByteConversion.shortToByte(namespaceId, data, NAMESPACE_OFFSET);
+			ByteConversion.shortToByte(localNameId, data, LOCALNAME_OFFSET);
 
-            UTF8.encode(ngram, data, 10);
+            UTF8.encode(ngram, data, NGRAM_OFFSET);
         }
     }
 
@@ -885,7 +870,7 @@ public class NGramIndexWorker implements IndexWorker {
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             String ngram;
             try {
-                ngram = new String(key.getData(), 10, key.getLength() - 10, "UTF-8");
+                ngram = new String(key.getData(), NGramQNameKey.NGRAM_OFFSET, key.getLength() - NGramQNameKey.NGRAM_OFFSET, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
@@ -974,7 +959,7 @@ public class NGramIndexWorker implements IndexWorker {
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             String term;
             try {
-                term = new String(key.getData(), 10, key.getLength() - 10, "UTF-8");
+                term = new String(key.getData(), NGramQNameKey.NGRAM_OFFSET, key.getLength() - NGramQNameKey.NGRAM_OFFSET, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
