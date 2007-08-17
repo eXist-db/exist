@@ -218,6 +218,13 @@ public class XQueryTest extends XMLTestCase {
 			result = service.queryResource(NUMBERS_XML, query );
 			printResult(result);
 			assertEquals( "XQuery: " + query, 4, result.getSize() );
+
+			System.out.println("testLet 3: ========" );
+			query = "let $test := <test><a> a </a><a>a</a></test> " +
+			"return distinct-values($test/a/normalize-space(.))";
+			result = service.queryResource(NUMBERS_XML, query );
+			printResult(result);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );			
 			
 		} catch (XMLDBException e) {
 			System.out.println("testLet(): XMLDBException: "+e);

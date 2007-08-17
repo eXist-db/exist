@@ -95,16 +95,10 @@ public class Predicate extends PathExpr {
         if (Type.subTypeOf(innerType, Type.NODE) && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
     		executionMode = NODE;
         // Case 2: predicate expression returns a unique number and has no dependency with the context item.
-    	} else if (Type.subTypeOf(innerType, Type.NUMBER) && (
-    			(inner.getCardinality() == Cardinality.EXACTLY_ONE && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM))
-    			||
-    			//TOTHINK :
-    			//No context item dependency check for functions that return at most one number
-    			(Cardinality.checkCardinality(inner.getCardinality(), Cardinality.EXACTLY_ONE) && inner instanceof Function)
-    			)
-    		)
-    		executionMode = POSITIONAL;
-        // Case 3: all other cases, boolean evaluation (that can be reevaluated later)
+    	} else if (Type.subTypeOf(innerType, Type.NUMBER) && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) 
+    			&& Cardinality.checkCardinality(inner.getCardinality(), Cardinality.EXACTLY_ONE)) 		
+   			executionMode = POSITIONAL;
+        // Case 3: all other cases, boolean evaluation (that can be "promoted" later)
         else
             executionMode = BOOLEAN;
                 
@@ -161,6 +155,7 @@ public class Predicate extends PathExpr {
                 //If there is no dependency on the context item, try a positional promotion
 	            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)
 	            		//Hack : GeneralComparison lies on its dependencies
+	            		//TODO : try to remove this since our dependency computation should now be better
 	            		&& !((inner instanceof GeneralComparison) && ((GeneralComparison)inner).invalidNodeEvaluation)) {
 	            	innerSeq = inner.eval(contextSequence); 
 	                //Only if we have an actual *singleton* of numeric items
@@ -256,7 +251,7 @@ public class Predicate extends PathExpr {
 					Item item = i.nextItem();            
 		            Sequence innerSeq = inner.eval(contextSequence, item);
 		            //TODO : introduce a check in innerSeq.hasOne() ?
-					NumericValue nv = (NumericValue)innerSeq;
+					NumericValue nv = (NumericValue)innerSeq.itemAt(0);
 					//Non integers return... nothing, not even an error !
 					if (!nv.hasFractionalPart() && !nv.isZero())
 		            	positions.add(nv);	            

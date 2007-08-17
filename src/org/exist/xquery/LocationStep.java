@@ -105,11 +105,23 @@ public class LocationStep extends Step {
      */
     public int getDependencies() {
         int deps = Dependency.CONTEXT_SET;
+        
+        //self axis has an obvious dependency on the context item
+        //TODO : I guess every other axis too... so we might consider using Constants.UNKNOWN_AXIS here
+        //BUT
+        //in a predicate, the expression can't depend on... itself
+        if (!this.inPredicate && this.axis == Constants.SELF_AXIS)
+        	deps = deps | Dependency.CONTEXT_ITEM; 
+        
         //TODO : normally, we should call this one...
         //int deps = super.getDependencies(); ???
         for (Iterator i = predicates.iterator(); i.hasNext();) {
             deps |= ((Predicate) i.next()).getDependencies();
         }
+        
+        //TODO : should we remove the CONTEXT_ITEM dependency returned by the predicates ? See the comment above.
+        //consider nested predicates however...
+        
         return deps;
     }
 
@@ -179,6 +191,8 @@ public class LocationStep extends Step {
             pred = (Predicate) i.next();
             pred.setContextDocSet(getContextDocSet());
             result = pred.evalPredicate(outerSequence, result, axis);
+            //subsequent predicates operate on the result of the previous one
+            outerSequence = result;
         }
         return result;
     }
