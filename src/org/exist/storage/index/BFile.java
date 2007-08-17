@@ -78,7 +78,7 @@ import org.exist.xquery.TerminatedException;
  */
 public class BFile extends BTree {
 
-    public final static short FILE_FORMAT_VERSION_ID = 9;
+    public final static short FILE_FORMAT_VERSION_ID = 10;
     
     public final static long UNKNOWN_ADDRESS = -1;
 
