@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: FunGetDateTimeComponent.java 3063 2006-04-05 20:49:44Z brihaye $
+ *  $Id$
  */
 package org.exist.xquery.functions;
 

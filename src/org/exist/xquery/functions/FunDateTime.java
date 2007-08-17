@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: FunCodepointsToString.java 3457 2006-05-07 14:46:21Z wolfgang_m $
+ *  $Id$
  */
 package org.exist.xquery.functions;
 
