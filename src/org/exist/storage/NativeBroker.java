@@ -21,12 +21,7 @@
  */
 package org.exist.storage;
 
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Observer;
@@ -1366,7 +1361,7 @@ public class NativeBroker extends DBBroker {
      * @param id
      * @throws PermissionDeniedException
      */
-    protected void freeCollectionId(Txn transaction, short id) throws PermissionDeniedException {       
+    protected void freeCollectionId(Txn transaction, int id) throws PermissionDeniedException {       
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
@@ -1376,11 +1371,11 @@ public class NativeBroker extends DBBroker {
                 byte[] data = value.getData();
                 byte[] ndata = new byte[data.length + Collection.LENGTH_COLLECTION_ID];
                 System.arraycopy(data, 0, ndata, OFFSET_VALUE, data.length);
-                ByteConversion.shortToByte(id, ndata, OFFSET_COLLECTION_ID);
+                ByteConversion.intToByte(id, ndata, OFFSET_COLLECTION_ID);
                 collectionsDb.put(transaction, key, ndata, true);
             } else {
                 byte[] data = new byte[Collection.LENGTH_COLLECTION_ID];
-                ByteConversion.shortToByte(id, data, OFFSET_COLLECTION_ID);
+                ByteConversion.intToByte(id, data, OFFSET_COLLECTION_ID);
                 collectionsDb.put(transaction, key, data, true);
             }
         } catch (LockException e) {
@@ -1400,8 +1395,8 @@ public class NativeBroker extends DBBroker {
      * @return next free collection id.
      * @throws ReadOnlyException
      */
-    public short getFreeCollectionId(Txn transaction) throws ReadOnlyException {
-        short freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;      
+    public int getFreeCollectionId(Txn transaction) throws ReadOnlyException {
+        int freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
@@ -1409,7 +1404,7 @@ public class NativeBroker extends DBBroker {
             Value value = collectionsDb.get(key);
             if (value != null) {
                 byte[] data = value.getData();
-                freeCollectionId = ByteConversion.byteToShort(data, data.length - Collection.LENGTH_COLLECTION_ID);
+                freeCollectionId = ByteConversion.byteToInt(data, data.length - Collection.LENGTH_COLLECTION_ID);
                 //LOG.debug("reusing collection id: " + freeCollectionId);
                 if(data.length - Collection.LENGTH_COLLECTION_ID > 0) {
                     byte[] ndata = new byte[data.length - Collection.LENGTH_COLLECTION_ID];
@@ -1417,6 +1412,17 @@ public class NativeBroker extends DBBroker {
                     collectionsDb.put(transaction, key, ndata, true);
                 } else
                     collectionsDb.remove(transaction, key);
+//            } else {
+//                try {
+//                    StringWriter sw = new StringWriter();
+//                    collectionsDb.dump(sw);
+//                    LOG.debug(CollectionStore.FREE_COLLECTION_ID_KEY + ": " + key.dump());
+//                    LOG.debug(sw.toString());
+//                } catch (IOException e) {
+//                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//                } catch (BTreeException e) {
+//                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//                }
             }
             return freeCollectionId;
         } catch (LockException e) {
@@ -1434,9 +1440,9 @@ public class NativeBroker extends DBBroker {
      * @return next available unique collection id
      * @throws ReadOnlyException
      */
-    public short getNextCollectionId(Txn transaction) throws ReadOnlyException {
+    public int getNextCollectionId(Txn transaction) throws ReadOnlyException {
         
-        short nextCollectionId = getFreeCollectionId(transaction);
+        int nextCollectionId = getFreeCollectionId(transaction);
         
         if(nextCollectionId != Collection.UNKNOWN_COLLECTION_ID)
             return nextCollectionId;        
@@ -1447,11 +1453,11 @@ public class NativeBroker extends DBBroker {
             Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_COLLECTION_ID_KEY);
             Value data = collectionsDb.get(key);
             if (data != null) {
-                nextCollectionId = ByteConversion.byteToShort(data.getData(), OFFSET_COLLECTION_ID);
+                nextCollectionId = ByteConversion.byteToInt(data.getData(), OFFSET_COLLECTION_ID);
                 ++nextCollectionId;
             }
             byte[] d = new byte[Collection.LENGTH_COLLECTION_ID];
-            ByteConversion.shortToByte(nextCollectionId, d, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(nextCollectionId, d, OFFSET_COLLECTION_ID);
             collectionsDb.put(transaction, key, d, true);
             return nextCollectionId;
         } catch (LockException e) {

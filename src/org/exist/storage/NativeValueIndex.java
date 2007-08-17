@@ -332,7 +332,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
         if (keyCount == 0)
             return;
-        final short collectionId = this.doc.getCollection().getId();
+        final int collectionId = this.doc.getCollection().getId();
         final Lock lock = dbValues.getLock();
         for (byte section = 0; section <= IDX_QNAME; section++) {
             for (Iterator i = pending[section].entrySet().iterator(); i.hasNext();) {
@@ -406,7 +406,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
         if (keyCount == 0)
             return;
-        final short collectionId = this.doc.getCollection().getId();
+        final int collectionId = this.doc.getCollection().getId();
         final Lock lock = dbValues.getLock();
         for (byte section = 0; section <= IDX_QNAME; section++) {
             for (Iterator i = pending[section].entrySet().iterator(); i.hasNext();) {
@@ -548,7 +548,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 */
     //TODO : note that this is *not* this.doc -pb
     public void dropIndex(DocumentImpl document) throws ReadOnlyException {
-        final short collectionId = document.getCollection().getId();
+        final int collectionId = document.getCollection().getId();
         final Lock lock = dbValues.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
@@ -629,7 +629,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			try {
 				lock.acquire(Lock.READ_LOCK);	
-                final short collectionId = ((Collection) iter.next()).getId();
+                final int collectionId = ((Collection) iter.next()).getId();
                 //Compute a key for the value in the collection
                 final Value searchKey, prefixKey;
                 if (qname == null) {
@@ -693,7 +693,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {			
 			try {
 				lock.acquire(Lock.READ_LOCK);
-                final short collectionId = ((Collection) iter.next()).getId();
+                final int collectionId = ((Collection) iter.next()).getId();
                 Value searchKey;
                 if (qname == null) {
                     if (startTerm != null) {
@@ -734,7 +734,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             try {
                 lock.acquire(Lock.READ_LOCK); 
-                final  short collectionId = ((Collection) i.next()).getId();
+                final  int collectionId = ((Collection) i.next()).getId();
                 //Compute a key for the start value in the collection
                 if (stringType) {
                     final Value startKey = new SimpleValue(collectionId, start);
@@ -788,7 +788,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
                 try {
                     lock.acquire(Lock.READ_LOCK);
-                    final  short collectionId = ((Collection) i.next()).getId();
+                    final  int collectionId = ((Collection) i.next()).getId();
                     //Compute a key for the start value in the collection
                     if (stringType) {
                         final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getSymbols());
@@ -1131,20 +1131,20 @@ public class NativeValueIndex implements ContentLoadingObserver {
         public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + LENGTH_IDX_TYPE; //1
         public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; // 3
 
-        public SimpleValue(short collectionId) {
+        public SimpleValue(int collectionId) {
             len = LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
             data = new byte[len];
             data[OFFSET_IDX_TYPE] = IDX_GENERIC;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             pos = OFFSET_IDX_TYPE;
         }
 
-        public SimpleValue(short collectionId, Indexable atomic) throws EXistException {
+        public SimpleValue(int collectionId, Indexable atomic) throws EXistException {
             data = atomic.serializeValue(OFFSET_VALUE);
             len = data.length;
             pos = OFFSET_IDX_TYPE;
             data[OFFSET_IDX_TYPE] = IDX_GENERIC;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
         }
 
         public static Indexable deserialize(byte[] data, int start, int len) throws EXistException {
@@ -1156,11 +1156,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public static int LENGTH_VALUE_TYPE = 1; //sizeof byte
 
-        public SimplePrefixValue(short collectionId, int type) {
+        public SimplePrefixValue(int collectionId, int type) {
             len = SimpleValue.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID + LENGTH_VALUE_TYPE;
             data = new byte[len];
             data[SimpleValue.OFFSET_IDX_TYPE] = IDX_GENERIC;
-            ByteConversion.shortToByte(collectionId, data, SimpleValue.OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, SimpleValue.OFFSET_COLLECTION_ID);
             data[SimpleValue.OFFSET_VALUE] = (byte) type;
             pos = SimpleValue.OFFSET_IDX_TYPE;
         }
@@ -1178,22 +1178,22 @@ public class NativeValueIndex implements ContentLoadingObserver {
 		public static int OFFSET_LOCAL_NAME = OFFSET_NS_URI + SymbolTable.LENGTH_NS_URI; //6
 		public static int OFFSET_VALUE = OFFSET_LOCAL_NAME + SymbolTable.LENGTH_LOCAL_NAME; //8
 
-        public QNameValue(short collectionId) {
+        public QNameValue(int collectionId) {
             len = LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
             data = new byte[len];
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             pos = OFFSET_IDX_TYPE;
         }
 
-        public QNameValue(short collectionId, QName qname, Indexable atomic, SymbolTable symbols) throws EXistException {
+        public QNameValue(int collectionId, QName qname, Indexable atomic, SymbolTable symbols) throws EXistException {
             data = atomic.serializeValue(OFFSET_VALUE);
             len = data.length;
             pos = OFFSET_IDX_TYPE;
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
             final short localNameId = symbols.getSymbol(qname.getLocalName());
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             data[OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
             ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);
@@ -1208,11 +1208,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public static int LENGTH_VALUE_TYPE = 1; //sizeof byte
 
-        public QNamePrefixValue(short collectionId, QName qname, int type, SymbolTable symbols) {
+        public QNamePrefixValue(int collectionId, QName qname, int type, SymbolTable symbols) {
             len = QNameValue.OFFSET_VALUE + LENGTH_VALUE_TYPE;
             data = new byte[len];
             data[QNameValue.OFFSET_IDX_TYPE] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, QNameValue.OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, QNameValue.OFFSET_COLLECTION_ID);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
             final short localNameId = symbols.getSymbol(qname.getLocalName());
             data[QNameValue.OFFSET_QNAME_TYPE] = qname.getNameType();

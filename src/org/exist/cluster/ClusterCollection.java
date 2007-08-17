@@ -284,7 +284,7 @@ public final class ClusterCollection extends Collection {
         return collection.getDocumentCount();
     }
 
-    public short getId() {
+    public int getId() {
         return collection.getId();
     }
 
@@ -353,7 +353,7 @@ public final class ClusterCollection extends Collection {
         collection.store(txn, broker, info, node, privileged);
     }
 
-    public void setId(short id) {
+    public void setId(int id) {
         collection.setId(id);
     }
 

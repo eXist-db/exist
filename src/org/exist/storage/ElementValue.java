@@ -47,58 +47,58 @@ public class ElementValue extends Value {
 	
 	public static final String[] type = { "element", "attribute", "id" };
 
-    ElementValue(short collectionId) {
+    ElementValue(int collectionId) {
 		len = Collection.LENGTH_COLLECTION_ID;
 		data = new byte[len];
-		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		pos = OFFSET_COLLECTION_ID;
 	}
 
-	ElementValue(byte type, short collectionId) {
+	ElementValue(byte type, int collectionId) {
 		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE;
 		data = new byte[len];
-		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
 		pos = OFFSET_COLLECTION_ID;
 	}
 
-	ElementValue(byte type, short collectionId, short symbol) {
+	ElementValue(byte type, int collectionId, short symbol) {
 		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_LOCAL_NAME;
 		data = new byte[len];
-		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
 		ByteConversion.shortToByte(symbol, data, OFFSET_SYMBOL);
 		pos = OFFSET_COLLECTION_ID;
 	}
 
-	ElementValue(byte type, short collectionId, short symbol, short nsSymbol) {
+	ElementValue(byte type, int collectionId, short symbol, short nsSymbol) {
 		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_LOCAL_NAME + OFFSET_NSSYMBOL;
 		data = new byte[len];
-		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
 		ByteConversion.shortToByte(symbol, data, OFFSET_SYMBOL);
 		ByteConversion.shortToByte(nsSymbol, data, OFFSET_NSSYMBOL);
 		pos = OFFSET_COLLECTION_ID;
 	}
 
-	ElementValue(byte type, short collectionId, String idStringValue) {
+	ElementValue(byte type, int collectionId, String idStringValue) {
 		//Note that the type expected to be ElementValue.ATTRIBUTE_ID
 		//TODO : add sanity check for this ?
 		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + UTF8.encoded(idStringValue);
 		data = new byte[len];
-		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
 		UTF8.encode(idStringValue, data, OFFSET_ID_STRING_VALUE);
 		//TODO : reset pos, just like in other contructors ?
 	}
 
-	short getCollectionId() {
-		return ByteConversion.byteToShort(data, OFFSET_COLLECTION_ID);
+	int getCollectionId() {
+		return ByteConversion.byteToInt(data, OFFSET_COLLECTION_ID);
 	}
 	
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("Collection id : " + ByteConversion.byteToShort(data, OFFSET_COLLECTION_ID));
+		buf.append("Collection id : " + ByteConversion.byteToInt(data, OFFSET_COLLECTION_ID));
 		if (len > OFFSET_COLLECTION_ID) {
 			buf.append(" Type : " + type[data[OFFSET_TYPE]]);
 			if (data[OFFSET_TYPE] == ElementValue.ATTRIBUTE_ID) {

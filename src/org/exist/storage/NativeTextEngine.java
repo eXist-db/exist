@@ -435,7 +435,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             token = expr;
         final NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);         
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-            final short collectionId = ((Collection) iter.next()).getId();
+            final int collectionId = ((Collection) iter.next()).getId();
             Value key;
             if (qname == null)
                 key = new WordRef(collectionId, token);
@@ -585,7 +585,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, axis, docs, qname);
 		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-            final short collectionId = ((Collection) iter.next()).getId();        
+            final int collectionId = ((Collection) iter.next()).getId();        
             //Compute a key for the token                
             Value value;
 			if (startTerm != null && startTerm.length() > 0) {
@@ -625,7 +625,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final IndexCallback cb = new IndexCallback(null, matcher);		
 		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-            final short collectionId = ((Collection) iter.next()).getId();  
+            final int collectionId = ((Collection) iter.next()).getId();  
             //Compute a key for the token                                 
             Value value = new WordRef(collectionId);
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
@@ -653,7 +653,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, false);
         final Lock lock = dbTokens.getLock();
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {            
-            final short collectionId = ((Collection) i.next()).getId();          
+            final int collectionId = ((Collection) i.next()).getId();          
             final IndexQuery query;
             if (start == null) {
             	Value startRef = new WordRef(collectionId);            	
@@ -692,7 +692,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, true);
         for (int q = 0; q < qnames.length; q++) {
             for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-                final short collectionId = ((Collection) i.next()).getId();
+                final int collectionId = ((Collection) i.next()).getId();
                 final IndexQuery query;
                 if (start == null) {
                     Value startRef = new QNameWordRef(collectionId);
@@ -971,7 +971,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             if (wordsCount == 0)
                 return;
             final ProgressIndicator progress = new ProgressIndicator(wordsCount, 100);
-            final short collectionId = this.doc.getCollection().getId();
+            final int collectionId = this.doc.getCollection().getId();
             int count = 0;
             for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
             	//Not very necessary, but anyway...
@@ -1034,7 +1034,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             }
         }
 
-        private void flushWord(int currentSection, short collectionId, Object token, ByteArray data) {
+        private void flushWord(int currentSection, int collectionId, Object token, ByteArray data) {
             //return early
             //TODO : is this ever called ? -pb
             if (data.size() == 0)
@@ -1066,7 +1066,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             //Return early
             if (document == null)
                 return;
-            final short collectionId = document.getCollection().getId();
+            final int collectionId = document.getCollection().getId();
             final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
                 //Not very necessary, but anyway...
@@ -1160,7 +1160,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		    //Return early
 			if (doc == null)
 				return;                    
-            final short collectionId = this.doc.getCollection().getId();
+            final int collectionId = this.doc.getCollection().getId();
             final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
             	//Not very necessary, but anyway...
@@ -1621,18 +1621,18 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + WordRef.LENGTH_IDX_TYPE; //1
 		public static int OFFSET_WORD = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
 		
-		public WordRef(short collectionId) {
+		public WordRef(int collectionId) {
 			len = WordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
 			data = new byte[len];
             data[OFFSET_IDX_TYPE] = IDX_GENERIC;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		}
 
-		public WordRef(short collectionId, String word) {
+		public WordRef(int collectionId, String word) {
 			len = WordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID + UTF8.encoded(word);
 			data = new byte[len];
             data[OFFSET_IDX_TYPE] = IDX_GENERIC;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
 			UTF8.encode(word, data, OFFSET_WORD);
 		}
 		
@@ -1656,40 +1656,40 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		
     	public static int OFFSET_IDX_TYPE = 0;
 		public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + QNameWordRef.LENGTH_IDX_TYPE; //1
-		public static int OFFSET_QNAME_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
+		public static int OFFSET_QNAME_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //4
 		public static int OFFSET_NS_URI = OFFSET_QNAME_TYPE + LENGTH_QNAME_TYPE; //4
 		public static int OFFSET_LOCAL_NAME = OFFSET_NS_URI + SymbolTable.LENGTH_NS_URI; //6
 		public static int OFFSET_WORD = OFFSET_LOCAL_NAME + SymbolTable.LENGTH_LOCAL_NAME; //8
 		
-		public QNameWordRef(short collectionId) {
+		public QNameWordRef(int collectionId) {
 			len = QNameWordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
 			data = new byte[len];
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);			
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             pos = OFFSET_IDX_TYPE;
         }
 		
-        public QNameWordRef(short collectionId, QName qname, SymbolTable symbols) {
+        public QNameWordRef(int collectionId, QName qname, SymbolTable symbols) {
 			len = QNameWordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID +  
 				QNameWordRef.LENGTH_QNAME_TYPE + SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME;
 			data = new byte[len];
 			final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
 			final short localNameId = symbols.getSymbol(qname.getLocalName());
 			data[OFFSET_IDX_TYPE] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
 			data[OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
 			ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);            
         }
 
-        public QNameWordRef(short collectionId, QName qname, String word, SymbolTable symbols) {
+        public QNameWordRef(int collectionId, QName qname, String word, SymbolTable symbols) {
 			len = UTF8.encoded(word) + QNameWordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID +  
 			LENGTH_QNAME_TYPE + SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME;
 			data = new byte[len];
 			final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
 			final short localNameId = symbols.getSymbol(qname.getLocalName());
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
 			data[OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
 			ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);            
