@@ -32,6 +32,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -68,14 +69,14 @@ public class FunNilled extends BasicFunction {
         if (args[0].isEmpty())
         	result = Sequence.EMPTY_SEQUENCE;
         else {
-            //TODO : how to improve performance ?
-            Node n = ((NodeValue)args[0]).getNode();
-            if (!(n.getNodeType() == Node.ELEMENT_NODE))
+        	Item arg = args[0].itemAt(0);
+        	if (!Type.subTypeOf(arg.getType(), Type.ELEMENT))
             	result = Sequence.EMPTY_SEQUENCE;
             else {
+            	Node n = ((NodeValue)arg).getNode();
             	//TODO : think more...
             	if (n.hasAttributes()) {
-            		Node nilled =n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
+            		Node nilled = n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
             		if (nilled != null)
             			result = new BooleanValue(nilled.getNodeValue() == "false");
             		else
