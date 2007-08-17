@@ -21,6 +21,9 @@
  */
 package org.exist.memtree;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
@@ -173,7 +176,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	 */
 	public NamedNodeMap getAttributes() {
 		NamedNodeMapImpl map = new NamedNodeMapImpl();
-		int attr = document.alpha[nodeNumber];
+        int attr = document.alpha[nodeNumber];
 		if(-1 < attr) {
 			while (attr < document.nextAttr
 				&& document.attrParent[attr] == nodeNumber) {
@@ -378,6 +381,54 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	public boolean hasAttributeNS(String namespaceURI, String localName) {
 		return getAttributeNS(namespaceURI, localName) != null;
 	}
+
+	/**
+     * The method <code>getNamespaceForPrefix</code>
+     *
+     * @param name a <code>String</code> value
+     * @return a <code>String</code> value
+     */
+    public String getNamespaceForPrefix(String name) {
+        int ns = document.alphaLen[nodeNumber];
+        if (-1 < ns) {
+            while (ns < document.nextNamespace
+                   && document.namespaceParent[ns] == nodeNumber) {
+                QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+                if (nsQName.getStringValue().equals("xmlns:" + name))
+                    return nsQName.getNamespaceURI();
+                ++ns;
+            }
+        }
+		return null;
+	}
+
+    /**
+     * The method <code>declaresNamespacePrefixes</code>
+     *
+     * @return a <code>boolean</code> value
+     */
+    public boolean declaresNamespacePrefixes() {
+        return  (document.getNamespacesCountFor(nodeNumber) > 0);
+    }
+
+    /**
+     * The method <code>getNamespaceMap</code>
+     *
+     * @return a <code>Map</code> value
+     */
+    public Map getNamespaceMap() {    
+        Map map = new HashMap();
+        int ns = document.alphaLen[nodeNumber];
+        if (-1 < ns) {
+            while (ns < document.nextNamespace
+                   && document.namespaceParent[ns] == nodeNumber) {
+                QName nsQName = (QName) document.namePool.get(document.namespaceCode[ns]);
+                map.put(nsQName.getLocalName(), nsQName.getNamespaceURI());
+                ++ns;
+            }
+        }
+        return map;
+    }
 
     
     /** ? @see org.w3c.dom.Node#getBaseURI()

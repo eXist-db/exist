@@ -106,8 +106,8 @@ public class FunDateTime extends BasicFunction {
         	}
         }
         
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
         
         return result;
 	}
