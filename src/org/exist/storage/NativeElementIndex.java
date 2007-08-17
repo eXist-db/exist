@@ -195,7 +195,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         if (pending.size() == 0) 
             return;
         final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5); 
-        final short collectionId = this.doc.getCollection().getId(); 
+        final int collectionId = this.doc.getCollection().getId(); 
         final Lock lock = dbNodes.getLock();   
         int count = 0;
         for (Iterator i = pending.entrySet().iterator(); i.hasNext(); count++) {
@@ -270,7 +270,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         //TODO : return if doc == null? -pb  
         if (pending.size() == 0) 
             return; 
-        final short collectionId = this.doc.getCollection().getId();
+        final int collectionId = this.doc.getCollection().getId();
         final Lock lock = dbNodes.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
             Map.Entry entry = (Map.Entry) i.next();
@@ -414,7 +414,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      */
     //TODO : note that this is *not* this.doc -pb
     public void dropIndex(DocumentImpl document) throws ReadOnlyException {              
-        final short collectionId = document.getCollection().getId();
+        final int collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         final Lock lock = dbNodes.getLock();
@@ -500,7 +500,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             //Compute a key for the node
             Collection collection = (Collection) i.next();
-            short collectionId = collection.getId();
+            int collectionId = collection.getId();
             final Value key = computeTypedKey(type, collectionId, qname);
             try {
                 lock.acquire(Lock.READ_LOCK);
@@ -592,7 +592,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             //Compute a key for the node
             Collection collection = (Collection) i.next();
-            short collectionId = collection.getId();
+            int collectionId = collection.getId();
             final Value key = computeTypedKey(type, collectionId, qname);
             try {
                 lock.acquire(Lock.READ_LOCK);
@@ -837,7 +837,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final Lock lock = dbNodes.getLock();
         for (Iterator i = collections.iterator(); i.hasNext();) {
             Collection storedCollection = (Collection) i.next();
-            short storedCollectionId = storedCollection.getId();
+            int storedCollectionId = storedCollection.getId();
             ElementValue startKey = new ElementValue(ElementValue.ELEMENT, storedCollectionId);
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
             try {
@@ -902,7 +902,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     //TODO : note that this is *not* this.doc -pb
     public void consistencyCheck(DocumentImpl document) throws EXistException {
         final SymbolTable symbols = broker.getSymbols();
-        final short collectionId = document.getCollection().getId();
+        final int collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         final StringBuffer msg = new StringBuffer();    
@@ -979,11 +979,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }
     } 
     
-    private Value computeKey(short collectionId, QName qname) {
+    private Value computeKey(int collectionId, QName qname) {
         return computeTypedKey(qname.getNameType(), collectionId, qname);        
     }
    
-    private Value computeTypedKey(byte type, short collectionId, QName qname) {    
+    private Value computeTypedKey(byte type, int collectionId, QName qname) {
         if (type == ElementValue.ATTRIBUTE_ID) {
             return new ElementValue(type, collectionId, qname.getLocalName());
         } else {

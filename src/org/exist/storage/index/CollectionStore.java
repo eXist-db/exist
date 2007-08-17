@@ -112,19 +112,19 @@ public class CollectionStore extends BFile {
 		public static int LENGTH_DOCUMENT_TYPE = 1; //sizeof byte
 		public static int OFFSET_DOCUMENT_ID = OFFSET_DOCUMENT_TYPE + LENGTH_DOCUMENT_TYPE; //4
 
-        public DocumentKey(short collectionId) {
+        public DocumentKey(int collectionId) {
             data = new byte[LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID];
             data[OFFSET_TYPE] = KEY_TYPE_DOCUMENT;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             len = LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID;
             pos = OFFSET_TYPE;
         }
 
-        public DocumentKey(short collectionId, byte type, int docId) {
+        public DocumentKey(int collectionId, byte type, int docId) {
             data = new byte[LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID + LENGTH_DOCUMENT_TYPE + 
                             DocumentImpl.LENGTH_DOCUMENT_ID];
             data[OFFSET_TYPE] = KEY_TYPE_DOCUMENT;
-            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             data[OFFSET_DOCUMENT_TYPE] = type;
             ByteConversion.intToByte(docId, data, OFFSET_DOCUMENT_ID);
             len = LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID + LENGTH_DOCUMENT_TYPE + 

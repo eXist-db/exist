@@ -92,7 +92,7 @@ public class Object2LongHashMap extends AbstractHashtable {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
 				return -1; // key not found
-			} else if (keys[idx].equals(key)) {
+			} else if (keys[idx] != REMOVED && keys[idx].equals(key)) {
 				return values[idx];
 			}
 		}

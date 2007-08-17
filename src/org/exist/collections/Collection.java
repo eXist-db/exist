@@ -93,7 +93,7 @@ import org.xml.sax.XMLReader;
  */
 public  class Collection extends Observable implements Comparable, Cacheable
 {    
-	public static int LENGTH_COLLECTION_ID = 2; //sizeof short
+	public static int LENGTH_COLLECTION_ID = 4; //sizeof int
     
     public Collection(){
         
@@ -109,10 +109,10 @@ public  class Collection extends Observable implements Comparable, Cacheable
     //private final static int VALIDATION_AUTO = 1;
     //private final static int VALIDATION_DISABLED = 2;
     
-    public final static short UNKNOWN_COLLECTION_ID = -1;
+    public final static int UNKNOWN_COLLECTION_ID = -1;
     
     // Internal id
-    private short collectionId = UNKNOWN_COLLECTION_ID;
+    private int collectionId = UNKNOWN_COLLECTION_ID;
     
     // the documents contained in this collection
     private Map documents = new TreeMap();
@@ -596,7 +596,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
      *
      *@return    The id value
      */
-    public short getId() {
+    public int getId() {
         return collectionId;
     }
     
@@ -692,7 +692,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
      * @throws IOException
      */
     public void read(DBBroker broker, VariableByteInput istream) throws IOException {
-        collectionId = istream.readShort();
+        collectionId = istream.readInt();
         final int collLen = istream.readInt();
         subcollections = new ObjectHashSet(collLen == 0 ? 19 : collLen);
         for (int i = 0; i < collLen; i++)
@@ -1409,7 +1409,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     }
     
     
-    public void setId(short id) {
+    public void setId(int id) {
         this.collectionId = id;
     }
     
@@ -1452,7 +1452,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
      * @throws IOException
      */
     public void write(DBBroker broker, VariableByteOutputStream ostream) throws IOException {
-        ostream.writeShort(collectionId);
+        ostream.writeInt(collectionId);
         ostream.writeInt(subcollections.size());
         XmldbURI childColl;
         for (Iterator i = subcollections.iterator(); i.hasNext(); ) {
