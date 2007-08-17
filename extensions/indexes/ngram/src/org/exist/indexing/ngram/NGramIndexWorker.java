@@ -356,7 +356,7 @@ public class NGramIndexWorker implements IndexWorker {
             qnames = getDefinedIndexes(context.getBroker(), docs);
         final NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-            final short collectionId = ((org.exist.collections.Collection) iter.next()).getId();
+            final int collectionId = ((org.exist.collections.Collection) iter.next()).getId();
             for (int i = 0; i < qnames.size(); i++) {
                 QName qname = (QName) qnames.get(i);
                 NGramQNameKey key = new NGramQNameKey(collectionId, qname, context.getBroker().getSymbols(), query);
@@ -414,7 +414,7 @@ public class NGramIndexWorker implements IndexWorker {
         final IndexScanCallback cb = new IndexScanCallback(docs);
         final Lock lock = index.db.getLock();
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-            final short collectionId = ((Collection) i.next()).getId();
+            final int collectionId = ((Collection) i.next()).getId();
             Value ref = new NGramQNameKey(collectionId);
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			try {
@@ -825,37 +825,37 @@ public class NGramIndexWorker implements IndexWorker {
 
     private class NGramQNameKey extends Value {
 
-        public NGramQNameKey(short collectionId) {
-            len = 3;
+        public NGramQNameKey(int collectionId) {
+            len = 5;
             data = new byte[len];
             data[0] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, 1);
+            ByteConversion.intToByte(collectionId, data, 1);
         }
 
-        public NGramQNameKey(short collectionId, QName qname, SymbolTable symbols) {
-            len = 8;
+        public NGramQNameKey(int collectionId, QName qname, SymbolTable symbols) {
+            len = 10;
             data = new byte[len];
             data[0] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, 1);
+            ByteConversion.intToByte(collectionId, data, 1);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
 			final short localNameId = symbols.getSymbol(qname.getLocalName());
-            data[3] = qname.getNameType();
-            ByteConversion.shortToByte(namespaceId, data, 4);
-			ByteConversion.shortToByte(localNameId, data, 6);
+            data[5] = qname.getNameType();
+            ByteConversion.shortToByte(namespaceId, data, 6);
+			ByteConversion.shortToByte(localNameId, data, 8);
         }
 
-        public NGramQNameKey(short collectionId, QName qname, SymbolTable symbols, String ngram) {
-            len = UTF8.encoded(ngram) + 8;
+        public NGramQNameKey(int collectionId, QName qname, SymbolTable symbols, String ngram) {
+            len = UTF8.encoded(ngram) + 10;
             data = new byte[len];
             data[0] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, 1);
+            ByteConversion.intToByte(collectionId, data, 1);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
 			final short localNameId = symbols.getSymbol(qname.getLocalName());
-            data[3] = qname.getNameType();
-            ByteConversion.shortToByte(namespaceId, data, 4);
-			ByteConversion.shortToByte(localNameId, data, 6);
+            data[5] = qname.getNameType();
+            ByteConversion.shortToByte(namespaceId, data, 6);
+			ByteConversion.shortToByte(localNameId, data, 8);
 
-            UTF8.encode(ngram, data, 8);
+            UTF8.encode(ngram, data, 10);
         }
     }
 
@@ -885,7 +885,7 @@ public class NGramIndexWorker implements IndexWorker {
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             String ngram;
             try {
-                ngram = new String(key.getData(), 8, key.getLength() - 8, "UTF-8");
+                ngram = new String(key.getData(), 10, key.getLength() - 10, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
@@ -974,7 +974,7 @@ public class NGramIndexWorker implements IndexWorker {
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             String term;
             try {
-                term = new String(key.getData(), 8, key.getLength() - 8, "UTF-8");
+                term = new String(key.getData(), 10, key.getLength() - 10, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
