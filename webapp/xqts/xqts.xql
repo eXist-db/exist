@@ -292,7 +292,7 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
                xqts:check-output($query, $result, $testCase),
 	     (: Only expected exception and got exception.
 	        No check on if it is the right exception, though. :)
-           if ($testCase//catalog:expected-error and fn:empty($testCase//catalog:output-file)) then
+           if (fn:exists($testCase//catalog:expected-error) and fn:empty($testCase//catalog:output-file)) then
                <test-case name="{$testCase/@name}" result="pass" dateRun="{util:system-time()}" print="expected-exception-got-exception">
                    <exception>{$util:exception-message}</exception>
                    <expected-error>{string-join($testCase//catalog:expected-error/text(),";")}</expected-error>
@@ -300,7 +300,7 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
                </test-case>
            else
 	     (: Expected either output or exception. :)
-	     if ($testCase//catalog:expected-error and $testCase//catalog:output-file) then
+	     if (fn:exists($testCase//catalog:expected-error) and fn:exists($testCase//catalog:output-file)) then
                <test-case name="{$testCase/@name}" result="pass" dateRun="{util:system-time()}" print="exception-or-output">
                    <exception>{$util:exception-message}</exception>
                    <expected-error>{string-join($testCase//catalog:expected-error/text(),";")}</expected-error>
@@ -313,7 +313,7 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
 		   }
                    <query>{$query}</query>
                </test-case>
-           else if (fn:empty($testCase//catalog:expected-error) and $testCase//catalog:output-file) then
+           else if (fn:empty($testCase//catalog:expected-error) and fn:exists($testCase//catalog:output-file)) then
  	     (: Expected output, but got exception. :)
                <test-case name="{$testCase/@name}" result="fail" dateRun="{util:system-time()}" print="expected-output-got-exception">
                    <exception>{$util:exception-message}</exception>
@@ -332,7 +332,7 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
                    <exception>{$util:exception-message}</exception>
                    <expected-error>{string-join($testCase//catalog:expected-error/text(),";")}</expected-error>
 		   {
-		     if ( $testCase//catalog:output-file) then
+		     if (fn:exists($testCase//catalog:output-file)) then
 		     for $output in $testCase//catalog:output-file
 		     return <expected>{
                      let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $testCase/@FilePath, $output/text())
