@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
  *
- *  http://exist-db.org
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -75,7 +74,7 @@ public class FunQName extends BasicFunction {
 
         //TODO : currently useless (but for empty sequences) since the type is forced :-(
         if (!args[0].isEmpty() && args[0].getItemType() != Type.STRING)
-        	throw new XPathException("XPTY0004: namespace URI is of type '" + 
+        	throw new XPathException("err:XPTY0004: namespace URI is of type '" + 
         			Type.getTypeName(args[0].getItemType()) + "', 'xs:string' expected");
         String namespace;
 		if (args[0].isEmpty())
@@ -91,11 +90,11 @@ public class FunQName extends BasicFunction {
 			prefix = QName.extractPrefix(param);
 			localName = QName.extractLocalName(param);
 		} catch (IllegalArgumentException e) {
-        	throw new XPathException(e);
+        	throw new XPathException("err:FOCA0002: invalid lexical form of either prefix or local name.");
 		}
 		
 		if ((prefix != null && prefix.length() > 0) && (namespace == null || namespace.length() == 0))
-        	throw new XPathException("FOCA0002: non-empty namespace prefix with empty namespace URI");
+        	throw new XPathException("err:FOCA0002: non-empty namespace prefix with empty namespace URI");
 		
 		QName qname = new QName(localName, namespace, prefix);
 

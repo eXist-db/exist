@@ -407,7 +407,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	/**
      * The method <code>getPrefixes</code>
      *
-     * @return a <code>String</code> value
+     * @return a <code>Set</code> value
      */
     public Set getPrefixes() {
         HashSet set = new HashSet();

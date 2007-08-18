@@ -228,12 +228,17 @@ public class QName implements Comparable {
 	 * @return the prefix, if found
 	 * @exception IllegalArgumentException if the qname starts with a leading :
 	 */
-	public static String extractPrefix(String qname) {
+	public static String extractPrefix(String qname) 
+    throws IllegalArgumentException {
 		int p = qname.indexOf(':');
 		if (p == Constants.STRING_NOT_FOUND)
 			return null;
 		if (p == 0)
 			throw new IllegalArgumentException("Illegal QName: starts with a :");
+        // fixme! Should we not use isQName() here? /ljo
+        if (Character.isDigit(qname.substring(0,1).charAt(0))) {
+            throw new IllegalArgumentException("Illegal QName: starts with a digit");
+        }
 		return qname.substring(0, p);
 	}
 
@@ -243,7 +248,8 @@ public class QName implements Comparable {
 	 * @param qname
 	 * @exception IllegalArgumentException if the qname starts with a leading : or ends with a :
 	 */
-	public static String extractLocalName(String qname) {
+	public static String extractLocalName(String qname) 
+        throws IllegalArgumentException {
 		int p = qname.indexOf(':');
 		if (p == Constants.STRING_NOT_FOUND)
 			return qname;
@@ -251,6 +257,10 @@ public class QName implements Comparable {
 			throw new IllegalArgumentException("Illegal QName: starts with a :");
 		if (p == qname.length())
 			throw new IllegalArgumentException("Illegal QName: ends with a :");
+        if (!isQName(qname)) {
+			throw new IllegalArgumentException("Illegal QName: not a valid local name.");
+        }
+
 		return qname.substring(p + 1);
 	}
 

@@ -50,9 +50,9 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public abstract class Function extends PathExpr {
-	
+	// Declare it in Namespaces instead? /ljo
 	public final static String BUILTIN_FUNCTION_NS =
-		"http://www.w3.org/2003/05/xpath-functions";
+		"http://www.w3.org/2005/xpath-functions";
 	
 	// The signature of the function.	
 	protected FunctionSignature mySignature;
