@@ -1033,7 +1033,8 @@ public class XQueryContext {
 			throw new XPathException("XQST0045: function is in the forbidden namespace '" + Namespaces.SCHEMA_NS + "'");
 		if (Namespaces.SCHEMA_INSTANCE_NS.equals(function.getSignature().getName().getNamespaceURI()))
 			throw new XPathException("XQST0045: function is in the forbidden namespace '" + Namespaces.SCHEMA_INSTANCE_NS + "'");
-		//TODO : forbid "http://www.w3.org/2005/xpath-functions"
+        if (Namespaces.XPATH_FUNCTIONS_NS.equals(function.getSignature().getName().getNamespaceURI()))
+			throw new XPathException("XQST0045: function is in the forbidden namespace '" + Namespaces.XPATH_FUNCTIONS_NS + "'");
 		
 		declaredFunctions.put(function.getSignature().getFunctionId(), function);
 //		if (declaredFunctions.get(function.getSignature().getFunctionId()) == null)
@@ -2091,7 +2092,7 @@ public class XQueryContext {
 			declareNamespace("xsi", Namespaces.SCHEMA_INSTANCE_NS);
 			//required for backward compatibility
 			declareNamespace("xdt", Namespaces.XPATH_DATATYPES_NS);
-			declareNamespace("fn", Function.BUILTIN_FUNCTION_NS);
+			declareNamespace("fn", Namespaces.XPATH_FUNCTIONS_NS);
 			declareNamespace("local", XQUERY_LOCAL_NS);
 			//*not* as standard NS
 			declareNamespace("exist", Namespaces.EXIST_NS);

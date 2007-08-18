@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2005-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist;
 
 import org.exist.dom.QName;
@@ -14,6 +35,8 @@ public interface Namespaces {
     public final static String DTD_NS = "http://www.w3.org/TR/REC-xml";	
 	public final static String SCHEMA_DATATYPES_NS = "http://www.w3.org/2001/XMLSchema-datatypes";	
 	public final static String SCHEMA_INSTANCE_NS = "http://www.w3.org/2001/XMLSchema-instance";	
+    // Move this here from Function.BUILTIN_FUNCTION_NS? /ljo
+	public final static String XPATH_FUNCTIONS_NS = "http://www.w3.org/2005/xpath-functions";	
 	public final static String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";	
 	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";	
 	public final static String XML_NS = "http://www.w3.org/XML/1998/namespace";	
