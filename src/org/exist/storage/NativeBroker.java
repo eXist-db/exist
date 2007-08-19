@@ -582,10 +582,8 @@ public class NativeBroker extends DBBroker {
     private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException, IOException
     {
         User u = user;
-        Lock lock = collectionsDb.getLock();
         try
-        {           
-            lock.acquire(Lock.WRITE_LOCK);
+        {
             user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
             Collection temp = getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI);
             temp.setPermissions(0771);
@@ -595,7 +593,6 @@ public class NativeBroker extends DBBroker {
         finally
         {
             user = u;
-            lock.release(Lock.WRITE_LOCK);
         }
     }
     
@@ -686,7 +683,7 @@ public class NativeBroker extends DBBroker {
     	final CollectionCache collectionsCache = pool.getCollectionsCache();  
     	synchronized(collectionsCache) {      
     		collection = collectionsCache.get(uri);
-    		if (collection == null) {				
+    		if (collection == null) {
     			final Lock lock = collectionsDb.getLock();
 				try {
 				    lock.acquire(Lock.READ_LOCK);
@@ -697,12 +694,12 @@ public class NativeBroker extends DBBroker {
 				    } else {
 				    	is = collectionsDb.getAsStream(addr);
 				    }
-				    if (is == null) 
-				    	return null;   
-		
+				    if (is == null)
+				    	return null;
+
 		            collection = new Collection(uri);
 				    collection.read(this, is);
-			                
+
 				    //TODO : manage this from within the cache -pb
 				    if(!pool.isInitializing())
 				    	collectionsCache.add(collection);
@@ -1594,7 +1591,7 @@ public class NativeBroker extends DBBroker {
 		    }
         	else
 		    {
-        		//lock the temp collection
+        		// unlock the temp collection
         		if(transaction == null)
         		{
         			temp.getLock().release(Lock.WRITE_LOCK);
