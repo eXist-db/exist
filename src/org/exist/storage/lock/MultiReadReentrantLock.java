@@ -84,28 +84,6 @@ public class MultiReadReentrantLock implements Lock {
      * ensure that write locks are issued in the same order they are requested.
      */
     private List waitingForWriteLock = null;
-    
-    protected Stack suspendedThreads = new Stack();
-
-    private class SuspendedWaiter {
-        Thread thread;
-        int outstanding;
-        List waiters;
-
-        public SuspendedWaiter(Thread thread, int outstandingWriteLocks, List waiters) {
-            this.thread = thread;
-            this.outstanding = outstandingWriteLocks;
-            this.waiters = waiters;
-        }
-
-        public void wakeUp() {
-            for (int i = 0; i < waiters.size(); i++) {
-                WaitingThread wt = (WaitingThread) waiters.get(i);
-                wt.lockReleased();
-            }
-            waiters = null;
-        }
-    }
 
     /**
      * Default constructor.
@@ -321,7 +299,7 @@ public class MultiReadReentrantLock implements Lock {
 
             // if another thread is waiting for a write lock, we immediately pass control to it.
             // no further checks should be required here.
-            if (suspendedThreads.empty() && grantWriteLockAfterRead()) {
+            if (grantWriteLockAfterRead()) {
                 WaitingThread waiter = (WaitingThread) waitingForWriteLock.get(0);
                 removeWaitingWrite(waiter);
                 DeadlockDetection.clearResourceWaiter(waiter.getThread());
@@ -338,7 +316,7 @@ public class MultiReadReentrantLock implements Lock {
 //                }
             } else {
                 writeLockedThread = null;
-                if (waitingForReadLock > 0 && suspendedThreads.empty()) {
+                if (waitingForReadLock > 0) {
 //                    LOG.debug("writeLock " + Thread.currentThread().getName() + " released, notified waiting readers");
                     // wake up pending read locks
                     notifyAll();
@@ -346,13 +324,6 @@ public class MultiReadReentrantLock implements Lock {
 //                } else {
 //                    LOG.debug("writeLock released, no readers waiting");
 //                }
-            }
-            if (!suspendedThreads.empty()) {
-                SuspendedWaiter waiter = (SuspendedWaiter) suspendedThreads.pop();
-                writeLockedThread = waiter.thread;
-                outstandingWriteLocks = waiter.outstanding;
-                waiter.wakeUp();
-                LOG.debug("Passing lock to suspended thread: " + writeLockedThread.getName() + " waiting on " + getId());
             }
         } else {
             LOG.warn("Possible lock problem: a thread released a write lock it didn't hold. Either the " +
