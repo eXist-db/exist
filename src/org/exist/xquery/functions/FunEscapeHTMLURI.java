@@ -1,6 +1,8 @@
-/* eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
- *  
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
@@ -13,11 +15,10 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
- * Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -66,7 +67,7 @@ public class FunEscapeHTMLURI extends Function {
         Sequence result;
 		Sequence seq = getArgument(0).eval(contextSequence);
 		if(seq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            result = StringValue.EMPTY_STRING;
         else {
     		String value; 
    			value = URIUtils.escapeHtmlURI(seq.getStringValue());
