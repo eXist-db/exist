@@ -66,11 +66,12 @@ public class FunBoolean extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
-        
-		contextSequence = getArgument(0).eval(contextSequence);
-		Sequence result = contextSequence.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
+		//if(contextItem != null)
+		//	contextSequence = contextItem.toSequence();
+
+        Sequence arg = getArgument(0).eval(contextSequence, contextItem);        
+		Sequence result =  arg.effectiveBooleanValue() ? 
+				BooleanValue.TRUE : BooleanValue.FALSE;
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
