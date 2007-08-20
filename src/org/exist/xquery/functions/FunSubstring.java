@@ -1,6 +1,7 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org/
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -31,6 +32,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -98,54 +100,49 @@ public class FunSubstring extends Function {
 		Sequence seqSourceString = argSourceString.eval(contextSequence);
 		
 		//If the value of $sourceString is the empty sequence return EMPTY_STRING, there must be a string to operate on!
-		if(seqSourceString.isEmpty())
-		{
+		if(seqSourceString.isEmpty()) {
 			result = StringValue.EMPTY_STRING;
-		}
-		else
-		{
+		} else {
 			//get the string to substring
         	String sourceString = seqSourceString.getStringValue();
     		
         	//check for a valid start position for the substring
         	NumericValue startingLoc = ((NumericValue)(argStartingLoc.eval(contextSequence).itemAt(0).convertTo(Type.NUMBER))).round();
-        	if(!validStartPosition(startingLoc, sourceString.length()))
-        	{
+        	if(!validStartPosition(startingLoc, sourceString.length())) {
         		//invalid start position
         		result = StringValue.EMPTY_STRING;
-        	}
-        	else
-        	{
+        	} else {
 				//are there 2 or 3 arguments to this function?
-				if(getArgumentCount() > 2)
-				{
-					//three arguments, get the third argument value for the length
+				if(getArgumentCount() > 2) {
 					argLength = getArgument(2);
-					
-					//check for a valid length for the substring
-					NumericValue length = ((NumericValue)(argLength.eval(contextSequence).itemAt(0).convertTo(Type.NUMBER))).round();
-					if(!validLength(length))
-					{
+                    NumericValue length = new IntegerValue(sourceString.length());
+                    length = ((NumericValue)(argLength.eval(contextSequence).itemAt(0).convertTo(Type.NUMBER))).round();
+
+                    // Relocate length to position according to spec:
+                    // fn:round($startingLoc) <=
+                    // $p 
+                    // < fn:round($startingLoc) + fn:round($length)
+                    NumericValue endingLoc;
+                    if (!length.isInfinite()) {
+                        endingLoc = (NumericValue) new IntegerValue(startingLoc.getInt() + length.getInt());
+                    } else {
+                        endingLoc = length;
+                    }
+					//check for a valid end position for the substring
+					if(!validEndPosition(endingLoc, startingLoc)) {
 						//invalid length
 						result = StringValue.EMPTY_STRING;
-					}
-					else
-					{
-						//if the length extends past the end of the string, just return the string from the start position
-						if(length.getInt() > sourceString.length() || startingLoc.getInt() -1 + length.getInt() > sourceString.length() || length.isInfinite())
-						{
+					} else {
+						if(endingLoc.getInt() > sourceString.length() 
+                           || endingLoc.isInfinite()) {
 							//fallback to fn:substring(string, start)
 							result = substring(sourceString, startingLoc);
-						}
-						else
-						{
-							//three arguments fn:substring(string, start, length)
-							result = substring(sourceString, startingLoc, length);
+						} else {
+							//three arguments fn:substring(string, start, end)
+							result = substring(sourceString, startingLoc, endingLoc);
 						}
 					}
-				}
-				else
-				{
+				} else { // No length argument
 					//two arguments fn:substring(string, start)
 					result = substring(sourceString, startingLoc);
 				}
@@ -178,14 +175,11 @@ public class FunSubstring extends Function {
 			return false;
 		
 		//if the start position extends beyond $sourceString return EMPTY_STRING
-    	try
-    	{
+    	try {
     		//fn:substring("he",2) must return "e"
     		if(startPosition.getInt() > stringLength) 
     			return false;
-    	}
-    	catch(XPathException xpe)
-    	{
+    	} catch(XPathException xpe) {
     		return false;
     	}
     	
@@ -194,16 +188,29 @@ public class FunSubstring extends Function {
 	}
 	
 	/**
-	 * Checks that the length is valid for the $sourceString
+     * Checks that the end position is valid for the $sourceString
 	 * 
-	 * @param length		The user specified length for the fn:substring()
-	 * 
-	 * @return true if the length is valid, false otherwise
-	 */
-	private boolean validLength(NumericValue length)
-	{
-		//if length is not a number return false
-		if(length.isNaN())
+     * @param end a <code>NumericValue</code> value
+     * @param start a <code>NumericValue</code> value
+     * @return true if the length is valid, false otherwise
+     * @exception XPathException if an error occurs
+     */
+    private boolean validEndPosition(NumericValue end, NumericValue start)
+        throws XPathException {
+        //if end position is not a number
+        if (end.isNaN())
+            return false;
+
+        //if end position is ±infinite
+        if (end.isInfinite())
+            return true;
+        
+        //if end position is less than 1
+        if (end.getInt() < 1)
+			return false;
+
+        //if end position is less than start position
+        if(end.getInt() <= start.getInt())
 			return false;
 		
 		//length is valid
@@ -216,21 +223,18 @@ public class FunSubstring extends Function {
 	 * @see http://www.w3.org/TR/xpath-functions/#func-substring
 	 * 
 	 * @param stringSource	The source string to substring
-	 * @param startingLoc	The Starting Location for the substring, start index is 1
+	 * @param startingLoc	The Starting Location for the substring, start 
+     * index is 1
 	 * 
 	 * @return The StringValue of the substring
 	 */
-	private StringValue substring(String sourceString, NumericValue startingLoc) throws XPathException
-	{
-		if(startingLoc.getInt() <= 1)
-		{
+	private StringValue substring(String sourceString, NumericValue startingLoc)
+        throws XPathException {
+		if(startingLoc.getInt() <= 1) {
 			//start value is 1 or less, so just return the string
 			return new StringValue(sourceString);
 		}
-		
-		
-		
-		//start index of xs:string is 1, whereas java string is 0; so subtract 1
+        // transition from xs:string index to Java string index.
 		return new StringValue(sourceString.substring(startingLoc.getInt() - 1));
 	}
 	
@@ -240,23 +244,17 @@ public class FunSubstring extends Function {
 	 * @see http://www.w3.org/TR/xpath-functions/#func-substring
 	 * 
 	 * @param stringSource	The source string to substring
-	 * @param startingLoc	The Starting Location for the substring, start index is 1
+	 * @param startingLoc	The Starting Location for the substring, start 
+     * index is 1
 	 * @param length	The length of the substring
 	 * 
 	 * @return The StringValue of the substring
 	 */
-	private StringValue substring(String sourceString, NumericValue startingLoc, NumericValue length) throws XPathException
-	{
-		//if start value is 1 or less, start at the start of the string and adjust the length appropriately
-		if(startingLoc.getInt() <= 1)
-		{
-			//the -1 is to transition from xs:string index which starts at 1 to Java string index which starts at 0
-			int endIndex = length.getInt() + (-1 + startingLoc.getInt());
-			
-			return new StringValue(sourceString.substring(0, endIndex));
+	private StringValue substring(String sourceString, NumericValue startingLoc, NumericValue endingLoc)
+        throws XPathException {
+		if(startingLoc.getInt() <= 1) {
+			return new StringValue(sourceString.substring(0, endingLoc.getInt() - 1));
 		}
-		
-		return new StringValue(sourceString.substring(startingLoc.getInt() - 1, startingLoc.getInt() - 1 + length.getInt()));
+        return new StringValue(sourceString.substring(startingLoc.getInt() - 1, endingLoc.getInt() - 1));
 	}
-	
 }

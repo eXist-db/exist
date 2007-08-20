@@ -1,5 +1,5 @@
 /* eXist Native XML Database
- * Copyright (C) 2000-2006, The eXist team
+ * Copyright (C) 2000-2006, The eXist Project
  * http://exist-db.org/
  *
  * This library is free software; you can redistribute it and/or
@@ -92,7 +92,7 @@ public class FunNormalizeUnicode extends Function {
         if (s1.isEmpty())
             result = StringValue.EMPTY_STRING;
         else {
-			String newNormalizationForm = "NFC";
+            String newNormalizationForm = "NFC";
 			if (getArgumentCount() > 1)
 				newNormalizationForm = getArgument(1).eval(contextSequence).getStringValue().toUpperCase().trim();
 			//TODO : handle the "FULLY-NORMALIZED" string...
@@ -107,7 +107,7 @@ public class FunNormalizeUnicode extends Function {
 	        			try {
 	        				modeField = clazz.getField(newNormalizationForm);
 	        			} catch (NoSuchFieldException e) {
-	        				throw new XPathException("FOCH0003: unknown normalization form");
+	        				throw new XPathException("err:FOCH0003: unknown normalization form");
 	        			}
 	    	        	//com.ibm.icu.text.Normalizer.Mode
 	            		modeObject = modeField.get(null);
@@ -127,7 +127,7 @@ public class FunNormalizeUnicode extends Function {
 		        	//result = new StringValue(n.getText());
 		        	returnedObject = method.invoke(instance, null);
         		} catch (Exception e) {
-        			throw new XPathException("Can not find the ICU4J library in the classpath");
+        			throw new XPathException("Can not find the ICU4J library in the classpath " + e.getMessage());
         		}
         		result = new StringValue((String)returnedObject);
 			}
