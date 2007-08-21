@@ -1,7 +1,7 @@
 /*
  * eXist Open Source Native XML Database
  * Copyright (C) 2001-2007 The eXist Project
- * http://exist-db.org/
+ * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -38,11 +38,13 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * Built-in function fn:substring().
  *
  *	@author Adam Retter <adam.retter@devon.gov.uk>
+ *	@author ljo <ellefj@gmail.com>
  */
 public class FunSubstring extends Function {
 	
@@ -201,7 +203,7 @@ public class FunSubstring extends Function {
         if (end.isNaN())
             return false;
 
-        //if end position is ±infinite
+        //if end position is +/-infinite
         if (end.isInfinite())
             return true;
         
@@ -234,9 +236,10 @@ public class FunSubstring extends Function {
 			//start value is 1 or less, so just return the string
 			return new StringValue(sourceString);
 		}
+        ValueSequence codepoints = FunStringToCodepoints.getCodePoints(sourceString);
         // transition from xs:string index to Java string index.
-		return new StringValue(sourceString.substring(startingLoc.getInt() - 1));
-	}
+        return new StringValue(FunStringToCodepoints.subSequence(codepoints, startingLoc.getInt() - 1));
+ 	}
 	
 	/**
 	 * fn:substring($sourceString, $startingLoc, $length)
@@ -252,9 +255,11 @@ public class FunSubstring extends Function {
 	 */
 	private StringValue substring(String sourceString, NumericValue startingLoc, NumericValue endingLoc)
         throws XPathException {
-		if(startingLoc.getInt() <= 1) {
-			return new StringValue(sourceString.substring(0, endingLoc.getInt() - 1));
-		}
-        return new StringValue(sourceString.substring(startingLoc.getInt() - 1, endingLoc.getInt() - 1));
+        ValueSequence codepoints = FunStringToCodepoints.getCodePoints(sourceString);
+        // transition from xs:string index to Java string index.
+        return new StringValue(FunStringToCodepoints.subSequence(codepoints,
+                                                                 startingLoc.getInt() - 1,
+                                                                 endingLoc.getInt() - 1));
 	}
+    
 }

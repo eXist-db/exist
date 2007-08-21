@@ -1,7 +1,8 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
- *  
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
@@ -16,9 +17,8 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- * $Id$
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import java.text.Collator;
@@ -102,30 +102,38 @@ public class FunSubstringAfter extends CollatingFunction {
 			
 		Sequence seq1 = arg0.eval(contextSequence);
 		Sequence seq2 = arg1.eval(contextSequence);
-		
+
+        String value;
+        String cmp;
         Sequence result;
-		if(seq1.isEmpty() || seq2.isEmpty())
-			result = Sequence.EMPTY_SEQUENCE;
-        else {		
-    		String value = seq1.getStringValue();
-    		String cmp = seq2.getStringValue();
-    		if(cmp.length() == 0)
-    			result = StringValue.EMPTY_STRING;
-            else {
-        		Collator collator = getCollator(contextSequence, contextItem, 3);
-        		int p = Collations.indexOf(collator, value, cmp);
-        		if (p == Constants.STRING_NOT_FOUND)
-                    result = StringValue.EMPTY_STRING;
-                else
-        			result = new StringValue(p + cmp.length() < value.length() ? 
-                            value.substring(p + cmp.length()) : ""
-        			);        		
-            }
+		if (seq1.isEmpty()) {
+            value = StringValue.EMPTY_STRING.getStringValue();
+        } else {
+            value = seq1.getStringValue();
+        }
+        
+        if (seq2.isEmpty()) {
+            cmp = StringValue.EMPTY_STRING.getStringValue();
+        } else {
+            cmp = seq2.getStringValue();
+        }
+        
+        if(cmp.length() == 0)
+            result = new StringValue(value);
+        else {
+            Collator collator = getCollator(contextSequence, contextItem, 3);
+            int p = Collations.indexOf(collator, value, cmp);
+            if (p == Constants.STRING_NOT_FOUND)
+                result = StringValue.EMPTY_STRING;
+            else
+                result = new StringValue(p + cmp.length() < value.length() ? 
+                                         value.substring(p + cmp.length()) : ""
+                                         );        		
         }
         
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
-
+        
         return result;        
         
 	}
