@@ -23,6 +23,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
+import org.exist.util.XMLChar;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -65,28 +66,98 @@ public class FunStringToCodepoints extends BasicFunction {
         if (args[0].isEmpty())
 			result =  Sequence.EMPTY_SEQUENCE;
         else {
-    		String s = args[0].getStringValue();
-    		ValueSequence codepoints = new ValueSequence();
-    		int ch;
-    		IntegerValue next;
-    		for (int i = 0; i < s.length(); i++) {
-    			ch = s.charAt(i);
-    			if (ch >= 55296 && ch <= 56319) {
-                    // we'll trust the data to be sound
-                    next = new IntegerValue(((ch - 55296) * 1024) + ((int) s.charAt(i++) - 56320) + 65536);
-                } else {
-                    next = new IntegerValue(ch);
-                }
-    			codepoints.add(next);
-    		}
-    		result = codepoints;
+    		result = getCodePoints(args[0].getStringValue());
         }
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
-        
         return result;             
         
 	}
+
+    /**
+     * The method <code>getCodePoints</code>
+     *
+     * @param s a <code>String</code> value
+     * @return a <code>ValueSequence</code> value
+     */
+    public static ValueSequence getCodePoints(final String s) {
+        ValueSequence codepoints = new ValueSequence();
+        int ch;
+        IntegerValue next;
+        for (int i = 0; i < s.length(); i++) {
+            ch = s.charAt(i);
+            if (ch >= 55296 && ch <= 56319) {
+                // we'll trust the data to be sound
+                next = new IntegerValue(((ch - 55296) * 1024) + ((int) s.charAt(i++) - 56320) + 65536);
+            } else {
+                next = new IntegerValue(ch);
+            }
+            codepoints.add(next);
+        }
+        return codepoints;
+    }
+
+    /**
+     * The method <code>subSequence</code>
+     *
+     * @param seq a <code>ValueSequence</code> value
+     * @param start an <code>int</code> value
+     * @return a <code>ValueSequence</code> value
+     * @exception XPathException if an error occurs
+     */
+    public static String subSequence(final ValueSequence seq, final int start) 
+        throws XPathException {
+        StringBuffer substring = new StringBuffer(seq.getItemCount());
+        int ch;
+        try {
+            for (int i = start >= 0 ? start : 0; i < seq.getItemCount(); i++) {
+                ch = ((IntegerValue) seq.itemAt(i)).getInt();
+                if (XMLChar.isSupplemental(ch)) {
+                    substring.append(XMLChar.highSurrogate(ch));
+                    substring.append(XMLChar.lowSurrogate(ch));
+                } else {
+                    substring.append((char) ch);                
+                }
+            }
+        } catch (XPathException e) {
+            throw new XPathException("FunStringCodepoints.subSequence()/2 failure" + e.getMessage());
+        }
+        return substring.toString();
+        
+    }
+
+    /**
+     * The method <code>subSequence</code>
+     *
+     * @param seq a <code>ValueSequence</code> value
+     * @param start an <code>int</code> value
+     * @param end an <code>int</code> value
+     * @return a <code>ValueSequence</code> value
+     * @exception XPathException if an error occurs
+     */
+    public static String subSequence(final ValueSequence seq, final int start, final int end) 
+        throws XPathException {
+        StringBuffer substring = new StringBuffer(seq.getItemCount());
+        int ch;
+        IntegerValue next;
+        if (seq.getItemCount() < end) {
+            return subSequence(seq, start);
+        }
+        try {
+            for (int i = start >= 0 ? start : 0; i < end; i++) {
+                ch = ((IntegerValue) seq.itemAt(i)).getInt();
+                if (XMLChar.isSupplemental(ch)) {
+                    substring.append(XMLChar.highSurrogate(ch));
+                    substring.append(XMLChar.lowSurrogate(ch));
+                } else {
+                    substring.append((char) ch);                
+                }
+            }
+        } catch (XPathException e) {
+            throw new XPathException("FunStringCodepoints.subSequence()/3 failure" + e.getMessage());
+        }
+        return substring.toString();
+    }
 
 }

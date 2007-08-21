@@ -89,7 +89,7 @@ public class FunQName extends BasicFunction {
 		try {
 			prefix = QName.extractPrefix(param);
 			localName = QName.extractLocalName(param);
-		} catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
         	throw new XPathException("err:FOCA0002: invalid lexical form of either prefix or local name.");
 		}
 		
@@ -97,12 +97,19 @@ public class FunQName extends BasicFunction {
         	throw new XPathException("err:FOCA0002: non-empty namespace prefix with empty namespace URI");
 		
 		QName qname = new QName(localName, namespace, prefix);
+        if (prefix != null && namespace != null) {
+            if (context.getURIForPrefix(prefix) == null) {
+                context.declareNamespace(prefix, namespace);
+            }
 
+
+            //context.declareInScopeNamespace(prefix, namespace);
+        }
 		Sequence result = new QNameValue(context, qname);
-        
+
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
         
-        return result;                 
+        return result;
 	}
 }

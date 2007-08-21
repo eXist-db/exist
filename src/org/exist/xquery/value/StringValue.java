@@ -58,7 +58,7 @@ public class StringValue extends AtomicValue {
 			this.value = collapseWhitespace(stringValue);
 			checkType();
 		}
-	}
+ 	}
 
 	public StringValue(String stringValue) {
 		value = stringValue;
@@ -109,7 +109,43 @@ public class StringValue extends AtomicValue {
 	 * @see org.exist.xquery.value.Item#getStringValue()
 	 */
 	public String getStringValue() {
-		return value;
+        return getStringValue(false);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Item#getStringValue()
+	 */
+	public String getStringValue(boolean bmpCheck) {
+        if (bmpCheck) {
+            StringBuffer buf = new StringBuffer(value.length());
+            char ch;
+            boolean secondSurrChar = false;
+            char high;
+            
+            int surrogateCounter = 0;
+            for (int i = 0; i < value.length(); i++) {
+                ch = value.charAt(i);
+                high = ch;
+                if (XMLChar.isSurrogate(ch)) {
+                    // Compose supplemental from high and low surrogate
+                    if (secondSurrChar) {
+                        int suppChar = XMLChar.supplemental(high, ch);
+                        secondSurrChar = false;
+                        buf.append("&#");
+                        buf.append(suppChar);
+                        buf.append(";");
+                    } else {
+                        secondSurrChar = true;
+                    }
+                } else {
+                    buf.append(ch);
+                }
+            }
+            
+            return buf.toString();
+        } else {
+        return value;
+        }
 	}
     
 	public Item itemAt(int pos) {
@@ -506,7 +542,13 @@ public class StringValue extends AtomicValue {
 	                        }
 	                    }
 	                    if (found) {
-	                        buf.append(expandEntity(entityRef.toString()));
+                            int charref = expandEntity(entityRef.toString());
+                            if (XMLChar.isSupplemental(charref)) {
+                                buf.append(XMLChar.highSurrogate(charref));
+                                buf.append(XMLChar.lowSurrogate(charref));
+                            } else {
+                                buf.append((char) charref);
+                            }
 	                    } else {
 	                        throw new XPathException("XPST0003 : Invalid character in character reference ("+ch+") or missing ;");
 	                    }
@@ -529,7 +571,14 @@ public class StringValue extends AtomicValue {
 	    return buf.toString();
 	}
 
-	private final static char expandEntity(String buf) throws XPathException {
+	/**
+     * The method <code>expandEntity</code>
+     *
+     * @param buf a <code>String</code> value
+     * @return an <code>int</code> value
+     * @exception XPathException if an error occurs
+     */
+    private final static int expandEntity(String buf) throws XPathException {
 		if (buf.equals("amp"))
 			return '&';
 		else if (buf.equals("lt"))
@@ -540,15 +589,22 @@ public class StringValue extends AtomicValue {
 			return '"';
 		else if (buf.equals("apos"))
 			return '\'';
-		else if (buf.length() > 1 && buf.charAt(0) == '#')
-			return expandCharRef(buf.substring(1));
-		else
+		else if (buf.length() > 1 && buf.charAt(0) == '#') {
+            return expandCharRef(buf.substring(1));
+		} else
 			throw new XPathException("Unknown entity reference: " + buf);
 	}
 
-	private final static char expandCharRef(String buf) throws XPathException {
+	/**
+     * The method <code>expandCharRef</code>
+     *
+     * @param buf a <code>String</code> value
+     * @return an <code>int</code> value
+     * @exception XPathException if an error occurs
+     */
+    private final static int expandCharRef(String buf) throws XPathException {
 		try {
-                   int charNumber;
+            int charNumber;
 			if (buf.length() > 1 && buf.charAt(0) == 'x') {
 				// Hex
 				charNumber = Integer.parseInt(buf.substring(1), 16);
@@ -558,7 +614,7 @@ public class StringValue extends AtomicValue {
                    if (charNumber==0) {
                       throw new XPathException("XQST0090 : Character number zero (0) is not allowed.");
                    }
-                   return (char)charNumber;
+                   return charNumber;
 		} catch (NumberFormatException e) {
 			throw new XPathException("Unknown character reference: " + buf);
 		}

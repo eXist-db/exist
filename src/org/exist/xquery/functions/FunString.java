@@ -86,8 +86,6 @@ public class FunString extends Function {
         Sequence result;        
 		if(contextSequence.isEmpty())
 			result = StringValue.EMPTY_STRING;
-			//Despite : fn:string($arg as item()?) as xs:string in the specs
-			//result = Sequence.EMPTY_SEQUENCE;
         else
             result = contextSequence.convertTo(Type.STRING);        
 

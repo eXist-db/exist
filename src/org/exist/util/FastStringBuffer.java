@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2003-2007 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,8 +17,9 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * This class is copied from Saxon 2003-01-21 (version ?).
- *  
+ * This class is to large extents copied from Saxon 2003-01-21 (version ?).
+ * See comment at the back about licensing for those parts.
+ * 
  *  $Id$
  */
 package org.exist.util;

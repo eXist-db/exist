@@ -82,7 +82,6 @@ public class QNameValue extends AtomicValue {
 	 */
 	public String getStringValue() throws XPathException {
 		String prefix = null;
-        
 	    if(qname.needsNamespaceDecl()) {
 	    	prefix = context.getPrefixForURI(qname.getNamespaceURI());
 			if (prefix != null)
