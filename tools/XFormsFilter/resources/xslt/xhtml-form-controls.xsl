@@ -1356,14 +1356,16 @@
             <!-- handle items, items in choices, and items in itemsets, but neither of these in chiba:data  -->
             <xsl:for-each select="$parent/xforms:item|$parent/xforms:choices/xforms:item|$parent/xforms:itemset/xforms:item">
                 <option id="{@id}-value" class="selector-item">
-                    <xsl:when test="xforms:copy">
-                        <xsl:attribute name="value" select="xforms:copy/@id"/>
-                        <xsl:attribute name="title" select="xforms:copy/@id"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:attribute name="value" select="xforms:value"/>
-                        <xsl:attribute name="title" select="xforms:hint"/>
-                    </xsl:otherwise>
+                    <xsl:choose>
+                        <xsl:when test="xforms:copy">
+                            <xsl:attribute name="value" select="xforms:copy/@id"/>
+                            <xsl:attribute name="title" select="xforms:copy/@id"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="value" select="xforms:value"/>
+                            <xsl:attribute name="title" select="xforms:hint"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     <xsl:if test="@selected='true'">
                         <xsl:attribute name="selected">selected</xsl:attribute>
                     </xsl:if>
