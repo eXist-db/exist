@@ -83,13 +83,12 @@ public class FunStringToCodepoints extends BasicFunction {
      */
     public static ValueSequence getCodePoints(final String s) {
         ValueSequence codepoints = new ValueSequence();
-        int ch;
+        char ch;
         IntegerValue next;
         for (int i = 0; i < s.length(); i++) {
             ch = s.charAt(i);
-            if (ch >= 55296 && ch <= 56319) {
-                // we'll trust the data to be sound
-                next = new IntegerValue(((ch - 55296) * 1024) + ((int) s.charAt(i++) - 56320) + 65536);
+            if (XMLChar.isSupplemental(ch)) {
+                next = new IntegerValue(XMLChar.supplemental(ch,  s.charAt(i++)));
             } else {
                 next = new IntegerValue(ch);
             }
