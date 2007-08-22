@@ -97,14 +97,14 @@ public class FunMax extends CollatingFunction {
         } 
         
 		//if (contextItem != null)
-		//	contextSequence = contextItem.toSequence();
-        
-		boolean computableProcessing = false;
+		//	contextSequence = contextItem.toSequence();        
+		
         Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if(arg.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
+        	boolean computableProcessing = false;
         	//TODO : test if a range index is defined *iff* it is compatible with the collator
     		Collator collator = getCollator(contextSequence, contextItem, 2);
     		SequenceIterator iter = arg.unorderedIterator();

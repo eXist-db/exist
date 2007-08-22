@@ -70,10 +70,10 @@ public class FunData extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }       
         
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
-		Sequence arg = getArgument(0).eval(contextSequence);
-        
+		//if(contextItem != null)
+		//	contextSequence = contextItem.toSequence();
+		
+        Sequence arg = getArgument(0).eval(contextSequence, contextItem);        
         Sequence result;
 		if(arg.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;

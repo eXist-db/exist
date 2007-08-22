@@ -50,7 +50,7 @@ public class FunNodeName extends Function {
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("node-name", Function.BUILTIN_FUNCTION_NS),
-			" Returns an expanded-QName for node kinds that can have names. For other kinds " +
+			"Returns an expanded-QName for node kinds that can have names. For other kinds " +
 			"of nodes it returns the empty sequence. If $a is the empty sequence, the " +
 			"empty sequence is returned.",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
@@ -73,11 +73,11 @@ public class FunNodeName extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-        if(contextItem != null)
-            contextSequence = contextItem.toSequence();
+        //if(contextItem != null)
+        //    contextSequence = contextItem.toSequence();
         
         Sequence result;
-        Sequence seq = getArgument(0).eval(contextSequence);
+        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
         if(seq.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {

@@ -718,6 +718,32 @@ public class XQueryFunctionsTest extends TestCase {
       }
     }
     
+    public void testNodeName() {
+        String query = "let $a := <a><b>-1</b><b>-2</b></a> " + 
+        "for $b in $a/b[node-name(.) = xs:QName('b')] return $b";
+        
+        try {
+          ResourceSet result = service.query(query);          
+          assertEquals(2, result.getSize());
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }    
+    
+    public void testData() {
+        String query = "let $a := <a><b>1</b><b>1</b></a> " +
+        	"for $b in $a/b[data(.) = '1'] return $b";
+        
+        try {
+          ResourceSet result = service.query(query);          
+          assertEquals(2, result.getSize());
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }     
+    
     
     //ensure the test collection is removed and call collection-exists,
     //which should return false, no exception thrown
