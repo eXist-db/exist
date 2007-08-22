@@ -58,11 +58,11 @@ public class FunEncodeForURI extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+		//if(contextItem != null)
+			//contextSequence = contextItem.toSequence();
         
         Sequence result;
-		Sequence seq = getArgument(0).eval(contextSequence);
+		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.isEmpty())
 			//If $uri-part is the empty sequence, returns the zero-length string.
             result = StringValue.EMPTY_STRING;

@@ -25,7 +25,6 @@ import org.exist.dom.QName;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -73,20 +72,21 @@ public class FunDocumentURI extends Function {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }          
-        if (contextItem != null)
-            contextSequence = contextItem.toSequence();
         
-		Expression arg = getArgument(0);
-		Sequence s = arg.eval(contextSequence);
+        //if (contextItem != null)
+            //contextSequence = contextItem.toSequence();        
+		
+		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
         Sequence result = Sequence.EMPTY_SEQUENCE;
-        if (!s.isEmpty()) {
-            NodeValue value = (NodeValue) s.itemAt(0);
+        if (!seq.isEmpty()) {
+            NodeValue value = (NodeValue) seq.itemAt(0);
             if (value.getImplementationType() == NodeValue.PERSISTENT_NODE) { 
         		NodeProxy node = (NodeProxy) value;
          		XmldbURI path = node.getDocument().getURI(); 
         		result = new AnyURIValue(path);
             }
         }
+        
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
         

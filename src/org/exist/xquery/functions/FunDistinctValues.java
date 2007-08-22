@@ -84,12 +84,14 @@ public class FunDistinctValues extends CollatingFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
+	/*
 	public int getDependencies() {
 		int deps = Dependency.CONTEXT_SET;
 		if (getArgumentCount() == 1)
 			deps |= getArgument(0).getDependencies();
 		return deps;
 	}
+	*/
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
@@ -104,17 +106,17 @@ public class FunDistinctValues extends CollatingFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }       
         
-        if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+        //if (contextItem != null)
+			//contextSequence = contextItem.toSequence();
 
-		Sequence values = getArgument(0).eval(contextSequence);
+		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		Collator collator = getCollator(contextSequence, contextItem, 2);		
 		TreeSet set = new TreeSet(new ValueComparator(collator));
 		ValueSequence result = new ValueSequence();
 		Item item;
 		AtomicValue value;
 		boolean hasAlreadyNaN = false;
-		for (SequenceIterator i = values.iterate(); i.hasNext();) {
+		for (SequenceIterator i = seq.iterate(); i.hasNext();) {
 			item = i.nextItem();
 			value = item.atomize();
 			if (!set.contains(value)) {

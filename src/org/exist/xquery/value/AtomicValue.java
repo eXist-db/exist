@@ -219,9 +219,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#effectiveBooleanValue()
 	 */
-	public boolean effectiveBooleanValue() throws XPathException {
-		return false;
-	}
+	public abstract boolean effectiveBooleanValue() throws XPathException;
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#toNodeSet()
@@ -469,6 +467,10 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 				default :
 					throw new XPathException("cannot convert empty value to " + requiredType);
 			}
+		}
+		
+		public boolean effectiveBooleanValue() throws XPathException {
+			return false;
 		}
 
 		/* (non-Javadoc)

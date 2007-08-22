@@ -67,6 +67,10 @@ public class JavaObjectValue extends AtomicValue {
 		throw new XPathException(
 			"cannot convert Java object to " + Type.getTypeName(requiredType));
 	}
+	
+	public boolean effectiveBooleanValue() throws XPathException {
+		throw new XPathException("Called effectiveBooleanValue() on JavaObjectValue");
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)

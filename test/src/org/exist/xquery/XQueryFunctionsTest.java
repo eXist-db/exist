@@ -189,6 +189,11 @@ public class XQueryFunctionsTest extends TestCase {
             
             result  = service.query( "let $seq := ('A', 2, 'B', 2) return distinct-values($seq) " );      
             assertEquals( 3, result.getSize() ); 
+            
+            String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+        	"return $a/b[distinct-values(.)]";
+            result = service.query(query);          
+            assertEquals(2, result.getSize());
 		
 		} catch (XMLDBException e) {
 			System.out.println("testDistinctValues(): " + e);
@@ -555,7 +560,14 @@ public class XQueryFunctionsTest extends TestCase {
 			query = "encode-for-uri(\"" + string + "\")";
 			result = service.query(query);
 			r 	= (String) result.getResource(0).getContent();
-			assertEquals(expected, r);				
+			assertEquals(expected, r);	
+			
+			
+	        query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+        	"return $a/b[encode-for-uri(.) ne '']";
+	        result = service.query(query);          
+	        assertEquals(2, result.getSize());
+	        
 		} catch (XMLDBException e) {
 			System.out.println("testEncodeForURI(): " + e);
 			fail(e.getMessage());
@@ -622,6 +634,11 @@ public class XQueryFunctionsTest extends TestCase {
 			result = service.query(query);
 			r 	= (String) result.getResource(0).getContent();
 			assertEquals("$", r);
+			
+	        query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+        	"return $a/b[escape-html-uri(.) ne '']";
+	        result = service.query(query);          
+	        assertEquals(2, result.getSize());			
 
 		} catch (XMLDBException e) {
 			System.out.println("EscapeHTMLURI(): " + e);
@@ -775,8 +792,22 @@ public class XQueryFunctionsTest extends TestCase {
           e.printStackTrace();
           fail(e.getMessage());
         }
-      }     
+      }  
     
+    public void testDocumentURI() {
+        String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+        	"return $a/b[document-uri(.) ne '']";
+        
+        try {
+          ResourceSet result = service.query(query);          
+          assertEquals(2, result.getSize());
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }   
+  
+   
     //ensure the test collection is removed and call collection-exists,
     //which should return false, no exception thrown
     public void testCollectionExists1() {

@@ -148,40 +148,48 @@ public abstract class AbstractSequence implements Sequence {
 	public boolean effectiveBooleanValue() throws XPathException {		
 		if (isEmpty())
 			return false;
-		
-		if ( OLD_EXIST_VERSION_COMPATIBILITY )
-			//TODO : get rid of getLength()
-			if (hasMany())
-				return true;
 
-		Item first = itemAt(0);
-		
-		// If operand is a sequence whose first item is a node, fn:boolean returns true.		
-		if (Type.subTypeOf(first.getType(), Type.NODE )) {
+		Item first = itemAt(0);		
+		//If its operand is a sequence whose first item is a node, fn:boolean returns true.		
+		if (Type.subTypeOf(first.getType(), Type.NODE))
 			return true;
+		
+		if (hasMany()) {
+			if (OLD_EXIST_VERSION_COMPATIBILITY)		
+				return true;
+			else
+				throw new XPathException(
+					"error FORG0006: effectiveBooleanValue: first item of '" + 
+	                (toString().length() < 20 ? toString() : toString().substring(0, 20)+ "...") + 
+	                "' is not a node, and sequence length > 1");
 		}
+		
+		//TODO : type a single cast to AtomicValue
 
-		if ( ! OLD_EXIST_VERSION_COMPATIBILITY )
-			//TODO : get rid of getLength()
-			if (hasMany())
-			throw new XPathException(
-				"error FORG0006: effectiveBooleanValue: first item of '" + 
-                (toString().length() < 20 ? toString() : toString().substring(0, 20)+ "...") + 
-                            "' is not a node, and sequence length > 1");
-
-		// If $arg is a singleton value of type xs:boolean or a derived from xs:boolean, fn:boolean returns $arg.
+		// If its operand is a singleton value of type xs:string, xs:anyURI, xs:untypedAtomic, 
+		//or a type derived from one of these, fn:boolean returns false if the operand value has zero length; otherwise it returns true.
 		if(first instanceof StringValue)
 			return ((StringValue)first).effectiveBooleanValue();
+		else if(first instanceof AnyURIValue)
+			return ((AnyURIValue)first).effectiveBooleanValue();
+		else if(first instanceof UntypedAtomicValue)
+			return ((UntypedAtomicValue)first).effectiveBooleanValue();
+		//If its operand is a singleton value of type xs:boolean or derived from xs:boolean, 
+		//fn:boolean returns the value of its operand unchanged.
 		else if(first instanceof BooleanValue)
 			return ((BooleanValue)first).getValue();
+		//If its operand is a singleton value of any numeric type or derived from a numeric type, 
+		//fn:boolean returns false if the operand value is NaN or is numerically equal to zero; 
+		//otherwise it returns true.		
 		else if(first instanceof NumericValue)
 			return ((NumericValue)first).effectiveBooleanValue();
 		else {
-			if ( OLD_EXIST_VERSION_COMPATIBILITY )
+			if (OLD_EXIST_VERSION_COMPATIBILITY)
 				return true;
 			// In all other cases, fn:boolean raises a type error [err:FORG0006].
 			throw new XPathException(
-				"error FORG0006: effectiveBooleanValue: sequence of length 1, but not castable to a number or Boolean");
+				"error FORG0006: effectiveBooleanValue: sequence of length 1, " +
+				"but not castable to a number or Boolean");
 		}
 	}
 	

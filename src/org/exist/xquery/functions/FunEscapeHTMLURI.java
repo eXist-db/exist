@@ -61,16 +61,15 @@ public class FunEscapeHTMLURI extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+		//if(contextItem != null)
+		//	contextSequence = contextItem.toSequence();
         
         Sequence result;
-		Sequence seq = getArgument(0).eval(contextSequence);
+		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.isEmpty())
             result = StringValue.EMPTY_STRING;
         else {
-    		String value; 
-   			value = URIUtils.escapeHtmlURI(seq.getStringValue());
+    		String value = URIUtils.escapeHtmlURI(seq.getStringValue());
             result =  new StringValue(value);
         }
         
