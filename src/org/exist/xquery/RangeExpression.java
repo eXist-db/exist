@@ -95,6 +95,7 @@ public class RangeExpression extends PathExpr {
         else {
         	NumericValue valueStart;
         	try {
+        		//Currently breaks 1e3 to 3
         		valueStart = (NumericValue)startSeq.itemAt(0).convertTo(Type.NUMBER);
         	} catch (XPathException e) {
 				throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
@@ -103,17 +104,20 @@ public class RangeExpression extends PathExpr {
         	}
         	NumericValue valueEnd;
         	try {
+        		//Currently breaks 3 to 1e3
         		valueEnd = (NumericValue)endSeq.itemAt(0).convertTo(Type.NUMBER);
         	} catch (XPathException e) {
 				throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
 						Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
 						endSeq.itemAt(0).getStringValue() + ")'");
         	}
+        	//Implied by previous conversion
         	if (valueStart.hasFractionalPart()) {
 				throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
 						Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
 						startSeq.itemAt(0).getStringValue() + ")'");
 			}
+        	//Implied by previous conversion
         	if (valueEnd.hasFractionalPart()) {
 				throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
 						Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
