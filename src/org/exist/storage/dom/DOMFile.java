@@ -1019,157 +1019,161 @@ public class DOMFile extends BTree implements Lockable {
 	short count = 0;
 	final int dlen = page.getPageHeader().getDataLength();
 	for (int pos = 0; pos < dlen; count++) {
+		buf.append(pos + "/");
 	    final short tid = ByteConversion.byteToShort(page.data, pos);
 	    pos += LENGTH_TID;
-            if (ItemId.isLink(tid)) {
-                buf.append('L');
-            } else if (ItemId.isRelocated(tid)) {            
-                buf.append('R');
-            }             	
-	    buf.append(ItemId.getId(tid) + "[" + pos);
-	    if (ItemId.isLink(tid)) {
-		final long forwardLink = ByteConversion.byteToLong(page.data, pos);
-		buf.append(':').append(forwardLink).append("] ");
-		pos += LENGTH_FORWARD_LOCATION;
+	    buf.append(ItemId.getId(tid));
+        if (ItemId.isLink(tid)) {
+            buf.append("L");
+        } else if (ItemId.isRelocated(tid)) {            
+            buf.append("R");
+        }
+		if (ItemId.isLink(tid)) {
+			final long forwardLink = ByteConversion.byteToLong(page.data, pos);
+			buf.append(':').append(forwardLink).append(" ");
+			pos += LENGTH_FORWARD_LOCATION;
 	    } else {
-		final short vlen = ByteConversion.byteToShort(page.data, pos);
-                pos += LENGTH_DATA_LENGTH;
-		if (vlen < 0) {
-		    LOG.warn("Illegal length: " + vlen);
-		    return buf.append(":illegal length] ").toString();
-		}	
-                if (ItemId.isRelocated(tid)) {
-		    //TODO : output to buffer ?
-                    pos += LENGTH_ORIGINAL_LOCATION; 
-		}	
-				
-		switch (Signatures.getType(page.data[pos])) {
-		case Node.ELEMENT_NODE : {
-		    buf.append(':').append("element");
-		    int readOffset = pos;
-		    readOffset += 1;
-		    final int children = ByteConversion.byteToInt(page.data, readOffset);
-		    readOffset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
-		    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
-		    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-		    //That might happen during recovery runs : TODO, investigate
-		    if (owner == null) {
-		    	buf.append("(can't read data, owner is null)");
-		    } else {
-				try {				                	
-			        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
-			        readOffset += nodeId.size();					                
-				    buf.append("(" + nodeId.toString() + ")");
-					final short attributes = ByteConversion.byteToShort(page.data, readOffset);				         						
-					buf.append(" children : " + children);
-					buf.append(" attributes : " + attributes);					    
-				} catch (Exception e) {				                		
-					//TODO : more friendly message. Provide the array of bytes ?
-				    buf.append("(unable to read the node ID at : " + readOffset);								         						
-					buf.append(" children : " + children);
-					//Probably a wrong offset so... don't read it
-					buf.append(" attributes : unknown");					    
-				}             
-		    }	
-		    buf.append( "] ");
-		    break;
-		}
-		case Node.TEXT_NODE:
-		case Node.CDATA_SECTION_NODE: {
-		    if (Signatures.getType(page.data[pos]) == Node.TEXT_NODE)
-			buf.append(':').append("text");		
-		    else
-			buf.append(':').append("CDATA");		
-		    int readOffset = pos;
-		    readOffset += 1;
-		    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
-		    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-		    //That might happen during recovery runs : TODO, investigate
-		    if (owner == null) {
-		    	buf.append("(can't read data, owner is null)");
-		    } else {
-				try {			    	
-			        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
-			        readOffset += nodeId.size();
-				    buf.append("(" + nodeId.toString() + ")");
-					final ByteArrayOutputStream os = new ByteArrayOutputStream();
-					os.write(page.data, readOffset, vlen - (readOffset - pos));
-					String value;
-					try {
-					    value = new String(os.toByteArray(),"UTF-8");
-					    if (value.length() > 15) {
-					    	value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
-					    }
-					} catch (UnsupportedEncodingException e) {
-					    value = "can't decode value string";
-					}
-					buf.append(":'" + value + "'");					    
-				} catch (Exception e) {
-					//TODO : more friendly message. Provide the array of bytes ?
-					buf.append("(unable to read the node ID at : " + readOffset);	              
+			final short vlen = ByteConversion.byteToShort(page.data, pos);
+				pos += LENGTH_DATA_LENGTH;
+			if (vlen < 0) {
+			    LOG.warn("Illegal length: " + vlen);
+			    return buf.append("[illegal length : " + vlen + "] ").toString();
+			    //Probably unable to continue...
+			}	
+			else if (ItemId.isRelocated(tid)) {
+            	//TODO : output to buffer ?
+                pos += LENGTH_ORIGINAL_LOCATION; 
+            }	
+			else {	
+				buf.append("[");
+				switch (Signatures.getType(page.data[pos])) {
+				case Node.ELEMENT_NODE : {
+				    buf.append("element");
+				    int readOffset = pos;
+				    readOffset += 1;
+				    final int children = ByteConversion.byteToInt(page.data, readOffset);
+				    readOffset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
+				    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
+				    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
+				    //That might happen during recovery runs : TODO, investigate
+				    if (owner == null) {
+				    	buf.append("(can't read data, owner is null)");
+				    } else {
+						try {				                	
+					        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
+					        readOffset += nodeId.size();					                
+						    buf.append("(" + nodeId.toString() + ")");
+							final short attributes = ByteConversion.byteToShort(page.data, readOffset);				         						
+							buf.append(" children : " + children);
+							buf.append(" attributes : " + attributes);					    
+						} catch (Exception e) {				                		
+							//TODO : more friendly message. Provide the array of bytes ?
+						    buf.append("(unable to read the node ID at : " + readOffset);								         						
+							buf.append(" children : " + children);
+							//Probably a wrong offset so... don't read it
+							buf.append(" attributes : unknown");					    
+						}             
+				    }	
+				    buf.append( "] ");
+				    break;
 				}
-		    } 
-		    buf.append("] ");
-		    break;
-		}
-		case Node.ATTRIBUTE_NODE: {
-		    buf.append(':').append("attribute");
-		    int readOffset = pos;
-		    final byte idSizeType = (byte) (page.data[readOffset] & 0x3);
-		    final boolean hasNamespace = (page.data[readOffset] & 0x10) == 0x10;
-		    readOffset += 1;
-		    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);	
-		    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-		    //That might happen during recovery runs : TODO, investigate
-		    if (owner == null) {
-		    	buf.append("(can't read data, owner is null)");
-		    } else {
-				try {
-			        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
-			        readOffset += nodeId.size();
-				    buf.append("(" + nodeId.toString() + ")");	
-					readOffset += Signatures.getLength(idSizeType); 
-					if (hasNamespace) {
-					    //Untested
-					    final short NSId = ByteConversion.byteToShort(page.data, readOffset);
-					    readOffset += AttrImpl.LENGTH_NS_ID;
-					    final short prefixLen = ByteConversion.byteToShort(page.data, readOffset);
-					    readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen; 
-					    final ByteArrayOutputStream os = new ByteArrayOutputStream();
-					    os.write(page.data, readOffset, vlen - (readOffset - prefixLen));
-					    String prefix = "";
-					    try {
-						prefix = new String(os.toByteArray(),"UTF-8");				                	
-					    } catch (UnsupportedEncodingException e) {
-						LOG.error("can't decode prefix string");
-					    }		
-					    final String NsURI = ((NativeBroker)owner).getSymbols().getNamespace(NSId);					                	
-					    buf.append(prefix + "{" + NsURI + "}");
-					}		                
-					final ByteArrayOutputStream os = new ByteArrayOutputStream();
-					os.write(page.data, readOffset, vlen - (readOffset - pos));
-					String value;
-					try {
-					    value = new String(os.toByteArray(),"UTF-8");
-					    if (value.length() > 15) {
-						value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
-					    }
-					} catch (UnsupportedEncodingException e) {
-					    value = "can't decode value string";
-					}
-					buf.append(":'" + value + "'");				    
-				} catch (Exception e) {
-					//TODO : more friendly message. Provide the array of bytes ?
-					buf.append("(unable to read the node ID at : " + readOffset);	    
+				case Node.TEXT_NODE:
+				case Node.CDATA_SECTION_NODE: {
+				    if (Signatures.getType(page.data[pos]) == Node.TEXT_NODE)
+				    	buf.append("text");		
+				    else
+				    	buf.append("CDATA");		
+				    int readOffset = pos;
+				    readOffset += 1;
+				    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
+				    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
+				    //That might happen during recovery runs : TODO, investigate
+				    if (owner == null) {
+				    	buf.append("(can't read data, owner is null)");
+				    } else {
+						try {			    	
+					        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
+					        readOffset += nodeId.size();
+						    buf.append("(" + nodeId.toString() + ")");
+							final ByteArrayOutputStream os = new ByteArrayOutputStream();
+							os.write(page.data, readOffset, vlen - (readOffset - pos));
+							String value;
+							try {
+							    value = new String(os.toByteArray(),"UTF-8");
+							    if (value.length() > 15) {
+							    	value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
+							    }
+							} catch (UnsupportedEncodingException e) {
+							    value = "can't decode value string";
+							}
+							buf.append(":'" + value + "'");					    
+						} catch (Exception e) {
+							//TODO : more friendly message. Provide the array of bytes ?
+							buf.append("(unable to read the node ID at : " + readOffset);	              
+						}
+				    } 
+				    buf.append("] ");
+				    break;
 				}
-		    }
-		    buf.append("] ");
-		    break;
-		}
-		default:
-		    buf.append(':').append("UNKNOWN !").append("]");
-		}
-                pos += vlen;
+				case Node.ATTRIBUTE_NODE: {
+				    buf.append("attribute");
+				    int readOffset = pos;
+				    final byte idSizeType = (byte) (page.data[readOffset] & 0x3);
+				    final boolean hasNamespace = (page.data[readOffset] & 0x10) == 0x10;
+				    readOffset += 1;
+				    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);	
+				    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
+				    //That might happen during recovery runs : TODO, investigate
+				    if (owner == null) {
+				    	buf.append("(can't read data, owner is null)");
+				    } else {
+						try {
+					        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
+					        readOffset += nodeId.size();
+						    buf.append("(" + nodeId.toString() + ")");	
+							readOffset += Signatures.getLength(idSizeType); 
+							if (hasNamespace) {
+							    //Untested
+							    final short NSId = ByteConversion.byteToShort(page.data, readOffset);
+							    readOffset += AttrImpl.LENGTH_NS_ID;
+							    final short prefixLen = ByteConversion.byteToShort(page.data, readOffset);
+							    readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen; 
+							    final ByteArrayOutputStream os = new ByteArrayOutputStream();
+							    os.write(page.data, readOffset, vlen - (readOffset - prefixLen));
+							    String prefix = "";
+							    try {
+								prefix = new String(os.toByteArray(),"UTF-8");				                	
+							    } catch (UnsupportedEncodingException e) {
+								LOG.error("can't decode prefix string");
+							    }		
+							    final String NsURI = ((NativeBroker)owner).getSymbols().getNamespace(NSId);					                	
+							    buf.append(prefix + "{" + NsURI + "}");
+							}		                
+							final ByteArrayOutputStream os = new ByteArrayOutputStream();
+							os.write(page.data, readOffset, vlen - (readOffset - pos));
+							String value;
+							try {
+							    value = new String(os.toByteArray(),"UTF-8");
+							    if (value.length() > 15) {
+								value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
+							    }
+							} catch (UnsupportedEncodingException e) {
+							    value = "can't decode value string";
+							}
+							buf.append(":'" + value + "'");				    
+						} catch (Exception e) {
+							//TODO : more friendly message. Provide the array of bytes ?
+							buf.append("(unable to read the node ID at : " + readOffset);	    
+						}
+				    }
+				    buf.append("] ");
+				    break;
+				}
+				default:
+				    buf.append("Unknown node type !").append("]");
+				}
+			}
+			pos += vlen;
 	    }
 	}
 	buf.append("; records in page: " + count + " (header says " + page.getPageHeader().getRecordCount() + ")");

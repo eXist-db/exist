@@ -87,7 +87,7 @@ public final class Signatures {
             case Cdata:
                 return Node.CDATA_SECTION_NODE;
         }
-        System.err.println( "unknown node type" );
+        System.err.println( "Unknown node type" + type);
         return -1;
     }
     
