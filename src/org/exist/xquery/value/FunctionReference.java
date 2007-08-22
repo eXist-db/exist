@@ -66,6 +66,10 @@ public class FunctionReference extends AtomicValue {
             return this;
         throw new XPathException("cannot convert function reference to " + Type.getTypeName(requiredType));
     }
+    
+	public boolean effectiveBooleanValue() throws XPathException {
+		throw new XPathException("Called effectiveBooleanValue() on FunctionReference");
+	}    
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.AtomicValue#compareTo(java.text.Collator, int, org.exist.xquery.value.AtomicValue)

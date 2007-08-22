@@ -64,11 +64,12 @@ public class FunEndsWith extends CollatingFunction {
     };
 
     public FunEndsWith(XQueryContext context, FunctionSignature signature) {
-	super(context, signature);
+    	super(context, signature);
     }
 
+    //Why override ?
     public int returnsType() {
-	return Type.BOOLEAN;
+    	return Type.BOOLEAN;
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
@@ -81,20 +82,20 @@ public class FunEndsWith extends CollatingFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-	if (contextItem != null)
-	    contextSequence = contextItem.toSequence();
+        //if (contextItem != null)
+	    	//contextSequence = contextItem.toSequence();
 
-	String s1 = getArgument(0).eval(contextSequence).getStringValue();
-	String s2 = getArgument(1).eval(contextSequence).getStringValue();
+        Sequence s1 = getArgument(0).eval(contextSequence, contextItem);
+        Sequence s2 = getArgument(1).eval(contextSequence, contextItem);
 		
         Sequence result;
-        if (s1.length() == 0 || s2.length() == 0)
+        if (s1.isEmpty() || s2.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
-	    Collator collator = getCollator(contextSequence, contextItem, 3);
-	    if (Collations.endsWith(collator, s1, s2))
-                result = BooleanValue.TRUE;
-	    else
+		    Collator collator = getCollator(contextSequence, contextItem, 3);
+		    if (Collations.endsWith(collator, s1.getStringValue(), s2.getStringValue()))
+	            result = BooleanValue.TRUE;
+		    else
                 result = BooleanValue.FALSE;
         }
         
