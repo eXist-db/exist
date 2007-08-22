@@ -42,7 +42,12 @@ import org.exist.dom.StoredNode;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.*;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.BufferStats;
+import org.exist.storage.CacheManager;
+import org.exist.storage.NativeBroker;
+import org.exist.storage.Signatures;
+import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
@@ -52,7 +57,6 @@ import org.exist.storage.btree.Value;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
-import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.Loggable;
 import org.exist.storage.journal.Lsn;
@@ -1050,20 +1054,22 @@ public class DOMFile extends BTree implements Lockable {
 		    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 		    //That might happen during recovery runs : TODO, investigate
 		    if (owner == null) {
-			buf.append("(can't read data, owner is null)");
+		    	buf.append("(can't read data, owner is null)");
 		    } else {
-			final int nodeIdLen = ((NativeBroker)owner).getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, page.data, readOffset);
-			final VariableByteArrayInput is = new VariableByteArrayInput(page.data, readOffset, nodeIdLen);
-			readOffset += nodeIdLen;
-			try {				                	
-			    final NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromStream(is);					                
-			    buf.append("(" + nodeId.toString() + ")");
-			} catch (Exception e) {				                		
-			    buf.append("(unable to build node ID from: " + is.toString(nodeIdLen));   
-			}	
-			final short attributes = ByteConversion.byteToShort(page.data, readOffset);				         						
-			buf.append(" children : " + children);
-			buf.append(" attributes : " + attributes);					                
+				try {				                	
+			        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
+			        readOffset += nodeId.size();					                
+				    buf.append("(" + nodeId.toString() + ")");
+					final short attributes = ByteConversion.byteToShort(page.data, readOffset);				         						
+					buf.append(" children : " + children);
+					buf.append(" attributes : " + attributes);					    
+				} catch (Exception e) {				                		
+					//TODO : more friendly message. Provide the array of bytes ?
+				    buf.append("(unable to read the node ID at : " + readOffset);								         						
+					buf.append(" children : " + children);
+					//Probably a wrong offset so... don't read it
+					buf.append(" attributes : unknown");					    
+				}             
 		    }	
 		    buf.append( "] ");
 		    break;
@@ -1080,29 +1086,28 @@ public class DOMFile extends BTree implements Lockable {
 		    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 		    //That might happen during recovery runs : TODO, investigate
 		    if (owner == null) {
-			buf.append("(can't read data, owner is null)");
+		    	buf.append("(can't read data, owner is null)");
 		    } else {
-			final int nodeIdLen = ((NativeBroker)owner).getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, page.data, readOffset);		                
-			final VariableByteArrayInput is = new VariableByteArrayInput(page.data, readOffset, nodeIdLen);
-			readOffset += nodeIdLen;
-			try {
-			    final NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromStream(is);					                
-			    buf.append("(" + nodeId.toString() + ")");
-			} catch (Exception e) {
-			    buf.append("(unable to build node ID from: " + is.toString(nodeIdLen));                   
-			}	
-			final ByteArrayOutputStream os = new ByteArrayOutputStream();
-			os.write(page.data, readOffset, vlen - (readOffset - pos));
-			String value;
-			try {
-			    value = new String(os.toByteArray(),"UTF-8");
-			    if (value.length() > 15) {
-				value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
-			    }
-			} catch (UnsupportedEncodingException e) {
-			    value = "can't decode value string";
-			}
-			buf.append(":'" + value + "'");		
+				try {			    	
+			        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
+			        readOffset += nodeId.size();
+				    buf.append("(" + nodeId.toString() + ")");
+					final ByteArrayOutputStream os = new ByteArrayOutputStream();
+					os.write(page.data, readOffset, vlen - (readOffset - pos));
+					String value;
+					try {
+					    value = new String(os.toByteArray(),"UTF-8");
+					    if (value.length() > 15) {
+					    	value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
+					    }
+					} catch (UnsupportedEncodingException e) {
+					    value = "can't decode value string";
+					}
+					buf.append(":'" + value + "'");					    
+				} catch (Exception e) {
+					//TODO : more friendly message. Provide the array of bytes ?
+					buf.append("(unable to read the node ID at : " + readOffset);	              
+				}
 		    } 
 		    buf.append("] ");
 		    break;
@@ -1117,47 +1122,46 @@ public class DOMFile extends BTree implements Lockable {
 		    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 		    //That might happen during recovery runs : TODO, investigate
 		    if (owner == null) {
-			buf.append("(can't read data, owner is null)");
+		    	buf.append("(can't read data, owner is null)");
 		    } else {
-			final int nodeIdLen = ((NativeBroker)owner).getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, page.data, readOffset);			                	
-			final VariableByteArrayInput is = new VariableByteArrayInput(page.data, readOffset, nodeIdLen);
-			readOffset += nodeIdLen;
-			try {
-			    final NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromStream(is);					                
-			    buf.append("(" + nodeId.toString() + ")");
-			} catch (Exception e) {
-			    buf.append("(unable to build node ID from: " + is.toString(nodeIdLen));   
-			}		                
-			readOffset += Signatures.getLength(idSizeType); 
-			if (hasNamespace) {
-			    //Untested
-			    final short NSId = ByteConversion.byteToShort(page.data, readOffset);
-			    readOffset += AttrImpl.LENGTH_NS_ID;
-			    final short prefixLen = ByteConversion.byteToShort(page.data, readOffset);
-			    readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen; 
-			    final ByteArrayOutputStream os = new ByteArrayOutputStream();
-			    os.write(page.data, readOffset, vlen - (readOffset - prefixLen));
-			    String prefix = "";
-			    try {
-				prefix = new String(os.toByteArray(),"UTF-8");				                	
-			    } catch (UnsupportedEncodingException e) {
-				LOG.error("can't decode prefix string");
-			    }		
-			    final String NsURI = ((NativeBroker)owner).getSymbols().getNamespace(NSId);					                	
-			    buf.append(prefix + "{" + NsURI + "}");
-			}		                
-			final ByteArrayOutputStream os = new ByteArrayOutputStream();
-			os.write(page.data, readOffset, vlen - (readOffset - pos));
-			String value;
-			try {
-			    value = new String(os.toByteArray(),"UTF-8");
-			    if (value.length() > 15) {
-				value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
-			    }
-			} catch (UnsupportedEncodingException e) {
-			    value = "can't decode value string";
-			}
-			buf.append(":'" + value + "'");
+				try {
+			        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
+			        readOffset += nodeId.size();
+				    buf.append("(" + nodeId.toString() + ")");	
+					readOffset += Signatures.getLength(idSizeType); 
+					if (hasNamespace) {
+					    //Untested
+					    final short NSId = ByteConversion.byteToShort(page.data, readOffset);
+					    readOffset += AttrImpl.LENGTH_NS_ID;
+					    final short prefixLen = ByteConversion.byteToShort(page.data, readOffset);
+					    readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen; 
+					    final ByteArrayOutputStream os = new ByteArrayOutputStream();
+					    os.write(page.data, readOffset, vlen - (readOffset - prefixLen));
+					    String prefix = "";
+					    try {
+						prefix = new String(os.toByteArray(),"UTF-8");				                	
+					    } catch (UnsupportedEncodingException e) {
+						LOG.error("can't decode prefix string");
+					    }		
+					    final String NsURI = ((NativeBroker)owner).getSymbols().getNamespace(NSId);					                	
+					    buf.append(prefix + "{" + NsURI + "}");
+					}		                
+					final ByteArrayOutputStream os = new ByteArrayOutputStream();
+					os.write(page.data, readOffset, vlen - (readOffset - pos));
+					String value;
+					try {
+					    value = new String(os.toByteArray(),"UTF-8");
+					    if (value.length() > 15) {
+						value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
+					    }
+					} catch (UnsupportedEncodingException e) {
+					    value = "can't decode value string";
+					}
+					buf.append(":'" + value + "'");				    
+				} catch (Exception e) {
+					//TODO : more friendly message. Provide the array of bytes ?
+					buf.append("(unable to read the node ID at : " + readOffset);	    
+				}
 		    }
 		    buf.append("] ");
 		    break;
