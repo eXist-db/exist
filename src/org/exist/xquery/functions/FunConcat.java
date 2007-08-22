@@ -70,6 +70,7 @@ public class FunConcat extends Function {
 		super(context, signature);
 	}
 
+	//Why a specific method here ?
 	public int returnsType() {
 		return Type.STRING;
 	}
@@ -90,6 +91,7 @@ public class FunConcat extends Function {
 		}
 	}
     
+	//Why a specific method here ?
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
         // call analyze for each argument
@@ -112,12 +114,12 @@ public class FunConcat extends Function {
 		if(getArgumentCount() < 2)
 			throw new XPathException ("concat requires at least two arguments");
         
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+		//if(contextItem != null)
+		//	contextSequence = contextItem.toSequence();
 		
 		StringBuffer concat = new StringBuffer();        
 		for (int i = 0; i < getArgumentCount(); i++) {			
-            concat.append(getArgument(i).eval(contextSequence).getStringValue());
+            concat.append(getArgument(i).eval(contextSequence, contextItem).getStringValue());
 		}
 		Sequence result = new StringValue(concat.toString());
 

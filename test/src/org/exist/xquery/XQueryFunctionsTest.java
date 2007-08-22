@@ -161,7 +161,14 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "-1", r );
 			//result 	= service.query("fn:compare(\"Strasse\", \"Stra\u00DFe\", \"java:GermanCollator\")");
 			//r 		= (String) result.getResource(0).getContent();
-			//assertEquals( "0", r );			
+			//assertEquals( "0", r );
+			
+	        String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+        	"return $a/b[compare(., '+') gt 0]";        
+	        result = service.query(query);          
+	        assertEquals(2, result.getSize());			
+			
+			
 		} catch (XMLDBException e) {
 			System.out.println("testCompare(): " + e);
 			fail(e.getMessage());
@@ -742,8 +749,33 @@ public class XQueryFunctionsTest extends TestCase {
           e.printStackTrace();
           fail(e.getMessage());
         }
-      }     
+      }  
     
+    public void testCeiling() {
+        String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+        	"return $a/b[abs(ceiling(.))]";
+        
+        try {
+          ResourceSet result = service.query(query);          
+          assertEquals(2, result.getSize());
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }    
+    
+    public void testConcat() {
+        String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+        	"return $a/b[concat('+', ., '+') = '+-2+']";
+        
+        try {
+          ResourceSet result = service.query(query);          
+          assertEquals(1, result.getSize());
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }     
     
     //ensure the test collection is removed and call collection-exists,
     //which should return false, no exception thrown

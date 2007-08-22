@@ -72,26 +72,20 @@ public class FunCompare extends CollatingFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+		//if(contextItem != null)
+		//	contextSequence = contextItem.toSequence();
 
-		Sequence seq1 = getArgument(0).eval(contextSequence);
-		Sequence seq2 =	getArgument(1).eval(contextSequence);
+		Sequence seq1 = getArgument(0).eval(contextSequence, contextItem);
+		Sequence seq2 =	getArgument(1).eval(contextSequence, contextItem);
 		
-		Sequence result;
-		
+		Sequence result;		
 		if (seq1.isEmpty() || seq2.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
 		else {
-		
-			String s1 = seq1.getStringValue();
-			String s2 = seq2.getStringValue();
-	                
 			Collator collator = getCollator(contextSequence, contextItem, 3);		
-			int comparison = Collations.compare(collator, s1, s2);
+			int comparison = Collations.compare(collator, seq1.getStringValue(), seq2.getStringValue());
 			if (comparison == Constants.EQUAL) 
-				result = new IntegerValue(Constants.EQUAL);
-	        //TODO : 
+				result = new IntegerValue(Constants.EQUAL);	        
 			else if (comparison < 0)
 				result = new IntegerValue(Constants.INFERIOR);
 			else 
