@@ -120,22 +120,21 @@ public class StringValue extends AtomicValue {
             StringBuffer buf = new StringBuffer(value.length());
             char ch;
             boolean secondSurrChar = false;
-            char high;
+            char high = '\0';
             
-            int surrogateCounter = 0;
             for (int i = 0; i < value.length(); i++) {
                 ch = value.charAt(i);
-                high = ch;
                 if (XMLChar.isSurrogate(ch)) {
                     // Compose supplemental from high and low surrogate
                     if (secondSurrChar) {
                         int suppChar = XMLChar.supplemental(high, ch);
                         secondSurrChar = false;
                         buf.append("&#");
-                        buf.append(suppChar);
+                        buf.append(Integer.toString(suppChar));
                         buf.append(";");
                     } else {
                         secondSurrChar = true;
+                        high = ch;
                     }
                 } else {
                     buf.append(ch);
@@ -501,7 +500,7 @@ public class StringValue extends AtomicValue {
 	                        }
 	                    }
 	                    if (found) {
-	                        buf.append(expandEntity(entityRef.toString()));
+	                        buf.append((char) expandEntity(entityRef.toString()));
 	                    } else {
 	                        throw new XPathException("XPST0003 : Invalid character in entity name ("+ch+") or missing ;");
 	                    }

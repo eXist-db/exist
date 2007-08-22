@@ -55,7 +55,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -282,6 +284,19 @@ public class Eval extends BasicFunction {
 			sequence = xquery.execute(compiled, exprContext, false);
             if (innerContext != this.context)
                 innerContext.reset();
+            ValueSequence newSeq = new ValueSequence();
+            boolean hasSupplements = false;
+            for (int i = 0;  i < sequence.getItemCount(); i++) {
+                if (sequence.itemAt(i) instanceof StringValue) {
+                    newSeq.add(new StringValue(((StringValue) sequence.itemAt(i)).getStringValue(true)));
+                    hasSupplements = true;
+                } else {
+                    newSeq.add(sequence.itemAt(i));
+                }
+            }
+            if (hasSupplements) {
+                sequence = newSeq;
+            }
 			return sequence;
 		} catch (XPathException e) {
 			try {

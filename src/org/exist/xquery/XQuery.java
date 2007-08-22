@@ -40,6 +40,7 @@ import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
