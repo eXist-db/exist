@@ -119,23 +119,14 @@ public class StringValue extends AtomicValue {
         if (bmpCheck) {
             StringBuffer buf = new StringBuffer(value.length());
             char ch;
-            boolean secondSurrChar = false;
-            char high = '\0';
-            
             for (int i = 0; i < value.length(); i++) {
                 ch = value.charAt(i);
                 if (XMLChar.isSurrogate(ch)) {
                     // Compose supplemental from high and low surrogate
-                    if (secondSurrChar) {
-                        int suppChar = XMLChar.supplemental(high, ch);
-                        secondSurrChar = false;
+                    int suppChar = XMLChar.supplemental(ch, value.charAt(++i));
                         buf.append("&#");
                         buf.append(Integer.toString(suppChar));
                         buf.append(";");
-                    } else {
-                        secondSurrChar = true;
-                        high = ch;
-                    }
                 } else {
                     buf.append(ch);
                 }
