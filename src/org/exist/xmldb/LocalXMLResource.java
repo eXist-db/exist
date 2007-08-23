@@ -54,6 +54,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -120,7 +121,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			// Case 2: content is an atomic value
 		} else if (value != null) {
 			try {
-                if (value instanceof StringValue) {
+                if (Type.subTypeOf(value.getType(),Type.STRING)) {
                     return ((StringValue)value).getStringValue(true);
                 }
                 else {
