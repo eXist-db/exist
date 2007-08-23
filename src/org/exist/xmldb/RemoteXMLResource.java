@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2003-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xmldb;
 
 import java.io.ByteArrayOutputStream;
@@ -30,6 +51,7 @@ import org.exist.util.Compressor;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.DocumentType;
@@ -108,71 +130,71 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     }
 
     public Object getContent() throws XMLDBException {
-	if (content != null) {
-	    return content;
-	}
-	if (file != null) {
-	    return file;
-	}
-	Properties properties = parent.getProperties();
-	byte[] data = null;
-	if (id == null) {
-	    Vector params = new Vector();
-	    params.addElement(path.toString());
-	    params.addElement(properties);
-	    try {
-		Hashtable table = (Hashtable) parent.getClient().execute("getDocumentData", params);
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		int offset = ((Integer)table.get("offset")).intValue();
-		data = (byte[])table.get("data");
-		os.write(data);
-		while(offset > 0) {
-		    params.clear();
-		    params.addElement(table.get("handle"));
-		    params.addElement(new Integer(offset));
-		    table = (Hashtable) parent.getClient().execute("getNextChunk", params);
-		    offset = ((Integer)table.get("offset")).intValue();
-		    data = (byte[])table.get("data");
-		    os.write(data);
-		}
-		data = os.toByteArray();
-	    } catch (XmlRpcException xre) {
-		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-	    } catch (IOException ioe) {
-		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-	    }
-	} else {
-	    Vector params = new Vector();
-	    params.addElement(new Integer(handle));
-	    params.addElement(new Integer(pos));
-	    params.addElement(properties);
-	    try {
-		data = (byte[]) parent.getClient().execute("retrieve", params);
-	    } catch (XmlRpcException xre) {
-		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-	    } catch (IOException ioe) {
-		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-	    }
-	}
-
-	if (properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no").equals("yes")) {
-	    try {
-		data = Compressor.uncompress(data);
-	    } catch (IOException e) {
-
-	    }
-
-
-	}
-
-
-	try {
-	    content = new String(data, properties.getProperty(OutputKeys.ENCODING, "UTF-8"));
-	} catch (UnsupportedEncodingException ue) {
-		LOG.warn(ue);
-	    content = new String(data);
-	}
-	return content;
+        if (content != null) {
+            return new StringValue(content).getStringValue(true);
+        }
+        if (file != null) {
+            return file;
+        }
+        Properties properties = parent.getProperties();
+        byte[] data = null;
+        if (id == null) {
+            Vector params = new Vector();
+            params.addElement(path.toString());
+            params.addElement(properties);
+            try {
+                Hashtable table = (Hashtable) parent.getClient().execute("getDocumentData", params);
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                int offset = ((Integer)table.get("offset")).intValue();
+                data = (byte[])table.get("data");
+                os.write(data);
+                while(offset > 0) {
+                    params.clear();
+                    params.addElement(table.get("handle"));
+                    params.addElement(new Integer(offset));
+                    table = (Hashtable) parent.getClient().execute("getNextChunk", params);
+                    offset = ((Integer)table.get("offset")).intValue();
+                    data = (byte[])table.get("data");
+                    os.write(data);
+                }
+                data = os.toByteArray();
+            } catch (XmlRpcException xre) {
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+            } catch (IOException ioe) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+            }
+        } else {
+            Vector params = new Vector();
+            params.addElement(new Integer(handle));
+            params.addElement(new Integer(pos));
+            params.addElement(properties);
+            try {
+                data = (byte[]) parent.getClient().execute("retrieve", params);
+            } catch (XmlRpcException xre) {
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+            } catch (IOException ioe) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+            }
+        }
+        
+        if (properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no").equals("yes")) {
+            try {
+                data = Compressor.uncompress(data);
+            } catch (IOException e) {
+                
+            }
+        }
+        
+        try {
+            content = new String(data, properties.getProperty(OutputKeys.ENCODING, "UTF-8"));
+            // fixme! - this should probably be earlier in the chain before serialisation. /ljo
+            content = new StringValue(content).getStringValue(true);
+        } catch (UnsupportedEncodingException ue) {
+            LOG.warn(ue);
+            content = new String(data);
+            content = new StringValue(content).getStringValue(true);
+        }
+        return content;
     }
 
     public Node getContentAsDOM() throws XMLDBException {

@@ -81,7 +81,7 @@ public class FunStrLength extends Function {
 		
 		String strval = contextSequence.getStringValue();
 
-		Sequence result = new IntegerValue(FunStringToCodepoints.getCodePoints(strval).getItemCount());
+		Sequence result = new IntegerValue(FunStringToCodepoints.getCodePointCount(strval));
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 

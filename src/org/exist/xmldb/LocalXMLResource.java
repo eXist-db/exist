@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2003-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xmldb;
 
 import java.io.File;
@@ -32,6 +53,7 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.StringValue;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -77,8 +99,10 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	}
 
 	public Object getContent() throws XMLDBException {
-		if (content != null)
+		if (content != null) {
+            System.out.println("LocaXML string 0 " + content);
 			return content;
+        }
 
 		// Case 1: content is an external DOM node
 		else if (root != null && !(root instanceof NodeValue)) {
@@ -96,7 +120,15 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			// Case 2: content is an atomic value
 		} else if (value != null) {
 			try {
+                if (value instanceof StringValue) {
+                    return ((StringValue)value).getStringValue(true);
+                }
+                else {
 				return value.getStringValue();
+                }
+
+
+
 			} catch (XPathException e) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e
 						.getMessage(), e);

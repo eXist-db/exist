@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.util.XMLChar;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -87,14 +88,33 @@ public class FunStringToCodepoints extends BasicFunction {
         IntegerValue next;
         for (int i = 0; i < s.length(); i++) {
             ch = s.charAt(i);
-            if (XMLChar.isSupplemental(ch)) {
-                next = new IntegerValue(XMLChar.supplemental(ch,  s.charAt(i++)));
+            if (XMLChar.isSurrogate(ch)) {
+                int supp = XMLChar.supplemental(ch, s.charAt(++i));
+                next = new IntegerValue(supp);
             } else {
-                next = new IntegerValue(ch);
+                next = new IntegerValue((int) ch);
             }
             codepoints.add(next);
         }
         return codepoints;
+    }
+
+    /** The method <code>getCodePointCount</code>
+     *
+     * @param s a <code>String</code> value
+     * @return a <code>ValueSequence</code> value
+     */
+    public static int getCodePointCount(final String s) {
+        int count = 0;
+        char ch;
+        for (int i = 0; i < s.length(); i++) {
+            ch = s.charAt(i);
+            if (XMLChar.isSurrogate(ch)) {
+                i++;
+            }
+            count++;
+        }
+        return count;
     }
 
     /**
@@ -116,14 +136,13 @@ public class FunStringToCodepoints extends BasicFunction {
                     substring.append(XMLChar.highSurrogate(ch));
                     substring.append(XMLChar.lowSurrogate(ch));
                 } else {
-                    substring.append((char) ch);                
+                    substring.append((char) ch);
                 }
             }
         } catch (XPathException e) {
             throw new XPathException("FunStringCodepoints.subSequence()/2 failure" + e.getMessage());
         }
         return substring.toString();
-        
     }
 
     /**
@@ -150,13 +169,55 @@ public class FunStringToCodepoints extends BasicFunction {
                     substring.append(XMLChar.highSurrogate(ch));
                     substring.append(XMLChar.lowSurrogate(ch));
                 } else {
-                    substring.append((char) ch);                
+                    substring.append((char) ch);             
                 }
             }
         } catch (XPathException e) {
             throw new XPathException("FunStringCodepoints.subSequence()/3 failure" + e.getMessage());
         }
         return substring.toString();
+    }
+
+    /**
+     * The method <code>codePointToString</code>
+     *
+     * @param value an <code>IntegerValue</code> value
+     * @return a <code>String</code> value
+     * @exception XPathException if an error occurs
+     */
+    public static String codePointToString(final IntegerValue value) 
+        throws XPathException {
+        StringBuffer string = new StringBuffer(2);
+        try {
+            int intValue = value.getInt();
+            if (XMLChar.isSupplemental(intValue)) {
+                string.append(XMLChar.highSurrogate(intValue));
+                string.append(XMLChar.lowSurrogate(intValue));
+            } else {
+                string.append((char) intValue);
+            }
+        } catch (XPathException e) {
+            throw new XPathException("FunStringCodepoints.codePointToString()/1 failure" + e.getMessage());
+        }
+        return string.toString();
+    }
+
+    /**
+     * The method <code>indexOf</code>
+     *
+     * @param seq a <code>ValueSequence</code> value
+     * @param value an <code>IntegerValue</code> value
+     * @return a <code>int</code> value
+     */
+    public static int indexOf(final ValueSequence seq, final IntegerValue value) {
+        int index = Constants.STRING_NOT_FOUND;
+        char ch;
+        for (int i = 0; i < seq.getItemCount(); i++) {
+            if (value.compareTo(seq.itemAt(i)) == Constants.EQUAL) {
+                return i;
+            }
+        }
+        return index;
     }
 
 }

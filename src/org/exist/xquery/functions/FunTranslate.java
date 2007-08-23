@@ -30,10 +30,12 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.ValueSequence;
 import org.exist.xquery.value.Type;
 
 /**
@@ -82,21 +84,21 @@ public class FunTranslate extends Function {
 		if(seq.isEmpty())
             result = StringValue.EMPTY_STRING;
         else {
-    		String arg = seq.getStringValue();
-    		String mapStr = getArgument(1).eval(contextSequence).getStringValue();
-    		String transStr = getArgument(2).eval(contextSequence).getStringValue();
+    		ValueSequence arg = FunStringToCodepoints.getCodePoints(seq.getStringValue());
+    		ValueSequence mapStr = FunStringToCodepoints.getCodePoints(getArgument(1).eval(contextSequence).getStringValue());
+            ValueSequence transStr = FunStringToCodepoints.getCodePoints(getArgument(2).eval(contextSequence).getStringValue());
     		int p;
-    		char ch;
-    		StringBuffer buf = new StringBuffer(arg.length());
-    		for(int i = 0; i < arg.length(); i++) {
-    			ch = arg.charAt(i);
-    			p = mapStr.indexOf(ch);
-    			if(p == Constants.STRING_NOT_FOUND)
-                    buf.append(ch);
-                else {
-    				if (p < transStr.length())
-    					buf.append(transStr.charAt(p));
-    			}    				
+    		IntegerValue ch;
+    		StringBuffer buf = new StringBuffer(arg.getItemCount());
+    		for(int i = 0; i < arg.getItemCount(); i++) {
+    			ch = (IntegerValue) arg.itemAt(i);
+    			p = FunStringToCodepoints.indexOf(mapStr, ch);
+    			if(p == Constants.STRING_NOT_FOUND) {
+                    buf.append(FunStringToCodepoints.codePointToString(ch));
+                } else {
+    				if (p < transStr.getItemCount())
+    					buf.append(FunStringToCodepoints.codePointToString((IntegerValue) transStr.itemAt(p)));
+    			}
     		}
             result = new StringValue(buf.toString());
         }

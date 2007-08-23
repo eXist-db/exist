@@ -287,7 +287,8 @@ public class Eval extends BasicFunction {
             ValueSequence newSeq = new ValueSequence();
             boolean hasSupplements = false;
             for (int i = 0;  i < sequence.getItemCount(); i++) {
-                if (sequence.itemAt(i) instanceof StringValue) {
+                //if (sequence.itemAt(i) instanceof StringValue) {
+                if (Type.subTypeOf(sequence.itemAt(i).getType(),Type.STRING)) {
                     newSeq.add(new StringValue(((StringValue) sequence.itemAt(i)).getStringValue(true)));
                     hasSupplements = true;
                 } else {
