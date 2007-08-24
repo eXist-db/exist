@@ -275,19 +275,8 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
        util:catch("java.lang.Exception",
 			let $context :=
 				<static-context>
-				    {				    	
-        				if (starts-with($testCase/@name, "fn-current-time-")) then                                
-                            <current-dateTime value="2005-12-05T10:15:03.408-05:00"/>
-                        else                        
-                            <current-dateTime value="2005-12-05T17:10:00.203-05:00"/>
-                    }
-                    {
-                        if (not(matches($testCase/@name,"^K-Adj.*ToTimezoneFunc-.*$"))) then      
-				            <implicit-timezone value="-PT5H"/>
-				           else 
-				            ()
-				    }
-           			{
+				    { xqts:compute-specific-static-context(string($testCase/@name)) }
+           			{               			
                			for $input in $testCase/catalog:input-file
                			return
                    			<variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
@@ -474,6 +463,45 @@ declare function xqts:overall-result() {
         <test-result failed="{$failed}" passed="{$passed}"
 	    error="{$error}"
             percentage="{$passed div ($passed + $failed)}"/>
+};
+
+declare function xqts:compute-specific-static-context($testCaseName as xs:string) as element()* {
+    (        
+        if ($testCaseName eq "fn-current-time-4") then
+            (: arbitrary date :)                                
+            <current-dateTime value="2005-12-05T13:38:03.455-05:00"/>  
+        else if ($testCaseName eq "fn-current-time-6") then
+            (: arbitrary date :)                                
+            <current-dateTime value="2005-12-05T13:38:18.059-05:00"/>  
+        else if ($testCaseName eq "fn-current-time-7") then
+            (: arbitrary date :)                                
+            <current-dateTime value="2005-12-05T13:38:18.059-05:00"/>              
+        else if ($testCaseName eq "fn-current-time-10") then
+            (: arbitrary date :)                                
+            <current-dateTime value="2005-12-05T13:38:18.09-05:00"/>
+        else if (starts-with($testCaseName, "fn-current-time-")) then
+            (: arbitrary date :)                                
+            <current-dateTime value="2005-12-05T10:15:03.408-05:00"/>
+        else if ($testCaseName eq "fn-current-dateTime-6") then
+            <current-dateTime value="2005-12-05T17:10:00.312-05:00"/>
+        (: bloody lower-case ! :)
+        else if ($testCaseName eq "fn-current-datetime-7") then
+            <current-dateTime value="2005-12-05T17:10:00.312-05:00"/>            
+        else if ($testCaseName eq "fn-current-dateTime-10") then
+            <current-dateTime value="2005-12-05T17:10:00.344-05:00"/> 
+        else if ($testCaseName eq "fn-current-dateTime-21") then
+            <current-dateTime value="2005-12-05T17:10:00.453-05:00"/>   
+        else if ($testCaseName eq "fn-current-dateTime-24") then
+            <current-dateTime value="2005-12-05T17:10:00.469-05:00"/>                                   
+        else                        
+            <current-dateTime value="2005-12-05T17:10:00.203-05:00"/>
+    ,
+        if (matches($testCaseName,"^fn-implicit-timezone-.*$") or
+            matches($testCaseName,"^K-ContextImplicitTimezoneFunc-.*$")) then      
+            <implicit-timezone value="-PT5H"/>
+        else 
+            ()
+    )
 };
 
 let $group := request:get-parameter('group', ())
