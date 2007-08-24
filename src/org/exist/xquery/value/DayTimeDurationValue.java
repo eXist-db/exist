@@ -244,9 +244,10 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		return new DayTimeDurationValue(quotient.getCanonicalDuration());		
 	}
 
-	private DayTimeDurationValue fromDecimalSeconds(BigDecimal x) throws XPathException {
+	private DayTimeDurationValue fromDecimalSeconds(BigDecimal x) throws XPathException {		
 		return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
-				x.signum() >= 0, null, null, null, null, null, x));
+				x.signum() >= 0, null, null, null, null, null, x.abs()));
+	
 	}
 
     public boolean effectiveBooleanValue() throws XPathException {

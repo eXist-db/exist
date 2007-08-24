@@ -275,7 +275,18 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
        util:catch("java.lang.Exception",
 			let $context :=
 				<static-context>
-				    <current-dateTime value="2005-12-05T17:10:00.203-05:00"/>
+				    {				    	
+        				if (starts-with($testCase/@name, "fn-current-time-")) then                                
+                            <current-dateTime value="2005-12-05T10:15:03.408-05:00"/>
+                        else                        
+                            <current-dateTime value="2005-12-05T17:10:00.203-05:00"/>
+                    }
+                    {
+                        if (not(matches($testCase/@name,"^K-Adj.*ToTimezoneFunc-.*$"))) then      
+				            <implicit-timezone value="-PT5H"/>
+				           else 
+				            ()
+				    }
            			{
                			for $input in $testCase/catalog:input-file
                			return

@@ -206,8 +206,9 @@ public class FunGetDateComponent extends BasicFunction {
 				result = new IntegerValue(date.getPart(DateValue.MINUTE),
 						Type.INTEGER);
 			} else if (isCalledAs("seconds-from-dateTime") || isCalledAs("seconds-from-time")) {
-				long millis = date.getPart(DateValue.SECOND) * 1000L + date.getPart(DateValue.MILLISECOND);
-				result = new DecimalValue(millis / 1000D);
+				result = new IntegerValue(date.calendar.getSecond()).convertTo(Type.DECIMAL);
+				if (date.calendar.getFractionalSecond() != null)						
+					result = ((DecimalValue)result).plus(new DecimalValue(date.calendar.getFractionalSecond()));			
 			} else if (isCalledAs("timezone-from-dateTime") || isCalledAs("timezone-from-date") || isCalledAs("timezone-from-time")) {
 				result = date.getTimezone();
 			} else {
