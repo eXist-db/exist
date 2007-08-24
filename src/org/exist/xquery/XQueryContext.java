@@ -29,13 +29,22 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.SimpleTimeZone;
 import java.util.Stack;
+import java.util.TimeZone;
 import java.util.TreeMap;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -48,7 +57,6 @@ import org.exist.collections.triggers.TriggerStatePerThread;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.http.servlets.SessionWrapper;
@@ -79,12 +87,11 @@ import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Item;
+import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.TimeUtils;
 import org.exist.xquery.value.Type;
 
 import antlr.RecognitionException;
@@ -161,6 +168,10 @@ public class XQueryContext {
 	
 	// List of options declared for this query
 	protected List options = null;
+	
+	//The Calendar for this context : may be changed by some options
+	XMLGregorianCalendar calendar = null; 
+	TimeZone implicitTimeZone = null;
 	
     /**
      * the watchdog object assigned to this query
@@ -330,6 +341,8 @@ public class XQueryContext {
     }
 
     protected void copyFields(XQueryContext ctx) {
+    	ctx.calendar = this.calendar;
+    	ctx.implicitTimeZone = this.implicitTimeZone;    	
         ctx.baseURI = this.baseURI;
         ctx.baseURISetInProlog = this.baseURISetInProlog;
         ctx.staticDocumentPaths = this.staticDocumentPaths;
@@ -350,7 +363,7 @@ public class XQueryContext {
 
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
-        ctx.contextStack = this.contextStack;
+        ctx.contextStack = this.contextStack;       
     }
     
     /**
@@ -366,7 +379,18 @@ public class XQueryContext {
 			broker.setUser(user);
 		}
 		//Reset current context position
-		setContextPosition(0);
+		setContextPosition(0);	
+		//Note that, for some reasons, an XQueryContext might be used without calling this method
+		try {
+			if (calendar == null) {
+				//Initialize to current dateTime
+				calendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+			}
+		} catch (DatatypeConfigurationException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		if (implicitTimeZone == null)
+			implicitTimeZone = TimeZone.getDefault();
 	}
 	
 	public AccessContext getAccessContext() {
@@ -734,6 +758,36 @@ public class XQueryContext {
 		staticDocuments = set;
 	}
 	
+	//TODO : not sure how these 2 options might/have to be related
+	public void setCalendar(XMLGregorianCalendar newCalendar) {		
+		this.calendar = (XMLGregorianCalendar)newCalendar.clone();	
+	}
+	
+	public void setTimeZone(TimeZone newTimeZone) {
+		this.implicitTimeZone = newTimeZone;
+	}
+	
+	public XMLGregorianCalendar getCalendar() {
+		//TODO : we might prefer to return null
+		if (calendar == null) {
+			try {
+				//Initialize to current dateTime
+				calendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+			} catch (DatatypeConfigurationException e) {
+				LOG.error(e.getMessage(), e);
+			}
+		}
+		//That's how we ensure stability of that static context function
+		return calendar;
+	}	
+	
+	 public TimeZone getImplicitTimeZone() { 	
+		 if (implicitTimeZone == null)
+			 implicitTimeZone = TimeZone.getDefault();
+		//That's how we ensure stability of that static context function
+		return this.implicitTimeZone;
+	}	
+	
 	/**
 	 * @return set of statically known documents.
 	 */
@@ -872,6 +926,8 @@ public class XQueryContext {
      * called when adding an XQuery to the cache.
 	 */
 	public void reset(boolean keepGlobals) {
+		calendar = null;
+		implicitTimeZone = null;			
         builder = new MemTreeBuilder(this);
 		builder.startDocument();
 		staticDocumentPaths = null;
@@ -1791,6 +1847,17 @@ public class XQueryContext {
                         enableOptimizer = false;
                 }
             }
+        }
+        //TODO : not sure how these 2 options might/have to be related
+        else if (Option.OPTIMIZE_IMPLICIT_TIMEZONE.compareTo(qn) == 0) {
+        	//TODO : error check
+        	Duration duration = TimeUtils.getInstance().newDuration(option.getContents());         	
+        	implicitTimeZone = new SimpleTimeZone((int)duration.getTimeInMillis(new Date()), "XQuery context");        
+        }
+        else if (Option.CURRENT_DATETIME.compareTo(qn) == 0) {
+        	//TODO : error check
+        	DateTimeValue dtv = new DateTimeValue(option.getContents());
+        	calendar = (XMLGregorianCalendar)dtv.calendar.clone();
         }
     }
 	

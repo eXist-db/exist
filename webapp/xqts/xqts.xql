@@ -275,16 +275,17 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
        util:catch("java.lang.Exception",
 			let $context :=
 				<static-context>
-       			{
-           			for $input in $testCase/catalog:input-file
-           			return
-               			<variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
-            		for $var in $testCase/catalog:input-query
-            		return
-                		<variable name="{$var/@variable}">
-                    		{xqts:get-variable($testCase, $var/@name)}
-                		</variable>
-       			}
+				    <current-dateTime value="2005-12-05T17:10:00.203-05:00"/>
+           			{
+               			for $input in $testCase/catalog:input-file
+               			return
+                   			<variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
+                		for $var in $testCase/catalog:input-query
+                		return
+                    		<variable name="{$var/@variable}">
+                        		{xqts:get-variable($testCase, $var/@name)}
+                    		</variable>
+           			}
        			</static-context>
            let $result :=
                util:eval-with-context($query, $context, false(), xqts:get-context-item($testCase/catalog:contextItem))

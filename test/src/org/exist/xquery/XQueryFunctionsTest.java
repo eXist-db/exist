@@ -679,17 +679,25 @@ public class XQueryFunctionsTest extends TestCase {
 	
     
     public void testCurrentDateTime() throws XPathException {
-        ResourceSet result      = null;
-        String      r           = "";
-        try {   
-            //Do not use this test around midnight on the last day of a month ;-)
-            result  = service.query(
-            "('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', " +
-            "'Oct', 'Nov', 'Dec')[month-from-dateTime(current-dateTime())]");
-            r       = (String) result.getResource(0).getContent();
-            SimpleDateFormat df = new SimpleDateFormat("MMM", new Locale("en", "US"));
-            Date date = new Date();
-            assertEquals(df.format(date), r );
+		ResourceSet result      = null;
+		String      r           = "";
+		try {   
+		    //Do not use this test around midnight on the last day of a month ;-)
+		    result  = service.query(
+		    "('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', " +
+		    "'Oct', 'Nov', 'Dec')[month-from-dateTime(current-dateTime())]");
+		    r       = (String) result.getResource(0).getContent();
+		    SimpleDateFormat df = new SimpleDateFormat("MMM", new Locale("en", "US"));
+		    Date date = new Date();
+		    assertEquals(df.format(date), r );
+		    
+		    String query = "declare option exist:current-dateTime '2007-08-23T00:01:02.062+02:00';" +
+		    "current-dateTime()";
+		    result = service.query(query);          
+		    assertEquals(1, result.getSize());
+		    r = (String) result.getResource(0).getContent();
+		    assertEquals("2007-08-23T00:01:02.062+02:00", r);          
+        
         } catch (XMLDBException e) {
             System.out.println("current-dateTime(): " + e);
             fail(e.getMessage());
@@ -806,7 +814,20 @@ public class XQueryFunctionsTest extends TestCase {
           fail(e.getMessage());
         }
       }   
-  
+    
+    public void testImplicitTimezone() {
+        String query = "declare option exist:implicit-timezone 'PT3H';" +
+        "implicit-timezone()";
+        try {
+          ResourceSet result = service.query(query);          
+          assertEquals(1, result.getSize());
+          String r = (String) result.getResource(0).getContent();
+          assertEquals("PT3H", r);          
+         } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      } 
    
     //ensure the test collection is removed and call collection-exists,
     //which should return false, no exception thrown
