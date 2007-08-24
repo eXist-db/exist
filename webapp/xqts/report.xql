@@ -87,7 +87,7 @@ declare function xqts:display-page() as element() {
     util:declare-option("exist:serialize", "media-type=text/html method=xhtml"),
     <html>
         <head>
-            <title>XQuery Test Suite - Test Reports</title>
+            <title>{string(/catalog:test-suite/catalog:test-suite-info/catalog:title)} - Test Reports</title>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <link type="text/css" href="styles/report.css" rel="stylesheet"/>
 			<link type="text/css" href="styles/SyntaxHighlighter.css" rel="stylesheet"/>
@@ -111,7 +111,7 @@ declare function xqts:display-page() as element() {
                     <li><a href="../examples.xml">Demo</a></li>
                     <li><a href="collectresults.xql">Results</a></li>
                 </ul>
-                <h1>XQuery Test Suite - Test Reports</h1>
+                <h1>{string(/catalog:test-suite/catalog:test-suite-info/catalog:title)} - Test Reports</h1>
             </div>
             
             <div id="content">
@@ -160,8 +160,9 @@ declare function xqts:display-page() as element() {
                         <li>Modify the file <span class="filename">EXIST_HOME/webapp/xqts/config.xml</span> to match your 
                             local setup (XQTS_HOME)</li>
                         <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, change <b>validation="no"</b></li>
+                        <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, change <b>suppress-whitespace="none"</b></li>
                         <li>Start eXist as full server in EXIST_HOME : <span class="filename">bin/startup.sh</span></li>
-                        <li>Start data upload : <span class="filename">build.[.sh|bat] -f webapp/xqts/build.xml</span></li>
+                        <li>Start data upload : <span class="filename">build.[sh|bat] -f webapp/xqts/build.xml</span></li>
                         <li>Reload this page!</li>
                     </ul>
                 </div>

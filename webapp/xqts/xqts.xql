@@ -131,17 +131,19 @@ declare function xqts:get-query($case as element(catalog:test-case)) {
 declare function xqts:print-result($test-name as xs:string, $passed as xs:boolean, $query as xs:string, 
     $result as item()*, $expected as item()*, $case as element(catalog:test-case)) as element() {
     <test-case name="{$test-name}" result="{if ($passed) then 'pass' else 'fail'}" dateRun="{util:system-time()}" print="print-result">
-    {
-        if (not($passed)) then (
-            <result>{$result}</result>,
-            if ($expected instance of element() and count($expected/*) > 10) then
-            	<expected truncated="">{$expected/*[position() < 10]}</expected>
-            else
-                <expected>{$expected}</expected>,
-            (: element {$case/catalog:input-file/@variable} { xqts:getInputValue($case) }, :)
-            <query>{$query}</query>
-        ) else ()
-    }
+        <result>{$result}</result>
+        {
+            if (not($passed)) then (    
+                for $expected_single in $expected[position() < 10]
+                return        
+                    <expected>{$expected_single}</expected>,
+                    if (count($expected) > 9) then
+                        <expected>Skipped {count($expected) - 10}</expected>
+                    else ()
+                (: element {$case/catalog:input-file/@variable} { xqts:getInputValue($case) }, :)
+            ) else ()
+        }
+        <query>{$query}</query>            
     </test-case>
 };
 
@@ -184,11 +186,11 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 let $test := xdiff:compare($expected, $result)
                 return
                     xqts:print-result($case/@name, $test, $query, $result, $expected, $case),
-                (: Handle unexpected exceptions :)
-                <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="xml-compare-unexpected-exception">
-                   <exception>Exception while loading expected result: {$util:exception-message}</exception>
-                   <query>{$query}</query>
-                </test-case>
+                    (: Handle unexpected exceptions :)
+                    <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="xml-compare-unexpected-exception">
+                       <exception>Exception while loading expected result: {$util:exception-message}</exception>
+                       <query>{$query}</query>
+                    </test-case>
             )
         (: Comparison method: "Fragment" :)
         else if ($output/@compare eq "Fragment") then
@@ -200,15 +202,15 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 (:
                 let $log := util:log("DEBUG", ("Frag stored: ", $xmlFrag))
                 let $doh := doc(xdb:store("/db", $output, $xmlFrag, "text/xml"))
-		:)
+                :)
                 let $test := xdiff:compare($expected, <f>{$result}</f>)
                 return
                     xqts:print-result($case/@name, $test, $query, <f>{$result}</f>, $expected, $case),
-                (: Handle unexpected exceptions :)
-                <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="fragment-compare-unexpected-exception">
-                   <exception>Exception while loading expected result fragment: {$util:exception-message}</exception>
-                   <query>{$query}</query>
-                </test-case>
+                    (: Handle unexpected exceptions :)
+                    <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="fragment-compare-unexpected-exception">
+                       <exception>Exception while loading expected result fragment: {$util:exception-message}</exception>
+                       <query>{$query}</query>
+                    </test-case>
             )
         (: Comparison method: "Inspect" :)
         (: A text compare is sufficient in many test cases :)
@@ -217,45 +219,41 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 "/", $output/text()), "UTF-8")
             let $test := xqts:normalize-text($text) eq xqts:normalize-text($result)
             return
-                xqts:print-result($case/@name, $test, $query, $result, $text, $case)
-            
+                xqts:print-result($case/@name, $test, $query, $result, $text, $case)            
         (: Don't know how to compare :)
-      else
-        <test-case name="{$case/@name}" result="error" dateRun="{util:system-time()}" print="unknown-comparison-method">
-          <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
-          <query>{$query}</query>
-	</test-case>
+        else
+            <test-case name="{$case/@name}" result="error" dateRun="{util:system-time()}" print="unknown-comparison-method">
+                <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
+                <query>{$query}</query>
+            </test-case>
     (: Use this let clause to get an update insert failure from the 5314th 
        test and onward in xqts:report-progress(). in-memory-temp-frag corrpution
        reproducible in xqts, who could imagine... /ljo :)
     (: let $passed := $all-results//test-case[@result eq 'pass'] :)
     let $passed :=
       if (fn:exists($all-results[2])) then
-	let $result-frag := concat("<f>", fn:string-join($all-results, ""), "</f>")
-	let $results-doc := doc(xdb:store("/db", "temp-res.xml", $result-frag, "text/xml"))
-        return $results-doc//test-case[@result eq 'pass']
+    	let $result-frag := concat("<f>", fn:string-join($all-results, ""), "</f>")
+        let $results-doc := doc(xdb:store("/db", "temp-res.xml", $result-frag, "text/xml"))
+            return $results-doc//test-case[@result eq 'pass']
       else ()
     return
-      if (fn:exists($passed)) then
-	$passed[1]
-      else if (fn:exists($all-results[1])) then
-	$all-results[1]
+      if (fn:exists($passed)) then $passed[1]
+      else if (fn:exists($all-results[1])) then	$all-results[1]
       else
         (: Expected runtime-exception, but got a result :)
-      if (fn:exists($case//catalog:expected-error) and fn:empty($case//catalog:output-file) and $case/@scenario eq "runtime-error") then
-        <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="expected-error-and-no-output">
-          <expected-error>{string-join($case/catalog:expected-error/text(), ";")}</expected-error>
-          <result>{$result}</result>
-          <query>{$query}</query>
-        </test-case>
-      else
-	let $log-all := util:log("DEBUG", ("Unhandled error, no result for: ", xs:string($case/@name)))
+        if (fn:exists($case//catalog:expected-error) and fn:empty($case//catalog:output-file) and $case/@scenario eq "runtime-error") then
+            <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="expected-error-and-no-output">
+              <expected-error>{string-join($case/catalog:expected-error/text(), ";")}</expected-error>
+              <result>{$result}</result>
+              <query>{$query}</query>
+            </test-case>
+        else
+	       let $log-all := util:log("DEBUG", ("Unhandled error, no result for: ", xs:string($case/@name)))
 	return 
 	  <test-case name="{$case/@name}" result="error" dateRun="{util:system-time()}" print="unhandled-error">
     	    <error test="{$case/@name}">Cannot handle: {$case/@name}.</error>
             <query>{$query}</query>
-          </test-case>
-
+      </test-case>
 };
 
 declare function xqts:get-variable($case as element(catalog:test-case), 
