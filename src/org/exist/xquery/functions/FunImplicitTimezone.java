@@ -1,7 +1,5 @@
 package org.exist.xquery.functions;
 
-import java.util.Date;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -10,7 +8,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.DayTimeDurationValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -42,13 +40,7 @@ public class FunImplicitTimezone extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-        //Sequence result = new DayTimeDurationValue(TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
-        
-        //TODO : very ugly workaround that makes implicit-timeout() stable
-        //and independant from the context's implicit time zone 
-        //not counting that its stability might be discussed
-        
-        Sequence result = new DateTimeValue(new Date(context.getWatchDog().getStartTime())).getTimezone();
+        Sequence result = new DayTimeDurationValue(context.getImplicitTimeZone().getRawOffset() + context.getImplicitTimeZone().getDSTSavings());
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 

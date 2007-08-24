@@ -1155,6 +1155,14 @@ example:echo(("Hello", "World!"))
                 The limit is just an estimation, specified in terms of the accumulated number of
                 nodes contained in all generated fragments. This can be used to prevent users from
                 consuming too much memory if they are allowed to pass in their own XQueries.</para>
+                
+            <synopsis>declare option exist:implicit-timezone "duration";</synopsis>
+
+            <para>Specifies the <ulink url="http://www.w3.org/TR/xquery/#dt-timezone">implicit timezone</ulink> for the XQuery context.</para>
+                
+            <synopsis>declare option exist:current-dateTime "dateTime";</synopsis>
+
+            <para>Specifies the <ulink url="http://www.w3.org/TR/xquery/#GLdt-date-time">current dateTime</ulink> for the XQuery context.</para>
 
         </section>
         

@@ -25,6 +25,11 @@ package org.exist.xquery.functions.util;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.SimpleTimeZone;
+
+import javax.xml.datatype.Duration;
 
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -50,12 +55,14 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.EmptySequence;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.TimeUtils;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Element;
@@ -117,7 +124,8 @@ public class Eval extends BasicFunction {
                 "URI is interpreted as a database path. This is the same as calling " +
                 "util:eval('xmldb:exist:///db/test/test.xq'). " +                
 				"The query inherits the context described by the XML fragment in the second parameter. " +
-				"It should have the format: <static-context><variable name=\"qname\">" +
+				"It should have the format: <static-context><current-dateTime value=\"dateTime\"/>" +
+				"implicit-timezone value=\"duration\"/><variable name=\"qname\">" +
 				"variable value</variable></static-context>. " +
 				"The third argument specifies if the compiled query expression " +
 				"should be cached. The cached query will be globally available within the db instance.",
@@ -137,7 +145,8 @@ public class Eval extends BasicFunction {
                 "URI is interpreted as a database path. This is the same as calling " +
                 "util:eval('xmldb:exist:///db/test/test.xq'). " +                
 				"The query inherits the context described by the XML fragment in the second parameter. " +
-				"It should have the format: <static-context><variable name=\"qname\">" +
+				"It should have the format: <static-context><current-dateTime value=\"dateTime\"/>" +
+				"implicit-timezone value=\"duration\"/><variable name=\"qname\">" +
 				"variable value</variable></static-context>. " +
 				"The third argument specifies if the compiled query expression " +
 				"should be cached. The cached query will be globally available within the db instance." +
@@ -403,6 +412,16 @@ public class Eval extends BasicFunction {
 				if (value instanceof ReferenceNode)
 					value = ((ReferenceNode) value).getReference();
 				innerContext.declareVariable(qname, value);
+			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"current-dateTime".equals(child.getLocalName())) {
+				Element elem = (Element) child;
+				//TODO : error check
+				DateTimeValue dtv = new DateTimeValue(elem.getAttribute("value"));
+	        	innerContext.setCalendar(dtv.calendar);	        	
+			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"implicit-timezone".equals(child.getLocalName())) {
+				Element elem = (Element) child;
+				//TODO : error check
+				Duration duration = TimeUtils.getInstance().newDuration(elem.getAttribute("value")); 	        
+	        	innerContext.setTimeZone(new SimpleTimeZone((int)duration.getTimeInMillis(new Date()), "XQuery context"));      	
 			}
 		}
 	}

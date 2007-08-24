@@ -40,6 +40,8 @@ public class Option {
 	public final static QName SERIALIZE_QNAME = new QName("serialize", Namespaces.EXIST_NS);
     public final static QName PROFILE_QNAME = new QName("profiling", Namespaces.EXIST_NS);
     public final static QName OPTIMIZE_QNAME = new QName("optimize", Namespaces.EXIST_NS);
+    public final static QName OPTIMIZE_IMPLICIT_TIMEZONE = new QName("implicit-timezone", Namespaces.EXIST_NS);
+    public final static QName CURRENT_DATETIME = new QName("current-dateTime", Namespaces.EXIST_NS);
 	
     private final static String paramPattern =
 		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\\s]+)";

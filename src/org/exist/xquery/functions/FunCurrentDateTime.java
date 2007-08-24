@@ -22,8 +22,6 @@
  */
 package org.exist.xquery.functions;
 
-import java.util.Date;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -85,7 +83,7 @@ public class FunCurrentDateTime extends Function {
 				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
 		}        
 
-		Sequence result = new DateTimeValue(new Date(context.getWatchDog().getStartTime()));
+		Sequence result = new DateTimeValue(context.getCalendar());
 		if (isCalledAs("current-dateTime")) {
 			// do nothing, result already in right form
 		} else if (isCalledAs("current-date")) {
