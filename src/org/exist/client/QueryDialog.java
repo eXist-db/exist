@@ -202,7 +202,7 @@ public class QueryDialog extends JFrame {
         query.setPositionOutputTextArea(queryPositionDisplay);
         
         progress = new JProgressBar();
-        progress.setPreferredSize(new Dimension(200, 30));
+        progress.setPreferredSize(new Dimension(200, statusbar.getHeight()));
         progress.setVisible(false);
         statusbar.add(progress);
         
