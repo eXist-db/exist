@@ -126,6 +126,10 @@ public class XMLWriter {
 		defaultNamespace = "";
 	}
 
+	public String getDefaultNamespace() {
+		return "".equals(defaultNamespace) ? null : defaultNamespace;
+	}
+
 	public void setDefaultNamespace(String namespace) {
 		defaultNamespace = namespace == null ? "" : namespace;
 	}
