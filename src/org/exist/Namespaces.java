@@ -37,8 +37,9 @@ public interface Namespaces {
 	public final static String SCHEMA_INSTANCE_NS = "http://www.w3.org/2001/XMLSchema-instance";	
     // Move this here from Function.BUILTIN_FUNCTION_NS? /ljo
 	public final static String XPATH_FUNCTIONS_NS = "http://www.w3.org/2005/xpath-functions";	
+    public final static String XQUERY_LOCAL_NS = "http://www.w3.org/2003/08/xquery-local-functions";
 	public final static String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";	
-	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";	
+	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
 	public final static String XML_NS = "http://www.w3.org/XML/1998/namespace";	
 	public final static String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
 	
