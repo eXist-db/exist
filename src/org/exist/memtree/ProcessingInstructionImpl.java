@@ -22,6 +22,9 @@
 package org.exist.memtree;
 
 import org.exist.dom.QName;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.StringValue;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
@@ -66,6 +69,10 @@ public class ProcessingInstructionImpl
 		return new String(document.characters, document.alpha[nodeNumber],
 		document.alphaLen[nodeNumber]);
 	}
+	
+	public AtomicValue atomize() throws XPathException {
+		return new StringValue(getData());
+	}	
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.ProcessingInstruction#setData(java.lang.String)
