@@ -123,9 +123,6 @@ public class XQueryContext {
 	private static final String JAVA_URI_START = "java:";
     //private static final String XMLDB_URI_START = "xmldb:exist://";
     
-    public final static String XQUERY_LOCAL_NS =
-		"http://www.w3.org/2003/08/xquery-local-functions";
-
     protected final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
 	private static final String TEMP_STORE_ERROR = "Error occurred while storing temporary data";
@@ -504,13 +501,34 @@ public class XQueryContext {
 	            // if an empty namespace is specified, 
 	            // remove any existing mapping for this namespace
 	        	//TODO : improve, since XML_NS can't be unbound
-	            prefixes.remove(uri);
+				prefixes.remove(uri);
 	            namespaces.remove(prefix);
 	            return;
 			}
-			//Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
-			if (!uri.equals(prevURI))
-				throw new XPathException("err:XQST0033: Namespace prefix '" + prefix + "' is already bound to a different uri '" + prevURI + "'");
+			//those prefixes can be rebound to different URIs
+			if ((prefix.equals("xs") && Namespaces.SCHEMA_NS.equals(prevURI)) ||
+				(prefix.equals("xsi") && Namespaces.SCHEMA_INSTANCE_NS.equals(prevURI)) ||
+				(prefix.equals("xdt") && Namespaces.XPATH_DATATYPES_NS.equals(prevURI))|| 
+				(prefix.equals("fn") && Namespaces.XPATH_FUNCTIONS_NS.equals(prevURI)) ||
+				(prefix.equals("local") && Namespaces.XQUERY_LOCAL_NS.equals(prevURI))) {
+
+				prefixes.remove(prevURI);
+				namespaces.remove(prefix);
+				if (uri.length() > 0) {
+					namespaces.put(prefix, uri);
+					prefixes.put(uri, prefix);
+					return;
+				}
+				//Nothing to bind (not sure if it should raise an error though)
+				else {
+					//TODO : check the specs : unbinding an NS which is not already bound may be disallowed.
+					LOG.warn("Unbinding unbound prefix '" + prefix + "'");
+				}
+			} else {		
+				//Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
+				if (!uri.equals(prevURI))
+					throw new XPathException("err:XQST0033: Namespace prefix '" + prefix + "' is already bound to a different uri '" + prevURI + "'");
+			}
 		}
 	}
 
@@ -2160,7 +2178,7 @@ public class XQueryContext {
 			//required for backward compatibility
 			declareNamespace("xdt", Namespaces.XPATH_DATATYPES_NS);
 			declareNamespace("fn", Namespaces.XPATH_FUNCTIONS_NS);
-			declareNamespace("local", XQUERY_LOCAL_NS);
+			declareNamespace("local", Namespaces.XQUERY_LOCAL_NS);
 			//*not* as standard NS
 			declareNamespace("exist", Namespaces.EXIST_NS);
 			//TODO : include "err" namespace ?
