@@ -199,7 +199,8 @@
 
     <section id="module_spatial">
       <title>Spatial module</title>
-      <para>Various functions for <ulink url="http://www.opengeospatial.org/standards/gml">GML</ulink> geometries, whether indexed or not.</para>
+      <para>Various functions for <ulink url="http://www.opengeospatial.org/standards/gml">GML</ulink> geometries, whether indexed or not. 
+      More information about the design is available <ulink url="devguide_indexes.xml">here</ulink>.</para>
       <para>
 	<command>Creator:</command>&#160;<dc:creator>Pierrick Brihaye</dc:creator>
 	<command>Licence:</command>&#160;LGPL
