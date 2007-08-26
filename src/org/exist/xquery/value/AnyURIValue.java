@@ -111,7 +111,19 @@ public class AnyURIValue extends AtomicValue {
 					"Type error: the given string '" + s + "' cannot be cast to " + Type.getTypeName(getType()));
 			}
 		}
-		this.uri = s;
+		/*
+		The URI value is whitespace normalized according to the rules for the xs:anyURI type in [XML Schema]. 
+		<xs:simpleType name="anyURI" id="anyURI">
+			...
+			<xs:restriction base="xs:anySimpleType">
+				<xs:whiteSpace fixed="true" value="collapse" id="anyURI.whiteSpace"/>
+			</xs:restriction>
+		</xs:simpleType>
+		*/
+		//TODO : find a way to perform the 3 operations at the same time
+		s = StringValue.expand(s); //Should we have character entities
+		s = StringValue.normalizeWhitespace(s); //Should we have TABs, new lines...
+		this.uri = StringValue.collapseWhitespace(s);
 	}
 
 	/**
