@@ -43,7 +43,7 @@ import org.xml.sax.SAXException;
  */
 public class LogFunction extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("log", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Logs the message specified in $b to the current logger. $a indicates " +
@@ -52,9 +52,27 @@ public class LogFunction extends BasicFunction {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
 			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+			new SequenceType(Type.ITEM, Cardinality.EMPTY)
+		),
+		new FunctionSignature(
+			new QName("log-system-out", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Logs the message specified in $b to System.out.",
+			new SequenceType[] {
+				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+			},
+			new SequenceType(Type.ITEM, Cardinality.EMPTY)
+		),
+		new FunctionSignature(
+			new QName("log-system-err", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Logs the message specified in $b to System.err.",
+			new SequenceType[] {
+				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+			},
+			new SequenceType(Type.ITEM, Cardinality.EMPTY)
+		)
+	};
 	
-	public LogFunction(XQueryContext context) {
+	public LogFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -63,17 +81,25 @@ public class LogFunction extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		if(args[1].isEmpty())
-			return Sequence.EMPTY_SEQUENCE;
-		String priority = args[0].getStringValue();
 		
+		SequenceIterator i;
+		if (isCalledAs("log")) {
+			i = args[1].unorderedIterator();
+			if(args[1].isEmpty())
+				return Sequence.EMPTY_SEQUENCE;
+		} else {
+			i = args[0].unorderedIterator();
+			if(args[0].isEmpty())
+				return Sequence.EMPTY_SEQUENCE;
+		}
+			
 		// add line of the log statement
 		StringBuffer buf = new StringBuffer();
 		buf.append("(Line: ");
 		buf.append(getASTNode().getLine());
 		buf.append(") ");
 		
-		for(SequenceIterator i = args[1].unorderedIterator(); i.hasNext(); ) {
+		while(i.hasNext()) {
 			Item next = i.nextItem();
 			if (Type.subTypeOf(next.getType(), Type.NODE)) {
 				Serializer serializer = context.getBroker().getSerializer();
@@ -88,16 +114,23 @@ public class LogFunction extends BasicFunction {
 				buf.append(next.getStringValue());
 		}
                 
-		if(priority.equalsIgnoreCase("error"))
-			LOG.error(buf);
-		else if(priority.equalsIgnoreCase("warn"))
-			LOG.warn(buf);
-		else if(priority.equalsIgnoreCase("info"))
-			LOG.info(buf);
-		else if(priority.equalsIgnoreCase("trace"))
-			LOG.trace(buf);
-		else
-			LOG.debug(buf);
+		if (isCalledAs("log")) {
+			String priority = args[0].getStringValue();			
+			if(priority.equalsIgnoreCase("error"))
+				LOG.error(buf);
+			else if(priority.equalsIgnoreCase("warn"))
+				LOG.warn(buf);
+			else if(priority.equalsIgnoreCase("info"))
+				LOG.info(buf);
+			else if(priority.equalsIgnoreCase("trace"))
+				LOG.trace(buf);
+			else
+				LOG.debug(buf);
+		} else if (isCalledAs("log-system-out")) {
+			System.out.println(buf);
+		} else if (isCalledAs("log-system-err")) {
+			System.err.println(buf);				
+		}
                 
 		return Sequence.EMPTY_SEQUENCE;
 	}
