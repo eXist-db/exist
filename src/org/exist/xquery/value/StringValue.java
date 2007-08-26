@@ -37,10 +37,17 @@ public class StringValue extends AtomicValue {
 	public final static StringValue EMPTY_STRING = new StringValue("");
 
     private final static String langRegex =
-        "/(([a-z]|[A-Z])([a-z]|[A-Z])|" // ISO639Code
-        + "([iI]-([a-z]|[A-Z])+)|"     // IanaCode
-        + "([xX]-([a-z]|[A-Z])+))"     // UserCode
-        + "(-([a-z]|[A-Z])+)*/";        // Subcode
+    	//http://www.w3.org/TR/xmlschema-2/#language
+    	//The lexical space of language is the set of all strings that conform 
+    	//to the pattern [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})* . 
+    	"[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*";
+    
+    	//Old definition : not sure where it comes from
+        //"/(([a-z]|[A-Z])([a-z]|[A-Z])|" // ISO639Code
+        //+ "([iI]-([a-z]|[A-Z])+)|"     // IanaCode
+        //+ "([xX]-([a-z]|[A-Z])+))"     // UserCode
+        //+ "(-([a-z]|[A-Z])+)*/";        // Subcode" 
+        
     
     private final static Pattern langPattern = Pattern.compile(langRegex);
     
@@ -48,20 +55,22 @@ public class StringValue extends AtomicValue {
 
 	protected String value;
 
-	public StringValue(String stringValue, int type) throws XPathException {
+	public StringValue(String string, int type) throws XPathException {
 		this.type = type;
+		string = StringValue.expand(string); //Should we have character entities
 		if(type == Type.STRING)
-			this.value = stringValue;
+			this.value = string;
 		else if(type == Type.NORMALIZED_STRING)
-			this.value = normalizeWhitespace(stringValue); 
+			this.value = normalizeWhitespace(string); 
 		else {
-			this.value = collapseWhitespace(stringValue);
+			this.value = collapseWhitespace(string);
 			checkType();
 		}
  	}
 
-	public StringValue(String stringValue) {
-		value = stringValue;
+	public StringValue(String string) {
+		//string = StringValue.expand(string); //Should we have character entities
+		value = string;
 	}
     
 	public StringValue expand() throws XPathException {
