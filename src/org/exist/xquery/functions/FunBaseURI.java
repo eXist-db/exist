@@ -22,13 +22,11 @@
 package org.exist.xquery.functions;
 
 import java.net.URI;
-import java.net.URISyntaxException
-;
-import org.exist.Namespaces;
+import java.net.URISyntaxException;
+
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -129,9 +127,14 @@ public class FunBaseURI extends BasicFunction {
             if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                 NodeImpl domNode = (NodeImpl) node.getNode();
                 short type = domNode.getNodeType();
-                // Only elements, document nodes and processing instructions have a base-uri
-                if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
-                        type == Node.PROCESSING_INSTRUCTION_NODE) {
+                //A direct processing instruction constructor creates a processing instruction node 
+                //whose target property is PITarget and whose content property is DirPIContents. 
+                //The base-uri property of the node is empty. 
+                //The parent property of the node is empty.
+                if (type == Node.PROCESSING_INSTRUCTION_NODE) {
+                	result = Sequence.EMPTY_SEQUENCE;                	
+                } else if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE) {
+                	//Only elements, document nodes have a base-uri                
                     URI relativeURI;
                     URI baseURI;
                     try {
@@ -151,7 +154,7 @@ public class FunBaseURI extends BasicFunction {
                     }
 
                 } else
-                    result = Sequence.EMPTY_SEQUENCE;
+                	result = Sequence.EMPTY_SEQUENCE;
             } else {
                 NodeProxy proxy = (NodeProxy) node;
                 short type = proxy.getNodeType();
