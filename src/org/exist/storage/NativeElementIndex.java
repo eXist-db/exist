@@ -32,17 +32,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.ByDocumentIterator;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
@@ -413,14 +403,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.dom.DocumentImpl)
      */
     //TODO : note that this is *not* this.doc -pb
-    public void dropIndex(DocumentImpl document) throws ReadOnlyException {              
+    public void dropIndex(DocumentImpl document) throws ReadOnlyException {
         final int collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         final Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            ArrayList elements = dbNodes.findKeys(query);  
+            ArrayList elements = dbNodes.findKeys(query);
             for (int i = 0; i < elements.size(); i++) {
                 boolean changed = false;
                 Value key = (Value) elements.get(i);
@@ -428,7 +418,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 if (is == null)
                     continue;
                 os.clear();
-                try {              
+                try {
                     while (is.available() > 0) {
                         int storedDocId = is.readInt();
                         byte ordered = is.readByte();
@@ -451,22 +441,24 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         }
                     }
                 } catch (EOFException e) {
-                   //EOF is expected here 
+                   //EOF is expected here
                 }
-                if (changed) {  
+                if (changed) {
                     //TODO : no call to dbNodes.remove if no data ? -pb
                     //TODO : why not use the same construct as above :
                     //dbNodes.update(value.getAddress(), ref, os.data()) -pb
-                    if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                    if (os.data().size() == 0) {
+                        dbNodes.remove(key);
+                    } else if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not put index data for value '" +  ref + "'");
                         //TODO : thow exception ?
-                    }                    
+                    }
                 }
             }
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
         } catch (TerminatedException e) {
-            LOG.warn(e.getMessage(), e);  
+            LOG.warn(e.getMessage(), e);
         } catch (BTreeException e) {
             LOG.error(e.getMessage(), e);
         } catch (IOException e) {
