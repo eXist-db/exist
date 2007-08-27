@@ -1407,7 +1407,7 @@ public class BTree extends Paged {
          */
 		private long findValue(Value value) throws IOException, BTreeException {
 			int idx = searchKey(value);
-			switch (ph.getStatus()) {
+            switch (ph.getStatus()) {
 				case BRANCH :
 					idx = idx < 0 ? - (idx + 1) : idx + 1;
 
@@ -2256,7 +2256,7 @@ public class BTree extends Paged {
                 if (pfxCmp > 0)
                     return -(nKeys + 1);
 
-                key = new Value(key.data(), prefix.getLength(), key.getLength() - prefix.getLength());
+                key = new Value(key.data(), key.start() + prefix.getLength(), key.getLength() - prefix.getLength());
             }
             int low = 0;
             int high = nKeys - 1;
