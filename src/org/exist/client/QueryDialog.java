@@ -161,6 +161,29 @@ public class QueryDialog extends JFrame {
 		});
 		toolbar.add(button);
 		
+		toolbar.addSeparator();
+		//TODO: change icon
+		url= getClass().getResource("icons/Find24.gif");
+		button= new JButton(new ImageIcon(url));
+		button.setToolTipText("Compile only query.");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			   compileQuery();
+			}
+		});
+		toolbar.add(button);
+		
+		toolbar.addSeparator();
+        url= getClass().getResource("icons/Find24.gif");
+		button= new JButton("Submit", new ImageIcon(url));
+		button.setToolTipText("Submit query.");
+		toolbar.add(button);
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				doQuery();
+			}
+		});
+		toolbar.add(button);
 		
 		
 		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -270,23 +293,14 @@ public class QueryDialog extends JFrame {
 		});
         optionsPanel.add(collections);
 
-		label= new JLabel("Display max.:");
+		label= new JLabel(" Display max.:");
         optionsPanel.add(label);
         
 		count= new SpinnerNumberModel(100, 1, 10000, 50);
 		JSpinner spinner= new JSpinner(count);
+		spinner.setMaximumSize(new Dimension(400,100));
 		optionsPanel.add(spinner);
-        
-		URL url= getClass().getResource("icons/Find24.gif");
-		JButton button= new JButton("Submit", new ImageIcon(url));
-        optionsPanel.add(button);
-		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				doQuery();
-			}
-		});
-        optionsPanel.add(button);
-        
+       
 		inputVBox.add(optionsPanel, BorderLayout.SOUTH);
 		return tabs;
 	}
@@ -374,6 +388,46 @@ public class QueryDialog extends JFrame {
 		resultDisplay.setText("");
 		new QueryThread(xpath).start();
 	}
+	
+	
+	private void compileQuery() {
+		String xpath= (String) query.getText();
+		if (xpath.length() == 0)
+			return;
+		resultDisplay.setText("");
+		
+		{
+			statusMessage.setText("Compiling query ...");
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			long tResult =0;
+			long tCompiled=0;
+			
+			try {
+				XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
+				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
+				long t0 = System.currentTimeMillis();
+				CompiledExpression compiled = service.compile(xpath);
+				long t1 = System.currentTimeMillis();
+				tCompiled = t1 - t0;
+				statusMessage.setText("Compilation: " + tCompiled + "ms");
+				
+			} catch (Throwable e) {
+				statusMessage.setText("Error: "+InteractiveClient.getExceptionMessage(e)+". Compilation: " + tCompiled + "ms, Execution: " + tResult+"ms");
+		
+				ClientFrame.showErrorMessageQuery(
+						"An exception occurred during query compilation: "
+						+ InteractiveClient.getExceptionMessage(e), e);
+				
+			} 
+			
+			setCursor(Cursor.getDefaultCursor());
+			
+		}
+		
+		
+		
+	}
+	
 	
 	class QueryThread extends Thread {
 
