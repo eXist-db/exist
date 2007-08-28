@@ -23,12 +23,10 @@ package org.exist.storage.lock;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.OutputStreamWriter;
-
-
-import java.util.*;
-
-import org.apache.log4j.Logger;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Deadlock detection for resource and collection locks. The static methods in this class
@@ -238,10 +236,10 @@ public class DeadlockDetection {
             writer.println("Lock type: " + info.getLockType());
             writer.println("Lock mode: " + info.getLockMode());
             writer.println("Lock id: " + info.getId());
-            writer.println("Held by: " + Arrays.toString(info.getOwners()));
-            writer.println("Read locks: " + Arrays.toString(info.getReadLocks()));
-            writer.println("Wait for read: " + Arrays.toString(info.getWaitingForRead()));
-            writer.println("Wait for write: " + Arrays.toString(info.getWaitingForWrite()));
+            writer.println("Held by: " + arrayToString(info.getOwners()));
+            writer.println("Read locks: " + arrayToString(info.getReadLocks()));
+            writer.println("Wait for read: " + arrayToString(info.getWaitingForRead()));
+            writer.println("Wait for write: " + arrayToString(info.getWaitingForWrite()));
         }
     }
 
@@ -255,5 +253,26 @@ public class DeadlockDetection {
         }
         writer.close();
         System.out.println(sout.toString());
+    }
+
+    private static String arrayToString(Object[] a) {
+        if (a == null)
+            return "null";
+        if (a.length == 0)
+            return "[]";
+
+        StringBuffer buf = new StringBuffer();
+
+        for (int i = 0; i < a.length; i++) {
+            if (i == 0)
+                buf.append('[');
+            else
+                buf.append(", ");
+
+            buf.append(a[i] == null ? "null" : a[i].toString());
+        }
+
+        buf.append("]");
+        return buf.toString();
     }
 }
