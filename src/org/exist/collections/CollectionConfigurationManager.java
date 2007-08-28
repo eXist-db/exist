@@ -176,10 +176,10 @@ public class CollectionConfigurationManager {
         
 		// we synchronize on the global CollectionCache to avoid deadlocks.
 		// the calling code does mostly already hold a lock on CollectionCache.
-		CollectionCache collectionCache = pool.getCollectionsCache();
-		synchronized (collectionCache) {
-			cache.put(collection.getURI(), conf);
-		}
+//		CollectionCache collectionCache = pool.getCollectionsCache();
+//		synchronized (collectionCache) {
+//			cache.put(collection.getURI(), conf);
+//		}
         return conf;
     }
     
