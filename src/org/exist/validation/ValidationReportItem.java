@@ -75,7 +75,7 @@ public class ValidationReportItem {
     }
     
     public void setSystemId(String systemId){
-        this.publicId=publicId;
+        this.systemId=systemId;
     }
     
     public String getSystemId(){
