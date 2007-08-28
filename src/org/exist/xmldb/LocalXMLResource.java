@@ -100,8 +100,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	}
 
 	public Object getContent() throws XMLDBException {
-		if (content != null) {
-            System.out.println("LocaXML string 0 " + content);
+		if (content != null) {            
 			return content;
         }
 
