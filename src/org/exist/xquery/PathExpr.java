@@ -260,6 +260,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 //!(expr instanceof VariableDeclaration) &&
                 !(expr instanceof VariableReference) &&
                 !(expr instanceof LetExpr) &&
+                !(expr instanceof EnclosedExpr) &&
                 !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
                 throw new XPathException("XPTY0018: Cannot mix nodes and atomic values in the result of a path expression.");                    
             }
