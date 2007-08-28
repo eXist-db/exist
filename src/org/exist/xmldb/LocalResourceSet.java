@@ -101,7 +101,6 @@ public class LocalResourceSet implements ResourceSet {
 	}
 
 	public void addResource(Resource resource) throws XMLDBException {
-        System.out.println("LocalResourceSet::add = " + resource);
 		resources.add(resource);
 	}
 
