@@ -64,7 +64,7 @@ public abstract class LogicalOp extends BinaryOp {
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         this.parent = contextInfo.getParent();
-        super.analyze(contextInfo);
+        super.analyze(contextInfo);		
 		//To optimize, we want nodes
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
@@ -73,14 +73,26 @@ public abstract class LogicalOp extends BinaryOp {
 				!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM) &&	
 				//and no dependency on *local* variables (context variables are OK)
 				!Dependency.dependsOn(getLeft(), Dependency.LOCAL_VARS) &&							
-				!Dependency.dependsOn(getRight(), Dependency.LOCAL_VARS))
+				!Dependency.dependsOn(getRight(), Dependency.LOCAL_VARS) /* && 
+				//If in an enclosed expression, return the boolean value, not a NodeSet
+				//Commented out since we don't want to lose the benefit of the optimization
+				//The boolean value will be returned by derived classes
+				//See below, returnsType() however... 
+				!(getParent() instanceof EnclosedExpr)*/)
 			optimize = true;
 		else
 			optimize = false;
 	}
 	
-	public int returnsType() {
-		return optimize ? Type.NODE : Type.BOOLEAN;		
+	public int returnsType() {		
+		return optimize ? 
+			//Possibly more expression types to add there
+			(getParent() instanceof EnclosedExpr ||
+			//First, the intermediate PathExpr
+			((PathExpr)getParent()).getParent() == null) ? 
+			Type.BOOLEAN : Type.NODE 
+			:
+			Type.BOOLEAN;		
 	}
 	
 	/* (non-Javadoc)

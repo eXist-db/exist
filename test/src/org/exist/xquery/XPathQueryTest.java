@@ -1,6 +1,5 @@
 package org.exist.xquery;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.BindException;
 import java.util.Iterator;
@@ -9,9 +8,7 @@ import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.stream.StreamSource;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.StandaloneServer;
@@ -23,7 +20,6 @@ import org.mortbay.util.MultiException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -1516,6 +1512,46 @@ public class XPathQueryTest extends XMLTestCase {
             fail(e.getMessage());
         }
     }
+
+    public void testLogicalOr() {
+        try {
+            XQueryService service =
+                    storeXMLStringAndGetQueryService("strings.xml", strings);
+            
+            ResourceSet result = queryResource(service, "strings.xml",	"<test>{() or ()}</test>", 1);
+            Resource r = result.getResource(0);
+            assertXMLEqual("<test>false</test>", r.getContent().toString()); 
+
+            result = queryResource(service, "strings.xml",	"() or ()", 1);
+            r = result.getResource(0);
+            assertEquals("false", r.getContent().toString());                  
+            
+        } catch (Exception e) {
+            System.out.println("testStrings(): "+e);
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    } 
+    
+    public void testLogicalAnd() {
+        try {
+            XQueryService service =
+                    storeXMLStringAndGetQueryService("strings.xml", strings);
+            
+            ResourceSet result = queryResource(service, "strings.xml",	"<test>{() and ()}</test>", 1);
+            Resource r = result.getResource(0);
+            assertXMLEqual("<test>false</test>", r.getContent().toString());  
+            
+            result = queryResource(service, "strings.xml",	"() and ()", 1);
+            r = result.getResource(0);
+            assertEquals("false", r.getContent().toString());             
+            
+        } catch (Exception e) {
+            System.out.println("testStrings(): "+e);
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }     
     
     public void testIds() {
         try {
