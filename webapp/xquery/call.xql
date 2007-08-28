@@ -1,3 +1,5 @@
+xquery version "1.0";
+(: $Id$ :)
 (:  This example demonstrates the use of higher-order functions.
     It uses the library module sequences.xq, which is found in 
     src/org/exist/xquery/lib and is loaded through the Java class 

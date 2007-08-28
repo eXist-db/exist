@@ -1,4 +1,5 @@
 xquery version "1.0";
+(: $Id$ :)
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace image="http://exist-db.org/xquery/image"

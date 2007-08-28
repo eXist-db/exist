@@ -1,11 +1,12 @@
 xquery version "1.0";
-
-declare option exist:serialize "media-type=text/xml";
+(: $Id$ :)
 
 declare namespace ajax="http://exist-db.org/xquery/ajax";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace request="http://exist-db.org/xquery/request";
+
+declare option exist:serialize "media-type=text/xml";
 
 declare function ajax:display-collection($collection as xs:string) as element()* {
     let $c := xdb:collection($collection, "guest", "guest")

@@ -1,9 +1,11 @@
+xquery version "1.0";
+(: $Id$ :)
+
 module namespace conf="http://exist-db.org/modules/mods-config";
-
-import module namespace md="http://exist-db.org/biblio/mods-display" at "mods-display.xq";
-
 declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace util="http://exist-db.org/xquery/util";
+
+import module namespace md="http://exist-db.org/biblio/mods-display" at "mods-display.xq";
 
 declare variable $conf:preload { true() };
 

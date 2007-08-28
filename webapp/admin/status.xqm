@@ -1,6 +1,9 @@
+xquery version "1.0";
+(: $Id$ :)
 (:
     Module: display status information on the current database instance.
 :)
+
 module namespace status="http://exist-db.org/xquery/admin-interface/status";
 
 declare namespace system="http://exist-db.org/xquery/system";

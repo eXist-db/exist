@@ -1,11 +1,12 @@
 xquery version "1.0";
-
-declare option exist:serialize "media-type=text/xml";
+(: $Id$ :)
 
 declare namespace sandbox="http://exist-db.org/xquery/sandbox";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace util="http://exist-db.org/xquery/util";
+
+declare option exist:serialize "media-type=text/xml";
 
 declare function sandbox:display-child-collections($collection as object)
 as element()* {

@@ -1,6 +1,5 @@
 xquery version "1.0";
-
-(::pragma exist:output-size-limit -1::)
+(: $Id$ :)
 
 declare namespace f="http://exist-db.org/xquery/test";
 declare namespace mods="http://www.loc.gov/mods/v3";
@@ -8,6 +7,8 @@ declare namespace mods="http://www.loc.gov/mods/v3";
 import module namespace t="http://exist-db.org/xquery/text";
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
+
+(: declare option exist:output-size-limit "-1"; :)
 
 declare function f:term-callback($term as xs:string, $data as xs:int+) 
 as element()+ {

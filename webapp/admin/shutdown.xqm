@@ -1,6 +1,9 @@
+xquery version "1.0";
+(: $Id$ :)
 (:
     Module: trigger database shutdown.
 :)
+
 module namespace shutdown="http://exist-db.org/xquery/admin-interface/shutdown";
 
 declare namespace system="http://exist-db.org/xquery/system";

@@ -1,6 +1,5 @@
 xquery version "1.0";
-
-(::pragma exist:output-size-limit -1::)
+(: $Id$ :)
 
 declare namespace bib="http://exist-db.org/bibliography";
 
@@ -16,6 +15,8 @@ import module namespace conf="http://exist-db.org/modules/mods-config" at "confi
 import module namespace sort="http://exist-db.org/biblio/sort" at "sort.xq";
 
 import module namespace display="http://exist-db.org/biblio/display" at "display.xq";
+
+(: declare option exist:output-size-limit "-1"; :)
 
 declare variable $bib:sort-import {
     'import module namespace sort="http://exist-db.org/biblio/sort"

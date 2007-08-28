@@ -1,5 +1,6 @@
 xquery version "1.0";
 (: $Id$ :)
+
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
@@ -74,8 +75,8 @@ declare function xqts:path-to-uri($path as xs:string) as xs:string {
 
 declare function xqts:get-query($case as element(catalog:test-case)) {
    let $query-name := $case//catalog:query/@name
-   let $path := concat( xqts:path-to-uri($xqts:XQTS_HOME), "Queries/XQuery/", 
-       $case/@FilePath, $query-name, ".xq" )
+   let $path := concat(xqts:path-to-uri($xqts:XQTS_HOME), "Queries/XQuery/", 
+       $case/@FilePath, $query-name, ".xq")
    let $xq-string := util:file-read($path)
    return $xq-string
    (: let $tokenized := tokenize($xq-string, "\n")

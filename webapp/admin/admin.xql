@@ -1,8 +1,9 @@
 xquery version "1.0";
-
+(: $Id$ :)
 (:
     Main module of the database administration interface.
 :)
+
 declare namespace admin="http://exist-db.org/xquery/admin-interface";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";

@@ -1,6 +1,7 @@
 xquery version "1.0";
-
+(: $Id$ :)
 (: An example found in Saxon: creates a table with 10x10 cells :)
+
 declare namespace f="http://my-namespaces.org";
 
 declare function f:background-color($x as xs:double, $y as xs:integer)

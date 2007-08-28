@@ -1,6 +1,9 @@
+xquery version "1.0";
+(: $Id$ :)
 (:
     Module: examples setup
 :)
+
 module namespace setup="http://exist-db.org/xquery/admin-interface/setup";
 
 declare namespace xdb="http://exist-db.org/xquery/xmldb";

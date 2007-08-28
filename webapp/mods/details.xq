@@ -1,4 +1,5 @@
 xquery version "1.0";
+(: $Id$ :)
 
 import module namespace display="http://exist-db.org/biblio/display" at "display.xq";
 

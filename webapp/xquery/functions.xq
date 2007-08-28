@@ -1,6 +1,7 @@
 xquery version "1.0";
-
+(: $Id$ :)
 (: prints a list of all built-in functions :)
+
 declare namespace util="http://exist-db.org/xquery/util";
 
 <book>

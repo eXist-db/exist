@@ -1,12 +1,13 @@
 xquery version "1.0";
+(: $Id$ :)
 
 declare namespace sandbox="http://exist-db.org/xquery/sandbox";
+declare namespace system="http://exist-db.org/xquery/system";
 
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace session="http://exist-db.org/xquery/session";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
-declare namespace system="http://exist-db.org/xquery/system";
 
 declare option exist:serialize "method=xhtml indent=no";
 

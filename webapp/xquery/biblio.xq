@@ -1,4 +1,5 @@
 xquery version "1.0";
+(: $Id$ :)
 
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace dc="http://purl.org/dc/elements/1.1/";
