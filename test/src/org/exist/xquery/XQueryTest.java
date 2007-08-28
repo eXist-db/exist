@@ -2179,7 +2179,6 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
-    
     public void bugtestDocumentNode_1730690(){
         
         try {
@@ -2195,6 +2194,22 @@ public class XQueryTest extends XMLTestCase {
         }
         
     }
+    
+    public void testEnclosedExpressions(){
+    	try {
+	        String query="let $a := <docum><titolo>titolo</titolo><autor>giulio</autor></docum> " +
+	        	"return <row>{$a/titolo/text()} {' '} {$a/autor/text()}</row>";
+	        XPathQueryService service 
+	        	= (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+	        ResourceSet result = service.query(query);
+	        assertXMLEqual("<row>titolo giulio</row>", result.getResource(0).getContent().toString());
+        } catch (Exception e) {
+        	System.out.println("testEnclosedExpressions(): " + e);
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+        
+    }    
     
     public void testOrderCompareAtomicType_1733265(){
         
