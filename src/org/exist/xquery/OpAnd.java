@@ -64,14 +64,13 @@ public class OpAnd extends LogicalOp {
     			// TODO: optimize and return false if rl.getLength() == 0 ?
     			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
     			rr = rr.getContextNodes(contextId);
-    			result = rr.intersection(rl);
-    			//<test>{() and ()}</test> should return <test>false</test>
-    			/*
-    			if (contextSequence.isEmpty()) {
+    			result = rr.intersection(rl); 
+    			//<test>{() and ()}</test> has to return <test>false</test>    			
+    			if (getParent() instanceof EnclosedExpr ||
+    				//First, the intermediate PathExpr
+    				((PathExpr)getParent()).getParent() == null) {
     				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
     			}
-    			*/
-    			
     		} else {
     			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
     			// immediately return false if the left operand is false

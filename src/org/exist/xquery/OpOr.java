@@ -62,12 +62,12 @@ public class OpOr extends LogicalOp {
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
 			rr = rr.getContextNodes(contextId);
 			result = rl.union(rr);
-			//<test>{() or ()}</test> should return <test>false</test>
-			/*
-			if (contextSequence.isEmpty()) {
+			//<test>{() or ()}</test> should return <test>false</test>			
+			if (getParent() instanceof EnclosedExpr ||
+				//First, the intermediate PathExpr
+				((PathExpr)getParent()).getParent() == null) {					
 				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
-			}
-			*/			
+			}		
         } else {
 			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
 			if (ls)
