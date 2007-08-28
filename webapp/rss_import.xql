@@ -1,11 +1,11 @@
 xquery version "1.0";
 
-declare option exist:serialize "media-type=text/xml";
-
 declare namespace f="http://exist-db.org/xquery/local-functions";
 declare namespace dc="http://purl.org/dc/elements/1.1/";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
+
+declare option exist:serialize "media-type=text/xml";
 
 let $col := xdb:create-collection("/db", "rss")
 let $rssUri := xs:anyURI("http://wiki.exist-db.org/exec/rss?snip=start")
