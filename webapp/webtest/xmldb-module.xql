@@ -1,9 +1,10 @@
 xquery version "1.0";
-
-declare option exist:serialize "method=xml";
+(: $Id$ :)
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace system="http://exist-db.org/xquery/system";
+
+declare option exist:serialize "method=xml";
 
 let $home := system:get-exist-home()
 let $sep := util:system-property("file.separator")

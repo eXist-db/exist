@@ -1,4 +1,5 @@
 xquery version "1.0";
+(: $Id$ :)
 
 <html>
 	<head><title>Sitemap Parameters</title></head>

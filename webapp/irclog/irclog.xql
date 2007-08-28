@@ -1,4 +1,5 @@
 xquery version "1.0";
+(: $Id$ :)
 
 declare namespace irc="http://exist-db.org/xquery/irclog";
 declare namespace request="http://exist-db.org/xquery/request";

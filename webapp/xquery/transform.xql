@@ -1,4 +1,5 @@
 xquery version "1.0";
+(: $Id$ :)
 
 declare namespace transform="http://exist-db.org/xquery/transform";
 declare namespace util="http://exist-db.org/xquery/util";

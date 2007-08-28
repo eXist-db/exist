@@ -1,3 +1,6 @@
+xquery version "1.0";
+(: $Id$ :)
+
 module namespace md="http://exist-db.org/biblio/mods-display";
 
 declare namespace mods="http://www.loc.gov/mods/v3";

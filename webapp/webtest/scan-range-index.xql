@@ -1,6 +1,9 @@
-declare option exist:serialize "media-type=text/xml";
+xquery version "1.0";
+(: $Id$ :)
 
 declare namespace f="http://exist-db.org/xquery/test";
+
+declare option exist:serialize "media-type=text/xml";
 
 declare function f:term-callback($term, $data as xs:int+) as element() {
 	<entry>

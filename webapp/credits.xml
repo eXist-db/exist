@@ -54,7 +54,7 @@
             to access the subversion repository. To become an active committer, start to post patches to the 
             mailing list. You should also read the doc about 
             <ulink href="developper.html">bug reporting and junit
-            tests</ulink>. You will get write access to the CVS if your patches
+            tests</ulink>. You will get write access to the Subversion repository if your patches
             are ok.</para>
         </section>
 
@@ -105,7 +105,7 @@
                     <para>Per Nyfelt (JBoss integration)</para>
                 </listitem>
                 <listitem>
-                    <para>Leif-Jöran Olsson (patches)</para>
+                    <para>Leif-Jöran Olsson (developer)</para>
                 </listitem>
                 <listitem>
                     <para>Adam Retter (developer)</para>

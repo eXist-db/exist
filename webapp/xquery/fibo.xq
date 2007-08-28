@@ -1,5 +1,5 @@
 xquery version "1.0";
-
+(: $Id$ :)
 (: computes the first 10 fibonacci numbers :)
 
 declare namespace f="http://exist-db.org/NS/fibo";

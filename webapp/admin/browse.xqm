@@ -1,6 +1,9 @@
+xquery version "1.0";
+(: $Id$ :)
 (:
     Module: display and browse collections.
 :)
+
 module namespace browse="http://exist-db.org/xquery/admin-interface/browse";
 
 declare namespace request="http://exist-db.org/xquery/request";

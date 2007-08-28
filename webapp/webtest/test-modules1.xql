@@ -1,9 +1,10 @@
 xquery version "1.0";
-
-declare option exist:serialize "method=xhtml";
+(: $Id$ :)
 
 import module namespace testmod="http://exist-db.org/xquery/testmod"
 at "testmod.xq";
+
+declare option exist:serialize "method=xhtml";
 
 <html>
     <head>

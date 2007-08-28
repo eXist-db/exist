@@ -1,3 +1,6 @@
+xquery version "1.0";
+(: $Id$ :)
+
 module namespace sort="http://exist-db.org/biblio/sort";
 
 declare namespace mods="http://www.loc.gov/mods/v3";

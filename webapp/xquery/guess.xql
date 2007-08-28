@@ -1,4 +1,5 @@
 xquery version "1.0";
+(: $Id$ :)
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";

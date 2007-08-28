@@ -1,6 +1,9 @@
+xquery version "1.0";
+(: $Id$ :)
 (:
     Module: display and edit users.
 :)
+
 module namespace users="http://exist-db.org/xquery/admin-interface/users";
 
 declare namespace util="http://exist-db.org/xquery/util";

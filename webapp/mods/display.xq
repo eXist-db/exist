@@ -1,3 +1,6 @@
+xquery version "1.0";
+(: $Id$ :)
+
 module namespace display="http://exist-db.org/biblio/display";
 
 import module namespace config="http://exist-db.org/modules/mods-config" at "config.xqm";

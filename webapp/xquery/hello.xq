@@ -1,4 +1,5 @@
 xquery version "1.0";
+(: $Id$ :)
 (: How to do plain dynamic Web pages with XQuery and eXist extensions :)
 
 declare namespace request="http://exist-db.org/xquery/request";
