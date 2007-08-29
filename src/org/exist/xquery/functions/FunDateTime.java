@@ -76,19 +76,22 @@ public class FunDateTime extends BasicFunction {
         	DateValue dv = (DateValue)args[0].itemAt(0);
         	TimeValue tv = (TimeValue)args[1].itemAt(0);
         	if (!dv.getTimezone().isEmpty()) {
+        		//Apparently, the specs have changes in this area
         		if (!tv.getTimezone().isEmpty()) {
-    				if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).compareTo(null, Constants.EQ, ((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
+        			if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).compareTo(null, Constants.EQ, ((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
     					throw new XPathException("FORG0008: operands have different timezones");
     				}
-    			} else {
+    			} /* else {
     				if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
     	        		throw new XPathException("FORG0008: operands have different timezones");
-    			}
+    			} */
     		} else {
+    			/*
     			if (!tv.getTimezone().isEmpty()) {
     				if (!((DayTimeDurationValue)tv.getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
     					throw new XPathException("FORG0008: operands have different timezones");
     			}
+    			*/
     		}
         	String dtv = dv.convertTo(Type.DATE_TIME).getStringValue();
         	if (dv.getTimezone().isEmpty()) {
@@ -100,9 +103,15 @@ public class FunDateTime extends BasicFunction {
         			result = new DateTimeValue(dtv + tv.getStringValue() + "Z");
         		else
         			result = new DateTimeValue(dtv + tv.getStringValue());
-        	} else {
-        		dtv = dtv.substring(0, dtv.length() - 14);    
-        		result = new DateTimeValue(dtv + tv.getStringValue());
+        	} else {        		
+        		if (tv.getTimezone().isEmpty()) {
+        			String tz = dtv.substring(19);
+        			dtv = dtv.substring(0, dtv.length() - 14);
+        			result = new DateTimeValue(dtv + tv.getStringValue() + tz);
+        		} else {
+        			dtv = dtv.substring(0, dtv.length() - 14);
+        			result = new DateTimeValue(dtv + tv.getStringValue());
+        		}
         	}
         }
         
