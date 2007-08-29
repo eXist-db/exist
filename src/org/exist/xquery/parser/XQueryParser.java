@@ -419,23 +419,31 @@ public XQueryParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST xpath_AST = null;
 		
-		{
-		if ((_tokenSet_0.member(LA(1)))) {
-			module();
-			astFactory.addASTChild(currentAST, returnAST);
+		try {      // for error handling
+			{
+			if ((_tokenSet_0.member(LA(1)))) {
+				module();
+				astFactory.addASTChild(currentAST, returnAST);
+			}
+			else if ((LA(1)==EOF)) {
+			}
+			else {
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			
+			}
+			org.exist.xquery.parser.XQueryAST tmp52_AST = null;
+			tmp52_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp52_AST);
+			match(Token.EOF_TYPE);
+			xpath_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
-		else if ((LA(1)==EOF)) {
+		catch (RecognitionException e) {
+			if (inputState.guessing==0) {
+			} else {
+				throw e;
+			}
 		}
-		else {
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		
-		}
-		org.exist.xquery.parser.XQueryAST tmp52_AST = null;
-		tmp52_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp52_AST);
-		match(Token.EOF_TYPE);
-		xpath_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		returnAST = xpath_AST;
 	}
 	
@@ -5550,23 +5558,38 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST pragma_AST = null;
 		String name = null;
 		
-		match(PRAGMA_START);
-		name=qName();
-		org.exist.xquery.parser.XQueryAST tmp257_AST = null;
-		tmp257_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp257_AST);
-		match(PRAGMA_END);
-		if ( inputState.guessing==0 ) {
-			pragma_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			
-					pragma_AST = (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(PRAGMA,name)).add(pragma_AST));
+		try {      // for error handling
+			match(PRAGMA_START);
+			name=qName();
+			org.exist.xquery.parser.XQueryAST tmp257_AST = null;
+			tmp257_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp257_AST);
+			match(PRAGMA_END);
+			if ( inputState.guessing==0 ) {
+				pragma_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				
-			currentAST.root = pragma_AST;
-			currentAST.child = pragma_AST!=null &&pragma_AST.getFirstChild()!=null ?
-				pragma_AST.getFirstChild() : pragma_AST;
-			currentAST.advanceChildToEnd();
+				lexer.wsExplicit = false;
+						pragma_AST = (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(PRAGMA,name)).add(pragma_AST));
+					
+				currentAST.root = pragma_AST;
+				currentAST.child = pragma_AST!=null &&pragma_AST.getFirstChild()!=null ?
+					pragma_AST.getFirstChild() : pragma_AST;
+				currentAST.advanceChildToEnd();
+			}
+			pragma_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
-		pragma_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+		catch (RecognitionException e) {
+			if (inputState.guessing==0) {
+				
+				lexer.wsExplicit = false;
+				System.out.println("Undantag i pragma =" + e.getMessage());
+				//return;
+				throw new XPathException("err:XPST0003: Parse error: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
+				
+			} else {
+				throw e;
+			}
+		}
 		returnAST = pragma_AST;
 	}
 	
@@ -8466,42 +8489,55 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST elementConstructor_AST = null;
 		
 			String name= null;
+		//lexer.wsExplicit = true;
 		
 		
-		boolean synPredMatched363 = false;
-		if (((LA(1)==LT))) {
-			int _m363 = mark();
-			synPredMatched363 = true;
-			inputState.guessing++;
-			try {
-				{
-				match(LT);
-				qName();
-				{
-				match(_tokenSet_14);
+		try {      // for error handling
+			boolean synPredMatched363 = false;
+			if (((LA(1)==LT))) {
+				int _m363 = mark();
+				synPredMatched363 = true;
+				inputState.guessing++;
+				try {
+					{
+					match(LT);
+					qName();
+					{
+					match(_tokenSet_14);
+					}
+					}
 				}
+				catch (RecognitionException pe) {
+					synPredMatched363 = false;
 				}
+				rewind(_m363);
+				inputState.guessing--;
 			}
-			catch (RecognitionException pe) {
-				synPredMatched363 = false;
+			if ( synPredMatched363 ) {
+				elementWithAttributes();
+				astFactory.addASTChild(currentAST, returnAST);
+				elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			}
-			rewind(_m363);
-			inputState.guessing--;
+			else if ((LA(1)==LT)) {
+				elementWithoutAttributes();
+				astFactory.addASTChild(currentAST, returnAST);
+				elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			}
+			else {
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			
 		}
-		if ( synPredMatched363 ) {
-			elementWithAttributes();
-			astFactory.addASTChild(currentAST, returnAST);
-			elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+		catch (RecognitionException e) {
+			if (inputState.guessing==0) {
+				
+				lexer.wsExplicit = false;
+				throw new XPathException("err:XPST0003: Parse error: element name containing whitespace: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
+				
+			} else {
+				throw e;
+			}
 		}
-		else if ((LA(1)==LT)) {
-			elementWithoutAttributes();
-			astFactory.addASTChild(currentAST, returnAST);
-			elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-		}
-		else {
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		
 		returnAST = elementConstructor_AST;
 	}
 	
@@ -9591,7 +9627,7 @@ public XQueryParser(ParserSharedInputState state) {
 			if ( inputState.guessing==0 ) {
 				elementWithoutAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				
-								//lexer.wsExplicit= false;
+								lexer.wsExplicit= false;
 								if (!elementStack.isEmpty())
 									lexer.inElementContent= true;
 								elementWithoutAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name);
