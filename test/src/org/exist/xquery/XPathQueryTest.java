@@ -1004,6 +1004,11 @@ public class XPathQueryTest extends XMLTestCase {
             query = "(1,2,3)[max(.)]";
             result = queryResource(service, "numbers.xml", query, 3);
 
+            query = "(1,2,3)[max(.[. gt 1])]";
+            result = queryResource(service, "numbers.xml", query, 2);
+            assertEquals("2", result.getResource(0).getContent().toString());
+            assertEquals("3", result.getResource(1).getContent().toString());
+
             query = "(1,2,3)[.]";
             result = queryResource(service, "numbers.xml", query, 3);
             
