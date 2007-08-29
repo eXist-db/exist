@@ -12,6 +12,8 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";
 import module namespace request="http://exist-db.org/xquery/request";
 declare namespace system="http://exist-db.org/xquery/system";
 
+declare option exist:output-size-limit "-1";
+
 (: $Id$ :)
 
 (:~  ----------------------------------------------------------------------------
@@ -131,7 +133,9 @@ declare function xqts:get-variable($case as element(catalog:test-case), $varName
 
 declare function xqts:compute-specific-static-context($testCaseName as xs:string) as element()* {
     (        
-        if ($testCaseName eq "fn-current-time-4") then
+        if ($testCaseName eq "ForExpr013") then
+            <output-size-limit value="-1"/>
+        else if ($testCaseName eq "fn-current-time-4") then
             (: arbitrary date :)                                
             <current-dateTime value="2005-12-05T13:38:03.455-05:00"/>  
         else if ($testCaseName eq "fn-current-time-6") then

@@ -25,7 +25,6 @@ package org.exist.xquery.functions.util;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.SimpleTimeZone;
 
@@ -124,7 +123,7 @@ public class Eval extends BasicFunction {
                 "URI is interpreted as a database path. This is the same as calling " +
                 "util:eval('xmldb:exist:///db/test/test.xq'). " +                
 				"The query inherits the context described by the XML fragment in the second parameter. " +
-				"It should have the format: <static-context><current-dateTime value=\"dateTime\"/>" +
+				"It should have the format: <static-context><output-size-limit value=\"-1\"><current-dateTime value=\"dateTime\"/>" +
 				"implicit-timezone value=\"duration\"/><variable name=\"qname\">" +
 				"variable value</variable></static-context>. " +
 				"The third argument specifies if the compiled query expression " +
@@ -145,7 +144,8 @@ public class Eval extends BasicFunction {
                 "URI is interpreted as a database path. This is the same as calling " +
                 "util:eval('xmldb:exist:///db/test/test.xq'). " +                
 				"The query inherits the context described by the XML fragment in the second parameter. " +
-				"It should have the format: <static-context><current-dateTime value=\"dateTime\"/>" +
+				"It should have the format: <static-context><output-size-limit value=\"-1\">" +
+				"<current-dateTime value=\"dateTime\"/>" +
 				"implicit-timezone value=\"duration\"/><variable name=\"qname\">" +
 				"variable value</variable></static-context>. " +
 				"The third argument specifies if the compiled query expression " +
@@ -405,6 +405,7 @@ public class Eval extends BasicFunction {
 		NodeList cl = root.getChildNodes();
 		for (int i = 0; i < cl.getLength(); i++) {
 			Node child = cl.item(i);
+			//TODO : more check on attributes existence and on their values
 			if (child.getNodeType() == Node.ELEMENT_NODE &&	"variable".equals(child.getLocalName())) {
 				Element elem = (Element) child;
 				String qname = elem.getAttribute("name");
@@ -412,6 +413,10 @@ public class Eval extends BasicFunction {
 				if (value instanceof ReferenceNode)
 					value = ((ReferenceNode) value).getReference();
 				innerContext.declareVariable(qname, value);
+			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"output-size-limit".equals(child.getLocalName())) {
+				Element elem = (Element) child;
+				//TODO : error check
+				innerContext.getWatchDog().setMaxNodes(Integer.valueOf(elem.getAttribute("value")).intValue());
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"current-dateTime".equals(child.getLocalName())) {
 				Element elem = (Element) child;
 				//TODO : error check
