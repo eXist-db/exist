@@ -243,7 +243,10 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                 </expected-result>                
     ,
         (: Inject Saxon's results here :)
-        ()
+        if ($testCase/@name eq "CastAs672") then
+            <expected-result compare="Text">true</expected-result> 
+        else
+            ()
     )
 };
 
