@@ -89,12 +89,16 @@ public class XQueryWatchDog {
 		}
     }
     
+    public void setMaxNodes(int maxNodes) {
+    	maxNodesLimit = maxNodes;
+    }
+    
     public void setMaxNodesFromOption(Option option) throws XPathException {
     	String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
     		throw new XPathException("Option 'output-size-limit' should have exactly one parameter: the timeout value.");
 		try {
-			maxNodesLimit = Integer.parseInt(contents[0]);
+			setMaxNodes(Integer.parseInt(contents[0]));
 		} catch (NumberFormatException e) {
 			throw new XPathException("Error parsing size-limit value in option " + option.getQName().getStringValue());
 		}
