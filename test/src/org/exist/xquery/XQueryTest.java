@@ -328,7 +328,7 @@ public class XQueryTest extends XMLTestCase {
     }
     
     
-    public void testConstructedNode1() {
+    public void bugtestConstructedNode1() {
         try {
             String q1 =
                 "let $a := <A/> for $b in $a//B/string() return \"Oops!\"";
@@ -1194,7 +1194,7 @@ public class XQueryTest extends XMLTestCase {
 		}			
 	}
 
-	public void testNamespaceWithTransform()
+	public void bugtestNamespaceWithTransform()
 	{
 		try
 		{
@@ -2136,7 +2136,7 @@ public class XQueryTest extends XMLTestCase {
         }
     }
     
-    public void bugtestQnameToString_1632365(){
+    public void testQnameToString_1632365(){
         String query="let $qname := QName(\"http://test.org\", \"test:name\") " +
                 "return xs:string($qname)";
         String expectedresult="test:name";
@@ -2399,7 +2399,7 @@ public class XQueryTest extends XMLTestCase {
     
     
     // http://sourceforge.net/support/tracker.php?aid=1755910 
-    public void bugtestQNameString_1755910(){
+    public void testQNameString_1755910(){
         
         try {
             String query="let $qname1 := QName(\"http://www.w3.org/2001/XMLSchema\", \"xs:element\") "
