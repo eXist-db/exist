@@ -1172,15 +1172,14 @@ public class NativeBroker extends DBBroker {
                 final XmldbURI childName = (XmldbURI) i.next();
                 //TODO : resolve from collection's base URI
                 //TODO : resulve URIs !!! (uri.resolve(childName))
-                Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
-            
-                try
-                {                    
+                Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);            
+                try {                    
                     removeCollection(transaction, childCollection);                    
-                }
-                finally
-                {
-                    childCollection.getLock().release(Lock.WRITE_LOCK);
+                } finally {
+                	if (childCollection != null)
+                		childCollection.getLock().release(Lock.WRITE_LOCK);
+                	else
+                		LOG.warn("childCollection is null !");
                 }
             }
 
