@@ -30,6 +30,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
 import org.exist.util.FastStringBuffer;
+import org.exist.util.FloatingPointConverter;
 import org.exist.xquery.XPathException;
 
 /**
@@ -112,12 +113,14 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         }
         if ((s.intValue() != 0) || (d==0 && m==0 && h==0)) {
         	//TODO : ugly -> factorize
-        	sb.append(Integer.toString(s.intValue()));
-        	double ms = s.doubleValue() - s.intValue();
-        	if (ms != 0.0) {
-        		sb.append(".");
-        		sb.append(Double.toString(ms).substring(2));        		
-        	}
+        	//sb.append(Integer.toString(s.intValue()));
+        	//double ms = s.doubleValue() - s.intValue();
+        	//if (ms != 0.0) {
+        	//	sb.append(".");
+        	//	sb.append(Double.toString(ms).substring(2));        		
+        	//}
+    		//0 is a dummy parameter
+    		FloatingPointConverter.appendFloat(sb, s.floatValue()).getNormalizedString(0);	
         	sb.append("S");        			
         	/*
             if (micros == 0) {
