@@ -174,11 +174,40 @@ throws XPathException
 //	catch [XPathException e]
 //	{ handleException(e); }
 
+
 module [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 { Expression step = null; }:
+    ( 
+        #(
+            v:VERSION_DECL
+            {
+                if (!v.getText().equals("1.0"))
+                    throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0");
+            }
+            ( enc:STRING_LITERAL )?
+            {
+                if (enc != null) {
+                    if (!XMLChar.isValidIANAEncoding(enc.getText())) {
+                        throw new XPathException(enc, "err:XQST0087: Unknown or wrong encoding not adhering to required XML 1.0 EncName.");
+                    }
+                    if (!enc.getText().equals("UTF-8")) {
+                        //util.serializer.encodings.CharacterSet
+                        //context.setEncoding(enc.getText());
+                    }   
+                }
+            }
+        ) 
+    )?
+    (   libraryModule [path]
+    |
+    mainModule [path] )
+	;
 
-    #(
+libraryModule [PathExpr path]
+throws PermissionDeniedException, EXistException, XPathException
+{ Expression step = null; }:
+   #(
             m:MODULE_DECL uri:STRING_LITERAL
             {
                 myModule = new ExternalModuleImpl(uri.getText(), m.getText());
@@ -187,9 +216,14 @@ throws PermissionDeniedException, EXistException, XPathException
             }
 	)
 	prolog [path]
-	|
+	;
+
+mainModule [PathExpr path]
+throws PermissionDeniedException, EXistException, XPathException
+{ Expression step = null; }:
 	prolog [path] step=expr [path]
 	;
+
 
 /**
  * Process the XQuery prolog.
@@ -206,27 +240,6 @@ throws PermissionDeniedException, EXistException, XPathException
   boolean construction = false;
 
 }:
-	(
-		#(
-			v:VERSION_DECL
-			{
-				if (!v.getText().equals("1.0"))
-					throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0");
-			}
-            ( enc:STRING_LITERAL )?
-            {
-                if (enc != null) {
-                    if (!XMLChar.isValidIANAEncoding(enc.getText())) {
-                        throw new XPathException(enc, "err:XQST0087: Unknown or wrong encoding not adhering to required XML 1.0 EncName.");
-                    }
-                    if (!enc.getText().equals("UTF-8")) {
-                    //util.serializer.encodings.CharacterSet
-                    //context.setEncoding(enc.getText());
-                    }
-                }
-            }
-		)
-	)?
 	(
 		#(
 			prefix:NAMESPACE_DECL uri:STRING_LITERAL
@@ -712,10 +725,13 @@ throws PermissionDeniedException, EXistException, XPathException
 	step= null;
 }
 :
-    EOF
+    eof:EOF
         {
-            // System.out.println("EMPTY EXPR");
             // Added for handling empty mainModule /ljo
+            // System.out.println("EMPTY EXPR");
+            if ("".equals(eof.getText()))
+                throw new XPathException("err:XPST0003: Parse error: The zero-length string is not a valid XPath expression.");     
+
         }
     |
 	step=typeCastExpr [path]

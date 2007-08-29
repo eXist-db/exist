@@ -182,9 +182,9 @@ xpath throws XPathException
 :
 	( module )? EOF
 	;
-//	exception catch [RecognitionException e]
+	exception catch [RecognitionException e] {}
 //	{ handleException(e); }
-
+    //{ throw new XPathException("err:XPST0003: A syntax or parsing error has occurred. " + e.getMessage()); }
 module throws XPathException: 
 	( ( "xquery" "version" ) => v:versionDecl SEMICOLON! )?
 	(
@@ -744,8 +744,16 @@ pragma throws XPathException
 :
 	PRAGMA_START! name=qName! PRAGMA_END
 	{
+        lexer.wsExplicit = false;
 		#pragma = #(#[PRAGMA, name], #pragma);
 	}
+exception catch [RecognitionException e]
+        {
+            lexer.wsExplicit = false;
+            System.out.println("Undantag i pragma =" + e.getMessage());
+            //return;
+            throw new XPathException("err:XPST0003: Parse error: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
+        }
 	;
 
 unionExpr throws XPathException
@@ -1144,9 +1152,15 @@ localNamespaceDecl
 elementConstructor throws XPathException
 {
 	String name= null;
+    //lexer.wsExplicit = true;
 }
 :
 	( LT qName ~( GT | SLASH ) ) => elementWithAttributes | elementWithoutAttributes
+    exception catch [RecognitionException e]
+        {
+            lexer.wsExplicit = false;
+            throw new XPathException("err:XPST0003: Parse error: element name containing whitespace: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
+        }
 	;
 
 elementWithoutAttributes throws XPathException
@@ -1157,7 +1171,7 @@ elementWithoutAttributes throws XPathException
 		(
 			SLASH! GT!
 			{
-				//lexer.wsExplicit= false;
+				lexer.wsExplicit= false;
 				if (!elementStack.isEmpty())
 					lexer.inElementContent= true;
 				#elementWithoutAttributes= #[ELEMENT, name];
@@ -2019,6 +2033,7 @@ options {
 	PRAGMA_END
 	{
 		inPragma = false; 
+        wsExplicit = true;
 		$setType(PRAGMA_END); 
 	}
 	;
