@@ -31,6 +31,7 @@ import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -450,7 +451,10 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
         }
         return map;
     }
-
+    
+	public int getItemType() {
+		return Type.ELEMENT;
+	}    
     
     /** ? @see org.w3c.dom.Node#getBaseURI()
 	 */

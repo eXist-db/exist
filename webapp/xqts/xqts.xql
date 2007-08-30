@@ -166,7 +166,7 @@ declare function xqts:compute-specific-static-context($testCaseName as xs:string
     ,
         if (matches($testCaseName,"^fn-implicit-timezone-.*$") or
             matches($testCaseName,"^K-ContextImplicitTimezoneFunc-.*$")) then      
-            <implicit-timezone value="-PT5H"/>
+            <implicit-timezone from="Saxon8.9J" value="-PT5H"/>
         else 
             ()
     )
@@ -282,6 +282,7 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case))
             (: Only expected exception and got exception. No check on if it is the right exception, though. :)
             if (fn:exists($testCase//catalog:expected-error) and empty($expectedResults)) then
                <test-case name="{$testCase/@name}" result="pass" dateRun="{util:system-time()}" print="expected-exception-got-exception">
+                    (: TODO : check exception code :)
                     <exception>{$util:exception-message}</exception>
                     {
                         for $expected-error in $testCase//catalog:expected-error
@@ -293,6 +294,7 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case))
             (: Expected either output or exception. :)
             else if (fn:exists($testCase//catalog:expected-error) and fn:exists($expectedResults)) then
                 <test-case name="{$testCase/@name}" result="pass" dateRun="{util:system-time()}" print="expected-exception-or-output">
+                    (: TODO : check exception code :)
                     <exception>{$util:exception-message}</exception>
                     {
                         for $expectedResult in $expectedResults

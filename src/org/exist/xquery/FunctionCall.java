@@ -25,6 +25,7 @@ package org.exist.xquery;
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.xquery.util.Error;
@@ -157,7 +158,22 @@ public class FunctionCall extends Function {
                 throw e;
             }
 		}
-		return evalFunction(contextSequence, contextItem, seq);
+		Sequence result = evalFunction(contextSequence, contextItem, seq);
+
+		try {
+			//Don't check deferred calls : it would result in a stack overflow
+			//TODO : find a solution or... is it already here ?
+			if (!(result instanceof DeferredFunctionCall) &&
+				//TODO : should we introduce a deffered type check on VirtualNodeSet 
+				// and trigger it when the nodeSet is realized ?
+				!(result instanceof VirtualNodeSet))
+				getSignature().getReturnType().checkType(result.getItemType());
+		} catch (XPathException e) {
+			throw new XPathException(getASTNode(), "err:XPTY004 in function '" + getSignature().getName() + "'. " + 
+					e.getMessage());
+		}
+
+		return result;
 	}
 
     /**

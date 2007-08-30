@@ -22,6 +22,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.xquery.value.Type;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -144,7 +145,11 @@ public class TextImpl extends NodeImpl implements Text {
 		return null;
 	}
 	
-    public String toString() {
+	public int getItemType() {
+		return Type.TEXT;
+	}   
+	
+	public String toString() {
     	StringBuffer result = new StringBuffer();
     	result.append("in-memory#");
     	result.append("text {");    	

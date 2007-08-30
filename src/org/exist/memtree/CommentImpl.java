@@ -25,6 +25,7 @@ package org.exist.memtree;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
@@ -116,7 +117,11 @@ public class CommentImpl extends NodeImpl implements Comment {
 
 	}
 	
-    public String toString() {
+	public int getItemType() {
+		return Type.COMMENT;
+	}    
+
+	public String toString() {
     	StringBuffer result = new StringBuffer();
     	result.append("in-memory#");
     	result.append("comment {");      	

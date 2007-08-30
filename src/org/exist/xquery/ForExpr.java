@@ -253,6 +253,15 @@ public class ForExpr extends BindingExpression {
 		if(positionalVariable != null)
 			at.setValue(atVal);
 		
+    	//Type.EMPTY is *not* a subtype of other types ; the tests below would fail without this prior cardinality check
+		if (in.isEmpty() && sequenceType != null && 
+				!Cardinality.checkCardinality(sequenceType.getCardinality(), Cardinality.EMPTY)) {
+				throw new XPathException("XPTY004: Invalid cardinality for variable $" + varName + 
+					". Expected " + 
+					Cardinality.getDescription(sequenceType.getCardinality()) + 
+					", got " + Cardinality.getDescription(in.getCardinality()));
+	    }
+
 		// Loop through each variable binding
 		p = 0;
 		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
@@ -267,8 +276,9 @@ public class ForExpr extends BindingExpression {
 			contextSequence = contextItem.toSequence();
 
 			// set variable value to current item
-			var.setValue(contextSequence);
-           var.checkType();
+            var.setValue(contextSequence);
+            if (sequenceType == null)
+            	var.checkType(); //because it makes some conversions ! 
 			val = contextSequence;
 			
 			// check optional where clause
@@ -347,12 +357,41 @@ public class ForExpr extends BindingExpression {
 		
         clearContext(getExpressionId(), in);
 
-        if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", resultSequence);
-        
+        if (sequenceType != null) {    
+        	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
+        	//only a check on empty sequence is accurate here
+    		if (resultSequence.isEmpty() && !Cardinality.checkCardinality(sequenceType.getCardinality(), Cardinality.EMPTY))
+				throw new XPathException("XPTY004: Invalid cardinality for variable $" + varName +
+						". Expected " +
+						Cardinality.getDescription(sequenceType.getCardinality()) +
+						", got " + Cardinality.getDescription(Cardinality.EMPTY));
+    		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
+    		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {    		
+	    		if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
+					throw new XPathException("XPTY004: Invalid type for variable $" + varName +
+							". Expected " +
+							Type.getTypeName(sequenceType.getPrimaryType()) +
+							", got " +Type.getTypeName(resultSequence.getItemType()));
+	    	//trigger the old behaviour
+    		} else var.checkType();
+        }
+
         actualReturnType = resultSequence.getItemType();
 
-		return resultSequence;
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", resultSequence);
+
+        return resultSequence;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Expression#returnsType()
+	 */
+	public int returnsType() {
+		if (sequenceType != null)
+			return sequenceType.getPrimaryType();
+		//Type.ITEM by default : this may change *after* evaluation
+		return actualReturnType;
 	}
 
 	/* (non-Javadoc)
@@ -460,13 +499,6 @@ public class ForExpr extends BindingExpression {
         result.append(returnExpr.toString());
         return result.toString();
     }
-
-    /* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#returnsType()
-	 */
-	public int returnsType() {
-		return Type.ITEM;
-	}
 
     /* (non-Javadoc)
     * @see org.exist.xquery.AbstractExpression#resetState()
