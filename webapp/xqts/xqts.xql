@@ -166,7 +166,7 @@ declare function xqts:compute-specific-static-context($testCaseName as xs:string
     ,
         if (matches($testCaseName,"^fn-implicit-timezone-.*$") or
             matches($testCaseName,"^K-ContextImplicitTimezoneFunc-.*$")) then      
-            <implicit-timezone from="Saxon8.9J" value="-PT5H"/>
+            <implicit-timezone value="-PT5H"/>
         else 
             ()
     )
@@ -212,7 +212,23 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                 if ($output/@compare eq "Inspect") then
                     (: introduce a per-test/output position return value:)
                     "Text"
-                else
+                (: obvious wrong comparison methods :)
+                else if ($testCase/@name eq "copynamespace-2") then
+                    "XML"
+                (: ForExprType057 fails : why ? :)
+                else if ($testCase/@name eq "ForExprType059") then
+                    "XML"
+                else if ($testCase/@name eq "ForExprType060") then
+                    "XML"
+                else if ($testCase/@name eq "Constr-inscope-1") then
+                    "XML"
+                else if ($testCase/@name eq "Constr-inscope-2") then
+                    "XML"
+                else if ($testCase/@name eq "Constr-inscope-3") then
+                    "XML"
+                else if ($testCase/@name eq "Constr-inscope-4") then
+                    "XML"
+                else                
                     $output/@compare
             let $outputFilePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $testCase/@FilePath,
                 $output/text())
@@ -244,7 +260,7 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
     ,
         (: Inject Saxon's results here :)
         if ($testCase/@name eq "CastAs672") then
-            <expected-result compare="Text">true</expected-result> 
+            <expected-result from="Saxon8.9J" compare="Text">true</expected-result> 
         else
             ()
     )
