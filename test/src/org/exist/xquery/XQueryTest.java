@@ -328,7 +328,7 @@ public class XQueryTest extends XMLTestCase {
     }
     
     
-    public void bugtestConstructedNode1() {
+    public void testConstructedNode1() {
         try {
             String q1 =
                 "let $a := <A/> for $b in $a//B/string() return \"Oops!\"";
@@ -2522,9 +2522,29 @@ public class XQueryTest extends XMLTestCase {
     }
     
     
-
-    
-    
+    public void testShortVersionPositionPredicate(){
+        
+        try {
+            String query= "declare option exist:serialize 'indent=no';"
+                +"let $foo :=  <foo>    <bar baz=\"\"/>  </foo>"
+                +"let $bar1 := $foo/bar[exists(@baz)][1]"
+                +"let $bar2 := $foo/bar[exists(@baz)][position() = 1]"
+                +"return  <found> <bar1>{$bar1}</bar1> <bar2>{$bar2}</bar2> </found>";
+            
+            XPathQueryService service
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+            assertEquals(1,result.getSize());           
+            assertEquals(query, "<found><bar1><bar baz=\"\"/></bar1><bar2><bar baz=\"\"/></bar2></found>", result.getResource(0).getContent().toString());
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
+       
     // ======================================
     
 	/**
