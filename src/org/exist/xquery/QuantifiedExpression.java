@@ -95,23 +95,55 @@ public class QuantifiedExpression extends BindingExpression {
 		context.declareVariableBinding(var);
         
 		Sequence inSeq = inputSequence.eval(contextSequence);
-		Sequence satisfiesSeq;
+        if (sequenceType != null) {
+        	//Type.EMPTY is *not* a subtype of other types ; the tests below would fail without this prior cardinality check
+        	if (!inSeq.isEmpty() && !Type.subTypeOf(inSeq.getItemType(), sequenceType.getPrimaryType()))
+				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
+						". Expected " +
+						Type.getTypeName(sequenceType.getPrimaryType()) +
+						", got " +Type.getTypeName(inSeq.getItemType()));        	
+        }	
+
 		boolean found = (mode == EVERY) ? true : false;
+		boolean canDecide = (mode == EVERY) ? true : false;
+
 		for (SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
 			contextItem = i.nextItem();
-			var.setValue(contextItem.toSequence());
-            var.checkType();
-			satisfiesSeq = returnExpr.eval(contextSequence);
+			
+			// set variable value to current item
+            var.setValue(contextItem.toSequence());
+            if (sequenceType == null) 
+                var.checkType(); //... because is makes some conversions
+				
+            Sequence satisfiesSeq = returnExpr.eval(contextSequence);
+            if (sequenceType != null) {
+        		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
+        		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
+	            	if (!Type.subTypeOf(contextItem.toSequence().getItemType(), sequenceType.getPrimaryType()))
+	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
+	    						". Expected " +
+	    						Type.getTypeName(sequenceType.getPrimaryType()) +
+	    						", got " +Type.getTypeName(contextItem.toSequence().getItemType()));
+            	} else if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), Type.NODE))
+    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
+    						". Expected " +
+    						Type.getTypeName(Type.NODE) +
+    						" (or more specific), got " + Type.getTypeName(resultSequence.getItemType()));
+    	    	//trigger the old behaviour
+        		else var.checkType();
+            }	
+            
+            canDecide = true;
 			found = satisfiesSeq.effectiveBooleanValue();
 			if ((mode == SOME ) && found)
 				break;
 			if ((mode == EVERY) && !found)
 				break;
 		}
-        
+	
 		context.popLocalVariables(mark);
         
-		Sequence result = found ? BooleanValue.TRUE : BooleanValue.FALSE;
+		Sequence result = canDecide && found ? BooleanValue.TRUE : BooleanValue.FALSE;
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);

@@ -38,6 +38,7 @@ import org.exist.util.serializer.Receiver;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -1138,7 +1139,11 @@ public class DocumentImpl extends NodeImpl implements Document {
         //return XmldbURI.ROOT_COLLECTION_URI.toString();
     }
 
-   public String toString() {
+	public int getItemType() {
+		return Type.DOCUMENT;
+	}    
+
+	public String toString() {
     	StringBuffer result = new StringBuffer();
     	result.append("in-memory#");
     	result.append("document {");

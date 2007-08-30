@@ -25,6 +25,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
@@ -117,7 +118,11 @@ public class ProcessingInstructionImpl
 		return null;
 	}	
 	
-    public String toString() {
+	public int getItemType() {
+		return Type.PROCESSING_INSTRUCTION;
+	}   
+	
+	public String toString() {
     	StringBuffer result = new StringBuffer();
     	result.append("in-memory#");
     	result.append("processing-instruction {");

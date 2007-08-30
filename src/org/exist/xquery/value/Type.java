@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.value;
 
+import java.util.HashSet;
+
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.util.hashtable.Int2ObjectHashMap;
@@ -135,7 +137,6 @@ public class Type {
 		defineSubType(NODE, CDATA_SECTION);
 
 		defineSubType(ITEM, ATOMIC);
-		//TODO :; haven't we here UNTYPED_ATOMIC descendants ?
 		defineSubType(ATOMIC, STRING);
 		defineSubType(ATOMIC, BOOLEAN);
 		defineSubType(ATOMIC, QNAME);
@@ -196,6 +197,8 @@ public class Type {
 	private final static Object2IntHashMap typeCodes = new Object2IntHashMap(100);
 
 	static {
+		//TODO : use NODETYPES above ?
+		//TODO use parentheses after the nodes name  ?
 		defineBuiltInType(NODE, "node");
 		defineBuiltInType(ITEM, "item");
 		defineBuiltInType(EMPTY, "empty");
@@ -338,8 +341,12 @@ public class Type {
 	public final static boolean subTypeOf(int subtype, int supertype) {
 		if (subtype == supertype)
 			return true;
+		//Note that it will return true even if subtype == EMPTY
 		if (supertype == ITEM || supertype == ANY_TYPE)
+			//maybe return subtype != EMPTY ?
 			return true;
+		//Note that EMPTY is *not* a sub-type of anything else than itself
+		//EmptySequence has to take care of this when it checks its type
 		if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE)
 			return false;
 		if (!typeHierarchy.containsKey(subtype))
@@ -375,12 +382,27 @@ public class Type {
 	 * @param type2
 	 */
 	public static int getCommonSuperType(int type1, int type2) {
+		//Super shortcut
 		if(type1 == type2)
 			return type1;
-		type1 = getSuperType(type1);
-		if(type1 == type2)
-			return type1;
-		else
-			return getCommonSuperType(type1, getSuperType(type2));
+		//TODO : optimize by swapping the arguments based on their numeric values ?
+		//Processing lower value first *should* reduce the size of the Set
+		//Collect type1's super-types
+		HashSet t1 = new HashSet();
+		//Don't introduce a shortcut (starting at getSuperType(type1) here
+		//type2 might be a super-type of type1
+		int t;
+		for(t = type1; t != ITEM; t = getSuperType(t)) {
+			//Shortcut
+			if (t == type2)
+				return t;
+			t1.add(new Integer(t));
+		}
+		//Starting from type2's super type : the shortcut should have done its job
+		for(t = getSuperType(type2); t != ITEM ; t = getSuperType(t)) {
+			if (t1.contains(new Integer(t)))
+				return t;
+		}
+		return ITEM;
 	} 
 }

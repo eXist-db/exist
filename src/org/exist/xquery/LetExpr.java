@@ -148,15 +148,17 @@ public class LetExpr extends BindingExpression {
             try {
                 // evaluate input sequence
                 in = inputSequence.eval(contextSequence, null);
-                clearContext(getExpressionId(), in);
+
+        		clearContext(getExpressionId(), in);
 
                 // Declare the iteration variable
                 LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
                 var.setSequenceType(sequenceType);
                 context.declareVariableBinding(var);
                 var.setValue(in);
+                if (sequenceType == null)
+                    var.checkType(); //Just because it makes conversions !                	
                 var.setContextDocs(inputSequence.getContextDocSet());
-                var.checkType();
 
                 registerUpdateListener(in);
 
@@ -258,7 +260,33 @@ public class LetExpr extends BindingExpression {
 //            // Restore the local variable stack
 //            context.popLocalVariables(mark);
            
-            if (context.getProfiler().isEnabled())
+            if (sequenceType != null) {
+            	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
+        		if (!Cardinality.checkCardinality(sequenceType.getCardinality(), resultSequence.getCardinality()))
+    				throw new XPathException("XPTY004: Invalid cardinality for variable $" + varName +
+    						". Expected " +
+    						Cardinality.getDescription(sequenceType.getCardinality()) +
+    						", got " + Cardinality.getDescription(resultSequence.getCardinality()));
+        		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
+        		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
+	        		if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
+	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
+	    						". Expected " +
+	    						Type.getTypeName(sequenceType.getPrimaryType()) +
+	    						", got " +Type.getTypeName(resultSequence.getItemType()));
+        		//Here is an attempt to process the nodes correctly
+        		} else {
+        			//Same as above : we probably may factorize 
+	        		if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
+	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
+	    						". Expected " +
+	    						Type.getTypeName(sequenceType.getPrimaryType()) +
+	    						", got " +Type.getTypeName(resultSequence.getItemType()));
+        			
+        		}
+            }
+
+        	if (context.getProfiler().isEnabled())
                 context.getProfiler().end(this, "", resultSequence);
             
             actualReturnType = resultSequence.getItemType();
@@ -267,6 +295,16 @@ public class LetExpr extends BindingExpression {
         } finally {
             context.popDocumentContext();
         }
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Expression#returnsType()
+	 */
+	public int returnsType() {
+		if (sequenceType != null)
+			return sequenceType.getPrimaryType();
+		//Type.ITEM by default : this may change *after* evaluation
+		return actualReturnType;
 	}
 
 	/* (non-Javadoc)

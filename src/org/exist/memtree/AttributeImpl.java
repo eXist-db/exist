@@ -159,7 +159,11 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 		return false;
 	}
 	
-    public String toString() {
+	public int getItemType() {
+		return Type.ATTRIBUTE;
+	}    
+	
+	public String toString() {
     	StringBuffer result = new StringBuffer();
     	result.append("in-memory#");
     	result.append("attribute {");

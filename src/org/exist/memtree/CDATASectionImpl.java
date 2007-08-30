@@ -21,6 +21,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.xquery.value.Type;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
@@ -123,6 +124,10 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection {
 		return null;
 	}	
 
+	public int getItemType() {
+		return Type.CDATA_SECTION;
+	}    
+		
     public String toString() {
     	StringBuffer result = new StringBuffer();
     	if (isPersistentSet())

@@ -257,14 +257,6 @@ public abstract class BindingExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#returnsType()
-	 */
-	public int returnsType() {
-		//Type.ITEM by default : this may change *after* evaluation
-		return actualReturnType;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {

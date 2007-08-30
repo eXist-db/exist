@@ -141,6 +141,9 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
 		return false;
 	}
 	
+	public int getItemType() {
+		return Type.NAMESPACE;
+	}  
 	//Untested
     public String toString() {
     	StringBuffer result = new StringBuffer();
