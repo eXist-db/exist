@@ -93,7 +93,7 @@
                                                             -p <emphasis>[admin_password]</emphasis> 
                                                             -b <emphasis>[collection_path]</emphasis> 
                                                             -d <emphasis>[target_path]</emphasis>
-                                                            -o uri=<emphasis>[xml_uri]</emphasis></synopsis>
+                                                            -ouri=<emphasis>[xml_uri]</emphasis></synopsis>
                     <para>To view the all of the available options for this command, use the
                             <parameter>-h</parameter> parameter.</para>
                 </listitem>
@@ -114,7 +114,7 @@
                 example, the following backup on a Unix system specifies the database URI
                     <filename>xmldb:exist://192.168.1.2:8080/exist/xmlrpc</filename></para>
             <synopsis>bin/backup.sh -u admin -p admin-pass -b /db -d /var/backup/hd060501
-                                                    -o uri=xmldb:exist://192.168.1.2:8080/exist/xmlrpc</synopsis>
+                                                    -ouri=xmldb:exist://192.168.1.2:8080/exist/xmlrpc</synopsis>
 
             <note>
                 <para>Default settings for the user, password or server URIs can also be set via the

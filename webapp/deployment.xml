@@ -149,7 +149,7 @@
       pass the <option>-o</option> option on the command line. For example, if
       you start the Admin client using the command:</para>
 
-      <synopsis format="linespecific">bin/client.sh -o uri=xmldb:exist://</synopsis>
+      <synopsis format="linespecific">bin/client.sh -ouri=xmldb:exist://</synopsis>
 
       <para>this will cause a local database instance to run in the same Java
       virtual machine as the client. Note that the short form for this
