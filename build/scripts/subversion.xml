@@ -72,7 +72,7 @@
   <!-- 
     Create patch; unfortunately VERSION.txt is included as well.
   -->
-  <target name="svn-diff" description="Make diff.">
+  <target name="svn-diff" description="Make patch.">
 
     <echo>Generating patch file '${svn.patch.file}'....</echo>
     <java classname="org.tmatesoft.svn.cli.SVN" dir="." fork="true" output="eXist.patch">
@@ -86,6 +86,22 @@
     <echo>Reminder: please remove all VERSION.txt diffs from the file '${svn.patch.file}'.</echo>
   </target>
 
-
+  <!-- 
+    Check out / update sources from subversion code archive.
+  -->
+  <target name="svn-checkout" description="Check out or update from SubVersion code archive.">
+    <property name="source-root" value="."/>
+    <property name="repository.URL" value="https://exist.svn.sourceforge.net/svnroot/exist"/>
+    <java classname="org.tmatesoft.svn.cli.SVN"
+       dir="." fork="true">
+      <arg value="co"/>
+      <arg value="${repository.URL}/trunk/eXist"/>
+      <arg value="${source-root}"/>
+      <classpath>
+        <pathelement location="${svn.svnkit.jar}"/>
+        <pathelement location="${svn.svnkitcli.jar}"/>
+      </classpath>
+    </java>
+  </target>
 
 </project>
