@@ -146,7 +146,7 @@
       <option>uri</option> property for the server location. For permanent
       changes, edit the properties-file <filename
       moreinfo="none">client.properties</filename>. To make temporary changes,
-      pass the <option>-o</option> option on the command line. For example, if
+      pass the <option>-ouri</option> option on the command line. For example, if
       you start the Admin client using the command:</para>
 
       <synopsis format="linespecific">bin/client.sh -ouri=xmldb:exist://</synopsis>

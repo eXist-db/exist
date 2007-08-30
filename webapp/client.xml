@@ -174,7 +174,7 @@
         any XML:DB URI containing a host part is accessed through the XMLRPC protocol.</para>
       <para>There are several ways to specify an alternate XML:DB base URI: first, you may change
         the <option>uri=</option> property in <filename moreinfo="none"
-        >client.properties</filename>. Second, you may use the <option>-o</option> parameter on the
+        >client.properties</filename>. Second, you may use the <option>-ouri</option> parameter on the
         command-line to temporarily select another target for the connection. For example, to start
         the client in local mode, use:</para>
       <synopsis format="linespecific">bin/client.sh -ouri=xmldb:exist://</synopsis>
@@ -184,7 +184,7 @@
         initialized and started by the client. It will thus have direct access to the database
         instance. Use this option if you want to batch-load a large document or a huge collection of
         documents.</para>
-      <para>Using the <option>-o</option>, you can temporarily change any property specified in the
+      <para>Using the <option>-ouri</option>, you can temporarily change any property specified in the
         properties file. Since switching to local mode is required quite often, there's also a
         shortcut: specifying</para>
       <synopsis format="linespecific">bin/client.sh -l</synopsis>

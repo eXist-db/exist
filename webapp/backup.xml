@@ -110,7 +110,7 @@
             <para>By default, the utility connects to the database at the URI:
                     <filename>xmldb:exist://localhost:8080/exist/xmlrpc</filename>. If you want to
                 backup a database at a different location, specify its <command>XML:DB URI</command>
-                (excluding any collection path) using the <parameter>-o</parameter> parameter. For
+                (excluding any collection path) using the <parameter>-ouri</parameter> parameter. For
                 example, the following backup on a Unix system specifies the database URI
                     <filename>xmldb:exist://192.168.1.2:8080/exist/xmlrpc</filename></para>
             <synopsis>bin/backup.sh -u admin -p admin-pass -b /db -d /var/backup/hd060501
