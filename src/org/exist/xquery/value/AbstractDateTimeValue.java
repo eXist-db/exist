@@ -50,6 +50,26 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
 	
 	protected static Pattern negativeDateStart = Pattern.compile("^\\d\\d?-(\\d+)-(.*)"); 
+    protected static Pattern gYearWUTCTZ = Pattern.compile("^(\\d\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)$");
+    protected static Pattern gYearNoTZ = Pattern.compile("^(\\d\\d\\d\\d)$");
+    protected static Pattern gDayWTZ = Pattern.compile("^(---\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    protected static Pattern gMonthWTZ = Pattern.compile("^(--\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    //protected static Pattern gMonthWUTCTZ = Pattern.compile("^(--\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    protected static Pattern gYearMonthWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    protected static Pattern gMonthDayWTZ = Pattern.compile("^(--\\d\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    protected static Pattern dateWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    protected static Pattern timeNoTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)");
+    protected static Pattern timeWUTCTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)([+-]\\d\\d:\\d\\d)");
+    protected static Pattern timeMsWTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)(\\.)(\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    protected static Pattern dateTimeMsWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\dT)(\\d\\d):(\\d\\d):(\\d\\d)(\\.)(\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    protected static Pattern dateTimeNoTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)(T)(\\d\\d):(\\d\\d):(\\d\\d)");
+
+
+    protected static Pattern dateInvalidDay = Pattern.compile("^(---)\\d(\\d\\d)");
+    protected static Pattern dateInvalidMonth = Pattern.compile("(^\\d\\d\\d\\d-\\d\\d\\d-\\d\\d$|^\\d\\d\\d\\d-\\d\\d\\d.*|^\\d\\d\\d\\d-\\d\\d\\d-\\d\\dT.*)");
+    protected static Pattern dateInvalidYear = Pattern.compile("(^0(\\d\\d\\d\\d\\d*)-(\\d\\d)-(\\d\\d)|^0(\\d\\d\\d\\d)-(\\d\\d\\d)$)");
+
+
 
 	public final static int YEAR = 0;
 	public final static int MONTH = 1;
@@ -70,15 +90,16 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		this.calendar = calendar;
 	}
 	
-	protected AbstractDateTimeValue(String lexicalValue) throws XPathException {
+	protected AbstractDateTimeValue(String lexicalValue)
+        throws XPathException {
         lexicalValue = StringValue.trimWhitespace(lexicalValue);
-        //4 digits years should not have leading zeroes
-        //xs:gDay("---08-10:60") is invalid also
-        //TODO : where to enforce those lexical constains ?
+
+        lexicalValue = normalizeDate(lexicalValue);
+        lexicalValue = normalizeTime(lexicalValue);
 		try {
 			this.calendar = TimeUtils.getInstance().newXMLGregorianCalendar(lexicalValue);
 		} catch (IllegalArgumentException e) {
-			throw new XPathException("illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
+			throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
 		}
 	}
 	
@@ -328,5 +349,246 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         else
             return getType() > other.getType() ? Constants.SUPERIOR : Constants.INFERIOR;
     }	
+
+    /**
+     * The method <code>normalizeDate</code>
+     *
+     * @param dateValue a <code>String</code> value
+     * @return a <code>String</code> value
+     * @exception XPathException if an error occurs
+     */
+    public static String normalizeDate(String dateValue)
+    throws XPathException {
+        Matcher d = dateInvalidDay.matcher(dateValue);
+       Matcher m = dateInvalidMonth.matcher(dateValue);
+       Matcher y = dateInvalidYear.matcher(dateValue);
+       if (d.matches() ||  m.matches() || y.matches()) {
+           throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + dateValue + "'");
+       }
+       return dateValue;
+    }
+
+    /**
+     * The method <code>normalizeTime</code>
+     *
+     * @param timeValue a <code>String</code> value
+     * @return a <code>String</code> value
+     */
+    public static String normalizeTime(String timeValue)
+    throws XPathException {
+        int hours = 0;
+        int mins = 0;
+        int secs = 0;
+        int mSecs = 0;
+        int tzHours = 0;
+        int tzMins = 0;
+        DecimalFormat df = new DecimalFormat("00");
+        DecimalFormat msf = new DecimalFormat("000");
+		Matcher m = timeNoTZ.matcher(timeValue);
+		if (m.matches()) {
+			hours = Integer.valueOf(m.group(1)).intValue();
+			mins = Integer.valueOf(m.group(2)).intValue();
+			secs = Integer.valueOf(m.group(3)).intValue();
+            if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (hours == 24) {
+                if (mins == 0) {
+                    hours = 0;
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            // fixme!
+            timeValue = df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs);
+		}
+        
+        m = dateTimeNoTZ.matcher(timeValue);
+		if (m.matches()) {
+            String date =  m.group(1);
+            DateValue dateValue = null;
+
+			hours = Integer.valueOf(m.group(3)).intValue();
+			mins = Integer.valueOf(m.group(4)).intValue();
+			secs = Integer.valueOf(m.group(5)).intValue();
+            if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (hours == 24) {
+                if (mins == 0) {
+                    hours = 0;
+                    dateValue = (DateValue) new DateValue(date).plus(new DayTimeDurationValue("P1D"));
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            // fixme!
+            timeValue = (dateValue == null ? date : dateValue.getStringValue()) + m.group(2) + df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs);
+		}
+
+        m = dateTimeMsWTZ.matcher(timeValue);
+		if (m.matches()) {
+			hours = Integer.valueOf(m.group(2)).intValue();
+			mins = Integer.valueOf(m.group(3)).intValue();
+			secs = Integer.valueOf(m.group(4)).intValue();
+			mSecs = Integer.valueOf(m.group(6)).intValue();
+            tzHours = Integer.valueOf(m.group(8)).intValue();
+			tzMins = Integer.valueOf(m.group(9)).intValue();
+            if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (hours == 24) {
+                if (mins == 0) {
+                    hours = 0;
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            // fixme!
+            timeValue = m.group(1) + df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs) + m.group(5) + msf.format(mSecs) + m.group(7) + df.format(tzHours) + ":" + df.format(tzMins);
+		}
+        
+        m = timeMsWTZ.matcher(timeValue);
+		if (m.matches()) {
+			hours = Integer.valueOf(m.group(1)).intValue();
+			mins = Integer.valueOf(m.group(2)).intValue();
+			secs = Integer.valueOf(m.group(3)).intValue();
+			mSecs = Integer.valueOf(m.group(5)).intValue();
+            tzHours = Integer.valueOf(m.group(7)).intValue();
+			tzMins = Integer.valueOf(m.group(8)).intValue();
+            if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (hours == 24) {
+                if (mins == 0) {
+                    hours = 0;
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            timeValue = df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs) + m.group(4) + msf.format(mSecs) + m.group(6) + df.format(tzHours) + ":" + df.format(tzMins);
+		}
+
+        m = gYearWUTCTZ.matcher(timeValue);
+		if (m.matches()) {
+			tzHours = Integer.valueOf(m.group(3)).intValue();
+			tzMins = Integer.valueOf(m.group(4)).intValue();
+            if (tzMins >= 60 && tzMins < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (tzHours == 24) {
+                if (tzMins == 0) {
+                    tzHours = 0;
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            // fixme!
+            timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
+		}
+
+        m = gDayWTZ.matcher(timeValue);
+		if (m.matches()) {
+			tzHours = Integer.valueOf(m.group(3)).intValue();
+			tzMins = Integer.valueOf(m.group(4)).intValue();
+            if (tzMins >= 60 && tzMins < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (tzHours == 24) {
+                if (tzMins == 0) {
+                    tzHours = 0;
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            // fixme!
+            timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
+		}
+
+        m = gMonthWTZ.matcher(timeValue);
+		if (m.matches()) {
+            tzHours = Integer.valueOf(m.group(3)).intValue();
+			tzMins = Integer.valueOf(m.group(4)).intValue();
+            if (tzMins >= 60 || tzMins < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (tzHours == 24) {
+                if (tzMins == 0) {
+                    tzHours = 0;
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            // fixme!
+            timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
+		}
+
+        m = gYearMonthWTZ.matcher(timeValue);
+		if (m.matches()) {
+            tzHours = Integer.valueOf(m.group(3)).intValue();
+			tzMins = Integer.valueOf(m.group(4)).intValue();
+            if (tzMins >= 60 || tzMins < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (tzHours == 24) {
+                if (tzMins == 0) {
+                    tzHours = 0;
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            // fixme!
+            timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
+		}
+
+        m = gMonthDayWTZ.matcher(timeValue);
+		if (m.matches()) {
+			hours = Integer.valueOf(m.group(2)).intValue();
+			mins = Integer.valueOf(m.group(3)).intValue();
+            tzHours = Integer.valueOf(m.group(5)).intValue();
+			tzMins = Integer.valueOf(m.group(6)).intValue();
+            if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (hours == 24) {
+                if (mins == 0) {
+                    hours = 0;
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            // fixme!
+            timeValue = m.group(1) + df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs) + m.group(4) + df.format(tzHours) + ":" + df.format(tzMins);
+		}
+        
+        m = dateWTZ.matcher(timeValue);
+		if (m.matches()) {
+			hours = Integer.valueOf(m.group(3)).intValue();
+			mins = Integer.valueOf(m.group(4)).intValue();
+            if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
+                throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+            }
+            
+            if (hours == 24) {
+                if (mins == 0) {
+                    hours = 0;
+                } else {
+                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                }
+            }
+            // fixme!
+            timeValue = m.group(1) + m.group(2) + df.format(hours) + ":" + df.format(mins);
+		}
+        return timeValue;
+    }
 
 }
