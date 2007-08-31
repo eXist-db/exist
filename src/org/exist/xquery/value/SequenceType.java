@@ -147,6 +147,10 @@ public class SequenceType {
 	public void checkType(int type) throws XPathException {
 		if (type == Type.EMPTY || type == Type.ITEM)
 			return;
+		
+		//Although xs:anyURI is not a subtype of xs:string, both types are compatible
+		if (type ==	Type.ANY_URI && primaryType == Type.STRING)
+			return;
         
 		if (!Type.subTypeOf(type, primaryType))
 			throw new XPathException(

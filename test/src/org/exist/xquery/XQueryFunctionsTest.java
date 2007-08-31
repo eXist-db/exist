@@ -47,6 +47,33 @@ public class XQueryFunctionsTest extends TestCase {
 		super(arg0);
 	}
 	
+	public void testArguments() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			result 	= service.query( "declare function local:testAnyURI($uri as xs:string) as xs:string { " +
+					"concat('Successfully processed as xs:string : ',$uri) " +
+					"}; " +
+					"let $a := xs:anyURI('http://exist.sourceforge.net/') " +
+					"return local:testAnyURI($a)" );
+			assertEquals(1,result.getSize());
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "Successfully processed as xs:string : http://exist.sourceforge.net/", r );	
+			
+			
+			result 	= service.query( "declare function local:testEmpty($blah as xs:string)  as element()* { " +
+					"for $a in (1,2,3) order by $a " +
+					"return () " +
+					"}; " +
+					"local:testEmpty('test')" );
+			assertEquals(0,result.getSize());
+
+		} catch (XMLDBException e) {
+			System.out.println("testSum(): " + e);
+			fail(e.getMessage());
+		}
+	}	
+	
 	/** Tests the XQuery-/XPath-function fn:round-half-to-even
 	 * with the rounding value typed xs:integer
 	 */
