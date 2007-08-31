@@ -439,7 +439,7 @@
             <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
             <link href="http://jline.sourceforge.net/javadoc/"/>
             <link href="http://jug.safehaus.org/curr/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/docs/api"/>
+            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
             <link href="http://people.apache.org/~andyc/neko/doc/html/javadoc/"/>
             <link href="http://quartz.sourceforge.net/javadoc/"/>
             <link href="http://sunxacml.sourceforge.net/javadoc/"/>
