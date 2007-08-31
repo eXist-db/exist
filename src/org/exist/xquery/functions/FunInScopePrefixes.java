@@ -62,8 +62,6 @@ public class FunInScopePrefixes extends BasicFunction {
 			}
 		} else { // In-memory node
 			NodeImpl next = (NodeImpl) node;
-            // Add xmlNS to all in-memory construcs. /ljo
-            prefixes.put("xml", Namespaces.XML_NS);
 			do {
 				collectNamespacePrefixes((org.exist.memtree.ElementImpl) next, prefixes);
 				next = (NodeImpl) next.getParentNode();
@@ -84,7 +82,9 @@ public class FunInScopePrefixes extends BasicFunction {
 	}
 
 	public static void collectNamespacePrefixes(ElementImpl element, Map prefixes) {
-		String namespaceURI = element.getNamespaceURI();
+        // Add xmlNS to all constructs. -pb
+        prefixes.put("xml", Namespaces.XML_NS);	
+        String namespaceURI = element.getNamespaceURI();
 		String prefix;
         if (namespaceURI != null && namespaceURI.length() > 0) {
 			prefix = element.getPrefix();
@@ -99,6 +99,8 @@ public class FunInScopePrefixes extends BasicFunction {
 	}
 	
 	public static void collectNamespacePrefixes(Element element, Map prefixes) {
+        // Add xmlNS to all constructs. -pb
+        prefixes.put("xml", Namespaces.XML_NS);		
 		String namespaceURI = element.getNamespaceURI();
 		String prefix;
         System.out.println("FunInScopePrefixes::collectNamespacePrefixes Element 1:" + element+ "/" + namespaceURI);
@@ -110,6 +112,8 @@ public class FunInScopePrefixes extends BasicFunction {
     }
 
 	public static void collectNamespacePrefixes(org.exist.memtree.ElementImpl element, Map prefixes) {
+        // Add xmlNS to all in-memory constructs. /ljo
+        prefixes.put("xml", Namespaces.XML_NS);		
 		String namespaceURI = element.getNamespaceURI();
 		String prefix;
 		if (namespaceURI != null && namespaceURI.length() > 0) {
