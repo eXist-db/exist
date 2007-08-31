@@ -214,20 +214,20 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                     "Text"
                 (: obvious wrong comparison methods :)
                 else if ($testCase/@name eq "copynamespace-2") then
-                    "XML"
+                    "Text"
                 (: ForExprType057 fails : why ? :)
                 else if ($testCase/@name eq "ForExprType059") then
-                    "XML"
+                    "TextAsXML"
                 else if ($testCase/@name eq "ForExprType060") then
-                    "XML"
+                    "TextAsXML"
                 else if ($testCase/@name eq "Constr-inscope-1") then
-                    "XML"
+                    "TextAsXML"
                 else if ($testCase/@name eq "Constr-inscope-2") then
-                    "XML"
+                    "TextAsXML"
                 else if ($testCase/@name eq "Constr-inscope-3") then
-                    "XML"
+                    "TextAsXML"
                 else if ($testCase/@name eq "Constr-inscope-4") then
-                    "XML"
+                    "TextAsXML"
                 else                
                     $output/@compare
             let $outputFilePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $testCase/@FilePath,
@@ -236,6 +236,8 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                 <expected-result compare="{$comparison}">
                 {
                     if ($comparison eq "Text") then
+                        xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
+                    else if ($comparison eq "TextAsXML") then
                         xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
                     else if ($comparison eq "XML") then                    
                         util:catch(
@@ -428,6 +430,8 @@ declare function xqts:compute-result($testCase as element(catalog:test-case), $q
         return
             if ($expectedResult/@compare eq "Text") then
                 $expectedResult/string() eq xqts:normalize-text($result)
+            else if ($expectedResult/@compare eq "TextAsXML") then
+                xdiff:compare($expectedResult/*, util:eval($result))                              
             else if ($expectedResult/@compare eq "XML") then
                 xdiff:compare($expectedResult/*, $result)
             else if ($expectedResult/@compare eq "Fragment") then
