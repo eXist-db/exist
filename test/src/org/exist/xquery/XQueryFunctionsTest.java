@@ -777,6 +777,24 @@ public class XQueryFunctionsTest extends TestCase {
       }
     }
     
+    public void testNamespaceURI() {
+        String query = "let $var := <a xmlns='aaa'/> " +
+        	"return " + 
+        	"$var[fn:namespace-uri() = 'aaa']/fn:namespace-uri()";
+        
+        try {
+          ResourceSet result = service.query(query);
+          String r = (String) result.getResource(0).getContent();
+          assertEquals("aaa", r);
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }    
+    
+    
+    
+    
     public void testNodeName() {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " + 
         "for $b in $a/b[node-name(.) = xs:QName('b')] return $b";

@@ -80,8 +80,8 @@ public class FunNamespaceURI extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-        if(contextItem != null)
-            contextSequence = contextItem.toSequence();
+        //if(contextItem != null)
+        //    contextSequence = contextItem.toSequence();
         
         Item item = null;
         // check if the node is passed as an argument or should be taken from
@@ -91,11 +91,15 @@ public class FunNamespaceURI extends Function {
             if(!seq.isEmpty())
                 item = seq.itemAt(0);
         } else { 
-        	if (contextSequence == null)
-        		throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
-            if(!contextSequence.isEmpty())
+        	if (contextItem == null)
             	throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
-            item = contextSequence.itemAt(0);
+        	item = contextItem;
+        	//if (contextSequence == null)
+        	//	throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+        	//Doh !
+            //if(!contextSequence.isEmpty())
+            //	throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+            //item = contextSequence.itemAt(0);
         }
         
         Sequence result;
