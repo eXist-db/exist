@@ -861,42 +861,43 @@ public class XQueryContext {
     /**
 	 * Should loaded documents be locked?
 	 * 
-     * @see #setLockDocumentsOnLoad(boolean)
+     * see #setLockDocumentsOnLoad(boolean)
      *
 	 */
 	public boolean lockDocumentsOnLoad() {
 	    return false;
 	}
 	
-	/**
-	 * If lock is true, all documents loaded during query execution
-	 * will be locked. This way, we avoid that query results become
-	 * invalid before the entire result has been processed by the client
-	 * code. All attempts to modify nodes which are part of the result
-	 * set will be blocked.
-	 * 
-	 * However, it is the client's responsibility to proper unlock
-	 * all documents once processing is completed.
-	 * 
-	 * @param lock
-	 */
+//	/**
+//	 * If lock is true, all documents loaded during query execution
+//	 * will be locked. This way, we avoid that query results become
+//	 * invalid before the entire result has been processed by the client
+//	 * code. All attempts to modify nodes which are part of the result
+//	 * set will be blocked.
+//	 * 
+//	 * However, it is the client's responsibility to proper unlock
+//	 * all documents once processing is completed.
+//	 * 
+//	 * @param lock
+//	 */
 //	public void setLockDocumentsOnLoad(boolean lock) {
 //	    lockDocumentsOnLoad = lock;
 //	    if(lock)
 //	        lockedDocuments = new LockedDocumentMap();
 //	}
 
+
     public void addLockedDocument(DocumentImpl doc) {
 //        if (lockedDocuments != null)
 //           lockedDocuments.add(doc);
     }
 
-    /**
-     * Release all locks on documents that have been locked
-     * during query execution.
-     *
-     *@see #setLockDocumentsOnLoad(boolean)
-     */
+//    /**
+//     * Release all locks on documents that have been locked
+//     * during query execution.
+//     *
+//     *@see #setLockDocumentsOnLoad(boolean)
+//     */
 //	public void releaseLockedDocuments() {
 //        if(lockedDocuments != null)
 //	        lockedDocuments.unlock();
@@ -904,15 +905,15 @@ public class XQueryContext {
 //		lockedDocuments = null;
 //	}
 	
-    /**
-     * Release all locks on documents not being referenced by the sequence.
-     * This is called after query execution has completed. Only locks on those
-     * documents contained in the final result set will be preserved. All other
-     * locks are released as they are no longer needed.
-     * 
-     * @param seq
-     * @throws XPathException 
-     */
+//    /**
+//     * Release all locks on documents not being referenced by the sequence.
+//     * This is called after query execution has completed. Only locks on those
+//     * documents contained in the final result set will be preserved. All other
+//     * locks are released as they are no longer needed.
+//     * 
+//     * @param seq
+//     * @throws XPathException 
+//     */
 //	public LockedDocumentMap releaseUnusedDocuments(Sequence seq) throws XPathException {
 //	    if(lockedDocuments == null)
 //	        return null;
