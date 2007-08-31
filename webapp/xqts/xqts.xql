@@ -214,7 +214,7 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                     "Text"
                 (: obvious wrong comparison methods :)
                 else if ($testCase/@name eq "copynamespace-2") then
-                    "Text"
+                    "XML"
                 (: ForExprType057 fails : why ? :)
                 else if ($testCase/@name eq "ForExprType059") then
                     "TextAsXML"
