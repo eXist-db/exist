@@ -100,7 +100,7 @@ public class DateValue extends AbstractDateTimeValue {
 				return new StringValue(dv.getStringValue());
 			}
 			default :
-				throw new XPathException("FORG0001: can not convert " + 
+				throw new XPathException("err:FORG0001: can not convert " + 
 						Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
 						Type.getTypeName(requiredType));
 		}
