@@ -87,14 +87,12 @@ public class QuantifiedExpression extends BindingExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);
         }        
         
-        if (contextItem != null)
-            contextSequence = contextItem.toSequence();
+        //if (contextItem != null)
+        //    contextSequence = contextItem.toSequence();
         
-		LocalVariable mark = context.markLocalVariables(false);
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
-		context.declareVariableBinding(var);
         
-		Sequence inSeq = inputSequence.eval(contextSequence);
+		Sequence inSeq = inputSequence.eval(contextSequence, contextItem);
         if (sequenceType != null) {
         	//Type.EMPTY is *not* a subtype of other types ; the tests below would fail without this prior cardinality check
         	if (!inSeq.isEmpty() && !Type.subTypeOf(inSeq.getItemType(), sequenceType.getPrimaryType()))
@@ -108,40 +106,42 @@ public class QuantifiedExpression extends BindingExpression {
 		boolean canDecide = (mode == EVERY) ? true : false;
 
 		for (SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
-			contextItem = i.nextItem();
+			canDecide = true;
 			
+			Item item = i.nextItem();			
 			// set variable value to current item
-            var.setValue(contextItem.toSequence());
+            var.setValue(item.toSequence());
             if (sequenceType == null) 
                 var.checkType(); //... because is makes some conversions
 				
-            Sequence satisfiesSeq = returnExpr.eval(contextSequence);
+    		LocalVariable mark = context.markLocalVariables(false);
+            context.declareVariableBinding(var);
+            Sequence satisfiesSeq = returnExpr.eval(contextSequence, contextItem);
+    		context.popLocalVariables(mark);
+            
             if (sequenceType != null) {
         		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
         		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
-	            	if (!Type.subTypeOf(contextItem.toSequence().getItemType(), sequenceType.getPrimaryType()))
+	            	if (!Type.subTypeOf(item.toSequence().getItemType(), sequenceType.getPrimaryType()))
 	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
 	    						". Expected " +
 	    						Type.getTypeName(sequenceType.getPrimaryType()) +
 	    						", got " +Type.getTypeName(contextItem.toSequence().getItemType()));
-            	} else if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), Type.NODE))
+            	} else if (!Type.subTypeOf(item.getType(), Type.NODE))
     				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
     						". Expected " +
     						Type.getTypeName(Type.NODE) +
-    						" (or more specific), got " + Type.getTypeName(resultSequence.getItemType()));
+    						" (or more specific), got " + Type.getTypeName(item.getType()));
     	    	//trigger the old behaviour
         		else var.checkType();
             }	
             
-            canDecide = true;
 			found = satisfiesSeq.effectiveBooleanValue();
 			if ((mode == SOME ) && found)
 				break;
 			if ((mode == EVERY) && !found)
 				break;
 		}
-	
-		context.popLocalVariables(mark);
         
 		Sequence result = canDecide && found ? BooleanValue.TRUE : BooleanValue.FALSE;
         

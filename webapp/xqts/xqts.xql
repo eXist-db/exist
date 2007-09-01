@@ -431,17 +431,19 @@ declare function xqts:compute-result($testCase as element(catalog:test-case), $q
     let $testsPassed :=
         for $expectedResult in $expectedResults
         return
-            if ($expectedResult/@compare eq "Text") then
-                $expectedResult/string() eq xqts:normalize-text($result)
-            else if ($expectedResult/@compare eq "TextAsXML") then
-                xdiff:compare($expectedResult/*, util:eval($result))                              
-            else if ($expectedResult/@compare eq "XML") then
-                xdiff:compare($expectedResult/*, $result)
-            else if ($expectedResult/@compare eq "Fragment") then
-                xdiff:compare($expectedResult/*, <f>{$result}</f>)
-            (: unlikely :)    
-            else
-                false()
+            let $comparisonMethod := $expectedResult/@compare
+            return
+                if ($comparisonMethod eq "Text") then
+                    $expectedResult/string() eq xqts:normalize-text($result)
+                else if ($comparisonMethod eq "TextAsXML") then
+                    xdiff:compare($expectedResult/*, util:eval($result))                              
+                else if ($comparisonMethod eq "XML") then
+                    xdiff:compare($expectedResult/*, $result)
+                else if ($comparisonMethod eq "Fragment") then
+                    xdiff:compare($expectedResult/*, <f>{$result}</f>)
+                (: unlikely :)    
+                else
+                    false()
     let $passed := boolean(count(index-of($testsPassed, true())) gt 0)
     return
         xqts:format-result($testCase, $passed, $query, $result, $expectedResults)
