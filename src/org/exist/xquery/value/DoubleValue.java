@@ -164,17 +164,6 @@ public class DoubleValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
-	 */
-	public boolean effectiveBooleanValue() throws XPathException {
-		if (value == 0.0)
-			return false;
-		if (isNaN())
-			return false;
-		return true;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#getDouble()
 	 */
 	public double getDouble() throws XPathException {

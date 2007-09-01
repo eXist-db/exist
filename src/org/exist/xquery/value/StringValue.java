@@ -367,6 +367,8 @@ public class StringValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
+		// If its operand is a singleton value of type xs:string, xs:anyURI, xs:untypedAtomic, 
+		//or a type derived from one of these, fn:boolean returns false if the operand value has zero length; otherwise it returns true.
 		return value.length() > 0;
 	}
 

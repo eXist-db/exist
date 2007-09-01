@@ -227,7 +227,8 @@ public class IntegerValue extends NumericValue {
 	}
 
 	public boolean isZero() {
-		return value.compareTo(ZERO_BIGINTEGER) == Constants.EQUAL;
+		return value.signum() == 0;
+		//return value.compareTo(ZERO_BIGINTEGER) == Constants.EQUAL;
 	};	
 
 	/* (non-Javadoc)
@@ -291,13 +292,6 @@ public class IntegerValue extends NumericValue {
 	 */
 	public double getDouble() throws XPathException {
 		return value.doubleValue(); // (double) value;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
-	 */
-	public boolean effectiveBooleanValue() throws XPathException {
-		return (value.compareTo(ZERO_BIGINTEGER) == 0 ) ? false : true; // value != 0;
 	}
 
 	/* (non-Javadoc)

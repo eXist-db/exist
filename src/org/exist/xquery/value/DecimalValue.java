@@ -189,13 +189,6 @@ public class DecimalValue extends NumericValue {
 						+ Type.getTypeName(requiredType));
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
-	 */
-	public boolean effectiveBooleanValue() throws XPathException {
-		return value.signum() != 0;
-	}
 	
 	public boolean isNaN() {
 		return false;
@@ -206,7 +199,8 @@ public class DecimalValue extends NumericValue {
 	}
 
 	public boolean isZero() {
-		return value.compareTo(ZERO_BIGDECIMAL) == Constants.EQUAL;
+		return value.signum() == 0;
+		//return value.compareTo(ZERO_BIGDECIMAL) == Constants.EQUAL;
 	}
 	
 	/* (non-Javadoc)

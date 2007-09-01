@@ -31,6 +31,13 @@ public abstract class NumericValue extends ComputableValue {
 
 	public abstract boolean isZero();
 	
+	public boolean effectiveBooleanValue() throws XPathException {
+		//If its operand is a singleton value of any numeric type or derived from a numeric type, 
+		//fn:boolean returns false if the operand value is NaN or is numerically equal to zero; 
+		//otherwise it returns true.		
+		return !(isNaN() || isZero());
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */

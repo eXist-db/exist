@@ -75,6 +75,7 @@ public abstract class AbstractSequence implements Sequence {
 		if(Type.subTypeOf(first.getType(), Type.ATOMIC))
 			return ((AtomicValue)first).convertTo(requiredType);
 		else
+			//TODO : clean atomization
 			return new StringValue(first.getStringValue()).convertTo(requiredType);
 	}
 
@@ -163,8 +164,15 @@ public abstract class AbstractSequence implements Sequence {
 	                (toString().length() < 20 ? toString() : toString().substring(0, 20)+ "...") + 
 	                "' is not a node, and sequence length > 1");
 		}
+		//From now, we'll work with singletons...
+
+		//Not sure about this one : does it mean than any singleton, including false() and 0 will return true ?
+		if (OLD_EXIST_VERSION_COMPATIBILITY)
+			return true;
+		else
+			return ((AtomicValue)first).effectiveBooleanValue();
 		
-		//TODO : type a single cast to AtomicValue
+		/*
 
 		// If its operand is a singleton value of type xs:string, xs:anyURI, xs:untypedAtomic, 
 		//or a type derived from one of these, fn:boolean returns false if the operand value has zero length; otherwise it returns true.
@@ -191,6 +199,8 @@ public abstract class AbstractSequence implements Sequence {
 				"error FORG0006: effectiveBooleanValue: sequence of length 1, " +
 				"but not castable to a number or Boolean");
 		}
+		
+		*/
 	}
 	
 	/* (non-Javadoc)
