@@ -208,25 +208,26 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
     (
         for $output at $pos in $testCase/catalog:output-file
         return
+            let $testName := $testCase/@name        
             let $comparison :=
                 if ($output/@compare eq "Inspect") then
                     (: introduce a per-test/output position return value:)
                     "Text"
                 (: obvious wrong comparison methods :)
-                else if ($testCase/@name eq "copynamespace-2") then
+                else if ($testName eq "copynamespace-2") then
                     "XML"
                 (: ForExprType057 fails : why ? :)
-                else if ($testCase/@name eq "ForExprType059") then
+                else if ($testName eq "ForExprType059") then
                     "TextAsXML"
-                else if ($testCase/@name eq "ForExprType060") then
+                else if ($testName eq "ForExprType060") then
                     "TextAsXML"
-                else if ($testCase/@name eq "Constr-inscope-1") then
+                else if ($testName eq "Constr-inscope-1") then
                     "TextAsXML"
-                else if ($testCase/@name eq "Constr-inscope-2") then
+                else if ($testName eq "Constr-inscope-2") then
                     "TextAsXML"
-                else if ($testCase/@name eq "Constr-inscope-3") then
+                else if ($testName eq "Constr-inscope-3") then
                     "TextAsXML"
-                else if ($testCase/@name eq "Constr-inscope-4") then
+                else if ($testName eq "Constr-inscope-4") then
                     "TextAsXML"
                 else                
                     $output/@compare
@@ -260,71 +261,73 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                 }
                 </expected-result>                
     ,
-        (: Inject Saxon's results here :)
-        if ($testCase/@name eq "CastAs672") then
-            <expected-result from="Saxon8.9J" compare="Text">true</expected-result>
-        else if ($testCase/@name eq "copynamespace-3") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">xml exist</expected-result> 
-        else if ($testCase/@name eq "copynamespace-4") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist foo xml</expected-result> 
-        else if ($testCase/@name eq "copynamespace-5") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist foo xml</expected-result>
-        else if ($testCase/@name eq "copynamespace-6") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist foo xml</expected-result>
-        else if ($testCase/@name eq "copynamespace-7") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist xml</expected-result>                           
-        else if ($testCase/@name eq "copynamespace-8") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist existingNamespace xml</expected-result>                           
-        else if ($testCase/@name eq "copynamespace-9") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist newNamespace xml</expected-result>                           
-        else if ($testCase/@name eq "copynamespace-10") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist existingNamespace newNamespace xml</expected-result>                           
-        else if ($testCase/@name eq "copynamespace-11") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist existingNamespace xml</expected-result>                           
-        else if ($testCase/@name eq "copynamespace-12") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist existingNamespace newNamespace xml</expected-result>
-        else if ($testCase/@name eq "copynamespace-13") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">xml exist</expected-result>                                        
-        else if ($testCase/@name eq "copynamespace-14") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">SOMESPACE exist somespace xml</expected-result>                                        
-        else if ($testCase/@name eq "copynamespace-15") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist namespace1 namespace2 namespace3 xml</expected-result>                                        
-        else if ($testCase/@name eq "copynamespace-16") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist namespace3 xml</expected-result>
-        else if ($testCase/@name eq "copynamespace-17") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">xml exist</expected-result>                                        
-        else if ($testCase/@name eq "copynamespace-18") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist namespace1 xml</expected-result>                                        
-        else if ($testCase/@name eq "copynamespace-19") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist namespace2 namespace3 xml</expected-result>                                        
-        else if ($testCase/@name eq "copynamespace-20") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist namespace3 xml</expected-result>                                        
-        else if ($testCase/@name eq "copynamespace-21") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">xml exist</expected-result>                                   
-        else if ($testCase/@name eq "copynamespace-22") then
-            (: eXist's NS is automatically bound :)
-            <expected-result from="eXist" compare="Text">exist namespace2 xml</expected-result> 
-        else
-            ()
+        let $testName := $testCase/@name
+        return
+            (: Inject Saxon's results here :)
+            if ($testName eq "CastAs672") then
+                <expected-result from="Saxon8.9J" compare="Text">true</expected-result>
+            else if ($testName eq "copynamespace-3") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">xml exist</expected-result> 
+            else if ($testName eq "copynamespace-4") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist foo xml</expected-result> 
+            else if ($testName eq "copynamespace-5") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist foo xml</expected-result>
+            else if ($testName eq "copynamespace-6") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist foo xml</expected-result>
+            else if ($testName eq "copynamespace-7") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist xml</expected-result>                           
+            else if ($testName eq "copynamespace-8") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist existingNamespace xml</expected-result>                           
+            else if ($testName eq "copynamespace-9") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist newNamespace xml</expected-result>                           
+            else if ($testName eq "copynamespace-10") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist existingNamespace newNamespace xml</expected-result>                           
+            else if ($testName eq "copynamespace-11") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist existingNamespace xml</expected-result>                           
+            else if ($testName eq "copynamespace-12") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist existingNamespace newNamespace xml</expected-result>
+            else if ($testName eq "copynamespace-13") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">xml exist</expected-result>                                        
+            else if ($testName eq "copynamespace-14") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">SOMESPACE exist somespace xml</expected-result>                                        
+            else if ($testName eq "copynamespace-15") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist namespace1 namespace2 namespace3 xml</expected-result>                                        
+            else if ($testName eq "copynamespace-16") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist namespace3 xml</expected-result>
+            else if ($testName eq "copynamespace-17") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">xml exist</expected-result>                                        
+            else if ($testName eq "copynamespace-18") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist namespace1 xml</expected-result>                                        
+            else if ($testName eq "copynamespace-19") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist namespace2 namespace3 xml</expected-result>                                        
+            else if ($testName eq "copynamespace-20") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist namespace3 xml</expected-result>                                        
+            else if ($testName eq "copynamespace-21") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">xml exist</expected-result>                                   
+            else if ($testName eq "copynamespace-22") then
+                (: eXist's NS is automatically bound :)
+                <expected-result from="eXist" compare="Text">exist namespace2 xml</expected-result> 
+            else
+                ()
     )
 };
 
