@@ -147,9 +147,7 @@ public class ConditionalExpression extends AbstractExpression {
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
-		if(thenExpr.returnsType() == elseExpr.returnsType())
-			return thenExpr.returnsType();
-		return Type.ITEM;
+		return Type.getCommonSuperType(thenExpr.returnsType(), elseExpr.returnsType());
 	}
 
 	/* (non-Javadoc)
