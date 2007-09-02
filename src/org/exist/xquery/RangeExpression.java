@@ -93,52 +93,66 @@ public class RangeExpression extends PathExpr {
 		else if (endSeq.hasMany())
 			throw new XPathException(getASTNode(), "XPTY0004: the second operand must have at most one item");
         else {
-        	NumericValue valueStart;
-        	try {
-        		//Currently breaks 1e3 to 3
-        		valueStart = (NumericValue)startSeq.itemAt(0).convertTo(Type.NUMBER);
-        	} catch (XPathException e) {
-				throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
-						Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
-						startSeq.itemAt(0).getStringValue() + ")'");
-        	}
-        	NumericValue valueEnd;
-        	try {
-        		//Currently breaks 3 to 1e3
-        		valueEnd = (NumericValue)endSeq.itemAt(0).convertTo(Type.NUMBER);
-        	} catch (XPathException e) {
-				throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
-						Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
-						endSeq.itemAt(0).getStringValue() + ")'");
-        	}
-        	//Implied by previous conversion
-        	if (valueStart.hasFractionalPart()) {
-				throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
-						Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
-						startSeq.itemAt(0).getStringValue() + ")'");
-			}
-        	//Implied by previous conversion
-        	if (valueEnd.hasFractionalPart()) {
-				throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
-						Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
-						startSeq.itemAt(0).getStringValue() + ")'");
-        	}        	
-        	result = new ValueSequence();
-			for(long i = ((IntegerValue)valueStart.convertTo(Type.INTEGER)).getLong(); 
-				i <= ((IntegerValue)valueEnd.convertTo(Type.INTEGER)).getLong(); i++) {
-				result.add(new IntegerValue(i));
-			}
+        	if (context.isBackwardsCompatible()) {
+	        	NumericValue valueStart;
+	        	try {
+	        		//Currently breaks 1e3 to 3
+	        		valueStart = (NumericValue)startSeq.itemAt(0).convertTo(Type.NUMBER);
+	        	} catch (XPathException e) {
+					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
+							startSeq.itemAt(0).getStringValue() + ")'");
+	        	}
+	        	NumericValue valueEnd;
+	        	try {
+	        		//Currently breaks 3 to 1e3
+	        		valueEnd = (NumericValue)endSeq.itemAt(0).convertTo(Type.NUMBER);
+	        	} catch (XPathException e) {
+					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
+							endSeq.itemAt(0).getStringValue() + ")'");
+	        	}
+	        	//Implied by previous conversion
+	        	if (valueStart.hasFractionalPart()) {
+					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
+							startSeq.itemAt(0).getStringValue() + ")'");
+				}
+	        	//Implied by previous conversion
+	        	if (valueEnd.hasFractionalPart()) {
+					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
+							startSeq.itemAt(0).getStringValue() + ")'");
+	        	}        	
+	        	result = new ValueSequence();
+				for(long i = ((IntegerValue)valueStart.convertTo(Type.INTEGER)).getLong(); 
+					i <= ((IntegerValue)valueEnd.convertTo(Type.INTEGER)).getLong(); i++) {
+					result.add(new IntegerValue(i));
+				}
+	        } else {
+	        	//Quite unusual test : we accept integers but no other *typed* type 
+	        	if (!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
+	        		!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
+					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
+							startSeq.itemAt(0).getStringValue() + ")'");
+	        	//Quite unusual test : we accept integers but no other *typed* type 
+	        	if (!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
+	        		!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
+					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
+							endSeq.itemAt(0).getStringValue() + ")'");
+	        	IntegerValue valueStart = (IntegerValue)startSeq.itemAt(0).convertTo(Type.INTEGER);
+	        	IntegerValue valueEnd = (IntegerValue)endSeq.itemAt(0).convertTo(Type.INTEGER);
+	       		result = new ValueSequence();
+				for(long i = valueStart.getLong();	i <= valueEnd.getLong(); i++) {
+					result.add(new IntegerValue(i));
+				}        	
+	        }
         }
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.functions.Function#getDependencies()
-	 */
-	public int getDependencies() {
-		return Dependency.NO_DEPENDENCY;
-	}
-	
     public void dump(ExpressionDumper dumper) {
         dumper.display(start);
         dumper.display(" to ");

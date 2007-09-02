@@ -113,10 +113,13 @@ public class QuantifiedExpression extends BindingExpression {
             var.setValue(item.toSequence());
             if (sequenceType == null) 
                 var.checkType(); //... because is makes some conversions
-				
+			
+            //Binds the variable : now in scope
     		LocalVariable mark = context.markLocalVariables(false);
             context.declareVariableBinding(var);
+            //Evaluate the return clause for the current value of the variable
             Sequence satisfiesSeq = returnExpr.eval(contextSequence, contextItem);
+            //Unbind the variable until the next iteration : now out of scope
     		context.popLocalVariables(mark);
             
             if (sequenceType != null) {
