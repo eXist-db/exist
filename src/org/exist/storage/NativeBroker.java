@@ -1125,7 +1125,10 @@ public class NativeBroker extends DBBroker {
             final XmldbURI uri = collection.getURI();
             final String collName = uri.getRawCollectionPath();
             final boolean isRoot = collection.getParentURI() == null;
-        
+
+            // Notify the collection configuration manager
+            pool.getConfigurationManager().invalidateAll(uri);
+            
             //Drop all index entries
             notifyDropIndex(collection);
             

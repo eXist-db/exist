@@ -9,4 +9,8 @@ public class DatabaseConfigurationException extends Exception {
 	public DatabaseConfigurationException(String message) {
 		super(message);
 	}
+
+    public DatabaseConfigurationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

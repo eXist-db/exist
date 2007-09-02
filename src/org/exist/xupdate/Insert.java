@@ -79,7 +79,7 @@ public class Insert extends Modification {
         NodeList children = content;
         if (children.getLength() == 0) return 0;
         try {
-            StoredNode[] ql = selectAndLock();
+            StoredNode[] ql = selectAndLock(transaction);
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();       
             NodeImpl parent;             
@@ -112,7 +112,7 @@ public class Insert extends Modification {
             checkFragmentation(transaction, modifiedDocuments);
             return ql.length;
         } finally {
-            unlockDocuments();
+            unlockDocuments(transaction);
         }
     }
 

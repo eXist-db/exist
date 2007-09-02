@@ -129,7 +129,7 @@ public class TriggerStatePerThread {
 		return ((TriggerState)triggerRunningState.get()).getTransaction();
 	}
 	public static void setTransaction(Txn transaction) {
-		((TriggerState)triggerRunningState.get()).setTransaction(transaction);
+        ((TriggerState)triggerRunningState.get()).setTransaction(transaction);
 	}
 	
 	public static DocumentImpl getModifiedDocument() {

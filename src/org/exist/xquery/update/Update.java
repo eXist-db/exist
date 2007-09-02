@@ -125,7 +125,7 @@ public class Update extends Modification {
                 
                 //start a transaction
                 Txn transaction = getTransaction();
-                StoredNode ql[] = selectAndLock(inSeq.toNodeSet());
+                StoredNode ql[] = selectAndLock(transaction, inSeq.toNodeSet());
                 IndexListener listener = new IndexListener(ql);
                 TextImpl text;
                 AttrImpl attribute;
@@ -183,7 +183,7 @@ public class Update extends Modification {
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
                 checkFragmentation(transaction, modifiedDocuments);
-                
+                finishTriggers(transaction);
                 //commit the transaction
                 commitTransaction(transaction);
             } catch (LockException e) {

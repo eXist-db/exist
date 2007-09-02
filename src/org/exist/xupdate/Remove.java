@@ -65,7 +65,7 @@ public class Remove extends Modification {
 	public long process(Txn transaction) throws PermissionDeniedException,
 			LockException, EXistException, XPathException {
 		try {
-			StoredNode[] ql = selectAndLock();
+			StoredNode[] ql = selectAndLock(transaction);
 			IndexListener listener = new IndexListener(ql);
 			NotificationService notifier = broker.getBrokerPool()
 					.getNotificationService();
@@ -96,7 +96,7 @@ public class Remove extends Modification {
 			checkFragmentation(transaction, modifiedDocuments);
 			return ql.length;
 		} finally {
-			unlockDocuments();
+			unlockDocuments(transaction);
 		}
 	}
 

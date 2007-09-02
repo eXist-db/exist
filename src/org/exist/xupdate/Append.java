@@ -73,7 +73,7 @@ public class Append extends Modification {
 	        return 0;
 		
 	    try {
-	        StoredNode ql[] = selectAndLock();
+	        StoredNode ql[] = selectAndLock(transaction);
 			IndexListener listener = new IndexListener(ql);
 			NotificationService notifier = broker.getBrokerPool().getNotificationService();
 			for(int i = 0; i < ql.length; i++) {
@@ -93,7 +93,7 @@ public class Append extends Modification {
 			return ql.length;
 	    } finally {
 	        // release all acquired locks
-	        unlockDocuments();
+	        unlockDocuments(transaction);
 	    }
 	}
 

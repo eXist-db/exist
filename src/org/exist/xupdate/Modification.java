@@ -32,6 +32,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
@@ -52,6 +53,7 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
@@ -88,8 +90,9 @@ public abstract class Modification {
 	protected Map variables;
 	protected DocumentSet lockedDocuments = null;
 	protected DocumentSet modifiedDocuments = new DocumentSet();
-	
-	private AccessContext accessCtx;
+    protected Int2ObjectHashMap triggers;
+
+    private AccessContext accessCtx;
 
 	private Modification() {}
 	/**
@@ -102,7 +105,8 @@ public abstract class Modification {
 		this.docs = docs;
 		this.namespaces = new HashMap(namespaces);
 		this.variables = new TreeMap(variables);
-		// DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
+        this.triggers = new Int2ObjectHashMap(97);
+        // DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
 	}
 
 	public final void setAccessContext(AccessContext accessCtx) {
@@ -214,15 +218,11 @@ public abstract class Modification {
 	 * feature trigger_update :
 	 * At the same time we leverage on the fact that it's called before 
 	 * database modification to call the eventual triggers.
-
-	 * @param transaction
-	 *            TODO
-	 * @param nl
 	 * 
 	 * @return The selected document nodes.
 	 * @throws LockException
 	 */
-	protected final StoredNode[] selectAndLock()
+	protected final StoredNode[] selectAndLock(Txn transaction)
 			throws LockException, PermissionDeniedException, EXistException,
 			XPathException {
 	    Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
@@ -247,7 +247,7 @@ public abstract class Modification {
 				// TODO -jmv separate loop on docs and not on nodes
 			
 				//prepare Trigger
-				prepareTrigger(TriggerStatePerThread.getTransaction(), doc);
+				prepareTrigger(transaction, doc);
 			}
 			return ql;
 	    } finally {
@@ -260,9 +260,8 @@ public abstract class Modification {
 	 * feature trigger_update :
 	 * at the same time we leverage on the fact that it's called after 
 	 * database modification to call the eventual triggers
-	 * @param transaction
 	 */
-	protected final void unlockDocuments()
+	protected final void unlockDocuments(Txn transaction)
 	{
 		if(lockedDocuments == null)
 			return;
@@ -273,9 +272,10 @@ public abstract class Modification {
 		while (iterator.hasNext())
 		{
 			doc = (DocumentImpl) iterator.next();
-			finishTrigger(TriggerStatePerThread.getTransaction(), doc);
+			finishTrigger(transaction, doc);
 		}
-		modifiedDocuments.clear();
+        triggers.clear();
+        modifiedDocuments.clear();
 		
 		//unlock documents
 	    lockedDocuments.unlock(true);
@@ -314,10 +314,14 @@ public abstract class Modification {
         DocumentTrigger trigger = null;
         if(config != null)
         {
-        	//get the UPDATE_DOCUMENT_EVENT trigger
-        	trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-        
-        	if(trigger != null)
+            //get the UPDATE_DOCUMENT_EVENT trigger
+            try {
+                trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), doc.getCollection());
+            } catch (CollectionConfigurationException e) {
+                LOG.debug("An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e);
+            }
+
+            if(trigger != null)
         	{
 	            try
 	            {
@@ -332,7 +336,8 @@ public abstract class Modification {
         		{
         			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
         		}
-        	}
+                triggers.put(doc.getDocId(), trigger);
+            }
         }
 	}
 	
@@ -343,21 +348,17 @@ public abstract class Modification {
 	 */
 	private void finishTrigger(Txn transaction, DocumentImpl doc)
 	{
-        CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
-        if (config != null)
+        DocumentTrigger trigger = (DocumentTrigger) triggers.get(doc.getDocId());
+        if(trigger != null)
         {
-        	DocumentTrigger trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-        	if(trigger != null)
-        	{
-				try
-				{
-					trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
-				}
-				catch(Exception e)
-        		{
-        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
-        		}
-        	}
+            try
+            {
+                trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
+            }
+            catch(Exception e)
+            {
+                LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
+            }
         }
 	}
 	

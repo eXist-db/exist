@@ -68,7 +68,7 @@ public class Update extends Modification {
             return 0;
         int modifications = children.getLength();
         try {
-            StoredNode ql[] = selectAndLock();
+            StoredNode ql[] = selectAndLock(transaction);
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();
             Node temp;
@@ -124,7 +124,7 @@ public class Update extends Modification {
             }
             checkFragmentation(transaction, modifiedDocuments);
         } finally {
-            unlockDocuments();
+            unlockDocuments(transaction);
         }
         return modifications;
     }

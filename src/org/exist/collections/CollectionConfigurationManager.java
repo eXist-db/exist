@@ -21,11 +21,6 @@
  */
 package org.exist.collections;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
@@ -41,6 +36,11 @@ import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * Manages index configurations. Index configurations are stored in a collection
  * hierarchy below /db/system/config. CollectionConfigurationManager is called
@@ -55,14 +55,22 @@ public class CollectionConfigurationManager {
 	
     public final static String CONFIG_COLLECTION = DBBroker.SYSTEM_COLLECTION + "/config";
     public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
-    
+
+    private Map configurations = new HashMap();
+
+    private Object latch;
+
+    private CollectionConfiguration defaultConfig;
+
     private BrokerPool pool;
-	
-    private Map cache = new TreeMap();
     
-    public CollectionConfigurationManager(DBBroker broker) throws EXistException {
+    public CollectionConfigurationManager(DBBroker broker) throws EXistException, CollectionConfigurationException {
 		this.pool = broker.getBrokerPool();
-		checkConfigCollection(broker);		
+        this.latch = pool.getCollectionsCache();
+        checkConfigCollection(broker);
+        loadAllConfigurations(broker);
+        defaultConfig = new CollectionConfiguration(broker.getBrokerPool());
+        defaultConfig.setIndexConfiguration(broker.getIndexConfiguration());
     }
     
 	/**
@@ -85,20 +93,24 @@ public class CollectionConfigurationManager {
 			XmldbURI configurationDocumentName = null;
             //Replaces the current configuration file if there is one
             CollectionConfiguration conf = getConfiguration(broker, collection);
-            if (conf != null) {                
+            if (conf != null) {
                 configurationDocumentName = conf.getDocName();
                 if (configurationDocumentName != null) 
                     LOG.warn("Replacing current configuration file '" + configurationDocumentName + "'");
-                
             }
             if (configurationDocumentName == null)
                 configurationDocumentName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI;
-            //broker.saveCollection(transaction, confCol);
+            broker.saveCollection(transaction, confCol);
 			IndexInfo info = confCol.validateXMLResource(transaction, broker, configurationDocumentName, config);
 			//TODO : unlock the collection here ?
 			confCol.store(transaction, broker, info, config, false);
 			//broker.sync(Sync.MAJOR_SYNC);
-		} catch (IOException e) {
+
+            synchronized (latch) {
+                configurations.remove(path);
+                loadConfiguration(broker, confCol);
+            }
+        } catch (IOException e) {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
@@ -127,11 +139,8 @@ public class CollectionConfigurationManager {
      */
     protected CollectionConfiguration getConfiguration(DBBroker broker, Collection collection) 
         throws CollectionConfigurationException {
-
-    	CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool(), collection);
-        boolean configFound = false;
     	XmldbURI path = XmldbURI.CONFIG_COLLECTION_URI.append(collection.getURI());
-    	Collection coll = null;
+
     	/*
     	 * This used to go from the root collection (/db), and continue all the
     	 * way to the end of the path, checking each collection on the way.  I
@@ -139,77 +148,75 @@ public class CollectionConfigurationManager {
     	 * the root, stopping at the first config file it finds. This should be
     	 * more efficient, and fit more appropriately will the XmldbURI api
     	 */
-    	while(!configFound && !path.equals(XmldbURI.CONFIG_COLLECTION_URI)) {
-    		try {
-    			coll = broker.openCollection(path,Lock.READ_LOCK);
-    			if (coll != null && coll.getDocumentCount() > 0) {
-    			    for(Iterator i = coll.iterator(broker); i.hasNext(); ) {
-    			        DocumentImpl confDoc = (DocumentImpl) i.next();
-    			        if(confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
-                            if (!configFound) {
-                                if (LOG.isTraceEnabled())
-                                    LOG.trace("Reading collection configuration for '" + collection.getURI() + "' from '" + confDoc.getURI() + "'");
-        			            conf.read(broker, confDoc, path, confDoc.getFileURI());                            
-                                configFound = true;
-                                //Allow just one configuration document per collection
-                                //TODO : do not break if a system property allows several ones -pb
-        			            break;
-                            } else {
-                                if (LOG.isDebugEnabled())
-                                    LOG.debug("Found another collection configuration for '" + collection.getURI() + "' in '" + confDoc.getURI() + "'");
-                            }
-    			        }
-    			    }                    
-                }
-    		} finally {
-    			if(coll != null)
-    				coll.release(Lock.READ_LOCK);
-    		}
-    		path = path.removeLastSegment();
-	    }
-        if (!configFound) {
-            if (LOG.isTraceEnabled())
-                LOG.trace("Reading collection configuration for '" + collection.getURI() + "' from index configuration");
-            // use default configuration
-            conf.setIndexConfiguration(broker.getIndexConfiguration());
+        CollectionConfiguration conf;
+
+        synchronized (latch) {
+            while(!path.equals(XmldbURI.CONFIG_COLLECTION_URI)) {
+                conf = (CollectionConfiguration) configurations.get(path);
+                if (conf != null)
+                    return conf;
+                path = path.removeLastSegment();
+            }
         }
-        
-		// we synchronize on the global CollectionCache to avoid deadlocks.
-		// the calling code does mostly already hold a lock on CollectionCache.
-//		CollectionCache collectionCache = pool.getCollectionsCache();
-//		synchronized (collectionCache) {
-//			cache.put(collection.getURI(), conf);
-//		}
-        return conf;
+        if (LOG.isTraceEnabled())
+            LOG.trace("Reading collection configuration for '" + collection.getURI() + "' from index configuration");
+        // use default configuration
+        return defaultConfig;
     }
-    
+
+    protected void loadAllConfigurations(DBBroker broker) throws CollectionConfigurationException {
+        Collection root = broker.getCollection(XmldbURI.CONFIG_COLLECTION_URI);
+        loadAllConfigurations(broker, root);
+    }
+
+    protected void loadAllConfigurations(DBBroker broker, Collection configCollection) throws CollectionConfigurationException {
+        if (configCollection == null)
+            return;
+        loadConfiguration(broker, configCollection);
+        XmldbURI path = configCollection.getURI();
+        for (Iterator i = configCollection.collectionIterator(); i.hasNext(); ) {
+            XmldbURI childName = (XmldbURI) i.next();
+            Collection child = broker.getCollection(path.appendInternal(childName));
+            if (child == null)
+                LOG.error("Collection is registered but could not be loaded: " + childName);
+            loadAllConfigurations(broker, child);
+        }
+    }
+
+    protected void loadConfiguration(DBBroker broker, Collection configCollection) throws CollectionConfigurationException {
+        if (configCollection != null && configCollection.getDocumentCount() > 0) {
+            for(Iterator i = configCollection.iterator(broker); i.hasNext(); ) {
+                DocumentImpl confDoc = (DocumentImpl) i.next();
+                if(confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
+                    if (LOG.isTraceEnabled())
+                        LOG.trace("Reading collection configuration from '" + confDoc.getURI() + "'");
+                    CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
+                    conf.read(broker, confDoc, configCollection.getURI(), confDoc.getFileURI());
+                    synchronized (latch) {
+                        configurations.put(configCollection.getURI(), conf);
+                    }
+                    //Allow just one configuration document per collection
+                    //TODO : do not break if a system property allows several ones -pb
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * Notify the manager that a collection.xconf file has changed. All cached configurations
      * for the corresponding collection and its sub-collections will be cleared. 
      * 
      * @param collectionPath
      */
-    protected void invalidateAll(XmldbURI collectionPath) {
-    	//TODO : use XmldbURI.resolve !
+    public void invalidateAll(XmldbURI collectionPath) {
+        //TODO : use XmldbURI.resolve !
         if (!collectionPath.startsWith(XmldbURI.CONFIG_COLLECTION_URI))
-    		return;        
-        collectionPath = collectionPath.trimFromBeginning(XmldbURI.CONFIG_COLLECTION_URI);
-		// we synchronize on the global CollectionCache to avoid deadlocks.
-		// the calling code does mostly already hold a lock on CollectionCache.
-		CollectionCache collectionCache = pool.getCollectionsCache();
-		synchronized (collectionCache) {
-	    	Map.Entry next;
-	    	CollectionConfiguration config;
-	    	for(Iterator i = cache.entrySet().iterator(); i.hasNext(); ) {
-	    		next = (Map.Entry) i.next();
-	    		if(((XmldbURI)next.getKey()).startsWith(collectionPath)) {
-	    			config = (CollectionConfiguration) next.getValue();
-	    			if (config != null)
-	    				config.getCollection().invalidateConfiguration();
-	    			i.remove();
-	    		}
-	    	}
-		}
+    		return;
+        synchronized (latch) {
+            LOG.debug("Invalidating collection " + collectionPath);
+            configurations.remove(collectionPath);
+        }
     }
     
     /**
@@ -220,17 +227,17 @@ public class CollectionConfigurationManager {
      */
     protected void invalidate(XmldbURI collectionPath) {
     	//TODO : use XmldbURI.resolve !
-    	if (!collectionPath.startsWith(XmldbURI.CONFIG_COLLECTION_URI))
-    		return;
-    	collectionPath = collectionPath.trimFromBeginning(XmldbURI.CONFIG_COLLECTION_URI);
-		CollectionCache collectionCache = pool.getCollectionsCache();
-		synchronized (collectionCache) {
-	    	CollectionConfiguration config = (CollectionConfiguration) cache.get(collectionPath);
-	    	if (config != null) {
-	    		config.getCollection().invalidateConfiguration();
-	    		cache.remove(collectionPath);
-	    	}
-		}
+//    	if (!collectionPath.startsWith(XmldbURI.CONFIG_COLLECTION_URI))
+//    		return;
+//    	collectionPath = collectionPath.trimFromBeginning(XmldbURI.CONFIG_COLLECTION_URI);
+//		CollectionCache collectionCache = pool.getCollectionsCache();
+//		synchronized (collectionCache) {
+//	    	CollectionConfiguration config = (CollectionConfiguration) cache.get(collectionPath);
+//	    	if (config != null) {
+//	    		config.getCollection().invalidateConfiguration();
+//	    		cache.remove(collectionPath);
+//	    	}
+//		}
     }
     
 	/**
@@ -331,5 +338,12 @@ public class CollectionConfigurationManager {
             throw new EXistException(e.getMessage());
         } 
     }
-    
+
+    private void debugCache() {
+        StringBuffer buf = new StringBuffer();
+        for (Iterator i = configurations.keySet().iterator(); i.hasNext(); ) {
+            buf.append(i.next()).append(' ');
+        }
+        LOG.debug(buf.toString());
+    }
 }

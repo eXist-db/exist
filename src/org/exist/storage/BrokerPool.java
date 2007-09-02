@@ -38,6 +38,7 @@ import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.indexing.IndexManager;
 import org.exist.numbering.DLNFactory;
 import org.exist.numbering.NodeIdFactory;
@@ -764,7 +765,11 @@ public class BrokerPool {
 		if(securityManager.isXACMLEnabled())
 			securityManager.getPDP().initializePolicyCollection();
 		//Get a manager to handle further collectios configuration
-		collectionConfigurationManager = new CollectionConfigurationManager(broker);
+        try {
+            collectionConfigurationManager = new CollectionConfigurationManager(broker);
+        } catch (CollectionConfigurationException e) {
+            throw new DatabaseConfigurationException("Found an error while initializing database: " + e.getMessage(), e);
+        }
         //If necessary, launch a task to repair the DB
         //TODO : merge this with the recovery process ?
         if (recovered) {

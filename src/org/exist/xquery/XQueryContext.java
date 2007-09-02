@@ -51,6 +51,7 @@ import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
@@ -2044,8 +2045,13 @@ public class XQueryContext {
     	        CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
     	        if(config != null)
     	        {
-    	        	DocumentTrigger trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-    	        	if(trigger != null)
+                    DocumentTrigger trigger = null;
+                    try {
+                        trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, getBroker(), doc.getCollection());
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e);
+                    }
+                    if(trigger != null)
     	        	{
     	        		try
     	        		{

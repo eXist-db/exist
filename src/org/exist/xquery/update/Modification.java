@@ -27,6 +27,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
@@ -48,6 +49,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.AbstractExpression;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
@@ -77,15 +79,17 @@ public abstract class Modification extends AbstractExpression
 	
 	protected DocumentSet lockedDocuments = null;
 	protected DocumentSet modifiedDocuments = new DocumentSet();
-
-	/**
+    protected Int2ObjectHashMap triggers;
+    
+    /**
 	 * @param context
 	 */
 	public Modification(XQueryContext context, Expression select, Expression value) {
 		super(context);
 		this.select = select;
 		this.value = value;
-	}
+        this.triggers = new Int2ObjectHashMap(97);
+    }
 
 	public int getCardinality() {
 		return Cardinality.EMPTY;
@@ -124,11 +128,11 @@ public abstract class Modification extends AbstractExpression
 	 * We have to avoid that node positions change during the
 	 * operation.
 	 * 
-	 * @param nl
+	 * @param nodes
 	 * @return
 	 * @throws LockException
 	 */
-	protected StoredNode[] selectAndLock(NodeSet nodes) throws LockException, PermissionDeniedException, 
+	protected StoredNode[] selectAndLock(Txn transaction, NodeSet nodes) throws LockException, PermissionDeniedException,
 		XPathException {
 	    Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
 	    try {
@@ -147,7 +151,7 @@ public abstract class Modification extends AbstractExpression
 				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
 				doc.setBroker(context.getBroker());
 				//prepare Trigger
-				prepareTrigger(TriggerStatePerThread.getTransaction(), doc);
+				prepareTrigger(transaction, doc);
 			}
 			return ql;
 	    } finally {
@@ -185,8 +189,19 @@ public abstract class Modification extends AbstractExpression
 			context.popDocumentContext();
 		}
 	}
-	
-	/**
+
+    protected void finishTriggers(Txn transaction) {
+        Iterator iterator = modifiedDocuments.iterator();
+		DocumentImpl doc;
+		while(iterator.hasNext())
+		{
+			doc = (DocumentImpl) iterator.next();
+			finishTrigger(transaction, doc);
+		}
+        triggers.clear();
+    }
+
+    /**
 	 * Release all acquired document locks.
 	 */
 	protected void unlockDocuments()
@@ -194,14 +209,6 @@ public abstract class Modification extends AbstractExpression
 	    if(lockedDocuments == null)
 	        return;
 	    
-	    //finish Trigger
-	    Iterator iterator = modifiedDocuments.iterator();
-		DocumentImpl doc;
-		while(iterator.hasNext())
-		{
-			doc = (DocumentImpl) iterator.next();
-			finishTrigger(TriggerStatePerThread.getTransaction(), doc);
-		}
 		modifiedDocuments.clear();
 	    
 		//unlock documents
@@ -258,9 +265,13 @@ public abstract class Modification extends AbstractExpression
         if(config != null)
         {
         	//get the UPDATE_DOCUMENT_EVENT trigger
-        	trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-        
-        	if(trigger != null)
+            try {
+                trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), doc.getCollection());
+            } catch (CollectionConfigurationException e) {
+                LOG.debug("An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e);
+            }
+
+            if(trigger != null)
         	{
 	            try
 	            {
@@ -275,7 +286,8 @@ public abstract class Modification extends AbstractExpression
         		{
         			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
         		}
-        	}
+                triggers.put(doc.getDocId(), trigger);
+            }
         }
 	}
 	
@@ -294,22 +306,18 @@ public abstract class Modification extends AbstractExpression
 		else
 		{
 			//finish the trigger
-	        CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
-	        if (config != null)
-	        {
-	        	DocumentTrigger trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-	        	if(trigger != null)
-	        	{
-	        		try
-	        		{
-	        			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
-	        		}
-	        		catch(Exception e)
-	        		{
-	        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
-	        		}
-	        	}
-	        }
+            DocumentTrigger trigger = (DocumentTrigger) triggers.get(doc.getDocId());
+            if(trigger != null)
+            {
+                try
+                {
+                    trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
+                }
+                catch(Exception e)
+                {
+                    LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
+                }
+            }
 		}
 	}
 	
