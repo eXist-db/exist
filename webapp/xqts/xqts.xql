@@ -428,7 +428,7 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case))
 };
 
 declare function xqts:compute-result($testCase as element(catalog:test-case), $query as xs:string, $result as item()*, $expectedResults as element()* ) {
-    let $testsPassed :=
+    let $passed := some $expectedResultTest in (
         for $expectedResult in $expectedResults
         return
             let $comparisonMethod := $expectedResult/@compare
@@ -444,7 +444,7 @@ declare function xqts:compute-result($testCase as element(catalog:test-case), $q
                 (: unlikely :)    
                 else
                     false()
-    let $passed := boolean(count(index-of($testsPassed, true())) gt 0)
+    ) satisfies $expectedResultTest
     return
         xqts:format-result($testCase, $passed, $query, $result, $expectedResults)
 };

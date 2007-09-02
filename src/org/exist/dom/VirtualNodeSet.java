@@ -66,9 +66,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
     private boolean knownIsEmptyCardinality = false;
     private boolean knownHasOneCardinality = false;
     private boolean knownHasManyCardinality = false;
-    private boolean isEmpty = true;
-    private boolean hasOne = false;    
-    private boolean hasMany = false;    
+    
+    protected boolean hasMany = false; 
 
     /**
      * Creates a new <code>VirtualNodeSet</code> instance.
@@ -79,6 +78,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param context a <code>NodeSet</code> value
      */
     public VirtualNodeSet(int axis, NodeTest test, int contextId, NodeSet context) {
+        isEmpty = true;
+        hasOne = false;
         this.axis = axis;
         this.test = test;
         this.context = context;
