@@ -322,7 +322,8 @@ public class StringValue extends AtomicValue {
 			}
 		}
 		throw new XPathException(
-			"XPTY0004: can not compare xs:string() with " + Type.getTypeName(other.getType()));
+			"XPTY0004: can not compare xs:string('" + value + "') with " + 
+			Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "')");
 	}
 
 	/* (non-Javadoc)
