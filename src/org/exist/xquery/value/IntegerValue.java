@@ -80,11 +80,11 @@ public class IntegerValue extends NumericValue {
 		try {
 			value =  new BigInteger(StringValue.trimWhitespace(stringValue)); // Long.parseLong(stringValue);
 			if (!(checkType(value, type)))
-					throw new XPathException("FORG0001: can not convert '" + 
-							stringValue + "' to " + Type.getTypeName(type));
+				throw new XPathException("FORG0001: can not convert '" + 
+						stringValue + "' to " + Type.getTypeName(type));
 		} catch (NumberFormatException e) {
-			throw new XPathException(
-					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage());
+			throw new XPathException("FORG0001: can not convert '" + 
+					stringValue + "' to " + Type.getTypeName(type));
 		}
 	}
 
