@@ -71,7 +71,7 @@ public class Rename extends Modification {
         if (children.getLength() == 0) return 0;
         int modificationCount = 0;
         try {
-            StoredNode[] ql = selectAndLock();
+            StoredNode[] ql = selectAndLock(transaction);
             NodeImpl parent;
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();
@@ -110,7 +110,7 @@ public class Rename extends Modification {
             }
             checkFragmentation(transaction, modifiedDocuments);
         } finally {
-            unlockDocuments();
+            unlockDocuments(transaction);
         }
         return modificationCount;
     }

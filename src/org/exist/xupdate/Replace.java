@@ -54,7 +54,7 @@ public class Replace extends Modification {
         LOG.debug("processing replace ...");
         int modifications = children.getLength();
         try {
-            StoredNode ql[] = selectAndLock();
+            StoredNode ql[] = selectAndLock(transaction);
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();
             Node temp;
@@ -108,7 +108,7 @@ public class Replace extends Modification {
             }
             checkFragmentation(transaction, modifiedDocuments);
         } finally {
-            unlockDocuments();
+            unlockDocuments(transaction);
         }
         return modifications;
 	}

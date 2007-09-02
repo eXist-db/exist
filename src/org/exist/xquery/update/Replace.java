@@ -119,10 +119,10 @@ public class Replace extends Modification {
 		context.pushInScopeNamespaces();
         contentSeq = deepCopy(contentSeq);
         
-		try {
-            //start a transaction
-            Txn transaction = getTransaction();
-            StoredNode ql[] = selectAndLock(inSeq.toNodeSet());
+        //start a transaction
+        Txn transaction = getTransaction();
+        try {
+            StoredNode ql[] = selectAndLock(transaction, inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             Item temp;
@@ -173,7 +173,7 @@ public class Replace extends Modification {
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
             checkFragmentation(transaction, modifiedDocuments);
-            
+            finishTriggers(transaction);
             //commit the transaction
             commitTransaction(transaction);
         } catch (LockException e) {

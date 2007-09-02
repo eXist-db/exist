@@ -136,14 +136,6 @@ public  class Collection extends Observable implements Comparable, Cacheable
     
     private Observer[] observers = null;
     
-    /**
-     *
-     * @uml.property name="configuration"
-     * @uml.associationEnd multiplicity="(0 1)"
-     */
-    private CollectionConfiguration configuration = null;
-    
-    
     private boolean collectionConfEnabled = true;
     private boolean triggersEnabled = true;
     
@@ -762,8 +754,12 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	            if (triggersEnabled) {
 	                CollectionConfiguration config = getConfiguration(broker);
 	                if (config != null)
-	                    trigger = (DocumentTrigger) config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
-	            }
+                        try {
+                            trigger = (DocumentTrigger) config.newTrigger(Trigger.REMOVE_DOCUMENT_EVENT, broker, this);
+                        } catch (CollectionConfigurationException e) {
+                            LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                        }
+                }
 	        } else {
 	            // we remove a collection.xconf configuration file: tell the configuration manager to
 	            // reload the configuration.
@@ -840,7 +836,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
             if (triggersEnabled) {
                 CollectionConfiguration config = getConfiguration(broker);
                 if (config != null) {
-                    trigger = (DocumentTrigger) config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
+                    try {
+                        trigger = (DocumentTrigger) config.newTrigger(Trigger.REMOVE_DOCUMENT_EVENT, broker, this);
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                    }
                 }
             }
             
@@ -1009,12 +1009,17 @@ public  class Collection extends Observable implements Comparable, Cacheable
         //TODO: *resolve* URI against CollectionConfigurationManager.CONFIG_COLLECTION_URI 
         if (getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI)
         		&& docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
-        	
-        	broker.sync(Sync.MAJOR_SYNC);
+            broker.sync(Sync.MAJOR_SYNC);
 
             CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
-            if (manager != null)
-            	manager.invalidateAll(getURI());
+            if (manager != null) {
+                try {
+                    manager.invalidateAll(getURI());
+                    manager.loadConfiguration(broker, this);
+                } catch (CollectionConfigurationException e) {
+                    throw new EXistException("Error while reading new collection configuration: " + e.getMessage(), e);
+                }
+            }
         }
     }
     
@@ -1211,10 +1216,14 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        }
         }
     	
-        broker.saveCollection(transaction, this);
-        CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-        if(confMgr != null)
-        	confMgr.invalidateAll(getURI());
+//        broker.saveCollection(transaction, this);
+//        CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+//        if(confMgr != null)
+//            try {
+//                confMgr.reload(broker, this);
+//            } catch (CollectionConfigurationException e) {
+//                throw new EXistException("An error occurred while reloading the updated collection configuration: " + e.getMessage(), e);
+//            }
     }
     
     /** add observers to the indexer
@@ -1290,8 +1299,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
         //TODO : is this the right place for such a task ? -pb
         if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
             // we are updating collection.xconf. Notify configuration manager
-            CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-            confMgr.invalidateAll(getURI());
+//            CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+//            confMgr.invalidateAll(getURI());
             collectionConfEnabled = false;
             return null;
         }
@@ -1302,12 +1311,16 @@ public  class Collection extends Observable implements Comparable, Cacheable
         if (config == null)
             return null;
         
-        DocumentTrigger trigger;
-        if (update)
-            trigger = (DocumentTrigger) config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-        else
-            trigger = (DocumentTrigger) config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
-        
+        DocumentTrigger trigger = null;
+        try {
+            if (update)
+                trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, this);
+            else
+                trigger = (DocumentTrigger) config.newTrigger(Trigger.STORE_DOCUMENT_EVENT, broker, this);
+        } catch (CollectionConfigurationException e) {
+            LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+        }
+
         if(trigger == null)
             return null;
         
@@ -1365,8 +1378,12 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	            CollectionConfiguration config = getConfiguration(broker);
 	            if (config != null) {
 	                event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
-	                trigger = (DocumentTrigger) config.getTrigger(event);
-	                if (trigger != null) {
+                    try {
+                        trigger = (DocumentTrigger) config.newTrigger(event, broker, this);
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                    }
+                    if (trigger != null) {
 	                    trigger.prepare(event, broker, transaction, blob.getURI(), blob);
 	                }
 	            }
@@ -1481,8 +1498,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     public CollectionConfiguration getConfiguration(DBBroker broker) {
         if (!collectionConfEnabled)
             return null;
-        if (configuration != null)
-            return configuration;
+
         //System collection has no configuration
         if (getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
             return null;
@@ -1492,6 +1508,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             return null;
 
         //Attempt to get configuration
+        CollectionConfiguration configuration = null;
         collectionConfEnabled = false;
         try {
         	//TODO: AR: if a Trigger throws CollectionConfigurationException from its configure() method, is the rest of the collection configurartion (indexes etc.) ignored even though they might be fine?
@@ -1513,10 +1530,6 @@ public  class Collection extends Observable implements Comparable, Cacheable
      */
     public void setConfigEnabled(boolean enabled) {
         collectionConfEnabled = enabled;
-    }
-        
-    public void invalidateConfiguration() {
-        configuration = null;
     }
     
     /**
@@ -1698,7 +1711,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         //If the collection has its own config...
         if (conf == null) {
             return broker.getIndexConfiguration();
-        //... otherwise return the general config (the broker's one)
+            //... otherwise return the general config (the broker's one)
         } else {
             return conf.getIndexConfiguration();
         }

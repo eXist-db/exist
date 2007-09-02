@@ -120,7 +120,7 @@ public class Delete extends Modification {
             Txn transaction = getTransaction();
     		try {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
+                StoredNode[] ql = selectAndLock(transaction, inSeq.toNodeSet());
                 IndexListener listener = new IndexListener(ql);
                 NodeImpl parent;
                 for (int i = 0; i < ql.length; i++) {
@@ -150,7 +150,7 @@ public class Delete extends Modification {
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
                 checkFragmentation(transaction, modifiedDocuments);
-                
+                finishTriggers(transaction);
                 //commit the transaction
                 commitTransaction(transaction);
             } catch (EXistException e) {

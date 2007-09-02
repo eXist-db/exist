@@ -136,7 +136,7 @@ public class Insert extends Modification {
             try {
                 //start a transaction
                 Txn transaction = getTransaction();
-                StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
+                StoredNode[] ql = selectAndLock(transaction, inSeq.toNodeSet());
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 IndexListener listener = new IndexListener(ql);                
                 NodeList contentList = seq2nodeList(contentSeq);
@@ -168,7 +168,7 @@ public class Insert extends Modification {
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
                 checkFragmentation(transaction, modifiedDocuments);
-    
+                finishTriggers(transaction);
                 //commit the transaction
                 commitTransaction(transaction);
             } catch (PermissionDeniedException e) {

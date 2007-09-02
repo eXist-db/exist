@@ -825,7 +825,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
         for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = (Collection) i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);
-            qnames.addAll(idxConf.getIndexedQNames());
+            if (idxConf != null)
+                qnames.addAll(idxConf.getIndexedQNames());
         }
         QName[] result = new QName[qnames.size()];
         return (QName[]) qnames.toArray(result);
@@ -1036,11 +1037,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
             } catch (EXistException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
-            }
-            try {
-                LOG.debug(atomic.getStringValue());
-            } catch (XPathException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
             VariableByteInput is;
             try {
