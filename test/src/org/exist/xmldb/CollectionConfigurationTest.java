@@ -24,6 +24,8 @@ public class CollectionConfigurationTest extends TestCase {
 
     private final static XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("testIndexConfiguration");
     
+    private final static XmldbURI COLLECTION_SUB1 = TEST_COLLECTION.append("sub1");
+    private final static XmldbURI COLLECTION_SUB2 = COLLECTION_SUB1.append("sub2");
 
     private static final XmldbURI CONF_COLL_URI = XmldbURI.CONFIG_COLLECTION_URI.append(TEST_COLLECTION);     
     private static final XmldbURI CONF_COLL_URI2 = CONF_COLL_URI.append(TestConstants.SPECIAL_NAME);     
@@ -72,7 +74,19 @@ public class CollectionConfigurationTest extends TestCase {
         + "    <create path=\"//@h\" type=\"xs:string\"/>"            
         + "  </index>"
         + "</collection>";
-    
+
+    private String CONFIG3 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+        + "  <index>"
+        + "    <create qname=\"a\" type=\"xs:integer\"/>"
+        + "    <create path=\"//a\" type=\"xs:integer\"/>"
+        + "  </index>"
+        + "</collection>";
+
+    private String EMPTY_CONFIG = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+        + "  <index>"
+        + "  </index>"
+        + "</collection>";
+
     private Collection testCollection;
 
     protected void setUp() {
@@ -111,8 +125,10 @@ public class CollectionConfigurationTest extends TestCase {
             service.removeCollection(TEST_COLLECTION.toString());
             testCollection = null;
             
-            //Removes the collection config collection *manually*          
-            service.removeCollection(CONF_COLL_URI.toString());
+            //Removes the collection config collection *manually*
+            Collection confCol = DatabaseManager.getCollection(URI + CONF_COLL_URI, "admin", null);
+            if (confCol != null)
+                service.removeCollection(CONF_COLL_URI.toString());
             
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
@@ -227,10 +243,12 @@ public class CollectionConfigurationTest extends TestCase {
             testCollection.getService("XPathQueryService", "1.0");
    
             //3 numeric values 
-            result = service.query("util:index-key-occurrences(/test/a, 1)"); 
+            result = service.query("util:index-key-occurrences(/test/a, 1)");
+            assertEquals(1, result.getSize());
             assertEquals("3", result.getResource(0).getContent()); 
             //... but 1 string value 
-            result = service.query("util:index-key-occurrences(/test/b, \"1\")"); 
+            result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+            assertEquals(1, result.getSize());
             assertEquals("1", result.getResource(0).getContent());             
 
             //3 numeric values 
@@ -239,7 +257,8 @@ public class CollectionConfigurationTest extends TestCase {
             //... but 1 string value 
             result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) "); 
             assertEquals(1, result.getSize()); }
-        catch(Exception e) { 
+        catch(Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());             
         }
    }
@@ -393,26 +412,293 @@ public class CollectionConfigurationTest extends TestCase {
            //Adding confMgr.invalidateAll(getName()); in Collection.storeInternal solved the problem
            //Strange case that needs investigations... -pb
            
-           //3 numeric values 
-           result = service.query("util:index-key-occurrences(/test/a, 1)"); 
-           assertEquals("3", result.getResource(0).getContent()); 
-           //... but 1 string value 
-           result = service.query("util:index-key-occurrences(/test/b, \"1\")"); 
-           assertEquals("1", result.getResource(0).getContent());             
+           //3 numeric values
+           result = service.query("util:index-key-occurrences(/test/a, 1)");
+           assertEquals("3", result.getResource(0).getContent());
+           //... but 1 string value
+           result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+           assertEquals("1", result.getResource(0).getContent());
 
            // 3 numeric values
            result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
            assertEquals(3, result.getSize());
            // ... but 1 string value
            result = service.query("util:qname-index-lookup( xs:QName(\"b\"), \"1\" ) ");
-           assertEquals(1, result.getSize());           
+           assertEquals(1, result.getSize());
                  
 
        } catch (Exception e) {
            fail(e.getMessage());
        }
    }
-   
+
+    /** Check if configurations are properly passed down the collection hierarchy. */
+    public void testCollectionConfigurationService7() {
+        ResourceSet result;
+        try {
+            CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+            Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+
+            //Configure collection automatically
+            // sub2 should inherit its index configuration from the top collection
+            IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(CONFIG1);
+
+            //... then index document
+            XMLResource doc = (XMLResource)
+                    sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+            doc.setContent(DOCUMENT_CONTENT);
+            sub2.storeResource(doc);
+
+            XPathQueryService service = (XPathQueryService)
+                    sub2.getService("XPathQueryService", "1.0");
+
+            //3 numeric values
+            result = service.query("util:index-key-occurrences(/test/a, 1)");
+            assertEquals("3", result.getResource(0).getContent());
+            //... but 1 string value
+            result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+            assertEquals("1", result.getResource(0).getContent());
+
+        	//3 numeric values
+            result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) ");
+            assertEquals(3, result.getSize());
+            //... but 1 string value
+            result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) ");
+            assertEquals(1, result.getSize());
+        }
+        catch(Exception e) {
+       	 e.printStackTrace();
+            fail(e.getMessage());
+        }
+   }
+
+    /** Overwrite configuration in a sub collection */
+    public void testCollectionConfigurationService8() {
+        ResourceSet result;
+        try {
+            CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+            Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+            
+            //Configure collection automatically
+            IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(CONFIG1);
+
+            // Overwrite main configuration with an empty configuration in the subcollection
+            idxConf = (IndexQueryService) sub2.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(EMPTY_CONFIG);
+            
+            //... then index document
+            XMLResource doc = (XMLResource)
+                    sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+            doc.setContent(DOCUMENT_CONTENT);
+            sub2.storeResource(doc);
+
+            XPathQueryService service = (XPathQueryService)
+                    sub2.getService("XPathQueryService", "1.0");
+
+            // index should be empty
+            result = service.query("util:index-key-occurrences(/test/a, 1)");
+            assertEquals(0, result.getSize());
+            result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+            assertEquals(0, result.getSize());
+
+            result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) ");
+            assertEquals(0, result.getSize());
+            result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) ");
+            assertEquals(0, result.getSize());
+        }
+        catch(Exception e) {
+       	 e.printStackTrace();
+            fail(e.getMessage());
+        }
+   }
+
+    /** Overwrite configuration in a sub collection 2 times */
+    public void testCollectionConfigurationService9() {
+        ResourceSet result;
+        try {
+            CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+            Collection sub1 = cms.createCollection(COLLECTION_SUB1.toString());
+            Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+
+            IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(CONFIG1);
+
+            // Overwrite main configuration with an empty configuration in the subcollection
+            idxConf = (IndexQueryService) sub1.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(EMPTY_CONFIG);
+
+            // Overwrite sub1 configuration in sub2
+            idxConf = (IndexQueryService) sub2.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(CONFIG3);
+
+            //... then store document into sub1
+            XMLResource doc = (XMLResource)
+                    sub1.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+            doc.setContent(DOCUMENT_CONTENT);
+            sub1.storeResource(doc);
+
+            XPathQueryService service = (XPathQueryService)
+                    sub1.getService("XPathQueryService", "1.0");
+
+            // sub1 has empty configuration, so index should be empty as well
+            result = service.query("util:index-key-occurrences(/test/a, 1)");
+            assertEquals(0, result.getSize());
+            result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+            assertEquals(0, result.getSize());
+
+            result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) ");
+            assertEquals(0, result.getSize());
+            result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) ");
+            assertEquals(0, result.getSize());
+
+            // remove document in sub1 and restore it in sub2
+            sub1.removeResource(doc);
+            doc = (XMLResource)
+                    sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+            doc.setContent(DOCUMENT_CONTENT);
+            sub2.storeResource(doc);
+
+            service = (XPathQueryService) sub2.getService("XPathQueryService", "1.0");
+
+            // sub2 only has an index on /test/a, but not on /test/b
+            
+            //3 numeric values
+           result = service.query("util:index-key-occurrences(/test/a, 1)");
+           assertEquals("3", result.getResource(0).getContent());
+           //... but 1 string value
+           result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+           assertEquals(0, result.getSize());
+
+           // 3 numeric values
+           result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
+           assertEquals(3, result.getSize());
+           // ... but 1 string value
+           result = service.query("util:qname-index-lookup( xs:QName(\"b\"), \"1\" ) ");
+           assertEquals(0, result.getSize());
+        }
+        catch(Exception e) {
+       	 e.printStackTrace();
+            fail(e.getMessage());
+        }
+   }
+
+    /** Remove config document */
+    public void testCollectionConfigurationService10() {
+        ResourceSet result;
+        try {
+            CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+            Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+
+            IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(CONFIG1);
+
+            //... then index document
+            XMLResource doc = (XMLResource)
+                    sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+            doc.setContent(DOCUMENT_CONTENT);
+            sub2.storeResource(doc);
+
+            XPathQueryService service = (XPathQueryService) sub2.getService("XPathQueryService", "1.0");
+
+            //3 numeric values
+            result = service.query("util:index-key-occurrences(/test/a, 1)");
+            assertEquals("3", result.getResource(0).getContent());
+            //... but 1 string value
+            result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+            assertEquals("1", result.getResource(0).getContent());
+
+        	//3 numeric values
+            result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) ");
+            assertEquals(3, result.getSize());
+            //... but 1 string value
+            result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) ");
+            assertEquals(1, result.getSize());
+
+            // remove config document thus dropping the configuration
+            Collection confCol = DatabaseManager.getCollection(URI + XmldbURI.CONFIG_COLLECTION_URI.append(TEST_COLLECTION), "admin", null);
+            Resource confDoc = confCol.getResource("collection.xconf");
+            assertNotNull(confDoc);
+            confCol.removeResource(confDoc);
+//            cms = (CollectionManagementService) confCol.getService("CollectionManagementService", "1.0");
+//            cms.removeCollection(".");
+
+            idxConf.reindexCollection();
+
+            // index should be empty since configuration was removed
+            result = service.query("util:index-key-occurrences(/test/a, 1)");
+            assertEquals(0, result.getSize());
+            result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+            assertEquals(0, result.getSize());
+
+            result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) ");
+            assertEquals(0, result.getSize());
+            result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) ");
+            assertEquals(0, result.getSize());
+        }
+        catch(Exception e) {
+       	 e.printStackTrace();
+            fail(e.getMessage());
+        }
+   }
+
+    /** Remove config collection */
+    public void testCollectionConfigurationService11() {
+        ResourceSet result;
+        try {
+            CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+            Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+
+            IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(CONFIG1);
+
+            //... then index document
+            XMLResource doc = (XMLResource)
+                    sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+            doc.setContent(DOCUMENT_CONTENT);
+            sub2.storeResource(doc);
+
+            XPathQueryService service = (XPathQueryService) sub2.getService("XPathQueryService", "1.0");
+
+            //3 numeric values
+            result = service.query("util:index-key-occurrences(/test/a, 1)");
+            assertEquals("3", result.getResource(0).getContent());
+            //... but 1 string value
+            result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+            assertEquals("1", result.getResource(0).getContent());
+
+        	//3 numeric values
+            result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) ");
+            assertEquals(3, result.getSize());
+            //... but 1 string value
+            result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) ");
+            assertEquals(1, result.getSize());
+
+            // remove config document thus dropping the configuration
+            Collection confCol = DatabaseManager.getCollection(URI + XmldbURI.CONFIG_COLLECTION_URI.append(TEST_COLLECTION), "admin", null);
+            cms = (CollectionManagementService) confCol.getService("CollectionManagementService", "1.0");
+            cms.removeCollection(".");
+
+            idxConf.reindexCollection();
+
+            // index should be empty since configuration was removed
+            result = service.query("util:index-key-occurrences(/test/a, 1)");
+            assertEquals(0, result.getSize());
+            result = service.query("util:index-key-occurrences(/test/b, \"1\")");
+            assertEquals(0, result.getSize());
+
+            result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) ");
+            assertEquals(0, result.getSize());
+            result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) ");
+            assertEquals(0, result.getSize());
+        }
+        catch(Exception e) {
+       	 e.printStackTrace();
+            fail(e.getMessage());
+        }
+   }
+
    public void testRangeIndex1() { 
        ResourceSet result; 
        try {
