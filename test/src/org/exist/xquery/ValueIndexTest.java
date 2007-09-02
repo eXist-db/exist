@@ -157,6 +157,7 @@ public class ValueIndexTest extends TestCase {
             queryResource(service, "items.xml", "//item[name = 'Racing Bicycle']", 1);
             queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4);
             queryResource(service, "items.xml", "//item[itemno = 3]", 1);
+            queryResource(service, "items.xml", "//item[itemno eq 3]", 1);
             ResourceSet result = queryResource(service, "items.xml", "for $i in //item[stock <= 10] return $i/itemno", 5);
             for (long i = 0; i < result.getSize(); i++) {
                 Resource res = result.getResource(i);
@@ -165,13 +166,15 @@ public class ValueIndexTest extends TestCase {
 
             queryResource(service, "items.xml", "//item[stock > 20]", 1);
             queryResource(service, "items.xml", "declare namespace x=\"http://www.foo.com\"; //item[x:rating > 8.0]", 2);
-            queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test = 123]", 1);
-            queryResource(service, "items.xml", "//item[name &= 'Racing Bicycle']", 1);
+            queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test = 123]", 1);            queryResource(service, "items.xml", "//item[name &= 'Racing Bicycle']", 1);
+            queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test eq 123]", 1);
             queryResource(service, "items.xml", "//item[mixed = 'uneven']", 1);
+            queryResource(service, "items.xml", "//item[mixed eq 'uneven']", 1);
             queryResource(service, "items.xml", "//item[mixed = 'external']", 1);
             queryResource(service, "items.xml", "//item[fn:matches(mixed, 'un.*')]", 2);
             queryResource(service, "items.xml", "//item[price/@specialprice = false()]", 2);
             queryResource(service, "items.xml", "//item[price/@specialprice = true()]", 1);
+            queryResource(service, "items.xml", "//item[price/@specialprice eq true()]", 1);
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
