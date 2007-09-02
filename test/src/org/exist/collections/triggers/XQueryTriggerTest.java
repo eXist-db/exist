@@ -20,25 +20,22 @@
 
 package org.exist.collections.triggers;
 
-import javax.xml.transform.OutputKeys;
+import static org.custommonkey.xmlunit.XMLAssert.*;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.BinaryResource;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
-import org.xmldb.api.modules.XUpdateQueryService;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.xmldb.api.modules.*;
 
-import static org.custommonkey.xmlunit.XMLAssert.*;
+import javax.xml.transform.OutputKeys;
 
 /** class under test : {@link XQueryTrigger}
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
@@ -192,7 +189,7 @@ public class XQueryTriggerTest {
 
     /** create "log" document that will be updated by the trigger,
      * and store the XQuery module implementing the trigger under test */
-    @Test
+    @Before
     public void storePreliminaryDocuments() {
     	try {
 			XMLResource doc =
@@ -232,8 +229,7 @@ public class XQueryTriggerTest {
     		// remove the trigger for the Collection under test
 			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
 
-	        XPathQueryService service = (XPathQueryService) testCollection
-    			.getService("XPathQueryService", "1.0");
+	        XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
 	        //TODO : understand why it is necessary !
 	        service.setProperty(OutputKeys.INDENT, "no");
 	        	        
