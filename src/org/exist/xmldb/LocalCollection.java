@@ -156,9 +156,6 @@ public class LocalCollection extends Observable implements CollectionImpl {
             collection = broker.openCollection(path, lockMode);
             if(collection == null)
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-            if (!collection.getURI().equalsInternal(path))
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "The collection returned does not correspond to " +
-                        "the collection requested: " + path + "; received: " + collection.getURI());
             collection.setReader(userReader);
         } catch (EXistException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
