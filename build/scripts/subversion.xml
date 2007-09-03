@@ -89,7 +89,7 @@
   <!-- 
     Check out / update sources from subversion code archive.
   -->
-  <target name="svn-checkout" description="Check out or update from SubVersion code archive.">
+  <target name="svn-update" description="Update project from SubVersion archive.">
     <property name="source-root" value="."/>
     <property name="repository.URL" value="https://exist.svn.sourceforge.net/svnroot/exist"/>
     <java classname="org.tmatesoft.svn.cli.SVN"
