@@ -98,8 +98,8 @@ public class LetExpr extends BindingExpression {
                     groupBy[i].analyze(contextInfo); 
             }			
 			returnExpr.analyze(contextInfo);
-		}
-		
+		}		
+
 		// restore the local variable stack
 		context.popLocalVariables(mark);
     }
@@ -222,6 +222,33 @@ public class LetExpr extends BindingExpression {
                       groupedSequence.addAll(toGroupSequence);
                     }
                 }
+                
+                if (sequenceType != null) {
+                	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
+            		if (!Cardinality.checkCardinality(sequenceType.getCardinality(), resultSequence.getCardinality()))
+        				throw new XPathException("XPTY004: Invalid cardinality for variable $" + varName +
+        						". Expected " +
+        						Cardinality.getDescription(sequenceType.getCardinality()) +
+        						", got " + Cardinality.getDescription(resultSequence.getCardinality()));
+            		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
+            		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
+    	        		if (!in.isEmpty() && !Type.subTypeOf(in.getItemType(), sequenceType.getPrimaryType()))
+    	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
+    	    						". Expected " +
+    	    						Type.getTypeName(sequenceType.getPrimaryType()) +
+    	    						", got " +Type.getTypeName(in.getItemType()));
+            		//Here is an attempt to process the nodes correctly
+            		} else {
+            			//Same as above : we probably may factorize 
+    	        		if (!in.isEmpty() && !Type.subTypeOf(in.getItemType(), sequenceType.getPrimaryType()))
+    	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
+    	    						". Expected " +
+    	    						Type.getTypeName(sequenceType.getPrimaryType()) +
+    	    						", got " +Type.getTypeName(in.getItemType()));
+            			
+            		}
+                }
+
             } finally {
                 // Restore the local variable stack
                 context.popLocalVariables(mark);
@@ -259,32 +286,6 @@ public class LetExpr extends BindingExpression {
             
 //            // Restore the local variable stack
 //            context.popLocalVariables(mark);
-           
-            if (sequenceType != null) {
-            	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-        		if (!Cardinality.checkCardinality(sequenceType.getCardinality(), resultSequence.getCardinality()))
-    				throw new XPathException("XPTY004: Invalid cardinality for variable $" + varName +
-    						". Expected " +
-    						Cardinality.getDescription(sequenceType.getCardinality()) +
-    						", got " + Cardinality.getDescription(resultSequence.getCardinality()));
-        		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
-        		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
-	        		if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
-	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
-	    						". Expected " +
-	    						Type.getTypeName(sequenceType.getPrimaryType()) +
-	    						", got " +Type.getTypeName(resultSequence.getItemType()));
-        		//Here is an attempt to process the nodes correctly
-        		} else {
-        			//Same as above : we probably may factorize 
-	        		if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
-	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
-	    						". Expected " +
-	    						Type.getTypeName(sequenceType.getPrimaryType()) +
-	    						", got " +Type.getTypeName(resultSequence.getItemType()));
-        			
-        		}
-            }
 
         	if (context.getProfiler().isEnabled())
                 context.getProfiler().end(this, "", resultSequence);
