@@ -31,6 +31,7 @@ import java.util.Map;
 import org.apache.cocoon.environment.Cookie;
 import org.apache.cocoon.environment.Response;
 import org.apache.cocoon.environment.http.HttpCookie;
+import org.apache.cocoon.environment.http.HttpResponse;
 import org.exist.http.servlets.ResponseWrapper;
 
 /**
@@ -178,6 +179,15 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 	public void setIntHeader(String arg0, int arg1) {
 		response.setIntHeader(arg0, arg1);
 	}
+    
+    /**
+     * @param arg0
+     */
+    public void setStatusCode(int arg0) {
+        if( response instanceof HttpResponse ) {
+            ((HttpResponse)response).setStatus(arg0);
+        }
+    }
 
 	/**
 	 * @param arg0
