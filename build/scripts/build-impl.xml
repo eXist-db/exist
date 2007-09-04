@@ -137,7 +137,7 @@
         <mkdir dir="${jetty.dir}/logs"/>
         <mkdir dir="${jetty.dir}/work"/>
         
-        <filter token="version" value="${project.version}-${DSTAMP}"/>
+        <filter token="version" value="${project.version}-rev:${svn.revision}-${DSTAMP}"/>
         <filter token="database" value="native"/>
 
         <copy file="${src.webapp}/header.xml.tmpl"
