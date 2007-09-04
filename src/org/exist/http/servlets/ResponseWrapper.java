@@ -94,6 +94,10 @@ public interface ResponseWrapper {
 	 * @param arg1
 	 */
 	public void setIntHeader(String arg0, int arg1);
+    /**
+     * @param arg0
+     */
+    public void setStatusCode(int arg0);
 	/**
 	 * @param arg0
 	 */

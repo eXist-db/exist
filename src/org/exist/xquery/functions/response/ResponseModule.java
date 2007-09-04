@@ -41,7 +41,8 @@ public class ResponseModule extends AbstractInternalModule {
 		new FunctionDef(SetCookie.signatures[0], SetCookie.class),
 		new FunctionDef(SetCookie.signatures[1], SetCookie.class),
 		new FunctionDef(SetHeader.signature, SetHeader.class),
-		new FunctionDef(StreamBinary.signature, StreamBinary.class)
+		new FunctionDef(SetStatusCode.signature, SetStatusCode.class),
+        new FunctionDef(StreamBinary.signature, StreamBinary.class)
 	};
 	
 	public ResponseModule() throws XPathException {

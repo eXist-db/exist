@@ -170,6 +170,13 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void setIntHeader(String arg0, int arg1) {
 		response.setIntHeader(arg0, arg1);
 	}
+    
+    /**
+     * @param arg0
+     */
+    public void setStatusCode(int arg0) {
+        response.setStatus(arg0);
+    }
 
 	/**
 	 * @param arg0
