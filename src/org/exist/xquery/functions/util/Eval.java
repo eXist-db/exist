@@ -121,11 +121,16 @@ public class Eval extends BasicFunction {
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
-                "util:eval('xmldb:exist:///db/test/test.xq'). " +                
+                "util:eval('xmldb:exist:///db/test/test.xq').\n" +                
 				"The query inherits the context described by the XML fragment in the second parameter. " +
-				"It should have the format: <static-context><output-size-limit value=\"-1\"><current-dateTime value=\"dateTime\"/>" +
-				"implicit-timezone value=\"duration\"/><variable name=\"qname\">" +
-				"variable value</variable></static-context>. " +
+				"It should have the format:\n" +
+				"<static-context>\n" +
+				"\t<output-size-limit value=\"-1\">\n" +
+				"\t<unbind-namespace uri=\"http://exist.sourceforge.net/NS/exist\"/>\n" +
+				"\t<current-dateTime value=\"dateTime\"/>\n" +
+				"\t<implicit-timezone value=\"duration\"/>\n" +
+				"\t<variable name=\"qname\">variable value</variable>\n" +
+				"</static-context>.\n" +
 				"The third argument specifies if the compiled query expression " +
 				"should be cached. The cached query will be globally available within the db instance.",
 				new SequenceType[] {
@@ -142,12 +147,16 @@ public class Eval extends BasicFunction {
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
-                "util:eval('xmldb:exist:///db/test/test.xq'). " +                
+                "util:eval('xmldb:exist:///db/test/test.xq').\n" + 
 				"The query inherits the context described by the XML fragment in the second parameter. " +
-				"It should have the format: <static-context><output-size-limit value=\"-1\">" +
-				"<current-dateTime value=\"dateTime\"/>" +
-				"implicit-timezone value=\"duration\"/><variable name=\"qname\">" +
-				"variable value</variable></static-context>. " +
+				"It should have the format:\n" +
+				"<static-context>\n" +
+				"\t<output-size-limit value=\"-1\">\n" +
+				"\t<unbind-namespace uri=\"http://exist.sourceforge.net/NS/exist\"/>\n" +
+				"\t<current-dateTime value=\"dateTime\"/>\n" +
+				"\t<implicit-timezone value=\"duration\"/>\n" +
+				"\t<variable name=\"qname\">variable value</variable>\n" +
+				"</static-context>.\n" +
 				"The third argument specifies if the compiled query expression " +
 				"should be cached. The cached query will be globally available within the db instance." +
 				"The fourth argument specifies the context item against which the expression will be evaluated.",
@@ -427,6 +436,14 @@ public class Eval extends BasicFunction {
 				//TODO : error check
 				Duration duration = TimeUtils.getInstance().newDuration(elem.getAttribute("value")); 	        
 	        	innerContext.setTimeZone(new SimpleTimeZone((int)duration.getTimeInMillis(new Date()), "XQuery context"));      	
+			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"unbind-namespace".equals(child.getLocalName())) {
+				Element elem = (Element) child;
+				//TODO : error check
+				if (elem.getAttribute("uri") != null) {		
+					//TODO : doesn't work when trying to unbind exist's NS. Possibly because
+					//NS are copied from context to context
+					innerContext.removeNamespace(elem.getAttribute("uri"));
+				}
 			}
 		}
 	}
