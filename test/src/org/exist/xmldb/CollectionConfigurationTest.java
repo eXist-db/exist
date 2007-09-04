@@ -44,9 +44,9 @@ public class CollectionConfigurationTest extends TestCase {
     + "<a>01</a>" + "<a>1</a>" + "<b>001</b>" + "<b>01</b>"
     + "<b>1</b>" + "</test>";
 
-    private final static String DOCUMENT_CONTENT2 = "<test >" + "<c c='2002-12-07T12:20:46.275+01:00'>2002-12-07T12:20:46.275+01:00</c>"
+    private final static String DOCUMENT_CONTENT2 = "<test x='0'>" + "<c c='2002-12-07T12:20:46.275+01:00'>2002-12-07T12:20:46.275+01:00</c>"
     + "<d d='1'>1</d>" + "<e e='1'>1</e>" + "<f f='true'>true</f>" +" <g g='1'>1</g>" +"<h h='1'>1</h>" 
-    + "</test>";
+    + "<test x='1'><test x='2'></test></test></test>";
 
     
     private String CONFIG1 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
@@ -72,6 +72,7 @@ public class CollectionConfigurationTest extends TestCase {
         + "    <create path=\"//@f\" type=\"xs:boolean\"/>"        
         + "    <create path=\"//@g\" type=\"xs:integer\"/>"        
         + "    <create path=\"//@h\" type=\"xs:string\"/>"            
+        + "    <create path=\"//test/@x\" type=\"xs:integer\"/>"
         + "  </index>"
         + "</collection>";
 
@@ -816,6 +817,18 @@ public class CollectionConfigurationTest extends TestCase {
    
            XPathQueryService service = (XPathQueryService)
            testCollection.getService("XPathQueryService", "1.0");              
+          
+           result = service.query("//test[@x = 0]");
+           assertEquals(1, result.getSize());
+           
+           result = service.query("//test[@x eq 0]");
+           assertEquals(1, result.getSize());
+           
+           result = service.query("//test[(# exist:force-index-use #) { @x = 0 }]");
+           assertEquals(1, result.getSize());
+           
+           result = service.query("//test[(# exist:force-index-use #) { @x eq 0 }]");
+           assertEquals(1, result.getSize());
            
            result = service.query("util:index-key-occurrences(/test//@c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
            assertEquals(1, result.getSize());
@@ -971,7 +984,7 @@ public class CollectionConfigurationTest extends TestCase {
            assertEquals(1, result.getSize());  
            
            result = service.query("/test[(# exist:force-index-use #) { ./h/@h = '1' }]");
-           assertEquals(1, result.getSize());           
+           assertEquals(1, result.getSize());
        
        } catch(Exception e) { 
       	 	e.printStackTrace();
