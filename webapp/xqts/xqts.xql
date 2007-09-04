@@ -132,7 +132,9 @@ declare function xqts:get-variable($case as element(catalog:test-case), $varName
 };
 
 declare function xqts:compute-specific-static-context($testCaseName as xs:string) as element()* {
-    (        
+    (
+        <unbind-namespace uri="http://exist.sourceforge.net/NS/exist"/>       
+    , 
         if ($testCaseName eq "ForExpr013") then
             <output-size-limit value="-1"/>
         else if ($testCaseName eq "fn-current-time-4") then
@@ -216,7 +218,9 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                 (: obvious wrong comparison methods :)
                 else if ($testName eq "copynamespace-2") then
                     "XML"
-                (: ForExprType057 fails : why ? :)
+                (: see https://sourceforge.net/tracker/?func=detail&atid=117691&aid=1786962&group_id=17691 :)
+                else if ($testName eq "ForExprType057") then
+                    "UnnormalizedText"
                 else if ($testName eq "ForExprType059") then
                     "TextAsXML"
                 else if ($testName eq "ForExprType060") then
@@ -237,6 +241,8 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                 <expected-result compare="{$comparison}">
                 {
                     if ($comparison eq "Text") then
+                        xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
+                    else if ($comparison eq "UnnormalizedText") then
                         xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
                     else if ($comparison eq "TextAsXML") then
                         xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
@@ -434,7 +440,12 @@ declare function xqts:compute-result($testCase as element(catalog:test-case), $q
             let $comparisonMethod := $expectedResult/@compare
             return
                 if ($comparisonMethod eq "Text") then
-                    $expectedResult/string() eq xqts:normalize-text($result)
+                    (: don't use text() because () neq "" :)
+                    $expectedResult/string() eq xqts:normalize-text($result)                
+                else if ($comparisonMethod eq "UnnormalizedText") then
+                    (: don't use text() because () neq "" :)
+                    (: join the results in one single string :)
+                    $expectedResult/string() eq string-join($result, "")
                 else if ($comparisonMethod eq "TextAsXML") then
                     xdiff:compare($expectedResult/*, util:eval($result))                              
                 else if ($comparisonMethod eq "XML") then
