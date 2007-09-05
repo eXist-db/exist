@@ -246,6 +246,19 @@ public class EntitiesTest extends XMLTestCase {
         }
     }
     
+    public void testURIConstructor() {
+    	try {
+            XQueryService service = getQueryService();
+            ResourceSet result;
+            
+            result = queryAndAssert(service, "xs:anyURI(\"index.xql?a=1&amp;b=2\")", 1, null);
+            // TODO: could check result
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
+    
     public static void main(String[] args) {
         junit.textui.TestRunner.run(EntitiesTest.class);
     }
