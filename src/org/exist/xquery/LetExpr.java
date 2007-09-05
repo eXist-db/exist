@@ -224,27 +224,31 @@ public class LetExpr extends BindingExpression {
                 }
                 
                 if (sequenceType != null) {
+                    int actualCardinality;
+                    if (var.getValue().isEmpty()) actualCardinality = Cardinality.EMPTY;
+                    else if (var.getValue().hasMany()) actualCardinality = Cardinality.MANY;
+                    else actualCardinality = Cardinality.ONE;                	
                 	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-            		if (!Cardinality.checkCardinality(sequenceType.getCardinality(), resultSequence.getCardinality()))
+            		if (!Cardinality.checkCardinality(sequenceType.getCardinality(), actualCardinality))
         				throw new XPathException("XPTY004: Invalid cardinality for variable $" + varName +
         						". Expected " +
         						Cardinality.getDescription(sequenceType.getCardinality()) +
         						", got " + Cardinality.getDescription(resultSequence.getCardinality()));
             		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
             		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
-    	        		if (!in.isEmpty() && !Type.subTypeOf(in.getItemType(), sequenceType.getPrimaryType()))
+    	        		if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType()))
     	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
     	    						". Expected " +
     	    						Type.getTypeName(sequenceType.getPrimaryType()) +
-    	    						", got " +Type.getTypeName(in.getItemType()));
+    	    						", got " +Type.getTypeName(var.getValue().getItemType()));
             		//Here is an attempt to process the nodes correctly
             		} else {
             			//Same as above : we probably may factorize 
-    	        		if (!in.isEmpty() && !Type.subTypeOf(in.getItemType(), sequenceType.getPrimaryType()))
+    	        		if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType()))
     	    				throw new XPathException("XPTY004: Invalid type for variable $" + varName +
     	    						". Expected " +
     	    						Type.getTypeName(sequenceType.getPrimaryType()) +
-    	    						", got " +Type.getTypeName(in.getItemType()));
+    	    						", got " +Type.getTypeName(var.getValue().getItemType()));
             			
             		}
                 }
