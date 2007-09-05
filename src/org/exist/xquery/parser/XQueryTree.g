@@ -285,9 +285,34 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
-			"copy-namespaces" ( "preserve" | "no-preserve" ) ( "inherit" | "no-inherit" )
+			"copy-namespaces" 
+            ( 
+            "preserve"
+            {   
+                staticContext.setPreserveNamespaces(true);
+                context.setPreserveNamespaces(true);
+            }
+            | 
+            "no-preserve"
             {
-                // ignored
+                staticContext.setPreserveNamespaces(false);
+                context.setPreserveNamespaces(false);
+            }
+            ) 
+            ( 
+            "inherit"
+            {
+                staticContext.setInheritNamespaces(true);
+                context.setInheritNamespaces(true);
+            }
+            | 
+            "no-inherit"
+            {
+                staticContext.setInheritNamespaces(false);
+                context.setInheritNamespaces(false);
+            }
+            )
+            {
                 if (copynamespaces)
                     throw new XPathException("err:XQST0055: Copy-namespaces mode already declared.");
                 copynamespaces = true;
