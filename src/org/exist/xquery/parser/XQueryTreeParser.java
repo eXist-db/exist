@@ -3320,6 +3320,10 @@ public XQueryTreeParser() {
 					org.exist.xquery.parser.XQueryAST tmp37_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,LITERAL_preserve);
 					_t = _t.getNextSibling();
+					
+					staticContext.setPreserveNamespaces(true);
+					context.setPreserveNamespaces(true);
+					
 					break;
 				}
 				case 85:
@@ -3327,6 +3331,10 @@ public XQueryTreeParser() {
 					org.exist.xquery.parser.XQueryAST tmp38_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,85);
 					_t = _t.getNextSibling();
+					
+					staticContext.setPreserveNamespaces(false);
+					context.setPreserveNamespaces(false);
+					
 					break;
 				}
 				default:
@@ -3343,6 +3351,10 @@ public XQueryTreeParser() {
 					org.exist.xquery.parser.XQueryAST tmp39_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,LITERAL_inherit);
 					_t = _t.getNextSibling();
+					
+					staticContext.setInheritNamespaces(true);
+					context.setInheritNamespaces(true);
+					
 					break;
 				}
 				case 87:
@@ -3350,6 +3362,10 @@ public XQueryTreeParser() {
 					org.exist.xquery.parser.XQueryAST tmp40_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,87);
 					_t = _t.getNextSibling();
+					
+					staticContext.setInheritNamespaces(false);
+					context.setInheritNamespaces(false);
+					
 					break;
 				}
 				default:
@@ -3359,7 +3375,6 @@ public XQueryTreeParser() {
 				}
 				}
 				
-				// ignored
 				if (copynamespaces)
 				throw new XPathException("err:XQST0055: Copy-namespaces mode already declared.");
 				copynamespaces = true;

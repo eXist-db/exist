@@ -234,6 +234,9 @@ public class XQueryContext {
 	 */
 	private boolean stripWhitespace = true;
 
+	private boolean preserveNamespaces = true;	
+    private boolean inheritNamespaces = true;
+
 	/**
 	 * The position of the currently processed item in the context 
 	 * sequence. This field has to be set on demand, for example,
@@ -353,6 +356,8 @@ public class XQueryContext {
         ctx.backwardsCompatible = this.backwardsCompatible;
         ctx.enableOptimizer = this.enableOptimizer;
         ctx.stripWhitespace = this.stripWhitespace;
+        ctx.preserveNamespaces = this.preserveNamespaces;        
+        ctx.inheritNamespaces = this.inheritNamespaces;
 
         ctx.declaredFunctions = new TreeMap(this.declaredFunctions);
         ctx.globalVariables = new TreeMap(this.globalVariables);
@@ -983,6 +988,39 @@ public class XQueryContext {
 	
 	public void setStripWhitespace(boolean strip) {
 		this.stripWhitespace = strip;
+	}
+
+	/**
+	 * Returns true if namespaces for constructed element and document nodes
+	 * should be preserved on copy by default.
+	 */
+	public boolean preserveNamespaces() {
+		return preserveNamespaces;
+	}
+	
+	/**
+     * The method <code>setPreserveNamespaces</code>
+     *
+     * @param strip a <code>boolean</code> value
+     */
+    public void setPreserveNamespaces(final boolean preserve) {
+		this.preserveNamespaces = preserve;
+	}
+	/**
+	 * Returns true if namespaces for constructed element and document nodes
+	 * should be inherited on copy by default.
+	 */
+	public boolean inheritNamespaces() {
+		return inheritNamespaces;
+	}
+	
+	/**
+     * The method <code>setInheritNamespaces</code>
+     *
+     * @param inherit a <code>boolean</code> value
+     */
+    public void setInheritNamespaces(final boolean inherit) {
+		this.inheritNamespaces = inherit;
 	}
 
 	/**
