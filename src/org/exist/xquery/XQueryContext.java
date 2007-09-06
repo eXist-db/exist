@@ -693,17 +693,15 @@ public class XQueryContext {
 	 * @return namespace
 	 */
 	public String getURIForPrefix(String prefix) {
-            // try in-scope namespace declarations
-           String ns =  inScopeNamespaces == null
-				? null
-				: (String) inScopeNamespaces.get(prefix);
-           if (ns==null) {
-              // Check global declarations
-              return (String)namespaces.get(prefix);
-           } else {
-              return ns;
-           }
-           /* old code checked namespaces first
+        // try in-scope namespace declarations
+       String uri = inScopeNamespaces == null
+			? null
+			: (String) inScopeNamespaces.get(prefix);
+       if (uri != null)
+    	   return uri;
+      // Check global declarations
+      return (String)namespaces.get(prefix);
+      /* old code checked namespaces first
 		String ns = (String) namespaces.get(prefix);
 		if (ns == null)
 			// try in-scope namespace declarations
@@ -712,7 +710,7 @@ public class XQueryContext {
 				: (String) inScopeNamespaces.get(prefix);
 		else
 			return ns;
-            */
+        */
 	}
 
 	/**
@@ -721,11 +719,12 @@ public class XQueryContext {
          * is not registered.
 	 */
 	public String getPrefixForURI(String uri) {
-		String prefix = (String) prefixes.get(uri);
-		if (prefix == null)
-			return inScopePrefixes == null ? null : (String) inScopeNamespaces.get(uri);
-		else
+		String prefix = inScopePrefixes == null ? 
+			null : 
+			(String) inScopePrefixes.get(uri);
+		if (prefix != null)
 			return prefix;
+		return (String) prefixes.get(uri);
 	}
 
 	/**
