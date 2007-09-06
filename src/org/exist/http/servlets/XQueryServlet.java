@@ -186,6 +186,46 @@ public class XQueryServlet extends HttpServlet {
         process(request, response);
     }
     
+    //-------------------------------
+    // doPut and doDelete added by Andrzej Taramina (andrzej@chaeron.com)
+    // Date: Sept/05/2007
+    //
+    // These methods were added so that you can issue an HTTP PUT or DELETE request and have it serviced by an XQuery.
+    // NOTE: The XQuery referenced in the target URL of the request will be executed and the PUT/DELETE request will be passed to it
+    //
+    //-------------------------------
+    
+     /* (non-Javadoc)
+     * @see javax.servlet.http.HttpServlet#doPut(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    protected void doPut(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
+        HttpServletRequest request = null;
+        
+        //For POST request, If we are logging the requests we must wrap HttpServletRequest in HttpServletRequestWrapper
+        //otherwise we cannot access the POST parameters from the content body of the request!!! - deliriumsky
+        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        if(descriptor != null) {
+            if(descriptor.allowRequestLogging()) {
+                request = new HttpServletRequestWrapper(req, formEncoding);
+            } else {
+                request = req;
+            }
+        } else {
+            request = req;
+        }
+        
+        process(request, response);
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpServlet#doDelete(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        process(request, response);
+    }
+    
+    
     /**
      * Processes incoming HTTP requests for XQuery
      */
