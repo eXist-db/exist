@@ -67,6 +67,10 @@ declare function xqts:initialize() as element() {
             $sources0
         else
             let $sourceCol := xdb:create-collection("/db/XQTS", "TestSources")
+            let $hackedTests := xdb:store($collection, "hacked-tests.xml",
+                xs:anyURI(xqts:path-to-uri(
+                        concat("file:///", system:get-module-load-path(), "/hacked-tests.xml")
+                    )))                    
             return
                 xdb:store-files-from-pattern($sourceCol, concat($xqtsHome, "TestSources"), "*.xml", "text/xml")
     return
@@ -206,54 +210,40 @@ declare function xqts:normalize-and-expand($text as item()*) as xs:string {
 		"&amp;gt;", "&gt;")
 };
 
-declare function xqts:get-expected-results($testCase as element(catalog:test-case)) as element()* {
+declare function xqts:get-expected-results($testCase as element(catalog:test-case)) as element()* { 
+    let $testName := $testCase/@name   
+    let $hackedTest := /hacked-test-cases/hacked-test-case[@name = $testName]    
+    return
     (
-        for $output at $pos in $testCase/catalog:output-file
+        for $output in $testCase/catalog:output-file
         return
-            let $testName := $testCase/@name        
-            let $comparison :=
-                if ($output/@compare eq "Inspect") then
-                    (: introduce a per-test/output position return value:)
-                    "Text"
-                (: obvious wrong comparison methods :)
-                else if ($testName eq "copynamespace-2") then
-                    "XML"
-                (: see https://sourceforge.net/tracker/?func=detail&atid=117691&aid=1786962&group_id=17691 :)
-                else if ($testName eq "ForExprType057") then
-                    "UnnormalizedText"
-                else if ($testName eq "ForExprType059") then
-                    "TextAsXML"
-                else if ($testName eq "ForExprType060") then
-                    "TextAsXML"
-                else if ($testName eq "Constr-inscope-1") then
-                    "TextAsXML"
-                else if ($testName eq "Constr-inscope-2") then
-                    "TextAsXML"
-                else if ($testName eq "Constr-inscope-3") then
-                    "TextAsXML"
-                else if ($testName eq "Constr-inscope-4") then
-                    "TextAsXML"
+            let $compare :=
+                if (exists($hackedTest/@compare)) then 
+                    $hackedTest/@compare
+                else if ($output/@compare eq "Inspect") then
+                    (: "Text" by default. OK in most if not all the cases :)
+                    "Text"                   
                 else                
-                    $output/@compare
+                    $output/@compare        
             let $outputFilePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $testCase/@FilePath,
                 $output/text())
             return
-                <expected-result compare="{$comparison}">
+                <expected-result compare="{$compare}">                
                 {
-                    if ($comparison eq "Text") then
+                    if ($compare eq "Text") then
                         xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
-                    else if ($comparison eq "UnnormalizedText") then
+                    else if ($compare eq "UnnormalizedText") then
                         xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
-                    else if ($comparison eq "TextAsXML") then
+                    else if ($compare eq "TextAsXML") then
                         xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
-                    else if ($comparison eq "XML") then                    
+                    else if ($compare eq "XML") then                    
                         util:catch(
                             "java.lang.Exception",
                             doc(xdb:store("/db/XQTS/temp", substring-before($output/text(), "."), xs:anyURI($outputFilePath), "text/xml")),
                             (: Handle unexpected exceptions :)
                             util:log("ERROR", concat("Exception while loading expected result: ", $util:exception-message))
                         )
-                    else if ($comparison eq "Fragment") then
+                    else if ($compare eq "Fragment") then
                         let $xmlFrag := concat("<f>", util:file-read($outputFilePath, "UTF-8"), "</f>")
                         return 
                             util:catch(
@@ -263,77 +253,15 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                                 util:log("ERROR", concat("Exception while loading expected result fragment: ", $util:exception-message))
                             )
                     else
-                        util:log("ERROR", concat("Unknown comparison method: ", $comparison))
+                        util:log("ERROR", concat("Unknown comparison method: ", $compare))
                 }
-                </expected-result>                
+                </expected-result>              
     ,
-        let $testName := $testCase/@name
-        return
-            (: Inject Saxon's results here :)
-            if ($testName eq "CastAs672") then
-                <expected-result from="Saxon8.9J" compare="Text">true</expected-result>
-            else if ($testName eq "copynamespace-3") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">xml exist</expected-result> 
-            else if ($testName eq "copynamespace-4") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist foo xml</expected-result> 
-            else if ($testName eq "copynamespace-5") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist foo xml</expected-result>
-            else if ($testName eq "copynamespace-6") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist foo xml</expected-result>
-            else if ($testName eq "copynamespace-7") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist xml</expected-result>                           
-            else if ($testName eq "copynamespace-8") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist existingNamespace xml</expected-result>                           
-            else if ($testName eq "copynamespace-9") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist newNamespace xml</expected-result>                           
-            else if ($testName eq "copynamespace-10") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist existingNamespace newNamespace xml</expected-result>                           
-            else if ($testName eq "copynamespace-11") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist existingNamespace xml</expected-result>                           
-            else if ($testName eq "copynamespace-12") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist existingNamespace newNamespace xml</expected-result>
-            else if ($testName eq "copynamespace-13") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">xml exist</expected-result>                                        
-            else if ($testName eq "copynamespace-14") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">SOMESPACE exist somespace xml</expected-result>                                        
-            else if ($testName eq "copynamespace-15") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist namespace1 namespace2 namespace3 xml</expected-result>                                        
-            else if ($testName eq "copynamespace-16") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist namespace3 xml</expected-result>
-            else if ($testName eq "copynamespace-17") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">xml exist</expected-result>                                        
-            else if ($testName eq "copynamespace-18") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist namespace1 xml</expected-result>                                        
-            else if ($testName eq "copynamespace-19") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist namespace2 namespace3 xml</expected-result>                                        
-            else if ($testName eq "copynamespace-20") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist namespace3 xml</expected-result>                                        
-            else if ($testName eq "copynamespace-21") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">xml exist</expected-result>                                   
-            else if ($testName eq "copynamespace-22") then
-                (: eXist's NS is automatically bound :)
-                <expected-result from="eXist" compare="Text">exist namespace2 xml</expected-result> 
-            else
-                ()
+        (: due to a possible bug in the MemTreeBuilder, the parent element will be copied ! :) 
+        if (exists($hackedTest/expected-result)) then
+            $hackedTest/expected-result        
+        else
+            ()
     )
 };
 
