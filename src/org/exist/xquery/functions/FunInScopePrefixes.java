@@ -55,11 +55,16 @@ public class FunInScopePrefixes extends BasicFunction {
 		NodeValue node = (NodeValue) args[0].itemAt(0);
 		if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy) node;
-			NodeSet ancestors = proxy.getAncestors(contextId, true);
-			for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
-				proxy = (NodeProxy) i.next();
-				collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);
-			}
+			//Horrible hacks to work-around bad in-scope NS
+			if (proxy.getNodeType() == Node.ELEMENT_NODE && !context.inheritNamespaces()) {
+				collectNamespacePrefixes((ElementImpl)proxy.getNode(), prefixes);
+			} else {
+				NodeSet ancestors = proxy.getAncestors(contextId, true);
+				for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
+					proxy = (NodeProxy) i.next();
+					collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);
+				}
+			}			
 		} else { // In-memory node
 			NodeImpl next = (NodeImpl) node;
 			do {
@@ -67,12 +72,16 @@ public class FunInScopePrefixes extends BasicFunction {
 				next = (NodeImpl) next.getParentNode();
 			} while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
 		}
-		
+
 		ValueSequence result = new ValueSequence();
 		String prefix;
 		for (Iterator i = prefixes.keySet().iterator(); i.hasNext(); ) {
 			prefix = (String) i.next();
-			result.add(new StringValue(prefix));
+			//The predefined namespaces (e.g. "exist" for temporary nodes) could have been removed from the static context
+			if (!(context.getURIForPrefix(prefix) == null && 
+					("exist".equals(prefix) || "xs".equals(prefix) || "xsi".equals(prefix) ||
+						"wdt".equals(prefix) || "fn".equals(prefix) || "local".equals(prefix))))
+				result.add(new StringValue(prefix)); 
 		}
 		
         if (context.getProfiler().isEnabled()) 
@@ -81,12 +90,14 @@ public class FunInScopePrefixes extends BasicFunction {
         return result;          
 	}
 
-	public static void collectNamespacePrefixes(ElementImpl element, Map prefixes) {
+	public static void collectNamespacePrefixes(ElementImpl element, Map prefixes) {		
         // Add xmlNS to all constructs. -pb
-        prefixes.put("xml", Namespaces.XML_NS);	
+        prefixes.put("xml", Namespaces.XML_NS);	 
         String namespaceURI = element.getNamespaceURI();
 		String prefix;
         if (namespaceURI != null && namespaceURI.length() > 0) {
+        	//Remember that a temporary node is wrapped by an <exist:temp> element
+			//The prefix could have been removed from the global context			     	
 			prefix = element.getPrefix();
 			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
 		}

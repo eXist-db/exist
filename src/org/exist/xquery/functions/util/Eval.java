@@ -440,8 +440,6 @@ public class Eval extends BasicFunction {
 				Element elem = (Element) child;
 				//TODO : error check
 				if (elem.getAttribute("uri") != null) {		
-					//TODO : doesn't work when trying to unbind exist's NS. Possibly because
-					//NS are copied from context to context
 					innerContext.removeNamespace(elem.getAttribute("uri"));
 				}
 			}
