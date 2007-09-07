@@ -140,7 +140,7 @@ public class XQueryContext {
 	protected HashMap prefixes = new HashMap();
 	
 	// Local prefix/namespace mappings in the current context
-	protected final HashMap inScopePrefixes = new HashMap();
+	protected HashMap inScopePrefixes = new HashMap();
 
 	// Local namespace stack
 	protected final Stack namespaceStack = new Stack();
@@ -565,6 +565,7 @@ public class XQueryContext {
 			throw new IllegalArgumentException("null argument passed to declareNamespace");
 		if (inScopeNamespaces == null)
 			inScopeNamespaces = new HashMap();
+		inScopePrefixes.put(uri, prefix);
 		inScopeNamespaces.put(prefix, uri);
 	}
 
@@ -697,6 +698,7 @@ public class XQueryContext {
        String uri = inScopeNamespaces == null
 			? null
 			: (String) inScopeNamespaces.get(prefix);
+       //TODO : search into inheritedInScopeNamespaces... if the settings allow to do so 
        if (uri != null)
     	   return uri;
       // Check global declarations
@@ -750,6 +752,7 @@ public class XQueryContext {
 				}
 			}
 		}
+		//TODO : remove also in inheritedInScopeNamespaces ?
 	}
 
 	/**
@@ -761,6 +764,7 @@ public class XQueryContext {
 		if (inScopeNamespaces != null) {
 			inScopeNamespaces.clear();
 			inScopePrefixes.clear();
+			//TODO : clear also inheritedInScopeNamespaces ?
 		}
 		loadDefaults(broker.getConfiguration());
 	}
@@ -1569,16 +1573,22 @@ public class XQueryContext {
 	 * Push all in-scope namespace declarations onto the stack.
 	 */
 	public void pushInScopeNamespaces() {
+		//TODO : push into an inheritedInScopeNamespaces HashMap... and return an empty HashMap		
 		HashMap m = (HashMap) inScopeNamespaces.clone();
+		HashMap p = (HashMap) inScopePrefixes.clone();
 		namespaceStack.push(inScopeNamespaces);
+		namespaceStack.push(inScopePrefixes);
 		inScopeNamespaces = m;
+		inScopePrefixes = p;
 	}
 
 	public void popInScopeNamespaces() {
+		inScopePrefixes = (HashMap) namespaceStack.pop();
 		inScopeNamespaces = (HashMap) namespaceStack.pop();
+		//TODO : pop the inheritedInScopeNamespaces Hashmap
 	}
 
-	public void pushNamespaceContext() {
+	public void pushNamespaceContext() {		
 		HashMap m = (HashMap) namespaces.clone();
 		HashMap p = (HashMap) prefixes.clone();
 		namespaceStack.push(namespaces);
