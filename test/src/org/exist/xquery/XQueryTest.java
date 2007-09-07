@@ -224,9 +224,28 @@ public class XQueryTest extends XMLTestCase {
 			"return distinct-values($test/a/normalize-space(.))";
 			result = service.queryResource(NUMBERS_XML, query );
 			printResult(result);
-			assertEquals( "XQuery: " + query, 1, result.getSize() );			
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
 			
-		} catch (XMLDBException e) {
+			//Ordered value sequence
+            System.out.println("testLet 4: ========" );
+            query = "let $unordset := (for $val in reverse(1 to 100) return " +
+					"<value>{$val}</value>)" +
+					"let $ordset := (for $newval in $unordset " +
+					"where $newval mod 2 eq 1 " +
+					"order by $newval " +
+					"return $newval/text()) " +
+					"return $ordset/ancestor::node()";			
+
+			result = service.queryResource(NUMBERS_XML, query );
+	        printResult(result);	        
+			assertEquals( "XQuery: " + query, 50, result.getSize() );
+			
+			//WARNING : the return order CHANGES !!!!!!!!!!!!!!!!!!
+			
+			assertXMLEqual("<value>99</value>", ((XMLResource)result.getResource(0)).getContent().toString());
+			assertXMLEqual("<value>1</value>", ((XMLResource)result.getResource(49)).getContent().toString());
+			
+		} catch (Exception e) {
 			System.out.println("testLet(): XMLDBException: "+e);
             e.printStackTrace();
             fail(e.getMessage());
@@ -297,7 +316,6 @@ public class XQueryTest extends XMLTestCase {
 	        printResult(result);
 	        resu = (XMLResource) result.getResource(0);
 			assertEquals( "XQuery: " + query, "<value>X</value>", resu.getContent() );
-
 				
 		} catch (XMLDBException e) {
 			System.out.println("testFor(): XMLDBException: "+e);
