@@ -23,6 +23,7 @@
 package org.exist.xquery.modules.httpclient;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.Header;
@@ -237,10 +238,15 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         boolean     parsed       = false;
         NodeImpl    responseNode = null;
         
+        // determine the type of the response document
+        MimeType responseMimeType = getResponseMimeType( method.getResponseHeader( "Content-Type" ) );
+        builder.addAttribute( new QName( "mimetype", null, null ), method.getResponseHeader( "Content-Type" ).getValue() );
+        
         //try and parse the response as XML
         try {
             //TODO: replace getResponseBodyAsString() with getResponseBodyAsStream()
             responseNode = (NodeImpl)ModuleUtils.stringToXML( context, method.getResponseBodyAsString() );
+            builder.addAttribute( new QName( "type", null, null ), "xml" );
             responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );         
         }
         catch( SAXException se ) {
@@ -248,8 +254,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         }
         
         if( responseNode == null ) {
-            //response is NOT parseable as XML, determine the type of the response document
-            MimeType responseMimeType = getResponseMimeType( method.getResponseHeader( "Content-Type" ) );
+            //response is NOT parseable as XML
             
             //is it a html document?
             if( responseMimeType.getName().equals( MimeType.HTML_TYPE.getName() ) ) {
@@ -257,6 +262,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                 try {
                     //parse html to xml(html)
                     responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource(method.getResponseBodyAsStream() ) ).getDocumentElement();
+                    builder.addAttribute( new QName( "type", null, null ), "xhtml" );
                     responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );                  
                 }
                 catch( URIException ue ) {
@@ -269,12 +275,22 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         }
         
         if( responseNode == null ) {
-            // Assume it's a binary body and encode it appropriately
-            byte[] body = method.getResponseBody();
-            
-            if( body != null ) {
-                Base64Binary binary = new Base64Binary( body );
-                builder.characters( binary.getStringValue() );
+            if( responseMimeType.getName().startsWith( "text/" ) ) {
+                // Assume it's a text body and URL encode it
+                builder.addAttribute( new QName( "type", null, null ), "text" );
+                builder.addAttribute( new QName( "encoding", null, null ), "URLEncoded" );
+                builder.characters( URLEncoder.encode( method.getResponseBodyAsString(), "UTF-8" ) );
+            } else {
+                // Assume it's a binary body and Base64 encode it
+                byte[] body = method.getResponseBody();
+                
+                builder.addAttribute( new QName( "type", null, null ), "binary" );
+                builder.addAttribute( new QName( "encoding", null, null ), "Base64Encoded" );
+                
+                if( body != null ) {
+                    Base64Binary binary = new Base64Binary( body );
+                    builder.characters( binary.getStringValue() );
+                }
             }
         }
     }

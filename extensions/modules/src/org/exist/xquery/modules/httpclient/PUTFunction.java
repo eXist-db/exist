@@ -56,9 +56,9 @@ public class PUTFunction extends BaseHTTPClientFunction
         new FunctionSignature(
         new QName( "put", NAMESPACE_URI, PREFIX ),
         "Performs a HTTP PUT request. $a is the URL, $b is the XML PUT payload/content, $c determines if cookies persist for the query lifetime. $d defines any HTTP Request Headers to set in the form <headers><header name=\"\" value=\"\"/></headers>."
-        + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body>body content</httpclient:body></httpclient:response>"
-        + " where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, any other body content will be returned as xs:base64Binary encoded data.",
-         new SequenceType[] {
+        + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>"
+        + " where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.",
+        new SequenceType[] {
             new SequenceType( Type.ANY_URI, Cardinality.EXACTLY_ONE ),
             new SequenceType( Type.NODE, Cardinality.EXACTLY_ONE ),
             new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ),
