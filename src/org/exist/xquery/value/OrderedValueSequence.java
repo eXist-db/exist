@@ -22,7 +22,7 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.util.FastQSort;
@@ -156,41 +156,47 @@ public class OrderedValueSequence extends AbstractSequence {
 			return NodeSet.EMPTY_SET;
         // for this method to work, all items have to be nodes
 		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
-			NodeSet set = new ExtArrayNodeSet();
+			//Was ExtArrayNodeset() which orders the nodes in document order
+			//The order seems to change between different invocations !!!
+			NodeSet set = new AVLTreeNodeSet();	
 			//We can't make it from an ExtArrayNodeSet (probably because it is sorted ?)
 			//NodeSet set = new ArraySet(100);
 			for (int i = 0; i < items.length; i++) {
-				NodeValue v = (NodeValue)items[i].item;
-				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-					
-					/*
-                    // found an in-memory document
-                    DocumentImpl doc = ((NodeImpl)v).getDocument();
-                    // make this document persistent: doc.makePersistent()
-                    // returns a map of all root node ids mapped to the corresponding
-                    // persistent node. We scan the current sequence and replace all
-                    // in-memory nodes with their new persistent node objects.
-                    Int2ObjectHashMap newRoots = doc.makePersistent();
-                    for (int j = i; j < items.length; j++) {
-                        v = (NodeValue) items[j];
-                        if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-                            NodeImpl node = (NodeImpl) v;
-                            if (node.getDocument() == doc) {
-                                NodeProxy p = (NodeProxy) newRoots.get(node.getNodeNumber());
-                                if (p != null) {
-                                    // replace the node by the NodeProxy
-                                    items[j] = p;
-                                }
-                            }
-                        }
-                    }
-                    */
-					
-                    set.add((NodeProxy)v);
-				} else {
-					set.add((NodeProxy)v);
+				//TODO : investigate why we could have null here
+				if (items[i] != null) {
+				
+					NodeValue v = (NodeValue)items[i].item;
+					if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+						
+						/*
+	                    // found an in-memory document
+	                    DocumentImpl doc = ((NodeImpl)v).getDocument();
+	                    // make this document persistent: doc.makePersistent()
+	                    // returns a map of all root node ids mapped to the corresponding
+	                    // persistent node. We scan the current sequence and replace all
+	                    // in-memory nodes with their new persistent node objects.
+	                    Int2ObjectHashMap newRoots = doc.makePersistent();
+	                    for (int j = i; j < items.length; j++) {
+	                        v = (NodeValue) items[j];
+	                        if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+	                            NodeImpl node = (NodeImpl) v;
+	                            if (node.getDocument() == doc) {
+	                                NodeProxy p = (NodeProxy) newRoots.get(node.getNodeNumber());
+	                                if (p != null) {
+	                                    // replace the node by the NodeProxy
+	                                    items[j] = p;
+	                                }
+	                            }
+	                        }
+	                    }
+	                    */
+						
+	                    set.add((NodeProxy)v);
+					} else {
+						set.add((NodeProxy)v);
+					}
 				}
-			}
+			}			
 			return set;
 		} else
 			throw new XPathException("Type error: the sequence cannot be converted into" +
