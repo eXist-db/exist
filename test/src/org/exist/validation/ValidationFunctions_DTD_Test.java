@@ -162,7 +162,7 @@ public class ValidationFunctions_DTD_Test extends TestCase {
         }
     }
     
-    public void bugtestSpecifiedGrammar() {
+    public void testSpecifiedGrammar() {
         
         System.out.println(this.getName());
         logger.info(this.getName());
