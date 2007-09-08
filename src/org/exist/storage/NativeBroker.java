@@ -1578,7 +1578,7 @@ public class NativeBroker extends DBBroker {
         
         //get the temp collection
         Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
-        
+        boolean created = false;
         try
 	    {
         	//if no temp collection
@@ -1590,21 +1590,9 @@ public class NativeBroker extends DBBroker {
         		{
         			LOG.warn("Failed to create temporary collection");
         		}
-		    }
-        	else
-		    {
-        		// unlock the temp collection
-        		if(transaction == null)
-        		{
-        			temp.getLock().release(Lock.WRITE_LOCK);
-        		}
-        		else
-        		{
-        			transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
-        		}
-		    }
-            
-			//create a temporary document
+                created = true;
+            }
+            //create a temporary document
 			DocumentImpl targetDoc = new DocumentImpl(this, temp, docName);
 			targetDoc.setPermissions(0771);
 			long now = System.currentTimeMillis();
@@ -1621,7 +1609,18 @@ public class NativeBroker extends DBBroker {
 
 			//store the temporary document
 			temp.addDocument(transaction, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
-			storeXMLResource(transaction, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
+
+            // unlock the temp collection
+            if(transaction == null)
+            {
+                temp.getLock().release(Lock.WRITE_LOCK);
+            }
+            else if (!created)
+            {
+                transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
+            }
+            
+ 			storeXMLResource(transaction, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
 			flush();
 			closeDocument();            
 	        
