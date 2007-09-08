@@ -183,12 +183,12 @@ public class Validation extends BasicFunction  {
             
         } else {
             String url=args[1].getStringValue();
-            if(url.endsWith(".dtd")){
-                String txt =  "Unable to validate with a specified DTD ("+url+"). "+
-                    "Please register the DTD in an xml catalog document.";
-                LOG.error(txt);
-                throw new XPathException(getASTNode(), txt);
-            }
+//            if(url.endsWith(".dtd")){
+//                String txt =  "Unable to validate with a specified DTD ("+url+"). "+
+//                    "Please register the DTD in an xml catalog document.";
+//                LOG.error(txt);
+//                throw new XPathException(getASTNode(), txt);
+//            }
             
             if(url.startsWith("/")){
                 url="xmldb:exist://"+url;
