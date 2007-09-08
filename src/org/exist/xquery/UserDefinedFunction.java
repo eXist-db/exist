@@ -184,4 +184,14 @@ public class UserDefinedFunction extends Function {
     public void accept(ExpressionVisitor visitor) {
         visitor.visitUserFunction(this);
     }
+    
+    /**
+     * Return the functions parameters list
+     * 
+     * @return List of function parameters
+     */
+    public List getParameters()
+    {
+    	return parameters;
+    }
 }
