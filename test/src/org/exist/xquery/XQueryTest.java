@@ -2562,6 +2562,29 @@ public class XQueryTest extends XMLTestCase {
         }
         
     }
+    
+    //    An exception occurred during query execution: XPTY004: Invalid type for
+    //variable $arg1. Expected xs:string, got xs:integer
+    // http://sourceforge.net/tracker/index.php?func=detail&aid=1787285&group_id=17691&atid=117691
+    
+    public void testWrongInvalidTypeError_1787285() {
+
+        try {
+            String query = "let $arg1 as xs:string := \"A String\"" + "let $arg2 as xs:integer := 3 return $arg2";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "3", result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+        
+    
+    
        
     // ======================================
     
