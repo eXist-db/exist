@@ -111,6 +111,8 @@
     </catalog>]]></programlisting>
                     </example>
                 </para>
+                <para>It is possible to configure any number of catalog entries in the
+                    entity-resolver section of conf.xml .</para>
             </section>
         </section>
 
@@ -263,11 +265,11 @@
                     <listitem>
                         <para>Tomcat has an long standing bug which makes it impossible to register
                             a custom protocol handler (object URLStreamHandler) to the JVM. The
-                            alternative is to register the object with the system property
+                            alternative is to register the object by setting the system property
                                 <code>java.protocol.handler.pkgs</code> but this fails as well.</para>
-                        <para>The result is that the validation features are only partly useable.
-                            There are two altenatives however: (1) switch to a recent version of
-                            Jetty, or (2) use absolute URLs pointing the the rest interface, e.g.
+                        <para>As a result the validation features are only partly useable in tomcat.
+                            There are two altenatives: (1) switch to a recent version of Jetty, or
+                            (2) use absolute URLs pointing the the rest interface, e.g.
                                 <code>http://localhost:8080/exist/rest/db/mycollection/schema.xsd</code>.</para>
                     </listitem>
                 </itemizedlist>
