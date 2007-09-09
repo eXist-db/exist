@@ -91,7 +91,7 @@
                     servlet container (e.g. '${CATALINA_HOME}/webapps/exist/')</para>
                 <para>A catalog which is stored in the database can be addressed by an URL like
                     'xmldb:exist:///db/mycollection/catalog.xml' (note the 3 slashes) or the shorter
-                    equivalent '/db/mycollection/catalog.xml'</para>
+                    equivalent '/db/mycollection/catalog.xml'.</para>
                 <para>
                     <example>
                         <title>Default OASIS catalog file</title>
@@ -116,7 +116,8 @@
 
         <section id="sect3">
             <title>Explicit validation</title>
-            <para>The database provides two extension functions to perform XML validation in an xquery:<itemizedlist>
+            <para>The database provides two extension functions to perform XML validation from an
+                xquery script:<itemizedlist>
                     <listitem>
                         <para>validate(...)</para>
                     </listitem>
@@ -129,7 +130,7 @@
                 functions accept either one or two parameters:</para>
             <itemizedlist>
                 <listitem>
-                    <para>validate($a) : Validate $a using the catalog used by the implicit
+                    <para>validate($a) : Validate $a using the same catalog as used by the implicit
                         validator.</para>
                 </listitem>
                 <listitem>
@@ -180,21 +181,34 @@
 
             <example>
                 <title>Validation report</title>
-                <programlisting format="linespecific"><![CDATA[<report>
-    <status>invalid</status>
-    <time>62</time>
-    <message level="Error" line="12" column="15">cvc-complex-type.2.4.a: Invalid content was 
-    found starting with element 'name'. One of '{"http://jmvanel.free.fr/xsd/addressBook":cname}' is expected.</message>
-</report></exist>]]></programlisting>
+                <programlisting format="linespecific"><![CDATA[    <report>
+        <status>invalid</status>
+        <time>62</time>
+        <message level="Error" line="12" column="15">cvc-complex-type.2.4.a: Invalid content was 
+        found starting with element 'name'. One of '{"http://jmvanel.free.fr/xsd/addressBook":cname}' is expected.</message>
+    </report></exist>]]></programlisting>
             </example>
         </section>
 
         <section id="sect4">
             <title>Grammar management</title>
-            <para/>
+            <para>The XML parser (Xerces) compiles all grammar files (dtd, xsd) when they are used.
+                For efficiency reasons these compiled grammars are cached for reuse, this results in
+                a dramatic increase of validation speed. However under certain conditions (e.g.
+                grammar development) this cache must be cleared. There are two related functions
+                available: <itemizedlist>
+                    <listitem>
+                        <para>show-grammar-cache() : returns an XML report about all
+                            cached grammar</para>
+                    </listitem>
+                    <listitem>
+                        <para>clear-grammar-cache() : removes all cached grammar and returns the number of removed grammar</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
         </section>
 
-        <section>
+        <section id="sect5">
             <title>XML instance examples</title>
             <para>
                 <example>
@@ -240,8 +254,11 @@
                 </example>
 
             </para>
+        </section>
 
-
+        <section id="sect6">
+            <title>Special notes</title>
+            <para>tomcat</para>
         </section>
     </chapter>
 </book>
