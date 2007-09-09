@@ -21,19 +21,18 @@
         <title>XML Validation</title>
         <section id="sect1">
             <title>Introduction</title>
-            <para>The database supports validation of XML in two different ways. The first one is
-                automagic validation of XML documents while they are inserted into the database, the
-                second way is validation of XML documents (either stored in database or in
-                constructed memory) using an xquery extension function. </para>
+            <para>The database supports implicit and explicit validation of XML documents. Implicit
+                validation can be executed automagically when documents are being inserted into the
+                database, explicit validation can be performed using xquery extension
+            functions.</para>
         </section>
         <section id="sect2">
-            <title>Configuration</title>
-            <para>In the eXist-db configuration file <filename>conf.xml</filename> the following
-                items can be configured: <itemizedlist>
+            <title>Implicit validation</title>
+            <para>To enable this feature the eXist-db configuration must be changed by editing the
+                file <filename>conf.xml</filename>. The following items must be configured:<itemizedlist>
                     <listitem>
                         <para>Validation mode</para>
                     </listitem>
-
                     <listitem>
                         <para>System catalog</para>
                     </listitem>
@@ -47,20 +46,18 @@
         <entity-resolver>
             <catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml" />
         </entity-resolver>
-    </validation>
-                ]]></programlisting>
+    </validation>]]></programlisting>
                 </example>
             </para>
 
             <section>
                 <title>Validation mode</title>
                 <para>With the parameter <emphasis>mode</emphasis> it is possible to switch on/off
-                    the validation capabilities of the (Xerces) XML parser, which is used when a
-                    document is inserted into the database. The possible values are:</para>
+                    the validation capabilities of the (Xerces) XML parser. The possible values are:</para>
                 <section>
                     <title>yes</title>
                     <para>Switch on validation. All XML documents will be validated, if there is no
-                        grammar (XML schema, DTD) the document will be rejected.</para>
+                        grammar (XML schema, DTD) the document will always be rejected.</para>
                 </section>
                 <section>
                     <title>no</title>
@@ -72,31 +69,32 @@
                     <para>Validation of an XML document will be performed based on the contents of
                         the document. When a document contains a reference to a grammar (XML schema
                         or DTD), the parser tries to resolve this grammar and the XML document will
-                        be validated against this grammar, like <emphasis>mode="yes"</emphasis>. If
-                        the grammar cannot be resolved, the XML document is rejected. When the XML
-                        document does not contain a reference to a grammar, it will be parsed like
-                            <emphasis>mode="no"</emphasis>.</para>
+                        be validated against this grammar, just like
+                        <emphasis>mode="yes"</emphasis>. If the grammar cannot be resolved, the XML
+                        document will be rejected. When the XML document does not contain a
+                        reference to a grammar, it will be parsed like
+                        <emphasis>mode="no"</emphasis>.</para>
                 </section>
             </section>
 
 
             <section>
                 <title>Catalog Entity Resolver</title>
-                <para>All grammar (XML schema, DTD) files that must be used in the validation
-                    process (when an XML document is inserted into the database) must be registered
-                    using <ulink
+                <para>All grammar (XML schema, DTD) files that must be part of the implicit
+                    validation process must be registered to the database using <ulink
                         url="http://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html"
                         >OASIS catalog</ulink> files. These catalog files can be stored on disk and
                     in the database.</para>
-                <para>In the upper example the ${WEBAPP_HOME} is substituted by 'webapp'-directory
-                    of eXist or the corresponding directory of a WAR file when eXist is deployed in
-                    a servlet container (e.g. '${CATALINA_HOME}/webapps/exist/')</para>
-                <para>A catalog which is stored in the database can be addressed by
-                    'xmldb:exist:///db/mycollection/catalog.xml' (note the 3 slashes) or
-                    '/db/mycollection/catalog.xml</para>
+                <para>In the upper example the ${WEBAPP_HOME} is substituted by a file://-URL
+                    pointing to the 'webapp'-directory of eXist or the corresponding directory of a
+                    WAR file when eXist is deployed in a servlet container (e.g.
+                    '${CATALINA_HOME}/webapps/exist/')</para>
+                <para>A catalog which is stored in the database can be addressed by an URL like
+                    'xmldb:exist:///db/mycollection/catalog.xml' (note the 3 slashes) or the shorter
+                    equivalent '/db/mycollection/catalog.xml'</para>
                 <para>
                     <example>
-                        <title>OASIS catalog file</title>
+                        <title>default OASIS catalog file</title>
                         <programlisting format="linespecific"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
     <public publicId="-//PLAY//EN" uri="entities/play.dtd"/>
@@ -113,36 +111,14 @@
                     </example>
                 </para>
             </section>
-
-
-
-            <para>Bla <ulink url="http://link#aa">txt</ulink> bla de bla <filename>.jar</filename>
-                bladibla.</para>
-            <para>Once the download has completed, start the eXist installation by doing
-                    <emphasis>ONE</emphasis> of the following:</para>
-            <procedure>
-                <step>
-                    <para>Bla bla: <filename> eXist-[version]-build-XXXX.jar</filename></para>
-                </step>
-                <step>
-                    <para>Bla bla <command>-jar</command> option:</para>
-                </step>
-            </procedure>
-            <synopsis format="linespecific">java -jar eXist-[Version].jar</synopsis>
-
-            <para>This will launch the installer. Simply follow the steps to complete the
-                installation process.</para>
-            <note>
-                <para>Bladibla.</para>
-            </note>
         </section>
 
         <section id="sect3">
-            <title>Validation while inserting documents</title>
+            <title>Implicit validation</title>
         </section>
 
         <section id="sect4">
-            <title>xQuery extension functions</title>
+            <title>Grammar management</title>
         </section>
 
         <section>
