@@ -56,6 +56,8 @@ public class CollectionConfigurationManager {
     public final static String CONFIG_COLLECTION = DBBroker.SYSTEM_COLLECTION + "/config";
     public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
 
+    public final static CollectionURI COLLECTION_CONFIG_PATH = new CollectionURI(XmldbURI.CONFIG_COLLECTION_URI.getRawCollectionPath());
+    
     private Map configurations = new HashMap();
 
     private Object latch;
@@ -107,7 +109,7 @@ public class CollectionConfigurationManager {
 			//broker.sync(Sync.MAJOR_SYNC);
 
             synchronized (latch) {
-                configurations.remove(path);
+                configurations.remove(new CollectionURI(path.getRawCollectionPath()));
                 loadConfiguration(broker, confCol);
             }
         } catch (IOException e) {
@@ -139,7 +141,8 @@ public class CollectionConfigurationManager {
      */
     protected CollectionConfiguration getConfiguration(DBBroker broker, Collection collection) 
         throws CollectionConfigurationException {
-    	XmldbURI path = XmldbURI.CONFIG_COLLECTION_URI.append(collection.getURI());
+        CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
+        path.append(collection.getURI().getRawCollectionPath());
 
     	/*
     	 * This used to go from the root collection (/db), and continue all the
@@ -151,11 +154,11 @@ public class CollectionConfigurationManager {
         CollectionConfiguration conf;
 
         synchronized (latch) {
-            while(!path.equals(XmldbURI.CONFIG_COLLECTION_URI)) {
+            while(!path.equals(COLLECTION_CONFIG_PATH)) {
                 conf = (CollectionConfiguration) configurations.get(path);
                 if (conf != null)
                     return conf;
-                path = path.removeLastSegment();
+                path.removeLastSegment();
             }
         }
         if (LOG.isTraceEnabled())
@@ -193,7 +196,7 @@ public class CollectionConfigurationManager {
                     CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
                     conf.read(broker, confDoc, configCollection.getURI(), confDoc.getFileURI());
                     synchronized (latch) {
-                        configurations.put(configCollection.getURI(), conf);
+                        configurations.put(new CollectionURI(configCollection.getURI().getRawCollectionPath()), conf);
                     }
                     //Allow just one configuration document per collection
                     //TODO : do not break if a system property allows several ones -pb
@@ -215,7 +218,7 @@ public class CollectionConfigurationManager {
     		return;
         synchronized (latch) {
             LOG.debug("Invalidating collection " + collectionPath);
-            configurations.remove(collectionPath);
+            configurations.remove(collectionPath.getRawCollectionPath());
         }
     }
     

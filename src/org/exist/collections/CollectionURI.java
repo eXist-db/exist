@@ -20,7 +20,14 @@ public class CollectionURI
         length = path.length();
     }
 
-	public void append(final String segment)
+    public CollectionURI(CollectionURI other) {
+        this.uri = new char[other.uri.length];
+        System.arraycopy(other.uri, 0, this.uri, 0, other.length);
+        this.length = other.length;
+        this.hash = other.hash;
+    }
+
+    public void append(final String segment)
 	{
 		if(uri == null)
 		{
@@ -47,7 +54,7 @@ public class CollectionURI
 	{
 		char c;
 		int pos = length - 1;
-		while(pos > -1 && (c = uri[pos]) != FRAGMENT_SEPARATOR)
+		while((c = uri[pos]) != FRAGMENT_SEPARATOR)
 		{
 			pos--;
 		}
