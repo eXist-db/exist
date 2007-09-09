@@ -85,40 +85,113 @@
                         url="http://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html"
                         >OASIS catalog</ulink> files. These catalog files can be stored on disk and
                     in the database.</para>
-                <para>In the upper example the ${WEBAPP_HOME} is substituted by a file://-URL
-                    pointing to the 'webapp'-directory of eXist or the corresponding directory of a
-                    WAR file when eXist is deployed in a servlet container (e.g.
-                    '${CATALINA_HOME}/webapps/exist/')</para>
+                <para>In the upper example the ${WEBAPP_HOME} is substituted by a
+                    <emphasis>file://</emphasis> URL pointing to the 'webapp'-directory of eXist or
+                    the equivalent directory of a deployed WAR file when eXist is deployed in a
+                    servlet container (e.g. '${CATALINA_HOME}/webapps/exist/')</para>
                 <para>A catalog which is stored in the database can be addressed by an URL like
                     'xmldb:exist:///db/mycollection/catalog.xml' (note the 3 slashes) or the shorter
                     equivalent '/db/mycollection/catalog.xml'</para>
                 <para>
                     <example>
-                        <title>default OASIS catalog file</title>
-                        <programlisting format="linespecific"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
-    <public publicId="-//PLAY//EN" uri="entities/play.dtd"/>
-    <system systemId="play.dtd" uri="entities/play.dtd"/>
-    <system systemId="mondial.dtd" uri="entities/mondial.dtd"/>    
+                        <title>Default OASIS catalog file</title>
+                        <programlisting format="linespecific"><![CDATA[
+    <?xml version="1.0" encoding="UTF-8"?>
+    <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+        <public publicId="-//PLAY//EN" uri="entities/play.dtd"/>
+        <system systemId="play.dtd" uri="entities/play.dtd"/>
+        <system systemId="mondial.dtd" uri="entities/mondial.dtd"/>    
+        
+        <uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/>
+        
+        <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
+    	<uri name="http://www.w3.org/2001/XMLSchema" uri="entities/XMLSchema.xsd"/>
     
-    <uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/>
-    
-    <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
-	<uri name="http://www.w3.org/2001/XMLSchema" uri="entities/XMLSchema.xsd"/>
-
-    <uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" />
-</catalog>]]></programlisting>
+        <uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" />
+    </catalog>]]></programlisting>
                     </example>
                 </para>
             </section>
         </section>
 
         <section id="sect3">
-            <title>Implicit validation</title>
+            <title>Explicit validation</title>
+            <para>The database provides two extension functions to perform XML validation in an xquery:<itemizedlist>
+                    <listitem>
+                        <para>validate(...)</para>
+                    </listitem>
+                    <listitem>
+                        <para>validate-report(...)</para>
+                    </listitem>
+                </itemizedlist></para>
+            <para>The first function returns a simple <emphasis>true</emphasis> or
+                <emphasis>false</emphasis> while the second generates a XML validation report. Both
+                functions accept either one or two parameters:</para>
+            <itemizedlist>
+                <listitem>
+                    <para>validate($a) : Validate $a using the catalog used by the implicit
+                        validator.</para>
+                </listitem>
+                <listitem>
+                    <para>validate-report($a,$b) : Validate $a using $b.</para>
+                </listitem>
+            </itemizedlist>
+            <para>Explaination of parameters:</para>
+            <variablelist>
+                <varlistentry>
+                    <term>$a</term>
+
+                    <listitem>
+                        <para>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>xs:anyURI pointing to an XML resource (e.g.
+                                        'xmldb:exist:///db/mycollection/doc.xml')</para>
+                                </listitem>
+                                <listitem>
+                                    <para>node (element or document node)</para>
+                                </listitem>
+                            </itemizedlist>
+                        </para>
+                    </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                    <term>$b</term>
+
+                    <listitem>
+                        <para>xs:anyURI pointing to <itemizedlist>
+                                <listitem>
+                                    <para>an OASIS catalog xml-file (uri ends with ".xml")</para>
+                                </listitem>
+                                <listitem>
+                                    <para>a collection (uri ends with "/") inside the database; XSDs
+                                        and DTDs are resolved from this collection using
+                                    queries.</para>
+                                </listitem>
+                                <listitem>
+                                    <para> a grammar file (uri ends with ".xsd" or ".dtd")</para>
+                                </listitem>
+                            </itemizedlist>
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+
+            <example>
+                <title>Validation report</title>
+                <programlisting format="linespecific"><![CDATA[<report>
+    <status>invalid</status>
+    <time>62</time>
+    <message level="Error" line="12" column="15">cvc-complex-type.2.4.a: Invalid content was 
+    found starting with element 'name'. One of '{"http://jmvanel.free.fr/xsd/addressBook":cname}' is expected.</message>
+</report></exist>]]></programlisting>
+            </example>
         </section>
 
         <section id="sect4">
             <title>Grammar management</title>
+            <para/>
         </section>
 
         <section>
@@ -127,43 +200,43 @@
                 <example>
                     <title>namespace</title>
                     <programlisting format="linespecific"><![CDATA[
-<?xml version='1.0'?>
-<addressBook xmlns="http://jmvanel.free.fr/xsd/addressBook">
-    .....
-</addressBook>]]></programlisting>
+    <?xml version='1.0'?>
+    <addressBook xmlns="http://jmvanel.free.fr/xsd/addressBook">
+        .....
+    </addressBook>]]></programlisting>
                 </example>
 
                 <example>
                     <title>schemaLocation</title>
                     <programlisting format="linespecific"><![CDATA[
-<?xml version='1.0'?>
-<addressBook xsi:schemaLocation="http://jmvanel.free.fr/xsd/addressBook http://myshost/schema.xsd" 
-             xmlns="http://jmvanel.free.fr/xsd/addressBook" 
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    .....
-</addressBook>]]></programlisting>
+    <?xml version='1.0'?>
+    <addressBook xsi:schemaLocation="http://jmvanel.free.fr/xsd/addressBook http://myshost/schema.xsd" 
+                 xmlns="http://jmvanel.free.fr/xsd/addressBook" 
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        .....
+    </addressBook>]]></programlisting>
                 </example>
 
                 <example>
                     <title>noNamespaceSchemaLocation</title>
                     <para>Taken from: conf.xml</para>
                     <programlisting format="linespecific"><![CDATA[
-<?xml version='1.0'?>
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-       xsi:noNamespaceSchemaLocation="schema/conf.xsd">
-    .....
-</exist>]]></programlisting>
+    <?xml version='1.0'?>
+    <exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+           xsi:noNamespaceSchemaLocation="schema/conf.xsd">
+        .....
+    </exist>]]></programlisting>
                 </example>
 
                 <example>
                     <title>DTD DOCTYPE</title>
                     <para>Taken from 'samples/validation/dtd'.</para>
                     <programlisting format="linespecific"><![CDATA[
-<?xml version='1.0'?>
-<!DOCTYPE PLAY PUBLIC "-//VALIDATION//EN" "hamlet.dtd">
-<PLAY>
-...
-</PLAY>]]></programlisting>
+    <?xml version='1.0'?>
+    <!DOCTYPE PLAY PUBLIC "-//VALIDATION//EN" "hamlet.dtd">
+    <PLAY>
+        .....
+    </PLAY>]]></programlisting>
                 </example>
 
             </para>
