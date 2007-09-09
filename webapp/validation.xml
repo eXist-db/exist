@@ -143,8 +143,7 @@
                     <term>$a</term>
 
                     <listitem>
-                        <para>
-                            <itemizedlist>
+                        <para>XML document as <itemizedlist>
                                 <listitem>
                                     <para>xs:anyURI pointing to an XML resource (e.g.
                                         'xmldb:exist:///db/mycollection/doc.xml')</para>
@@ -198,11 +197,12 @@
                 grammar development) this cache must be cleared. There are two related functions
                 available: <itemizedlist>
                     <listitem>
-                        <para>show-grammar-cache() : returns an XML report about all
-                            cached grammar</para>
+                        <para>show-grammar-cache() : returns an XML report about all cached
+                        grammar</para>
                     </listitem>
                     <listitem>
-                        <para>clear-grammar-cache() : removes all cached grammar and returns the number of removed grammar</para>
+                        <para>clear-grammar-cache() : removes all cached grammar and returns the
+                            number of removed grammar</para>
                     </listitem>
                 </itemizedlist>
             </para>
@@ -258,7 +258,20 @@
 
         <section id="sect6">
             <title>Special notes</title>
-            <para>tomcat</para>
+            <para>
+                <itemizedlist>
+                    <listitem>
+                        <para>Tomcat has an long standing bug which makes it impossible to register
+                            a custom protocol handler (object URLStreamHandler) to the JVM. The
+                            alternative is to register the object with the system property
+                                <code>java.protocol.handler.pkgs</code> but this fails as well.</para>
+                        <para>The result is that the validation features are only partly useable.
+                            There are two altenatives however: (1) switch to a recent version of
+                            Jetty, or (2) use absolute URLs pointing the the rest interface, e.g.
+                                <code>http://localhost:8080/exist/rest/db/mycollection/schema.xsd</code>.</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
         </section>
     </chapter>
 </book>
