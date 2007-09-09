@@ -13,22 +13,24 @@ public class CollectionURI
 	
     private int hash; // Default to 0
 	
-    public CollectionURI(String uri)
+    public CollectionURI(String path)
     {
-    	append(uri);
+    	uri = new char[path.length()];
+        path.getChars(0, path.length(), uri, 0);
+        length = path.length();
     }
-    
+
 	public void append(final String segment)
 	{
 		if(uri == null)
 		{
 			uri = new char[segment.length() + 1];
 			uri[0] = FRAGMENT_SEPARATOR;
-			segment.getChars(1, segment.length(), uri, length+1);
+			segment.getChars(0, segment.length(), uri, 1);
 		}
 		else
 		{
-			char newURI[] = new char[uri.length + 1 + segment.length()];
+			char newURI[] = new char[length + 1 + segment.length()];
 			System.arraycopy(uri, 0, newURI, 0, length);
 			newURI[length] = FRAGMENT_SEPARATOR;
 			segment.getChars(0, segment.length(), newURI, length+1);
@@ -45,7 +47,7 @@ public class CollectionURI
 	{
 		char c;
 		int pos = length - 1;
-		while((c = uri[pos]) != FRAGMENT_SEPARATOR)
+		while(pos > -1 && (c = uri[pos]) != FRAGMENT_SEPARATOR)
 		{
 			pos--;
 		}
@@ -102,7 +104,7 @@ public class CollectionURI
 				int pos = length - 1;
 				while(pos > -1)
 				{
-					if(this.uri[pos] != otherCollectionURI.uri[pos])
+					if(this.uri[pos] != otherCollectionURI.uri[pos--])
 						return false;
 				}
 				
