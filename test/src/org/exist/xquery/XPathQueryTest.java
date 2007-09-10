@@ -1595,12 +1595,25 @@ public class XPathQueryTest extends XMLTestCase {
                     storeXMLStringAndGetQueryService("strings.xml", strings);
             
             String query =
-                    "declare variable $local:string external;" +
-                    "/test/string[. = $local:string]";
+                "declare variable $x external;" +
+                "$x";
             CompiledExpression expr = service.compile(query);
-            service.declareVariable("local:string", "Hello");
+            //Do not declare the variable...
+            boolean exceptionThrown = false;
+            try {
+            	service.execute(expr);
+            } catch (XMLDBException e) {
+            	exceptionThrown = true;
+            }
+            assertTrue("Expected XPTY0002", exceptionThrown);
             
-            ResourceSet result = service.execute(expr);
+         	query =
+                "declare variable $local:string external;" +
+                "/test/string[. = $local:string]";
+         	expr = service.compile(query);
+         	service.declareVariable("local:string", "Hello");
+        
+        ResourceSet result = service.execute(expr);
             
             XMLResource r = (XMLResource) result.getResource(0);
             Node node = r.getContentAsDOM();

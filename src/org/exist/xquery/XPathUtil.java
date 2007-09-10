@@ -76,7 +76,8 @@ public class XPathUtil {
     public final static Sequence javaObjectToXPath(Object obj, XQueryContext context, 
     		boolean expandChars) throws XPathException {
         if (obj == null)
-            return Sequence.EMPTY_SEQUENCE;
+            //return Sequence.EMPTY_SEQUENCE;
+        	return null;
         if (obj instanceof Sequence)
             return (Sequence) obj;
         else if (obj instanceof String) {
