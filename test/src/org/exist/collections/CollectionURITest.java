@@ -17,6 +17,11 @@ public class CollectionURITest {
         assertTrue(uri.equals(new CollectionURI("/db/test1/test2")));
 		assertEquals(uri.toString(), "/db/test1/test2");
         assertEquals(uri.hashCode(), new String("/db/test1/test2").hashCode());
+
+        uri = new CollectionURI("/db/system/config");
+        uri.append("/db/test");
+        assertEquals(uri.toString(), "/db/system/config/db/test");
+        assertTrue(uri.equals(new CollectionURI("/db/system/config/db/test")));
     }
 
     @Test
