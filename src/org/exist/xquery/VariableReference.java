@@ -47,9 +47,11 @@ public class VariableReference extends AbstractExpression {
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         Variable var = getVariable();
+        if (var == null)
+            throw new XPathException(getASTNode(), "XPDY0002 : variable '$" + qname + "' is not set.");
         if (!var.isInitialized())
-            throw new XPathException(getASTNode(), "XQST0054: variable declaration cannot " +
-                    "be executed because of a circularity.");
+            throw new XPathException(getASTNode(), "XQST0054: variable declaration of '$" + qname + "' cannot " +
+            "be executed because of a circularity.");
     }
     
 	/* (non-Javadoc)
@@ -67,7 +69,9 @@ public class VariableReference extends AbstractExpression {
         
 		Variable var = getVariable();
 		Sequence seq = var.getValue();
-        Sequence result = (seq == null) ? Sequence.EMPTY_SEQUENCE : seq;
+		if (seq == null)
+			throw new XPathException(getASTNode(), "XPDY0002 : undefined value for variable '$" + qname + "'");
+        Sequence result = seq;
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);

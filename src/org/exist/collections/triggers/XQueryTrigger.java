@@ -163,15 +163,17 @@ public class XQueryTrigger extends FilteringTrigger
         	context.declareVariable(bindingPrefix + "eventType", EVENT_TYPE_PREPARE);
         	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
         	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(documentName));
-        	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event))); 
+        	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
         	
-        	if(existingDocument instanceof BinaryDocument)
+        	if(existingDocument == null)
+        		context.declareVariable(bindingPrefix + "document", Sequence.EMPTY_SEQUENCE);
+        	else if (existingDocument instanceof BinaryDocument)
         	{
         		//binary document
         		BinaryDocument bin = (BinaryDocument)existingDocument;
                 byte[] data = context.getBroker().getBinaryResource(bin);
         		
-        		context.declareVariable(bindingPrefix + "document", new Base64Binary(data));
+                context.declareVariable(bindingPrefix + "document", new Base64Binary(data));
         	}
         	else
         	{

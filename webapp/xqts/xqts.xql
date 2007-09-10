@@ -274,17 +274,14 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case))
             {                           
                 for $input in $testCase/catalog:input-file
                 return
-                    <variable name="{$input/@variable}">
-                    {
-                        xqts:get-input-value($input)}</variable>,
-                        for $var in $testCase/catalog:input-query
-                        return
-                            <variable name="{$var/@variable}">
-                            {
-                                xqts:get-variable($testCase, $var/@name)
-                            }
-                            </variable>
-                    }
+                    <variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
+                for $var in $testCase/catalog:input-query
+                return
+                    <variable name="{$var/@variable}">{xqts:get-variable($testCase, $var/@name)}</variable>,
+                for $input in $testCase/catalog:input-URI
+                return
+                    <variable name="{$input/@variable}">{xs:anyURI(concat("/db/XQTS/TestSources/", $input))}</variable>
+            }
         </static-context>                   
     let $query := xqts:get-query($testCase)
     let $expectedResults := xqts:get-expected-results($testCase)

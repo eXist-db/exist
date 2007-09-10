@@ -1369,7 +1369,7 @@ public class XQueryTest extends XMLTestCase {
 			} catch (XMLDBException e) {
 				message = e.getMessage();				
 			}			
-			assertTrue(message.indexOf("is not bound") > -1);
+			assertTrue(message.indexOf("XPDY0002") > -1);
 			
 //			Non-heritance check
 			System.out.println("testModule 7: ========" );
@@ -1383,7 +1383,7 @@ public class XQueryTest extends XMLTestCase {
 			} catch (XMLDBException e) {
 				message = e.getMessage();				
 			}			
-			assertTrue(message.indexOf("is not bound") > -1);
+			assertTrue(message.indexOf("XPDY0002") > -1);
 			
 			System.out.println("testModule 8: ========" );
 			query = "xquery version \"1.0\";\n" 
