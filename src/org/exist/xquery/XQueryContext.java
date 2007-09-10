@@ -1004,7 +1004,7 @@ public class XQueryContext {
 	/**
      * The method <code>setPreserveNamespaces</code>
      *
-     * @param strip a <code>boolean</code> value
+     * @param preserve a <code>boolean</code> value
      */
     public void setPreserveNamespaces(final boolean preserve) {
 		this.preserveNamespaces = preserve;
