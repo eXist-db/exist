@@ -218,7 +218,7 @@ public class CollectionConfigurationManager {
     		return;
         synchronized (latch) {
             LOG.debug("Invalidating collection " + collectionPath);
-            configurations.remove(collectionPath.getRawCollectionPath());
+            configurations.remove(new CollectionURI(collectionPath.getRawCollectionPath()));
         }
     }
     
