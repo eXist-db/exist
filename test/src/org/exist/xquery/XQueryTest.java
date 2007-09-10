@@ -1212,7 +1212,7 @@ public class XQueryTest extends XMLTestCase {
 		}			
 	}
 
-	public void bugtestNamespaceWithTransform()
+	public void testNamespaceWithTransform()
 	{
 		try
 		{
@@ -1227,7 +1227,7 @@ public class XQueryTest extends XMLTestCase {
 				"};\n" +
 	
 				"declare variable $xslt {\n" +
-				"	<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">\n" +
+				"	<xsl:stylesheet xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">\n" +
 				"		<xsl:template match=\"node\">\n" +
 	            "			<div><xsl:value-of select=\".\"/></div>\n" +
 	            "		</xsl:template>\n" +
