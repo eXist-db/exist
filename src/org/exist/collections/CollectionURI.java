@@ -13,11 +13,11 @@ public class CollectionURI
 	
     private int hash; // Default to 0
 	
-    public CollectionURI(String path)
-    {
-    	uri = new char[path.length()];
-        path.getChars(0, path.length(), uri, 0);
-        length = path.length();
+    public CollectionURI(String path) {
+//    	uri = new char[path.length()];
+//        path.getChars(0, path.length(), uri, 0);
+//        length = path.length();
+        append(path);
     }
 
     public CollectionURI(CollectionURI other) {
@@ -29,22 +29,26 @@ public class CollectionURI
 
     public void append(final String segment)
 	{
-		if(uri == null)
+        int startOffset = 0;
+        if (segment.charAt(0) == FRAGMENT_SEPARATOR) {
+            startOffset = 1;
+        }
+        if(uri == null)
 		{
-			uri = new char[segment.length() + 1];
-			uri[0] = FRAGMENT_SEPARATOR;
-			segment.getChars(0, segment.length(), uri, 1);
+			uri = new char[segment.length() + 1 - startOffset];
+            uri[0] = FRAGMENT_SEPARATOR;
+			segment.getChars(startOffset, segment.length(), uri, 1);
 		}
 		else
 		{
-			char newURI[] = new char[length + 1 + segment.length()];
+            char newURI[] = new char[length + 1 + segment.length() - startOffset];
 			System.arraycopy(uri, 0, newURI, 0, length);
 			newURI[length] = FRAGMENT_SEPARATOR;
-			segment.getChars(0, segment.length(), newURI, length+1);
+			segment.getChars(startOffset, segment.length(), newURI, length+1);
 			uri = newURI;
 		}
 		
-		length += segment.length() + 1;
+		length += segment.length() + 1 - startOffset;
 		
 		//reset the cache
 		hash = 0;

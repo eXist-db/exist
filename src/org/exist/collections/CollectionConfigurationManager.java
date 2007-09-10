@@ -127,6 +127,7 @@ public class CollectionConfigurationManager {
 		} catch (LockException e) {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		}
+        debugCache();
     }
     
     /**
@@ -155,6 +156,7 @@ public class CollectionConfigurationManager {
 
         synchronized (latch) {
             while(!path.equals(COLLECTION_CONFIG_PATH)) {
+                LOG.debug(path);
                 conf = (CollectionConfiguration) configurations.get(path);
                 if (conf != null)
                     return conf;
