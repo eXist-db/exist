@@ -16,12 +16,13 @@ import module namespace shut="http://exist-db.org/xquery/admin-interface/shutdow
 import module namespace setup="http://exist-db.org/xquery/admin-interface/setup" at "setup.xqm";
 
 (: 
-    Display the version and user info in the top right corner 
+    Display the version, SVN revision and user info in the top right corner 
 :)
 declare function admin:info-header($user as xs:string) as element() {
     <div class="info">
         <ul>
-            <li>Version: {util:system-property("product-version")}</li>
+            <li>Version: { util:system-property( "product-version" ) }</li>
+            <li>SVN Revision: { util:system-property( "svn-revision" ) }</li>
             <li>Build: {util:system-property("product-build")}</li>
             <li>User: { $user}</li>
         </ul>
