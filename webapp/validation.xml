@@ -34,7 +34,7 @@
                         <para>Validation mode</para>
                     </listitem>
                     <listitem>
-                        <para>System catalog</para>
+                        <para>Catalog Entity Resolver</para>
                     </listitem>
                 </itemizedlist>
             </para>
@@ -56,8 +56,9 @@
                     the validation capabilities of the (Xerces) XML parser. The possible values are:</para>
                 <section>
                     <title>yes</title>
-                    <para>Switch on validation. All XML documents will be validated, if there is no
-                        grammar (XML schema, DTD) the document will always be rejected.</para>
+                    <para>Switch on validation. All XML documents will be validated. When the
+                        grammar (XML schema, DTD) documents cannot be resolverd, the document will
+                        be rejected.</para>
                 </section>
                 <section>
                     <title>no</title>
@@ -68,12 +69,12 @@
                     <title>auto (default)</title>
                     <para>Validation of an XML document will be performed based on the contents of
                         the document. When a document contains a reference to a grammar (XML schema
-                        or DTD), the parser tries to resolve this grammar and the XML document will
-                        be validated against this grammar, just like
-                        <emphasis>mode="yes"</emphasis>. If the grammar cannot be resolved, the XML
-                        document will be rejected. When the XML document does not contain a
-                        reference to a grammar, it will be parsed like
-                        <emphasis>mode="no"</emphasis>.</para>
+                        or DTD) document, the XML parser tries to resolve this grammar and the XML
+                        document will be validated against this grammar, just like
+                            <emphasis>mode="yes"</emphasis> is configured. If the grammar cannot be
+                        resolved, the XML document will be rejected. When the XML document does not
+                        contain a reference to a grammar, it will be parsed like
+                        <emphasis>mode="no"</emphasis> is configured.</para>
                 </section>
             </section>
 
@@ -133,7 +134,7 @@
             <itemizedlist>
                 <listitem>
                     <para>validate($a) : Validate $a using the same catalog as used by the implicit
-                        validator.</para>
+                        validation process.</para>
                 </listitem>
                 <listitem>
                     <para>validate-report($a,$b) : Validate $a using $b.</para>
@@ -167,12 +168,15 @@
                                     <para>an OASIS catalog xml-file (uri ends with ".xml")</para>
                                 </listitem>
                                 <listitem>
-                                    <para>a collection (uri ends with "/") inside the database; XSDs
-                                        and DTDs are resolved from this collection using
-                                    queries.</para>
+                                    <para> a grammar file (uri ends with ".xsd" or ".dtd")</para>
                                 </listitem>
                                 <listitem>
-                                    <para> a grammar file (uri ends with ".xsd" or ".dtd")</para>
+                                    <para>a collection (uri ends with "/") inside the database; XSDs
+                                        are directly queried using the appropriate namespace
+                                            (<code>"http://www.w3.org/2001/XMLSchema"</code>) while
+                                        the DTDs are resolved by querying OASIS XML catalog
+                                        documents (namespace
+                                            <code>urn:oasis:names:tc:entity:xmlns:xml:catalog</code>).</para>
                                 </listitem>
                             </itemizedlist>
                         </para>
@@ -194,20 +198,31 @@
         <section id="sect4">
             <title>Grammar management</title>
             <para>The XML parser (Xerces) compiles all grammar files (dtd, xsd) when they are used.
-                For efficiency reasons these compiled grammars are cached for reuse, this results in
-                a dramatic increase of validation speed. However under certain conditions (e.g.
+                For efficiency reasons these compiled grammars are cached for reuse, this results
+                into a dramatic increase of validation speed. However under certain conditions (e.g.
                 grammar development) this cache must be cleared. There are two related functions
                 available: <itemizedlist>
-                    <listitem>
-                        <para>show-grammar-cache() : returns an XML report about all cached
-                        grammar</para>
-                    </listitem>
                     <listitem>
                         <para>clear-grammar-cache() : removes all cached grammar and returns the
                             number of removed grammar</para>
                     </listitem>
+                    <listitem>
+                        <para>show-grammar-cache() : returns an XML report about all cached
+                        grammar</para>
+                    </listitem>
                 </itemizedlist>
             </para>
+            <example>
+                <title>Cached grammars Report</title>
+                <programlisting format="linespecific"><![CDATA[
+    <?xml version='1.0'?>
+    @@@]]></programlisting>
+            </example>
+        </section>
+
+        <section id="sect4a">
+            <title>Interactive Client</title>
+            <para>Commands on the interface</para>
         </section>
 
         <section id="sect5">
@@ -215,6 +230,8 @@
             <para>
                 <example>
                     <title>namespace</title>
+                    <para>Most simple reference to an XML schema. The xmlns info is used by the
+                        parser to resolve the grammar document.</para>
                     <programlisting format="linespecific"><![CDATA[
     <?xml version='1.0'?>
     <addressBook xmlns="http://jmvanel.free.fr/xsd/addressBook">
@@ -224,6 +241,11 @@
 
                 <example>
                     <title>schemaLocation</title>
+                    <para>xsi:schemaLocation provides additional information to the parser on how to
+                        resolve grammar file. According to the XML schema specifications this
+                        information is considered to be a hint and might be ignored. eXist will
+                        ignore this informaton, the grammar will be resolved like the previous
+                        example.</para>
                     <programlisting format="linespecific"><![CDATA[
     <?xml version='1.0'?>
     <addressBook xsi:schemaLocation="http://jmvanel.free.fr/xsd/addressBook http://myshost/schema.xsd" 
@@ -235,7 +257,8 @@
 
                 <example>
                     <title>noNamespaceSchemaLocation</title>
-                    <para>Taken from: conf.xml</para>
+                    <para>Taken from: conf.xml. The xsi:noNamespaceSchemaLocation is honoured by the
+                        parser.</para>
                     <programlisting format="linespecific"><![CDATA[
     <?xml version='1.0'?>
     <exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -246,7 +269,8 @@
 
                 <example>
                     <title>DTD DOCTYPE</title>
-                    <para>Taken from 'samples/validation/dtd'.</para>
+                    <para>Taken from 'samples/validation/dtd'. eXist resolves the grammar by
+                        searching catalog files for the PUBLIC identifier.</para>
                     <programlisting format="linespecific"><![CDATA[
     <?xml version='1.0'?>
     <!DOCTYPE PLAY PUBLIC "-//VALIDATION//EN" "hamlet.dtd">
@@ -271,6 +295,21 @@
                             There are two altenatives: (1) switch to a recent version of Jetty, or
                             (2) use absolute URLs pointing the the rest interface, e.g.
                                 <code>http://localhost:8080/exist/rest/db/mycollection/schema.xsd</code>.</para>
+                    </listitem>
+                    <listitem>
+                        <para>eXist heavily relies on the features as provided by the Xerces XML
+                            parser. By default eXist izPack installer provides all required jar
+                            files</para>
+                        <para>When eXist is installed in e.g. Tomcat the required parser libraries
+                            need to be copied from the lib/endorsed directory into the server
+                            'endorsed' @@@ directory.</para>
+                        <para>Required endorsed files: resolver-*.jar xalan-*.jar xml-apis.jar
+                            serializer-*.jar xercesImpl-*.jar</para>
+                    </listitem>
+                    <listitem>
+                        <para>@@To prevent potential deadlocks it is considered to be a good idea to
+                            store XML instance documents and grammar documents in seperate
+                            collections.</para>
                     </listitem>
                 </itemizedlist>
             </para>
