@@ -68,7 +68,7 @@ public class HTTPUtils {
 				// response servlet object is read from global variable $response
 				Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
 				
-				if (var != null) {
+				if (var != null && var.getValue() != null) {
 					JavaObjectValue value = (JavaObjectValue) var.getValue()
 							.itemAt(0);
 					if (value != null
@@ -83,7 +83,7 @@ public class HTTPUtils {
 				}
 			}
 		} catch (Exception e) {
-			LOG.debug(e);
+			LOG.debug(e.getMessage(), e);
 		}
 	}
     
