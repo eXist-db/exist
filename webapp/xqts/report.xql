@@ -187,7 +187,7 @@ declare function xqts:print-tests($collection as xs:string, $name as xs:string) 
 			<div id="tests">
 				<table>
 				{
-					for $case at $pos in xcollection($collection)//test-case
+					for $case at $pos in xmldb:xcollection($collection)//test-case
 					let $result := $case/@result
 					let $name := string($case/@name)
 					return

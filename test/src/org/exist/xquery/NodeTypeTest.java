@@ -114,7 +114,7 @@ public class NodeTypeTest extends TestCase {
 		// case, it calls the "create" function to have a new page created with the live body
 		// but with a "work" or "$target" header.
 		query.append("declare function f:prepare($data as node(), $target as xs:string) as xs:string? { \n");
-		query.append("    if (empty(xcollection($collection)/page[@version=$target])) then \n");
+		query.append("    if (empty(xmldb:xcollection($collection)/page[@version=$target])) then \n");
 		query.append("        let $root := xdb:collection(concat(\"xmldb:exist://\", $collection), 'admin', 'admin') \n");
 		query.append("        return xdb:store($root, concat($target, \".xml\"), f:create($data, $target)) \n");
 		query.append("    else \n");
@@ -122,7 +122,7 @@ public class NodeTypeTest extends TestCase {
 		query.append("}; \n");
 		
 		// Main clause, tries to create a work from an existing live version
-		query.append("let $live := xcollection($collection)/page[@version=\"live\"],\n");
+		query.append("let $live := xmldb:xcollection($collection)/page[@version=\"live\"],\n");
         query.append("     $log := util:log('DEBUG', $live),\n");
 		query.append("     $w := f:prepare($live, \"work\")\n");
 		query.append("    return\n");

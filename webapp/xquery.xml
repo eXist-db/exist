@@ -222,13 +222,13 @@
                     documents in the current XML:DB collection. However, four additional functions
                     are available to change this behavior: <command>doc()</command>, <command
                         moreinfo="none">xmldb:document()</command>, <command moreinfo="none"
-                    >collection()</command> and <command>xcollection()</command>. The
+                    >collection()</command> and <command>xmldb:xcollection()</command>. The
                         <command>collection()</command> and <command>doc()</command> functions are
-                    standard XQuery/XPath functions; whereas, <command>xcollection()</command> and
+                    standard XQuery/XPath functions; whereas, <command>xmldb:xcollection()</command> and
                         <command>xmldb:document()</command> are eXist-specific extensions.</para>
 
                 <para>Without an URI scheme, eXist interprets the arguments to
-                    <command>collection</command> and <command>doc</command> as absolute or relative
+                    <command>collection()</command> and <command>doc()</command> as absolute or relative
                     paths, leading to some collection or document within the database. For example:</para>
 
                 <synopsis>doc("/db/collection1/collection2/resource.xml)</synopsis>
@@ -256,7 +256,7 @@
                         query via different interfaces.</para>
                 </note>
 
-                <para>You can also pass a full URI to the <command>doc</command> function:</para>
+                <para>You can also pass a full URI to the <command>doc()</command> function:</para>
 
                 <synopsis>doc("http://localhost:8080/exist/servlet/db/test.xml")</synopsis>
 
@@ -278,7 +278,7 @@
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term>collection() / xcollection()</term>
+                        <term>collection() / xmldb:xcollection()</term>
                         <listitem>
                             <para>The <command moreinfo="none">collection()</command> function
                                 specifies the collection of documents to be included in the query
@@ -293,10 +293,10 @@
                                 >/db/test</filename>, <filename moreinfo="none"
                                 >/db/test/abc</filename> and <filename moreinfo="none"
                                 >/db/test/def</filename>.</para>
-                            <para>The function <command moreinfo="none">xcollection()</command> can
+                            <para>The function <command moreinfo="none">xmldb:xcollection()</command> can
                                 be used to change the behavior of <command moreinfo="none"
                                     >collection()</command>. For instance, the function call </para>
-                            <synopsis format="linespecific">xcollection('/db/test')//title</synopsis>
+                            <synopsis format="linespecific">xmldb:xcollection('/db/test')//title</synopsis>
                             <para>will ONLY include resources found in <filename moreinfo="none"
                                     >/db/test</filename>, but NOT in <filename moreinfo="none"
                                     >/db/test/abc</filename> or <filename moreinfo="none"
