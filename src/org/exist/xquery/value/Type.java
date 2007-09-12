@@ -199,23 +199,23 @@ public class Type {
 	static {
 		//TODO : use NODETYPES above ?
 		//TODO use parentheses after the nodes name  ?
-		defineBuiltInType(NODE, "node");
-		defineBuiltInType(ITEM, "item");
-		defineBuiltInType(EMPTY, "empty");
-		defineBuiltInType(NUMBER, "number");
+		defineBuiltInType(NODE, "node()");
+		defineBuiltInType(ITEM, "item()");
+		defineBuiltInType(EMPTY, "empty()");		
 
-		defineBuiltInType(ELEMENT, "element");
-		defineBuiltInType(DOCUMENT, "document");
-		defineBuiltInType(ATTRIBUTE, "attribute");
-		defineBuiltInType(TEXT, "text");
-		defineBuiltInType(PROCESSING_INSTRUCTION, "processing-instruction");
-		defineBuiltInType(COMMENT, "comment");
-		defineBuiltInType(NAMESPACE, "namespace");
-		defineBuiltInType(CDATA_SECTION, "cdata-section");
+		defineBuiltInType(ELEMENT, "element()");
+		defineBuiltInType(DOCUMENT, "document()");
+		defineBuiltInType(ATTRIBUTE, "attribute()");
+		defineBuiltInType(TEXT, "text()");
+		defineBuiltInType(PROCESSING_INSTRUCTION, "processing-instruction()");
+		defineBuiltInType(COMMENT, "comment()");
+		defineBuiltInType(NAMESPACE, "namespace()");
+		defineBuiltInType(CDATA_SECTION, "cdata-section()");
 
 		defineBuiltInType(JAVA_OBJECT, "object");
 		defineBuiltInType(FUNCTION_REFERENCE, "function");
-        
+		defineBuiltInType(NUMBER, "numeric");
+		
 		defineBuiltInType(ANY_TYPE, "xs:anyType");
 		//Duplicate definition : new one first
 		defineBuiltInType(ATOMIC, "xs:anyAtomicType");
@@ -298,8 +298,8 @@ public class Type {
 	 * @throws XPathException
 	 */
 	public final static int getType(String name) throws XPathException {
-		if (name.equals("node"))
-			return NODE;
+		//if (name.equals("node"))
+		//	return NODE;
 		int code = typeCodes.get(name);
 		if (code == Object2IntHashMap.UNKNOWN_KEY)
 			throw new XPathException("Type: " + name + " is not defined");
