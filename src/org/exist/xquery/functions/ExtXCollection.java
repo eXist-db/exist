@@ -27,6 +27,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
@@ -38,14 +39,13 @@ public class ExtXCollection extends ExtCollection {
 	public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("xcollection", Function.BUILTIN_FUNCTION_NS),
-            "Works like fn:collection, but does not include documents " +
-            "found in subcollections of the specified collections. This " +
-            "function is specific to eXist and will be moved into a seperate " +
-            "module in the near future.",
+            "Works like fn:collection(), but does not include documents " +
+            "found in sub-collections of the specified collections.",
             new SequenceType[] {
                  new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-            true);
+            true,
+            "Moved to the '" + XMLDBModule.NAMESPACE_URI + "' namespace.");
 				
 	/**
 	 * @param context

@@ -171,7 +171,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
 		query.append("declare variable $xupdate {");
 		query.append("<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">");
-		query.append("<xu:append select=\"xcollection('" + DBBroker.ROOT_COLLECTION + "')/XmlNodeTest\">");
+		query.append("<xu:append select=\"xmldb:xcollection('" + DBBroker.ROOT_COLLECTION + "')/XmlNodeTest\">");
 		query.append("{$data}");
 		query.append("</xu:append>");
 		query.append("</xu:modifications>");
