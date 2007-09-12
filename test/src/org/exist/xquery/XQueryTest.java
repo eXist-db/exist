@@ -1990,7 +1990,7 @@ public class XQueryTest extends XMLTestCase {
 		  "</xu:append>" +
 		"</xu:modifications>" +
 		"let $count := xmldb:update($coll , $xu)" +
-		"for $textNode in document('/db/xupdateTest.xml')/test/text()" +
+		"for $textNode in xmldb:document('/db/xupdateTest.xml')/test/text()" +
 		"	return <text id='{util:node-id($textNode)}'>{$textNode}</text>";
 		
 		try {
@@ -2030,7 +2030,7 @@ public class XQueryTest extends XMLTestCase {
 		"for $frame in $game/frame\n" +
 		"return update insert attribute points {4} into $frame\n" +
 		"};\n" +
-		"let $series := document('bowling.xml')/series\n" +
+		"let $series := xmldb:document('bowling.xml')/series\n" +
 		"let $nul1 := for $game in $series/game return local:update-game($game)\n" +
 		"return $series/game/stats\n";
 		

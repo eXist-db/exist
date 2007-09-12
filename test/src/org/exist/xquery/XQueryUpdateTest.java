@@ -126,7 +126,7 @@ public class XQueryUpdateTest extends TestCase {
             System.out.println("testing duplicate attribute ...");
             xquery.execute(query, null, AccessContext.TEST);
 
-            seq = xquery.execute("document('" + TEST_COLLECTION + "/attribs.xml')/test[@attr1 = 'eee']", null, AccessContext.TEST);
+            seq = xquery.execute("xmldb:document('" + TEST_COLLECTION + "/attribs.xml')/test[@attr1 = 'eee']", null, AccessContext.TEST);
             assertEquals(1, seq.getItemCount());
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
 

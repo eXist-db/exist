@@ -60,8 +60,8 @@ public class MultipleDatabases {
 		Collection collection2 = DatabaseManager.getCollection(URI_DB2, "admin", null);
 		loadFile(collection2, "samples/shakespeare/r_and_j.xml");
 		
-		doQuery(collection1, "document()//SPEECH[LINE &= 'cursed spite']");
-		doQuery(collection2, "document()//SPEECH[LINE&= 'love' and SPEAKER = 'JULIET']");
+		doQuery(collection1, "xmldb:document()//SPEECH[LINE &= 'cursed spite']");
+		doQuery(collection2, "xmldb:document()//SPEECH[LINE&= 'love' and SPEAKER = 'JULIET']");
 		
 		doXUpdate(collection1, XUPDATE_1);
 		doXUpdate(collection2, XUPDATE_1);

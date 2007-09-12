@@ -68,8 +68,8 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 			tempFile = DBUtils.generateXMLFile(500, 10, wordList);
 			DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
 	    
-			//String query0 = "document('" + DBBroker.ROOT_COLLECTION + "/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
-			//String query1 = "document()/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
+			//String query0 = "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/C1/R1.xml')/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
+			//String query1 = "xmldb:document()/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
 	        
 			addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 0, 200);
 			//addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50, 100, 200);

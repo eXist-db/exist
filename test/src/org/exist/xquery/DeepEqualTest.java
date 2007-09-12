@@ -95,13 +95,13 @@ public class DeepEqualTest extends TestCase {
 	public void testDocuments1() {
 		createDocument("test1", "<test key='value'>hello</test>");
 		createDocument("test2", "<test key='value'>hello</test>");
-		assertQuery(true, "deep-equal(document('test1'), document('test2'))");
+		assertQuery(true, "deep-equal(xmldb:document('test1'), xmldb:document('test2'))");
 	}
 	
 	public void testDocuments2() {
 		createDocument("test1", "<test key='value'>hello</test>");
 		createDocument("test2", "<notatest/>");
-		assertQuery(false, "deep-equal(document('test1'), document('test2'))");
+		assertQuery(false, "deep-equal(xmldb:document('test1'), xmldb:document('test2'))");
 	}
 	
 	public void testText1() {

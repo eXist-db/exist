@@ -169,7 +169,7 @@ public interface Expression {
 	 * Called to inform an expression that it should reset to its initial state. 
 	 * 
 	 * All cached data in the expression object should be dropped. For example,
-	 * the document() function calls this method whenever the input document
+	 * the xmldb:document() function calls this method whenever the input document
 	 * set has changed.
 	 */	
 	public void resetState();

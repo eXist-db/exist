@@ -530,7 +530,7 @@ DatabaseManager.registerDatabase(database1);
             <xdb:collection uri="xdb:exist:///db">
                 <xdb:execute>
                     <xdb:xpath>
-                        "document()//rdf:Description[dc:title" +
+                        "xmldb:document()//rdf:Description[dc:title" +
                         "&amp;='" + request.getParameter("title") + "']"
                     </xdb:xpath>
                     <p>Found <xdb:get-hit-count/> hits.</p>

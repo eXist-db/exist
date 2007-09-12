@@ -89,7 +89,7 @@ declare function md:publishers($publishers as element()*) as element()* {
             <th>Publisher:</th>
             <td>
             {
-                for $pub as xs:string at $pos in $publishers
+                for $pub as xs:string at $pos in $publishers/string()
                 return
                     if ($pos > 1) then ("; ", $pub) else $pub
             }
@@ -107,7 +107,7 @@ declare function md:subjects($subjects as element()*, $auth as xs:string?) as el
             <td>
             {
                 let $ordered := 
-                    for $s as xs:string in $subjects order by $s return $s
+                    for $s as xs:string in $subjects/string() order by $s return $s
                 for $topic at $pos in $ordered
                 return
                     if ($pos > 1) then ("; ", $topic) else $topic
