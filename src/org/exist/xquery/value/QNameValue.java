@@ -38,6 +38,7 @@ public class QNameValue extends AtomicValue {
 
 	private XQueryContext context;
 	private QName qname;
+	private String stringValue;
 
     /**
      * Constructs a new QNameValue by parsing the given name using
@@ -56,11 +57,13 @@ public class QNameValue extends AtomicValue {
 	    } catch (Exception e) {
 	    	throw new XPathException(e);
 	    }
+	    stringValue = computeStringValue();
     }
     
 	public QNameValue(XQueryContext context, QName name) {
 		this.context = context;
 		this.qname = name;
+		stringValue = computeStringValue();
 	}
 
 	/**
@@ -81,8 +84,15 @@ public class QNameValue extends AtomicValue {
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
-		String prefix = null;
-	    if(qname.needsNamespaceDecl()) {
+		//TODO : previous approach was to resolve the qname when needed. We now try to keep the original qname
+		return stringValue;
+	}
+		
+	private String computeStringValue() {
+		//TODO : previous approach was to resolve the qname when needed. We now try to keep the original qname
+		String prefix = qname.getPrefix();
+		//Not clear what to work with here...
+	    if((prefix == null || "".equals(prefix)) && qname.needsNamespaceDecl()) {
 	    	prefix = context.getPrefixForURI(qname.getNamespaceURI());
 			if (prefix != null)
 				qname.setPrefix(prefix);
@@ -90,6 +100,7 @@ public class QNameValue extends AtomicValue {
 				//	"namespace " + qname.getNamespaceURI() + " is not defined");
 			
 	    }
+	    //TODO : check that the prefix matches the URI in the current context ?
 		if (prefix != null && prefix.length() > 0)
 			return prefix + ':' + qname.getLocalName();
 		else 

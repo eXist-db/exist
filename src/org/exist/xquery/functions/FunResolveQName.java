@@ -72,6 +72,7 @@ public class FunResolveQName extends BasicFunction {
         if (qnameSeq.isEmpty()) {
             return EmptySequence.EMPTY_SEQUENCE;
         } else {
+        	context.pushInScopeNamespaces();        	        	
             String qnameString = args[0].getStringValue();
             if (QName.isQName(qnameString)) {
                 String prefix = QName.extractPrefix(qnameString);
@@ -88,7 +89,7 @@ public class FunResolveQName extends BasicFunction {
                     NodeSet ancestors = proxy.getAncestors(contextId, true);
                     for (Iterator i = ancestors.iterator(); i.hasNext();) {
                         proxy = (NodeProxy) i.next();
-                        ElementImpl e = (ElementImpl) proxy.getNode();
+                        ElementImpl e = (ElementImpl) proxy.getNode(); 
                         uri = findNamespaceURI(e, prefix);
                         if (uri != null) {
                             break;
@@ -117,6 +118,8 @@ public class FunResolveQName extends BasicFunction {
                 QNameValue result = new QNameValue(context, qn);
                 if (context.getProfiler().isEnabled()) 
                     context.getProfiler().end(this, "", result); 
+                
+                context.popInScopeNamespaces();
           
                 return result;
             } else {
@@ -133,14 +136,15 @@ public class FunResolveQName extends BasicFunction {
      * @param prefix a <code>String</code> value
      * @return a <code>String</code> value
      */
-    public static String findNamespaceURI(ElementImpl element, String prefix) {
+    public String findNamespaceURI(ElementImpl element, String prefix) {
         String namespaceURI = element.getNamespaceURI();
         if (namespaceURI != null && namespaceURI.length() > 0 && prefix.equals(element.getPrefix())) {
             return namespaceURI;
         }
         if (element.declaresNamespacePrefixes()) {
-            for (Iterator i = element.getPrefixes(); i.hasNext();) {
+            for (Iterator i = element.getPrefixes(); i.hasNext();) {            	
                 String elementPrefix = (String) i.next();
+                context.declareInScopeNamespace(elementPrefix, element.getNamespaceForPrefix(elementPrefix));
                 if (prefix.equals(elementPrefix)) {
                     return element.getNamespaceForPrefix(prefix);
                 }

@@ -99,6 +99,7 @@ public class FunQName extends BasicFunction {
 		QName qname = new QName(localName, namespace, prefix);
         if (prefix != null && namespace != null) {
             if (context.getURIForPrefix(prefix) == null) {
+            	//TOCHECK : context.declareInScopeNamespace(prefix, uri) ?            	
                 context.declareNamespace(prefix, namespace);
             }
 
