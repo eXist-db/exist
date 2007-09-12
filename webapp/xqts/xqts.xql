@@ -2,6 +2,7 @@ xquery version "1.0";
 
 declare namespace xqts="http://exist-db.org/xquery/xqts";
 declare namespace catalog="http://www.w3.org/2005/02/query-test-XQTSCatalog";
+declare namespace hack="http://exist-db.org/xquery/xqts/hacked-test-cases";
 
 declare namespace props="java:java.io.File";
 
@@ -212,7 +213,7 @@ declare function xqts:normalize-and-expand($text as item()*) as xs:string {
 
 declare function xqts:get-expected-results($testCase as element(catalog:test-case)) as element()* { 
     let $testName := $testCase/@name   
-    let $hackedTest := /hacked-test-cases/hacked-test-case[@name = $testName]    
+    let $hackedTest := /hack:test-cases/hack:test-case[@name = $testName]    
     return
     (
         for $output in $testCase/catalog:output-file
@@ -258,8 +259,8 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                 </expected-result>              
     ,
         (: due to a possible bug in the MemTreeBuilder, the parent element will be copied ! :) 
-        if (exists($hackedTest/expected-result)) then
-            $hackedTest/expected-result        
+        if (exists($hackedTest/hack:expected-result)) then
+            $hackedTest/hack:expected-result        
         else
             ()
     )
