@@ -1205,9 +1205,18 @@ public class XQueryTest extends XMLTestCase {
 			 the statically known namespaces. This feature provides a way 
 			 to remove predeclared namespace prefixes such as local.
 			 */
+                        
+			System.out.println("testNamespace 9: ========" );
+			query = "declare option exist:serialize 'indent=no';" +
+				"for $x in <parent4 xmlns=\"http://www.example.com/parent4\"><child4/></parent4> " +  
+				"return <new>{$x//*:child4}</new>";
+			result = service.query(query);
+            assertXMLEqual("<new><child4 xmlns='http://www.example.com/parent4'/></new>",
+            		((XMLResource)result.getResource(0)).getContent().toString());                     
 			
-		} catch (XMLDBException e) {
-			System.out.println("testNamespace : XMLDBException: "+e);
+		} catch (Exception e) {			
+			System.out.println("testNamespace : " + e);
+			e.printStackTrace();
 			fail(e.getMessage());
 		}			
 	}

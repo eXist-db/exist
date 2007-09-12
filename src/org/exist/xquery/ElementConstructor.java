@@ -157,12 +157,12 @@ public class ElementConstructor extends NodeConstructor {
 		// declare namespaces
 		if(namespaceDecls != null) {
 			for(int i = 0; i < namespaceDecls.length; i++) {
-				if ("".equals(namespaceDecls[i].getNamespaceURI())) {
+				//if ("".equals(namespaceDecls[i].getNamespaceURI())) {
 					// TODO: the specs are unclear here: should we throw XQST0085 or not?
-					context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
+				//	context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
 //					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
 //		        		throw new XPathException("XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
-				} else
+				//} else
 					context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
 			}
 		}
@@ -211,9 +211,14 @@ public class ElementConstructor extends NodeConstructor {
 			//Do we have the same result than Atomize there ? -pb
 			qn = QName.parse(context, qnitem.getStringValue());
 			//Use the default namespace if specified
+			/*
 		 	if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
 	 			qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
 	 		}
+	 		*/
+			if (qn.getPrefix() == null && context.inScopeNamespaces.get("") != null) {
+	 			qn.setNamespaceURI((String)context.inScopeNamespaces.get(""));
+	 		}			
 	 	}
 		
 		//Not in the specs but... makes sense

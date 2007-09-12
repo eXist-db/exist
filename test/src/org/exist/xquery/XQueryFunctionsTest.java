@@ -761,16 +761,26 @@ public class XQueryFunctionsTest extends TestCase {
     }
     
     public void testResolveQName() {
-      String query = "declare namespace a=\"aes\";" +
-        "declare namespace n=\"ns1\";" +
-        "declare variable $d {<c xmlns:x=\"ns1\"><d>x:test</d></c>};" +
-        "for $e in $d/d " +
-        "return fn:resolve-QName($e/text(), $e)";
-      
       try {
+          String query = "declare namespace a=\"aes\"; " +
+          "declare namespace n=\"ns1\"; " +
+          "declare variable $d := <c xmlns:x=\"ns1\"><d>x:test</d></c>; " +
+          "for $e in $d/d " +
+          "return fn:resolve-QName($e/text(), $e)";
+        
         ResourceSet result = service.query(query);
         String r = (String) result.getResource(0).getContent();
-        assertEquals("n:test", r);
+        assertEquals("x:test", r);
+        
+        query = "declare namespace a=\"aes\"; " +
+        	"declare namespace n=\"ns1\"; " +
+        	"declare variable $d := <c xmlns:x=\"ns1\"><d xmlns:y=\"ns1\">y:test</d></c>; " +
+        	"for $e in $d/d " +
+        	"return fn:resolve-QName($e/text(), $e)";
+        result = service.query(query);
+        r = (String) result.getResource(0).getContent();
+        assertEquals("y:test", r);        
+        
       } catch (XMLDBException e) {
         e.printStackTrace();
         fail(e.getMessage());
@@ -778,21 +788,45 @@ public class XQueryFunctionsTest extends TestCase {
     }
     
     public void testNamespaceURI() {
-        String query = "let $var := <a xmlns='aaa'/> " +
-        	"return " + 
-        	"$var[fn:namespace-uri() = 'aaa']/fn:namespace-uri()";
-        
         try {
+        	String query = "let $var := <a xmlns='aaa'/> " +
+        	"return " + 
+        	"$var[fn:namespace-uri() = 'aaa']/fn:namespace-uri()";        	
           ResourceSet result = service.query(query);
           String r = (String) result.getResource(0).getContent();
           assertEquals("aaa", r);
+          
+          query = "for $a in <test><a xmlns=\"aaa\"><b><c/></b></a></test>//* " +
+          	"return namespace-uri($a)";
+          result = service.query(query);
+          assertEquals(result.getSize(), 3);
+          r = (String) result.getResource(0).getContent();
+          assertEquals("aaa", r);
+          r = (String) result.getResource(1).getContent();
+          assertEquals("aaa", r);
+          r = (String) result.getResource(2).getContent();
+          assertEquals("aaa", r);
+         
         } catch (XMLDBException e) {
           e.printStackTrace();
           fail(e.getMessage());
         }
       }    
     
-    
+    public void testPrefixFromQName() {
+        try {
+        	String query = "declare namespace foo = \"http://example.org\"; " + 
+        		"declare namespace FOO = \"http://example.org\"; " + 
+        		"fn:prefix-from-QName(xs:QName(\"foo:bar\"))";        	
+          ResourceSet result = service.query(query);
+          String r = (String) result.getResource(0).getContent();
+          assertEquals("foo", r);         
+        
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }    
     
     
     public void testNodeName() {

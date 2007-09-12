@@ -131,16 +131,22 @@ public class XQueryContext {
     private static final HashMap moduleClasses = new HashMap();
     
 	// Static namespace/prefix mappings
-	protected HashMap namespaces = new HashMap();
+	protected HashMap staticNamespaces = new HashMap();
 	
 	// Local in-scope namespace/prefix mappings in the current context
 	protected HashMap inScopeNamespaces = new HashMap();
+	
+	// Inherited in-scope namespace/prefix mappings in the current context
+	protected HashMap inheritedInScopeNamespaces = new HashMap();	
 
 	// Static prefix/namespace mappings
-	protected HashMap prefixes = new HashMap();
+	protected HashMap staticPrefixes = new HashMap();
 	
 	// Local prefix/namespace mappings in the current context
 	protected HashMap inScopePrefixes = new HashMap();
+	
+	// Inherited prefix/namespace mappings in the current context
+	protected HashMap inheritedInScopePrefixes = new HashMap();	
 
 	// Local namespace stack
 	protected final Stack namespaceStack = new Stack();
@@ -321,14 +327,14 @@ public class XQueryContext {
         this(copyFrom.getAccessContext());
         this.broker = copyFrom.broker;
         loadDefaultNS();
-        Iterator prefixes = copyFrom.namespaces.keySet().iterator();
+        Iterator prefixes = copyFrom.staticNamespaces.keySet().iterator();
         while (prefixes.hasNext()) {
             String prefix = (String)prefixes.next();
             if (prefix.equals("xml") || prefix.equals("xmlns")) {
                 continue;
             }
             try {
-                declareNamespace(prefix,(String)copyFrom.namespaces.get(prefix));
+                declareNamespace(prefix,(String)copyFrom.staticNamespaces.get(prefix));
             } catch (XPathException ex) {
                 ex.printStackTrace();
             }
@@ -484,13 +490,13 @@ public class XQueryContext {
 			throw new XPathException("err:XQST0070: Namespace predefined prefix '" + prefix + "' can not be bound");
 		if (uri.equals(Namespaces.XML_NS))
 			throw new XPathException("err:XQST0070: Namespace URI '" + uri + "' must be bound to the 'xml' prefix");
-		final String prevURI = (String)namespaces.get(prefix);
+		final String prevURI = (String)staticNamespaces.get(prefix);
 		//This prefix was not bound
 		if(prevURI == null ) {
 			//Bind it
 			if (uri.length() > 0) {
-				namespaces.put(prefix, uri);
-				prefixes.put(uri, prefix);
+				staticNamespaces.put(prefix, uri);
+				staticPrefixes.put(uri, prefix);
 				return;
 			}
 			//Nothing to bind
@@ -507,8 +513,8 @@ public class XQueryContext {
 	            // if an empty namespace is specified, 
 	            // remove any existing mapping for this namespace
 	        	//TODO : improve, since XML_NS can't be unbound
-				prefixes.remove(uri);
-	            namespaces.remove(prefix);
+				staticPrefixes.remove(uri);
+	            staticNamespaces.remove(prefix);
 	            return;
 			}
 			//those prefixes can be rebound to different URIs
@@ -518,11 +524,11 @@ public class XQueryContext {
 				(prefix.equals("fn") && Namespaces.XPATH_FUNCTIONS_NS.equals(prevURI)) ||
 				(prefix.equals("local") && Namespaces.XQUERY_LOCAL_NS.equals(prevURI))) {
 
-				prefixes.remove(prevURI);
-				namespaces.remove(prefix);
+				staticPrefixes.remove(prevURI);
+				staticNamespaces.remove(prefix);
 				if (uri.length() > 0) {
-					namespaces.put(prefix, uri);
-					prefixes.put(uri, prefix);
+					staticNamespaces.put(prefix, uri);
+					staticPrefixes.put(uri, prefix);
 					return;
 				}
 				//Nothing to bind (not sure if it should raise an error though)
@@ -549,8 +555,8 @@ public class XQueryContext {
 				prefix = "";
 			if(uri == null)
 				uri = "";
-            namespaces.put(prefix, uri);
-			prefixes.put(uri, prefix);
+            staticNamespaces.put(prefix, uri);
+			staticPrefixes.put(uri, prefix);
 		}
 	}
 	
@@ -563,6 +569,10 @@ public class XQueryContext {
 	public void declareInScopeNamespace(String prefix, String uri) {
 		if (prefix == null || uri == null)
 			throw new IllegalArgumentException("null argument passed to declareNamespace");
+		if (inheritedInScopePrefixes.get(getURIForPrefix(prefix)) != null)
+			inheritedInScopePrefixes.remove(uri);	
+		if (inheritedInScopeNamespaces.get(prefix) != null)
+			inheritedInScopeNamespaces.remove(prefix);	
 		if (inScopeNamespaces == null)
 			inScopeNamespaces = new HashMap();
 		inScopePrefixes.put(uri, prefix);
@@ -695,14 +705,15 @@ public class XQueryContext {
 	 */
 	public String getURIForPrefix(String prefix) {
         // try in-scope namespace declarations
-       String uri = inScopeNamespaces == null
-			? null
-			: (String) inScopeNamespaces.get(prefix);
-       //TODO : search into inheritedInScopeNamespaces... if the settings allow to do so 
+       String uri = inScopeNamespaces == null ? null : (String) inScopeNamespaces.get(prefix);
        if (uri != null)
     	   return uri;
+       //TODO : test NS inheritance
+       uri = inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
+       if (uri != null)
+    	   return uri;       
       // Check global declarations
-      return (String)namespaces.get(prefix);
+      return (String)staticNamespaces.get(prefix);
       /* old code checked namespaces first
 		String ns = (String) namespaces.get(prefix);
 		if (ns == null)
@@ -721,12 +732,14 @@ public class XQueryContext {
          * is not registered.
 	 */
 	public String getPrefixForURI(String uri) {
-		String prefix = inScopePrefixes == null ? 
-			null : 
-			(String) inScopePrefixes.get(uri);
+		String prefix = inScopePrefixes == null ? null : (String) inScopePrefixes.get(uri);
 		if (prefix != null)
 			return prefix;
-		return (String) prefixes.get(uri);
+		//TODO : test the NS inheritance
+		prefix = inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);		
+		if (prefix != null)
+			return prefix;		
+		return (String) staticPrefixes.get(uri);
 	}
 
 	/**
@@ -736,8 +749,8 @@ public class XQueryContext {
 	 * @param uri
 	 */
 	public void removeNamespace(String uri) {
-		prefixes.remove(uri);
-		for (Iterator i = namespaces.values().iterator(); i.hasNext();) {
+		staticPrefixes.remove(uri);
+		for (Iterator i = staticNamespaces.values().iterator(); i.hasNext();) {
 			if (((String) i.next()).equals(uri)) {
 				i.remove();
 				return;
@@ -752,20 +765,33 @@ public class XQueryContext {
 				}
 			}
 		}
-		//TODO : remove also in inheritedInScopeNamespaces ?
+		//TODO : is this relevant ?
+		inheritedInScopePrefixes.remove(uri);
+		if (inheritedInScopeNamespaces != null) {
+			for (Iterator i = inheritedInScopeNamespaces.values().iterator(); i.hasNext();) {
+				if (((String) i.next()).equals(uri)) {
+					i.remove();
+					return;
+				}
+			}
+		}		
 	}
 
 	/**
 	 * Clear all user-defined prefix/namespace mappings.
 	 */
 	public void clearNamespaces() {
-		namespaces.clear();
-		prefixes.clear();
+		staticNamespaces.clear();
+		staticPrefixes.clear();
 		if (inScopeNamespaces != null) {
 			inScopeNamespaces.clear();
-			inScopePrefixes.clear();
-			//TODO : clear also inheritedInScopeNamespaces ?
+			inScopePrefixes.clear();			
 		}
+		//TODO : it this relevant ?
+		if (inheritedInScopeNamespaces != null) {
+			inheritedInScopeNamespaces.clear();
+			inheritedInScopePrefixes.clear();
+		}		
 		loadDefaults(broker.getConfiguration());
 	}
 
@@ -1576,30 +1602,39 @@ public class XQueryContext {
 		//TODO : push into an inheritedInScopeNamespaces HashMap... and return an empty HashMap		
 		HashMap m = (HashMap) inScopeNamespaces.clone();
 		HashMap p = (HashMap) inScopePrefixes.clone();
+		namespaceStack.push(inheritedInScopeNamespaces);
+		namespaceStack.push(inheritedInScopePrefixes);
 		namespaceStack.push(inScopeNamespaces);
 		namespaceStack.push(inScopePrefixes);
-		inScopeNamespaces = m;
-		inScopePrefixes = p;
+		//Current namespaces now become inherited just like the previous inherited ones
+		inheritedInScopeNamespaces = (HashMap)inheritedInScopeNamespaces.clone();
+		inheritedInScopeNamespaces.putAll(m);	
+		inheritedInScopePrefixes = (HashMap)inheritedInScopePrefixes.clone();
+		inheritedInScopePrefixes.putAll(p);
+		//TODO : consider dynamic instanciation
+		inScopeNamespaces = new HashMap();
+		inScopePrefixes = new HashMap();
 	}
 
 	public void popInScopeNamespaces() {
 		inScopePrefixes = (HashMap) namespaceStack.pop();
 		inScopeNamespaces = (HashMap) namespaceStack.pop();
-		//TODO : pop the inheritedInScopeNamespaces Hashmap
+		inheritedInScopePrefixes = (HashMap) namespaceStack.pop();
+		inheritedInScopeNamespaces = (HashMap) namespaceStack.pop();
 	}
 
 	public void pushNamespaceContext() {		
-		HashMap m = (HashMap) namespaces.clone();
-		HashMap p = (HashMap) prefixes.clone();
-		namespaceStack.push(namespaces);
-		namespaceStack.push(prefixes);
-		namespaces = m;
-		prefixes = p;
+		HashMap m = (HashMap) staticNamespaces.clone();
+		HashMap p = (HashMap) staticPrefixes.clone();		
+		namespaceStack.push(staticNamespaces);
+		namespaceStack.push(staticPrefixes);		
+		staticNamespaces = m;
+		staticPrefixes = p;
 	}
 	
 	public void popNamespaceContext() {
-		prefixes = (HashMap) namespaceStack.pop();
-		namespaces = (HashMap) namespaceStack.pop();
+		staticPrefixes = (HashMap) namespaceStack.pop();
+		staticNamespaces = (HashMap) namespaceStack.pop();
 	}
 	
 	/**
@@ -2225,8 +2260,8 @@ public class XQueryContext {
     protected void loadDefaultNS() {
         try {
 			// default namespaces
-			namespaces.put("xml", Namespaces.XML_NS);
-			prefixes.put(Namespaces.XML_NS, "xml");
+			staticNamespaces.put("xml", Namespaces.XML_NS);
+			staticPrefixes.put(Namespaces.XML_NS, "xml");
 			declareNamespace("xs", Namespaces.SCHEMA_NS);
 			declareNamespace("xsi", Namespaces.SCHEMA_INSTANCE_NS);
 			//required for backward compatibility
