@@ -190,7 +190,7 @@ public class TreeLevelOrderTest extends TestCase {
 		try {
 			StringBuffer query = new StringBuffer();
 			query.append("xquery version \"1.0\";");
-			query.append("let $survey := document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
+			query.append("let $survey := xmldb:document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
 			query.append("return ($survey)");
 				
 			service.declareVariable("document", document);

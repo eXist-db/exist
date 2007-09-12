@@ -26,6 +26,7 @@ import java.util.Arrays;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.functions.ExtDocument;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -90,7 +91,8 @@ public class XMLDBModule extends AbstractInternalModule {
                 new FunctionDef(XMLDBURIFunctions.signatures[1], XMLDBURIFunctions.class),
                 new FunctionDef(XMLDBURIFunctions.signatures[2], XMLDBURIFunctions.class),
                 new FunctionDef(XMLDBURIFunctions.signatures[3], XMLDBURIFunctions.class),
-                new FunctionDef(XMLDBGetMimeType.signature, XMLDBGetMimeType.class)
+                new FunctionDef(XMLDBGetMimeType.signature, XMLDBGetMimeType.class),
+                new FunctionDef(FunDocument.signature, FunDocument.class),
     };
 
     static {

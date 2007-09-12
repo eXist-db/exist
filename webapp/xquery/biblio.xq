@@ -69,7 +69,7 @@ as xs:string
 						local:filter-expr($term2, $field2, $mode2)),
 		$t := session:set-attribute("query", $expr)
     return
-        concat("for $r in document()//rdf:Description[",
+        concat("for $r in xmldb:document()//rdf:Description[",
             $expr, "] order by $r/",
             local:order-expr($orderby), " return $r")
 };
@@ -146,7 +146,7 @@ as element()
 declare function local:reorder($query as xs:string, $orderby as xs:string)
 as element()
 {
-	let $expr := concat("for $r in document()//rdf:Description[",
+	let $expr := concat("for $r in xmldb:document()//rdf:Description[",
 					$query, "] order by $r/", local:order-expr($orderby),
 					" return $r"),
 		$hits := util:eval($expr),

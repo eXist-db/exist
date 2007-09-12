@@ -45,6 +45,7 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -53,9 +54,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * Implements eXist's document() function.
- * 
- * This will be replaced by XQuery's fn:doc() function.
+ * Implements eXist's xmldb:document() function.
  * 
  * @author wolf
  */
@@ -76,7 +75,8 @@ public class ExtDocument extends Function {
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-			true);
+			true,
+			"Moved to the '" + XMLDBModule.NAMESPACE_URI + "' namespace since it conflicts with the XSLT 2.0 function.");
 
 	private List cachedArgs = null;
 	private Sequence cached = null;

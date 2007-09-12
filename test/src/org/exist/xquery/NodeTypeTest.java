@@ -167,7 +167,7 @@ public class NodeTypeTest extends TestCase {
 	private final Node load(XQueryService service, String document) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
-		query.append("let $result := document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
+		query.append("let $result := xmldb:document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
 		query.append("return ($result)");
 
 		try {

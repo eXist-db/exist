@@ -221,11 +221,11 @@
                     By default, database queries that use the XML:DB API will only process the
                     documents in the current XML:DB collection. However, four additional functions
                     are available to change this behavior: <command>doc()</command>, <command
-                        moreinfo="none">document()</command>, <command moreinfo="none"
+                        moreinfo="none">xmldb:document()</command>, <command moreinfo="none"
                     >collection()</command> and <command>xcollection()</command>. The
                         <command>collection()</command> and <command>doc()</command> functions are
                     standard XQuery/XPath functions; whereas, <command>xcollection()</command> and
-                        <command>document()</command> are eXist-specific extensions.</para>
+                        <command>xmldb:document()</command> are eXist-specific extensions.</para>
 
                 <para>Without an URI scheme, eXist interprets the arguments to
                     <command>collection</command> and <command>doc</command> as absolute or relative
@@ -265,16 +265,16 @@
 
                 <variablelist>
                     <varlistentry>
-                        <term>doc() / document()</term>
+                        <term>doc() / xmldb:document()</term>
                         <listitem>
                             <para>While <command>doc()</command> is restricted to a single
-                                document-URI argument, <command>document()</command> accepts
+                                document-URI argument, <command>xmldb:document()</command> accepts
                                 multiple document paths to be included into the input node set.
-                                Second, calling <command>document()</command> without an argument
+                                Second, calling <command>xmldb:document()</command> without an argument
                                 includes <emphasis>EVERY</emphasis> document node in the current
                                 database instance. Some examples:</para>
-                            <synopsis format="linespecific">document()//SPEAKER</synopsis>
-                            <synopsis format="linespecific">document('/db/test/abc.xml', '/db/test/def.xml')//title</synopsis>
+                            <synopsis format="linespecific">xmldb:document()//SPEAKER</synopsis>
+                            <synopsis format="linespecific">xmldb:document('/db/test/abc.xml', '/db/test/def.xml')//title</synopsis>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
@@ -392,9 +392,9 @@
                     <note>
                         <para>There is an important semantic difference between the following two
                             expressions:</para>
-                        <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
+                        <synopsis format="linespecific">xmldb:document()//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
                         <para>and</para>
-                        <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
+                        <synopsis format="linespecific">xmldb:document()//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
 
                         <para>The first expression selects all distinct <option>LINE</option> nodes
                             that contain both of the search terms. The second expression selects all
@@ -403,7 +403,7 @@
                             and should yield more results than the first one. To make the first
                             expression select the same nodes (at least, nearly the same nodes), you
                             would have to change the first expression to:</para>
-                        <synopsis format="linespecific">document()//SPEECH[. &amp;= "cursed spite"]</synopsis>
+                        <synopsis format="linespecific">xmldb:document()//SPEECH[. &amp;= "cursed spite"]</synopsis>
                         <para>Note, however, that this new expression will also include other nodes,
                             for instance <option>SPEAKER</option> or <option>STAGEDIR</option>,
                             which are children of the <option>SPEECH</option> parent node.</para>
@@ -432,7 +432,7 @@
                                     are ignored, and the function performs identically to the
                                     &amp;= operator. For example, with the following search
                                     expression:</para>
-                                <synopsis format="linespecific">document()//SPEECH[near(., 'love marriage', 25)</synopsis>
+                                <synopsis format="linespecific">xmldb:document()//SPEECH[near(., 'love marriage', 25)</synopsis>
                                 <para>the search engine will return any <option>SPEECH</option>
                                     elements containing the words "love" and "marriage" within the
                                     range of 25 words between them.</para>

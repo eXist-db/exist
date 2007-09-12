@@ -21,7 +21,7 @@ declare namespace atom="http://www.w3.org/2005/Atom";
             let $parts := tokenize($current-path,'/')
                for $i in (1 to count($parts)-1)
                    let $apath := string-join(subsequence($parts,1,$i),'/'),
-                       $feed := document(concat($apath,'/.feed.atom'))/atom:feed
+                       $feed := xmldb:document(concat($apath,'/.feed.atom'))/atom:feed
                      return if ($feed and not($feed/atom:category[concat(@scheme,@term)='http://www.atomojo.org/ontology/display' and @value='none']))
                        then (<entry>
                             {

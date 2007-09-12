@@ -45,10 +45,10 @@ public class DocumentUpdateTest extends TestCase {
 			String result = execQuery(query);
 			assertEquals(result, "0 false");
 			
-			System.out.println("-- TEST 2: document() function --");
+			System.out.println("-- TEST 2: xmldb:document() function --");
 			query = imports +
 	    		"declare function local:get-doc($path as xs:string) {\n" + 
-	    		"    document($path)\n" + 
+	    		"    xmldb:document($path)\n" + 
 	    		"};\n" +
 	    		"let $col := xdb:create-collection('/db', 'testup')\n" + 
 	    		"let $path := '/db/testup/test1.xml'\n" +

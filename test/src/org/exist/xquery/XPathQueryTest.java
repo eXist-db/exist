@@ -1507,7 +1507,7 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals("<string>Hello World!</string>", r.getContent().toString());
             
             // test with non-existing items
-            queryResource(	service, "strings.xml", "document()/blah[not(blah)]", 0);
+            queryResource(	service, "strings.xml", "xmldb:document()/blah[not(blah)]", 0);
             queryResource(service, "strings.xml", "//*[string][not(@value)]", 1);
             queryResource(service, "strings.xml", "//*[string][not(@blah)]", 1);
             queryResource(service, "strings.xml", "//*[blah][not(@blah)]", 0);

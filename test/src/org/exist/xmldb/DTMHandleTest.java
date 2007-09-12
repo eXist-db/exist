@@ -146,7 +146,7 @@ public class DTMHandleTest extends TestCase {
 	private final Node load(XQueryService service, String document) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
-		query.append("let $survey := document(concat('" + DBBroker.ROOT_COLLECTION + "', '/', $document))");
+		query.append("let $survey := xmldb:document(concat('" + DBBroker.ROOT_COLLECTION + "', '/', $document))");
 		query.append("return ($survey)");		
 		try {
 			service.declareVariable("document", document);

@@ -44,12 +44,12 @@ public class ResourceSetTest extends TestCase {
 		}
 
         // Currently (2003-04-02) fires an exception in FunPosition:
-        XPathPrefix = "document('" + DBBroker.ROOT_COLLECTION + "/test/shakes.xsl')/*/*"; // "document('" + DBBroker.ROOT_COLLECTION + "/test/macbeth.xml')/*/*";
+        XPathPrefix = "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/test/shakes.xsl')/*/*"; // "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/test/macbeth.xml')/*/*";
    		query1 = XPathPrefix + "[position()>=5 ]";
    		query2 = XPathPrefix + "[position()<=10]";
         expected = 87;
 // This validates OK:
-//   XPathPrefix = "document('" +  DBBroker.ROOT_COLLECTION + "/test/hamlet.xml')//LINE";
+//   XPathPrefix = "xmldb:document('" +  DBBroker.ROOT_COLLECTION + "/test/hamlet.xml')//LINE";
 //		query1 = XPathPrefix + "[ .&='funeral' ]";		// count=4
 //		query2 = XPathPrefix + "[.&='dirge']";		// count=1, intersection=1
 //		expected = 1;
