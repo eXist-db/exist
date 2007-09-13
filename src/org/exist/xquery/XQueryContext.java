@@ -202,6 +202,12 @@ public class XQueryContext {
 	 */
 	protected DocumentSet staticDocuments = null;
 	
+	/** 
+	 * The set of statically known documents specified as
+	 * an array of paths to documents and collections.
+	 */
+	protected XmldbURI[] staticCollections = null;	
+	
 	/**
 	 * The main database broker object providing access
 	 * to storage and indexes. Every XQuery has its own
