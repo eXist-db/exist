@@ -398,6 +398,11 @@ public class DocumentImpl extends NodeImpl implements Document {
         return node;
     }
 
+    public NodeImpl getLastAttr() {
+        if (nextAttr == 0)
+            return null;
+        return new AttributeImpl(this, nextAttr - 1);
+    }
     /*
      * (non-Javadoc)
      * 

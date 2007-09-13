@@ -67,8 +67,8 @@ public class NativeSerializer extends Serializer {
     public NativeSerializer(DBBroker broker, Configuration config) {
         super(broker, config);
     }
-
-    protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent)
+    
+    protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent, boolean checkAttributes)
     throws SAXException {
     	if(Type.subTypeOf(p.getType(), Type.DOCUMENT) || p.getNodeId() == NodeId.DOCUMENT_NODE) {
     			serializeToReceiver(p.getDocument(), generateDocEvent);
@@ -77,7 +77,7 @@ public class NativeSerializer extends Serializer {
     	setDocument(p.getDocument());
     	if (generateDocEvent) receiver.startDocument();
         Iterator domIter = broker.getNodeIterator(new StoredNode(p));
-        serializeToReceiver(null, domIter, p.getDocument(), true, p.getMatches(), new TreeSet());
+        serializeToReceiver(null, domIter, p.getDocument(), checkAttributes, p.getMatches(), new TreeSet());
         if (generateDocEvent) receiver.endDocument();
     }
     
