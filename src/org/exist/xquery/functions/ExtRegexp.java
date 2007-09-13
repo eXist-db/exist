@@ -76,7 +76,7 @@ public class ExtRegexp extends Function implements Optimizable {
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 			true,
             "This function is eXist-specific and should not be in the standard functions namespace. Please " +
-            "use text:match-all instead."
+            "use text:match-all() instead."
         );
 
 	protected int type = Constants.FULLTEXT_AND;

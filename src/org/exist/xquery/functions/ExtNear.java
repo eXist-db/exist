@@ -46,7 +46,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 /**
- * near() function.
+ * text:near() function.
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org> (July 31, 2002)
  */

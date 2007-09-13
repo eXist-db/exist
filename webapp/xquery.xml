@@ -444,31 +444,31 @@
                             </listitem>
                         </varlistentry>
                         <varlistentry>
-                            <term>match-all()/match-any()</term>
+                            <term>text:match-all()/text:match-any()</term>
                             <listitem>
                                 <para>These two functions are variations of the <command
                                         moreinfo="none">&amp;=</command> and <command
                                         moreinfo="none">|=</command> operators, and interpret their
                                     arguments as regular expressions. <emphasis>However</emphasis>,
                                     contrary to the <command>matches()</command> function in the
-                                    XQuery core library, <command>match-all()</command> and
-                                        <command>match-any()</command> try to match the regular
+                                    XQuery core library, <command>text:match-all()</command> and
+                                        <command>text:match-any()</command> try to match the regular
                                     expression argument against the keywords contained in the
                                     full-text index, but NOT against the entire text.</para>
                                 <para>For example, assume you have a document that contains the
                                     following paragraph:</para>
                                 <synopsis>&lt;para&gt;Peter lives in Frankfurt&lt;/para&gt;</synopsis>
                                 <para>Then the following expression:</para>
-                                <synopsis>match-all(para, "li[vf]e.?", "frank.*")</synopsis>
+                                <synopsis>text:match-all(para, "li[vf]e.?", "frank.*")</synopsis>
                                 <para>will match this paragraph because it contains two keywords
                                     matching the specified regular expression patterns.</para>
 
                                 <para>
-                                    <command moreinfo="none">match-all()</command> corresponds to
+                                    <command moreinfo="none">text:match-all()</command> corresponds to
                                         <command moreinfo="none">&amp;=</command> in that it
                                     will select context nodes with keywords matching
                                     <emphasis>ALL</emphasis> of the specified regular expressions.
-                                        <command moreinfo="none">match-any()</command> will select
+                                        <command moreinfo="none">text:match-any()</command> will select
                                     nodes with keywords matching <emphasis>ANY</emphasis> of the
                                     specified regular expression.</para>
 
@@ -476,15 +476,13 @@
                                     expression patterns, each keyword has to be specified as a
                                     separate argument, so the syntax looks like:</para>
 
-                                <synopsis format="linespecific">match-all(node-set, 'regexp' [, 'regexp' ...])</synopsis>
+                                <synopsis format="linespecific">text:match-all(node-set, 'regexp' [, 'regexp' ...])</synopsis>
 
                                 <note>
-                                    <para>Please note that the <command moreinfo="none"
-                                        >match-all()</command> and <command moreinfo="none"
-                                            >match-any()</command> functions will try to match the
+                                    <para>Please note that the <command moreinfo="none">text:match-any()</command> functions will try to match the
                                         regular expression against the entire keyword. For example,
                                         the expression</para>
-                                    <synopsis format="linespecific">//SPEECH[match-all(LINE, 'li[vf]e')]</synopsis>
+                                    <synopsis format="linespecific">//SPEECH[text:match-all(LINE, 'li[vf]e')]</synopsis>
                                     <para>will match 'live', 'life', but not 'lives'.</para>
                                     <para>eXist uses the <ulink
                                             url="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/package-summary.html"
@@ -1205,7 +1203,7 @@ example:echo(("Hello", "World!"))
 	            <para>Uses a single Transaction and Trigger events for the expressions enclosed in curly braces.</para>
             </section>            
 			<section id="pragma_exception-if-index-not-used">
-	            <title>pragma_force-index-use</title>
+	            <title>exist:force-index-use</title>
 				<para><b>For debugging purposes</b>. An expression that can be assisted by <i>range</i> or <i>QName</i> indexes - <b>comparisons</b>, <b>fn:matches()</b> - will raise an error if, for any reason, this assistance can not be performed.</para>
 				<para>This can help to check whether the indexes are correctly defined or not.</para>
 	            <synopsis>(# exist:force-index-use #) {
@@ -1213,6 +1211,21 @@ example:echo(("Hello", "World!"))
 	             }</synopsis>
 	            <para>Raises an error (currently <b>XPDYxxxx</b> since this kind of dynamic error is not yet defined by the XQuery specifications) if the general comparison doesn't use a <i>range</i> or a <i>QName</i> index.</para>
             </section>  
+            <section id="pragma_no-index-use">
+                <title>exist:no-index</title>                
+                <para>This prevents the query engine to use the index in expressions that can be assisted by <i>range</i> 
+                or <i>QName</i> indexes - <b>comparisons</b>, <b>fn:matches()</b> - . Useful if the searched value isn't very selective or if 
+                it is cheaper to traverse the previous step of a path expression than querying the index.</para>
+                <synopsis>(# exist:no-index #) {
+                    //group[. = "dba"]
+                 }</synopsis>
+            </section>  
+            <section id="pragma_optimize">
+                <title>exist:optimize</title>                
+                <para>This pragma is normally inserted automatically by the query rewriter (if enabled) to optimize
+                an expression that implements the <classname>org.exist.xquery.Optimizable</classname> interface.</para>
+                <synopsis>//((#exist:optimize#) { item[stock = 10] })</synopsis>
+            </section>                         
             <para>We will certainly add more pragma expressions in the near future. Among other things, pragmas are a 
                 good way to pass optimization hints to the query engine.</para>
         </section>
