@@ -1,6 +1,7 @@
 package org.exist.xquery;
 
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.net.BindException;
 import java.util.Iterator;
 import java.util.regex.Matcher;
@@ -16,6 +17,8 @@ import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xquery.value.DecimalValue;
+import org.exist.xquery.value.IntegerValue;
 import org.mortbay.util.MultiException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -1592,7 +1595,7 @@ public class XPathQueryTest extends XMLTestCase {
     public void testExternalVars() {
         try {
             XQueryService service =
-                    storeXMLStringAndGetQueryService("strings.xml", strings);
+            	storeXMLStringAndGetQueryService("strings.xml", strings);
             
             String query =
                 "declare variable $x external;" +
@@ -1613,15 +1616,61 @@ public class XPathQueryTest extends XMLTestCase {
          	expr = service.compile(query);
          	service.declareVariable("local:string", "Hello");
         
-        ResourceSet result = service.execute(expr);
+         	ResourceSet result = service.execute(expr);
             
             XMLResource r = (XMLResource) result.getResource(0);
             Node node = r.getContentAsDOM();
             if (node.getNodeType() == Node.DOCUMENT_NODE)
                 node = node.getFirstChild();
             assertEquals("string", node.getNodeName());
-        } catch (XMLDBException e) {
-            System.out.println("testExternalVars(): XMLDBException");
+            
+            
+            //Instanciate a new service to prevent variable reuse
+            //TODO : consider auto-reset ?
+            service = storeXMLStringAndGetQueryService("strings.xml", strings);
+            
+         	query =
+                "declare variable $local:string as xs:string external;" +
+                "$local:string";
+         	expr = service.compile(query);
+         	//TODO : we should virtually pass any kind of value
+         	service.declareVariable("local:string", new Integer(1));
+        
+         	exceptionThrown = false;
+         	String message = "";
+            try {
+            	service.execute(expr);
+            	System.out.println(query);
+            } catch (XMLDBException e) {
+            	e.printStackTrace();
+            	exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("XPTY0004") > -1);
+
+            service = storeXMLStringAndGetQueryService("strings.xml", strings);
+            
+         	query =
+                "declare variable $x as xs:integer external; " +
+                "$x";
+         	expr = service.compile(query);
+         	//TODO : we should virtually pass any kind of value
+         	service.declareVariable("x", "1");
+        
+         	exceptionThrown = false;
+         	message = "";
+            try {
+            	System.out.println(query);
+            	service.execute(expr);
+            } catch (XMLDBException e) {
+            	e.printStackTrace();
+            	exceptionThrown = true;
+                message = e.getMessage();                
+            }
+            assertTrue(message.indexOf("XPTY0004") > -1);
+            
+        } catch (Exception e) {
+            System.out.println("testExternalVars(): ");
             e.printStackTrace();
             fail(e.getMessage());
         }

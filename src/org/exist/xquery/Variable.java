@@ -94,8 +94,41 @@ public class Variable {
             return Type.ITEM;
     }
     
-    public void setSequenceType(SequenceType type) {
-        this.type = type;
+    public void setSequenceType(SequenceType type) throws XPathException {
+    	this.type = type;
+    	//Check the value's type if it is already assigned : happens with external variables    	
+    	if (getValue() != null) {
+            if (getSequenceType() != null) {
+                int actualCardinality;
+                if (getValue().isEmpty()) actualCardinality = Cardinality.EMPTY;
+                else if (getValue().hasMany()) actualCardinality = Cardinality.MANY;
+                else actualCardinality = Cardinality.ONE;                	
+            	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
+        		if (!Cardinality.checkCardinality(getSequenceType().getCardinality(), actualCardinality))
+    				throw new XPathException("XPTY0004: Invalid cardinality for variable $" + getQName() +
+    						". Expected " +
+    						Cardinality.getDescription(getSequenceType().getCardinality()) +
+    						", got " + Cardinality.getDescription(actualCardinality));
+        		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
+        		if (!Type.subTypeOf(getSequenceType().getPrimaryType(), Type.NODE)) {
+            		if (!getValue().isEmpty() && !Type.subTypeOf(getValue().getItemType(), getSequenceType().getPrimaryType()))
+        				throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
+        						". Expected " +
+        						Type.getTypeName(getSequenceType().getPrimaryType()) +
+        						", got " +Type.getTypeName(getValue().getItemType()));
+        		//Here is an attempt to process the nodes correctly
+        		} else {
+        			//Same as above : we probably may factorize 
+            		if (!getValue().isEmpty() && !Type.subTypeOf(getValue().getItemType(), getSequenceType().getPrimaryType()))
+        				throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
+        						". Expected " +
+        						Type.getTypeName(getSequenceType().getPrimaryType()) +
+        						", got " +Type.getTypeName(getValue().getItemType()));
+        			
+        		}
+            }
+    		
+    	}
     }
     
     public SequenceType getSequenceType() {
