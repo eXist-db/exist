@@ -841,20 +841,24 @@ public abstract class Serializer implements XMLReader {
 		}
 		receiver.endDocument();
 	}
-	
-	public void toReceiver(NodeProxy p) throws SAXException {
-	    serializeToReceiver(p, false);
+
+    public void toReceiver(NodeProxy p) throws SAXException {
+        toReceiver(p, true);
+    }
+
+    public void toReceiver(NodeProxy p, boolean checkAttributes) throws SAXException {
+	    serializeToReceiver(p, false, checkAttributes);
 	}
-	
-	protected abstract void serializeToReceiver(NodeProxy p, boolean generateDocEvent) throws SAXException;
-	
-	protected abstract void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent)
+
+    protected abstract void serializeToReceiver(NodeProxy p, boolean generateDocEvent, boolean checkAttributes) throws SAXException;
+
+    protected abstract void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent)
     throws SAXException;
 	
 	protected void serializeToReceiver(NodeValue v, boolean generateDocEvents)
 	throws SAXException {
 		if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
-			serializeToReceiver((NodeProxy)v, generateDocEvents);
+			serializeToReceiver((NodeProxy)v, generateDocEvents, true);
 		else
 			serializeToReceiver((org.exist.memtree.NodeImpl)v, generateDocEvents);
 	}

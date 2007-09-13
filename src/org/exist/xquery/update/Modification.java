@@ -22,8 +22,6 @@
  */
 package org.exist.xquery.update;
 
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfiguration;
@@ -31,13 +29,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.collections.triggers.TriggerStatePerThread;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeIndexListener;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
@@ -50,19 +42,12 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.xquery.AbstractExpression;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Expression;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
+import java.util.Iterator;
 
 /**
  * @author wolf
@@ -174,8 +159,11 @@ public abstract class Modification extends AbstractExpression
 					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
 						int last = builder.getDocument().getLastNode();
 						NodeProxy p = (NodeProxy) item;
-						serializer.toReceiver(p);
-						item = builder.getDocument().getNode(last + 1);
+						serializer.toReceiver(p, false);
+                        if (p.getNodeType() == Node.ATTRIBUTE_NODE)
+                            item = builder.getDocument().getLastAttr();
+                        else
+                            item = builder.getDocument().getNode(last + 1);
 					} else {
 						((org.exist.memtree.NodeImpl)item).deepCopy();
 					}
