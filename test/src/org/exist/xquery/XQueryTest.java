@@ -2121,7 +2121,7 @@ public class XQueryTest extends XMLTestCase {
     }
     
     // http://sourceforge.net/tracker/index.php?func=detail&aid=1691177&group_id=17691&atid=117691
-    public void bugtestAttribute_1691177(){
+    public void testAttribute_1691177(){
         
         String query="declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "
                 +"let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) "
