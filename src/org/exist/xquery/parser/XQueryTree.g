@@ -413,14 +413,19 @@ throws PermissionDeniedException, EXistException, XPathException
 				|
 				"external"
 				{
+				    Variable decl = null;
 					boolean isDeclared = false;
 					try {
-						isDeclared = context.resolveVariable(qname.getText()) != null;
+						decl = context.resolveVariable(qname.getText());
+						isDeclared = (decl != null);
 					} catch (XPathException ignoredException) {
 					}
 					
 					if (!isDeclared)
-						context.declareVariable(qname.getText(), null);
+                        decl = context.declareVariable(qname.getText(), null);
+                        
+                    if (decl != null)                        
+                        decl.setSequenceType(type);
 				}
 			)
 		)

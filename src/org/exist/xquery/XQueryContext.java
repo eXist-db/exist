@@ -1279,6 +1279,37 @@ public class XQueryContext {
 			var = new Variable(qn);
 			globalVariables.put(qn, var);
 		}
+
+        if (var.getSequenceType() != null) {
+            int actualCardinality;
+            if (val.isEmpty()) actualCardinality = Cardinality.EMPTY;
+            else if (val.hasMany()) actualCardinality = Cardinality.MANY;
+            else actualCardinality = Cardinality.ONE;                	
+        	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
+    		if (!Cardinality.checkCardinality(var.getSequenceType().getCardinality(), actualCardinality))
+				throw new XPathException("XPTY0004: Invalid cardinality for variable $" + var.getQName() +
+						". Expected " +
+						Cardinality.getDescription(var.getSequenceType().getCardinality()) +
+						", got " + Cardinality.getDescription(actualCardinality));
+    		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
+    		if (!Type.subTypeOf(var.getSequenceType().getPrimaryType(), Type.NODE)) {
+        		if (!val.isEmpty() && !Type.subTypeOf(val.getItemType(), var.getSequenceType().getPrimaryType()))
+    				throw new XPathException("XPTY0004: Invalid type for variable $" + var.getQName() +
+    						". Expected " +
+    						Type.getTypeName(var.getSequenceType().getPrimaryType()) +
+    						", got " +Type.getTypeName(val.getItemType()));
+    		//Here is an attempt to process the nodes correctly
+    		} else {
+    			//Same as above : we probably may factorize 
+        		if (!val.isEmpty() && !Type.subTypeOf(val.getItemType(), var.getSequenceType().getPrimaryType()))
+    				throw new XPathException("XPTY0004: Invalid type for variable $" + var.getQName() +
+    						". Expected " +
+    						Type.getTypeName(var.getSequenceType().getPrimaryType()) +
+    						", got " +Type.getTypeName(val.getItemType()));
+    			
+    		}
+        }
+		
 		//TODO : should we allow global variable *re*declaration ?
 		var.setValue(val);
 		return var;
