@@ -990,9 +990,12 @@ public class XQueryContext {
 		implicitTimeZone = null;			
         builder = new MemTreeBuilder(this);
 		builder.startDocument();
-		staticDocumentPaths = null;
-		staticDocuments = null;
-		lastVar = null;
+        if (!keepGlobals) {
+            // do not reset the statically known documents
+            staticDocumentPaths = null;
+            staticDocuments = null;
+        }
+        lastVar = null;
 		fragmentStack = new Stack();
 		callStack.clear();
         protectedDocuments = null;
