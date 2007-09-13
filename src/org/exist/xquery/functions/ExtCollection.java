@@ -39,6 +39,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -69,7 +70,8 @@ public class ExtCollection extends Function {
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays'. " +
 			"Documents contained in subcollections are also included.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
+				//Different from the offical specs
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 			true);
 
@@ -121,19 +123,24 @@ public class ExtCollection extends Function {
 		// build the document set
 		DocumentSet docs = new DocumentSet(521);
 	    try {
-			for (int i = 0; i < args.size(); i++) {
-				String next = (String)args.get(i);
-			    Collection coll = context.getBroker().getCollection(new AnyURIValue(next).toXmldbURI());            
-			    if(coll != null) {
-                    if (context.inProtectedMode())
-                        context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, docs);
-                    else
-                        coll.allDocs(context.getBroker(), docs, includeSubCollections, true, context.getProtectedDocs());
-                }
-            }
+	    	if (args.size() == 0) {
+	    		docs = context.getStaticallyKnownDocuments();
+	    	} else {
+				for (int i = 0; i < args.size(); i++) {
+					String next = (String)args.get(i);
+					XmldbURI uri = new AnyURIValue(next).toXmldbURI();
+				    Collection coll = context.getBroker().getCollection(uri);            
+				    if(coll != null) {
+	                    if (context.inProtectedMode())
+	                        context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, docs);
+	                    else
+	                        coll.allDocs(context.getBroker(), docs, includeSubCollections, true, context.getProtectedDocs());
+	                }
+	            }
+	    	}
         } catch (XPathException e) { //From AnyURIValue constructor
         	e.setASTNode(getASTNode());
-            throw e;
+            throw new XPathException("FODC0002: " + e.getMessage(), e);
         }
         // iterate through all docs and create the node set
 		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);
