@@ -53,6 +53,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.EmptySequence;
@@ -421,7 +422,12 @@ public class Eval extends BasicFunction {
 				NodeValue value = (NodeValue) elem.getFirstChild();
 				if (value instanceof ReferenceNode)
 					value = ((ReferenceNode) value).getReference();
-				innerContext.declareVariable(qname, value);
+				String type = elem.getAttribute("type");
+				if (type != null && Type.subTypeOf(Type.getType(type), Type.ATOMIC)) {
+					innerContext.declareVariable(qname, value.atomize().convertTo(Type.getType(type)));
+				} else {
+					innerContext.declareVariable(qname, value);
+				}				
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"output-size-limit".equals(child.getLocalName())) {
 				Element elem = (Element) child;
 				//TODO : error check
@@ -442,6 +448,17 @@ public class Eval extends BasicFunction {
 				if (elem.getAttribute("uri") != null) {		
 					innerContext.removeNamespace(elem.getAttribute("uri"));
 				}
+			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"staticallyKnownDocuments".equals(child.getLocalName())) {
+				Element elem = (Element) child;
+				//TODO : iterate over the children
+				NodeValue value = (NodeValue) elem.getFirstChild();
+				if (value instanceof ReferenceNode)
+					value = ((ReferenceNode) value).getReference();	
+				XmldbURI[] pathes = new XmldbURI[1];
+				//TODO : aggregate !
+				//TODO : cleanly seperate the statically know docollection and documents
+				pathes[0] = XmldbURI.create(value.getStringValue());
+				innerContext.setStaticallyKnownDocuments(pathes);
 			}
 		}
 	}
