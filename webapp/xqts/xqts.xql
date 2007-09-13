@@ -63,17 +63,27 @@ declare function xqts:initialize() as element() {
             xdb:store($collection, "XQTSCatalog.xml", 
                 xs:anyURI(xqts:path-to-uri(concat($xqtsHome, "XQTSCatalog.xml"))))
     let $sources0 := collection("/db/XQTS/TestSources")
+    let $sourceCol := xdb:create-collection("/db/XQTS", "TestSources")
+    let $collection1 := xdb:create-collection("/db/XQTS/TestSources", "collection1")
+    let $collection2 := xdb:create-collection("/db/XQTS/TestSources", "collection2")
     let $sources :=
         if ($sources0) then
             $sources0
         else
-            let $sourceCol := xdb:create-collection("/db/XQTS", "TestSources")
-            let $hackedTests := xdb:store($collection, "hacked-tests.xml",
+            xdb:store-files-from-pattern($sourceCol, concat($xqtsHome, "TestSources"), "*.xml", "text/xml")
+    let $docs := 
+        (
+            (: since XQTS URIs are resolved against /db/XQTS/TestSources :)
+            xdb:copy($sourceCol, "/db/XQTS/TestSources/collection1", "bib.xml"),
+            xdb:copy($sourceCol, "/db/XQTS/TestSources/collection1", "reviews.xml"),
+            xdb:copy($sourceCol, "/db/XQTS/TestSources/collection2", "bib.xml"),
+            xdb:copy($sourceCol, "/db/XQTS/TestSources/collection2", "reviews.xml"),
+            xdb:copy($sourceCol, "/db/XQTS/TestSources/collection2", "books.xml"),            
+            xdb:store($collection, "hacked-tests.xml",
                 xs:anyURI(xqts:path-to-uri(
                         concat("file:///", system:get-module-load-path(), "/hacked-tests.xml")
-                    )))                    
-            return
-                xdb:store-files-from-pattern($sourceCol, concat($xqtsHome, "TestSources"), "*.xml", "text/xml")
+                    ))) 
+        )   
     return
         $config
 };
@@ -193,10 +203,12 @@ declare function xqts:get-context-item($input as element(catalog:contextItem)?) 
 };
 
 declare function xqts:path-to-uri($path as xs:string) as xs:string {
-    if (starts-with($path, "/")) then
-        concat("file://", $path)
+    if (starts-with($path, "file:///")) then
+        replace($path, "\\", "/")
+    else if (starts-with($path, "/")) then
+        concat("file://", replace($path, "\\", "/"))
     else
-        concat("file:///", $path)
+        concat("file:///", replace($path, "\\", "/"))
 };
 
 declare function xqts:normalize-text($result as item()*) as xs:string {
@@ -278,10 +290,17 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case))
                     <variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
                 for $var in $testCase/catalog:input-query
                 return
-                    <variable name="{$var/@variable}">{xqts:get-variable($testCase, $var/@name)}</variable>,
+                    let $variable := xqts:get-variable($testCase, $var/@name)
+                    return
+                        <variable name="{$var/@variable}" type="{util:get-sequence-type($variable)}">{$variable}</variable>,
                 for $input in $testCase/catalog:input-URI
                 return
-                    <variable name="{$input/@variable}">{xs:anyURI(concat("/db/XQTS/TestSources/", $input))}</variable>
+                    <variable name="{$input/@variable}" type="xs:anyURI">{xs:anyURI(concat("/db/XQTS/TestSources/", $input))}</variable>
+            }
+            {
+                for $input in $testCase/catalog:defaultCollection
+                return
+                    <staticallyKnownDocuments>{concat("/db/XQTS/TestSources/", $input)}</staticallyKnownDocuments>
             }
         </static-context>                   
     let $query := xqts:get-query($testCase)
