@@ -62,6 +62,7 @@ public class FunctionFactory {
 		String uri = qname.getNamespaceURI();
 		Expression step = null;
 		if(uri.equals(Function.BUILTIN_FUNCTION_NS)) {
+			//TODO : move to text:near()
 			// near(node-set, string)
 			if (local.equals("near")) {
 				if (params.size() < 2)

@@ -80,8 +80,8 @@
                         <command>|=</command></para>
                     </listitem>
                     <listitem>
-                        <para>Main Functions: <function>match-all()</function>,
-                                <function>match-any()</function> and
+                        <para>Main Functions: <function>text:match-all()</function>,
+                                <function>text:match-any()</function> and
                         <function>near()</function></para>
                     </listitem>
                 </itemizedlist>
