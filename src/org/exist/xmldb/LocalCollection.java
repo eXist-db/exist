@@ -582,7 +582,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         try {
-            LOG.debug("removing " + resURI);
+            if (LOG.isDebugEnabled())
+                LOG.debug("removing " + resURI);
             
             broker = brokerPool.get(user);
             collection = broker.openCollection(path, Lock.WRITE_LOCK);
@@ -633,12 +634,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
     
     public void storeResource(Resource resource, Date a, Date b) throws XMLDBException {
         if (resource.getResourceType().equals("XMLResource")) {
-            LOG.debug("storing document " + resource.getId());
+            if (LOG.isDebugEnabled())
+                LOG.debug("storing document " + resource.getId());
             ((LocalXMLResource)resource).datecreated =a;
             ((LocalXMLResource)resource).datemodified =b;
             storeXMLResource((LocalXMLResource) resource);
         } else if (resource.getResourceType().equals("BinaryResource")) {
-            LOG.debug("storing binary resource " + resource.getId());
+            if (LOG.isDebugEnabled())
+                LOG.debug("storing binary resource " + resource.getId());
             ((LocalBinaryResource)resource).datecreated =a;
             ((LocalBinaryResource)resource).datemodified =b;
             storeBinaryResource((LocalBinaryResource) resource);
@@ -751,7 +754,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
         if ( res.getMimeType().equals("text/html") 
                 || res.getId().endsWith(".htm") || res.getId().endsWith(".html") ) {
             try {
-                LOG.debug("Converting HTML to XML using NekoHTML parser.");
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Converting HTML to XML using NekoHTML parser.");
                 Class clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
                 XMLReader htmlReader = (XMLReader) clazz.newInstance();
                 //do not modify the case of elements and attributes
