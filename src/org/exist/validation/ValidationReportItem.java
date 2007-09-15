@@ -33,6 +33,7 @@ public class ValidationReportItem {
     private String publicId = null;
     private String systemId = null; 
     private String message ="";
+    private int repeat=1;
     
     public void setType(int type){
         this.type=type;
@@ -102,6 +103,14 @@ public class ValidationReportItem {
         
         return (reportType
                 + " (" + lineNumber +","+ columnNumber + ") : " + message);
+    }
+    
+    public void increaseRepeat(){
+        repeat++;
+    }
+    
+    public int getRepeat(){
+        return repeat;
     }
 }
 

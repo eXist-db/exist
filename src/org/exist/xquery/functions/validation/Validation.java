@@ -256,6 +256,10 @@ public class Validation extends BasicFunction  {
             attribs.addAttribute("", "line", "line", "CDATA", Integer.toString(vri.getLineNumber()));
             attribs.addAttribute("", "column", "column", "CDATA", Integer.toString(vri.getColumnNumber()));
             
+            if(vri.getRepeat()>1){
+                attribs.addAttribute("", "repeat", "repeat", "CDATA", Integer.toString(vri.getRepeat()));
+            }
+            
             // write message
             builder.startElement("", "message", "message", attribs);
             builder.characters(vri.getMessage());
