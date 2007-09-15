@@ -130,6 +130,32 @@ public class TriggerConfigTest {
         }
     }
 
+    @Test
+    public void updateTriggers() {
+        try {
+            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", null);
+            IndexQueryService iqs = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+            iqs.configureCollection(EMPTY_COLLECTION_CONFIG);
+
+            Collection configCol =  DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", null);
+            Resource resource = configCol.createResource("collection.xconf", "XMLResource");
+            resource.setContent(COLLECTION_CONFIG);
+            configCol.storeResource(resource);
+
+            resource = root.createResource("data.xml", "XMLResource");
+            resource.setContent(DOCUMENT_CONTENT);
+            root.storeResource(resource);
+
+            XQueryService qs = (XQueryService) root.getService("XQueryService", "1.0");
+            ResourceSet result = qs.query("doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE']/string(@collection)");
+            assertEquals(1, result.getSize());
+            assertEquals(testCollection, result.getResource(0).getContent());
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
     @BeforeClass
     public static void initDB() {
         // initialize XML:DB driver
