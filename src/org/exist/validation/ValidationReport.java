@@ -40,6 +40,8 @@ public class ValidationReport implements ErrorHandler {
     
     private ArrayList validationReport = new ArrayList();
     
+    private ValidationReportItem lastItem;
+    
     private long duration = -1L;
     private long start = -1L;
     private long stop = -1L;
@@ -58,6 +60,25 @@ public class ValidationReport implements ErrorHandler {
         return vri;
     }
     
+    private void addItem(ValidationReportItem newItem) {
+        if (lastItem == null) {
+            // First reported item
+            validationReport.add(newItem);
+            lastItem = newItem;
+            
+        } else if (lastItem.getMessage().equals(newItem.getMessage())) {
+            // Message is repeated
+            lastItem.increaseRepeat();
+            
+        } else {
+            // Received new message
+            validationReport.add(newItem);
+
+            // Swap reported item
+            lastItem = newItem;
+        }
+    }
+    
     /**
      *  Receive notification of a recoverable error.
      * @param exception The warning information encapsulated in a
@@ -66,9 +87,7 @@ public class ValidationReport implements ErrorHandler {
      *                      exception.
      */
     public void error(SAXParseException exception) throws SAXException {
-        
-        validationReport.add( createValidationReportItem(ValidationReportItem.ERROR, exception) );
-        
+        addItem( createValidationReportItem(ValidationReportItem.ERROR, exception) );
     }
     
     /**
@@ -80,7 +99,7 @@ public class ValidationReport implements ErrorHandler {
      *                      exception.
      */
     public void fatalError(SAXParseException exception) throws SAXException {
-        validationReport.add( createValidationReportItem(ValidationReportItem.FATAL, exception) );
+        addItem( createValidationReportItem(ValidationReportItem.FATAL, exception) );
     }
     
     /**
@@ -92,7 +111,7 @@ public class ValidationReport implements ErrorHandler {
      *                      exception.
      */
     public void warning(SAXParseException exception) throws SAXException {
-        validationReport.add( createValidationReportItem(ValidationReportItem.WARNING, exception) );
+        addItem( createValidationReportItem(ValidationReportItem.WARNING, exception) );
     }
     
     
