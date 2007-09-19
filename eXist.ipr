@@ -361,9 +361,9 @@
     <library name="endorsed">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/endorsed/resolver-1.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/endorsed/serializer-2.9.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/endorsed/serializer-2.9.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/endorsed/xalan-2.7.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/endorsed/xercesImpl-2.9.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/endorsed/xercesImpl-2.9.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/endorsed/xml-apis.jar!/" />
       </CLASSES>
       <JAVADOC />
