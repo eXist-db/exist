@@ -36,7 +36,7 @@ import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.resolver.SearchResourceResolver;
-import org.exist.validation.resolver.StoredResourceResolver;
+import org.exist.validation.resolver.AnyUriResolver;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXNotRecognizedException;
@@ -205,7 +205,7 @@ public class Validator {
                 
                 // Just find the document using empty resolver
                 //eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
-                StoredResourceResolver resolver = new StoredResourceResolver(grammarPath);
+                AnyUriResolver resolver = new AnyUriResolver(grammarPath);
                 xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
 
             }
@@ -220,7 +220,7 @@ public class Validator {
             report.stop();
             
             if( ! report.isValid() ){
-                logger.debug( "Parse errors \n" + report.toString() )  ;
+                logger.debug( "Document is not valid.")  ;
             }
             
         } catch(ExistIOException ex){

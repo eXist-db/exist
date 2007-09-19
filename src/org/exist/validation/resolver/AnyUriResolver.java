@@ -31,22 +31,36 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.exist.protocolhandler.embedded.EmbeddedInputStream;
+import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
 
 /**
  *  Resolve a resource straight out of database.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class StoredResourceResolver implements XMLEntityResolver {
-    private final static Logger LOG = Logger.getLogger(StoredResourceResolver.class);
+public class AnyUriResolver implements XMLEntityResolver {
+    private final static Logger LOG = Logger.getLogger(AnyUriResolver.class);
     
-    private String docPath=null;
+    private String docPath;
+    private String parentURI;
+    
+    private boolean firstTime=true;
     
     /** Creates a new instance of StoredResourceResolver */
-    public StoredResourceResolver(String path) {
+    public AnyUriResolver(String path) {
         docPath=path;
         if(docPath.startsWith("/")){
             docPath="xmldb:exist://"+docPath;
+        }
+        LOG.debug("Specified path="+path);
+        
+        if(path.lastIndexOf('/')!=-1){
+            parentURI=path.substring(0, path.lastIndexOf('/'));
+            LOG.debug("parentURI="+parentURI);
+        } else {
+            parentURI="";
         }
     }
     
@@ -64,24 +78,40 @@ public class StoredResourceResolver implements XMLEntityResolver {
         LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
         
         String resourcePath=null;
+        String baseSystemId=null;
         
-        if(xri.getBaseSystemId()==null){
+        if(firstTime){
             // First time use constructor supplied path
             resourcePath = docPath;
-            // set expandedSystem=Id?
+            baseSystemId = parentURI;
+            firstTime=false;
             
         } else {
-            // subsequent steps
-            resourcePath = xri.getExpandedSystemId();
+            resourcePath=xri.getExpandedSystemId();
+            baseSystemId=xri.getBaseSystemId();
+//            baseSystemId=parentURI;
         }
         
         LOG.debug("resourcePath='"+resourcePath+"'");
         
-        // DWES set systemid?
         
-        InputStream is = new URL(resourcePath).openStream();
-        XMLInputSource retVal = new XMLInputSource(xri.getPublicId(), xri.getExpandedSystemId(),
-            xri.getBaseSystemId(), is, "UTF-8"); //UTF-8?
+        InputStream is = null;
+        if(resourcePath.startsWith("xmldb:")){
+            XmldbURL xmldbURL = new XmldbURL(resourcePath);
+            if(xmldbURL.isEmbedded()){
+                is = new EmbeddedInputStream( xmldbURL );
+                
+            } else {
+                is = new XmlrpcInputStream( xmldbURL );
+            } 
+
+        } else {
+            is = new URL(resourcePath).openStream();
+        }
+        
+        XMLInputSource retVal = new XMLInputSource(xri.getPublicId(), resourcePath,
+            baseSystemId, is, "UTF-8");
+        
         return retVal;
         
     }
