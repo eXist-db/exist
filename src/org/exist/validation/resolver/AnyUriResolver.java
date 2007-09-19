@@ -27,16 +27,20 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
+
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
+
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
 
 /**
- *  Resolve a resource straight out of database.
+ *  Resolve a resource specified by xs:anyURI. First time the
+ * resource is resolved by the URL as specified in the constructor, 
+ * the second the URL of the ExpandedSystemId is used.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
@@ -48,7 +52,7 @@ public class AnyUriResolver implements XMLEntityResolver {
     
     private boolean firstTime=true;
     
-    /** Creates a new instance of StoredResourceResolver */
+    /** Creates a new instance of AnyUriResolver */
     public AnyUriResolver(String path) {
         docPath=path;
         if(docPath.startsWith("/")){
