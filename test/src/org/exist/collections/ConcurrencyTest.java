@@ -25,8 +25,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ConcurrencyTest {
 
-    private static final int N_THREADS = 12;
-    private static final int DOC_COUNT = 1000; 
+    private static final int N_THREADS = 4;
+    private static final int DOC_COUNT = 100; 
 
     private static final int QUERY_COUNT = 20;
     
