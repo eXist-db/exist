@@ -369,8 +369,7 @@ public class RpcConnection extends Thread {
             if(result.hasErrors())
                 throw result.getException();
             result.queryTime = System.currentTimeMillis() - startTime;
-            connectionPool.resultSets.put(result.hashCode(), result);
-            return result.hashCode();
+            return connectionPool.resultSets.add(result);
         } finally {
             brokerPool.release(broker);
         }
@@ -989,7 +988,7 @@ public class RpcConnection extends Thread {
     }
     
     public int getHits(User user, int resultId) throws EXistException {
-        QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
+        QueryResult qr = connectionPool.resultSets.get(resultId);
         if (qr == null)
             throw new EXistException("result set unknown or timed out");
         qr.timestamp = System.currentTimeMillis();
@@ -1606,8 +1605,8 @@ public class RpcConnection extends Thread {
         }
         queryResult.result = resultSeq;
         queryResult.queryTime = (System.currentTimeMillis() - startTime);
-        connectionPool.resultSets.put(queryResult.hashCode(), queryResult);
-        ret.put("id", new Integer(queryResult.hashCode()));
+        int id = connectionPool.resultSets.add(queryResult);
+        ret.put("id", new Integer(id));
         ret.put("results", result);
         return ret;
     }
@@ -1683,8 +1682,8 @@ public class RpcConnection extends Thread {
         }
         queryResult.result = resultSeq;
         queryResult.queryTime = (System.currentTimeMillis() - startTime);
-        connectionPool.resultSets.put(queryResult.hashCode(), queryResult);
-        ret.put("id", new Integer(queryResult.hashCode()));
+        int id = connectionPool.resultSets.add(queryResult);
+        ret.put("id", new Integer(id));
         ret.put("results", result);
         return ret;
     }
@@ -1805,8 +1804,7 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            QueryResult qr = (QueryResult) connectionPool.resultSets
-                    .get(resultId);
+            QueryResult qr = connectionPool.resultSets.get(resultId);
             if (qr == null)
                 throw new EXistException("result set unknown or timed out");
             qr.timestamp = System.currentTimeMillis();
@@ -1833,8 +1831,7 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            QueryResult qr = (QueryResult) connectionPool.resultSets
-                    .get(resultId);
+            QueryResult qr = connectionPool.resultSets.get(resultId);
             if (qr == null)
                 throw new EXistException("result set unknown or timed out");
             qr.timestamp = System.currentTimeMillis();
@@ -2336,7 +2333,7 @@ public class RpcConnection extends Thread {
     }
     
     public Hashtable summary(User user, int resultId) throws EXistException, XPathException {
-        QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
+        QueryResult qr = connectionPool.resultSets.get(resultId);
         if (qr == null)
             throw new EXistException("result set unknown or timed out");
         qr.timestamp = System.currentTimeMillis();
@@ -2483,7 +2480,6 @@ public class RpcConnection extends Thread {
     }
     
     /**
-     * @param user
      * @param start
      * @param end
      * @param broker
