@@ -221,7 +221,9 @@
             <classpath refid="classpath.junit"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <test fork="yes" name="org.exist.xmlrpc.XmlRpcTest" todir="${junit.reports.dat}"/>
+
+            <test fork="yes" name="org.exist.xmlrpc.AllXmlRpcTests" todir="${junit.reports.dat}"/>
+
             <test fork="yes" name="org.exist.xmldb.XmldbRemoteTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.XqueryRemoteTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.http.RESTServiceTest" todir="${junit.reports.dat}"/>

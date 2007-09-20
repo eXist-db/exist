@@ -11,11 +11,11 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
-import org.xmldb.api.modules.XQueryService;
-import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.base.CompiledExpression;
-import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XQueryService;
 
 import javax.xml.transform.OutputKeys;
 import java.io.File;
@@ -68,7 +68,7 @@ public class TestDataGenerator {
                 generatedFiles[i] = File.createTempFile(prefix, ".xml");
 
                 context.declareVariable("filename", generatedFiles[i].getName());
-                context.declareVariable("count", new IntegerValue(i));
+                context.declareVariable("count", new Integer(i));
                 Sequence results = service.execute(compiled, Sequence.EMPTY_SEQUENCE);
 
                 Serializer serializer = broker.getSerializer();
@@ -104,7 +104,7 @@ public class TestDataGenerator {
                 generatedFiles[i] = File.createTempFile(prefix, ".xml");
 
                 service.declareVariable("filename", generatedFiles[i].getName());
-                service.declareVariable("count", new IntegerValue(i));
+                service.declareVariable("count", new Integer(i));
                 ResourceSet result = service.execute(compiled);
 
                 Writer out = new OutputStreamWriter(new FileOutputStream(generatedFiles[i]), "UTF-8");
