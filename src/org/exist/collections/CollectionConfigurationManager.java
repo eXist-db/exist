@@ -161,8 +161,6 @@ public class CollectionConfigurationManager {
                 path.removeLastSegment();
             }
         }
-        if (LOG.isTraceEnabled())
-            LOG.trace("Reading collection configuration for '" + collection.getURI() + "' from index configuration");
         // use default configuration
         return defaultConfig;
     }
