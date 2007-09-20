@@ -1595,9 +1595,7 @@ public class RpcServer implements RpcAPI {
 
     class ConnectionPool {
 
-        public final static int CHECK_INTERVAL = 5000;
-
-        public final static int TIMEOUT = 180000;
+        public final static int CHECK_INTERVAL = 2000;
 
         protected Configuration conf;
 
@@ -1609,7 +1607,7 @@ public class RpcServer implements RpcAPI {
 
         protected int min = 0;
 
-        protected Int2ObjectHashMap resultSets = new Int2ObjectHashMap(128);
+        protected QueryResultCache resultSets = new QueryResultCache();
 
         protected Stack pool = new Stack();
 
@@ -1628,14 +1626,7 @@ public class RpcServer implements RpcAPI {
         }
 
         private void checkResultSets() {
-            for (Iterator i = resultSets.valueIterator(); i.hasNext();) {
-                final QueryResult qr = (QueryResult) i.next();
-                long ts = ((QueryResult) qr).timestamp;
-                if (System.currentTimeMillis() - ts > TIMEOUT) {
-                    LOG.debug("releasing result set " + qr.hashCode());
-                    i.remove();
-                }
-            }
+            resultSets.checkTimestamps();
         }
 
         protected RpcConnection createConnection() {
