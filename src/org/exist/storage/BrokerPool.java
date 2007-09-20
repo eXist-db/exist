@@ -1354,7 +1354,7 @@ public class BrokerPool {
     // WM: same as above: no other broker is active while we are calling this 
     //TODO : make it protected ?
     private void processWaitingTasks(DBBroker broker) {
-        while (!waitingSystemTasks.isEmpty()) {
+        while (waitingSystemTasks != null && !waitingSystemTasks.isEmpty()) {
             SystemTask task = (SystemTask) waitingSystemTasks.pop();
             runSystemTask(broker, task);
         }
@@ -1485,7 +1485,7 @@ public class BrokerPool {
         scheduler = null;
         systemTasks = null;
         systemTasksPeriods = null;
-        waitingSystemTasks = null;
+        waitingSystemTasks.clear();
         xmlReaderPool = null;
         shutdownListener = null;
         securityManager = null;
