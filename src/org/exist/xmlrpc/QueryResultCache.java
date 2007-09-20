@@ -47,11 +47,13 @@ public class QueryResultCache {
     }
 
     public void checkTimestamps() {
+        final long now = System.currentTimeMillis();
         for (int i = 0; i < results.length; i++) {
             QueryResult result = results[i];
             if (result != null) {
-                if (System.currentTimeMillis() - result.getTimestamp() > TIMEOUT) {
-                    LOG.debug("Removing result set " + new Date(result.getTimestamp()).toString());
+                if (now - result.getTimestamp() > TIMEOUT) {
+                    if (LOG.isDebugEnabled())
+                        LOG.debug("Removing result set " + new Date(result.getTimestamp()).toString());
                     results[i] = null;
                 }
             }
