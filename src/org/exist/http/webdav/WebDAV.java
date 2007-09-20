@@ -131,10 +131,15 @@ public class WebDAV {
         if(path.endsWith("/"))
             path = path.substring(0, path.length() - 1);
         
-        LOG.debug("method='" + request.getMethod() + "'; path='" + path 
-                + "'; user='"+user.getName()
-                + "'; Lock-Token='" + request.getHeader("Lock-Token")
-                + "'; If='"+request.getHeader("If")+"'");
+        if(LOG.isDebugEnabled()){
+            LOG.debug("method='" + request.getMethod() + "'; path='" + path 
+                    + "'; user='"+user.getName()
+                    + "'; Lock-Token='" + request.getHeader("Lock-Token")
+                    + "'; If='"+request.getHeader("If")+"'");
+        }
+        
+        // for debugging webdav
+        long start=System.currentTimeMillis();
                 
         WebDAVMethod method = factory.create(request.getMethod(), pool);
         if(method == null) {
@@ -142,10 +147,18 @@ public class WebDAV {
                     "Method is not supported: " + request.getMethod());
             return;
         }
+        
         try {
         	method.process(user, request, response, XmldbURI.xmldbUriFor(path));
+            
         } catch (URISyntaxException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            
+        } finally {
+            // for debugging webdav
+            if(LOG.isDebugEnabled()){
+                LOG.debug("Completed in "+(System.currentTimeMillis()-start)+" msecs.");
+            }
         }
         	
     }
