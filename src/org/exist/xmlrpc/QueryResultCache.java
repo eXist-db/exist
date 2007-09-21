@@ -39,11 +39,14 @@ public class QueryResultCache {
     }
 
     public QueryResult get(int pos) {
+        if (pos < 0 || pos >= results.length)
+            return null;
         return results[pos];
     }
 
     public void remove(int pos) {
-        results[pos] = null;
+        if (pos > -1 && pos < results.length)
+            results[pos] = null;
     }
 
     public void checkTimestamps() {
