@@ -76,6 +76,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     final static String PREFIX                              = HTTPClientModule.PREFIX;
     final static String HTTP_MODULE_PERSISTENT_COOKIES      = HTTPClientModule.HTTP_MODULE_PERSISTENT_COOKIES;
     
+    final static String HTTP_EXCEPTION_STATUS_CODE          = "500";
+    
     
     public BaseHTTPClientFunction( XQueryContext context, FunctionSignature signature )
     {
@@ -122,6 +124,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     protected Sequence doRequest( XQueryContext context, HttpMethod method, boolean persistCookies ) throws IOException, XPathException
     {
         int statusCode = 0;
+        Sequence encodedResponse = null;
         
         //use existing cookies?
         if( persistCookies ) {
@@ -149,23 +152,24 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             
             //perform the request
             statusCode = http.executeMethod( method );
+            
+            encodedResponse = encodeResponseAsXML( context, method, statusCode );
+            
+            //persist cookies?
+            if( persistCookies ) {
+                //store/update cookies
+                HttpState state             = http.getState();
+                Cookie[] incomingCookies    = state.getCookies();
+                Cookie[] currentCookies     = (Cookie[])context.getXQueryContextVar( HTTP_MODULE_PERSISTENT_COOKIES );
+                
+                context.setXQueryContextVar( HTTP_MODULE_PERSISTENT_COOKIES, mergeCookies( currentCookies, incomingCookies ) );
+            }
         }
         catch( Exception e ) {
-            e.printStackTrace();
-            System.err.println( e.getMessage() );
+            encodedResponse = encodeErrorResponse( context, e.getMessage() );
         }
         
-        //persist cookies?
-        if( persistCookies ) {
-            //store/update cookies
-            HttpState state             = http.getState();
-            Cookie[] incomingCookies    = state.getCookies();
-            Cookie[] currentCookies     = (Cookie[])context.getXQueryContextVar( HTTP_MODULE_PERSISTENT_COOKIES );
-            
-            context.setXQueryContextVar( HTTP_MODULE_PERSISTENT_COOKIES, mergeCookies( currentCookies, incomingCookies ) );
-        }
-        
-        return( encodeResponseAsXML( context, method, statusCode ) );
+        return( encodedResponse );
     }
     
     
@@ -178,7 +182,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * 
      * @return The data in XML format
      */
-    private Sequence encodeResponseAsXML( XQueryContext context, HttpMethod method, int statusCode ) throws IOException, XPathException
+    private Sequence encodeResponseAsXML( XQueryContext context, HttpMethod method, int statusCode ) throws XPathException, IOException
     {
         Sequence    xmlResponse     = null;
         
@@ -210,6 +214,40 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             
             builder.endElement();
         }
+        
+        builder.endElement();
+        
+        xmlResponse = (NodeValue)builder.getDocument().getDocumentElement();
+        
+        return( xmlResponse );
+    }
+    
+    
+    /**
+    * Takes an exception message and encodes it as an XML response structure.
+    * 
+    * @param context       The context of the calling XQuery
+    * @param message       The exception error message
+    * 
+    * @return The response in XML format
+    */
+    private Sequence encodeErrorResponse( XQueryContext context, String message ) throws IOException, XPathException
+    {
+        Sequence    xmlResponse     = null;
+        
+        MemTreeBuilder builder = context.getDocumentBuilder();
+        
+        builder.startDocument();
+        builder.startElement( new QName( "response", NAMESPACE_URI, PREFIX ), null );
+        builder.addAttribute( new QName( "statusCode", null, null ), HTTP_EXCEPTION_STATUS_CODE );
+        
+        builder.startElement( new QName( "body", NAMESPACE_URI, PREFIX ), null );
+        
+        builder.addAttribute( new QName( "type", null, null ), "text" );
+        builder.addAttribute( new QName( "encoding", null, null ), "URLEncoded" );
+        builder.characters( URLEncoder.encode( message, "UTF-8" ) );
+        
+        builder.endElement();
         
         builder.endElement();
         
