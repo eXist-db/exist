@@ -64,7 +64,7 @@ public class QuerySessionTest {
 
     @Test (expected=XMLDBException.class)
     public void manualRelease() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseURI + "/db/test", "admin", "");
+        Collection test = DatabaseManager.getCollection(baseURI + "/db/rpctest", "admin", "");
         XQueryService service = (XQueryService) test.getService("XQueryService", "1.0");
         ResourceSet result = service.query("//chapter[@xml:id = 'chapter1']");
         Assert.assertEquals(1, result.getSize());
@@ -103,7 +103,7 @@ public class QuerySessionTest {
 
         public void run() {
             try {
-                Collection test = DatabaseManager.getCollection(baseURI + "/db/test", "admin", "");
+                Collection test = DatabaseManager.getCollection(baseURI + "/db/rpctest", "admin", "");
                 XQueryService service = (XQueryService) test.getService("XQueryService", "1.0");
                 int n = random.nextInt(DOC_COUNT) + 1;
                 service.declareVariable("n", "chapter" + n);
@@ -149,12 +149,12 @@ public class QuerySessionTest {
         DatabaseManager.registerDatabase(database);
 
         Collection root = DatabaseManager.getCollection(baseURI + "/db", "admin", "");
-        IndexQueryService idxs = (IndexQueryService) root.getService("IndexQueryService", "1.0");
-        idxs.configureCollection(COLLECTION_CONFIG);
         
         CollectionManagementService mgmt =
                 (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-        Collection test = mgmt.createCollection("test");
+        Collection test = mgmt.createCollection("rpctest");
+        IndexQueryService idxs = (IndexQueryService) test.getService("IndexQueryService", "1.0");
+        idxs.configureCollection(COLLECTION_CONFIG);
 
         Resource resource = test.createResource("strings.xml", "XMLResource");
         resource.setContent(new File("samples/shakespeare/macbeth.xml"));
@@ -176,15 +176,16 @@ public class QuerySessionTest {
             Collection root = DatabaseManager.getCollection(baseURI + "/db", "admin", "");
             CollectionManagementService mgmt =
                 (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            mgmt.removeCollection("test");
+            mgmt.removeCollection("rpctest");
 
-            Collection config = DatabaseManager.getCollection(baseURI + "/db/system/config", "admin", "");
+            Collection config = DatabaseManager.getCollection(baseURI + "/db/system/config/db", "admin", "");
             mgmt =
                 (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
-            mgmt.removeCollection("db");
+            mgmt.removeCollection("rpctest");
         } catch (XMLDBException e) {
             e.printStackTrace();
         }
         server.shutdown();
+        server = null;
     }
 }
