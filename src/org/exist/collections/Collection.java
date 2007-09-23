@@ -383,7 +383,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         try {
             getLock().acquire(Lock.READ_LOCK);
             docs.addCollection(this);
-            docs.addAll(broker, documents.values(), checkPermissions);
+            docs.addAll(broker, this, getDocumentPaths(), checkPermissions);
         } catch (LockException e) {
             LOG.warn(e.getMessage(), e);
         } finally {
@@ -396,13 +396,22 @@ public  class Collection extends Observable implements Comparable, Cacheable
         try {
             getLock().acquire(Lock.READ_LOCK);
             docs.addCollection(this);
-            docs.addAll(broker, documents.values(), lockMap, lockType);
+            docs.addAll(broker, this, getDocumentPaths(), lockMap, lockType);
         } catch (LockException e) {
             throw e;
         } finally {
             getLock().release(Lock.READ_LOCK);
         }
         return docs;
+    }
+
+    private String[] getDocumentPaths() {
+        String paths[] = new String[documents.size()];
+        int i = 0;
+        for (Iterator iter = documents.keySet().iterator(); iter.hasNext(); i++) {
+            paths[i] = (String) iter.next();
+        }
+        return paths;
     }
 
     /**
@@ -542,7 +551,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
             getLock().release(Lock.READ_LOCK);
         }
     }
-    
+
+    public DocumentImpl getDocumentNoLock(String rawPath) {
+        return (DocumentImpl) documents.get(rawPath);
+    }
+
     /**
      * Release any locks held on the document.
      * @deprecated Use other method
@@ -773,7 +786,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        }
 	        
 	        broker.removeXMLResource(transaction, doc);
-	        documents.remove(docUri.getRawCollectionPath());
+            documents.remove(docUri.getRawCollectionPath());
 	        
 	        if (trigger != null) {
 	            trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc);
