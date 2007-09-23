@@ -40,8 +40,8 @@ public class Options implements WebDAVMethod {
 			HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
             
         // TODO DWES changed to 2 ; check regression
-		response.addHeader("DAV", "2");
-		response.addHeader("Allow", "OPTIONS, GET, HEAD, PUT, PROPFIND, MKCOL, LOCK, UNLOCK");
+		response.addHeader("DAV", "1, 2");
+		response.addHeader("Allow", "OPTIONS, GET, HEAD, PUT, PROPFIND, MKCOL, LOCK, UNLOCK, DELETE, COPY, MOVE");
 		
 		// MS specific
 		response.addHeader("MS-Author-Via", "DAV");
