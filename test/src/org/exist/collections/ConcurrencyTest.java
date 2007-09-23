@@ -25,8 +25,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ConcurrencyTest {
 
-    private static final int N_THREADS = 4;
-    private static final int DOC_COUNT = 100; 
+    private static final int N_THREADS = 10;
+    private static final int DOC_COUNT = 200; 
 
     private static final int QUERY_COUNT = 20;
     
@@ -46,7 +46,7 @@ public class ConcurrencyTest {
 	public void runTasks() {
 		ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
 
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= 20; i++) {
             executor.submit(new QueryTask(REMOVE, i * 10, true));
             for (int j = 0; j < QUERY_COUNT; j++) {
                 executor.submit(new QueryTask(QUERY, 0, true));
@@ -86,7 +86,7 @@ public class ConcurrencyTest {
                 } finally {
                     service.endProtected();
                 }
-            } catch (XMLDBException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
             }

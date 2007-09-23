@@ -22,11 +22,6 @@
 
 package org.exist.dom;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.TreeSet;
-
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
@@ -38,6 +33,8 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.*;
 
 /**
  * Manages a set of documents.
@@ -102,21 +99,19 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	 * 
 	 * The method assumes that no duplicate entries are
 	 * in the input collection.
-	 * 
-	 * @param docs
 	 */
-	public void addAll(DBBroker broker, java.util.Collection docs, boolean checkPermissions) {
-		DocumentImpl doc;
-        for(Iterator i = docs.iterator(); i.hasNext(); ) {
-			doc = (DocumentImpl)i.next();
-//			    if(doc.isLockedForWrite())
-//			        continue;
+	public void addAll(DBBroker broker, Collection collection, String[] paths, boolean checkPermissions) {
+        DocumentImpl doc;
+        for (int i = 0; i < paths.length; i++) {
+            doc = collection.getDocumentNoLock(paths[i]);
+            if (doc == null)
+                continue;
             if(broker == null || !checkPermissions ||
                     doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
                 doc.setBroker(broker);
                 put(doc.getDocId(), doc);
             }
-		}
+        }
 	}
 
     /**
@@ -125,19 +120,20 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
      * specified LockedDocumentMap in order to keep track of the locks..
      *
      * @param broker
-     * @param docs
+     * @param collection
+     * @param paths
      * @param lockMap
      * @param lockType
      * @throws LockException
      */
-    public void addAll(DBBroker broker, java.util.Collection docs, LockedDocumentMap lockMap, int lockType) throws LockException {
+    public void addAll(DBBroker broker, Collection collection, String[] paths, LockedDocumentMap lockMap, int lockType) throws LockException {
         DocumentImpl doc;
         Lock lock;
-        for(Iterator i = docs.iterator(); i.hasNext(); ) {
-			doc = (DocumentImpl)i.next();
-//			    if(doc.isLockedForWrite())
-//			        continue;
-            if(doc.getPermissions().validate(broker.getUser(), Permission.WRITE)) {
+        for (int i = 0; i < paths.length; i++) {
+            doc = collection.getDocumentNoLock(paths[i]);
+            if (doc == null)
+                   continue;
+            if (doc.getPermissions().validate(broker.getUser(), Permission.WRITE)) {
                 doc.setBroker(broker);
                 lock = doc.getUpdateLock();
 
@@ -145,7 +141,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
                 put(doc.getDocId(), doc);
                 lockMap.add(doc);
             }
-		}
+        }
     }
 
     public void addCollection(Collection collection) {
