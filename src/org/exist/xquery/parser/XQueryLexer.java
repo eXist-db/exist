@@ -4394,7 +4394,7 @@ tryAgain:
 								if ( inputState.guessing==0 ) {
 									
 											inPragma = false; 
-									wsExplicit = true;
+									//wsExplicit = true;
 											_ttype = PRAGMA_END; 
 										
 								}

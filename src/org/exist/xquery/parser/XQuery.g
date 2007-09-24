@@ -750,8 +750,6 @@ pragma throws XPathException
 exception catch [RecognitionException e]
         {
             lexer.wsExplicit = false;
-            System.out.println("Undantag i pragma =" + e.getMessage());
-            //return;
             throw new XPathException("err:XPST0003: Parse error: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
         }
 	;
@@ -2033,7 +2031,7 @@ options {
 	PRAGMA_END
 	{
 		inPragma = false; 
-        wsExplicit = true;
+        //wsExplicit = true;
 		$setType(PRAGMA_END); 
 	}
 	;

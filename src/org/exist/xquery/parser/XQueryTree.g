@@ -318,6 +318,8 @@ throws PermissionDeniedException, EXistException, XPathException
                 copynamespaces = true;
             }
 		)
+            exception catch [RecognitionException se]
+        {throw new XPathException("err:XPST0003: XQuery syntax error.");}
 		|
 		#(
 			"base-uri" base:STRING_LITERAL
