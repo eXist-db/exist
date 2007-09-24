@@ -3308,79 +3308,84 @@ public XQueryTreeParser() {
 			}
 			case 68:
 			{
-				AST __t20 = _t;
-				org.exist.xquery.parser.XQueryAST tmp36_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,68);
-				_t = _t.getFirstChild();
-				{
-				if (_t==null) _t=ASTNULL;
-				switch ( _t.getType()) {
-				case LITERAL_preserve:
-				{
-					org.exist.xquery.parser.XQueryAST tmp37_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-					match(_t,LITERAL_preserve);
+				try {      // for error handling
+					AST __t20 = _t;
+					org.exist.xquery.parser.XQueryAST tmp36_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+					match(_t,68);
+					_t = _t.getFirstChild();
+					{
+					if (_t==null) _t=ASTNULL;
+					switch ( _t.getType()) {
+					case LITERAL_preserve:
+					{
+						org.exist.xquery.parser.XQueryAST tmp37_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+						match(_t,LITERAL_preserve);
+						_t = _t.getNextSibling();
+						
+						staticContext.setPreserveNamespaces(true);
+						context.setPreserveNamespaces(true);
+						
+						break;
+					}
+					case 85:
+					{
+						org.exist.xquery.parser.XQueryAST tmp38_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+						match(_t,85);
+						_t = _t.getNextSibling();
+						
+						staticContext.setPreserveNamespaces(false);
+						context.setPreserveNamespaces(false);
+						
+						break;
+					}
+					default:
+					{
+						throw new NoViableAltException(_t);
+					}
+					}
+					}
+					{
+					if (_t==null) _t=ASTNULL;
+					switch ( _t.getType()) {
+					case LITERAL_inherit:
+					{
+						org.exist.xquery.parser.XQueryAST tmp39_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+						match(_t,LITERAL_inherit);
+						_t = _t.getNextSibling();
+						
+						staticContext.setInheritNamespaces(true);
+						context.setInheritNamespaces(true);
+						
+						break;
+					}
+					case 87:
+					{
+						org.exist.xquery.parser.XQueryAST tmp40_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+						match(_t,87);
+						_t = _t.getNextSibling();
+						
+						staticContext.setInheritNamespaces(false);
+						context.setInheritNamespaces(false);
+						
+						break;
+					}
+					default:
+					{
+						throw new NoViableAltException(_t);
+					}
+					}
+					}
+					
+					if (copynamespaces)
+					throw new XPathException("err:XQST0055: Copy-namespaces mode already declared.");
+					copynamespaces = true;
+					
+					_t = __t20;
 					_t = _t.getNextSibling();
-					
-					staticContext.setPreserveNamespaces(true);
-					context.setPreserveNamespaces(true);
-					
-					break;
 				}
-				case 85:
-				{
-					org.exist.xquery.parser.XQueryAST tmp38_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-					match(_t,85);
-					_t = _t.getNextSibling();
-					
-					staticContext.setPreserveNamespaces(false);
-					context.setPreserveNamespaces(false);
-					
-					break;
+				catch (RecognitionException se) {
+					throw new XPathException("err:XPST0003: XQuery syntax error.");
 				}
-				default:
-				{
-					throw new NoViableAltException(_t);
-				}
-				}
-				}
-				{
-				if (_t==null) _t=ASTNULL;
-				switch ( _t.getType()) {
-				case LITERAL_inherit:
-				{
-					org.exist.xquery.parser.XQueryAST tmp39_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-					match(_t,LITERAL_inherit);
-					_t = _t.getNextSibling();
-					
-					staticContext.setInheritNamespaces(true);
-					context.setInheritNamespaces(true);
-					
-					break;
-				}
-				case 87:
-				{
-					org.exist.xquery.parser.XQueryAST tmp40_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-					match(_t,87);
-					_t = _t.getNextSibling();
-					
-					staticContext.setInheritNamespaces(false);
-					context.setInheritNamespaces(false);
-					
-					break;
-				}
-				default:
-				{
-					throw new NoViableAltException(_t);
-				}
-				}
-				}
-				
-				if (copynamespaces)
-				throw new XPathException("err:XQST0055: Copy-namespaces mode already declared.");
-				copynamespaces = true;
-				
-				_t = __t20;
-				_t = _t.getNextSibling();
 				break;
 			}
 			case 67:
