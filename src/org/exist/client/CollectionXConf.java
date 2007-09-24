@@ -889,7 +889,7 @@ public class CollectionXConf
 				for(int q = 0; q < qnameIndexes.length; q ++)
 				{
 					xconf.append("\t\t\t");
-					xconf.append(rangeIndexes[q].toXMLString());
+					xconf.append(qnameIndexes[q].toXMLString());
 					xconf.append(System.getProperty("line.separator"));
 				}
 			}
