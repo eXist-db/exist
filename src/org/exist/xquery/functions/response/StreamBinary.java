@@ -87,7 +87,7 @@ public class StreamBinary extends BasicFunction {
         Base64Binary binary = (Base64Binary) args[0].itemAt(0);
         String contentType = args[1].getStringValue();
         String filename = null;
-        if(!args[2].isEmpty())
+        if(args.length > 2 && !args[2].isEmpty())
         {
         	filename = args[2].getStringValue();
         }
