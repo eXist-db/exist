@@ -96,7 +96,8 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(UUID.signature, UUID.class),
         new FunctionDef(DeepCopyFunction.signature, DeepCopyFunction.class),
         new FunctionDef(GetSequenceType.signature, GetSequenceType.class),
-        
+        new FunctionDef(Parse.signature, Parse.class),
+
         // deprecated functions
         new FunctionDef(GetVersion.deprecated, GetVersion.class),
 	};
