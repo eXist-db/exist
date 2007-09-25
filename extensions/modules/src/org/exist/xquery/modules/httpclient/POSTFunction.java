@@ -95,10 +95,7 @@ public class POSTFunction extends BaseHTTPClientFunction
         //serialize the node to SAX
         ByteArrayOutputStream baos  = new ByteArrayOutputStream();
         OutputStreamWriter osw      = new OutputStreamWriter( baos );
-        XMLWriter xmlWriter         = new XMLWriter( osw );
-        SAXSerializer sax           = new SAXSerializer();
-        
-        sax.setReceiver( xmlWriter );
+        SAXSerializer sax           = new SAXSerializer(osw, new Properties());
         
         try {
             payload.toSAX( context.getBroker(), sax, new Properties() );
