@@ -488,7 +488,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		    ostream.writeShort(StorageAddress.tidFromPointer(childAddress[i]));
 		}
 	    }
-            metadata.write(broker, ostream);
+            getMetadata().write(broker, ostream);
 	} catch (IOException e) {
 	    LOG.warn("io error while writing document data", e);
 	}
