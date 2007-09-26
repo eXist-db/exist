@@ -166,6 +166,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             }
         }
         catch( Exception e ) {
+            e.printStackTrace();
             encodedResponse = encodeErrorResponse( context, e.getMessage() );
         }
         
@@ -245,7 +246,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         
         builder.addAttribute( new QName( "type", null, null ), "text" );
         builder.addAttribute( new QName( "encoding", null, null ), "URLEncoded" );
-        builder.characters( URLEncoder.encode( message, "UTF-8" ) );
+        if (message != null)
+            builder.characters( URLEncoder.encode( message, "UTF-8" ) );
         
         builder.endElement();
         
@@ -275,7 +277,12 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     {
         boolean     parsed       = false;
         NodeImpl    responseNode = null;
-        
+        String        bodyAsString = method.getResponseBodyAsString();
+
+        // check if there is a response body
+        if (bodyAsString == null)
+                return;
+
         // determine the type of the response document
         MimeType responseMimeType = getResponseMimeType( method.getResponseHeader( "Content-Type" ) );
         builder.addAttribute( new QName( "mimetype", null, null ), method.getResponseHeader( "Content-Type" ).getValue() );
@@ -283,7 +290,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         //try and parse the response as XML
         try {
             //TODO: replace getResponseBodyAsString() with getResponseBodyAsStream()
-            responseNode = (NodeImpl)ModuleUtils.stringToXML( context, method.getResponseBodyAsString() );
+            responseNode = (NodeImpl)ModuleUtils.stringToXML( context, bodyAsString );
             builder.addAttribute( new QName( "type", null, null ), "xml" );
             responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );         
         }
