@@ -217,10 +217,10 @@ prolog throws XPathException
 			importDecl
 			|
 			( "declare" ( "default" | "boundary-space" | "ordering" | "construction" | "base-uri" | "copy-namespaces" | "namespace" ) ) =>
-			setter
+			s:setter
 			{
 				if(!inSetters)
-					throw new TokenStreamException("Default declarations have to come first");
+					throw new XPathException(#s, "Default declarations have to come first");
 			}
             |
 			( "declare" "option" )
