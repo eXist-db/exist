@@ -735,6 +735,7 @@ public XQueryParser(ParserSharedInputState state) {
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST prolog_AST = null;
+		org.exist.xquery.parser.XQueryAST s_AST = null;
 		boolean inSetters = true;
 		
 		{
@@ -808,11 +809,12 @@ public XQueryParser(ParserSharedInputState state) {
 					}
 					if ( synPredMatched21 ) {
 						setter();
+						s_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 						astFactory.addASTChild(currentAST, returnAST);
 						if ( inputState.guessing==0 ) {
 							
 											if(!inSetters)
-												throw new TokenStreamException("Default declarations have to come first");
+												throw new XPathException(s_AST, "Default declarations have to come first");
 										
 						}
 					}
