@@ -277,64 +277,64 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     {
         boolean     parsed       = false;
         NodeImpl    responseNode = null;
-        String        bodyAsString = method.getResponseBodyAsString();
-
+        String      bodyAsString = method.getResponseBodyAsString();
+        
         // check if there is a response body
-        if (bodyAsString == null)
-                return;
-
-        // determine the type of the response document
-        MimeType responseMimeType = getResponseMimeType( method.getResponseHeader( "Content-Type" ) );
-        builder.addAttribute( new QName( "mimetype", null, null ), method.getResponseHeader( "Content-Type" ).getValue() );
-        
-        //try and parse the response as XML
-        try {
-            //TODO: replace getResponseBodyAsString() with getResponseBodyAsStream()
-            responseNode = (NodeImpl)ModuleUtils.stringToXML( context, bodyAsString );
-            builder.addAttribute( new QName( "type", null, null ), "xml" );
-            responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );         
-        }
-        catch( SAXException se ) {
-            //could not parse to xml
-        }
-        
-        if( responseNode == null ) {
-            //response is NOT parseable as XML
+        if( bodyAsString != null ) {
             
-            //is it a html document?
-            if( responseMimeType.getName().equals( MimeType.HTML_TYPE.getName() ) ) {
-                //html document
-                try {
-                    //parse html to xml(html)
-                    responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource(method.getResponseBodyAsStream() ) ).getDocumentElement();
-                    builder.addAttribute( new QName( "type", null, null ), "xhtml" );
-                    responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );                  
-                }
-                catch( URIException ue ) {
-                    throw( new XPathException (ue ) );
-                }
-                catch( SAXException se ) {
-                    //could not parse to xml(html)
+            // determine the type of the response document
+            MimeType responseMimeType = getResponseMimeType( method.getResponseHeader( "Content-Type" ) );
+            builder.addAttribute( new QName( "mimetype", null, null ), method.getResponseHeader( "Content-Type" ).getValue() );
+            
+            //try and parse the response as XML
+            try {
+                //TODO: replace getResponseBodyAsString() with getResponseBodyAsStream()
+                responseNode = (NodeImpl)ModuleUtils.stringToXML( context, bodyAsString );
+                builder.addAttribute( new QName( "type", null, null ), "xml" );
+                responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );         
+            }
+            catch( SAXException se ) {
+                //could not parse to xml
+            }
+            
+            if( responseNode == null ) {
+                //response is NOT parseable as XML
+                
+                //is it a html document?
+                if( responseMimeType.getName().equals( MimeType.HTML_TYPE.getName() ) ) {
+                    //html document
+                    try {
+                        //parse html to xml(html)
+                        responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource(method.getResponseBodyAsStream() ) ).getDocumentElement();
+                        builder.addAttribute( new QName( "type", null, null ), "xhtml" );
+                        responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );                  
+                    }
+                    catch( URIException ue ) {
+                        throw( new XPathException (ue ) );
+                    }
+                    catch( SAXException se ) {
+                        //could not parse to xml(html)
+                    }
                 }
             }
-        }
-        
-        if( responseNode == null ) {
-            if( responseMimeType.getName().startsWith( "text/" ) ) {
-                // Assume it's a text body and URL encode it
-                builder.addAttribute( new QName( "type", null, null ), "text" );
-                builder.addAttribute( new QName( "encoding", null, null ), "URLEncoded" );
-                builder.characters( URLEncoder.encode( method.getResponseBodyAsString(), "UTF-8" ) );
-            } else {
-                // Assume it's a binary body and Base64 encode it
-                byte[] body = method.getResponseBody();
-                
-                builder.addAttribute( new QName( "type", null, null ), "binary" );
-                builder.addAttribute( new QName( "encoding", null, null ), "Base64Encoded" );
-                
-                if( body != null ) {
-                    Base64Binary binary = new Base64Binary( body );
-                    builder.characters( binary.getStringValue() );
+            
+            if( responseNode == null ) {
+                if( responseMimeType.getName().startsWith( "text/" ) ) {
+                    // Assume it's a text body and URL encode it
+                    builder.addAttribute( new QName( "type", null, null ), "text" );
+                    builder.addAttribute( new QName( "encoding", null, null ), "URLEncoded" );
+                    builder.characters( URLEncoder.encode( method.getResponseBodyAsString(), "UTF-8" ) );
+                } else {
+                    // Assume it's a binary body and Base64 encode it
+                    byte[] body = method.getResponseBody();
+                    
+                    builder.addAttribute( new QName( "type", null, null ), "binary" );
+                    builder.addAttribute( new QName( "encoding", null, null ), "Base64Encoded" );
+                    
+                    if( body != null ) {
+                        Base64Binary binary = new Base64Binary( body );
+                        builder.characters( binary.getStringValue() );
+                    }
                 }
             }
         }
