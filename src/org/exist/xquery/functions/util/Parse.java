@@ -21,19 +21,31 @@ import java.io.StringReader;
 
 public class Parse extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName( "parse", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Parses the passed string value into an XML fragment. The string has to be " +
             "well-formed XML. An empty sequence is returned if the argument is an " +
             "empty string or sequence.",
             new SequenceType[] {
-                new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE ),
+                new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE )
             },
             new SequenceType( Type.NODE, Cardinality.ZERO_OR_MORE )
-        );
+        ),
+        new FunctionSignature(
+            new QName( "parse-html", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Parses the passed string value into an XML fragment. The HTML string may not be " +
+            "well-formed XML. It will be passed through the Neko HTML parser to make it well-formed. " +
+            "An empty sequence is returned if the argument is an " +
+            "empty string or sequence.",
+            new SequenceType[] {
+                new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE )
+            },
+            new SequenceType( Type.NODE, Cardinality.ZERO_OR_MORE )
+        )
+    };
 
-    public Parse(XQueryContext context) {
+    public Parse(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -48,8 +60,25 @@ public class Parse extends BasicFunction {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
             InputSource src = new InputSource(reader);
-            SAXParser parser = factory.newSAXParser();
-            XMLReader xr = parser.getXMLReader();
+
+            XMLReader xr = null;
+            if (isCalledAs("parse-html")) {
+                try {
+                    Class clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
+                    xr = (XMLReader) clazz.newInstance();
+                    //do not modify the case of elements and attributes
+                    xr.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
+                    xr.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");
+                } catch (Exception e) {
+                    LOG.warn("Could not instantiate neko HTML parser for function util:parse-html, falling back to " +
+                            "default XML parser.", e);
+                }
+            }
+            if (xr == null) {
+                SAXParser parser = factory.newSAXParser();
+                xr = parser.getXMLReader();
+            }
+
             SAXAdapter adapter = new SAXAdapter();
             xr.setContentHandler(adapter);
             xr.parse(src);
