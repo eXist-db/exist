@@ -230,6 +230,13 @@ public class Validation extends BasicFunction  {
             builder.characters("invalid");
         }
         builder.endElement();
+        
+        // namespace when available
+        if(report.getNamespaceUri()!=null){
+            builder.startElement("", "namespace", "namespace", null);
+            builder.characters(report.getNamespaceUri());
+            builder.endElement(); 
+        }
 
         // validation duration
         builder.startElement("", "time", "time", null);
