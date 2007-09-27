@@ -374,13 +374,32 @@ public class BTree extends Paged {
 
                     if (callback != null)
                         callback.indexInfo(nextPage.keys[i], nextPage.ptrs[i]);
-                    nextPage.decrementDataLen(nextPage.keys[i]);
                     nextPage.removeKey(i);
                     nextPage.removePointer(i);
+                    nextPage.recalculateDataLen();
                     --i;
                 }
             }
             next = nextPage.ph.getNextPage();
+        }
+    }
+
+    protected void scanSequential(BTreeNode page, IndexQuery query, Value keyPrefix, BTreeCallback callback) throws TerminatedException {
+        while (page != null) {
+            for (int i = 0; i < page.nKeys; i++) {
+                if (keyPrefix != null && page.keys[i].comparePrefix(keyPrefix) > 0)
+                    return;
+                boolean test = query.testValue(page.keys[i]);
+                if (query.getOperator() != IndexQuery.NEQ && !test)
+                    return;
+                if (test)
+                    callback.indexInfo(page.keys[i], page.ptrs[i]);
+            }
+            long next = page.ph.getNextPage();
+            if (next != Page.NO_PAGE) {
+                page = getBTreeNode(next);
+            } else
+                page = null;
         }
     }
 
@@ -1794,26 +1813,9 @@ public class BTree extends Paged {
             long next = ph.getNextPage();
             if (next != Page.NO_PAGE) {
                 BTreeNode nextPage = getBTreeNode(next);
-                nextPage.scanSequential(query, keyPrefix, callback);
+                scanSequential(nextPage, query, keyPrefix, callback);
             }
         }
-
-        protected void scanSequential(IndexQuery query, Value keyPrefix, BTreeCallback callback) throws TerminatedException {
-            for (int i = 0; i < nKeys; i++) {
-                if (keyPrefix != null && keys[i].comparePrefix(keyPrefix) > 0)
-                    return;
-                boolean test = query.testValue(keys[i]);
-                if (query.getOperator() != IndexQuery.NEQ && !test)
-                    return;
-                if (test)
-                    callback.indexInfo(keys[i], ptrs[i]);
-            }
-            long next = ph.getNextPage();
-            if (next != Page.NO_PAGE) {
-                BTreeNode nextPage = getBTreeNode(next);
-                nextPage.scanSequential(query, keyPrefix, callback);
-            }
-    }
 
         /**
          * Search for keys matching the given {@link IndexQuery} and
@@ -1954,25 +1956,7 @@ public class BTree extends Paged {
 									leftIdx = - (leftIdx + 1);
 								if (rightIdx < 0)
 									rightIdx = - (rightIdx + 1);
-								for (int i = 0; i < nPtrs; i++)
-									if ((pos && (i >= leftIdx && i < rightIdx))
-										|| (!pos && (i <= leftIdx || i >= rightIdx))) {
-										if (query.testValue(keys[i])) {
-                                            if (isTransactional && transaction != null) {
-                                                RemoveValueLoggable log = 
-                                                    new RemoveValueLoggable(transaction, fileId, page.getPageNum(), i,
-                                                            keys[i], ptrs[i]);
-                                                writeToLog(log, this);
-                                            }
-                                            
-											if (callback != null)
-												callback.indexInfo(keys[i], ptrs[i]);
-                                            decrementDataLen(keys[i]);
-                                            removeKey(i);
-                                            removePointer(i);
-											--i;
-										}
-									}
+                                
                                 for (int i = leftIdx; i < rightIdx && i < nPtrs; i++) {
 									if (query.testValue(keys[i])) {
                                         if (isTransactional && transaction != null) {

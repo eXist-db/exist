@@ -1,12 +1,18 @@
 package org.exist.storage.btree;
 
-import junit.framework.TestCase;
+import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
-import org.exist.util.*;
+import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
+import org.exist.util.UTF8;
+import org.exist.util.XMLString;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.DoubleValue;
-import org.exist.EXistException;
+import org.junit.After;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,15 +21,70 @@ import java.io.StringWriter;
 /**
  * Low-level tests on the B+tree.
  */
-public class BTreeTest extends TestCase {
+public class BTreeTest {
 
     private BrokerPool pool;
     private File file = null;
 
     private int count = 0;
-    private static final int COUNT = 10000;
+    private static final int COUNT = 5000;
 
-    public void testStrings() {
+    @Test
+    public void simpleUpdates() {
+        System.out.println("------------------ testStrings: START -------------------------");
+        BTree btree = null;
+        try {
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree.create((short) -1);
+
+            String prefixStr = "K";
+            for (int i = 1; i <= COUNT; i++) {
+                Value value = new Value(prefixStr + Integer.toString(i));
+                btree.addValue(value, i);
+            }
+
+            System.out.println("Testing IndexQuery.TRUNC_RIGHT");
+            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(prefixStr));
+            btree.query(query, new StringIndexCallback());
+            assertEquals(COUNT, count);
+            btree.flush();
+
+            System.out.println("Removing index entries ...");
+            btree.remove(query, new StringIndexCallback());
+            assertEquals(COUNT, count);
+            btree.flush();
+
+            System.out.println("Readding data ...");
+            for (int i = 1; i <= COUNT; i++) {
+                Value value = new Value(prefixStr + Integer.toString(i));
+                btree.addValue(value, i);
+            }
+
+            System.out.println("Testing IndexQuery.TRUNC_RIGHT");
+            btree.query(query, new StringIndexCallback());
+            assertEquals(COUNT, count);
+            btree.flush();
+        } catch (DBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } catch (TerminatedException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (btree != null)
+                try {
+                    btree.close();
+                } catch (DBException e) {
+                }
+        }
+        System.out.println("------------------ testStrings: END -------------------------");
+    }
+
+    @Test
+    public void strings() {
         System.out.println("------------------ testStrings: START -------------------------");
         BTree btree = null;
         try {
@@ -56,7 +117,7 @@ public class BTreeTest extends TestCase {
             System.out.println("Testing IndexQuery.TRUNC_RIGHT");
             query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(prefixStr + "1"));
             btree.query(query, new StringIndexCallback());
-            assertEquals(1112, count);
+            assertEquals(1111, count);
 
             System.out.println("Testing IndexQuery.NEQ");
             query = new IndexQuery(IndexQuery.NEQ, new Value(prefixStr + "10"));
@@ -96,7 +157,8 @@ public class BTreeTest extends TestCase {
         System.out.println("------------------ testStrings: END -------------------------");
     }
 
-    public void testStringsTruncated() {
+    @Test
+    public void stringsTruncated() {
         System.out.println("------------------ testStringsTruncated: START -------------------------");
         BTree btree = null;
         try {
@@ -141,7 +203,8 @@ public class BTreeTest extends TestCase {
         System.out.println("------------------ testStringsTruncated: END -------------------------");
     }
 
-    public void testRemoveStrings() {
+    @Test
+    public void removeStrings() {
         System.out.println("------------------ testRemoveStrings: START -------------------------");
         BTree btree = null;
         try {
@@ -195,7 +258,8 @@ public class BTreeTest extends TestCase {
         System.out.println("------------------ testRemoveStrings: END -------------------------");
     }
 
-    public void testNumbers() throws TerminatedException {
+    @Test
+    public void numbers() throws TerminatedException {
         System.out.println("------------------ testNumbers: START -------------------------");
         try {
             BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
@@ -246,7 +310,8 @@ public class BTreeTest extends TestCase {
         System.out.println("------------------ testNumbers: END -------------------------");
     }
 
-    public void testNumbersWithPrefix() {
+    @Test
+    public void numbersWithPrefix() {
         System.out.println("------------------ testNumbersWithPrefix: START -------------------------");
         try {
             BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
@@ -323,20 +388,23 @@ public class BTreeTest extends TestCase {
         System.out.println("------------------ testNumbersWithPrefix: END -------------------------");
     }
 
-    protected void setUp() {
+    @Before
+    public void initialize() {
         try {
             Configuration config = new Configuration();
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
 
             file = new File(System.getProperty("exist.home", ".") + "/test/junit/test.dbx");
+            assertFalse(file.exists());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
     }
 
-    protected void tearDown() {
+    @After
+    public void cleanUp() {
     	try {
 	        BrokerPool.stopAll(false);
 
@@ -344,6 +412,8 @@ public class BTreeTest extends TestCase {
         } catch (Exception e) {
 	        fail(e.getMessage());
 	    }
+        pool = null;
+        file = null;
     }
 
     private final class SimpleCallback implements BTreeCallback {
@@ -367,7 +437,7 @@ public class BTreeTest extends TestCase {
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             int prefix = ByteConversion.byteToInt(value.data(), value.start());
             assertEquals(99, prefix);
-            XMLString key = UTF8.decode(value.data(), value.start() + 4, value.getLength() - 4);
+//            XMLString key = UTF8.decode(value.data(), value.start() + 4, value.getLength() - 4);
 //            System.out.println(prefix + " : " + key);
             count++;
             return false;
