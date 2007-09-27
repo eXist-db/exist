@@ -47,6 +47,7 @@ public class ValidationReport implements ErrorHandler {
     private long stop = -1L;
     
     private Throwable throwed = null;
+    private String namespaceUri = null;
         
     private ValidationReportItem createValidationReportItem(int type, SAXParseException exception){
         
@@ -205,5 +206,13 @@ public class ValidationReport implements ErrorHandler {
     
     public Throwable getThrowable() {
         return throwed;
+    }
+    
+    public void setNamespaceUri(String namespace){
+        namespaceUri=namespace;
+    }
+    
+    public String getNamespaceUri(){
+        return namespaceUri;
     }
 }

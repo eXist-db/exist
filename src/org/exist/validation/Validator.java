@@ -212,12 +212,16 @@ public class Validator {
 
             xmlReader.setErrorHandler( report );
             
+            ValidationContentHandler handler = new ValidationContentHandler();
+            xmlReader.setContentHandler(handler);
+            
             logger.debug("Validation started.");
             report.start();
             xmlReader.parse(source);
-            
             logger.debug("Validation stopped.");
+            
             report.stop();
+            report.setNamespaceUri(handler.getNamespaceUri());
             
             if( ! report.isValid() ){
                 logger.debug( "Document is not valid.")  ;
