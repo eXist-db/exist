@@ -80,23 +80,27 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         this.pool = pool;
     }
     
-    /** (non-Javadoc)
+    /**
      * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
      */
     public Object makeObject() throws Exception {
         Configuration config = pool.getConfiguration();
-        // get validation settings
+        
+        // Get validation settings
         int validation = VALIDATION_AUTO;
         String option = (String) config.getProperty(PROPERTY_VALIDATION_MODE);
         if (option != null) {
             if (option.equals("true") || option.equals("yes"))
                 validation = VALIDATION_ENABLED;
+            
             else if (option.equals("auto"))
                 validation = VALIDATION_AUTO;
+            
             else
                 validation = VALIDATION_DISABLED;
         }
-        // create a SAX parser
+        
+        // Create a xmlreader
         SAXParserFactory saxFactory = SAXParserFactory.newInstance();
         if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED){
             saxFactory.setValidating(true);
@@ -104,50 +108,48 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             saxFactory.setValidating(false);
         }
         saxFactory.setNamespaceAware(true);
+        
+        SAXParser saxParser = saxFactory.newSAXParser();
+        XMLReader xmlReader = saxParser.getXMLReader();
+        
+        // Configure xmlreader see http://xerces.apache.org/xerces2-j/features.html
+        xmlReader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
         try {
-            saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
-            try {
-                // TODO check does this work?
-                // http://xerces.apache.org/xerces2-j/features.html
-                saxFactory.setFeature(Namespaces.SAX_VALIDATION,
-                    validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
-                
-                saxFactory.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC,
-                    validation == VALIDATION_AUTO);
-                
-                saxFactory.setFeature(FEATURES_VALIDATION_SCHEMA,
-                    validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);            
-                
-                saxFactory.setFeature(PROPERTIES_LOAD_EXT_DTD,
-                    validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
-                
-                // Attempt to make validation function equal to inser mode
-                //saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
-                
-            } catch (SAXNotRecognizedException e1) {
-                // ignore: feature only recognized by xerces
-            } catch (SAXNotSupportedException e1) {
-                // ignore: feature only recognized by xerces
-            }
-            SAXParser sax = saxFactory.newSAXParser();
-            XMLReader parser = sax.getXMLReader();
+            xmlReader.setFeature(Namespaces.SAX_VALIDATION,
+                validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
 
-            // Setup grammar cache
-            GrammarPool grammarPool =
-               (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
-            if(grammarPool!=null){
-                sax.setProperty(PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
-            }
+            xmlReader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC,
+                validation == VALIDATION_AUTO);
 
-            eXistXMLCatalogResolver resolver = (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
-            if(resolver!=null){
-                parser.setProperty(PROPERTIES_ENTITYRESOLVER, resolver);
-            }
-            return parser;
+            xmlReader.setFeature(FEATURES_VALIDATION_SCHEMA,
+                validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);            
 
-        } catch (ParserConfigurationException e) {
-            throw new EXistException(e);
+            xmlReader.setFeature(PROPERTIES_LOAD_EXT_DTD,
+                validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
+
+            // Attempt to make validation function equal to insert mode
+            //saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
+
+        } catch (SAXNotRecognizedException e1) {
+            // Ignore: feature only recognized by xerces
+        } catch (SAXNotSupportedException e1) {
+            // Ignore: feature only recognized by xerces
         }
+
+        // Setup grammar cache
+        GrammarPool grammarPool =
+           (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+        if(grammarPool!=null){
+            xmlReader.setProperty(PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+        }
+
+        // Setup xml catalog resolver
+        eXistXMLCatalogResolver resolver = (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
+        if(resolver!=null){
+            xmlReader.setProperty(PROPERTIES_ENTITYRESOLVER, resolver);
+        }
+        
+        return xmlReader;
     }
 
 }
