@@ -49,6 +49,7 @@ import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.UUIDGenerator;
+import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
@@ -204,6 +205,8 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                // get the feed
                LOG.debug("Acquiring lock on feed document...");
                feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
+               if (!feedDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+                   throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
                ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
                
                // Lock the feed
@@ -664,6 +667,8 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          // Get the feed
          //LOG.info("Acquiring lock on feed document...");
          feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
+          if (!feedDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+              throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
          feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
 
          // Find the entry
