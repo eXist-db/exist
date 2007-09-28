@@ -44,7 +44,7 @@ public class XmlLibraryChecker
 	 */
 	private final static ClassVersion[] validTransformers = {
 		new ClassVersion("Xalan", "Xalan Java 2.7.0", "org.apache.xalan.Version.getVersion()"),
-		new ClassVersion("Saxon", "8.7.3", "net.sf.saxon.Version.getProductVersion()")
+		new ClassVersion("Saxon", "8.9.0.3", "net.sf.saxon.Version.getProductVersion()")
 	};
 	
 	
