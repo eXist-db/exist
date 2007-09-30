@@ -21,17 +21,20 @@
  */
 package org.exist.indexing;
 
+import java.util.List;
 import java.util.Map;
 
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.xquery.XQueryContext;
 import org.w3c.dom.NodeList;
 
 /**
@@ -186,7 +189,11 @@ public interface IndexWorker {
      * <li>the list of the documents in which the index entry is</li>
      * </ol> 
      */
-    Occurrences[] scanIndex(DocumentSet docs);
+    public Occurrences[] scanIndex(DocumentSet docs);
+    
+    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, Object start);
+    
+    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, List qnames, Object start, Object end);
     
     //TODO : a scanIndex() method that would return an unaggregated list of index entries ?
 

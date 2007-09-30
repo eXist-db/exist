@@ -28,6 +28,7 @@ import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -552,6 +553,21 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	occurences.values().toArray(result);
     	return result;
     }
+    
+    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, Object start) {
+    	if (start != null && !"".equals(start))
+    		LOG.info("unsupported feature. '" + start + "' will be ignored");
+    	return scanIndex(docs);
+    }
+    
+    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, List qnames, Object start, Object end) {
+    	if (start != null && !"".equals(start))
+    		LOG.info("unsupported feature. '" + start + "' will be ignored");
+    	if (end != null && !"".equals(end))
+    		LOG.info("unsupported feature. '" + end + "' will be ignored");
+    	return scanIndex(docs);
+    }
+    
     
     public Geometry streamNodeToGeometry(XQueryContext context, NodeValue node) throws SpatialIndexException {
     	try {

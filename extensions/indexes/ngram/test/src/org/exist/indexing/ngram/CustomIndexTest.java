@@ -633,8 +633,10 @@ public class CustomIndexTest extends TestCase {
             Occurrences occurrence = occurrences[i];
             if (occurrence.getTerm().compareTo(term) == 0)
                 found++;
-        }
+        }        
         assertEquals(count, found);
+        //TODO : we  could use this, but how to get an XQueryContext?
+        //Occurrences[] occurrences = index.scanIndex(context, docs, null, term);
     }
 
     protected void setUp() {
