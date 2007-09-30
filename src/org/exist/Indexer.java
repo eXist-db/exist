@@ -383,17 +383,19 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     }
 
     public void error(SAXParseException e) throws SAXException {
-	LOG.debug("error at line " + e.getLineNumber(), e);
-	throw new SAXException(
-			       "error at line " + e.getLineNumber() + ": " + e.getMessage(),
-			       e);
+        String msg="error at ("
+                + e.getLineNumber() + "," + e.getColumnNumber() + ") : " 
+                + e.getMessage();
+    	LOG.debug(msg);
+    	throw new SAXException(msg, e);
     }
 
     public void fatalError(SAXParseException e) throws SAXException {
-	LOG.debug("fatal error at line " + e.getLineNumber());
-	throw new SAXException(
-			       "fatal error at line " + e.getLineNumber() + ": " + e.getMessage(),
-			       e);
+        String msg="fatal error at ("
+                + e.getLineNumber() + "," + e.getColumnNumber() + ") : " 
+                + e.getMessage();
+    	LOG.debug(msg);
+    	throw new SAXException(msg, e);
     }
 
     public void ignorableWhitespace(char[] ch, int start, int length) {
@@ -691,10 +693,10 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     }
 
     public void warning(SAXParseException e) throws SAXException {
-    	LOG.debug("warning at line " + e.getLineNumber(), e);
-    	throw new SAXException(
-			       "warning at line " + e.getLineNumber() + ": " + e.getMessage(),
-			       e);
+        String msg="error at ("
+                + e.getLineNumber() + "," + e.getColumnNumber() + ") : " 
+                + e.getMessage();
+    	throw new SAXException(msg, e);
     }
 	
     private void setPrevious(StoredNode previous) {
