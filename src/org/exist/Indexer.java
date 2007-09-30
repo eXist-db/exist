@@ -693,7 +693,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     }
 
     public void warning(SAXParseException e) throws SAXException {
-        String msg="error at ("
+        String msg="warning at ("
                 + e.getLineNumber() + "," + e.getColumnNumber() + ") : " 
                 + e.getMessage();
     	throw new SAXException(msg, e);
