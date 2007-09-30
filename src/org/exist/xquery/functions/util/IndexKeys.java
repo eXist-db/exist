@@ -124,9 +124,7 @@ public class IndexKeys extends BasicFunction {
         	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[4].itemAt(0).getStringValue()).getWorker();
         	if (indexWorker == null)
         		throw new XPathException("Unknown index: " + args[4].itemAt(0).getStringValue());
-        	//TODO : how to take the nodes into account ?
-        	//TODO : how to take the start value into account as well ?
-        	Occurrences[] occur = indexWorker.scanIndex(docs);
+        	Occurrences[] occur = indexWorker.scanIndexKeys(context, docs, nodes, args[1]);
 	        int len = (occur.length > max ? max : occur.length);
 	        Sequence params[] = new Sequence[2];
 	        ValueSequence data = new ValueSequence();

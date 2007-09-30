@@ -21,13 +21,47 @@
  */
 package org.exist.indexing.ngram;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
-import org.exist.indexing.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
+import org.exist.indexing.AbstractMatchListener;
+import org.exist.indexing.AbstractStreamListener;
+import org.exist.indexing.Index;
+import org.exist.indexing.IndexController;
+import org.exist.indexing.IndexWorker;
+import org.exist.indexing.MatchListener;
+import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.*;
+import org.exist.storage.DBBroker;
+import org.exist.storage.ElementValue;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.NodePath;
+import org.exist.storage.OccurrenceList;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.IndexQuery;
@@ -37,21 +71,24 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
+import org.exist.util.ByteArray;
+import org.exist.util.ByteConversion;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FastQSort;
+import org.exist.util.LockException;
+import org.exist.util.Occurrences;
+import org.exist.util.ReadOnlyException;
+import org.exist.util.UTF8;
+import org.exist.util.XMLString;
 import org.exist.util.serializer.AttrList;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
 
 /**
  *
@@ -413,6 +450,86 @@ public class NGramIndexWorker implements IndexWorker {
 		}
 		Occurrences[] result = new Occurrences[cb.map.size()];
 		return (Occurrences[]) cb.map.values().toArray(result);
+    }
+
+    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, Object start) {
+        List qnames = getDefinedIndexes(context.getBroker(), docs);
+    	final Lock lock = index.db.getLock();
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
+        for (int q = 0; q < qnames.size(); q++) {
+            for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+                final int collectionId = ((Collection) i.next()).getId();
+                final IndexQuery query;
+                if (start == null) {
+                    Value startRef = new NGramQNameKey(collectionId);
+                    query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
+                } else {
+                    Value startRef = new NGramQNameKey(collectionId, (QName)qnames.get(q),
+                    		context.getBroker().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
+                    query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
+                }
+                try {
+                    lock.acquire(Lock.READ_LOCK);
+                    index.db.query(query, cb);
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (BTreeException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (TerminatedException e) {
+                    LOG.warn(e.getMessage(), e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
+                }
+            }
+        }
+        Occurrences[] result = new Occurrences[cb.map.size()];
+        return (Occurrences[]) cb.map.values().toArray(result);
+    }
+
+    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, List qnames,
+    		Object start, Object end) {
+        if (qnames == null || qnames.isEmpty())
+            qnames = getDefinedIndexes(context.getBroker(), docs);
+    	final Lock lock = index.db.getLock();
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
+        for (int q = 0; q < qnames.size(); q++) {
+            for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+                final int collectionId = ((Collection) i.next()).getId();
+                final IndexQuery query;
+                if (start == null) {
+                    Value startRef = new NGramQNameKey(collectionId);
+                    query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
+                } else if (end == null) {
+                    Value startRef = new NGramQNameKey(collectionId, (QName)qnames.get(q),
+                    		context.getBroker().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
+                    query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
+                } else {
+                    Value startRef = new NGramQNameKey(collectionId, (QName)qnames.get(q), 
+                    	context.getBroker().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
+                    Value endRef = new NGramQNameKey(collectionId, (QName)qnames.get(q), 
+                    		context.getBroker().getSymbols(), ((StringValue)end).getStringValue().toLowerCase());
+                    query = new IndexQuery(IndexQuery.BW, startRef, endRef);
+                }
+                try {
+                    lock.acquire(Lock.READ_LOCK);
+                    index.db.query(query, cb);
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (BTreeException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (TerminatedException e) {
+                    LOG.warn(e.getMessage(), e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
+                }
+            }
+        }
+        Occurrences[] result = new Occurrences[cb.map.size()];
+        return (Occurrences[]) cb.map.values().toArray(result);
     }
     
     //This listener is always the same whatever the document and the mode
@@ -947,10 +1064,16 @@ public class NGramIndexWorker implements IndexWorker {
     private final class IndexScanCallback implements BTreeCallback {
 
 		private DocumentSet docs;
+		private NodeSet contextSet;
 		private Map map = new TreeMap();
 
 		IndexScanCallback(DocumentSet docs) {
 			this.docs = docs;
+		}
+		
+		IndexScanCallback(DocumentSet docs, NodeSet contextSet) {
+			this.docs = docs;
+			this.contextSet = contextSet;
 		}
 
 		/* (non-Javadoc)
@@ -993,16 +1116,24 @@ public class NGramIndexWorker implements IndexWorker {
                         previous = nodeId;
                         int freq = is.readInt();
                         is.skip(freq);
-                        Occurrences oc = (Occurrences) map.get(term);
-                        if (oc == null) {
-                            oc = new Occurrences(term);
-                            map.put(term, oc);
+                        boolean include = true;
+                        //TODO : revisit
+                        if (contextSet != null) {
+                            NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
+                            include = (parentNode != null);
                         }
-                        if (!docAdded) {
-                            oc.addDocument(storedDocument);
-                            docAdded = true;
+                        if (include) {
+	                        Occurrences oc = (Occurrences) map.get(term);
+	                        if (oc == null) {
+	                            oc = new Occurrences(term);
+	                            map.put(term, oc);
+	                        }
+	                        if (!docAdded) {
+	                            oc.addDocument(storedDocument);
+	                            docAdded = true;
+	                        }
+	                        oc.addOccurrences(freq);
                         }
-                        oc.addOccurrences(freq);
                     }
                 }
 			} catch(IOException e) {

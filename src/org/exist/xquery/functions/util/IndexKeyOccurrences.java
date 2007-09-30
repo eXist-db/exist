@@ -94,9 +94,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 	        	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[2].itemAt(0).getStringValue()).getWorker();
 	        	if (indexWorker == null)
 	        		throw new XPathException("Unknown index: " + args[2].itemAt(0).getStringValue());
-	        	//TODO : how to take the nodes into account ?
-	        	//TODO : how to take the start value into account as well ?
-	        	Occurrences[] occur = indexWorker.scanIndex(docs);
+	        	Occurrences[] occur = indexWorker.scanIndexKeys(context, docs, nodes, args[1]);
 		        if (occur.length == 0)
 		        	result= Sequence.EMPTY_SEQUENCE;
 		        else
