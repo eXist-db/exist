@@ -31,11 +31,13 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 public class CollectionConfiguration {
 
@@ -59,6 +61,9 @@ public class CollectionConfiguration {
 	private final static String PERMISSIONS_ELEMENT = "default-permissions";
 	private final static String RESOURCE_PERMISSIONS_ATTR = "resource";
 	private final static String COLLECTION_PERMISSIONS_ATTR = "collection";
+    
+    private final static String VALIDATION_ELEMENT = "validation";
+    private final static String VALIDATION_MODE_ATTR = "mode";
 	
 	private static final Logger LOG = Logger.getLogger(CollectionConfiguration.class);
 
@@ -71,6 +76,8 @@ public class CollectionConfiguration {
 	
 	private int defCollPermissions;
 	private int defResPermissions;
+    
+    private int validationMode=XMLReaderObjectFactory.VALIDATION_UNKNOWN; 
 
     public CollectionConfiguration(BrokerPool pool) {
     	this.defResPermissions = pool.getSecurityManager().getResourceDefaultPerms();
@@ -124,6 +131,7 @@ public class CollectionConfiguration {
 						if(node.getNodeType() == Node.ELEMENT_NODE)
 							createTrigger(broker, (Element)node);
 					}
+                    
 			    } else if(INDEX_ELEMENT.equals(node.getLocalName())) {
 			        Element elem = (Element) node;
                     try {
@@ -134,6 +142,7 @@ public class CollectionConfiguration {
                     } catch (DatabaseConfigurationException e) {
                         throw new CollectionConfigurationException(e.getMessage(), e);
                     }
+                    
 			    } else if (PERMISSIONS_ELEMENT.equals(node.getLocalName())) {
 			    	Element elem = (Element) node;
 			    	String permsOpt = elem.getAttribute(RESOURCE_PERMISSIONS_ATTR);
@@ -156,6 +165,18 @@ public class CollectionConfiguration {
 								e.getMessage(), e);
 						}
 					}
+                    
+                } else if (VALIDATION_ELEMENT.equals(node.getLocalName())) {
+                    Element elem = (Element) node;
+                    String mode = elem.getAttribute(VALIDATION_MODE_ATTR);
+                    if(mode==null){
+                        LOG.debug("Unable to determine validation mode in "+srcCollectionURI);
+                        validationMode=XMLReaderObjectFactory.VALIDATION_UNKNOWN;
+                    } else {
+                        LOG.debug(srcCollectionURI + " : Validation mode="+mode);
+                        validationMode=XMLReaderObjectFactory.convertValidationMode(mode);
+                    }                
+                    
 			    } else {
                     LOG.info("Ignored node '" + node.getLocalName() + "' in configuration document");
                     //TODO : throw an exception like above ? -pb
@@ -184,6 +205,10 @@ public class CollectionConfiguration {
     
     public int getDefResPermissions() {
     	return defResPermissions;
+    }
+    
+    public int getValidationMode() {
+        return validationMode;
     }
     
     public IndexSpec getIndexConfiguration() {

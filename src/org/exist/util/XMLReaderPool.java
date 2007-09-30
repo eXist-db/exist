@@ -64,7 +64,8 @@ public class XMLReaderPool extends StackObjectPool {
         if (reader == null) {
             return;
         }
-        try {
+        
+        try {            
             reader.setContentHandler(DUMMY_HANDLER);
             reader.setErrorHandler(DUMMY_HANDLER);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, DUMMY_HANDLER);
