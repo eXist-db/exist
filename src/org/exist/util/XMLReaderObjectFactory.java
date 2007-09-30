@@ -26,11 +26,13 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.exist.EXistException;
+
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
+
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
@@ -43,6 +45,7 @@ import org.xml.sax.XMLReader;
  */
 public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     
+    public final static int VALIDATION_UNKNOWN = -1;
     public final static int VALIDATION_ENABLED = 0;
     public final static int VALIDATION_AUTO = 1;
     public final static int VALIDATION_DISABLED = 2;
@@ -86,19 +89,27 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     public Object makeObject() throws Exception {
         Configuration config = pool.getConfiguration();
         
-        // Get validation settings
-        int validation = VALIDATION_AUTO;
+        // Get validation settings        
         String option = (String) config.getProperty(PROPERTY_VALIDATION_MODE);
-        if (option != null) {
-            if (option.equals("true") || option.equals("yes"))
-                validation = VALIDATION_ENABLED;
-            
-            else if (option.equals("auto"))
-                validation = VALIDATION_AUTO;
-            
-            else
-                validation = VALIDATION_DISABLED;
-        }
+        int validation = convertValidationMode(option);
+        
+        GrammarPool grammarPool = 
+                (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+        eXistXMLCatalogResolver resolver = 
+                (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
+                
+        XMLReader xmlReader = createXmlReader(validation, grammarPool, resolver);
+        
+        setReaderValidationMode(validation, xmlReader);
+    
+        return xmlReader;
+    }
+    
+    /**
+     * Create Xmlreader and setup validation
+     */
+    public static XMLReader createXmlReader(int validation, GrammarPool grammarPool, 
+            eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException{
         
         // Create a xmlreader
         SAXParserFactory saxFactory = SAXParserFactory.newInstance();
@@ -112,9 +123,51 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         SAXParser saxParser = saxFactory.newSAXParser();
         XMLReader xmlReader = saxParser.getXMLReader();
         
+        // Setup grammar cache
+        if(grammarPool!=null){
+            xmlReader.setProperty(PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+        }
+
+        // Setup xml catalog resolver
+        if(resolver!=null){
+            xmlReader.setProperty(PROPERTIES_ENTITYRESOLVER, resolver);
+        }
+        
+        return xmlReader;
+    }
+    
+    /**
+     * Convert configuration text (yes,no,true,false,auto) into a magic number.  
+     */
+    public static int convertValidationMode(String option) {
+        int validation = VALIDATION_AUTO;
+        if (option != null) {
+            if (option.equals("true") || option.equals("yes")) {
+                validation = VALIDATION_ENABLED;
+                
+            } else if (option.equals("auto")) {
+                validation = VALIDATION_AUTO;
+                
+            } else {
+                validation = VALIDATION_DISABLED;
+            }
+        }
+        return validation;
+    }
+    
+    /**
+     * Setup validation mode of xml reader.
+     */
+    public static void setReaderValidationMode(int validation, XMLReader xmlReader){
+        
+        if(validation==VALIDATION_UNKNOWN){
+            return;
+        }
+
         // Configure xmlreader see http://xerces.apache.org/xerces2-j/features.html
-        xmlReader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
         try {
+            xmlReader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
+            
             xmlReader.setFeature(Namespaces.SAX_VALIDATION,
                 validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
 
@@ -135,21 +188,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         } catch (SAXNotSupportedException e1) {
             // Ignore: feature only recognized by xerces
         }
-
-        // Setup grammar cache
-        GrammarPool grammarPool =
-           (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
-        if(grammarPool!=null){
-            xmlReader.setProperty(PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
-        }
-
-        // Setup xml catalog resolver
-        eXistXMLCatalogResolver resolver = (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
-        if(resolver!=null){
-            xmlReader.setProperty(PROPERTIES_ENTITYRESOLVER, resolver);
-        }
         
-        return xmlReader;
     }
 
 }

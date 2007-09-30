@@ -73,7 +73,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
-import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.w3c.dom.Node;
@@ -131,8 +130,6 @@ public  class Collection extends Observable implements Comparable, Cacheable
     
     // creation time
     private long created = 0;
-    
-    private eXistXMLCatalogResolver resolver;
     
     private Observer[] observers = null;
     
@@ -900,8 +897,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 } catch (IOException e) {
                     LOG.debug("could not reset input source", e);
                 }
-                XMLReader reader = getReader(broker);
-                //info.setReader(reader, Collection.this);
+                
+                CollectionConfiguration colconf 
+                        = info.getDocument().getCollection().getConfiguration(broker);        
+                XMLReader reader = getReader(broker, colconf);
+
                 info.setReader(reader, null);
                 try {
                     reader.parse(source);
@@ -931,8 +931,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             public void run() throws SAXException, EXistException {
-                XMLReader reader = getReader(broker);
-                //info.setReader(reader, Collection.this);
+                
+                CollectionConfiguration colconf 
+                        = info.getDocument().getCollection().getConfiguration(broker);
+                XMLReader reader = getReader(broker, colconf);
+
                 info.setReader(reader, null);
                 try {
                     reader.parse(new InputSource(new StringReader(data)));
@@ -1077,8 +1080,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
             SAXException, LockException, IOException {
         return validateXMLResourceInternal(transaction, broker, docUri, new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException, EXistException {
-                XMLReader reader = getReader(broker);
-                //info.setReader(reader, Collection.this);
+                
+                CollectionConfiguration colconf 
+                        = info.getDocument().getCollection().getConfiguration(broker);       
+                XMLReader reader = getReader(broker, colconf);
+
                 info.setReader(reader, null);
                 try {
                     reader.parse(source);
@@ -1585,22 +1591,62 @@ public  class Collection extends Observable implements Comparable, Cacheable
         userReader = reader;
     }
     
-    /** If user-defined Reader is set, return it; otherwise return JAXP default XMLReader
-     * configured by eXist. */
-    private XMLReader getReader(DBBroker broker) throws EXistException,
+//    /** 
+//     * If user-defined Reader is set, return it; otherwise return JAXP 
+//     * default XMLReader configured by eXist. 
+//     */
+//    private XMLReader getReader(DBBroker broker) throws EXistException,
+//            SAXException {
+//        
+//        if(userReader != null){
+//            return userReader;
+//        }
+//
+//        return broker.getBrokerPool().getParserPool().borrowXMLReader();
+//    }
+    
+    /** 
+     * Get xml reader from readerpool and setup validation when needed.
+     */
+    private XMLReader getReader(DBBroker broker, CollectionConfiguration colconfig) throws EXistException,
             SAXException {
         
-        if ( userReader != null )
+        // If user-defined Reader is set, return it;
+        if(userReader != null){
             return userReader;
+        }
         
-        Configuration config = broker.getConfiguration();
-        resolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
-        return broker.getBrokerPool().getParserPool().borrowXMLReader();
+        // Get reader from readerpool.
+        XMLReader reader= broker.getBrokerPool().getParserPool().borrowXMLReader();
+        
+        // If Collection configuration exists (try to) get validation mode
+        // and setup reader with this information.
+        if( colconfig!=null ) {
+            int mode=colconfig.getValidationMode();
+            XMLReaderObjectFactory.setReaderValidationMode(mode, reader);  
+        } 
+        
+        // Return configured reader.
+        return reader;       
     }
     
+    /**
+     * Reset validation mode of reader and return reader to reader pool.
+     */    
     private void releaseReader(DBBroker broker, XMLReader reader) {
-        if (userReader != null )
+        if(userReader != null){
             return;
+        }
+       
+        // Get validation mode from static configuration
+        Configuration config = broker.getConfiguration();
+        String optionValue = (String) config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);
+        int validationMode = XMLReaderObjectFactory.convertValidationMode(optionValue);
+
+        // Restore default validation mode
+        XMLReaderObjectFactory.setReaderValidationMode(validationMode, reader);
+                   
+        // Return reader
         broker.getBrokerPool().getParserPool().returnXMLReader(reader);
     }
     
