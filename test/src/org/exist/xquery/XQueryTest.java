@@ -2591,7 +2591,78 @@ public class XQueryTest extends XMLTestCase {
             fail(ex.toString());
         }
     }
+
+    // regression http://sourceforge.net/support/tracker.php?aid=1805612
+    public void bugtestWrongAttributeTypeCheck_1805612() {
         
+        // OK
+        try {
+            String query = "declare namespace tst = \"http://test\"; "
+                    +"declare function tst:foo($a as element()?) {   $a }; "
+                    +"tst:foo( <result/> )";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "<result/>", result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+
+        // NOK
+        try {
+            String query = "declare namespace tst = \"http://test\"; "
+                    +"declare function tst:foo($a as element()?) {   $a }; "
+                    +"tst:foo( "
+                    +"let $a as xs:boolean := true()  return <result/> )";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "<result/>", result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+    
+    // regression http://sourceforge.net/support/tracker.php?aid=1805609
+    public void bugtestWrongAttributeCardinalityCount_1805609() {
+        
+        // OK
+        try {
+            String query = "element {\"a\"} { <element b=\"\"/>"
+                    +"/attribute()[namespace-uri(.) != \"http://www.asml.com/metainformation\"]}";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "<a b=\"\"/>", result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+
+        // NOK
+        try {
+            String query = "element {\"a\"} { <element b=\"\" c=\"\"/>"
+                    +"/attribute()[namespace-uri(.) != \"http://www.asml.com/metainformation\"]}";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "<a b=\"\" c=\"\"/>", result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+    
     
     
        
