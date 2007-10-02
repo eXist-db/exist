@@ -39,8 +39,29 @@ public class BinaryToString extends BasicFunction {
             },
             new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
             true
+        ),
+        new FunctionSignature(
+            new QName("string-to-binary", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Returns the contents of a binary resource as an xs:string value. The binary data " +
+            "is transformed into a Java string using the encoding specified in the optional " +
+            "second argument or UTF-8.",
+            new SequenceType[] {
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+        ),
+        new FunctionSignature(
+            new QName("string-to-binary", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Returns the contents of a binary resource as an xs:string value. The binary data " +
+            "is transformed into a Java string using the encoding specified in the optional " +
+            "second argument or UTF-8.",
+            new SequenceType[] {
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+            },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
         )
-	};
+    };
 	
 	public BinaryToString(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -53,13 +74,23 @@ public class BinaryToString extends BasicFunction {
 		String encoding = "UTF-8";
 		if (args.length == 2)
 			encoding = args[1].getStringValue();
-		Base64Binary binary = (Base64Binary) args[0].itemAt(0);
-		byte[] data = binary.getBinaryData();
-		try {
-			return new StringValue(new String(data, encoding));
-		} catch (UnsupportedEncodingException e) {
-			throw new XPathException(getASTNode(), "Unsupported encoding: " + encoding);
-		}
-	}
+        if (isCalledAs("binary-to-string")) {
+            Base64Binary binary = (Base64Binary) args[0].itemAt(0);
+            byte[] data = binary.getBinaryData();
+            try {
+                return new StringValue(new String(data, encoding));
+            } catch (UnsupportedEncodingException e) {
+                throw new XPathException(getASTNode(), "Unsupported encoding: " + encoding);
+            }
+        } else {
+            String str = args[0].getStringValue();
+            try {
+                byte[] data = str.getBytes(encoding);
+                return new Base64Binary(data);
+            } catch (UnsupportedEncodingException e) {
+                throw new XPathException(getASTNode(), "Unsupported encoding: " + encoding);
+            }
+        }
+    }
 
 }
