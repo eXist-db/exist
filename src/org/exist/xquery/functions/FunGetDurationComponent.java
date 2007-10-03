@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.functions;
 
+import java.math.BigDecimal;
+
 import javax.xml.datatype.DatatypeConstants;
 
 import org.exist.dom.QName;
@@ -118,10 +120,11 @@ public class FunGetDurationComponent extends BasicFunction {
             result = new IntegerValue(duration.getPart(DurationValue.MINUTE));
 			} else if (isCalledAs("seconds-from-duration")) {
 				if (duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS) == null)
-					//TODO sign inot account ?
 					result = new DecimalValue(0);
 				else
-					result = new DecimalValue(duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS).doubleValue() * duration.getCanonicalDuration().getSign());
+					result = new DecimalValue((BigDecimal)duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS));
+				if (duration.getCanonicalDuration().getSign() < 0)
+					result = ((DecimalValue)result).negate();
 			} else if (isCalledAs("months-from-duration")) {
             result = new IntegerValue(duration.getPart(DurationValue.MONTH));
 			} else if (isCalledAs("years-from-duration")) {
