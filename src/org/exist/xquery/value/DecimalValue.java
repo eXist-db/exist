@@ -369,6 +369,44 @@ public class DecimalValue extends NumericValue {
 		}
 	}
 	
+	public boolean compareTo(Collator collator, int operator, AtomicValue other)
+		throws XPathException {
+		if (other.isEmpty()) {
+			//Never equal, or inequal...
+			return false;
+		}		
+		if(Type.subTypeOf(other.getType(), Type.NUMBER)) {
+			if (isNaN()) {
+				//NaN does not equal itself.
+				if (((NumericValue)other).isNaN()) {
+					return operator == Constants.NEQ;
+				}
+			}			
+			if(Type.subTypeOf(other.getType(), Type.DECIMAL)) {
+				DecimalValue otherValue = (DecimalValue)other.convertTo(Type.DECIMAL);
+				switch(operator) {
+					case Constants.EQ:
+						return compareTo(otherValue) == Constants.EQUAL;
+					case Constants.NEQ:
+						return compareTo(otherValue) != Constants.EQUAL;
+					case Constants.GT:
+						return compareTo(otherValue) == Constants.SUPERIOR;
+					case Constants.GTEQ:
+						return compareTo(otherValue) != Constants.INFERIOR;
+					case Constants.LT:
+						return compareTo(otherValue) == Constants.INFERIOR;
+					case Constants.LTEQ:
+						return compareTo(otherValue) != Constants.SUPERIOR;
+					default:
+						throw new XPathException("Type error: cannot apply operator to numeric value");
+				}
+			}
+		}
+		//Default to the standard numeric comparison
+		return super.compareTo(collator, operator, other);
+	}
+
+	
     public int compareTo(Object o) {
         final AtomicValue other = (AtomicValue)o;
         if(Type.subTypeOf(other.getType(), Type.DECIMAL)) {
