@@ -2664,7 +2664,27 @@ public class XQueryTest extends XMLTestCase {
     }
     
     
-    
+    // regression http://sourceforge.net/support/tracker.php?aid=1806901
+    public void testDoubleDefaultNamespace_1806901() {
+        
+        // OK
+        try {
+            String query = "declare namespace xf = \"http://a\"; "
+                    +"declare option exist:serialize 'indent=no';"
+                    +"<html xmlns=\"http://b\"><xf:model><xf:instance xmlns=\"\"/></xf:model></html>";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "<html xmlns=\"http://b\"><xf:model xmlns:xf=\"http://a\">"
+                    +"<xf:instance xmlns=\"\"/></xf:model></html>", 
+                    result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
        
     // ======================================
     

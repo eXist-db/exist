@@ -300,23 +300,24 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 				}
 			}
 			Map.Entry nsEntry;
-			for (Iterator i = optionalNamespaceDecls.entrySet().iterator(); i.hasNext();) {
+            String optPrefix;
+            for (Iterator i = optionalNamespaceDecls.entrySet().iterator(); i.hasNext();) {
 				nsEntry = (Map.Entry) i.next();
-				prefix = (String) nsEntry.getKey();
+				optPrefix = (String) nsEntry.getKey();
 				uri = (String) nsEntry.getValue(); 
-				receiver.namespace(prefix, uri);
-				nsSupport.declarePrefix(prefix, uri);
+				receiver.namespace(optPrefix, uri);
+				nsSupport.declarePrefix(optPrefix, uri);
 			}
 			// output all namespace declarations
 			for (Iterator i = namespaceDecls.entrySet().iterator();	i.hasNext();) {
 				nsEntry = (Map.Entry) i.next();
-				prefix = (String) nsEntry.getKey();
-				if (prefix.equals("xmlns")) {
+				optPrefix = (String) nsEntry.getKey();
+				if (optPrefix.equals("xmlns")) {
 					continue;
 				}
 				uri = (String) nsEntry.getValue(); 
-				if(!optionalNamespaceDecls.containsKey(prefix)) {
-					receiver.namespace(prefix, uri);
+				if(!optionalNamespaceDecls.containsKey(optPrefix)) {
+					receiver.namespace(optPrefix, uri);
 				}
 			}
 			optionalNamespaceDecls.clear();
