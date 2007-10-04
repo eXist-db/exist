@@ -317,6 +317,14 @@ public class XQueryTest extends XMLTestCase {
 	        resu = (XMLResource) result.getResource(0);
 			assertEquals( "XQuery: " + query, "<value>X</value>", resu.getContent() );
 				
+            //Ordered value sequence
+            System.out.println("testFor 8: ========" );
+            query = "for $e in (1) order by $e return $e";			
+			result = service.queryResource(NUMBERS_XML, query );
+	        printResult(result);
+	        resu = (XMLResource) result.getResource(0);
+			assertEquals( "XQuery: " + query, "1", resu.getContent() );
+
 		} catch (XMLDBException e) {
 			System.out.println("testFor(): XMLDBException: "+e);
 			fail(e.getMessage());

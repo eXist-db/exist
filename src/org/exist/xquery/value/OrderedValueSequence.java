@@ -93,7 +93,9 @@ public class OrderedValueSequence extends AbstractSequence {
 		if (isEmpty)
 			hasOne = true;
         isEmpty = false;
-		if(count == items.length) {
+		if(count == 0 && items.length == 1) {
+			items = new Entry[2];
+		} else if (count == items.length) {
 			Entry newItems[] = new Entry[count * 2];
 			System.arraycopy(items, 0, newItems, 0, count);
 			items = newItems;
