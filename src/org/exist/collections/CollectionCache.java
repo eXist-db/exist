@@ -85,7 +85,9 @@ public class CollectionCache extends LRDCache {
 			bucket = 0;
 		old = (Collection)items[bucket];
 		if (old != null) {
-			pool.getConfigurationManager().invalidate(old.getURI());
+			if(pool.getConfigurationManager()!=null){ // might be null during db initialization
+				pool.getConfigurationManager().invalidate(old.getURI());
+            }
 			map.remove(old.getKey());
 			names.remove(old.getURI().getRawCollectionPath());
 			old.sync(true);
