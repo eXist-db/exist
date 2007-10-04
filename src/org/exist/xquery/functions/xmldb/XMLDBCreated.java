@@ -78,7 +78,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
                 new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
+			new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)
         );
 	
 	public XMLDBCreated(XQueryContext context, FunctionSignature signature) {
@@ -96,6 +96,11 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
                 date = ((CollectionImpl)collection).getCreationTime();
 			} else {
                 Resource resource = collection.getResource(args[1].getStringValue());
+                
+                if(resource==null){
+                    return Sequence.EMPTY_SEQUENCE;
+                }
+                
                 if(isCalledAs("last-modified"))
                 	date = ((EXistResource)resource).getLastModificationTime();
                 else
