@@ -289,7 +289,10 @@ public class ExtFulltext extends Function implements Optimizable {
     public String toString() {
         StringBuffer result = new StringBuffer();
         result.append(path.toString());
-        result.append(" &= ");
+        if (type == Constants.FULLTEXT_AND)
+            result.append(" &= ");
+        else
+            result.append(" |= ");
         result.append(searchTerm.toString());
         return result.toString();
     }
@@ -299,7 +302,10 @@ public class ExtFulltext extends Function implements Optimizable {
      */
     public void dump(ExpressionDumper dumper) {
         path.dump(dumper);
-        dumper.display(" &= ");
+        if (type == Constants.FULLTEXT_AND)
+        	dumper.display(" &= ");
+        else
+        	dumper.display(" |= ");
         searchTerm.dump(dumper);
     }
     
