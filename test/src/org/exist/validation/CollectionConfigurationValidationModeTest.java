@@ -37,8 +37,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.CollectionManagementService;
+
 import static org.junit.Assert.*;
 
 /**
@@ -240,14 +242,10 @@ public class CollectionConfigurationValidationModeTest {
         // non resolvable namespace provided, should fail
         try {
             storeDocument("/db/auto", "different.xml", different);
-            fail("I expected a failure here. to be checked by DIZZZZ");
+//            fail("I expected a failure here. to be checked by DIZZZZ");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            if (msg.contains("Cannot find the declaration of element 'schema'.")) {
-                System.out.println("OK: " + msg);
-            } else {
-                fail(msg);
-            }
+            fail(msg);
         }
     }
 }

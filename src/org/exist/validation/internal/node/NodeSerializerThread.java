@@ -61,7 +61,7 @@ public class NodeSerializerThread extends Thread{
         try {
             //parse serialization options
             Properties outputProperties = new Properties();
-            outputProperties.setProperty(OutputKeys.INDENT, "no");
+            outputProperties.setProperty(OutputKeys.INDENT, "yes");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             
             NodeSerializer.serialize(context, siNode, outputProperties, bos);
