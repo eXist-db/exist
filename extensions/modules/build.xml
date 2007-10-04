@@ -6,6 +6,30 @@
 	
     <property name="build.compiler" value="modern"/>
 	
+	<condition property="libs.available">
+		<and>
+			<available file="${top.dir}/${lib.user}/fop.jar"/>
+			<available file="${top.dir}/${lib.user}/batik-all-1.6.jar"/>
+			<available file="${top.dir}/${lib.user}/xmlgraphics-commons-1.2.jar"/>
+	    </and>
+	</condition>
+	
+	<target name="prepare-libs" unless="libs.available">
+	    <echo message="------------------------------------------------------"/>
+	    <echo message="Downloading libraries required by the xsl-fo module"/>
+	    <echo message="------------------------------------------------------"/>
+		<get src="http://mirror.public-internet.co.uk/apache/xmlgraphics/fop/binaries/fop-0.94-bin-jdk1.4.zip" dest="fop-0.94-bin-jdk1.4.zip" verbose="true" usetimestamp="true" />
+		<unzip src="fop-0.94-bin-jdk1.4.zip" dest="${top.dir}/${lib.user}">
+			<patternset>
+				<include name="fop-0.94/build/fop.jar"/>
+				<include name="fop-0.94/lib/batik-all-1.6.jar"/>
+				<include name="fop-0.94/lib/xmlgraphics-commons-1.2.jar"/>
+			</patternset>
+			<mapper type="flatten"/>
+		</unzip>
+		<delete file="fop-0.94-bin-jdk1.4.zip"/>
+	</target>
+	
 	<path id="classpath.core">
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
@@ -42,7 +66,7 @@
         </antlr>
 	</target>
 		
-	<target name="prepare">
+	<target name="prepare" depends="prepare-libs">
 		<mkdir dir="${classes}"/>
 	</target>
 	
