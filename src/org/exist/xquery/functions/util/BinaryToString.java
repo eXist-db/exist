@@ -25,8 +25,7 @@ public class BinaryToString extends BasicFunction {
             new SequenceType[] {
                 new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
             },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-            true
+            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
         ),
         new FunctionSignature(
             new QName("binary-to-string", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -37,8 +36,7 @@ public class BinaryToString extends BasicFunction {
                 new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
             },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-            true
+            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
         ),
         new FunctionSignature(
             new QName("string-to-binary", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),

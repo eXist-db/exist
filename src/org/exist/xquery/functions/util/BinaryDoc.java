@@ -51,8 +51,7 @@ public class BinaryDoc extends BasicFunction {
             new SequenceType[] {
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
             },
-            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE),
-            true
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
         ),
         new FunctionSignature(
             new QName("binary-doc-available", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -60,8 +59,7 @@ public class BinaryDoc extends BasicFunction {
             new SequenceType[] {
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
             },
-            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
-            true
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
         )
     };
     
