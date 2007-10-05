@@ -25,11 +25,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
+
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
@@ -38,9 +38,8 @@ import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.resolver.SearchResourceResolver;
 import org.exist.validation.resolver.AnyUriResolver;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
+
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -52,14 +51,10 @@ public class Validator {
     
     private final static Logger logger = Logger.getLogger(Validator.class);
     
-    // TODO check whether this private static trick is wise to do.
-    // These are made static to prevent expensive double initialization
-    // of classes.
-    private static SAXParserFactory saxFactory = null;
-
     private BrokerPool brokerPool = null;
     private GrammarPool grammarPool = null;
     private Configuration config = null;
+    private eXistXMLCatalogResolver systemCatalogResolver = null;
     
 
     /**
@@ -82,37 +77,13 @@ public class Validator {
         }
         
         // setup grammar brokerPool
-       grammarPool 
+        grammarPool 
            = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
         
-        // setup sax factory ; be sure just one instance!
-        if(saxFactory==null){
-            saxFactory = SAXParserFactory.newInstance();
-            
-            
-            // Enable validation stuff
-            saxFactory.setValidating(true);
-            saxFactory.setNamespaceAware(true);
-            
-            try{
-                // Enable validation features of xerces
-                saxFactory.setFeature(Namespaces.SAX_VALIDATION, true);
-                saxFactory.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
-                saxFactory.setFeature(XMLReaderObjectFactory.FEATURES_VALIDATION_SCHEMA,true);
-                saxFactory.setFeature(XMLReaderObjectFactory.PROPERTIES_LOAD_EXT_DTD, true);
-                saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
-                
-            } catch (ParserConfigurationException ex){
-                logger.error(ex);
-                
-            } catch (SAXNotRecognizedException ex){
-                logger.error(ex);
-                
-            } catch (SAXNotSupportedException ex){
-                logger.error(ex);
-                
-            }
-        }
+        // setup system wide catalog resolver
+        systemCatalogResolver
+           = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+        
     }
     
     
@@ -123,8 +94,7 @@ public class Validator {
      * @return      Validation report containing all validation info.
      */
     public ValidationReport validate(InputStream is) {
-        return validate( new InputStreamReader(is) , null );
-        
+        return validate( new InputStreamReader(is) , null );     
     }
     
     /**
@@ -134,8 +104,7 @@ public class Validator {
      * @return      Validation report containing all validation info.
      */
     public ValidationReport validate(InputStream is, String grammarPath) {
-        return validate( new InputStreamReader(is), grammarPath );
-        
+        return validate( new InputStreamReader(is), grammarPath );        
     }
     
     /**
@@ -164,27 +133,41 @@ public class Validator {
         
         logger.debug("Start validation.");
         
+        // repair path to local resource
+        if(grammarPath!=null && grammarPath.startsWith("/")){
+            grammarPath="xmldb:exist://"+grammarPath;
+        }
+        
         ValidationReport report = new ValidationReport();
+        ValidationContentHandler handler = new ValidationContentHandler();
+        
+        // setup sax factory ; be sure just one instance!
+        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+
+        // Enable validation stuff
+        saxFactory.setValidating(true);
+        saxFactory.setNamespaceAware(true);
         
         try{
             InputSource source = new InputSource(reader);
             
+            // Create xml reader
             SAXParser saxParser = saxFactory.newSAXParser();
-            saxParser.setProperty(XMLReaderObjectFactory.PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
-            
             XMLReader xmlReader = saxParser.getXMLReader();
             
-            // repair path to local resource
-            if(grammarPath!=null && grammarPath.startsWith("/")){
-                grammarPath="xmldb:exist://"+grammarPath;
-            }
+            // Setup xmlreader
+            xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+            
+            xmlReader.setFeature(Namespaces.SAX_VALIDATION, true);
+            xmlReader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
+            xmlReader.setFeature(XMLReaderObjectFactory.FEATURES_VALIDATION_SCHEMA,true);
+            xmlReader.setFeature(XMLReaderObjectFactory.PROPERTIES_LOAD_EXT_DTD, true);
+            xmlReader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
 
             if(grammarPath==null){
                 // Scenario 1 : no params - use system catalog
                 logger.debug("Validation using system catalog.");
-                eXistXMLCatalogResolver resolver = 
-                    (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
-                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, systemCatalogResolver);
                 
             } else if(grammarPath.endsWith(".xml")){
                 // Scenario 2 : path to catalog (xml)
@@ -201,18 +184,12 @@ public class Validator {
                 
             } else {
                 // Scenario 4 : path to grammar (xsd, dtd) specified.
-                logger.debug("Validation using specified grammar '"+grammarPath+"'.");
-                
-                // Just find the document using empty resolver
-                //eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
+                logger.debug("Validation using specified grammar '"+grammarPath+"'.");                
                 AnyUriResolver resolver = new AnyUriResolver(grammarPath);
                 xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
-
             }
 
-            xmlReader.setErrorHandler( report );
-            
-            ValidationContentHandler handler = new ValidationContentHandler();
+            xmlReader.setErrorHandler(report);
             xmlReader.setContentHandler(handler);
             
             logger.debug("Validation started.");
@@ -224,7 +201,7 @@ public class Validator {
             report.setNamespaceUri(handler.getNamespaceUri());
             
             if( ! report.isValid() ){
-                logger.debug( "Document is not valid.")  ;
+                logger.debug("Document is not valid.");
             }
             
         } catch(ExistIOException ex){
