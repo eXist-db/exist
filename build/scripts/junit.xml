@@ -78,7 +78,7 @@
             <fileset dir="${junit.reports.dat}">
                 <include name="TEST-*.xml"/>
             </fileset>
-            <report format="frames" styledir="${tools.ant}/etc" todir="${junit.reports.html}"/>
+            <report format="frames" todir="${junit.reports.html}"/>
         </junitreport>
     </target>
 
