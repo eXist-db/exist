@@ -5,8 +5,36 @@
 	<property name="top.dir" value="../.."/>
 	
     <property name="build.compiler" value="modern"/>
-	
-	<condition property="libs.available">
+
+    <property file="local.build.properties"/>
+    <property file="build.properties"/>
+
+    <condition property="include.module.simpleql.config">
+        <istrue value="${include.module.simpleql}"/>
+    </condition>
+
+    <condition property="include.module.xmldiff.config">
+        <istrue value="${include.module.xmldiff}"/>
+    </condition>
+
+    <condition property="include.module.image.config">
+        <istrue value="${include.module.image}"/>
+    </condition>
+
+    <condition property="include.module.mail.config">
+        <istrue value="${include.module.mail}"/>
+    </condition>
+
+    <condition property="include.module.httpclient.config">
+        <istrue value="${include.module.httpclient}"/>
+    </condition>
+
+    <condition property="include.module.xslfo.config">
+        <istrue value="${include.module.xslfo}"/>
+    </condition>
+
+    <!-- Special targets for XSLFO module -->
+    <condition property="libs.available.xslfo">
 		<and>
 			<available file="${top.dir}/${lib.user}/fop.jar"/>
 			<available file="${top.dir}/${lib.user}/batik-all-1.6.jar"/>
@@ -14,8 +42,9 @@
 	    </and>
 	</condition>
 	
-	<target name="prepare-libs" unless="libs.available">
-	    <echo message="------------------------------------------------------"/>
+	<target name="prepare-libs-xslfo" unless="libs.available.xslfo" if="include.module.xslfo.config">
+        <echo message="Load: ${include.module.xslfo}"/>
+        <echo message="------------------------------------------------------"/>
 	    <echo message="Downloading libraries required by the xsl-fo module"/>
 	    <echo message="------------------------------------------------------"/>
 		<get src="http://mirror.public-internet.co.uk/apache/xmlgraphics/fop/binaries/fop-0.94-bin-jdk1.4.zip" dest="fop-0.94-bin-jdk1.4.zip" verbose="true" usetimestamp="true" />
@@ -29,8 +58,26 @@
 		</unzip>
 		<delete file="fop-0.94-bin-jdk1.4.zip"/>
 	</target>
-	
-	<path id="classpath.core">
+
+    <!-- Special targets for simpleql module -->
+    <uptodate property="parser.uptodate"
+		srcfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
+		targetfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.java"/>
+
+	<target name="prepare-simpleql" unless="parser.uptodate" if="include.module.simpleql.config">
+        <echo message="Running ANTLR to generate XQuery parser"/>
+		<antlr target="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
+                outputdirectory="${src}/org/exist/xquery/modules/simpleql"
+                traceparser="${antlr.traceParser}"
+                tracelexer="${antlr.traceLexer}">
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+        </antlr>
+	</target>
+    <!-- Special targets end -->
+    
+    <path id="classpath.core">
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
         </fileset>
@@ -49,28 +96,12 @@
     	<pathelement path="${top.dir}/start.jar"/>
 		<pathelement path="${java.class.path}"/>
     </path>
-	
-	<uptodate property="parser.uptodate"
-		srcfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
-		targetfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.java"/>
-	
-	<target depends="prepare" name="antlr" unless="parser.uptodate">
-        <echo message="Running ANTLR to generate XQuery parser"/>
-		<antlr target="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
-                outputdirectory="${src}/org/exist/xquery/modules/simpleql"
-                traceparser="${antlr.traceParser}"
-                tracelexer="${antlr.traceLexer}">
-            <classpath>
-                <path refid="classpath.core"/>
-            </classpath>
-        </antlr>
-	</target>
 		
-	<target name="prepare" depends="prepare-libs">
+	<target name="prepare" depends="prepare-libs-xslfo,prepare-simpleql">
 		<mkdir dir="${classes}"/>
-	</target>
+    </target>
 	
-	<target name="compile" depends="prepare, antlr">
+	<target name="compile" depends="prepare">
 		<echo message="---------------------------"/>
         <echo message="Compiling extension modules"/>
         <echo message="---------------------------"/>
@@ -82,6 +113,13 @@
             <classpath>
             	<path refid="classpath.core"/>
             </classpath>
+
+            <exclude name="org/exist/xquery/modules/xslfo/**" unless="include.module.xslfo.config"/>
+            <exclude name="org/exist/xquery/modules/simpleql/**" unless="include.module.simpleql.config"/>
+            <exclude name="org/exist/xquery/modules/httpclient/**" unless="include.module.httpclient.config"/>
+            <exclude name="org/exist/xquery/modules/xmldiff/**" unless="include.module.xmldiff.config"/>
+            <exclude name="org/exist/xquery/modules/image/**" unless="include.module.image.config"/>
+            <exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
         </javac>
 	</target>
 	
