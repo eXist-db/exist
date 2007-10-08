@@ -106,7 +106,8 @@ public class RemoveCollectionTest {
             
             transact.commit(transaction);
             System.out.println("Transaction interrupted ...");
-	    } catch (Exception e) {            
+	    } catch (Exception e) {  
+	    	e.printStackTrace();
 	        fail(e.getMessage());               
         } finally {
         	if (pool != null) pool.release(broker);

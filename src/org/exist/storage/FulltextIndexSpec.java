@@ -21,6 +21,7 @@
 package org.exist.storage;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -307,7 +308,10 @@ public class FulltextIndexSpec {
     				if (path != null) 
     					result.append("\tpreserve content : ").append(path.toString()).append('\n');   	  
     	  		}
-    	  }      	  
+    	  }  
+    	  for (Iterator i = qnameSpecs.iterator(); i.hasNext(); ) {
+    		  result.append("\tQName : ").append(i.next()).append('\n');   
+    	  }
     	  return result.toString();
       }
 
