@@ -105,18 +105,18 @@ public class ReceiverToSAX implements Receiver {
 			QName attrQName;
 			for(int i = 0; i < attribs.getLength(); i++) {
 				attrQName = attribs.getQName(i);
-				a.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(), attrQName.toString(),
+				a.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(), attrQName.getStringValue(),
 						"CDATA", attribs.getValue(i));
 			}
 		}
-		contentHandler.startElement(qname.getNamespaceURI(), qname.getLocalName(), qname.toString(), a);
+		contentHandler.startElement(qname.getNamespaceURI(), qname.getLocalName(), qname.getStringValue(), a);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
 	 */
 	public void endElement(QName qname) throws SAXException {
-		contentHandler.endElement(qname.getNamespaceURI(), qname.getLocalName(), qname.toString());
+		contentHandler.endElement(qname.getNamespaceURI(), qname.getLocalName(), qname.getStringValue());
 	}
 
 	/* (non-Javadoc)

@@ -49,6 +49,7 @@ public class QName implements Comparable {
 	private String localName_ = null;
 	private String namespaceURI_ = null;
 	private String prefix_ = null;
+	//TODO ; use ElementValue.INKNOWN and type explicitely ?
     private byte nameType_ = ElementValue.ELEMENT;
 
 	/**

@@ -165,7 +165,7 @@ public class XMLWriter {
 		if (!declarationWritten)
 			writeDeclaration();
         if (!doctypeWritten)
-            writeDoctype(qname.toString());
+            writeDoctype(qname.getStringValue());
 		try {
 			if (tagIsOpen)
 				closeStartTag(false);

@@ -33,6 +33,7 @@ import org.exist.util.UTF8;
  */
 public class ElementValue extends Value {
 
+	public static final byte UNKNOWN = -1;
 	public static final byte ELEMENT = 0;
 	public static final byte ATTRIBUTE = 1;
 	public static final byte ATTRIBUTE_ID = 2;

@@ -237,7 +237,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                     + "ms.");
         } catch (Exception e) {
             transact.abort(txn);
-            LOG.debug(e);
+            LOG.debug(e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
         } finally {
             pool.release(broker);
