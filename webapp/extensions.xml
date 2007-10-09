@@ -116,6 +116,7 @@
       <para>This modules provides facilities for sending text and/or HTML emails from XQuery using either SMTP or a local Sendmail binary.</para> 		    		
       <para>
 	<command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator>
+	<command>Contributors:</command>&#160;<dc:contributor>Robert Walpole</dc:contributor>
 	<command>Licence:</command>&#160;LGPL
 	<command>Status:</command>&#160;production
       </para>
