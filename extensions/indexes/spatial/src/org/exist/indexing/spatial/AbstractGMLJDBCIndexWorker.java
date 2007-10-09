@@ -28,7 +28,6 @@ import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -100,9 +99,12 @@ import com.vividsolutions.jts.io.WKTWriter;
 
 public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	
-	public static String GML_NS = "http://www.opengis.net/gml";
+	public static final String GML_NS = "http://www.opengis.net/gml";
     //The general configuration's element name to configure this kind of worker
-    protected final static String INDEX_ELEMENT = "gml";   
+    protected final static String INDEX_ELEMENT = "gml";
+    
+    public static final String START_KEY = "start_key";
+    public static final String END_KEY = "end_key";
     
     private static final Logger LOG = Logger.getLogger(AbstractGMLJDBCIndexWorker.class);
 
@@ -506,7 +508,8 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     protected abstract void releaseConnection(Connection conn) throws SQLException;
     
-    public Occurrences[] scanIndex(DocumentSet docs) {    	
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
+    	//TODO : try to use contextSet
     	Map occurences = new TreeMap();
     	Connection conn = null;
     	try { 
@@ -517,6 +520,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 				//TODO : check if document is GML-aware ?
 		    	//Aggregate the occurences between different documents
 		    	for (Iterator iGeom = getGeometriesForDocument(doc, conn).entrySet().iterator(); iGeom.hasNext();) {
+		    		///TODO : use the IndexWorker.VALUE_COUNT hint, if present, to limit the number of returned entries
 		    		Map.Entry entry = (Map.Entry) iGeom.next();
 		            Geometry key = (Geometry)entry.getKey();
 		            //Do we already have an occurence for this geometry ?
@@ -553,22 +557,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	occurences.values().toArray(result);
     	return result;
     }
-    
-    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, Object start) {
-    	if (start != null && !"".equals(start))
-    		LOG.info("unsupported feature. '" + start + "' will be ignored");
-    	return scanIndex(docs);
-    }
-    
-    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, List qnames, Object start, Object end) {
-    	if (start != null && !"".equals(start))
-    		LOG.info("unsupported feature. '" + start + "' will be ignored");
-    	if (end != null && !"".equals(end))
-    		LOG.info("unsupported feature. '" + end + "' will be ignored");
-    	return scanIndex(docs);
-    }
-    
-    
+  
     public Geometry streamNodeToGeometry(XQueryContext context, NodeValue node) throws SpatialIndexException {
     	try {
     		context.pushDocumentContext();
