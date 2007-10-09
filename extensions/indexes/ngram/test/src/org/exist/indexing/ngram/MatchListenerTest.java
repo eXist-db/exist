@@ -362,7 +362,7 @@ public class MatchListenerTest {
                 String result = queryResult2String(broker, seq);
                 System.out.println("RESULT: " + result);
 
-                XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+                XMLAssert.assertXpathEvaluatesTo(i < 2 ? "2" : "1", "count(//exist:match)", result);
                 XMLAssert.assertXpathExists("//exist:match[text() = '" + strings[i] + "']", result);
             }
 

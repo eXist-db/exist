@@ -186,7 +186,14 @@ public abstract class Match implements Comparable {
     	}
     	return false;
     }
-    
+
+    public void mergeOffsets(Match other) {
+        for (int i = 0; i < other.currentOffset; i++) {
+            if (!hasMatchAt(other.offsets[i]))
+                addOffset(other.offsets[i], other.lengths[i]);
+        }
+    }
+
     public Match getNextMatch() {
 		return nextMatch;
 	}
