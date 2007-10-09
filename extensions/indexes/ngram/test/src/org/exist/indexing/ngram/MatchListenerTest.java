@@ -7,7 +7,6 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.NodeProxy;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -21,6 +20,7 @@ import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -345,17 +345,46 @@ public class MatchListenerTest {
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
-            HashMap m = new HashMap();
-                m.put("tei", "http://www.tei-c.org/ns/1.0");
-                m.put("exist", "http://exist.sourceforge.net/NS/exist");
-                NamespaceContext ctx = new SimpleNamespaceContext(m);
-                XMLUnit.setXpathNamespaceContext(ctx);
-
             String[] strings = new String[] { "龍", "龍護", "曰龍護", "名曰龍護" };
             for (int i = 0; i < strings.length; i++) {
                 Sequence seq = xquery.execute(
                         "declare namespace tei=\"http://www.tei-c.org/ns/1.0\";\n" +
                         "//tei:p[ngram:contains(., '" + strings[i] + "')]",
+                        null, AccessContext.TEST);
+                assertNotNull(seq);
+                assertEquals(1, seq.getItemCount());
+                String result = queryResult2String(broker, seq);
+                System.out.println("RESULT: " + result);
+
+                XMLAssert.assertXpathEvaluatesTo(i < 2 ? "2" : "1", "count(//exist:match)", result);
+                XMLAssert.assertXpathExists("//exist:match[text() = '" + strings[i] + "']", result);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
+    public void constructedNodes() {
+        DBBroker broker = null;
+        try {
+            configureAndStore(CONF3, XML2);
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+
+            String[] strings = new String[] { "龍", "龍護", "曰龍護", "名曰龍護" };
+            for (int i = 0; i < strings.length; i++) {
+                Sequence seq = xquery.execute(
+                        "declare namespace tei=\"http://www.tei-c.org/ns/1.0\";\n" +
+                        "for $para in //tei:p[ngram:contains(., '" + strings[i] + "')]\n" +
+                        "return\n" +
+                        "   <match>{$para}</match>",
                         null, AccessContext.TEST);
                 assertNotNull(seq);
                 assertEquals(1, seq.getItemCount());
@@ -406,6 +435,12 @@ public class MatchListenerTest {
             if (pool != null)
                 pool.release(broker);
         }
+
+        HashMap m = new HashMap();
+        m.put("tei", "http://www.tei-c.org/ns/1.0");
+        m.put("exist", "http://exist.sourceforge.net/NS/exist");
+        NamespaceContext ctx = new SimpleNamespaceContext(m);
+        XMLUnit.setXpathNamespaceContext(ctx);
     }
 
     @AfterClass
@@ -483,6 +518,6 @@ public class MatchListenerTest {
         Serializer serializer = broker.getSerializer();
         serializer.reset();
         serializer.setProperties(props);
-        return serializer.serialize((NodeProxy) seq.itemAt(0));
+        return serializer.serialize((NodeValue) seq.itemAt(0));
     }
 }

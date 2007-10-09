@@ -1,30 +1,27 @@
 package org.exist.storage.serializers;
 
+import org.custommonkey.xmlunit.XMLAssert;
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationManager;
+import org.exist.collections.IndexInfo;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.Configuration;
-import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.IndexInfo;
 import org.exist.test.TestConstants;
+import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.value.Sequence;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
-import org.exist.dom.NodeProxy;
-import org.exist.security.xacml.AccessContext;
-import org.exist.EXistException;
-import org.junit.BeforeClass;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
 import org.xml.sax.SAXException;
-import org.custommonkey.xmlunit.XMLAssert;
 
 import javax.xml.transform.OutputKeys;
 import java.io.File;
@@ -119,6 +116,17 @@ public class FTMatchListenerTest {
             XMLAssert.assertEquals("<para>another paragraph with <note><hi>" + MATCH_START + "nested" +
                 MATCH_END + "</hi> " + MATCH_START +
                 "inner" + MATCH_END + "</note> " + MATCH_START + "elements" + MATCH_END + ".</para>", result);
+
+            seq = xquery.execute(
+                "for $para in //para[. &= 'nested inner elements'] return\n" +
+                "   <hit>{$para}</hit>", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertEquals("<hit><para>another paragraph with <note><hi>" + MATCH_START + "nested" +
+                MATCH_END + "</hi> " + MATCH_START +
+                "inner" + MATCH_END + "</note> " + MATCH_START + "elements" + MATCH_END + ".</para></hit>", result);
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -174,6 +182,17 @@ public class FTMatchListenerTest {
             XMLAssert.assertEquals("<para>" + MATCH_START + "double" + MATCH_END + " " +
                 MATCH_START + "match" + MATCH_END + " " + MATCH_START + "double" + MATCH_END + " " +
                 MATCH_START + "match" + MATCH_END + "</para>", result);
+
+            seq = xquery.execute(
+                    "for $para in //para[. &= 'double match'] return\n" +
+                    "   <hit>{$para}</hit>", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertEquals("<hit><para>" + MATCH_START + "double" + MATCH_END + " " +
+                MATCH_START + "match" + MATCH_END + " " + MATCH_START + "double" + MATCH_END + " " +
+                MATCH_START + "match" + MATCH_END + "</para></hit>", result);
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -291,6 +310,6 @@ public class FTMatchListenerTest {
         Serializer serializer = broker.getSerializer();
         serializer.reset();
         serializer.setProperties(props);
-        return serializer.serialize((NodeProxy) seq.itemAt(0));
+        return serializer.serialize((NodeValue) seq.itemAt(0));
     }
 }

@@ -566,7 +566,27 @@ public abstract class Serializer implements XMLReader {
         }
     }
 
-	protected void releasePrettyPrinter() {
+    protected Receiver setupMatchListeners(NodeProxy p) {
+        Receiver oldReceiver = receiver;
+        if (getHighlightingMode() != TAG_NONE) {
+            IndexController controller = broker.getIndexController();
+            MatchListener listener = controller.getMatchListener(p);
+            if (ftmatch.hasMatches(p)) {
+                ftmatch.reset(p);
+                ftmatch.setNextInChain(receiver);
+                receiver = ftmatch;
+                LOG.debug("Applying FTMatchListener");
+            }
+            if (listener != null) {
+                MatchListener last = (MatchListener) listener.getLastInChain();
+                last.setNextInChain(receiver);
+                receiver = listener;
+            }
+        }
+        return oldReceiver;
+    }
+    
+    protected void releasePrettyPrinter() {
 		if (xmlout != null)
             SerializerPool.getInstance().returnObject(xmlout);
 		xmlout = null;
@@ -842,13 +862,15 @@ public abstract class Serializer implements XMLReader {
 		receiver.endDocument();
 	}
 
-    public void toReceiver(NodeProxy p) throws SAXException {
-        toReceiver(p, true);
+    public void toReceiver(NodeProxy p, boolean highlightMatches) throws SAXException {
+        toReceiver(p, highlightMatches, true);
     }
 
-    public void toReceiver(NodeProxy p, boolean checkAttributes) throws SAXException {
-	    serializeToReceiver(p, false, checkAttributes);
-	}
+    public void toReceiver(NodeProxy p, boolean highlightMatches, boolean checkAttributes) throws SAXException {
+        Receiver oldReceiver = highlightMatches ? setupMatchListeners(p) : receiver;
+        serializeToReceiver(p, false, checkAttributes);
+        receiver = oldReceiver;
+    }
 
     protected abstract void serializeToReceiver(NodeProxy p, boolean generateDocEvent, boolean checkAttributes) throws SAXException;
 
