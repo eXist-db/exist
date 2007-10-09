@@ -21,10 +21,14 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.IndexWorker;
+import org.exist.indexing.OrderedValuesIndex;
 import org.exist.storage.Indexable;
 import org.exist.util.Occurrences;
 import org.exist.util.ValueOccurrences;
@@ -124,7 +128,14 @@ public class IndexKeys extends BasicFunction {
         	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[4].itemAt(0).getStringValue()).getWorker();
         	if (indexWorker == null)
         		throw new XPathException("Unknown index: " + args[4].itemAt(0).getStringValue());
-        	Occurrences[] occur = indexWorker.scanIndexKeys(context, docs, nodes, args[1]);
+        	Map hints = new HashMap();
+        	hints.put(IndexWorker.VALUE_COUNT, new IntegerValue(max));
+        	if (indexWorker instanceof OrderedValuesIndex)
+        		hints.put(OrderedValuesIndex.START_VALUE, args[1]);
+        	else
+        		LOG.info(indexWorker + " isn't an instance of org.exist.indexing.OrderedIndexWorker. " + args[1] + " ignored." );
+        	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);        	
+        	//TODO : add an extra argument to pass the END_VALUE ?
 	        int len = (occur.length > max ? max : occur.length);
 	        Sequence params[] = new Sequence[2];
 	        ValueSequence data = new ValueSequence();

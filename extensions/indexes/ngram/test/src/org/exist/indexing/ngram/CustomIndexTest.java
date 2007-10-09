@@ -26,6 +26,7 @@ import org.exist.util.ConfigurationHelper;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -627,16 +628,15 @@ public class CustomIndexTest extends TestCase {
     //TODO : could be replaced by an XQuery call to index-keys(). See above
     private void checkIndex(DBBroker broker, DocumentSet docs, String term, int count) {
         NGramIndexWorker index = (NGramIndexWorker) broker.getIndexController().getWorkerByIndexId(NGramIndex.ID);
-        Occurrences[] occurrences = index.scanIndex(docs);
+        XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
+        Occurrences[] occurrences = index.scanIndex(context, docs, null, null);
         int found = 0;
         for (int i = 0; i < occurrences.length; i++) {
             Occurrences occurrence = occurrences[i];
             if (occurrence.getTerm().compareTo(term) == 0)
                 found++;
         }        
-        assertEquals(count, found);
-        //TODO : we  could use this, but how to get an XQueryContext?
-        //Occurrences[] occurrences = index.scanIndex(context, docs, null, term);
+        assertEquals(count, found);        
     }
 
     protected void setUp() {

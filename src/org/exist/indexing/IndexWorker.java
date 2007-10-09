@@ -21,7 +21,6 @@
  */
 package org.exist.indexing;
 
-import java.util.List;
 import java.util.Map;
 
 import org.exist.collections.Collection;
@@ -45,6 +44,11 @@ import org.w3c.dom.NodeList;
  * to take care of synchronizing access to shared resources.
  */
 public interface IndexWorker {
+	
+    /**
+     * A key to a QName {@link java.util.List} "hint" to be used when the index scans its index entries
+     */	
+	public static final String VALUE_COUNT = "value_count";	
 	
     /**
      * Returns an ID which uniquely identifies this worker's index.
@@ -179,21 +183,24 @@ public interface IndexWorker {
     boolean checkIndex(DBBroker broker);
 
     /** 
-     * Return <strong>ordered</strong> (whatever the ordering semantics) and <strong>aggregated</strong>
-     * (on a document count basis) index entries for the specified document set. 
+     * Return <strong>aggregated</strong> (on a document count basis) 
+     * index entries for the specified document set. Aggregation can only occur if
+     * the index entries can be compared, i.e. if the index implements 
+     * {@link org.exist.indexing.OrderedValuesIndex}, otherwise each entry will be considered
+     * as a single occurence.
+     * @param context 
      * @param docs The documents to which the index entries belong
+	 * @param contextSet
+     * @param hints Some "hints" for retrieving the index entries. See such hints in
+     * {@link org.exist.indexing.OrderedValuesIndex} and {@link org.exist.indexing.QNamedKeysIndex}.
      * @return Occurrences objects that contain :
      * <ol>
-     * <li>a <strong>string</strong> representation of the index entry</li>
+     * <li>a <strong>string</strong> representation of the index entry. This may change in the future.</li>
      * <li>the number of occurrences for the index entry over all the documents</li>
      * <li>the list of the documents in which the index entry is</li>
      * </ol> 
      */
-    public Occurrences[] scanIndex(DocumentSet docs);
-    
-    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, Object start);
-    
-    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, List qnames, Object start, Object end);
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints);
     
     //TODO : a scanIndex() method that would return an unaggregated list of index entries ?
 
