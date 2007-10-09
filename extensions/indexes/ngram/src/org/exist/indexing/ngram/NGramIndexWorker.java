@@ -54,6 +54,8 @@ import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
+import org.exist.indexing.OrderedValuesIndex;
+import org.exist.indexing.QNamedKeysIndex;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -97,12 +99,11 @@ import org.xml.sax.SAXException;
  *
  * <pre>[docId : int, nameType: byte, occurrenceCount: int, entrySize: long, [id: NodeId, offset: int, ...]* ]</pre>
  */
-public class NGramIndexWorker implements IndexWorker {
+public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static final Logger LOG = Logger.getLogger(NGramIndexWorker.class);
 
     private final static String INDEX_ELEMENT = "ngram";
-
     private static final String QNAME_ATTR = "qname";
 
     private static final byte IDX_QNAME = 0;
@@ -426,73 +427,17 @@ public class NGramIndexWorker implements IndexWorker {
     	return true;
     }
 
-    public Occurrences[] scanIndex(DocumentSet docs) {
-        final IndexScanCallback cb = new IndexScanCallback(docs);
-        final Lock lock = index.db.getLock();
-		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-            final int collectionId = ((Collection) i.next()).getId();
-            Value ref = new NGramQNameKey(collectionId);
-            final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			try {
-				lock.acquire(Lock.READ_LOCK);
-				index.db.query(query, cb);
-			} catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
-			} catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-			} catch (BTreeException e) {
-                LOG.error(e.getMessage(), e);
-			} catch (TerminatedException e) {
-                LOG.warn(e.getMessage(), e);
-            } finally {
-				lock.release(Lock.READ_LOCK);
-			}
-		}
-		Occurrences[] result = new Occurrences[cb.map.size()];
-		return (Occurrences[]) cb.map.values().toArray(result);
-    }
-
-    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, Object start) {
-        List qnames = getDefinedIndexes(context.getBroker(), docs);
-    	final Lock lock = index.db.getLock();
-        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
-        for (int q = 0; q < qnames.size(); q++) {
-            for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-                final int collectionId = ((Collection) i.next()).getId();
-                final IndexQuery query;
-                if (start == null) {
-                    Value startRef = new NGramQNameKey(collectionId);
-                    query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
-                } else {
-                    Value startRef = new NGramQNameKey(collectionId, (QName)qnames.get(q),
-                    		context.getBroker().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
-                    query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
-                }
-                try {
-                    lock.acquire(Lock.READ_LOCK);
-                    index.db.query(query, cb);
-                } catch (LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
-                } catch (IOException e) {
-                    LOG.error(e.getMessage(), e);
-                } catch (BTreeException e) {
-                    LOG.error(e.getMessage(), e);
-                } catch (TerminatedException e) {
-                    LOG.warn(e.getMessage(), e);
-                } finally {
-                    lock.release(Lock.READ_LOCK);
-                }
-            }
-        }
-        Occurrences[] result = new Occurrences[cb.map.size()];
-        return (Occurrences[]) cb.map.values().toArray(result);
-    }
-
-    public Occurrences[] scanIndexKeys(XQueryContext context, DocumentSet docs, NodeSet contextSet, List qnames,
-    		Object start, Object end) {
-        if (qnames == null || qnames.isEmpty())
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
+        List qnames = hints == null ? null : (List)hints.get(QNAMES_KEY);
+        //Expects a StringValue
+    	Object start = hints == null ? null : hints.get(START_VALUE);
+    	//Expects a StringValue
+    	Object end = hints == null ? null : hints.get(END_VALUE); 
+    	//TODO : does this fallback make sense ? I guess yes.
+    	if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes(context.getBroker(), docs);
-    	final Lock lock = index.db.getLock();
+    	//TODO : use the IndexWorker.VALUE_COUNT hint, if present, to limit the number of returned entries
+    	final Lock lock = index.db.getLock(); 
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
         for (int q = 0; q < qnames.size(); q++) {
             for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
