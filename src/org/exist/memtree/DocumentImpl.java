@@ -785,7 +785,7 @@ public class DocumentImpl extends NodeImpl implements Document {
                     serializer.reset();
                     serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
                     serializer.setReceiver(receiver);
-                    serializer.toReceiver(document.references[document.alpha[nr]]);
+                    serializer.toReceiver(document.references[document.alpha[nr]], false);
                 } else {
                     receiver.addReferenceNode(document.references[document.alpha[nr]]);
                 }
@@ -953,7 +953,7 @@ public class DocumentImpl extends NodeImpl implements Document {
                     document.alphaLen[nr]);
             break;
     	case NodeImpl.REFERENCE_NODE:
-    		serializer.toReceiver(document.references[document.alpha[nr]]);
+    		serializer.toReceiver(document.references[document.alpha[nr]], true);
     	break;
     	}
     }

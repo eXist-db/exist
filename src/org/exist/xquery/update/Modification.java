@@ -159,7 +159,7 @@ public abstract class Modification extends AbstractExpression
 					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
 						int last = builder.getDocument().getLastNode();
 						NodeProxy p = (NodeProxy) item;
-						serializer.toReceiver(p, false);
+						serializer.toReceiver(p, false, false);
                         if (p.getNodeType() == Node.ATTRIBUTE_NODE)
                             item = builder.getDocument().getLastAttr();
                         else

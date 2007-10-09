@@ -47,7 +47,4 @@ import org.junit.runners.Suite;
         RangeIndexUpdateTest.class
 })
 public class AllStorageTests {
-
-    public static void main(String[] args) {
-    }
 }
