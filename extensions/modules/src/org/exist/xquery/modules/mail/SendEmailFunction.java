@@ -33,6 +33,7 @@ import java.net.Socket;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.Vector;
@@ -58,6 +59,7 @@ import org.exist.xquery.value.Type;
 
 //send-email specific imports
 import org.exist.util.Base64Encoder;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
@@ -67,8 +69,9 @@ import org.w3c.dom.Node;
  * allows email to be sent from XQuery using either SMTP or Sendmail.  
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2007-05-29
- * @version 1.12
+ * @author Robert Walpole <robert.walpole@devon.gov.uk>
+ * @serial 2007-10-05
+ * @version 1.2
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
@@ -76,7 +79,6 @@ public class SendEmailFunction extends BasicFunction
 {
 	//TODO: Feature - Add an option to execute the function Asynchronously as Socket operations for SMTP can be slow (Sendmail seems fast enough). Will require placing the SMTP code in a thread.
 	//TODO: Feature - Add a facility for the user to add their own message headers.
-	//TODO: Feature - Add attachment support, will need base64 encoding etc...
 	//TODO: Read the location of sendmail from the configuration file. Can vary from system to system
     
     private String charset;
@@ -84,7 +86,7 @@ public class SendEmailFunction extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
-			"Sends an email $a through the SMTP Server $b, or if $b is () tries to use the local sendmail program. $a is the email in the following format <mail><from/><reply-to/><to/><cc/><bcc/><subject/><message><text/><xhtml/></message></mail>. $c defines the charset value used in the \"Content-Type\" message header (Defaults to UTF-8)",
+			"Sends an email $a through the SMTP Server $b, or if $b is () tries to use the local sendmail program. $a is the email in the following format <mail><from/><reply-to/><to/><cc/><bcc/><subject/><message><text/><xhtml/></message><attachment filename=\"\" mimetype=\"\">xs:base64Binary</attachment></mail>. $c defines the charset value used in the \"Content-Type\" message header (Defaults to UTF-8)",
 			new SequenceType[]
 			{
 				new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
@@ -128,7 +130,7 @@ public class SendEmailFunction extends BasicFunction
             }
             
 			//Parse the XML <mail> into a mail Object
-			mail theMail = ParseMailXML( ((NodeValue)args[0].itemAt(0)).getNode() );
+			Mail theMail = ParseMailXML( ((NodeValue)args[0].itemAt(0)).getNode() );
 			
 			//Send email with Sendmail or SMTP?
 			if(!args[1].isEmpty())
@@ -163,7 +165,7 @@ public class SendEmailFunction extends BasicFunction
 	 * @param aMail		A mail object representing the email to send
 	 * @return		boolean value of true of false indicating success or failure to send email
 	 */
-	private boolean SendSendmail(mail aMail)
+	private boolean SendSendmail(Mail aMail)
 	{
 		try
 		{	
@@ -222,7 +224,7 @@ public class SendEmailFunction extends BasicFunction
 	 * @param SMTPServer	The SMTP Server to send the email through
 	 * @return		boolean value of true of false indicating success or failure to send email
 	 */
-	private boolean SendSMTP(mail aMail, String SMTPServer)
+	private boolean SendSMTP(Mail aMail, String SMTPServer)
 	{
 		final int TCP_PROTOCOL_SMTP = 25;									//SMTP Protocol
 		String SMTPResult = "";												//Holds the server Result code when an SMTP Command is executed
@@ -351,92 +353,179 @@ public class SendEmailFunction extends BasicFunction
 	 * @param out		A PrintWriter to receive the email
 	 * @param aMail		A mail object representing the email to write out		
 	 */
-	private void WriteMessage(PrintWriter out, mail aMail) throws IOException
+	private void WriteMessage(PrintWriter out, Mail aMail) throws IOException
 	{
-			String Version = eXistVersion();									//Version of eXist
-			String MultipartBoundary = "eXist.multipart." + Version;			//Multipart Boundary
-			
-			//write the message headers
-            
-			out.println("From: " + encode64Address(aMail.getFrom()));
-			if(aMail.getReplyTo() != null)
-			{
-				out.println("Reply-To: " + encode64Address(aMail.getReplyTo()));
-			}
-			for(int x = 0; x < aMail.countTo(); x++)
-			{	
-				out.println("To: " + encode64Address(aMail.getTo(x)));
-			}
-			for(int x = 0; x < aMail.countCC(); x++)
-			{	
-				out.println("CC: " + encode64Address(aMail.getCC(x)));
-			}
-			for(int x = 0; x < aMail.countBCC(); x++)
-			{	
-				out.println("BCC: " + encode64Address(aMail.getBCC(x)));
-			}
-			out.println("Date: " + getDateRFC822());
-			out.println("Subject: " + encode64(aMail.getSubject()));
-			out.println("X-Mailer: eXist " + Version + " util:send-email()");
-			out.println("MIME-Version: 1.0");
-			
-			//Is this a multipart message i.e. text and html?
-			if((!aMail.getText().toString().equals("")) && (!aMail.getXHTML().toString().equals("")))
-			{
-				//Yes, start multipart message
-				out.println("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "\";");
-				
-				//Mime warning
-				out.println("Error your mail client is not MIME Compatible");
-				
-				//send the text part first 
-				out.println("--" + MultipartBoundary);
-				out.println("Content-Type: text/plain; charset=" + charset);
-				out.println("Content-Transfer-Encoding: 8bit");
-				out.println(aMail.getText());
-				
-				//send the html part next
-				out.println("--" + MultipartBoundary);
-				out.println("Content-Type: text/html; charset=" + charset);
-				out.println("Content-Transfer-Encoding: 8bit");
-				out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
-				out.println(aMail.getXHTML());
-				
-				//Emd multipart message
-				out.println("--" + MultipartBoundary + "--");
-				
-			}
-			else
-			{
-				//No, is it a text email
-				if(!aMail.getText().toString().equals(""))
-				{
-					//Yes, text email
-					out.println("Content-Type: text/plain; charset=" + charset);
-					out.println("Content-Transfer-Encoding: 8bit");
+		String Version = eXistVersion();									//Version of eXist
+		String MultipartBoundary = "eXist.multipart." + Version;			//Multipart Boundary
+		
+		//write the message headers
+        
+		out.println("From: " + encode64Address(aMail.getFrom()));
+		if(aMail.getReplyTo() != null)
+		{
+			out.println("Reply-To: " + encode64Address(aMail.getReplyTo()));
+		}
+		for(int x = 0; x < aMail.countTo(); x++)
+		{	
+			out.println("To: " + encode64Address(aMail.getTo(x)));
+		}
+		for(int x = 0; x < aMail.countCC(); x++)
+		{	
+			out.println("CC: " + encode64Address(aMail.getCC(x)));
+		}
+		for(int x = 0; x < aMail.countBCC(); x++)
+		{	
+			out.println("BCC: " + encode64Address(aMail.getBCC(x)));
+		}
+		out.println("Date: " + getDateRFC822());
+		out.println("Subject: " + encode64(aMail.getSubject()));
+		out.println("X-Mailer: eXist " + Version + " util:send-email()");
+		out.println("MIME-Version: 1.0");
+		
+
+		boolean multipartAlternative = false;
+		String multipartBoundary = null;
+		
+		if(aMail.attachmentIterator().hasNext())
+		{
+			// we have an attachment as well as text and/or html so we need a multipart/mixed message
+			multipartBoundary =  MultipartBoundary;
+		}
+		else if(!aMail.getText().equals("") && !aMail.getXHTML().equals(""))
+		{
+			// we have text and html so we need a multipart/alternative message and no attachment
+			multipartAlternative = true;
+			multipartBoundary = MultipartBoundary + "_alt";
+		}
+		else
+		{
+			// we have either text or html and no attachment this message is not multipart
+		}
 					
-					//now send the trxt message
-					out.println();
-					out.println(aMail.getText());
+		//content type
+		if(multipartBoundary != null)
+		{
+			//multipart message
+			
+			out.println("Content-Type: " + (multipartAlternative ? "multipart/alternative" : "multipart/mixed") + "; boundary=\"" + multipartBoundary + "\";");
+		
+			//Mime warning
+			out.println();
+			out.println("Error your mail client is not MIME Compatible");
+			
+			out.println("--" + multipartBoundary);
+		}
+		
+		// TODO - need to put out a multipart/mixed boundary here when HTML, text and attachment present
+		if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+		{
+			out.println("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "_alt\";");
+			out.println("--" + MultipartBoundary + "_alt");
+		}
+		
+		//text email
+		if(!aMail.getText().toString().equals(""))
+		{
+			out.println("Content-Type: text/plain; charset=" + charset);
+			out.println("Content-Transfer-Encoding: 8bit");
+			
+			//now send the txt message
+			out.println();
+			out.println(aMail.getText());
+			
+			if(multipartBoundary != null)
+			{
+				if(!aMail.getXHTML().toString().equals("") || aMail.attachmentIterator().hasNext())
+				{
+					if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+					{
+						out.println("--" + MultipartBoundary + "_alt");
+					}
+					else
+					{
+						out.println("--" + multipartBoundary);
+					}						
 				}
 				else
 				{
-					//No, its a HTML email
-					out.println("Content-Type: text/html; charset=" + charset);
-					out.println("Content-Transfer-Encoding: 8bit");
-					
-					//now send the html message
-					out.println();
-					out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
-					out.println(aMail.getXHTML());
+					if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+					{
+						out.println("--" + MultipartBoundary + "_alt--");
+					}
+					else
+					{
+						out.println("--" + multipartBoundary + "--");
+					}						
+				}
+			}
+		}
+
+		//HTML email
+		if(!aMail.getXHTML().toString().equals(""))
+		{
+			out.println("Content-Type: text/html; charset=" + charset);
+			out.println("Content-Transfer-Encoding: 8bit");
+				
+			//now send the html message
+			out.println();
+			out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
+			out.println(aMail.getXHTML());
+			
+			if(multipartBoundary != null)
+			{
+				if(aMail.attachmentIterator().hasNext())
+				{
+					if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+					{
+						out.println("--" + MultipartBoundary + "_alt--");
+						out.println("--" + multipartBoundary);
+					}
+					else
+					{
+						out.println("--" + multipartBoundary);
+					}
+				}
+				else
+				{
+					if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+					{
+						out.println("--" + MultipartBoundary + "_alt--");
+					}
+					else
+					{
+						out.println("--" + multipartBoundary + "--");
+					}
+				}
+			}
+		}
+		
+		//attachments
+		if(aMail.attachmentIterator().hasNext())
+		{
+			for(Iterator itAttachment = aMail.attachmentIterator(); itAttachment.hasNext(); )
+			{
+				MailAttachment ma = (MailAttachment) itAttachment.next();
+				out.println("Content-Type: " + ma.getMimeType() + "; name=\"" + ma.getFilename() + "\"");
+				out.println("Content-Transfer-Encoding: base64");
+				out.println("Content-Description: " + ma.getFilename());
+				out.println("Content-Disposition: attachment; filname=\"" + ma.getFilename() + "\"");
+				out.println();
+				out.println(ma.getData());
+				if(itAttachment.hasNext())
+				{
+					out.println("--" + multipartBoundary);
 				}
 			}
 			
-			//end the message, <cr><lf>.<cr><lf>
-			out.println();
-			out.println(".");
-			out.println();
-			out.flush();
+			//Emd multipart message
+			out.println("--" + multipartBoundary + "--");
+		}
+
+		//end the message, <cr><lf>.<cr><lf>
+		out.println();
+		out.println(".");
+		out.println();
+		out.flush();
 	}
 	
 	
@@ -474,10 +563,10 @@ public class SendEmailFunction extends BasicFunction
 	 * @param message	The XML mail Node
 	 * @return		A mail Object representing the XML mail Node
 	 */
-	private mail ParseMailXML(Node message) throws TransformerException
+	private Mail ParseMailXML(Node message) throws TransformerException
 	{
 		//New mail Object
-		mail theMail = new mail(); 
+		Mail theMail = new Mail(); 
 		
 		//Make sure that message has a Mail node
 		if(message.getNodeType() == Node.ELEMENT_NODE && message.getLocalName().equals("mail"))
@@ -541,6 +630,12 @@ public class SendEmailFunction extends BasicFunction
 							bodyPart = bodyPart.getNextSibling();
 						}
 						
+					}
+					else if(child.getLocalName().equals("attachment"))
+					{
+						Element attachment = (Element)child;
+						MailAttachment ma = new MailAttachment(attachment.getAttribute("filename"), attachment.getAttribute("mimetype"), attachment.getFirstChild().getNodeValue());
+						theMail.addAttachment(ma);
 					}
 				}
 				
@@ -789,24 +884,57 @@ public class SendEmailFunction extends BasicFunction
         return(result);
 	}
 
-	//Class that Represents an email
+	/**
+	 * A simple data class to represent an email
+	 * attachment. Just has private
+	 * members and some get methods.
+	 * 
+	 * @version 1.2
+	 */
+	private class MailAttachment
+	{
+		private String filename;
+		private String mimeType;
+		private String data;
+		
+		public MailAttachment(String filename, String mimeType, String data)
+		{
+			this.filename = filename;
+			this.mimeType = mimeType;
+			this.data = data;
+		}
+
+		public String getData() {
+			return data;
+		}
+
+		public String getFilename() {
+			return filename;
+		}
+
+		public String getMimeType() {
+			return mimeType;
+		}
+	}
+	
 	/**
 	 * A simple data class to represent an email
 	 * doesnt do anything fancy just has private
 	 * members and get and set methods
 	 * 
-	 * @version 1.1
+	 * @version 1.2
 	 */
-	private class mail
+	private class Mail
 	{
-		private String from = "";			//Who is the mail from
-		private String replyTo = null;		//Who should you reply to 
-		private Vector to = new Vector();	//Who is the mail going to
-		private Vector cc = new Vector();	//Carbon Copy to
-		private Vector bcc = new Vector();	//Blind Carbon Copy to
-		private String subject = "";		//Subject of the mail
-		private String text = "";			//Body text of the mail
-		private String xhtml = "";			//Body XHTML of the mail
+		private String from = "";					//Who is the mail from
+		private String replyTo = null;				//Who should you reply to 
+		private Vector to = new Vector();			//Who is the mail going to
+		private Vector cc = new Vector();			//Carbon Copy to
+		private Vector bcc = new Vector();			//Blind Carbon Copy to
+		private String subject = "";				//Subject of the mail
+		private String text = "";					//Body text of the mail
+		private String xhtml = "";					//Body XHTML of the mail
+		private Vector attachment = new Vector();	//Any attachments
 		
 		//From
 		public void setFrom(String from)
@@ -924,6 +1052,16 @@ public class SendEmailFunction extends BasicFunction
 		public String getXHTML()
 		{
 			return(xhtml);
+		}
+		
+		public void addAttachment(MailAttachment ma)
+		{
+			attachment.add(ma);
+		}
+		
+		public Iterator attachmentIterator()
+		{
+			return attachment.iterator();
 		}
 	}
 }
