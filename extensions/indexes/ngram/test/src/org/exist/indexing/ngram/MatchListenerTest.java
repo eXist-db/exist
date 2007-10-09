@@ -1,5 +1,9 @@
 package org.exist.indexing.ngram;
 
+import org.custommonkey.xmlunit.NamespaceContext;
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLAssert;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
@@ -20,15 +24,14 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
-import org.custommonkey.xmlunit.XMLAssert;
 
 import javax.xml.transform.OutputKeys;
-import java.util.Properties;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Properties;
 
 public class MatchListenerTest {
 
@@ -40,6 +43,16 @@ public class MatchListenerTest {
         "   <para>double match double match</para>" +
         "</root>";
 
+    private static String XML2 =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<p xmlns=\"http://www.tei-c.org/ns/1.0\" xml:id=\"pT01p0257c1501\">爾時會中。有一尊者。名曰龍護。手執寶拂。 \n" +
+        "    <lb n=\"0257c16\" ed=\"T\"/>侍立佛側。時尊者龍護白佛言。世尊。我見 \n" +
+        "    <lb n=\"0257c17\" ed=\"T\"/>諸邪外道尼乾子等。於佛世尊。先不起信。 \n" +
+        "    <lb n=\"0257c18\" ed=\"T\"/>唯於邪道。競說勝能。是故我今建立表剎 \n" +
+        "    <lb n=\"0257c19\" ed=\"T\"/>宣示於世。咸使聞知佛勝功德。於佛世尊。是 \n" +
+        "    <lb n=\"0257c20\" ed=\"T\"/>大丈夫。最尊最上。無有等者。\n" +
+        "</p>";
+    
     private static String CONF1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
@@ -59,6 +72,15 @@ public class MatchListenerTest {
         "	</index>" +
     	"</collection>";
 
+    private static String CONF3 =
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+    	"	<index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
+    	"		<fulltext default=\"none\">" +
+    	"		</fulltext>" +
+    	"		<ngram qname=\"tei:p\"/>" +
+        "	</index>" +
+    	"</collection>";
+
     private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
     private static String MATCH_END = "</exist:match>";
 
@@ -68,7 +90,7 @@ public class MatchListenerTest {
     public void nestedContent() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF1);
+            configureAndStore(CONF1, XML);
 
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
@@ -117,7 +139,7 @@ public class MatchListenerTest {
     public void matchInParent() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF1);
+            configureAndStore(CONF1, XML);
 
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
@@ -142,7 +164,7 @@ public class MatchListenerTest {
     public void matchInAncestor() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF1);
+            configureAndStore(CONF1, XML);
 
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
@@ -173,7 +195,7 @@ public class MatchListenerTest {
     public void nestedIndex() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF1);
+            configureAndStore(CONF1, XML);
 
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
@@ -211,7 +233,7 @@ public class MatchListenerTest {
     public void mixedContentQueries() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF1);
+            configureAndStore(CONF1, XML);
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
             XQuery xquery = broker.getXQueryService();
@@ -261,7 +283,7 @@ public class MatchListenerTest {
     public void indexOnInnerElement() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF2);
+            configureAndStore(CONF2, XML);
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
             XQuery xquery = broker.getXQueryService();
@@ -293,7 +315,7 @@ public class MatchListenerTest {
     public void doubleMatch() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF1);
+            configureAndStore(CONF1, XML);
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
             XQuery xquery = broker.getXQueryService();
@@ -305,6 +327,45 @@ public class MatchListenerTest {
             System.out.println("RESULT: " + result);
             XMLAssert.assertEquals("<para>" + MATCH_START + "double match" + MATCH_END + " " +
                 MATCH_START + "double match" + MATCH_END + "</para>", result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
+    public void smallStrings() {
+        DBBroker broker = null;
+        try {
+            configureAndStore(CONF3, XML2);
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+
+            HashMap m = new HashMap();
+                m.put("tei", "http://www.tei-c.org/ns/1.0");
+                m.put("exist", "http://exist.sourceforge.net/NS/exist");
+                NamespaceContext ctx = new SimpleNamespaceContext(m);
+                XMLUnit.setXpathNamespaceContext(ctx);
+
+            String[] strings = new String[] { "龍", "龍護", "曰龍護", "名曰龍護" };
+            for (int i = 0; i < strings.length; i++) {
+                Sequence seq = xquery.execute(
+                        "declare namespace tei=\"http://www.tei-c.org/ns/1.0\";\n" +
+                        "//tei:p[ngram:contains(., '" + strings[i] + "')]",
+                        null, AccessContext.TEST);
+                assertNotNull(seq);
+                assertEquals(1, seq.getItemCount());
+                String result = queryResult2String(broker, seq);
+                System.out.println("RESULT: " + result);
+
+                XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+                XMLAssert.assertXpathExists("//exist:match[text() = '" + strings[i] + "']", result);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -384,7 +445,7 @@ public class MatchListenerTest {
         BrokerPool.stopAll(false);
     }
 
-    private void configureAndStore(String config) {
+    private void configureAndStore(String config, String xml) {
         DBBroker broker = null;
         TransactionManager transact = null;
         Txn transaction = null;
@@ -401,9 +462,9 @@ public class MatchListenerTest {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, config);
 
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), XML);
+            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), xml);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML, false);
+            root.store(transaction, broker, info, xml, false);
             
             transact.commit(transaction);
         } catch (Exception e) {

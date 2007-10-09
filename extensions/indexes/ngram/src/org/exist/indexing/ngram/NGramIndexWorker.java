@@ -937,7 +937,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 LOG.error(e.getMessage(), e);
                 return true;
             }
-            VariableByteInput is = null;
+            VariableByteInput is;
             try {
                 is = index.db.getAsStream(pointer);
                 //Does the token already has data in the index ?
@@ -945,7 +945,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return true;
                 while (is.available() > 0) {
                     int storedDocId = is.readInt();
-                    byte nameType = is.readByte();
+                    is.readByte();
                     int occurrences = is.readInt();
                     //Read (variable) length of node IDs + frequency + offsets
                     int length = is.readFixedInt();
@@ -994,7 +994,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         private void readMatches(String current, VariableByteInput is, NodeId nodeId, int freq, NodeProxy parentNode) throws IOException {
-            int diff = current.length() - ngram.length();
+            int diff = 0;
+            if (current.length() > ngram.length())
+                diff = current.indexOf(ngram);
             Match match = new NGramMatch(contextId, nodeId, ngram, freq);
             for (int n = 0; n < freq; n++) {
                 int offset = is.readInt();
