@@ -3398,7 +3398,7 @@ public XQueryTreeParser() {
 				match(_t,STRING_LITERAL);
 				_t = _t.getNextSibling();
 				
-				context.setBaseURI(new AnyURIValue(base.getText()), true);
+				context.setBaseURI(new AnyURIValue(StringValue.expand(base.getText())), true);
 				if (baseuri)
 				throw new XPathException(base, "err:XQST0032: Base URI is already declared.");
 				baseuri = true;

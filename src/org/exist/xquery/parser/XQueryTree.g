@@ -324,7 +324,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		#(
 			"base-uri" base:STRING_LITERAL
 			{ 
-                context.setBaseURI(new AnyURIValue(base.getText()), true);
+                context.setBaseURI(new AnyURIValue(StringValue.expand(base.getText())), true);
                 if (baseuri)
                     throw new XPathException(base, "err:XQST0032: Base URI is already declared.");
                 baseuri = true;
