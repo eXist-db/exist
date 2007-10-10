@@ -107,9 +107,7 @@ public class FilteredExpression extends AbstractExpression {
     public void dump(ExpressionDumper dumper) {
         expression.dump(dumper);
         for (Iterator i = predicates.iterator(); i.hasNext();) {
-            dumper.display('[');
             ((Expression)i.next()).dump(dumper);
-            dumper.display(']');
         }
     }
     
@@ -117,9 +115,7 @@ public class FilteredExpression extends AbstractExpression {
         StringBuffer result = new StringBuffer();
         result.append(expression.toString());
         for (Iterator i = predicates.iterator(); i.hasNext();) {
-        	result.append('[');
         	result.append(((Expression)i.next()).toString());
-            result.append(']');
         }
         return result.toString();
     }    
