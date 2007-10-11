@@ -82,8 +82,11 @@ public class FunDocumentURI extends Function {
             NodeValue value = (NodeValue) seq.itemAt(0);
             if (value.getImplementationType() == NodeValue.PERSISTENT_NODE) { 
         		NodeProxy node = (NodeProxy) value;
-         		XmldbURI path = node.getDocument().getURI(); 
-        		result = new AnyURIValue(path);
+        		//Returns the empty sequence if the node is not a document node. 
+        		if (node.isDocument()) {
+        			XmldbURI path = node.getDocument().getURI(); 
+        			result = new AnyURIValue(path);
+        		}
             }
         }
         
