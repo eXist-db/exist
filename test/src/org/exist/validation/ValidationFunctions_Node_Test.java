@@ -24,10 +24,14 @@ package org.exist.validation;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
 
 import org.xmldb.api.DatabaseManager;
@@ -58,10 +62,17 @@ public class ValidationFunctions_Node_Test extends TestCase {
         super(arg0);
     }
     
+    public static void initLog4J(){
+        Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
+        Appender appender=new ConsoleAppender(layout);
+        BasicConfigurator.configure(appender);       
+    }
+    
     public void testsetUp() throws Exception {
         
         // initialize driver
         System.out.println(this.getName());
+        initLog4J();
         logger.info(this.getName());
         
         Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");

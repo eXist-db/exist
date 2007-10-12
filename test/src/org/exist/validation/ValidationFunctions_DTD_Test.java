@@ -24,6 +24,7 @@ package org.exist.validation;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import org.exist.storage.DBBroker;
@@ -61,6 +62,7 @@ public class ValidationFunctions_DTD_Test extends TestCase {
     public void testsetUp() throws Exception {
         
         System.out.println(this.getName());
+        BasicConfigurator.configure();
         logger.info(this.getName());
         
         Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
