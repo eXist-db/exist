@@ -79,16 +79,19 @@
             <include name="*.jar"/>
         </fileset>
         <fileset dir="${lib.extensions}">
-            <include name="**/lib/*.jar"/>
+            <include name="*.jar"/>
         </fileset>        
 
+        <fileset dir="extensions">
+            <include name="**/lib/*.jar"/>
+        </fileset> 
         <fileset dir="${tools.ant}/lib">
             <include name="*.jar"/>
         </fileset>
         
         <pathelement path="exist.jar"/>
         <pathelement path="exist-optional.jar"/>
-        <pathelement path="exist-modules.jar"/>
+
         <pathelement path="start.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
