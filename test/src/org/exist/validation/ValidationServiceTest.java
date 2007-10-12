@@ -22,11 +22,16 @@
 package org.exist.validation;
 
 
+import org.apache.log4j.Appender;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Layout;
+import org.apache.log4j.PatternLayout;
 
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.ExistIOException;
 import org.exist.validation.service.ValidationService;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -59,9 +64,15 @@ public class ValidationServiceTest  {
 //        return suite;
 //    }
     
+    public static void initLog4J(){
+        Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
+        Appender appender=new ConsoleAppender(layout);
+        BasicConfigurator.configure(appender);       
+    }
+    
     @BeforeClass
 	public static void init() {
-        BasicConfigurator.configure();
+        initLog4J();
         
     }
     
