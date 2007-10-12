@@ -125,8 +125,7 @@
 	
 	<target name="jar" depends="compile">
 		<echo message="Creating exist-modules.jar ..."/>
-        <jar basedir="${classes}" compress="true" jarfile="${top.dir}/exist-modules.jar" update="true">
-        </jar>
+        <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-modules.jar" />
 	</target>
 
 	<target name="clean">

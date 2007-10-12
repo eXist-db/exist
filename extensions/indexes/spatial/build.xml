@@ -52,8 +52,7 @@
 	</target>
 
 	<target name="jar" depends="prepare-libs, compile">
-        <jar destfile="${top.dir}/exist-modules.jar" basedir="${classes}"
-             keepcompression="true" update="true"/>
+        <jar destfile="${top.dir}/${lib.extensions}/exist-spatial-module.jar" basedir="${classes}"/>
     </target>
     
     <target name="prepare-test-tresources">

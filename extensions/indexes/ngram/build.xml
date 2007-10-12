@@ -3,8 +3,7 @@
     <import file="../common.xml"/>
 
 	<target name="jar" depends="compile">
-        <jar destfile="${top.dir}/exist-modules.jar" basedir="${classes}"
-             keepcompression="true" update="true"/>
+        <jar destfile="${top.dir}/${lib.extensions}/exist-ngram-module.jar" basedir="${classes}"/>
     </target>
 
     <target name="test" depends="compile-tests">
