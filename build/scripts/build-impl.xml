@@ -23,7 +23,7 @@
     <property name="lib.endorsed" value="./lib/endorsed"/>
     <property name="lib.cocoon" value="./lib/cocoon"/>
     <property name="lib.user" value="./lib/user"/>
-    <property name="lib.extensions" value="./extensions"/>
+    <property name="lib.extensions" value="./lib/extensions"/>
 
     <property name="build" value="./build"/>
     <property name="build.src" value="${build}/src"/>
