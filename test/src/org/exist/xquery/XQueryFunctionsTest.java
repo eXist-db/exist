@@ -883,7 +883,7 @@ public class XQueryFunctionsTest extends TestCase {
     
     public void testDocumentURI() {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
-        	"return $a/b[document-uri(.) ne '']";
+        	"return $a/b[empty(document-uri(.))]";
         
         try {
           ResourceSet result = service.query(query);          
