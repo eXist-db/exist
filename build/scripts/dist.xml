@@ -46,6 +46,9 @@
                 <include name="*.jar"/>
                 <exclude name="javax.servlet-1.4.jar"/>
             </lib>
+			<lib dir="${lib.extensions}">
+				<include name="*.jar"/>
+			</lib>
             <lib dir="${lib.optional}">
                 <include name="*.jar"/>
             </lib>
