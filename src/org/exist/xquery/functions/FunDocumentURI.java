@@ -22,6 +22,7 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.memtree.DocumentImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -83,10 +84,14 @@ public class FunDocumentURI extends Function {
             if (value.getImplementationType() == NodeValue.PERSISTENT_NODE) { 
         		NodeProxy node = (NodeProxy) value;
         		//Returns the empty sequence if the node is not a document node. 
-        		if (node.isDocument()) {
+        		//if (node.isDocument()) {
         			XmldbURI path = node.getDocument().getURI(); 
         			result = new AnyURIValue(path);
-        		}
+        		//}        		
+            } else {
+        		if (value instanceof DocumentImpl && ((DocumentImpl)value).getDocumentURI() != null) {
+        			result = new AnyURIValue(((DocumentImpl)value).getDocumentURI());
+        		}        		
             }
         }
         

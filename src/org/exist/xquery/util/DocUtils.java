@@ -115,6 +115,7 @@ public class DocUtils {
 				Document doc = adapter.getDocument();
 				memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
 				memtreeDoc.setContext(context);
+				memtreeDoc.setDocumentURI(path);
 				document = memtreeDoc;
 			}
 			catch(MalformedURLException e)
