@@ -46,7 +46,13 @@
 	<target name="jar" depends="compile">
 		<echo message="Creating exist-fluent.jar ..."/>
         <jar basedir="${classes}" compress="true" jarfile="${top.dir}/exist-fluent.jar" update="true">
-        	<exclude name="org/exist/fluent/*$*Test*"/>
+        	<exclude name="org/exist/fluent/*$*Test*"/>     
+            <manifest>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+            </manifest>
         </jar>
 	</target>
 	

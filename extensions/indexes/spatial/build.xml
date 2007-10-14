@@ -52,7 +52,14 @@
 	</target>
 
 	<target name="jar" depends="prepare-libs, compile">
-        <jar destfile="${top.dir}/${lib.extensions}/exist-spatial-module.jar" basedir="${classes}"/>
+        <jar destfile="${top.dir}/${lib.extensions}/exist-spatial-module.jar" basedir="${classes}">    
+	        <manifest>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+            </manifest>
+		</jar>
     </target>
     
     <target name="prepare-test-tresources">
