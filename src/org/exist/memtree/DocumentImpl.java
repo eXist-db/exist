@@ -113,6 +113,8 @@ public class DocumentImpl extends NodeImpl implements Document {
     protected int size = 1;
 
     protected int documentRootNode = -1;
+    
+    protected String documentURI = null;
 
     // reference nodes (link to an external, persistent document fragment)
     protected NodeProxy references[];
@@ -1085,16 +1087,14 @@ public class DocumentImpl extends NodeImpl implements Document {
 
 	/** ? @see org.w3c.dom.Document#getDocumentURI()
 	 */
-	public String getDocumentURI() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return null;
+	public String getDocumentURI() {		
+		return documentURI;
 	}
 
 	/** ? @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
 	 */
 	public void setDocumentURI(String documentURI) {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		
+		this.documentURI = documentURI;
 	}
 
 	/** ? @see org.w3c.dom.Document#adoptNode(org.w3c.dom.Node)
