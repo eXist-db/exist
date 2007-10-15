@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.util.ExpressionDumper;
 
 /**
  * Abstract base class for simple functions. Subclasses should overwrite
@@ -56,8 +57,13 @@ public abstract class BasicFunction extends Function {
 		final int argCount = getArgumentCount();
 		Sequence[] args = new Sequence[argCount];
 		for (int i = 0; i < argCount; i++) {
-			args[i] = getArgument(i).eval(contextSequence, contextItem);
-		}
+            try {
+                args[i] = getArgument(i).eval(contextSequence, contextItem);
+            } catch (XPathException e) {
+                e.prependMessage("Error checking function parameter " + (i + 1) + " in call " + ExpressionDumper.dump(this) + ": ");
+                throw e;
+            }
+        }
 		       
         Sequence result = eval(args, contextSequence);
         
