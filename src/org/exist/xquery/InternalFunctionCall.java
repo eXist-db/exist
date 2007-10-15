@@ -45,9 +45,15 @@ public class InternalFunctionCall extends Function
 		} catch (PermissionDeniedException pde) {
 			throw new XPathException(function.getASTNode(), "Access to function '" + functionName + "'  denied.", pde);
 		}
-		
-		return function.eval(contextSequence, contextItem);
-	}
+
+        try {
+            return function.eval(contextSequence, contextItem);
+        } catch (XPathException e) {
+            if (e.getLine() == 0)
+                e.setASTNode(this.getASTNode());
+            throw e;
+        }
+    }
 	
 	public int getArgumentCount()
 	{
