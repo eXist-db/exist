@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -40,8 +41,16 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public class SAXAdapter implements ContentHandler, LexicalHandler {
 
-	private MemTreeBuilder builder = new MemTreeBuilder();
+	private MemTreeBuilder builder;
 	private HashMap namespaces = null;
+	
+	public SAXAdapter() {
+		builder = new MemTreeBuilder();
+ 	}
+
+	public SAXAdapter(XQueryContext context) {
+		builder = new MemTreeBuilder(context);
+	}
 	
 	public Document getDocument() {
 		return builder.getDocument();

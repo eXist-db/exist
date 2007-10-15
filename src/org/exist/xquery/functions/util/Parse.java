@@ -79,7 +79,7 @@ public class Parse extends BasicFunction {
                 xr = parser.getXMLReader();
             }
 
-            SAXAdapter adapter = new SAXAdapter();
+            SAXAdapter adapter = new SAXAdapter(context);
             xr.setContentHandler(adapter);
             xr.parse(src);
 
