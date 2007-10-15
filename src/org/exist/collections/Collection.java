@@ -1032,7 +1032,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 try {
                     manager.invalidateAll(getURI());
                     manager.loadConfiguration(broker, this);
-                } catch (CollectionConfigurationException e) {
+                } catch (CollectionConfigurationException e) { 
+                    // DIZ: should this exception really been thrown? bugid=1807744
                     throw new EXistException("Error while reading new collection configuration: " + e.getMessage(), e);
                 }
             }
