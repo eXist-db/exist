@@ -1,4 +1,24 @@
-
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2003-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xmldb;
 
 import java.io.IOException;
@@ -27,16 +47,38 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	protected Hashtable variableDecls = new Hashtable();
 	protected Properties outputProperties = null;
 	
-    public RemoteXPathQueryService( RemoteCollection collection ) {
+    /**
+     * Creates a new <code>RemoteXPathQueryService</code> instance.
+     *
+     * @param collection a <code>RemoteCollection</code> value
+     */
+    public RemoteXPathQueryService(RemoteCollection collection) {
         this.collection = collection;
         this.outputProperties = new Properties(collection.properties);
     }
 
-	public ResourceSet query( String query ) throws XMLDBException {
+	/**
+     * The method <code>query</code>
+     *
+     * @param query a <code>String</code> value
+     * @return a <code>ResourceSet</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public ResourceSet query(String query)
+        throws XMLDBException {
 		return query(query, null);
 	}
 	
-    public ResourceSet query( String query, String sortExpr ) throws XMLDBException {
+    /**
+     * The method <code>query</code>
+     *
+     * @param query a <code>String</code> value
+     * @param sortExpr a <code>String</code> value
+     * @return a <code>ResourceSet</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public ResourceSet query(String query, String sortExpr)
+        throws XMLDBException {
         try {
         	Hashtable optParams = new Hashtable();
             if(sortExpr != null)
@@ -50,7 +92,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 			Vector params = new Vector();
 			params.addElement(query.getBytes("UTF-8"));
 			params.addElement(optParams);
-            Hashtable result = (Hashtable) collection.getClient().execute( "queryP", params );
+            Hashtable result = (Hashtable) collection.getClient().execute("queryP", params);
             
             if(result.get(RpcAPI.ERROR) != null)
             	throwException(result);
@@ -67,6 +109,13 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         }
     }
 
+    /**
+     * The method <code>compile</code>
+     *
+     * @param query a <code>String</code> value
+     * @return a <code>CompiledExpression</code> value
+     * @exception XMLDBException if an error occurs
+     */
     public CompiledExpression compile(String query) throws XMLDBException {
         try {
             return compileAndCheck(query);
@@ -75,6 +124,14 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         }
     }
     
+    /**
+     * The method <code>compileAndCheck</code>
+     *
+     * @param query a <code>String</code> value
+     * @return a <code>CompiledExpression</code> value
+     * @exception XMLDBException if an error occurs
+     * @exception XPathException if an error occurs
+     */
     public CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException {
         try {
             Hashtable optParams = new Hashtable();
@@ -100,10 +157,12 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     }
     
     /**
-	 * @param result
-     * @throws XPathException 
-	 */
-	private void throwException(Hashtable result) throws XMLDBException {
+     * The method <code>throwException</code>
+     *
+     * @param result
+     * @exception XMLDBException if an error occurs
+     */
+    private void throwException(Hashtable result) throws XMLDBException {
 		String message = (String)result.get(RpcAPI.ERROR);
 		Integer lineInt = (Integer)result.get(RpcAPI.LINE);
 		Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
@@ -113,6 +172,12 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, message, cause);
 	}
 
+    /**
+     * The method <code>throwXPathException</code>
+     *
+     * @param result a <code>Hashtable</code> value
+     * @exception XPathException if an error occurs
+     */
     private void throwXPathException(Hashtable result) throws XPathException {
         String message = (String)result.get(RpcAPI.ERROR);
         Integer lineInt = (Integer)result.get(RpcAPI.LINE);
@@ -125,7 +190,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	/* (non-Javadoc)
      * @see org.exist.xmldb.XQueryService#execute(org.exist.source.Source)
      */
-    public ResourceSet execute(Source source) throws XMLDBException {
+    public ResourceSet execute(Source source)
+        throws XMLDBException {
         try {
             String xq = source.getContent();
             return query(xq, null);
@@ -134,14 +200,31 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         }
     }
     
-	public ResourceSet query( XMLResource res, String query )
+	/**
+     * The method <code>query</code>
+     *
+     * @param res a <code>XMLResource</code> value
+     * @param query a <code>String</code> value
+     * @return a <code>ResourceSet</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public ResourceSet query(XMLResource res, String query)
 		throws XMLDBException {
 			return query(res, query, null);
 	}
 
-    public ResourceSet query( XMLResource res, String query, String sortExpr )
+    /**
+     * The method <code>query</code>
+     *
+     * @param res a <code>XMLResource</code> value
+     * @param query a <code>String</code> value
+     * @param sortExpr a <code>String</code> value
+     * @return a <code>ResourceSet</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public ResourceSet query(XMLResource res, String query, String sortExpr)
         throws XMLDBException {
-        RemoteXMLResource resource = (RemoteXMLResource)res;
+        RemoteXMLResource resource = (RemoteXMLResource) res;
         try {
         	Hashtable optParams = new Hashtable();
         	if(namespaceMappings.size() > 0)
@@ -153,78 +236,150 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 			optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
             Vector params = new Vector();
-            params.addElement( query.getBytes("UTF-8") );
-            params.addElement( resource.path.toString() );
+            params.addElement(query.getBytes("UTF-8"));
+            params.addElement(resource.path.toString());
             if(resource.id == null)
             	params.addElement("");
             else
-            	params.addElement( resource.id );
-            params.addElement( optParams );
-			Hashtable result = (Hashtable) collection.getClient().execute( "queryP", params );
+            	params.addElement(resource.id);
+            params.addElement(optParams);
+			Hashtable result = (Hashtable) collection.getClient().execute("queryP", params);
 			
 			if(result.get(RpcAPI.ERROR) != null)
             	throwException(result);
 			
-			Vector resources = (Vector)result.get("results");
+			Vector resources = (Vector) result.get("results");
 			int handle = -1;
 			if(resources != null && resources.size() > 0)
-				handle = ((Integer)result.get("id")).intValue();
-			return new RemoteResourceSet( collection, outputProperties, resources, handle );
-        } catch ( XmlRpcException xre ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe );
+				handle = ((Integer) result.get("id")).intValue();
+			return new RemoteResourceSet(collection, outputProperties, resources, handle);
+        } catch (XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        } catch (IOException ioe) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         }
     }
     
-    public ResourceSet queryResource( String resource, String query ) throws XMLDBException {
+    /**
+     * The method <code>queryResource</code>
+     *
+     * @param resource a <code>String</code> value
+     * @param query a <code>String</code> value
+     * @return a <code>ResourceSet</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public ResourceSet queryResource(String resource, String query)
+        throws XMLDBException {
     	Resource res = collection.getResource(resource);
     	if(res == null)
     		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " not found");
     	if(!"XMLResource".equals(res.getResourceType()))
     		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + 
     				" is not an XML resource");
-        return query( (XMLResource)res, query );
+        return query((XMLResource) res, query);
     }
 
-    public String getVersion() throws XMLDBException {
+    /**
+     * The method <code>getVersion</code>
+     *
+     * @return a <code>String</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public String getVersion()
+        throws XMLDBException {
         return "1.0";
     }
 
-    public void setCollection( Collection col ) throws XMLDBException {
+    /**
+     * The method <code>setCollection</code>
+     *
+     * @param col a <code>Collection</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public void setCollection(Collection col)
+        throws XMLDBException {
     }
 
+    /**
+     * The method <code>getName</code>
+     *
+     * @return a <code>String</code> value
+     * @exception XMLDBException if an error occurs
+     */
     public String getName() throws XMLDBException {
         return "XPathQueryService";
     }
 
-    public String getProperty( String property ) throws XMLDBException {
+    /**
+     * The method <code>getProperty</code>
+     *
+     * @param property a <code>String</code> value
+     * @return a <code>String</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public String getProperty(String property)
+        throws XMLDBException {
     	return outputProperties.getProperty(property);
     }
 
-    public void setProperty( String property, String value ) throws XMLDBException {
+    /**
+     * The method <code>setProperty</code>
+     *
+     * @param property a <code>String</code> value
+     * @param value a <code>String</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public void setProperty(String property, String value)
+        throws XMLDBException {
         outputProperties.setProperty(property, value);
     }
 
+    /**
+     * The method <code>clearNamespaces</code>
+     *
+     * @exception XMLDBException if an error occurs
+     */
     public void clearNamespaces() throws XMLDBException {
     	namespaceMappings.clear();
     }
 
-    public void removeNamespace( String ns ) throws XMLDBException {
+    /**
+     * The method <code>removeNamespace</code>
+     *
+     * @param ns a <code>String</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public void removeNamespace(final String ns)
+        throws XMLDBException {
         for(Iterator i = namespaceMappings.values().iterator(); i.hasNext(); ) {
-        	if(((String)i.next()).equals(ns))
+        	if(((String) i.next()).equals(ns))
         		i.remove();
         }
     }
 
-    public void setNamespace( String prefix, String namespace )
+    /**
+     * The method <code>setNamespace</code>
+     *
+     * @param prefix a <code>String</code> value
+     * @param namespace a <code>String</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public void setNamespace(String prefix, String namespace)
              throws XMLDBException {
     	if (prefix == null)
     		prefix = "";
         namespaceMappings.put(prefix, namespace);
     }
 
-    public String getNamespace( String prefix ) throws XMLDBException {
+    /**
+     * The method <code>getNamespace</code>
+     *
+     * @param prefix a <code>String</code> value
+     * @return a <code>String</code> value
+     * @exception XMLDBException if an error occurs
+     */
+    public String getNamespace(String prefix)
+        throws XMLDBException {
     	if (prefix == null)
     		prefix = "";
         return (String)namespaceMappings.get(prefix);
@@ -241,7 +396,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	 * @see org.exist.xmldb.XQueryService#execute(org.exist.xmldb.CompiledExpression)
 	 */
 	public ResourceSet execute(CompiledExpression expression) throws XMLDBException {
-		return query(((RemoteCompiledExpression)expression).getQuery());
+		return query(((RemoteCompiledExpression) expression).getQuery());
 	}
 
 	/* (non-Javadoc)
@@ -249,7 +404,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	 */
 	public ResourceSet execute(XMLResource res, CompiledExpression expression)
 			throws XMLDBException {
-		return query(res, ((RemoteCompiledExpression)expression).getQuery());
+		return query(res, ((RemoteCompiledExpression) expression).getQuery());
 	}
 	
 	/* (non-Javadoc)
@@ -271,7 +426,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     /* (non-Javadoc)
      * @see org.exist.xmldb.XQueryService#dump(org.exist.xmldb.CompiledExpression, java.io.Writer)
      */
-    public void dump(CompiledExpression expression, Writer writer) throws XMLDBException {
+    public void dump(CompiledExpression expression, Writer writer)
+        throws XMLDBException {
         String query = ((RemoteCompiledExpression)expression).getQuery();
         Hashtable optParams = new Hashtable();
     	if(namespaceMappings.size() > 0)
@@ -307,4 +463,3 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         // not yet supported
     }
 }
-
