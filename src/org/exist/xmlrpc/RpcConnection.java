@@ -145,6 +145,14 @@ public class RpcConnection extends Thread {
     protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
 
     
+    /**
+     * Creates a new <code>RpcConnection</code> instance.
+     *
+     * @param conf a <code>Configuration</code> value
+     * @param pool a <code>RpcServer.ConnectionPool</code> value
+     * @param id a <code>String</code> value
+     * @exception EXistException if an error occurs
+     */
     public RpcConnection(Configuration conf, RpcServer.ConnectionPool pool, String id)
     throws EXistException {
         super();
@@ -153,11 +161,30 @@ public class RpcConnection extends Thread {
         brokerPool = BrokerPool.getInstance(this.databaseid);
     }
     
+    /**
+     * The method <code>createCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param name a <code>String</code> value
+     * @param created a <code>Date</code> value
+     * @exception Exception if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public void createCollection(User user, String name, Date created) throws Exception,
     	PermissionDeniedException, URISyntaxException {
     	createCollection(user,XmldbURI.xmldbUriFor(name),created);
     }
     
+    /**
+     * The method <code>createCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @param created a <code>Date</code> value
+     * @exception Exception if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public void createCollection(User user, XmldbURI collUri, Date created) throws Exception,
             PermissionDeniedException {
         DBBroker broker = null;
@@ -184,10 +211,28 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>configureCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collName a <code>String</code> value
+     * @param configuration a <code>String</code> value
+     * @exception EXistException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public void configureCollection(User user, String collName, String configuration)
     throws EXistException, URISyntaxException {
     	configureCollection(user,XmldbURI.xmldbUriFor(collName),configuration);
     }
+
+    /**
+     * The method <code>configureCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @param configuration a <code>String</code> value
+     * @exception EXistException if an error occurs
+     */
     public void configureCollection(User user, XmldbURI collUri, String configuration)
     throws EXistException {
         DBBroker broker = null;
@@ -218,6 +263,15 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>createId</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collName a <code>String</code> value
+     * @return a <code>String</code> value
+     * @exception EXistException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public String createId(User user, String collName) throws EXistException, URISyntaxException {
     	return createId(user,XmldbURI.xmldbUriFor(collName));
     }
@@ -251,6 +305,17 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>doQuery</code>
+     *
+     * @param user an <code>User</code> value
+     * @param broker a <code>DBBroker</code> value
+     * @param xpath a <code>String</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>QueryResult</code> value
+     * @exception Exception if an error occurs
+     */
     protected QueryResult doQuery(User user, DBBroker broker, String xpath,
             NodeSet contextSet, Hashtable parameters)
             throws Exception {
@@ -274,6 +339,17 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>compile</code>
+     *
+     * @param user an <code>User</code> value
+     * @param broker a <code>DBBroker</code> value
+     * @param source a <code>Source</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>CompiledXQuery</code> value
+     * @exception XPathException if an error occurs
+     * @exception IOException if an error occurs
+     */
     private CompiledXQuery compile(User user, DBBroker broker, Source source, Hashtable parameters) throws XPathException, IOException {
         XQuery xquery = broker.getXQueryService();
         XQueryPool pool = xquery.getXQueryPool();
@@ -320,6 +396,15 @@ public class RpcConnection extends Thread {
         return compiled;
     }
     
+    /**
+     * The method <code>printDiagnostics</code>
+     *
+     * @param user an <code>User</code> value
+     * @param query a <code>String</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     */
     public String printDiagnostics(User user, String query, Hashtable parameters) throws Exception {
         DBBroker broker = null;
         try {
@@ -359,6 +444,15 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>executeQuery</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xpath a <code>String</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return an <code>int</code> value
+     * @exception Exception if an error occurs
+     */
     public int executeQuery(User user, String xpath, Hashtable parameters) throws Exception {
         long startTime = System.currentTimeMillis();
         DBBroker broker = null;
@@ -375,10 +469,23 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>formatErrorMsg</code>
+     *
+     * @param message a <code>String</code> value
+     * @return a <code>String</code> value
+     */
     protected String formatErrorMsg(String message) {
         return formatErrorMsg("error", message);
     }
     
+    /**
+     * The method <code>formatErrorMsg</code>
+     *
+     * @param type a <code>String</code> value
+     * @param message a <code>String</code> value
+     * @return a <code>String</code> value
+     */
     protected String formatErrorMsg(String type, String message) {
         StringBuffer buf = new StringBuffer();
         buf.append("<exist:result xmlns:exist=\""+ Namespaces.EXIST_NS + "\" ");
@@ -393,11 +500,28 @@ public class RpcConnection extends Thread {
         return buf.toString();
     }
     
+    /**
+     * The method <code>getCollectionDesc</code>
+     *
+     * @param user an <code>User</code> value
+     * @param rootCollection a <code>String</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Hashtable getCollectionDesc(User user, String rootCollection)
     throws Exception, URISyntaxException {
     	return getCollectionDesc(user,(rootCollection==null)?XmldbURI.ROOT_COLLECTION_URI:XmldbURI.xmldbUriFor(rootCollection));
     }
     
+    /**
+     * The method <code>getCollectionDesc</code>
+     *
+     * @param user an <code>User</code> value
+     * @param rootUri a <code>XmldbURI</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     */
     public Hashtable getCollectionDesc(User user, XmldbURI rootUri)
     throws Exception {
         DBBroker broker = brokerPool.get(user);
@@ -443,11 +567,30 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>describeResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param resourceName a <code>String</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Hashtable describeResource(User user, String resourceName)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return describeResource(user,XmldbURI.xmldbUriFor(resourceName));
     }
     
+    /**
+     * The method <code>describeResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param resourceUri a <code>XmldbURI</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public Hashtable describeResource(User user, XmldbURI resourceUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = brokerPool.get(user);
@@ -482,10 +625,29 @@ public class RpcConnection extends Thread {
             brokerPool.release(broker);
         }
     }
+
+    /**
+     * The method <code>describeCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param rootCollection a <code>String</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Hashtable describeCollection(User user, String rootCollection)
     throws Exception, URISyntaxException {
     	return describeCollection(user,(rootCollection==null)?XmldbURI.ROOT_COLLECTION_URI:XmldbURI.xmldbUriFor(rootCollection));
     }
+
+    /**
+     * The method <code>describeCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     */
     public Hashtable describeCollection(User user, XmldbURI collUri)
     throws Exception {
         DBBroker broker = brokerPool.get(user);
@@ -514,10 +676,32 @@ public class RpcConnection extends Thread {
             brokerPool.release(broker);
         }
     }
+
+
+    /**
+     * The method <code>getDocument</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docName a <code>String</code> value
+     * @param parametri a <code>Hashtable</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public String getDocument(User user, String docName, Hashtable parametri)
     throws Exception, URISyntaxException {
     	return getDocument(user,XmldbURI.xmldbUriFor(docName), parametri);
     }
+
+    /**
+     * The method <code>getDocument</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param parametri a <code>Hashtable</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     */
     public String getDocument(User user, XmldbURI docUri, Hashtable parametri)
     throws Exception {
         DBBroker broker = null;
@@ -559,6 +743,15 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>getDocumentData</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docName a <code>String</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     */
     public Hashtable getDocumentData(User user, String docName, Hashtable parameters)
     throws Exception{
         Collection collection = null;
@@ -645,6 +838,15 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>getNextChunk</code>
+     *
+     * @param user an <code>User</code> value
+     * @param handle a <code>String</code> value
+     * @param offset an <code>int</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     */
     public Hashtable getNextChunk(User user, String handle, int offset) throws Exception {
         File file = new File(handle);
         if(!(file.isFile() && file.canRead()))
@@ -665,6 +867,14 @@ public class RpcConnection extends Thread {
         return result;
     }
     
+    /**
+     * The method <code>getChunk</code>
+     *
+     * @param file a <code>File</code> value
+     * @param offset an <code>int</code> value
+     * @return a <code>byte[]</code> value
+     * @exception IOException if an error occurs
+     */
     private byte[] getChunk(File file, int offset) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(file, "r");
         raf.seek((long)offset);
@@ -677,11 +887,30 @@ public class RpcConnection extends Thread {
         return data;
     }
     
+    /**
+     * The method <code>getBinaryResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param name a <code>String</code> value
+     * @return a <code>byte[]</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public byte[] getBinaryResource(User user, String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getBinaryResource(user,XmldbURI.xmldbUriFor(name));
     }
     
+    /**
+     * The method <code>getBinaryResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param name a <code>XmldbURI</code> value
+     * @return a <code>byte[]</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public byte[] getBinaryResource(User user, XmldbURI name)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
@@ -704,12 +933,39 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>xupdate</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionName a <code>String</code> value
+     * @param xupdate a <code>String</code> value
+     * @return an <code>int</code> value
+     * @exception SAXException if an error occurs
+     * @exception LockException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     * @exception XPathException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public int xupdate(User user, String collectionName, String xupdate)
     throws SAXException, LockException, PermissionDeniedException, EXistException,
             XPathException, URISyntaxException {
     	return xupdate(user,XmldbURI.xmldbUriFor(collectionName),xupdate);
     }
     
+    /**
+     * The method <code>xupdate</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @param xupdate a <code>String</code> value
+     * @return an <code>int</code> value
+     * @exception SAXException if an error occurs
+     * @exception LockException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     * @exception XPathException if an error occurs
+     */
     public int xupdate(User user, XmldbURI collUri, String xupdate)
     throws SAXException, LockException, PermissionDeniedException, EXistException,
             XPathException {
@@ -745,11 +1001,39 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>xupdateResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param resource a <code>String</code> value
+     * @param xupdate a <code>String</code> value
+     * @return an <code>int</code> value
+     * @exception SAXException if an error occurs
+     * @exception LockException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     * @exception XPathException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public int xupdateResource(User user, String resource, String xupdate)
     throws SAXException, LockException, PermissionDeniedException, EXistException,
             XPathException, URISyntaxException {
     	return xupdateResource(user,XmldbURI.xmldbUriFor(resource),xupdate);
     }
+
+    /**
+     * The method <code>xupdateResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param xupdate a <code>String</code> value
+     * @return an <code>int</code> value
+     * @exception SAXException if an error occurs
+     * @exception LockException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     * @exception XPathException if an error occurs
+     */
     public int xupdateResource(User user, XmldbURI docUri, String xupdate)
     throws SAXException, LockException, PermissionDeniedException, EXistException,
             XPathException {
@@ -791,6 +1075,11 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>sync</code>
+     *
+     * @return a <code>boolean</code> value
+     */
     public boolean sync() {
         DBBroker broker = null;
         try {
@@ -804,15 +1093,34 @@ public class RpcConnection extends Thread {
         return true;
     }
     
+    /**
+     * The method <code>isXACMLEnabled</code>
+     *
+     * @return a <code>boolean</code> value
+     */
     public boolean isXACMLEnabled() {
     	return brokerPool.getSecurityManager().isXACMLEnabled();
     }
     
+    /**
+     * The method <code>dataBackup</code>
+     *
+     * @param user an <code>User</code> value
+     * @param dest a <code>String</code> value
+     * @return a <code>boolean</code> value
+     */
     public boolean dataBackup(User user, String dest ) {
         brokerPool.triggerSystemTask( new DataBackup(dest));
         return true;
     }
     
+    /**
+     * The method <code>getDocumentListing</code>
+     *
+     * @param user an <code>User</code> value
+     * @return a <code>Vector</code> value
+     * @exception EXistException if an error occurs
+     */
     public Vector getDocumentListing(User user) throws EXistException {
         DBBroker broker = null;
         try {
@@ -829,10 +1137,30 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>getDocumentListing</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collName a <code>String</code> value
+     * @return a <code>Vector</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Vector getDocumentListing(User user, String collName)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getDocumentListing(user,XmldbURI.xmldbUriFor(collName));
     }
+
+    /**
+     * The method <code>getDocumentListing</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @return a <code>Vector</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public Vector getDocumentListing(User user, XmldbURI collUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
@@ -856,10 +1184,30 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>getResourceCount</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionName a <code>String</code> value
+     * @return an <code>int</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public int getResourceCount(User user, String collectionName)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getResourceCount(user,XmldbURI.xmldbUriFor(collectionName));
     }
+
+    /**
+     * The method <code>getResourceCount</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @return an <code>int</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public int getResourceCount(User user, XmldbURI collUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
@@ -875,6 +1223,16 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>createResourceId</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionName a <code>String</code> value
+     * @return a <code>String</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public String createResourceId(User user, String collectionName)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return createResourceId(user,XmldbURI.xmldbUriFor(collectionName));
@@ -918,10 +1276,30 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>listDocumentPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param name a <code>String</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Hashtable listDocumentPermissions(User user, String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return listDocumentPermissions(user,XmldbURI.xmldbUriFor(name));
     }
+
+    /**
+     * The method <code>listDocumentPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public Hashtable listDocumentPermissions(User user, XmldbURI collUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
@@ -952,10 +1330,30 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>listCollectionPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param name a <code>String</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Hashtable listCollectionPermissions(User user, String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return listCollectionPermissions(user,XmldbURI.xmldbUriFor(name));
     }
+
+    /**
+     * The method <code>listCollectionPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public Hashtable listCollectionPermissions(User user, XmldbURI collUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
@@ -987,6 +1385,14 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>getHits</code>
+     *
+     * @param user an <code>User</code> value
+     * @param resultId an <code>int</code> value
+     * @return an <code>int</code> value
+     * @exception EXistException if an error occurs
+     */
     public int getHits(User user, int resultId) throws EXistException {
         QueryResult qr = connectionPool.resultSets.get(resultId);
         if (qr == null)
@@ -997,10 +1403,30 @@ public class RpcConnection extends Thread {
         return qr.result.getItemCount();
     }
     
+    /**
+     * The method <code>getPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param name a <code>String</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Hashtable getPermissions(User user, String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getPermissions(user,XmldbURI.xmldbUriFor(name));
     }
+
+    /**
+     * The method <code>getPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param uri a <code>XmldbURI</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public Hashtable getPermissions(User user, XmldbURI uri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
@@ -1035,10 +1461,30 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>getCreationDate</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionPath a <code>String</code> value
+     * @return a <code>Date</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Date getCreationDate(User user, String collectionPath)
     throws PermissionDeniedException, EXistException, URISyntaxException {
     	return getCreationDate(user,XmldbURI.xmldbUriFor(collectionPath));
     }
+
+    /**
+     * The method <code>getCreationDate</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @return a <code>Date</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     */
     public Date getCreationDate(User user, XmldbURI collUri)
     throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
@@ -1056,10 +1502,30 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>getTimestamps</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @return a <code>Vector</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Vector getTimestamps(User user, String documentPath)
     throws PermissionDeniedException, EXistException, URISyntaxException {
     	return getTimestamps(user,XmldbURI.xmldbUriFor(documentPath));
     }
+
+    /**
+     * The method <code>getTimestamps</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @return a <code>Vector</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     */
     public Vector getTimestamps(User user, XmldbURI docUri)
     throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
@@ -1083,6 +1549,15 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>getUser</code>
+     *
+     * @param user an <code>User</code> value
+     * @param name a <code>String</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public Hashtable getUser(User user, String name) throws EXistException,
             PermissionDeniedException {
         User u = brokerPool.getSecurityManager().getUser(name);
@@ -1100,6 +1575,14 @@ public class RpcConnection extends Thread {
         return tab;
     }
     
+    /**
+     * The method <code>getUsers</code>
+     *
+     * @param user an <code>User</code> value
+     * @return a <code>Vector</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public Vector getUsers(User user) throws EXistException,
             PermissionDeniedException {
         User users[] = brokerPool.getSecurityManager().getUsers();
@@ -1119,6 +1602,14 @@ public class RpcConnection extends Thread {
         return r;
     }
     
+    /**
+     * The method <code>getGroups</code>
+     *
+     * @param user an <code>User</code> value
+     * @return a <code>Vector</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public Vector getGroups(User user) throws EXistException,
             PermissionDeniedException {
         String[] groups = brokerPool.getSecurityManager().getGroups();
@@ -1129,9 +1620,27 @@ public class RpcConnection extends Thread {
         return v;
     }
     
+    /**
+     * The method <code>hasDocument</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean hasDocument(User user, String documentPath) throws Exception, URISyntaxException {
     	return hasDocument(user,XmldbURI.xmldbUriFor(documentPath));
     }
+
+    /**
+     * The method <code>hasDocument</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean hasDocument(User user, XmldbURI docUri) throws Exception {
         DBBroker broker = null;
         try {
@@ -1142,9 +1651,27 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>hasCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionName a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean hasCollection(User user, String collectionName) throws Exception, URISyntaxException {
     	return hasCollection(user,XmldbURI.xmldbUriFor(collectionName));
     }
+
+    /**
+     * The method <code>hasCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean hasCollection(User user, XmldbURI collUri) throws Exception {
         DBBroker broker = null;
         try {
@@ -1156,20 +1683,67 @@ public class RpcConnection extends Thread {
     }
     
     
+    /**
+     * The method <code>parse</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xml a <code>byte</code> value
+     * @param documentPath a <code>String</code> value
+     * @param replace a <code>boolean</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean parse(User user, byte[] xml, String documentPath,
             boolean replace) throws Exception, URISyntaxException {
         return parse(user, xml,documentPath, replace, null, null);
     }
     
+    /**
+     * The method <code>parse</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xml a <code>byte</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param replace a <code>boolean</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean parse(User user, byte[] xml, XmldbURI docUri,
             boolean replace) throws Exception {
         return parse(user, xml,docUri, replace, null, null);
     }
     
+    /**
+     * The method <code>parse</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xml a <code>byte</code> value
+     * @param documentPath a <code>String</code> value
+     * @param replace a <code>boolean</code> value
+     * @param created a <code>Date</code> value
+     * @param modified a <code>Date</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean parse(User user, byte[] xml, String documentPath,
             boolean replace, Date created, Date modified) throws Exception, URISyntaxException {
     	return parse(user,xml,XmldbURI.xmldbUriFor(documentPath),replace,created,modified);
     }
+
+    /**
+     * The method <code>parse</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xml a <code>byte</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param replace a <code>boolean</code> value
+     * @param created a <code>Date</code> value
+     * @param modified a <code>Date</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean parse(User user, byte[] xml, XmldbURI docUri,
             boolean replace, Date created, Date modified) throws Exception {
         DBBroker broker = null;       
@@ -1245,16 +1819,54 @@ public class RpcConnection extends Thread {
         return parseLocal(user, localFile, documentPath, replace, mimeType, null, null);
     }
     
+    /**
+     * The method <code>parseLocal</code>
+     *
+     * @param user an <code>User</code> value
+     * @param localFile a <code>String</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param replace a <code>boolean</code> value
+     * @param mimeType a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean parseLocal(User user, String localFile, XmldbURI docUri,
             boolean replace, String mimeType) throws Exception {
         return parseLocal(user, localFile, docUri, replace, mimeType, null, null);
     }
     
+    /**
+     * The method <code>parseLocal</code>
+     *
+     * @param user an <code>User</code> value
+     * @param localFile a <code>String</code> value
+     * @param documentPath a <code>String</code> value
+     * @param replace a <code>boolean</code> value
+     * @param mimeType a <code>String</code> value
+     * @param created a <code>Date</code> value
+     * @param modified a <code>Date</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean parseLocal(User user, String localFile, String documentPath,
             boolean replace, String mimeType, Date created, Date modified) throws Exception, URISyntaxException {
     	return parseLocal(user,localFile,XmldbURI.xmldbUriFor(documentPath), replace, mimeType, created, modified);
     }
     
+    /**
+     * The method <code>parseLocal</code>
+     *
+     * @param user an <code>User</code> value
+     * @param localFile a <code>String</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param replace a <code>boolean</code> value
+     * @param mimeType a <code>String</code> value
+     * @param created a <code>Date</code> value
+     * @param modified a <code>Date</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean parseLocal(User user, String localFile, XmldbURI docUri,
             boolean replace, String mimeType, Date created, Date modified) throws Exception {
         
@@ -1339,24 +1951,70 @@ public class RpcConnection extends Thread {
         return true; // when arrived here, insert/update was successfull
     }
     
-    
-    
-    
-    
+    /**
+     * The method <code>storeBinary</code>
+     *
+     * @param user an <code>User</code> value
+     * @param data a <code>byte</code> value
+     * @param documentPath a <code>String</code> value
+     * @param mimeType a <code>String</code> value
+     * @param replace a <code>boolean</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean storeBinary(User user, byte[] data, String documentPath, String mimeType,
             boolean replace) throws Exception, URISyntaxException {
         return storeBinary(user, data, documentPath, mimeType, replace, null, null);
     }
 
+    /**
+     * The method <code>storeBinary</code>
+     *
+     * @param user an <code>User</code> value
+     * @param data a <code>byte</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param mimeType a <code>String</code> value
+     * @param replace a <code>boolean</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean storeBinary(User user, byte[] data, XmldbURI docUri, String mimeType,
             boolean replace) throws Exception {
         return storeBinary(user, data, docUri, mimeType, replace, null, null);
     }
 
+    /**
+     * The method <code>storeBinary</code>
+     *
+     * @param user an <code>User</code> value
+     * @param data a <code>byte</code> value
+     * @param documentPath a <code>String</code> value
+     * @param mimeType a <code>String</code> value
+     * @param replace a <code>boolean</code> value
+     * @param created a <code>Date</code> value
+     * @param modified a <code>Date</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean storeBinary(User user, byte[] data, String documentPath, String mimeType,
             boolean replace, Date created, Date modified) throws Exception, URISyntaxException {
     	return storeBinary(user,data,XmldbURI.xmldbUriFor(documentPath),mimeType,replace,created,modified);
     }    
+    /**
+     * The method <code>storeBinary</code>
+     *
+     * @param user an <code>User</code> value
+     * @param data a <code>byte</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param mimeType a <code>String</code> value
+     * @param replace a <code>boolean</code> value
+     * @param created a <code>Date</code> value
+     * @param modified a <code>Date</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean storeBinary(User user, byte[] data, XmldbURI docUri, String mimeType,
             boolean replace, Date created, Date modified) throws Exception {
         DBBroker broker = null;
@@ -1397,6 +2055,18 @@ public class RpcConnection extends Thread {
         return doc != null;
     }
     
+    /**
+     * The method <code>upload</code>
+     *
+     * @param user an <code>User</code> value
+     * @param chunk a <code>byte</code> value
+     * @param length an <code>int</code> value
+     * @param fileName a <code>String</code> value
+     * @param compressed a <code>boolean</code> value
+     * @return a <code>String</code> value
+     * @exception EXistException if an error occurs
+     * @exception IOException if an error occurs
+     */
     public String upload(User user, byte[] chunk, int length, String fileName, boolean compressed)
     throws EXistException, IOException {
         File file;
@@ -1420,6 +2090,18 @@ public class RpcConnection extends Thread {
         return fileName;
     }
     
+    /**
+     * The method <code>printAll</code>
+     *
+     * @param broker a <code>DBBroker</code> value
+     * @param resultSet a <code>Sequence</code> value
+     * @param howmany an <code>int</code> value
+     * @param start an <code>int</code> value
+     * @param properties a <code>Hashtable</code> value
+     * @param queryTime a <code>long</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     */
     protected String printAll(DBBroker broker, Sequence resultSet, int howmany,
             int start, Hashtable properties, long queryTime) throws Exception {
         if (resultSet.isEmpty())
@@ -1467,6 +2149,15 @@ public class RpcConnection extends Thread {
         return writer.toString();
     }
     
+    /**
+     * The method <code>compile</code>
+     *
+     * @param user an <code>User</code> value
+     * @param query a <code>String</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     */
     public Hashtable compile(User user, String query, Hashtable parameters) throws Exception {
         Hashtable ret = new Hashtable();
         DBBroker broker = null;
@@ -1492,6 +2183,17 @@ public class RpcConnection extends Thread {
         return ret;
     }
     
+    /**
+     * The method <code>query</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xpath a <code>String</code> value
+     * @param howmany an <code>int</code> value
+     * @param start an <code>int</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     */
     public String query(User user, String xpath, int howmany, int start,
             Hashtable parameters) throws Exception {
         long startTime = System.currentTimeMillis();
@@ -1515,10 +2217,36 @@ public class RpcConnection extends Thread {
         return result;
     }
     
+    /**
+     * The method <code>queryP</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xpath a <code>String</code> value
+     * @param documentPath a <code>String</code> value
+     * @param s_id a <code>String</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Hashtable queryP(User user, String xpath, String documentPath,
             String s_id, Hashtable parameters) throws Exception, URISyntaxException {
-    	return queryP(user,xpath,(documentPath==null)?null:XmldbURI.xmldbUriFor(documentPath),s_id,parameters);
+    	return queryP(user, xpath,
+                      (documentPath==null) ? null : XmldbURI.xmldbUriFor(documentPath),
+                      s_id, parameters);
     }    
+    
+    /**
+     * The method <code>queryP</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xpath a <code>String</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param s_id a <code>String</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     */
     public Hashtable queryP(User user, String xpath, XmldbURI docUri,
             String s_id, Hashtable parameters) throws Exception {
         long startTime = System.currentTimeMillis();
@@ -1611,6 +2339,15 @@ public class RpcConnection extends Thread {
         return ret;
     }
     
+    /**
+     * The method <code>execute</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xpath a <code>String</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     */
     public Hashtable execute(User user, String xpath, Hashtable parameters) throws Exception {
         long startTime = System.currentTimeMillis();
         String sortBy = (String) parameters.get(RpcAPI.SORT_EXPR);
@@ -1688,15 +2425,36 @@ public class RpcConnection extends Thread {
         return ret;
     }
     
+    /**
+     * The method <code>releaseQueryResult</code>
+     *
+     * @param handle an <code>int</code> value
+     */
     public void releaseQueryResult(int handle) {
         connectionPool.resultSets.remove(handle);
         documentCache.clear();
         LOG.debug("removed query result with handle " + handle);
     }
     
+    /**
+     * The method <code>remove</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public void remove(User user, String documentPath) throws Exception, URISyntaxException {
     	remove(user,XmldbURI.xmldbUriFor(documentPath));
     }    
+
+    /**
+     * The method <code>remove</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @exception Exception if an error occurs
+     */
     public void remove(User user, XmldbURI docUri) throws Exception {
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -1729,10 +2487,27 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>removeCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionName a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean removeCollection(User user, String collectionName) throws Exception, URISyntaxException {
     	return removeCollection(user,XmldbURI.xmldbUriFor(collectionName));
     } 
     
+    /**
+     * The method <code>removeCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collURI a <code>XmldbURI</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean removeCollection(User user, XmldbURI collURI) throws Exception {
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -1760,6 +2535,15 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>removeUser</code>
+     *
+     * @param user an <code>User</code> value
+     * @param name a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public boolean removeUser(User user, String name) throws EXistException,
             PermissionDeniedException {
         SecurityManager manager = brokerPool
@@ -1772,10 +2556,32 @@ public class RpcConnection extends Thread {
         return true;
     }
     
+    /**
+     * The method <code>retrieve</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @param s_id a <code>String</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public String retrieve(User user, String documentPath, String s_id,
             Hashtable parameters) throws Exception, URISyntaxException {
     	return retrieve(user,XmldbURI.xmldbUriFor(documentPath),s_id,parameters);
     }    
+
+    /**
+     * The method <code>retrieve</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param s_id a <code>String</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     */
     public String retrieve(User user, XmldbURI docUri, String s_id,
             Hashtable parameters) throws Exception {
         DBBroker broker = brokerPool.get(user);
@@ -1799,6 +2605,16 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>retrieve</code>
+     *
+     * @param user an <code>User</code> value
+     * @param resultId an <code>int</code> value
+     * @param num an <code>int</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     */
     public String retrieve(User user, int resultId, int num,
             Hashtable parameters) throws Exception {
         DBBroker broker = null;
@@ -1827,6 +2643,15 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>retrieveAll</code>
+     *
+     * @param user an <code>User</code> value
+     * @param resultId an <code>int</code> value
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     */
     public String retrieveAll(User user, int resultId, Hashtable parameters) throws Exception {
         DBBroker broker = null;
         try {
@@ -1880,6 +2705,10 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>run</code>
+     *
+     */
     public void run() {
         synchronized (this) {
             while (!terminate)
@@ -1892,11 +2721,37 @@ public class RpcConnection extends Thread {
         // broker.shutdown();
     }
     
+    /**
+     * The method <code>setPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param resource a <code>String</code> value
+     * @param owner a <code>String</code> value
+     * @param ownerGroup a <code>String</code> value
+     * @param permissions a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean setPermissions(User user, String resource, String owner,
             String ownerGroup, String permissions) throws EXistException,
             PermissionDeniedException, URISyntaxException {
     	return setPermissions(user,XmldbURI.xmldbUriFor(resource),owner,ownerGroup,permissions);
     }    
+
+    /**
+     * The method <code>setPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param uri a <code>XmldbURI</code> value
+     * @param owner a <code>String</code> value
+     * @param ownerGroup a <code>String</code> value
+     * @param permissions a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public boolean setPermissions(User user, XmldbURI uri, String owner,
             String ownerGroup, String permissions) throws EXistException,
             PermissionDeniedException {
@@ -1975,11 +2830,37 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>setPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param resource a <code>String</code> value
+     * @param owner a <code>String</code> value
+     * @param ownerGroup a <code>String</code> value
+     * @param permissions an <code>int</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean setPermissions(User user, String resource, String owner,
             String ownerGroup, int permissions) throws EXistException,
             PermissionDeniedException, URISyntaxException {
     	return setPermissions(user,XmldbURI.xmldbUriFor(resource),owner,ownerGroup,permissions);
     }    
+
+    /**
+     * The method <code>setPermissions</code>
+     *
+     * @param user an <code>User</code> value
+     * @param uri a <code>XmldbURI</code> value
+     * @param owner a <code>String</code> value
+     * @param ownerGroup a <code>String</code> value
+     * @param permissions an <code>int</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public boolean setPermissions(User user, XmldbURI uri, String owner,
             String ownerGroup, int permissions) throws EXistException,
             PermissionDeniedException {
@@ -2051,6 +2932,19 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>setUser</code>
+     *
+     * @param user an <code>User</code> value
+     * @param name a <code>String</code> value
+     * @param passwd a <code>String</code> value
+     * @param passwdDigest a <code>String</code> value
+     * @param groups a <code>Vector</code> value
+     * @param home a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public boolean setUser(User user, String name, String passwd, String passwdDigest,
             Vector groups, String home) throws EXistException,
             PermissionDeniedException {
@@ -2166,9 +3060,29 @@ public class RpcConnection extends Thread {
     	return true;
     }
     
+    /**
+     * The method <code>lockResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @param userName a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean lockResource(User user, String documentPath, String userName) throws Exception, URISyntaxException {
     	return lockResource(user,XmldbURI.xmldbUriFor(documentPath),userName);
     }    
+
+    /**
+     * The method <code>lockResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docURI a <code>XmldbURI</code> value
+     * @param userName a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean lockResource(User user, XmldbURI docURI, String userName) throws Exception {
         DBBroker broker = null;
         DocumentImpl doc = null;
@@ -2205,9 +3119,27 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>hasUserLock</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public String hasUserLock(User user, String documentPath) throws Exception, URISyntaxException {
     	return hasUserLock(user,XmldbURI.xmldbUriFor(documentPath));
     }    
+
+    /**
+     * The method <code>hasUserLock</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docURI a <code>XmldbURI</code> value
+     * @return a <code>String</code> value
+     * @exception Exception if an error occurs
+     */
     public String hasUserLock(User user, XmldbURI docURI) throws Exception {
         DBBroker broker = null;
         DocumentImpl doc = null;
@@ -2227,9 +3159,27 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>unlockResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean unlockResource(User user, String documentPath) throws Exception, URISyntaxException {
     	return unlockResource(user,XmldbURI.xmldbUriFor(documentPath));
     }    
+
+    /**
+     * The method <code>unlockResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docURI a <code>XmldbURI</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean unlockResource(User user, XmldbURI docURI) throws Exception {
         DBBroker broker = null;
         DocumentImpl doc = null;
@@ -2260,6 +3210,14 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>summary</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xpath a <code>String</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception Exception if an error occurs
+     */
     public Hashtable summary(User user, String xpath) throws Exception {
         long startTime = System.currentTimeMillis();
         DBBroker broker = null;
@@ -2332,6 +3290,15 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>summary</code>
+     *
+     * @param user an <code>User</code> value
+     * @param resultId an <code>int</code> value
+     * @return a <code>Hashtable</code> value
+     * @exception EXistException if an error occurs
+     * @exception XPathException if an error occurs
+     */
     public Hashtable summary(User user, int resultId) throws EXistException, XPathException {
         QueryResult qr = connectionPool.resultSets.get(resultId);
         if (qr == null)
@@ -2404,10 +3371,32 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>getIndexedElements</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionName a <code>String</code> value
+     * @param inclusive a <code>boolean</code> value
+     * @return a <code>Vector</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Vector getIndexedElements(User user, String collectionName,
             boolean inclusive) throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getIndexedElements(user,XmldbURI.xmldbUriFor(collectionName),inclusive);
     }    
+
+    /**
+     * The method <code>getIndexedElements</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @param inclusive a <code>boolean</code> value
+     * @return a <code>Vector</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public Vector getIndexedElements(User user, XmldbURI collUri,
             boolean inclusive) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
@@ -2437,11 +3426,37 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>scanIndexTerms</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionName a <code>String</code> value
+     * @param start a <code>String</code> value
+     * @param end a <code>String</code> value
+     * @param inclusive a <code>boolean</code> value
+     * @return a <code>Vector</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Vector scanIndexTerms(User user, String collectionName,
             String start, String end, boolean inclusive)
             throws PermissionDeniedException, EXistException, URISyntaxException {
     	return scanIndexTerms(user,XmldbURI.xmldbUriFor(collectionName),start,end,inclusive);
     }    
+
+    /**
+     * The method <code>scanIndexTerms</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @param start a <code>String</code> value
+     * @param end a <code>String</code> value
+     * @param inclusive a <code>boolean</code> value
+     * @return a <code>Vector</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     */
     public Vector scanIndexTerms(User user, XmldbURI collUri,
             String start, String end, boolean inclusive)
             throws PermissionDeniedException, EXistException {
@@ -2464,6 +3479,18 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>scanIndexTerms</code>
+     *
+     * @param user an <code>User</code> value
+     * @param xpath a <code>String</code> value
+     * @param start a <code>String</code> value
+     * @param end a <code>String</code> value
+     * @return a <code>Vector</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     * @exception XPathException if an error occurs
+     */
     public Vector scanIndexTerms(User user, String xpath,
             String start, String end)
             throws PermissionDeniedException, EXistException, XPathException {
@@ -2502,14 +3529,28 @@ public class RpcConnection extends Thread {
         return result;
     }
     
+    /**
+     * The method <code>synchronize</code>
+     *
+     */
     public void synchronize() {
         documentCache.clear();
     }
     
+    /**
+     * The method <code>terminate</code>
+     *
+     */
     public void terminate() {
         terminate = true;
     }
     
+    /**
+     * The method <code>getProperties</code>
+     *
+     * @param parameters a <code>Hashtable</code> value
+     * @return a <code>Properties</code> value
+     */
     private Properties getProperties(Hashtable parameters) {
         Properties properties = new Properties();
         for (Iterator i = parameters.entrySet().iterator(); i.hasNext(); ) {
@@ -2519,6 +3560,10 @@ public class RpcConnection extends Thread {
         return properties;
     }
     
+    /**
+     * The class <code>CachedQuery</code>
+     *
+     */
     class CachedQuery {
         
         PathExpr expression;
@@ -2532,6 +3577,10 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The class <code>DoctypeCount</code>
+     *
+     */
     class DoctypeCount {
         int count = 1;
         DocumentType doctype;
@@ -2551,6 +3600,10 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The class <code>NodeCount</code>
+     *
+     */
     class NodeCount {
         int count = 1;
         DocumentImpl doc;
@@ -2588,12 +3641,38 @@ public class RpcConnection extends Thread {
         return buffer;
     }
     
+    /**
+     * The method <code>moveOrCopyResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @param destinationPath a <code>String</code> value
+     * @param newName a <code>String</code> value
+     * @param move a <code>boolean</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean moveOrCopyResource(User user, String documentPath, String destinationPath,
             String newName, boolean move)
             throws EXistException, PermissionDeniedException, URISyntaxException {
     	return moveOrCopyResource(user,XmldbURI.xmldbUriFor(documentPath),
     			XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName),move);
     }    
+
+    /**
+     * The method <code>moveOrCopyResource</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param destUri a <code>XmldbURI</code> value
+     * @param newName a <code>XmldbURI</code> value
+     * @param move a <code>boolean</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public boolean moveOrCopyResource(User user, XmldbURI docUri, XmldbURI destUri,
             XmldbURI newName, boolean move)
             throws EXistException, PermissionDeniedException {
@@ -2648,6 +3727,19 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>moveOrCopyCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionName a <code>String</code> value
+     * @param destinationPath a <code>String</code> value
+     * @param newName a <code>String</code> value
+     * @param move a <code>boolean</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean moveOrCopyCollection(User user, String collectionName, String destinationPath,
             String newName, boolean move)
             throws EXistException, PermissionDeniedException, URISyntaxException {
@@ -2655,6 +3747,18 @@ public class RpcConnection extends Thread {
     			XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName),move);
     }    
     
+    /**
+     * The method <code>moveOrCopyCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @param destUri a <code>XmldbURI</code> value
+     * @param newName a <code>XmldbURI</code> value
+     * @param move a <code>boolean</code> value
+     * @return a <code>boolean</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public boolean moveOrCopyCollection(User user, XmldbURI collUri, XmldbURI destUri,
             XmldbURI newName, boolean move)
             throws EXistException, PermissionDeniedException {
@@ -2700,11 +3804,28 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>reindexCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collectionName a <code>String</code> value
+     * @exception Exception if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public void reindexCollection(User user, String collectionName) throws Exception,
     PermissionDeniedException, URISyntaxException {
     	reindexCollection(user,XmldbURI.xmldbUriFor(collectionName));
     }    
     
+    /**
+     * The method <code>reindexCollection</code>
+     *
+     * @param user an <code>User</code> value
+     * @param collUri a <code>XmldbURI</code> value
+     * @exception Exception if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public void reindexCollection(User user, XmldbURI collUri) throws Exception,
     PermissionDeniedException {
         DBBroker broker = null;
@@ -2720,6 +3841,17 @@ public class RpcConnection extends Thread {
         }
     }
     
+    /**
+     * The method <code>backup</code>
+     *
+     * @param user an <code>User</code> value
+     * @param userbackup a <code>String</code> value
+     * @param password a <code>String</code> value
+     * @param destcollection a <code>String</code> value
+     * @param collection a <code>String</code> value
+     * @exception Exception if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
     public void backup(User user, String userbackup, String password,
 	String destcollection, String collection) throws Exception,
     PermissionDeniedException {
@@ -2750,6 +3882,15 @@ public class RpcConnection extends Thread {
     	return isValid(user,XmldbURI.xmldbUriFor(documentPath));
     }   
     
+    /**
+     * The method <code>isValid</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @return a <code>boolean</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception Exception if an error occurs
+     */
     public boolean isValid(User user, XmldbURI docUri)
                                    throws PermissionDeniedException, Exception{
         boolean retVal=false;
@@ -2782,11 +3923,30 @@ public class RpcConnection extends Thread {
         return retVal;
     }
     
+    /**
+     * The method <code>getDocType</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @return a <code>Vector</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public Vector getDocType(User user, String documentPath)
     throws PermissionDeniedException, EXistException, URISyntaxException {
     	return getDocType(user,XmldbURI.xmldbUriFor(documentPath));
     }    
     
+    /**
+     * The method <code>getDocType</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @return a <code>Vector</code> value
+     * @exception PermissionDeniedException if an error occurs
+     * @exception EXistException if an error occurs
+     */
     public Vector getDocType(User user, XmldbURI docUri)
     throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
@@ -2832,10 +3992,34 @@ public class RpcConnection extends Thread {
     }
     
 
+    /**
+     * The method <code>setDocType</code>
+     *
+     * @param user an <code>User</code> value
+     * @param documentPath a <code>String</code> value
+     * @param doctypename a <code>String</code> value
+     * @param publicid a <code>String</code> value
+     * @param systemid a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
     public boolean setDocType(User user, String documentPath, String doctypename, String publicid, String systemid) throws
     Exception, URISyntaxException {
     	return setDocType(user,XmldbURI.xmldbUriFor(documentPath),doctypename, publicid, systemid);
     }    
+
+    /**
+     * The method <code>setDocType</code>
+     *
+     * @param user an <code>User</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param doctypename a <code>String</code> value
+     * @param publicid a <code>String</code> value
+     * @param systemid a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
     public boolean setDocType(User user, XmldbURI docUri, String doctypename, String publicid, String systemid) throws
     Exception {
         DBBroker broker = null;
@@ -2876,8 +4060,3 @@ public class RpcConnection extends Thread {
         }
     }
 }
-
-
-
-
-
