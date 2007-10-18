@@ -44,8 +44,7 @@ public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator
 		new FunctionSignature(
 			new QName("get-child-collections", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns a sequence of strings containing all the child collections of the collection specified in " +
-			"$a. The collection parameter can either be a simple collection path, an XMLDB URI or a collection " +
-			"object as returned by the xmldb:collection function.",
+			"$a. The collection parameter can either be a simple collection path or an XMLDB URI.",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},

@@ -50,7 +50,7 @@ public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
 			"document is serialized back to a string, it's size may be different, as parts of the " +
 			"structural information are stored in compressed form. " +
 			"The collection can be passed as a simple collection " +
-			"path, an XMLDB URI or a collection object (obtained from the collection function).",
+			"path or an XMLDB URI.",
 			new SequenceType[] {
                 new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)

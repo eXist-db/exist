@@ -22,15 +22,16 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import org.exist.collections.CollectionURI;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -46,13 +47,14 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 					XMLDBModule.PREFIX),
 					"Create a new collection as a child of the collection specified in the "
 					+ "first argument. The collection can be passed as a simple collection "
-					+ "path, an XMLDB URI or as a collection object (obtained from the collection function)."
+					+ "path or an XMLDB URI."
 					+ "The second argument specifies the name of the new "
-					+ "collection.",
+					+ "collection. The function returns the path to the new collection "
+					+ "as an xs:string or - if the collection could not be created - the empty sequence.",
 			new SequenceType[]{
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.JAVA_OBJECT, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 
 	/**
 	 * @param context
@@ -67,22 +69,24 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
 	 *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence evalWithCollection(Collection collection, Sequence args[], Sequence contextSequence)
-			throws XPathException {
+	public Sequence evalWithCollection(Collection collection, Sequence args[], Sequence contextSequence) throws XPathException
+	{
+		
 		String collectionName = args[1].getStringValue();
-		try {
-			CollectionManagementService mgtService = (CollectionManagementService) collection
-					.getService("CollectionManagementService", "1.0");
-			Collection newCollection = mgtService
-					.createCollection(new AnyURIValue(collectionName).toXmldbURI().toString());
+		
+		try
+		{
+			CollectionManagementService mgtService = (CollectionManagementService)collection.getService("CollectionManagementService", "1.0");
+			Collection newCollection = mgtService.createCollection(new AnyURIValue(collectionName).toXmldbURI().toString());
+			
 			if (newCollection == null)
 				return Sequence.EMPTY_SEQUENCE;
 			else
-				return new JavaObjectValue(newCollection);
-		} catch (XMLDBException e) {
-			throw new XPathException(getASTNode(),
-					"failed to create new collection " + collectionName + ": "
-							+ e.getMessage(), e);
+				return new StringValue(newCollection.getName());
+		}
+		catch(XMLDBException e)
+		{
+			throw new XPathException(getASTNode(), "failed to create new collection " + collectionName + ": " + e.getMessage(), e);
 		}
 	}
 }

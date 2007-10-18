@@ -45,7 +45,7 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 		new FunctionSignature(
 			new QName("rename", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Rename a collection $a. The collection can be specified either as " +
-				"a simple collection path, an XMLDB URI or a collection object.",
+				"a simple collection path or an XMLDB URI.",
 				new SequenceType[] {
 						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
@@ -54,8 +54,8 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 		new FunctionSignature(
 			new QName("rename", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Rename a resource $b in the collection specified in $a with name in $c. " +
-            "The collection can be either specified as a simple collection path, " +
-            "an XMLDB URI or a collection object.",
+            "The collection can be either specified as a simple collection path or " +
+            "an XMLDB URI.",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
