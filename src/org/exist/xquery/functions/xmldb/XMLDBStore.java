@@ -65,9 +65,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Store a new resource into the database. The first " +
 			"argument denotes the collection where the resource should be stored. " +
-			"The collection can be either specified as a simple collection path, " +
-			"an XMLDB URI, or a collection object as returned by the collection or " +
-			"create-collection functions. The second argument is the name of the new " +
+			"The collection can be either specified as a simple collection path or " +
+			"an XMLDB URI. The second argument is the name of the new " +
 			"resource. The third argument is either a node, an xs:string, a Java file object or an xs:anyURI. " +
 			"A node will be serialized to SAX. It becomes the root node of the new " +
 			"document. If the argument is of type xs:anyURI, the resource is loaded " +
@@ -82,9 +81,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Store a new resource into the database. The first " +
 			"argument denotes the collection where the resource should be stored. " +
-			"The collection can be either specified as a simple collection path, " +
-			"an XMLDB URI, or a collection object as returned by the collection or " +
-			"create-collection functions. The second argument is the name of the new " +
+			"The collection can be either specified as a simple collection path or " +
+			"an XMLDB URI. The second argument is the name of the new " +
 			"resource. The third argument is either a node, an xs:string, a Java file object or an xs:anyURI. " +
 			"A node will be serialized to SAX. It becomes the root node of the new " +
 			"document. If the argument is of type xs:anyURI, the resource is loaded " +

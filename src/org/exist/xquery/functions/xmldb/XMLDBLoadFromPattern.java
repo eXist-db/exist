@@ -56,9 +56,8 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                 "Store new resources into the database. Resources are read from the server's " +
                 "file system, using file patterns. " +
                 "The first argument denotes the collection where resources should be stored. " +
-                "The collection can be either specified as a simple collection path, " +
-                "an XMLDB URI, or a collection object as returned by the collection or " +
-                "create-collection functions. " +
+                "The collection can be either specified as a simple collection path or " +
+                "an XMLDB URI. " +
                 "The second argument is the directory in the file system wherefrom the files are read." +
                 "The third argument is the file pattern. File pattern matching is based " +
                 "on code from Apache's Ant, thus following the same conventions. For example: " +
@@ -77,9 +76,8 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                 "Store new resources into the database. Resources are read from the server's " +
                 "file system, using file patterns. " +
                 "The first argument denotes the collection where resources should be stored. " +
-                "The collection can be either specified as a simple collection path, " +
-                "an XMLDB URI, or a collection object as returned by the collection or " +
-                "create-collection functions. " +
+                "The collection can be either specified as a simple collection path or " +
+                "an XMLDB URI. " +
                 "The second argument is the directory in the file system wherefrom the files are read." +
                 "The third argument is the file pattern. File pattern matching is based " +
                 "on code from Apache's Ant, thus following the same conventions. For example: " +
@@ -102,9 +100,8 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                 "Store new resources into the database. Resources are read from the server's " +
                 "file system, using file patterns. " +
                 "The first argument denotes the collection where resources should be stored. " +
-                "The collection can be either specified as a simple collection path, " +
-                "an XMLDB URI, or a collection object as returned by the collection or " +
-                "create-collection functions. " +
+                "The collection can be either specified as a simple collection path or " +
+                "an XMLDB URI. " +
                 "The second argument is the directory in the file system wherefrom the files are read." +
                 "The third argument is the file pattern. File pattern matching is based " +
                 "on code from Apache's Ant, thus following the same conventions. For example: " +

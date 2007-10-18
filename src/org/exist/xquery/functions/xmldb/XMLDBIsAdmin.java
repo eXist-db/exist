@@ -47,7 +47,7 @@ public class XMLDBIsAdmin extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("is-admin-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Returns true if user exists. Requires username. Does not delete the user's home collection.",
+			"Returns true if user is an Admin. Requires username.",
 			new SequenceType[]{
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
             },

@@ -51,17 +51,20 @@ import org.xmldb.api.modules.XUpdateQueryService;
  * @author wolf
  *
  */
-public class XMLDBXUpdate extends BasicFunction {
+public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
+{
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("update", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Process an XUpdate request on the current collection. The first "
-					+ "argument specifies the collection object as returned by the collection or "
-					+ "create-collection functions. The second argument specifies the XUpdate "
+			"Process an XUpdate request against a collection. The first "
+					+ "argument specifies the collection as a simple collection "
+					+ "path or an XMLDB URI. "
+					+ "The second argument specifies the XUpdate "
 					+ "modifications to be processed. Modifications are passed in a "
-					+ "document conforming to the XUpdate specification.",
+					+ "document conforming to the XUpdate specification. "
+					+ "The function returns the number of modifications caused by the XUpdate.",
 			new SequenceType[]{
-					new SequenceType(Type.JAVA_OBJECT, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
 
@@ -72,39 +75,37 @@ public class XMLDBXUpdate extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		JavaObjectValue object = (JavaObjectValue) args[0].itemAt(0);
-		if (!(object.getObject() instanceof Collection))
-			throw new XPathException(getASTNode(),
-					"Specified Java object is not an XMLDB collection object");
+	public Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence) throws XPathException
+	{
 		NodeValue data = (NodeValue) args[1].itemAt(0);
 		StringWriter writer = new StringWriter();
 		Properties properties = new Properties();
 		properties.setProperty(OutputKeys.INDENT, "yes");
         DOMSerializer serializer = new ExtendedDOMSerializer(context.getBroker(), writer, properties);
-		try {
+		try
+		{
 			serializer.serialize(data.getNode());
-		} catch (TransformerException e) {
+		}
+		catch(TransformerException e)
+		{
 			LOG.debug("Exception while serializing XUpdate document", e);
-			throw new XPathException(getASTNode(),
-					"Exception while serializing XUpdate document: "
-							+ e.getMessage(), e);
+			throw new XPathException(getASTNode(), "Exception while serializing XUpdate document: " + e.getMessage(), e);
 		}
 		String xupdate = writer.toString();
 
 		long modifications = 0;
-		try {
-			XUpdateQueryService service = (XUpdateQueryService) ((Collection) object
-					.getObject()).getService("XUpdateQueryService", "1.0");
+		try
+		{
+			XUpdateQueryService service = (XUpdateQueryService)c.getService("XUpdateQueryService", "1.0");
 			LOG.debug("Processing XUpdate request: " + xupdate);
 			modifications = service.update(xupdate);
-		} catch (XMLDBException e) {
-			throw new XPathException(getASTNode(), "Exception while processing xupdate: "
-					+ e.getMessage(), e);
 		}
+		catch(XMLDBException e)
+		{
+			throw new XPathException(getASTNode(), "Exception while processing xupdate: " + e.getMessage(), e);
+		}
+		
 		context.getRootExpression().resetState();
 		return new IntegerValue(modifications);
 	}
-
 }

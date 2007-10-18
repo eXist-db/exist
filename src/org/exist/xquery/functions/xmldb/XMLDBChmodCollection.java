@@ -38,36 +38,38 @@ import org.exist.xquery.value.Type;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator {
-
-	public final static FunctionSignature signature =
-		new FunctionSignature(
+public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator
+{
+	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("chmod-collection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                        "Sets the mode of the specified Collection. Required: collection, mode (as xs:integer). "+
+                        "Sets the mode of the specified Collection. $a is the Collection path, $b is the mode (as xs:integer). "+
                         "PLEASE REMEMBER that 0755 is 7*64+5*8+5, NOT decimal 755.",
 			new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
 			},
-            new SequenceType(Type.ITEM, Cardinality.EMPTY));
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+	);
 
 	
-	public XMLDBChmodCollection(XQueryContext context) {
+	public XMLDBChmodCollection(XQueryContext context)
+	{
 		super(context, signature);
 	}
 	
-/* (non-Javadoc)
- * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
- *
- */
-	
-	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
-		throws XPathException {
-
-        try {
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+	 *
+	 */
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException
+	{
+        try
+        {
             UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
             ums.chmod(((IntegerValue) args[1].convertTo(Type.INTEGER)).getInt());
-        } catch (XMLDBException xe) {
+        }
+        catch(XMLDBException xe)
+        {
             throw new XPathException(getASTNode(), "Unable to change collection mode", xe);
         }
 

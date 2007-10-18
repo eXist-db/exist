@@ -33,7 +33,6 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -68,35 +67,40 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         
         boolean collectionNeedsClose = false;
         
-        // If the incoming is a collection object, use it:
+        
         Collection collection = null;
         Item item = args[0].itemAt(0);
-        if (item.getType() == Type.JAVA_OBJECT) {
-            Object o = ((JavaObjectValue) item).getObject();
-            if (o instanceof Collection)
-                collection = (Collection) o;
-        } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
+        if(Type.subTypeOf(item.getType(), Type.NODE))
+        {
         	NodeValue node = (NodeValue)item;
         	LOG.debug("Found node");
-        	if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+        	if(node.getImplementationType() == NodeValue.PERSISTENT_NODE)
+        	{
         		org.exist.collections.Collection internalCol = ((NodeProxy)node).getDocument().getCollection();
         		LOG.debug("Found node");
-        		try {
+        		try
+        		{
         			//TODO: use xmldbURI
 					collection = createLocalCollection(internalCol.getURI().toString());
 					LOG.debug("Loaded collection " + collection.getName());
-				} catch (XMLDBException e) {
+				}
+        		catch(XMLDBException e)
+        		{
 					throw new XPathException(getASTNode(), "Failed to access collection: " + internalCol.getURI(), e);
 				}
-        	} else
+        	}
+        	else
         		return Sequence.EMPTY_SEQUENCE;
         }
         
-        if (null == collection) {
-            // Otherwise, just extract the name as a string:
+        if(collection == null)
+        {
+        	//Otherwise, just extract the name as a string:
             String collectionURI = args[0].getStringValue();
-            if (null != collectionURI) {
-                try {
+            if(collectionURI != null)
+            {
+                try
+                {
                 	if (!collectionURI.startsWith("xmldb:"))
                     {
                         // Must be a LOCAL collection
@@ -117,31 +121,44 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                     	// Must be a LOCAL collection
                         collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://127.0.0.1", ""));
                     }
-                    else {
+                    else
+                    {
                         // Right now, the collection is retrieved as GUEST. Need to figure out how to
                         // get user information into the URL?
                         collection = org.xmldb.api.DatabaseManager.getCollection(collectionURI);
                     }
-                } catch (XMLDBException xe) {
+                }
+                catch(XMLDBException xe)
+                {
                     if(errorIfAbsent)
                         throw new XPathException(getASTNode(), "Could not locate collection: "+collectionURI, xe);
                     collection = null;
                 }
             }
-            if (null == collection && errorIfAbsent) {
-                throw new XPathException(getASTNode(), "Unable to find collection: "+collectionURI);
+            if(collection == null && errorIfAbsent)
+            {
+                throw new XPathException(getASTNode(), "Unable to find collection: " + collectionURI);
             }
-        } else {
-            // Don't close incoming JavaObjects:
-            collectionNeedsClose = false;
         }
         
         Sequence s = Sequence.EMPTY_SEQUENCE;
-        try {
+        try
+        {
             s = evalWithCollection(collection, args, contextSequence);
-        } finally {
-            if (collectionNeedsClose && collection != null)
-                try { collection.close(); } catch (Exception e) { throw new XPathException(getASTNode(), "Unable to close collection", e); }
+        }
+        finally
+        {
+            if(collectionNeedsClose && collection != null)
+            {
+                try
+            	{
+                	collection.close();
+            	}
+            	catch(Exception e)
+            	{
+            		throw new XPathException(getASTNode(), "Unable to close collection", e);
+        		}
+            }
         }
         return s;
 	}

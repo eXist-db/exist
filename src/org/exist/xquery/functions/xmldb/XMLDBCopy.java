@@ -45,7 +45,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 		new FunctionSignature(
 			new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Copy a collection. The collections can be specified either as " +
-				"a simple collection path, an XMLDB URI or a collection object.",
+				"a simple collection path or an XMLDB URI.",
 				new SequenceType[] {
 						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
@@ -54,8 +54,8 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 		new FunctionSignature(
 			new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Copy a resource from the collection specified in $a to collection in $b. " +
-            "The collections can be either specified as a simple collection path, " +
-            "an XMLDB URI or a collection object.",
+            "The collections can be either specified as a simple collection path " +
+            "or an XMLDB URI.",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),

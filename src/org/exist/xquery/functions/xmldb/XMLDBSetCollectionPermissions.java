@@ -47,7 +47,7 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
 		new FunctionSignature(
 			new QName("set-collection-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Sets the permissions of the specified collection. $a is the collection, which can be specified " +
-            "as a simple collection path, an XMLDB URI or a collection object. $b specifies the user which " +
+            "as a simple collection path or an XMLDB URI. $b specifies the user which " +
             "will become the owner of the resource, $c the group. " +
             "The final argument contains the permissions, specified as an xs:integer value. "+
             "PLEASE REMEMBER that 0755 is 7*64+5*8+5, NOT decimal 755.",

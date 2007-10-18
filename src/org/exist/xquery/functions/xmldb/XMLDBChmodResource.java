@@ -44,7 +44,7 @@ public class XMLDBChmodResource extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("chmod-resource", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                        "Sets the mode of the specified Resource. Required: collection, resource, mode (as xs:integer). "+
+                        "Sets the mode of the specified Resource. $a is the collection path, $b is the resource name, $c is the mode (as xs:integer). "+
                         "PLEASE REMEMBER that 0755 is 7*64+5*8+5, NOT decimal 755.",
 			new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),

@@ -45,7 +45,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 			new FunctionSignature(
 				new QName("get-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Returns the owner group of a collection. The collection can be passed as a simple collection "
-				+ "path, an XMLDB URI or a collection object (obtained from the collection function).",
+				+ "path or an XMLDB URI.",
 				new SequenceType[] {
 						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 				},
@@ -55,7 +55,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 				new QName("get-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Returns the owner group of a resource in the collection specified by $a. " +
 				"The collection can be passed as a simple collection " +
-				"path, an XMLDB URI or a collection object (obtained from the collection function).",
+				"path or an XMLDB URI.",
 				new SequenceType[] {
 						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
@@ -69,7 +69,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 				new QName("get-owner", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Returns the owner of a collection. " +
 				"The collection can be passed as a simple collection " +
-				"path, an XMLDB URI or a collection object (obtained from the collection function).",
+				"path or an XMLDB URI.",
 				new SequenceType[] {
 						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 				},
@@ -79,7 +79,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 				new QName("get-owner", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Returns the owner of the specified resource $b in collection $a. " +
 				"The collection can be passed as a simple collection " +
-				"path, an XMLDB URI or a collection object (obtained from the collection function).",
+				"path or an XMLDB URI.",
 				new SequenceType[] {
 						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
