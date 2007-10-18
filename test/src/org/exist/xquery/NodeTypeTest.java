@@ -79,8 +79,8 @@ public class NodeTypeTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
-		query.append("$doc := xdb:store($root, $document, $data)");
+		query.append("let $isLoggedIn := xdb:login('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
+		query.append("$doc := xdb:store(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", $document, $data)");
 		query.append("return <result/>");
 		try {
 			service.declareVariable("document", document);
@@ -115,8 +115,8 @@ public class NodeTypeTest extends TestCase {
 		// but with a "work" or "$target" header.
 		query.append("declare function f:prepare($data as node(), $target as xs:string) as xs:string? { \n");
 		query.append("    if (empty(xmldb:xcollection($collection)/page[@version=$target])) then \n");
-		query.append("        let $root := xdb:collection(concat(\"xmldb:exist://\", $collection), 'admin', 'admin') \n");
-		query.append("        return xdb:store($root, concat($target, \".xml\"), f:create($data, $target)) \n");
+		query.append("        let $isLoggedIn := xdb:login(concat(\"xmldb:exist://\", $collection), 'admin', 'admin') \n");
+		query.append("        return xdb:store(concat(\"xmldb:exist://\", $collection), concat($target, \".xml\"), f:create($data, $target)) \n");
 		query.append("    else \n");
 		query.append("    () \n");
 		query.append("}; \n");
@@ -146,8 +146,8 @@ public class NodeTypeTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
-		query.append("$mods := xdb:remove($root, \"" + doc + "\")");
+		query.append("let $isLoggedIn := xdb:login('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
+		query.append("$mods := xdb:remove(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", \"" + doc + "\")");
 		query.append("return <modifications>{$mods}</modifications>");
 
 		try {

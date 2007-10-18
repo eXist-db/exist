@@ -167,8 +167,8 @@ public class TreeLevelOrderTest extends TestCase {
 			StringBuffer query = new StringBuffer();
 			query.append("xquery version \"1.0\";");
 			query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-			query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', 'admin', 'admin'),");
-			query.append("$doc := xdb:store($root, $document, $survey)");
+			query.append("let $isLoggedIn := xdb:login('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', 'admin', 'admin'),");
+			query.append("$doc := xdb:store(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", $document, $survey)");
 			query.append("return <result/>");
 	
 			service.declareVariable("survey", xml);
