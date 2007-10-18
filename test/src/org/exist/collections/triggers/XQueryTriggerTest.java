@@ -126,8 +126,9 @@ public class XQueryTriggerTest {
     	"declare variable $log:triggerEvent external;" +
     	"declare variable $log:document external;" +
     	"declare function log:log($id as xs:string?) {" +
-    	  "xmldb:update("+
-    	    "xmldb:collection('" + URI + "/" + TEST_COLLECTION + "', 'admin', ''), " +
+    	"let $isLoggedIn := xmldb:login('" + URI + "/" + TEST_COLLECTION + "', 'admin', '') return " +
+    	  "xmldb:update(" +
+    	    "'" + URI + "/" + TEST_COLLECTION + "', " +
             "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
               "<xu:append select='/events'>" +
                 "<xu:element name='event'>" +

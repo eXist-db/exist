@@ -145,8 +145,8 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', 'admin', 'admin'),");
-		query.append("$doc := xdb:store($root, $document, $data)");
+		query.append("let $loggedIn := xdb:login(\"" + DBBroker.ROOT_COLLECTION + "\", \"admin\", \"admin\"),");
+		query.append("$doc := xdb:store(\"" + DBBroker.ROOT_COLLECTION + "\", $document, $data)");
 		query.append("return <result/>");
 
 		service.declareVariable("document", document);
@@ -176,8 +176,8 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		query.append("</xu:append>");
 		query.append("</xu:modifications>");
 		query.append("};");
-		query.append("let $root := xdb:collection('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
-		query.append("$mods := xdb:update($root, $xupdate)");
+		query.append("let $isLoggedIn := xdb:login('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
+		query.append("$mods := xdb:update(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", $xupdate)");
 		query.append("return <modifications>{$mods}</modifications>");
 
 		service.declareVariable("data", data);
