@@ -35,8 +35,8 @@ declare variable $xupdate {
     </xu:modifications>
 };
 
-let $root := xmldb:collection("xmldb:exist:///db", "admin", ""),
-    $collection := xmldb:create-collection($root, "test"),
+let $isLoggedIn := xmldb:login("xmldb:exist:///db", "admin", ""),
+    $collection := xmldb:create-collection("xmldb:exist:///db", "test"),
     $doc := xmldb:store($collection, "test.xml", $data),
     $mods := xmldb:update($collection, $xupdate)
 return
