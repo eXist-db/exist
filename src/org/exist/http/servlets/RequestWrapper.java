@@ -35,8 +35,10 @@ import javax.servlet.http.Cookie;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public interface RequestWrapper {
-	
-	public String getCharacterEncoding();
+
+    public Object getAttribute(String name);
+    
+    public String getCharacterEncoding();
 	
 	public int getContentLength();
 	

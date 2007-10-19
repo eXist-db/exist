@@ -73,14 +73,18 @@ public class HttpRequestWrapper implements RequestWrapper {
         if(FileUpload.isMultipartContent(servletRequest)) {
             parseMultipartContent();
         }
-    }    
-    
+    }
+
+    public Object getAttribute(String name) {
+        return servletRequest.getAttribute(name);
+    }
+
     /**
      * Returns an array of Cookies
      */
     public Cookie[] getCookies()
     {
-    	return servletRequest.getCookies();
+        return servletRequest.getCookies();
     }
     
     /**
