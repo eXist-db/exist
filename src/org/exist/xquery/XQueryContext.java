@@ -1459,8 +1459,13 @@ public class XQueryContext {
         		
         		if(session.getObject() instanceof SessionWrapper)
         		{
-        			return (User)((SessionWrapper)session.getObject()).getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
-        		}
+                    try {
+                        return (User)((SessionWrapper)session.getObject()).getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
+                    } catch (IllegalStateException e) {
+                        // session is invalid
+                        return null;
+                    }
+                }
     		}
     	}
 		
