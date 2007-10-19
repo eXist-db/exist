@@ -87,8 +87,13 @@ public class JettyStart {
 			BrokerPool.setRegisterShutdownHook(false);
 			
 			// configure the database instance
-			SingleInstanceConfiguration config = new SingleInstanceConfiguration();
-			BrokerPool.configure(1, 5, config);
+			SingleInstanceConfiguration config;
+            if (args.length == 2)
+                config = new SingleInstanceConfiguration(args[1]);
+            else
+                config = new SingleInstanceConfiguration();
+            
+            BrokerPool.configure(1, 5, config);
 			
 			// register the XMLDB driver
 			Database xmldb = new DatabaseImpl();
