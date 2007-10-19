@@ -104,8 +104,8 @@ declare function xqts:create-collections($group as element(catalog:test-group)) 
         doc($results)
 };
 
-declare function xqts:create-collections($parent as object,
-    $pathElements as element()+, $currentPath as xs:string) as object {
+declare function xqts:create-collections($parent as xs:string,
+    $pathElements as element()+, $currentPath as xs:string) as xs:string {
     let $next := $pathElements[last()]
     let $remainder := subsequence($pathElements, 1, count($pathElements) - 1)
     let $newColl := xdb:create-collection($parent, $next/@name)
