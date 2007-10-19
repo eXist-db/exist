@@ -50,7 +50,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 	
 	public DateValue(XMLGregorianCalendar calendar) throws XPathException {
-		super(stripCalendar((XMLGregorianCalendar) calendar.clone()));
+		super(stripCalendar(cloneXMLGregorianCalendar(calendar)));
 	}
 	
 	private static XMLGregorianCalendar stripCalendar(XMLGregorianCalendar calendar) {
