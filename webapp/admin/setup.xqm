@@ -12,76 +12,83 @@ declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace system="http://exist-db.org/xquery/system";
 
-declare function setup:main() as element() {
+declare function setup:main() as element()
+{
     <div class="panel">
         <div class="panel-head">Examples Setup</div>
         {
-            let $action := request:get-parameter("action", ())
-            return
+            let $action := request:get-parameter("action", ()) return
                 if($action) then
+                (
                     if($action eq "Import Example Data") then
+                    (
                         setup:importLocal()
+                    )
                     else if($action eq "Import Remote Files") then
+                    (
                         setup:importFromURLs()
+                    )
                     else
+                    (
                         setup:page3()
+                    )
+                )
                 else
+                (
                     setup:page1()
+                )
         }
     </div>
 };
 
-declare function setup:importLocal() as element()+ {
-	let $home := system:get-exist-home(),
-		$pathSep := util:system-property("file.separator"),
-		$dir :=
-			if (doc-available(concat("file:///", $home, "/exist-samples/examples.xml")))
-			then
-				concat($home, $pathSep, "exist-samples")
-			else if(ends-with($home, "WEB-INF")) then
-				concat(substring-before($home, "WEB-INF"), "samples")
-			else
-				concat($home, $pathSep, "samples")
+declare function setup:importLocal() as element()+ 
+{
+    let $home := system:get-exist-home(),
+    $pathSep := util:system-property("file.separator"),
+    $dir := if (doc-available(concat("file:///", $home, "/exist-samples/examples.xml"))) then
+        (
+            concat($home, $pathSep, "exist-samples")
+        )
+        else if(ends-with($home, "WEB-INF")) then
+        (
+            concat(substring-before($home, "WEB-INF"), "samples")
+        )
+        else
+        (
+            concat($home, $pathSep, "samples")
+        )
     return (
         setup:page2(),
         <div class="process">
-			<p>Loading from directory: {$dir}.</p>
+            <p>Loading from directory: {$dir}.</p>
             <h3>Actions:</h3>
             <ul>
             {
                 setup:create-collection("/db", "shakespeare"),
                 setup:create-collection("/db/shakespeare", "plays"),
-                setup:store-files("/db/shakespeare/plays", $dir, 
-                    ( "shakespeare/*.xml", "shakespeare/*.xsl" ),
-                    "text/xml"
-                ),
-                setup:store-files("/db/shakespeare/plays", $dir,
-                    "shakespeare/*.css", "text/css"),
+                setup:store-files("/db/shakespeare/plays", $dir, ( "shakespeare/*.xml", "shakespeare/*.xsl" ), "text/xml"),
+                setup:store-files("/db/shakespeare/plays", $dir, "shakespeare/*.css", "text/css"),
                 setup:create-collection("/db", "xinclude"),
-                setup:store-files("/db/xinclude", $dir, 
-                    ( "xinclude/*.xsl", "xinclude/*.xml"), "text/xml"),
-                setup:store-files("/db/xinclude", $dir,
-                    "xinclude/*.xq", "application/xquery"),
-                setup:store-files("/db/xinclude", $dir,
-                    "xinclude/*.jpg", "image/jpeg"),
-                setup:store-files("/db/xinclude", $dir,
-                    "xinclude/*.css", "text/css"),
+                setup:store-files("/db/xinclude", $dir, ( "xinclude/*.xsl", "xinclude/*.xml"), "text/xml"),
+                setup:store-files("/db/xinclude", $dir, "xinclude/*.xq", "application/xquery"),
+                setup:store-files("/db/xinclude", $dir, "xinclude/*.jpg", "image/jpeg"),
+                setup:store-files("/db/xinclude", $dir, "xinclude/*.css", "text/css"),
                 setup:create-collection("/db", "library"),
                 setup:store-files("/db/library", $dir, "*.rdf", "text/xml"),
                 setup:create-collection("/db", "mods"),
                 setup:store-files("/db/mods", $dir, "mods/*.xml", "text/xml"),
                 setup:store-files("/db", $dir, "*.xml", "text/xml"),
-				setup:create-collection("/db/system/config", "db"),
-				setup:create-collection("/db/system/config/db", "mondial"),
-				setup:store-files("/db/system/config/db/mondial", $dir,
-					"mondial.xconf", "text/xml")
+                setup:create-collection("/db/system/config", "db"),
+                setup:create-collection("/db/system/config/db", "mondial"),
+                setup:store-files("/db/system/config/db/mondial", $dir, "mondial.xconf", "text/xml")
             }
             </ul>
         </div>
     )
 };
 
-declare function setup:importFromURLs() as element()+ {
+declare function setup:importFromURLs() as element()+
+{
     (
         setup:page3(),
         <div class="process">
@@ -89,20 +96,18 @@ declare function setup:importFromURLs() as element()+ {
             <ul>
             {
                 let $includeXmlad := request:get-parameter("xmlad", ()),
-                    $includeMondial := request:get-parameter("mondial", ())
-                return (
-                    if($includeXmlad) then (
+                $includeMondial := request:get-parameter("mondial", ()) return
+                (
+                    if($includeXmlad) then
+                    (
                         setup:create-collection("/db", "xmlad"),
-                        setup:load-URL("/db/xmlad",
-                            "http://surfnet.dl.sourceforge.net/sourceforge/xmlad/xmlad.xml",
-                            "xmlad.xml")
-                    ) else (),
-                    if($includeMondial) then (
+                        setup:load-URL("/db/xmlad", "http://surfnet.dl.sourceforge.net/sourceforge/xmlad/xmlad.xml", "xmlad.xml")
+                    )else (),
+                    if($includeMondial) then
+                    (
                         setup:create-collection("/db", "mondial"),
-                        setup:load-URL("/db/mondial",
-                            "http://www.dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml",
-                            "mondial.xml")
-                    ) else ()
+                        setup:load-URL("/db/mondial", "http://www.dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml", "mondial.xml")
+                    )else ()
                 )
             }
             </ul>
@@ -110,27 +115,28 @@ declare function setup:importFromURLs() as element()+ {
     )
 };
 
-declare function setup:load-URL($collection, $url, $docName) as element() {
-	let $x := xdb:store($collection, $docName, xs:anyURI($url))
-	return
-    	<li>File {$docName} imported from url: {$url}</li>
+declare function setup:load-URL($collection as xs:string, $url as xs:anyURI, $docName as xs:string) as element()
+{
+    let $x := xdb:store($collection, $docName, $url) return
+        <li>File {$docName} imported from url: {$url}</li>
 };
 
-declare function setup:store-files($collection, $home, $patterns, $mimeType) as element()* {
+declare function setup:store-files($collection as xs:string, $home as xs:string, $patterns as xs:string, $mimeType as xs:string) as element()*
+{
     let $stored := xdb:store-files-from-pattern($collection, $home, $patterns, $mimeType)
-    for $doc in $stored
-    return
+    for $doc in $stored return
         <li>Uploaded: {$doc}</li>
 };
 
-declare function setup:create-collection($parent, $name) as element() {
-    let $col := xdb:create-collection($parent, $name)
-    return
-        <li class="high">Created collection: {util:collection-name($col)}</li>
+declare function setup:create-collection($parent as xs:string, $name as xs:string) as element()
+{
+    let $col := xdb:create-collection($parent, $name) return
+        <li class="high">Created collection: {$col}</li>
 };
 
-declare function setup:page1() as element() {
-    <form action="{session:encode-url(request:get-uri())}" method="POST">
+declare function setup:page1() as element()
+{
+    <form action="{session:encode-url(request:get-uri())}" method="post">
         <p>eXist ships with a number of XQuery examples. Some of these
         require certain documents to be stored in the database. Clicking on the button 
         below will import the required data from the samples directory:</p>
@@ -139,8 +145,9 @@ declare function setup:page1() as element() {
     </form>
 };
 
-declare function setup:page2() as element() {
-    <form action="{session:encode-url(request:get-uri())}" method="POST">
+declare function setup:page2() as element()
+{
+    <form action="{session:encode-url(request:get-uri())}" method="post">
         <p>The XQuery examples also use some XML data not included with the distribution.
         I can try to download the corresponding data. Do you want me to do so?</p>
         
@@ -158,7 +165,8 @@ declare function setup:page2() as element() {
     </form>
 };
 
-declare function setup:page3() as element() {
+declare function setup:page3() as element()
+{
     <p>Files have been loaded. You can now go to the
     <a href="../examples.xml">examples page</a>.</p>
 };
