@@ -7,8 +7,8 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 let $name := request:get-parameter("name", "")
 
 (: The first time store the document holding the names :)
-let $collection := xmldb:collection("xmldb:exist:///db", "guest", "guest")
-let $dummy := 
+let $collection := "xmldb:exist:///db",
+$dummy := 
  if ( not ( doc( "/db/names.xml" )) ) then
   xmldb:store($collection, "names.xml", <names/> )
 else <dummy/>
