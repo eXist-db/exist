@@ -23,9 +23,11 @@
 package org.exist.xquery.functions.system;
 
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.exist.dom.QName;
-import org.exist.storage.DBBroker;
-import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -35,9 +37,6 @@ import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * Shutdown the eXist server (must be dba)
@@ -50,20 +49,15 @@ public class Shutdown extends BasicFunction
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Shutdown eXist. $a is the username and $b is the password.",
-			new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
+			"Shutdown eXist.",
+			null,
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		),
 		
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Shutdown eXist. $a is the username, $b is the password and $c is the delay in milliseconds.",
+			"Shutdown eXist. $a is the delay in milliseconds.",
 			new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)
@@ -81,48 +75,53 @@ public class Shutdown extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		String username = args[0].getStringValue();
-		String password = args[1].getStringValue();
-		long delay = 0;
-		if(args.length == 3)
+		if(context.getUser().hasDbaRole())
 		{
-			if(!args[2].isEmpty())
+			//determine the shutdown delay
+			long delay = 0;
+			if(args.length == 1)
 			{
-				delay = ((NumericValue)args[2].itemAt(0)).getLong();
-			}
-		}
-		
-		try
-		{
-			//get the root collection
-			Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, username, password);
-			
-			DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-			
-			//get the database instance manager
-			if(mgr == null)
-			{
-				System.err.println("service is not available");
-			}
-			else if(mgr.isLocalInstance())
-			{
-				System.out.println("shutting down database...");
-				if(delay == 0)
+				if(!args[0].isEmpty())
 				{
-					mgr.shutdown();
-				}
-				else
-				{
-					mgr.shutdown(delay);
+					delay = ((NumericValue)args[0].itemAt(0)).getLong();
 				}
 			}
 			
-			return Sequence.EMPTY_SEQUENCE;
+			//get the broker pool and shutdown
+			BrokerPool pool = context.getBroker().getBrokerPool();
+				
+			if(delay > 0)
+			{
+				TimerTask task = new DelayedShutdownTask(pool);
+				Timer timer = new Timer();
+				timer.schedule(task, delay);
+			}
+			else
+			{
+				pool.shutdown();
+			}
 		}
-		catch(XMLDBException xmldbe)
+		else
 		{
-			throw new XPathException(getASTNode(), "Exception while retrieving root collection: " + xmldbe.getMessage(), xmldbe);
+			throw new XPathException("Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
+		}
+			
+		return Sequence.EMPTY_SEQUENCE;
+	}
+	
+	private class DelayedShutdownTask extends TimerTask
+	{
+		private BrokerPool pool = null;
+		
+		public DelayedShutdownTask(BrokerPool pool)
+		{
+			super();
+			this.pool = pool;
 		}
 		
+		public void run()
+		{
+			pool.shutdown();
+		}
 	}
 }
