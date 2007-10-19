@@ -1988,16 +1988,14 @@ public class XQueryTest extends XMLTestCase {
 		ResourceSet result;
 		String query;	
 		
-        query = 
-		"let $coll := xmldb:collection('/db', 'guest', 'guest')" +
-		"let $name := xmldb:store($coll , 'xupdateTest.xml', <test>aaa</test>)" +
+        query = "let $name := xmldb:store('/db' , 'xupdateTest.xml', <test>aaa</test>)" +
 		"let $xu :=" +
 		"<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
 		  "<xu:append select='/test'>" +
 		    "<xu:text>yyy</xu:text>" +
 		  "</xu:append>" +
 		"</xu:modifications>" +
-		"let $count := xmldb:update($coll , $xu)" +
+		"let $count := xmldb:update('/db' , $xu)" +
 		"for $textNode in xmldb:document('/db/xupdateTest.xml')/test/text()" +
 		"	return <text id='{util:node-id($textNode)}'>{$textNode}</text>";
 		
