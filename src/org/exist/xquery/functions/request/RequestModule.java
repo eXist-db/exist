@@ -50,7 +50,8 @@ public class RequestModule extends AbstractInternalModule {
 	public static final QName REQUEST_VAR = new QName("request", NAMESPACE_URI, PREFIX);
 	
 	public static final FunctionDef[] functions = {
-		new FunctionDef(GetCookieNames.signature, GetCookieNames.class),
+        new FunctionDef(GetRequestAttribute.signature, GetRequestAttribute.class),
+        new FunctionDef(GetCookieNames.signature, GetCookieNames.class),
 		new FunctionDef(GetCookieValue.signature, GetCookieValue.class),
 		new FunctionDef(GetData.signature, GetData.class),
 		new FunctionDef(GetHeader.signature, GetHeader.class),
@@ -80,7 +81,9 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetParameterNames.deprecated, GetParameterNames.class),
 		new FunctionDef(GetServerName.deprecated, GetServerName.class),
 		new FunctionDef(GetServerPort.deprecated, GetServerPort.class),
-		new FunctionDef(GetURI.deprecated, GetURI.class),
+        new FunctionDef(GetContextPath.signature, GetContextPath.class),
+        new FunctionDef(GetPathInfo.signature, GetPathInfo.class),
+        new FunctionDef(GetURI.deprecated, GetURI.class),
 		new FunctionDef(GetAttributeNames.deprecated, GetAttributeNames.class),
 		new FunctionDef(SetCurrentUser.deprecated, SetCurrentUser.class),
 		new FunctionDef(SetAttribute.deprecated, SetAttribute.class),

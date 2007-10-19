@@ -102,8 +102,8 @@ public class HttpSessionWrapper implements SessionWrapper {
 	 * @return A boolean indicating if the session was just created
 	 */
 	public boolean isNew() {
-		return session.isNew();
-	}
+        return session.isNew();
+    }
 
 	/**
 	 * @param arg0
