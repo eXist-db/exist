@@ -44,7 +44,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
 	}
 	
 	public DateTimeValue(XMLGregorianCalendar calendar) {
-		super(fillCalendar((XMLGregorianCalendar) calendar.clone()));
+		super(fillCalendar(cloneXMLGregorianCalendar(calendar)));
 	}
 	
 	public DateTimeValue(Date date) {
