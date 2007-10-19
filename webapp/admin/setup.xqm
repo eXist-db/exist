@@ -103,12 +103,12 @@ declare function setup:importFromURLs() as element()+
                     if($includeXmlad) then
                     (
                         setup:create-collection("/db", "xmlad"),
-                        setup:load-URL("/db/xmlad", "http://surfnet.dl.sourceforge.net/sourceforge/xmlad/xmlad.xml", "xmlad.xml")
+                        setup:load-URL("/db/xmlad", xs:anyURI("http://surfnet.dl.sourceforge.net/sourceforge/xmlad/xmlad.xml"), "xmlad.xml")
                     )else (),
                     if($includeMondial) then
                     (
                         setup:create-collection("/db", "mondial"),
-                        setup:load-URL("/db/mondial", "http://www.dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml", "mondial.xml")
+                        setup:load-URL("/db/mondial", xs:anyURI("http://www.dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml"), "mondial.xml")
                     )else ()
                 )
             }
