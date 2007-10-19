@@ -522,8 +522,8 @@ declare namespace  xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
 
 xdb:register-database("org.exist.xmldb.DatabaseImpl", true()),
-let $root := xdb:collection("xmldb:exist:///db", "admin", ""),
-    $out := xdb:create-collection($root, "output")
+let $isLoggedIn := xdb:login("xmldb:exist:///db", "admin, ""),
+$out := xdb:create-collection("xmldb:exist:///db", "output")
 for $rec in /rdf:RDF/* return
     xdb:store($out, concat(util:md5($rec/@rdf:about), ".xml"),
         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -535,12 +535,9 @@ for $rec in /rdf:RDF/* return
                 </example>
                 <para>Let's look at this script in some detail. First, since the extension functions
                     are based on the XML:DB API, we have to register a database driver with
-                        <command>xdb:register-database</command>. Then we can retrieve the root
-                    collection using <command>xdb:collection</command>. The variable
-                    <option>$root</option> returned by <command>xdb:collection</command> holds the
-                    collection as a Java object, and we can pass this variable to
-                        <command>xdb:create-collection</command> to create a new sub-collection,
-                    called "output".</para>
+                        <command>xdb:register-database</command>. Then we can create a new sub-collection,
+                    called "output" using <command>xdb:create-collection</command>, for which we need to be
+                    logged in appropriately using <command>xmldb:login</command>.</para>
                 <para>Next, the <command>for</command>-loop iterates through all child elements of
                     the top RDF element. In each iteration, we use <command>xdb:store</command> to
                     write out the current child node to a new document. Since a unique document name
