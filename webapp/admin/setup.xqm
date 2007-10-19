@@ -66,7 +66,8 @@ declare function setup:importLocal() as element()+
             {
                 setup:create-collection("/db", "shakespeare"),
                 setup:create-collection("/db/shakespeare", "plays"),
-                setup:store-files("/db/shakespeare/plays", $dir, ( "shakespeare/*.xml", "shakespeare/*.xsl" ), "text/xml"),
+                setup:store-files("/db/shakespeare/plays", $dir,  "shakespeare/*.xml",, "text/xml"),
+                setup:store-files("/db/shakespeare/plays", $dir, "shakespeare/*.xsl", "text/xml"),
                 setup:store-files("/db/shakespeare/plays", $dir, "shakespeare/*.css", "text/css"),
                 setup:create-collection("/db", "xinclude"),
                 setup:store-files("/db/xinclude", $dir, ( "xinclude/*.xsl", "xinclude/*.xml"), "text/xml"),
