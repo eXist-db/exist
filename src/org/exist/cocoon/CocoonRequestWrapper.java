@@ -56,7 +56,7 @@ public class CocoonRequestWrapper implements RequestWrapper {
 	 */
 	public CocoonRequestWrapper(Request cocoonRequest) {
 		this.cocoonRequest = cocoonRequest;
-	}
+    }
 
 	/** Constructs a wrapper for the given Cocoon request.
 	 * @param cocoonRequest The request as viewed by Cocoon.
@@ -65,9 +65,13 @@ public class CocoonRequestWrapper implements RequestWrapper {
 	public CocoonRequestWrapper(Request cocoonRequest, HttpServletRequest servletRequest) {
 		this.cocoonRequest = cocoonRequest;
 		this.servletRequest = servletRequest;
-	}	
-	 
-	public Cookie[] getCookies()
+	}
+
+    public Object getAttribute(String name) {
+        return this.cocoonRequest.getAttribute(name);
+    }
+
+    public Cookie[] getCookies()
 	{
 		return servletRequest.getCookies();
 	}
