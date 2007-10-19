@@ -73,7 +73,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			"from that URI. The functions returns the path to the new document as an xs:string or " + 
 			" - if the document could not be stored - the empty sequence.",
 			new SequenceType[] {
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
@@ -91,7 +91,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			"a binary resource. The functions returns the path to the new document as an xs:string or " +
 			"- if the document could not be stored - the empty sequence.",
 			new SequenceType[] {
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)

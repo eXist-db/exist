@@ -47,21 +47,21 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature createdSignatures[] = {
         new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the creation date of a resource in the collection specified by $a. " +
+			"Returns the creation date of a resource $b in the collection specified by $a. " +
 			"The collection can be passed as a simple collection " +
 			"path or an XMLDB URI.",
 			new SequenceType[] {
-                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
         ),
 		new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the creation date of a collection. The collection can be passed as a simple collection "
+			"Returns the creation date of a collection $a. The collection can be passed as a simple collection "
 			+ "path or an XMLDB URI.",
 			new SequenceType[] {
-					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
         )
