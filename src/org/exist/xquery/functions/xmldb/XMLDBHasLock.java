@@ -51,7 +51,7 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 			"The collection can be passed as a simple collection " +
 			"path or an XMLDB URI.",
 			new SequenceType[] {
-					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));

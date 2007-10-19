@@ -66,7 +66,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                 "The function returns a sequence of all document paths added " +
                 "to the db. These can be directly passed to fn:doc() to retrieve the document.",
                 new SequenceType[] {
-                    new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                     new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                     new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
                 },
@@ -89,7 +89,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                 "The function returns a sequence of all document paths added " +
                 "to the db. These can be directly passed to fn:doc() to retrieve the document.",
                 new SequenceType[] {
-                    new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                     new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                     new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
                     new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
@@ -116,7 +116,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                 "The function returns a sequence of all document paths added " +
                 "to the db. These can be directly passed to fn:doc() to retrieve the document.",
                 new SequenceType[] {
-            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
             new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
             new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
             new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),

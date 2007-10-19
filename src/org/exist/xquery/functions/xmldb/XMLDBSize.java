@@ -45,14 +45,14 @@ public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signature =
         new FunctionSignature(
 			new QName("size", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the estimated size of a resource (in bytes) in the collection specified by $a. " +
+			"Returns the estimated size of a resource $b (in bytes) in the collection specified by $a. " +
 			"The estimation is based on the number of pages occupied by a resource. If the " +
 			"document is serialized back to a string, it's size may be different, as parts of the " +
 			"structural information are stored in compressed form. " +
 			"The collection can be passed as a simple collection " +
 			"path or an XMLDB URI.",
 			new SequenceType[] {
-                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)

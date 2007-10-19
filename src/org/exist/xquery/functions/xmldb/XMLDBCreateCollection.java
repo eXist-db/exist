@@ -22,7 +22,6 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.collections.CollectionURI;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -52,7 +51,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 					+ "collection. The function returns the path to the new collection "
 					+ "as an xs:string or - if the collection could not be created - the empty sequence.",
 			new SequenceType[]{
-					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 

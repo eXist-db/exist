@@ -44,10 +44,10 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 	public final static FunctionSignature getGroupSignatures[] = {
 			new FunctionSignature(
 				new QName("get-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Returns the owner group of a collection. The collection can be passed as a simple collection "
+				"Returns the owner group of the collection $a. The collection can be passed as a simple collection "
 				+ "path or an XMLDB URI.",
 				new SequenceType[] {
-						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 				},
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 			),
@@ -57,7 +57,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 				"The collection can be passed as a simple collection " +
 				"path or an XMLDB URI.",
 				new SequenceType[] {
-						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 				},
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
