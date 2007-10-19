@@ -5,37 +5,36 @@ declare namespace util="http://exist-db.org/xquery/util";
 
 declare namespace display="display-collection";
 
-declare function display:display-collection($collection as object)
-as element()* {
+declare function display:display-collection($colName as xs:string) as element()*
+{
     <collection 
-        name="{util:collection-name($collection)}"
-        owner="{xdb:get-owner($collection)}"
-        group="{xdb:get-group($collection)}"
-        permissions="{xdb:permissions-to-string(xdb:get-permissions($collection))}"
+        name="{util:collection-name($colName)}"
+        owner="{xdb:get-owner($colName)}"
+        group="{xdb:get-group($colName)}"
+        permissions="{xdb:permissions-to-string(xdb:get-permissions($colName))}"
     >
     {
-        for $child in xdb:get-child-collections($collection)
-        let $childCol := xdb:collection(concat(util:collection-name($collection), "/", $child), "guest", "guest")
+        for $child in xdb:get-child-collections($colName)
+        let $childCol := concat($colName, "/", $child)
         return
             display:display-collection($childCol)
     }
     {
-        for $res in xdb:get-child-resources($collection)
+        for $res in xdb:get-child-resources($colName)
         return
-            display:display-resource($collection, $res)
+            display:display-resource($colName, $res)
     }
     </collection>
 };
 
-declare function display:display-resource($collection, $resource)
+declare function display:display-resource($colName, $resource)
 as element()* {
     <resource 
         name="{$resource}"
-        owner="{xdb:get-owner($collection, $resource)}"
-        group="{xdb:get-group($collection, $resource)}"
-        permissions="{xdb:permissions-to-string(xdb:get-permissions($collection, $resource))}"/>
+        owner="{xdb:get-owner($colName, $resource)}"
+        group="{xdb:get-group($colName, $resource)}"
+        permissions="{xdb:permissions-to-string(xdb:get-permissions($colName, $resource))}"/>
 };
 
-let $collection := xdb:collection($xinclude:current-collection, "guest", "guest")
-return
-    display:display-collection($collection)
+
+display:display-collection($xinclude:current-collection)
