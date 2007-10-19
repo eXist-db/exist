@@ -141,7 +141,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	
 	protected XMLGregorianCalendar getTrimmedCalendar() {
 		if (trimmedCalendar == null) {
-			trimmedCalendar = (XMLGregorianCalendar) calendar.clone();
+			trimmedCalendar = cloneXMLGregorianCalendar(calendar);
 			BigDecimal fract = trimmedCalendar.getFractionalSecond();
 			if (fract != null) {
 				// TODO: replace following algorithm in JDK 1.5 with fract.stripTrailingZeros();
@@ -589,6 +589,27 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             timeValue = m.group(1) + m.group(2) + df.format(hours) + ":" + df.format(mins);
 		}
         return timeValue;
+    }
+    
+    /**
+     * Utility method that is able to clone a calendarwhose year is 0
+     * @param calendar
+     * @return
+     */
+    public static XMLGregorianCalendar cloneXMLGregorianCalendar(XMLGregorianCalendar calendar) {
+    	boolean hacked = false;
+		if (calendar.getYear() == 0) {
+			calendar.setYear(1);
+			hacked = true;
+		}
+		XMLGregorianCalendar result = (XMLGregorianCalendar)calendar.clone();
+		if (hacked) {
+			//reset everything
+			calendar.setYear(0);
+			//-1 could also be considered
+			result.setYear(0);
+		}
+		return result;
     }
 
 }
