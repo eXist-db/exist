@@ -61,6 +61,17 @@ abstract class OrderedDurationValue extends DurationValue {
 		if (Type.subTypeOf(other.getType(), Type.DURATION)) {
 			//Take care : this method doesn't seem to take ms into account 
 			int r = duration.compare(((DurationValue) other).duration);
+			//compare fractional seconds to work around the JDK standard behaviour
+			if (r == DatatypeConstants.EQUAL && 
+					((BigDecimal)duration.getField(DatatypeConstants.SECONDS)) != null &&
+					((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)) != null) {
+				if (((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).compareTo(
+						((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS))) == DatatypeConstants.EQUAL)
+						return Constants.EQUAL;
+				return (((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).compareTo(
+						((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)))) == DatatypeConstants.LESSER ?
+						Constants.INFERIOR : Constants.SUPERIOR;
+			}
 			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between totally ordered duration values " + this + " and " + other);
 			return r;		
 		}
