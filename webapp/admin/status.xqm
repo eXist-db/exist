@@ -4,19 +4,21 @@ xquery version "1.0";
     Module: display status information on the current database instance.
 :)
 
-module namespace status="http://exist-db.org/xquery/admin-interface/status";
+module namespace status = "http://exist-db.org/xquery/admin-interface/status";
 
-declare namespace system="http://exist-db.org/xquery/system";
-declare namespace util="http://exist-db.org/xquery/util";
+declare namespace system = "http://exist-db.org/xquery/system";
+declare namespace util = "http://exist-db.org/xquery/util";
 
-declare function status:status-line($key as xs:string, $value as xs:string) as element() {
+declare function status:status-line($key as xs:string, $value as xs:string) as element()
+{
     <tr>
         <td class="key">{$key}:</td>
         <td>{$value}</td>
     </tr>
 };
 
-declare function status:main() as element() {
+declare function status:main() as element()
+{
     <div class="panel">
         <div class="panel-head">System Status</div>
         <table id="status" cellpadding="7">

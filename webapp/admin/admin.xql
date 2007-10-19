@@ -4,27 +4,30 @@ xquery version "1.0";
     Main module of the database administration interface.
 :)
 
-declare namespace admin="http://exist-db.org/xquery/admin-interface";
-declare namespace request="http://exist-db.org/xquery/request";
-declare namespace session="http://exist-db.org/xquery/session";
-declare namespace xdb="http://exist-db.org/xquery/xmldb";
+declare namespace admin = "http://exist-db.org/xquery/admin-interface";
 
-import module namespace status="http://exist-db.org/xquery/admin-interface/status" at "status.xqm";
-import module namespace browse="http://exist-db.org/xquery/admin-interface/browse" at "browse.xqm";
-import module namespace users="http://exist-db.org/xquery/admin-interface/users" at "users.xqm";
-import module namespace shut="http://exist-db.org/xquery/admin-interface/shutdown" at "shutdown.xqm";
-import module namespace setup="http://exist-db.org/xquery/admin-interface/setup" at "setup.xqm";
+declare namespace request = "http://exist-db.org/xquery/request";
+declare namespace session = "http://exist-db.org/xquery/session";
+declare namespace util = "http://exist-db.org/xquery/util";
+declare namespace xdb = "http://exist-db.org/xquery/xmldb";
+
+import module namespace status = "http://exist-db.org/xquery/admin-interface/status" at "status.xqm";
+import module namespace browse = "http://exist-db.org/xquery/admin-interface/browse" at "browse.xqm";
+import module namespace users = "http://exist-db.org/xquery/admin-interface/users" at "users.xqm";
+import module namespace shut = "http://exist-db.org/xquery/admin-interface/shutdown" at "shutdown.xqm";
+import module namespace setup = "http://exist-db.org/xquery/admin-interface/setup" at "setup.xqm";
 
 (: 
     Display the version, SVN revision and user info in the top right corner 
 :)
-declare function admin:info-header($user as xs:string) as element() {
+declare function admin:info-header() as element()
+{
     <div class="info">
         <ul>
             <li>Version: { util:system-property( "product-version" ) }</li>
             <li>SVN Revision: { util:system-property( "svn-revision" ) }</li>
             <li>Build: {util:system-property("product-build")}</li>
-            <li>User: { $user}</li>
+            <li>User: { xdb:get-current-user() }</li>
         </ul>
     </div>
 };
@@ -32,46 +35,43 @@ declare function admin:info-header($user as xs:string) as element() {
 (:
     Select the page to show. Every page is defined in its own module 
 :)
-declare function admin:panel($user as xs:string, $pass as xs:string?) as element() {
-    let $panel := request:get-parameter("panel", "status")
-    return
+declare function admin:panel() as element()
+{
+    let $panel := request:get-parameter("panel", "status") return
         if($panel eq "browse") then
-            browse:main($user, $pass)
+        (
+            browse:main()
+        )
         else if($panel eq "users") then
-            users:main($user, $pass)
+        (
+            users:main()
+        )
         else if($panel eq "shutdown") then
-            shut:main($user, $pass)
+        (
+            shut:main()
+        )
         else if($panel eq "setup") then
+        (
             setup:main()
+        )
         else
+        (
             status:main()
-};
-
-(:
-    Main function: display login form if no credentials have been supplied
-    or logout is selected.
-    
-    $credentials is either an empty sequence or a pair (user, password).
-:)
-declare function admin:main($credentials as xs:string*) as element()+ {
-    if( empty($credentials) or (count($credentials)!=2) ) then
-        admin:display-login-form()
-    else
-        admin:panel($credentials[1], $credentials[2])
+        )
 };
 
 (:~  
     Display the login form.
 :)
-declare function admin:display-login-form() as element() {
+declare function admin:display-login-form() as element()
+{
     <div class="panel">
         <div class="panel-head">Login</div>
         <p>This is a protected resource. Only registered database users can log
         in. If you have not set up any users, login as "admin" and leave the
-        password field empty. For testing purposes, you may also log in as
-        "guest" with password "guest".</p>
+        password field empty. Note that the "guest" user is not permitted access.</p>
 
-        <form action="{session:encode-url(request:get-uri())}">
+        <form action="{session:encode-url(request:get-uri())}" method="post">
             <table class="login" cellpadding="5">
                 <tr>
                     <th colspan="2" align="left">Please Login</th>
@@ -92,55 +92,45 @@ declare function admin:display-login-form() as element() {
     </div>
 };
 
-(:~  Try to authenticate the user name and password from
-    the current HTTP session. Returns a pair of (user, password)
-    on success, an empty sequence otherwise.
-:)
-declare function admin:checkUser() as xs:string* {
-    let $user := session:get-attribute("user") ,
-        $pass := session:get-attribute("password"),
-        $login := xdb:authenticate("xmldb:exist:///db", $user, $pass)
-    return
-        if($login) then
-            ($user, $pass)
+(: main entry point :)
+let $isLoggedIn :=  if(xdb:get-current-user() eq "guest")then
+    (
+        (: is this a login attempt? :)
+        if(request:get-parameter("user", ()) and not(empty(request:get-parameter("pass", ()))))then
+        (
+            if(request:get-parameter("user", ()) eq "guest")then
+            (
+                (: prevent the guest user from accessing the admin webapp :)
+                false()
+            )
+            else
+            (
+                (: try and log the user in :)
+                xdb:login("/db", request:get-parameter("user", ()), request:get-parameter("pass", ()))
+            )
+        )
         else
-            ()
-};
-
-(:~
-    Process user and password passed from the login form.
-    Returns a pair of (user, password) if the credentials are
-    valid, an empty sequence if not.
-:)
-declare function admin:doLogin($user as xs:string) as xs:string* {
-    let $pass := request:get-parameter("pass", ""),
-        $login := session:set-current-user($user, $pass)
-    return
-        if($login) then
-            ($user, $pass)
+        (
+            (: prevent the guest user from accessing the admin webapp :)
+            false()
+        )
+    )
+    else
+    (
+        (: if we are already logged in, are we logging out - i.e. set permissions back to guest :)
+        if(request:get-parameter("logout",()))then
+        (
+        	let $null := xdb:login("/db", "guest", "guest") return
+        	    false()
+        )
         else
-            ()
-};
-
-(:~  
-    Authenticate the user 
-:)
-declare function admin:login() as xs:string* {
-    let $userParam := request:get-parameter("user", ())
-    return
-        if($userParam) then
-            admin:doLogin($userParam)
-        else
-            admin:checkUser()
-};
-
-
-session:create(),
-let $logout := request:get-parameter("logout", ()),
-    $s := if($logout) then session:invalidate() else session:create(),
-    $credentials := admin:login(),
-    $user := if(exists($credentials)) then $credentials[1] else "not logged in"
+        (
+             (: we are already logged in and we are not the guest user :)
+            true()
+        )
+    )
 return
+
     <html>
         <head>
             <title>eXist Database Administration</title>
@@ -148,7 +138,7 @@ return
         </head>
         <body>
             <div class="header">
-                {admin:info-header($user)}
+                {admin:info-header()}
                 <img src="logo.jpg"/>
             </div>
             
@@ -165,10 +155,19 @@ return
                         <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>
                     </ul>
                     <div class="userinfo">
-                        Logged in as: {$user}
+                        Logged in as: {xdb:get-current-user()}
                     </div>
                 </div>
-                {admin:main($credentials)}
+                {
+                    if($isLoggedIn)then
+                    (
+                        admin:panel()
+                    )
+                    else
+                    (
+                        admin:display-login-form()
+                    )
+                }
             </div>
         </body>
     </html>

@@ -11,23 +11,29 @@ declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
 
-declare function shutdown:main($user as xs:string, $password as xs:string) as element() {
+declare function shutdown:main() as element()
+{
     <div class="panel">
         <div class="panel-head">Database Shutdown</div>
         {
-            if(not(xdb:is-admin-user($user))) then
+            if(not(xdb:is-admin-user(xdb:get-current-user()))) then
+            (
                 <div class="error">
                     Only users of the "dba" group can shutdown the database.
                 </div>
+            )
             else
-                let $shutdown := request:get-parameter("action", ())
-                return
+            (
+                let $shutdown := request:get-parameter("action", ()) return
                     if($shutdown) then
-                    	<div class="actions">
-					        Database shutdown starts in {request:get-parameter("delay", "2")} sec.
-				            {system:shutdown($user, $password, request:get-parameter("delay", "2") cast as xs:long)}
-				        </div>
+                    (
+                        <div class="actions">
+                                Database shutdown starts in {request:get-parameter("delay", "2")} sec.
+		    { system:shutdown(request:get-parameter("delay", "2") cast as xs:long * 1000) }
+                        </div>
+                    )
                     else
+                    (
                         <form action="{session:encode-url(request:get-uri())}" method="POST">
                             <p>Clicking on the button below will trigger a database shutdown. If
                             you are running the database with the webserver included in the distribution,
@@ -41,6 +47,8 @@ declare function shutdown:main($user as xs:string, $password as xs:string) as el
                             </table>
                             <input type="hidden" name="panel" value="shutdown"/>
                         </form>
+                    )
+            )
         }
     </div>
 };
