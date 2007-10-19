@@ -2,9 +2,6 @@ xquery version "1.0";
 
 (: prints a list of all built-in functions :)
 
-import module namespace utils="http://exist-db.org/xquery/collection-utils"
-at "webapp/xquery/collections.xqm";
-
 declare namespace util="http://exist-db.org/xquery/util";
 
 (: Define a local function :)
