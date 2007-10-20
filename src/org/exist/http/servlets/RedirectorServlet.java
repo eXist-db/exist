@@ -57,10 +57,13 @@ import java.util.*;
  *
  * <pre>
  *  &lt;exist:dispatch xmlns:exist="http://exist.sourceforge.net/NS/exist"
- *      path="/preview.xql" servlet-name="MyServlet">
+ *      path="/preview.xql" servlet-name="MyServlet" redirect="path">
  *       &lt;exist:add-parameter name="new-param" value="new-param-value"/>
  *   &lt;/exist:dispatch>
  * </pre>
+ *
+ * The element should have one of three attributes: <em>path</em>, <em>servlet-name</em> or
+ * <em>redirect</em>.
  *
  * If the servlet-name attribute is present, the request will be forwarded to the named servlet
  * (name as specified in web.xml). Alternatively, path can point to an arbitrary resource. It can be either absolute or relative.
@@ -73,6 +76,10 @@ import java.util.*;
  * When forwarding to other servlets, the fields in {@link javax.servlet.http.HttpServletRequest} will be
  * updated to point to the new, redirected URI. However, the original request URI is stored in the
  * request attribute org.exist.forward.request-uri.
+ *
+ * If present, the "redirect" attribute causes the server to send a redirect request to the client, which will usually respond
+ * with a new request to the redirected location. Note that this is quite different from a forwarding via RequestDispatcher,
+ * which is completely transparent to the client.
  *
  * RedirectorServlet takes a single parameter in web.xml: "xquery". This parameter should point to an
  * XQuery script. It should be relative to the current web context.
@@ -162,6 +169,7 @@ public class RedirectorServlet extends HttpServlet {
             }
             ResourceSet result = service.execute(source);
 
+            String redirectTo = null;
             String servletName = null;
             String path = null;
             RequestWrapper modifiedRequest = new RequestWrapper(request);
@@ -187,6 +195,8 @@ public class RedirectorServlet extends HttpServlet {
                     path = elem.getAttribute("path");
                 else if (elem.hasAttribute("servlet-name"))
                     servletName = elem.getAttribute("servlet-name");
+                else if (elem.hasAttribute("redirect"))
+                    redirectTo = elem.getAttribute("redirect");
                 else {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                         "Element <exist:dispatch> should either provide an attribute 'path' or 'servlet-name'. Received: " +
@@ -207,6 +217,12 @@ public class RedirectorServlet extends HttpServlet {
                         node = node.getNextSibling();
                     }
                 }
+            }
+
+            if (redirectTo != null) {
+                // directly redirect to the specified URI
+                response.sendRedirect(redirectTo);
+                return;
             }
 
             // Get a RequestDispatcher, either from the servlet context or the request
