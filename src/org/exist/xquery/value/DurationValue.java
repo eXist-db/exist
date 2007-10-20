@@ -267,27 +267,47 @@ public class DurationValue extends ComputableValue {
 		}
 	}
 
-	public boolean compareTo(Collator collator, int operator, AtomicValue other)
-		throws XPathException {		
+	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {		
 		switch (operator) {
-		case Constants.EQ :
-			if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
-				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
-			//TODO : upgrade so that P365D is *not* equal to P1Y
-			return duration.equals(((DurationValue)other).duration);
-		case Constants.NEQ :
-			if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
-				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
-			//TODO : upgrade so that P365D is *not* equal to P1Y
-			return !duration.equals(((DurationValue)other).duration);
-		case Constants.LT :			
-		case Constants.LTEQ :			
-		case Constants.GT :
-		case Constants.GTEQ :
-			throw new XPathException("XPTY0004: " + Type.getTypeName(other.getType()) + " type can not be ordered");
-		default :
-			throw new IllegalArgumentException("Unknown comparison operator");
-	}	}
+			case Constants.EQ :
+			{
+				if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
+					throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
+				//TODO : upgrade so that P365D is *not* equal to P1Y
+				boolean r = duration.equals(((DurationValue)other).duration);
+				//compare fractional seconds to work around the JDK standard behaviour
+				if (r && 
+						((BigDecimal)duration.getField(DatatypeConstants.SECONDS)) != null &&
+						((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)) != null) {
+					r = ((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).equals(
+							((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)));
+				}
+				return r;
+			}
+			case Constants.NEQ :
+			{
+				if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
+					throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
+				//TODO : upgrade so that P365D is *not* equal to P1Y
+				boolean r = duration.equals(((DurationValue)other).duration);
+				//compare fractional seconds to work around the JDK standard behaviour
+				if (r && 
+						((BigDecimal)duration.getField(DatatypeConstants.SECONDS)) != null &&
+						((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)) != null) {
+					r = ((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).equals(
+							((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)));
+				}
+				return !r;
+			}
+			case Constants.LT :			
+			case Constants.LTEQ :			
+			case Constants.GT :
+			case Constants.GTEQ :
+				throw new XPathException("XPTY0004: " + Type.getTypeName(other.getType()) + " type can not be ordered");
+			default :
+				throw new IllegalArgumentException("Unknown comparison operator");
+		}	
+	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
