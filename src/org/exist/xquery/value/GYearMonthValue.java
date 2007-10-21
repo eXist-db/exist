@@ -1,21 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -92,11 +92,14 @@ public class GYearMonthValue extends AbstractDateTimeValue {
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == getType()) {
-			if (!getTimezone().isEmpty()) {
+            if (!getTimezone().isEmpty()) {
 				if (!((AbstractDateTimeValue) other).getTimezone().isEmpty()) {
 					if (!((DayTimeDurationValue)getTimezone().itemAt(0)).compareTo(null, Constants.EQ, (DayTimeDurationValue)((AbstractDateTimeValue)other).getTimezone().itemAt(0))) {
 						return DatatypeConstants.LESSER;
 	    			} else {
+                        // equal? Is this sufficient? /ljo
+                        if (this.getTrimmedCalendar().compare(((AbstractDateTimeValue) other).getTrimmedCalendar()) == 0)
+                            return DatatypeConstants.EQUAL;
 	    				if (!((DayTimeDurationValue)getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
 	    					return DatatypeConstants.LESSER;
 	    			}
@@ -109,7 +112,7 @@ public class GYearMonthValue extends AbstractDateTimeValue {
 			}
 			// filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
 			int r =	this.getTrimmedCalendar().compare(((AbstractDateTimeValue) other).getTrimmedCalendar());
-				//getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
+            //getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
 			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between " + this + " and " + other);
 			return r;
 		}
