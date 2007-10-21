@@ -6,7 +6,8 @@
     TODO: Remove optional attributes in favour of well defined/named parent elements
 -->
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"  targetNamespace="http://exist-db.org/collection-config/1.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"
+    targetNamespace="http://exist-db.org/collection-config/1.0">
     <xs:element name="collection">
         <xs:complexType>
             <xs:sequence>
@@ -22,12 +23,14 @@
                                 </xs:annotation>
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="include" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:element name="include" minOccurs="0"
+                                            maxOccurs="unbounded">
                                             <xs:complexType>
                                                 <xs:attribute name="path" type="xs:string"/>
                                             </xs:complexType>
                                         </xs:element>
-                                        <xs:element name="exclude" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:element name="exclude" minOccurs="0"
+                                            maxOccurs="unbounded">
                                             <xs:complexType>
                                                 <xs:attribute name="path" type="xs:string"/>
                                             </xs:complexType>
@@ -58,6 +61,7 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
+                
                 <xs:element name="triggers" minOccurs="0" maxOccurs="1">
                     <xs:annotation>
                         <xs:documentation>Trigger Configuration</xs:documentation>
@@ -66,18 +70,37 @@
                         <xs:sequence>
                             <xs:element name="trigger" minOccurs="1" maxOccurs="unbounded">
                                 <xs:complexType>
-                                            <xs:sequence>
-                                                <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
-                                                    <xs:complexType>
-                                                        <xs:attribute name="name" type="xs:string"/>
-                                                        <xs:attribute name="value" type="xs:string"/>
-                                                    </xs:complexType>
-                                                </xs:element>
-                                            </xs:sequence>
-                                           <xs:attribute name="class" type="xs:string"/>
+                                    <xs:sequence>
+                                        <xs:element name="parameter" minOccurs="0"
+                                            maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="name" type="xs:string"/>
+                                                <xs:attribute name="value" type="xs:string"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="class" type="xs:string"/>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="validation" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Per collection validation-switch
+                        configuration</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:attribute name="mode">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="auto"/>
+                                    <xs:enumeration value="no"/>
+                                    <xs:enumeration value="yes"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
