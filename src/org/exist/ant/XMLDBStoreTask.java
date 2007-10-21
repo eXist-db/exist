@@ -60,6 +60,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 public class XMLDBStoreTask extends AbstractXMLDBTask
 {
   private File srcFile = null;
+  private String targetFile = null;
   private FileSet fileSet = null;
   private boolean createCollection = false;
   private boolean createSubcollections = false;
@@ -123,8 +124,10 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
         	throw new BuildException("Cannot find mime-type for " + srcFile.getName());
         
         resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
-        log("Creating resource " + srcFile.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
-        res = col.createResource(srcFile.getName(), resourceType);
+        if (targetFile == null)
+            targetFile = srcFile.getName();
+        log("Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
+        res = col.createResource(targetFile, resourceType);
         res.setContent(srcFile);
         ((EXistResource) res).setMimeType(mime.getName());
         col.storeResource(res);
@@ -182,6 +185,10 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
   {
     this.srcFile = file;
   }
+
+    public void setTargetFile(String name) {
+        this.targetFile = name;
+    }
 
   public FileSet createFileSet()
   {
