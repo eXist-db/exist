@@ -70,8 +70,8 @@ return
       <context-property name="Boundary-space policy" context-type="static"/>
       <context-property name="Copy-namespaces mode" context-type="static"/>
       <context-property name="Base URI" context-type="static" value="'/db' by default"/>
-      <context-property name="Statically known documents" context-type="static" value="all documents in the database by default"/>
-      <context-property name="Statically known collections" context-type="static" value="all collections in the database by default"/>
+      <context-property name="Statically known documents" context-type="static" value="By default, all the documents stored in the database for which the user has required permissions"/>
+      <context-property name="Statically known collections" context-type="static" value="By default, all the collections stored in the database for which the user has required permissions"/>
       <context-property name="Statically known default collection type" context-type="static"/>
       <context-property name="Context item" context-type="dynamic"/>
       <context-property name="Context position" context-type="dynamic"/>
@@ -80,9 +80,13 @@ return
       <context-property name="Function implementations" context-type="dynamic"/>
       <context-property name="Current dateTime" context-type="dynamic" value="Settable using an option, a pragma, or API"/>
       <context-property name="Implicit timezone" context-type="dynamic" value="Settable using an option, a pragma, or API"/>
-      <context-property name="Available documents" context-type="dynamic" value="Any document in the database for which the user has required permissions + external URLs"/>
-      <context-property name="Available collections" context-type="dynamic" value="Any collection in the database for which the user has required permissions"/>
-      <context-property name="Default collection" context-type="dynamic" value="all collections"/>
+      <context-property name="Available documents" context-type="dynamic" value="By default, all the documents stored in the database for which the user has required permissions + external URLs"/>
+      <context-property name="Available collections" context-type="dynamic" value="By default, all the collections stored in the database for which the user has required permissions"/>
+      <context-property name="Default collection" context-type="dynamic" value="By default, all the collections stored in the database for which the user has required permissions"/>
+      <context-property name="expressionUnicode" context-type="static" value="UTF-8"/>
+      <context-property name="collations" context-type="static" value="By default, 'http://www.w3.org/2005/xpath-functions/collation/codepoint'"/>
+      <context-property name="implicitTimezone" context-type="static" value="By default, the system's one"/>
+      <context-property name="errorsMethod" context-type="static" value="Errors are thrown as an org.exist.xquery.XPathException. The exception's getMessage() method contains the error code."/>
         </context-properties>
 
     </implementation>
@@ -96,7 +100,9 @@ return
             if (empty(doc('/db/XQTS/hacked-tests.xml')/hack:test-cases/hack:test-case/hack:expected-result)) then
                 <p>No unusual transformations.</p>
             else
-                <p>The following tests have been evaluated against results provided by other XQuery processors.</p>, 
+                <p>The following tests have been evaluated against results provided by other XQuery processors.</p>,
+                (: this paragraph element is not really wanted but we want it to be processed by the XSLT :)
+                <p> 
                 <table>
                     <th><td>Test name</td><td>Reference software</td><td>Considered result</td></th>
                     {
@@ -109,6 +115,7 @@ return
                             </tr>
                      }
                 </table>
+                </p>
                 
         }
         </transformation>
@@ -117,18 +124,21 @@ return
             if (empty(doc('/db/XQTS/hacked-tests.xml')/hack:test-cases/hack:test-case/@compare)) then
                 <p>No unusual comparisons</p>
             else
-                <p>The following tests have required a comparison method different from the standard one.</p>,                
+                <p>The following tests have required a comparison method different from the standard one.</p>,
+                (: this paragraph element is not really wanted but we want it to be processed by the XSLT :)
+                <p>                
                 <table>
                     <th><td>Test name</td><td>Comparison method</td></th>
                     {
                         for $hackedTest in doc('/db/XQTS/hacked-tests.xml')/hack:test-cases/hack:test-case[@compare]
                         return
                             <tr>
-                                <td>{$hackedTest/@name}</td>
-                                <td>{$hackedTest/@compare}</td>
+                                <td>{string($hackedTest/@name)}</td>
+                                <td>{string($hackedTest/@compare)}</td>
                             </tr>
                      }
-                </table>,
+                </table>
+                </p>,
                 <p>UnnormalizedText : result text nodes are concatenated without introducing (normalized) spaces between them.</p>,
                 <p>TextAsXML : result string is evaluated as if it were XML, then an XML comparison is done.</p>
         }
