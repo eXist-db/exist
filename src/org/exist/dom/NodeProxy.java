@@ -280,9 +280,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 	    throw new XPathException("cannot compare persistent node with in-memory node");
 	NodeProxy otherNode = (NodeProxy) other;
-	if (doc.getDocId() != otherNode.doc.getDocId())
-	    return false;		
-	return nodeId.before(otherNode.nodeId, isPreceding);
+	if (doc.getDocId() < otherNode.doc.getDocId())
+		return doc.getDocId() > otherNode.doc.getDocId();	return nodeId.before(otherNode.nodeId, isPreceding);
     }
 	
     /**
@@ -298,7 +297,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	    throw new XPathException("cannot compare persistent node with in-memory node");
 	NodeProxy otherNode = (NodeProxy) other;
 	if (doc.getDocId() != otherNode.doc.getDocId())
-	    return false;		
+		return doc.getDocId() > otherNode.doc.getDocId();		
 	return nodeId.after(otherNode.nodeId, isFollowing);
     }
 
