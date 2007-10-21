@@ -592,9 +592,11 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }
     
     /**
-     * Utility method that is able to clone a calendarwhose year is 0
-     * @param calendar
-     * @return
+     * Utility method that is able to clone a calendar whose year is 0
+     * (whatever a year 0 means). 
+     * It looks like the JDK is unable to do that.
+     * @param calendar The Calendar to clone
+     * @return the cloned Calendar
      */
     public static XMLGregorianCalendar cloneXMLGregorianCalendar(XMLGregorianCalendar calendar) {
     	boolean hacked = false;

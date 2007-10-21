@@ -112,22 +112,22 @@ public class DurationValue extends ComputableValue {
 		return canonicalDuration.toString();
 	}
 	
-	private BigInteger nullIfZero(BigInteger x) {
+	private static BigInteger nullIfZero(BigInteger x) {
 		if (BigInteger.ZERO.compareTo(x) == Constants.EQUAL) x = null;		
 		return x;
 	}
 	
-	private BigInteger zeroIfNull(BigInteger x) {
+	private static BigInteger zeroIfNull(BigInteger x) {
 		if (x == null) x = BigInteger.ZERO;
 		return x;
 	}
 	
-	private BigDecimal nullIfZero(BigDecimal x) {
+	private static BigDecimal nullIfZero(BigDecimal x) {
 		if (ZERO_DECIMAL.compareTo(x) == Constants.EQUAL) x = null;
 		return x;
 	}
 	
-	private BigDecimal zeroIfNull(BigDecimal x) {
+	private static BigDecimal zeroIfNull(BigDecimal x) {
 		if (x == null) x = ZERO_DECIMAL;
 		return x;
 	}
@@ -275,13 +275,9 @@ public class DurationValue extends ComputableValue {
 					throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
 				//TODO : upgrade so that P365D is *not* equal to P1Y
 				boolean r = duration.equals(((DurationValue)other).duration);
-				//compare fractional seconds to work around the JDK standard behaviour
-				if (r && 
-						((BigDecimal)duration.getField(DatatypeConstants.SECONDS)) != null &&
-						((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)) != null) {
-					r = ((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).equals(
-							((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)));
-				}
+				//confirm strict equality to work around the JDK standard behaviour
+				if (r)
+					r = r & areReallyEqual(getCanonicalDuration(), ((DurationValue)other).getCanonicalDuration());
 				return r;
 			}
 			case Constants.NEQ :
@@ -290,13 +286,9 @@ public class DurationValue extends ComputableValue {
 					throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
 				//TODO : upgrade so that P365D is *not* equal to P1Y
 				boolean r = duration.equals(((DurationValue)other).duration);
-				//compare fractional seconds to work around the JDK standard behaviour
-				if (r && 
-						((BigDecimal)duration.getField(DatatypeConstants.SECONDS)) != null &&
-						((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)) != null) {
-					r = ((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).equals(
-							((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)));
-				}
+				//confirm strict equality to work around the JDK standard behaviour
+				if (r)
+					r = r & areReallyEqual(getCanonicalDuration(), ((DurationValue)other).getCanonicalDuration());
 				return !r;
 			}
 			case Constants.LT :			
@@ -356,4 +348,16 @@ public class DurationValue extends ComputableValue {
         throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) +
             " has no boolean value.");
     }
+    
+    public static boolean areReallyEqual(Duration duration1, Duration duration2) {
+    	boolean secondsEqual = zeroIfNull((BigDecimal)duration1.getField(DatatypeConstants.SECONDS)).compareTo(
+    				zeroIfNull((BigDecimal)duration2.getField(DatatypeConstants.SECONDS))) == Constants.EQUAL;    		
+    	return secondsEqual &&
+    	duration1.getMinutes() == duration2.getMinutes() &&
+    	duration1.getHours() == duration2.getHours() &&
+    	duration1.getDays() == duration2.getDays() &&
+    	duration1.getMonths() == duration2.getMonths() &&
+    	duration1.getYears() == duration2.getYears();
+	}
+
 }
