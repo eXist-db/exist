@@ -389,8 +389,29 @@ public class User {
         buf.append( "</user>" );
         return buf.toString();
     }
-
+    
+    /**
+     * Split up the validate method into two, to make 
+     * it possible to authenticate users, which are not
+     * defined in the instance named "exist" without
+     * having impact on the standard functionality.
+     * 
+     * @param passwd
+     * @return true if the password was correct, false if not, 
+     * or if there was a problem.
+     */
     public final boolean validate( String passwd ) {
+        SecurityManager sm;
+        try {
+            sm=BrokerPool.getInstance().getSecurityManager();
+            return validate(passwd, sm);
+        } catch (EXistException e) {
+            LOG.warn("Failed to get security manager in validate: ",e);
+            return false;
+        }
+    }
+
+    public final boolean validate( String passwd, SecurityManager sm ) {
         // security management is disabled if in repair mode
         if (!CHECK_PASSWORDS)
             return true;
@@ -402,23 +423,16 @@ public class User {
             return false;
         }
         
-        
         // [ 1557095 ] LDAP passwords patch
-        SecurityManager sm;
         //Try to authenticate using LDAP
-        try {
-            sm=BrokerPool.getInstance().getSecurityManager();
-        } catch (EXistException e) {
-            LOG.warn("Failed to get security manager in validate: ",e);
-            return false;
+        if(sm != null) {
+	        if(sm instanceof LDAPbindSecurityManager ) {
+	            if( ((LDAPbindSecurityManager)sm).bind(user,passwd))
+	                return true;
+	            else
+	                return false;
+	        }
         }
-        if(sm instanceof LDAPbindSecurityManager ) {
-            if( ((LDAPbindSecurityManager)sm).bind(user,passwd))
-                return true;
-            else
-                return false;
-        }
-        
         
         if (password!=null) {
             if (MD5.md(passwd,true).equals( password )) {
