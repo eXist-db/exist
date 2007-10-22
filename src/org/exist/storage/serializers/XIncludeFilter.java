@@ -247,6 +247,8 @@ public class XIncludeFilter implements Receiver {
         String paramStr = docUri.getQuery();
         if (paramStr != null) {
             params = processParameters(paramStr);
+            // strip query part
+            docUri = XmldbURI.create(docUri.getRawCollectionPath());
         }
 
         // if docName has no collection specified, assume
