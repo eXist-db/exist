@@ -1,26 +1,24 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
-
 package org.exist.xquery.value;
 
 import java.math.BigDecimal;
@@ -42,6 +40,7 @@ import org.exist.xquery.XPathException;
 /**
  * @author wolf
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
+ * @author ljo
  */
 public abstract class AbstractDateTimeValue extends ComputableValue {
 	
@@ -56,7 +55,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     protected static Pattern gMonthWTZ = Pattern.compile("^(--\\d\\d)([+-])(\\d\\d):(\\d\\d)");
     //protected static Pattern gMonthWUTCTZ = Pattern.compile("^(--\\d\\d)([+-])(\\d\\d):(\\d\\d)");
     protected static Pattern gYearMonthWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    protected static Pattern gMonthDayWTZ = Pattern.compile("^(--\\d\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    protected static Pattern gMonthDayWTZ = Pattern.compile("^(--\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
     protected static Pattern dateWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
     protected static Pattern timeNoTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)");
     protected static Pattern timeWUTCTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)([+-]\\d\\d:\\d\\d)");
@@ -67,7 +66,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
     protected static Pattern dateInvalidDay = Pattern.compile("^(---)\\d(\\d\\d)");
     protected static Pattern dateInvalidMonth = Pattern.compile("(^\\d\\d\\d\\d-\\d\\d\\d-\\d\\d$|^\\d\\d\\d\\d-\\d\\d\\d.*|^\\d\\d\\d\\d-\\d\\d\\d-\\d\\dT.*)");
-    protected static Pattern dateInvalidYear = Pattern.compile("(^0(\\d\\d\\d\\d\\d*)-(\\d\\d)-(\\d\\d)|^0(\\d\\d\\d\\d)-(\\d\\d\\d)$)");
+    protected static Pattern dateInvalidYear = Pattern.compile("(^0(\\d\\d\\d\\d\\d*)-(\\d\\d)-(\\d\\d)|^0(\\d\\d\\d\\d)-(\\d\\d\\d)|^0(\\d\\d\\d\\d)-(\\d\\d)|^0(\\d\\d\\d\\d)|^0(\\d\\d\\d\\d\\d*)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d))");
 
 
 
@@ -360,12 +359,12 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     public static String normalizeDate(String dateValue)
     throws XPathException {
         Matcher d = dateInvalidDay.matcher(dateValue);
-       Matcher m = dateInvalidMonth.matcher(dateValue);
-       Matcher y = dateInvalidYear.matcher(dateValue);
-       if (d.matches() ||  m.matches() || y.matches()) {
-           throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + dateValue + "'");
-       }
-       return dateValue;
+        Matcher m = dateInvalidMonth.matcher(dateValue);
+        Matcher y = dateInvalidYear.matcher(dateValue);
+        if (d.matches() ||  m.matches() || y.matches()) {
+            throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + dateValue + "'");
+        }
+        return dateValue;
     }
 
     /**
@@ -477,7 +476,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		if (m.matches()) {
 			tzHours = Integer.valueOf(m.group(3)).intValue();
 			tzMins = Integer.valueOf(m.group(4)).intValue();
-            if (tzMins >= 60 && tzMins < 0) {
+            if (tzMins >= 60 || tzMins < 0) {
                 throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
             }
             
@@ -496,7 +495,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		if (m.matches()) {
 			tzHours = Integer.valueOf(m.group(3)).intValue();
 			tzMins = Integer.valueOf(m.group(4)).intValue();
-            if (tzMins >= 60 && tzMins < 0) {
+            if (tzMins >= 60 || tzMins < 0) {
                 throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
             }
             
@@ -551,23 +550,21 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
         m = gMonthDayWTZ.matcher(timeValue);
 		if (m.matches()) {
-			hours = Integer.valueOf(m.group(2)).intValue();
-			mins = Integer.valueOf(m.group(3)).intValue();
-            tzHours = Integer.valueOf(m.group(5)).intValue();
-			tzMins = Integer.valueOf(m.group(6)).intValue();
-            if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
+            tzHours = Integer.valueOf(m.group(3)).intValue();
+			tzMins = Integer.valueOf(m.group(4)).intValue();
+            if (tzMins >= 60 || tzMins < 0) {
                 throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
             }
             
-            if (hours == 24) {
-                if (mins == 0) {
-                    hours = 0;
+            if (tzHours == 24) {
+                if (tzMins == 0) {
+                    tzHours = 0;
                 } else {
                     throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                 }
             }
             // fixme!
-            timeValue = m.group(1) + df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs) + m.group(4) + df.format(tzHours) + ":" + df.format(tzMins);
+            timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
 		}
         
         m = dateWTZ.matcher(timeValue);
