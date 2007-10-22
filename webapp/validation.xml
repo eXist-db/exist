@@ -57,8 +57,8 @@
                 <section>
                     <title>yes</title>
                     <para>Switch on validation. All XML documents will be validated. When the
-                        grammar (XML schema, DTD) documents cannot be resolverd, the document will
-                        be rejected.</para>
+                        grammar (XML schema, DTD) documents cannot be resolved, the document is
+                        rejected.</para>
                 </section>
                 <section>
                     <title>no</title>
@@ -68,13 +68,13 @@
                 <section>
                     <title>auto (default)</title>
                     <para>Validation of an XML document will be performed based on the contents of
-                        the document. When a document contains a reference to a grammar (XML schema
-                        or DTD) document, the XML parser tries to resolve this grammar and the XML
-                        document will be validated against this grammar, just like
-                            <emphasis>mode="yes"</emphasis> is configured. If the grammar cannot be
-                        resolved, the XML document will be rejected. When the XML document does not
-                        contain a reference to a grammar, it will be parsed like
-                        <emphasis>mode="no"</emphasis> is configured.</para>
+                        the document. When a document contains a reference to a grammar
+                            (<emphasis>XML schema</emphasis> or <emphasis>DTD</emphasis>) document,
+                        the XML parser tries to resolve this grammar and the XML document will be
+                        validated against this grammar, just like <emphasis>mode="yes"</emphasis> is
+                        configured. If the grammar cannot be resolved, the XML document will be
+                        rejected. When the XML document does not contain a reference to a grammar,
+                        it will be parsed like <emphasis>mode="no"</emphasis> is configured.</para>
                 </section>
             </section>
 
@@ -87,9 +87,10 @@
                         >OASIS catalog</ulink> files. These catalog files can be stored on disk and
                     in the database.</para>
                 <para>In the upper example the ${WEBAPP_HOME} is substituted by a
-                    <emphasis>file://</emphasis> URL pointing to the 'webapp'-directory of eXist or
-                    the equivalent directory of a deployed WAR file when eXist is deployed in a
-                    servlet container (e.g. '${CATALINA_HOME}/webapps/exist/')</para>
+                    <emphasis>file://</emphasis> URL pointing to the 'webapp'-directory of eXist
+                    (e.g. '$EXIST_HOME/webapp/') or the equivalent directory of a deployed WAR file
+                    when eXist is deployed in a servlet container (e.g.
+                    '${CATALINA_HOME}/webapps/exist/')</para>
                 <para>A catalog which is stored in the database can be addressed by an URL like
                     'xmldb:exist:///db/mycollection/catalog.xml' (note the 3 slashes) or the shorter
                     equivalent '/db/mycollection/catalog.xml'.</para>
@@ -176,7 +177,7 @@
                                             (<code>"http://www.w3.org/2001/XMLSchema"</code>) while
                                         the DTDs are resolved by querying OASIS XML catalog
                                         documents (namespace
-                                            <code>urn:oasis:names:tc:entity:xmlns:xml:catalog</code>).</para>
+                                            <code>"urn:oasis:names:tc:entity:xmlns:xml:catalog"</code>).</para>
                                 </listitem>
                             </itemizedlist>
                         </para>
@@ -200,15 +201,15 @@
             <para>The XML parser (Xerces) compiles all grammar files (dtd, xsd) when they are used.
                 For efficiency reasons these compiled grammars are cached for reuse, this results
                 into a dramatic increase of validation speed. However under certain conditions (e.g.
-                grammar development) this cache must be cleared. There are two related functions
-                available: <itemizedlist>
+                grammar development) this cache must be cleared. There are two grammar management
+                functions available: <itemizedlist>
                     <listitem>
-                        <para>clear-grammar-cache() : removes all cached grammar and returns the
-                            number of removed grammar</para>
+                        <para><emphasis>clear-grammar-cache()</emphasis> : removes all cached
+                            grammar and returns the number of removed grammar</para>
                     </listitem>
                     <listitem>
-                        <para>show-grammar-cache() : returns an XML report about all cached
-                        grammar</para>
+                        <para><emphasis>show-grammar-cache()</emphasis> : returns an XML report
+                            about all cached grammar</para>
                     </listitem>
                 </itemizedlist>
             </para>
@@ -216,17 +217,35 @@
                 <title>Cached grammars Report</title>
                 <programlisting format="linespecific"><![CDATA[
     <?xml version='1.0'?>
-    @@@]]></programlisting>
+    <report>
+    <grammar type="http://www.w3.org/2001/XMLSchema">
+        <Namespace>http://www.w3.org/XML/1998/namespace</Namespace>
+        <BaseSystemId>file:/Users/guest/existdb/trunk/webapp//WEB-INF/entities/XMLSchema.xsd</BaseSystemId>
+        <LiteralSystemId>http://www.w3.org/2001/xml.xsd</LiteralSystemId>
+        <ExpandedSystemId>http://www.w3.org/2001/xml.xsd</ExpandedSystemId>
+    </grammar>
+    <grammar type="http://www.w3.org/2001/XMLSchema">
+        <Namespace>http://www.w3.org/2001/XMLSchema</Namespace>
+        <BaseSystemId>file:/Users/guest/existdb/trunk/schema/collection.xconf.xsd</BaseSystemId>
+    </grammar>
+    </report>]]></programlisting>
             </example>
+            <para>Note: the element <emphasis>BaseSystemId</emphasis> typically does not provide
+                usefull information.</para>
         </section>
 
         <section id="sect4a">
             <title>Interactive Client</title>
-            <para>Commands on the interface</para>
+            <para>The interactive shell mode of the <a href="client.xml">java client</a> provides a
+                simple <emphasis>validate</emphasis> command that accepts the similar explicit
+                validation arguments.</para>
         </section>
 
         <section id="sect5">
             <title>XML instance examples</title>
+            <para>This section provides a number of XML fragments demonstrating the required format
+                of the XML documents. Note that a root element should <emphasis>always</emphasis>
+                have a reference to a namespace.</para>
             <para>
                 <example>
                     <title>namespace</title>
@@ -258,7 +277,7 @@
                 <example>
                     <title>noNamespaceSchemaLocation</title>
                     <para>Taken from: conf.xml. The xsi:noNamespaceSchemaLocation is honoured by the
-                        parser.</para>
+                        parser during implicit validation.</para>
                     <programlisting format="linespecific"><![CDATA[
     <?xml version='1.0'?>
     <exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -288,8 +307,12 @@
                 <itemizedlist>
                     <listitem>
                         <para>Tomcat has an long standing bug which makes it impossible to register
-                            a custom protocol handler (object URLStreamHandler) to the JVM. The
-                            alternative is to register the object by setting the system property
+                            a custom <a
+                                href="http://java.sun.com/developer/onlineTraining/protocolhandlers/"
+                                >protocol handler</a> (object <a
+                                href="http://java.sun.com/j2se/1.5.0/docs/api/java/net/URLStreamHandler.html"
+                                >URLStreamHandler</a>) to the JVM. The alternative is to register
+                            the object by setting the system property
                                 <code>java.protocol.handler.pkgs</code> but this fails as well.</para>
                         <para>As a result the validation features are only partly useable in tomcat.
                             There are two altenatives: (1) switch to a recent version of Jetty, or
@@ -299,15 +322,16 @@
                     <listitem>
                         <para>eXist heavily relies on the features as provided by the Xerces XML
                             parser. By default eXist izPack installer provides all required jar
-                            files</para>
-                        <para>When eXist is installed in e.g. Tomcat the required parser libraries
-                            need to be copied from the lib/endorsed directory into the server
-                            'endorsed' @@@ directory.</para>
+                            files. However, when eXist is installed in e.g. Tomcat the required
+                            parser libraries need to be copied manually from the lib/endorsed
+                            directory into the server '<a
+                                href="http://tomcat.apache.org/tomcat-5.5-doc/class-loader-howto.html"
+                                >endorsed</a>' directory.</para>
                         <para>Required endorsed files: resolver-*.jar xalan-*.jar xml-apis.jar
                             serializer-*.jar xercesImpl-*.jar</para>
                     </listitem>
                     <listitem>
-                        <para>@@To prevent potential deadlocks it is considered to be a good idea to
+                        <para>To prevent potential deadlocks it is considered to be a good idea to
                             store XML instance documents and grammar documents in seperate
                             collections.</para>
                     </listitem>
