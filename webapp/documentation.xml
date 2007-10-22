@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <book>
   <bookinfo>
-    <graphic fileref="logo.jpg" />
+    <graphic fileref="logo.jpg"/>
 
     <productname>Open Source Native XML Database</productname>
 
@@ -14,8 +14,7 @@
     </author>
   </bookinfo>
 
-  <ci:include src="sidebar.xml"
-              xmlns:ci="http://apache.org/cocoon/include/1.0" />
+  <ci:include src="sidebar.xml" xmlns:ci="http://apache.org/cocoon/include/1.0"/>
 
   <chapter>
     <title>Documentation</title>
@@ -23,177 +22,138 @@
     <section>
       <title>Available Documentation</title>
 
-      <para>We recommend to have a look at the <ulink
-      url="quickstart.xml">Quick Start</ulink> first, then maybe continue to
-      read about <ulink url="xquery.xml">XQuery support</ulink>, in particular
-      eXist-specific extensions and features.</para>
+      <para>We recommend to have a look at the <ulink url="quickstart.xml">Quick Start</ulink>
+        first, then maybe continue to read about <ulink url="xquery.xml">XQuery support</ulink>, in
+        particular eXist-specific extensions and features.</para>
 
       <table class="documentation">
-        <title />
+        <title/>
 
         <tgroup cols="2">
           <tbody>
             <tr>
-              <td class="doclink"><ulink url="quickstart.xml">Quick
-              Start</ulink>:</td>
-
+              <td class="doclink"><ulink url="quickstart.xml">Quick Start</ulink>:</td>
               <td>getting started with eXist.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="ant-tasks.xml">Ant
-              Tasks</ulink>:</td>
-
+              <td class="doclink"><ulink url="ant-tasks.xml">Ant Tasks</ulink>:</td>
               <td>how to automate tasks with Ant.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="backup.xml">Backup and
-              Restore</ulink>:</td>
+              <td class="doclink"><ulink url="atompub.xml">Atom Publishing Protocol</ulink>:</td>
+              <td>how to configure and interact over the Atom Publishing Protocol to treat your
+                collections as Atom feeds.</td>
+            </tr>
 
+            <tr>
+              <td class="doclink"><ulink url="backup.xml">Backup and Restore</ulink>:</td>
               <td>explains how to backup/restore your database contents.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="building.xml">Building
-              eXist</ulink>:</td>
-
-              <td>compiling and building eXist distributions, using the
-              Subversion repository.</td>
+              <td class="doclink"><ulink url="building.xml">Building eXist</ulink>:</td>
+              <td>compiling and building eXist distributions, using the Subversion repository.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink
-              url="http://wiki.exist-db.org/space/Change+Log">Changes</ulink>:</td>
-
+              <td class="doclink"><ulink url="http://wiki.exist-db.org/space/Change+Log"
+                >Changes</ulink>:</td>
               <td>detailed list of changes.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="cluster.xml">Cluster
-              configuration</ulink>:</td>
-
+              <td class="doclink"><ulink url="cluster.xml">Cluster configuration</ulink>:</td>
               <td>how to configure cluster environment.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="indexing.xml">Configuring
-              Indexes</ulink>:</td>
-
+              <td class="doclink"><ulink url="indexing.xml">Configuring Indexes</ulink>:</td>
               <td>how to configure specific indexes.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="triggers.xml">Configuring
-              Triggers</ulink>:</td>
-
+              <td class="doclink"><ulink url="triggers.xml">Configuring Triggers</ulink>:</td>
               <td>how to configure triggers.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink
-              url="deployment.xml">Deployment</ulink>:</td>
-
-              <td>eXist supports different alternatives for server
-              deployment.</td>
+              <td class="doclink"><ulink url="deployment.xml">Deployment</ulink>:</td>
+              <td>eXist supports different alternatives for server deployment.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="devguide.xml">Developer's
-              Guide</ulink>:</td>
-
-              <td>describes the various interfaces: XML:DB API, XML-RPC, REST,
-              SOAP.</td>
+              <td class="doclink"><ulink url="devguide.xml">Developer's Guide</ulink>:</td>
+              <td>describes the various interfaces: XML:DB API, XML-RPC, REST, SOAP.</td>
             </tr>
 
             <tr>
               <td class="doclink"><ulink url="jmx.xml">JMX</ulink></td>
               <td>Experimental support for Java Management Extensions (JMX)</td>
             </tr>
-            
-            <tr>
-              <td class="doclink"><ulink url="developper.html">Developer's
-              Notes</ulink>:</td>
 
-              <td>a few notes on how to use the various tools; SVN, eclipse,
-              Ant, PMD, JDepend, ...</td>
+            <tr>
+              <td class="doclink"><ulink url="developper.html">Developer's Notes</ulink>:</td>
+              <td>a few notes on how to use the various tools; SVN, eclipse, Ant, PMD, JDepend,
+              ...</td>
             </tr>
-            
-            <tr>
-              <td class="doclink"><ulink url="devguide_indexes.xml">Developer's
-              Guide to Modularized Indexes</ulink>:</td>
 
+            <tr>
+              <td class="doclink"><ulink url="devguide_indexes.xml">Developer's Guide to Modularized
+                  Indexes</ulink>:</td>
               <td>describes, through a use case, how modularized indexes work.</td>
-            </tr>            
+            </tr>
 
             <tr>
-              <td class="doclink"><ulink url="client.xml">Java Admin
-              Client</ulink>:</td>
-
+              <td class="doclink"><ulink url="client.xml">Java Admin Client</ulink>:</td>
               <td>describes command-line usage of the Java client</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="ldap-security.xml">LDAP Security
-              Manager</ulink>:</td>
-
+              <td class="doclink"><ulink url="ldap-security.xml">LDAP Security Manager</ulink>:</td>
               <td>configuring eXist to use LDAP for users and groups.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink
-              url="security.xml">Security</ulink>:</td>
-
-              <td>creating/changing users, passwords and resource
-              permissions.</td>
+              <td class="doclink"><ulink url="security.xml">Security</ulink>:</td>
+              <td>creating/changing users, passwords and resource permissions.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="configuration.xml">Server
-              Configuration</ulink>:</td>
-
+              <td class="doclink"><ulink url="configuration.xml">Server Configuration</ulink>:</td>
               <td>configuration options for the server.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="webdav.xml">WebDAV</ulink>:</td>
+              <td class="doclink"><ulink url="validation.xml">Validation</ulink>:</td>
+              <td>validate xml documents.</td>
+            </tr>
 
+            <tr>
+              <td class="doclink"><ulink url="webdav.xml">WebDAV</ulink>:</td>
               <td>how to setup your favourite webDAV enabled application.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="atompub.xml">Atom Publishing
-              Protocol</ulink>:</td>
-
-              <td>how to configure and interact over the Atom Publishing
-              Protocol to treat your collections as Atom feeds.</td>
-            </tr>
-
-            <tr>
               <td class="doclink"><ulink url="xacml.xml">XACML</ulink>:</td>
-
               <td>xQuery access control.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink
-              url="xinclude.xml">XInclude</ulink>:</td>
-
+              <td class="doclink"><ulink url="xinclude.xml">XInclude</ulink>:</td>
               <td>xInclude support in eXist.</td>
             </tr>
 
             <tr>
               <td class="doclink"><ulink url="xquery.xml">XQuery</ulink>:</td>
-
               <td>current status, supported features and extensions.</td>
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="update_ext.xml">XQuery Update
-              Extensions</ulink>:</td>
-
-              <td>eXist provides a number of extensions to update document
-              fragments from within an XQuery.</td>
+              <td class="doclink"><ulink url="update_ext.xml">XQuery Update Extensions</ulink>:</td>
+              <td>eXist provides a number of extensions to update document fragments from within an
+                XQuery.</td>
             </tr>
           </tbody>
         </tgroup>
@@ -203,37 +163,32 @@
     <section>
       <title>Documentation on the Wiki</title>
 
-      <para>Further documentation can be found in the <ulink
-      url="http://wiki.exist-db.org">Wiki</ulink>. Among other things, have a
-      look at:</para>
+      <para>Further documentation can be found in the <ulink url="http://wiki.exist-db.org"
+        >Wiki</ulink>. Among other things, have a look at:</para>
 
       <itemizedlist>
         <listitem>
           <para>
-            <ulink url="http://wiki.exist-db.org/space/HowTos">Various
-            HowTos</ulink>
+            <ulink url="http://wiki.exist-db.org/space/HowTos">Various HowTos</ulink>
           </para>
         </listitem>
 
         <listitem>
           <para>
-            <ulink url="http://wiki.exist-db.org/space/FAQs">Some frequently
-            asked questions</ulink>
+            <ulink url="http://wiki.exist-db.org/space/FAQs">Some frequently asked questions</ulink>
           </para>
         </listitem>
 
         <listitem>
           <para>
-            <ulink
-            url="http://wiki.exist-db.org/space/XMLPrague2006">XMLPrague 2006
-            papers and presentations</ulink>
+            <ulink url="http://wiki.exist-db.org/space/XMLPrague2006">XMLPrague 2006 papers and
+              presentations</ulink>
           </para>
         </listitem>
 
         <listitem>
-          <para><ulink
-          url="http://wiki.exist-db.org/space/NewSchemaValidation"> New Schema
-          Validation</ulink>.</para>
+          <para><ulink url="http://wiki.exist-db.org/space/NewSchemaValidation"> New Schema
+              Validation</ulink>.</para>
         </listitem>
       </itemizedlist>
     </section>
@@ -241,33 +196,30 @@
     <section>
       <title>Articles</title>
 
-      <para>An up-to-date list of articles can be found
-          <ulink url="http://wiki.exist-db.org/space/Articles">on the wiki</ulink>.</para>
-        
-      <para>If you would like to know more about the internal workings of
-      eXist, you may read the following introductory article:</para>
+      <para>An up-to-date list of articles can be found <ulink
+          url="http://wiki.exist-db.org/space/Articles">on the wiki</ulink>.</para>
 
-      <para>Wolfgang Meier. <ulink url="xmlprague06.xml">Index-Driven XQuery
-      Processing in the eXist XML Database</ulink>. Paper presented at XML
-      Prague 2006. Presentation slides can be found <ulink
-      href="http://wiki.exist-db.org/space/XMLPrague2006/wolfgangs_talk.pdf">here</ulink>
-      as well.</para>
+      <para>If you would like to know more about the internal workings of eXist, you may read the
+        following introductory article:</para>
+
+      <para>Wolfgang Meier. <ulink url="xmlprague06.xml">Index-Driven XQuery Processing in the eXist
+          XML Database</ulink>. Paper presented at XML Prague 2006. Presentation slides can be found
+          <ulink href="http://wiki.exist-db.org/space/XMLPrague2006/wolfgangs_talk.pdf">here</ulink>
+        as well.</para>
 
       <para>An older article is:</para>
 
-      <para>Wolfgang Meier. <ulink url="http://exist-db.org/webdb.pdf">eXist:
-      An Open Source Native XML Database</ulink>. In: Akmal B. Chaudri, Mario
-      Jeckle, Erhard Rahm, Rainer Unland (Eds.): Web, Web-Services, and
-      Database Systems. NODe 2002 Web- and Database-Related Workshops, Erfurt,
-      Germany, October 2002. Springer LNCS Series, 2593.</para>
+      <para>Wolfgang Meier. <ulink url="http://exist-db.org/webdb.pdf">eXist: An Open Source Native
+          XML Database</ulink>. In: Akmal B. Chaudri, Mario Jeckle, Erhard Rahm, Rainer Unland
+        (Eds.): Web, Web-Services, and Database Systems. NODe 2002 Web- and Database-Related
+        Workshops, Erfurt, Germany, October 2002. Springer LNCS Series, 2593.</para>
 
       <para>A chapter about eXist is also contained in the book:</para>
 
       <para>Akmal B. Chaudri, Awais Rashid, Roberto Zicari (Eds.): <ulink
-      url="http://www.aw.com/catalog/academic/product/1,4096,0201844524,00.html">XML
-      Data Management: Native XML and XML-Enabled Database Systems</ulink>.
-      ISBN: 0-201-84452-4. Published by Addison Wesley Professional, March,
-      2003.</para>
+          url="http://www.aw.com/catalog/academic/product/1,4096,0201844524,00.html">XML Data
+          Management: Native XML and XML-Enabled Database Systems</ulink>. ISBN: 0-201-84452-4.
+        Published by Addison Wesley Professional, March, 2003.</para>
     </section>
   </chapter>
 </book>
