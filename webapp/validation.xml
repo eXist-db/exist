@@ -116,6 +116,22 @@
                 <para>It is possible to configure any number of catalog entries in the
                     entity-resolver section of conf.xml .</para>
             </section>
+
+            <section>
+                <title>Collection validation configuration</title>
+                <para>The validation mode for each individal collection can be configured using
+                        <emphasis>collection.xconf</emphasis> documents, in the same way these are
+                    used for configuring <a href="indexing.xml">indexes</a>. These documents need to
+                    be stored in '/db/system/config/db/....'.</para>
+                <example>
+                    <title>collection.xconf</title>
+                    <programlisting format="linespecific"><![CDATA[
+<?xml version='1.0'?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <validation mode="yes"/>
+</collection>]]></programlisting>
+                </example>
+            </section>
         </section>
 
         <section id="sect3">
@@ -123,10 +139,14 @@
             <para>The database provides two extension functions to perform XML validation from an
                 xquery script:<itemizedlist>
                     <listitem>
-                        <para>validate(...)</para>
+                        <para>
+                            <emphasis>validate(...)</emphasis>
+                        </para>
                     </listitem>
                     <listitem>
-                        <para>validate-report(...)</para>
+                        <para>
+                            <emphasis>validate-report(...)</emphasis>
+                        </para>
                     </listitem>
                 </itemizedlist></para>
             <para>The first function returns a simple <emphasis>true</emphasis> or
@@ -134,11 +154,11 @@
                 functions accept either one or two parameters:</para>
             <itemizedlist>
                 <listitem>
-                    <para>validate($a) : Validate $a using the same catalog as used by the implicit
-                        validation process.</para>
+                    <para><emphasis>validate-report($a)</emphasis> : Validate $a using the same
+                        catalog as used by the implicit validation process.</para>
                 </listitem>
                 <listitem>
-                    <para>validate-report($a,$b) : Validate $a using $b.</para>
+                    <para><emphasis>validate-report($a,$b)</emphasis> : Validate $a using $b.</para>
                 </listitem>
             </itemizedlist>
             <para>Explaination of parameters:</para>
