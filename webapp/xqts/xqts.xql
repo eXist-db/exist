@@ -295,7 +295,12 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case))
                         <variable name="{$var/@variable}" type="{util:get-sequence-type($variable)}">{$variable}</variable>,
                 for $input in $testCase/catalog:input-URI
                 return
-                    <variable name="{$input/@variable}" type="xs:anyURI">{xs:anyURI(concat("/db/XQTS/TestSources/", $input))}</variable>
+                    if ($input eq "works") then
+                        <variable name="{$input/@variable}" type="xs:anyURI">{xs:anyURI("/db/XQTS/TestSources/works.xml")}</variable>
+                    else if ($input eq "works-mod") then
+                        <variable name="{$input/@variable}" type="xs:anyURI">{xs:anyURI("/db/XQTS/TestSources/works-mod.xml")}</variable>
+                    else
+                        <variable name="{$input/@variable}" type="xs:anyURI">{xs:anyURI(concat("/db/XQTS/TestSources/", $input))}</variable>
             }
             {
                 for $input in $testCase/catalog:defaultCollection
