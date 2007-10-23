@@ -44,7 +44,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunLang extends Function {
 	
-	public static String queryString = "(ancestor-or-self::*/@xml:lang)[last()]";
+	public static String queryString = "(ancestor-or-self::*/@xml:lang)[position() = last()]";
 	public CompiledXQuery query; 
 
 	public final static FunctionSignature signatures[] = {
