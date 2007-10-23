@@ -1315,6 +1315,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
                     p.addContextNode(contextId, this);
                 else
                     p.copyContext(this);
+                p.addMatches(this);
                 result.add(p);
             }
         }

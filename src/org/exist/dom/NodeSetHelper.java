@@ -105,6 +105,7 @@ public class NodeSetHelper {
                             parent.deepCopyContext(child, contextId);
                         else
                             parent.copyContext(child);
+                        parent.addMatches(child);
                         result.add(parent, sizeHint);
                     }
                 }

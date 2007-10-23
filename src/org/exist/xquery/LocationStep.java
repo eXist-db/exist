@@ -857,9 +857,12 @@ public class LocationStep extends Step {
                             ancestor.addContextNode(contextId, current);
                         else
                             ancestor.copyContext(current);
+                        ancestor.addMatches(current);
                         result.add(ancestor);
-                    } else
+                    } else {
                         t.addContextNode(contextId, current);
+                        t.addMatches(current);
+                    }
                 }
                 NodeId parentID = current.getNodeId().getParentId();
                 while (parentID != null) {
@@ -874,9 +877,12 @@ public class LocationStep extends Step {
                                     ancestor.addContextNode(contextId, current);
                                 else
                                     ancestor.copyContext(current);
+                                ancestor.addMatches(current);
                                 result.add(ancestor);
-                            } else
+                            } else {
                                 t.addContextNode(contextId, current);
+                                t.addMatches(current);
+                            }
                         }
                     }
                     parentID = parentID.getParentId();

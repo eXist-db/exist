@@ -1,6 +1,9 @@
 package org.exist.storage.serializers;
 
+import org.custommonkey.xmlunit.NamespaceContext;
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLAssert;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
@@ -25,6 +28,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
 import java.io.File;
+import java.util.HashMap;
 import java.util.Properties;
 
 public class FTMatchListenerTest {
@@ -135,6 +139,58 @@ public class FTMatchListenerTest {
         }
     }
 
+    @Test
+    public void ancestorAxis() {
+        DBBroker broker;
+        try {
+            configureAndStore(CONF1);
+
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq = xquery.execute("//hi[. &= 'mixed']/parent::para", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            String result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+
+            seq = xquery.execute("//hi[. &= 'mixed']/..", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+
+            seq = xquery.execute("//hi[. &= 'nested']/ancestor::para", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+
+            seq = xquery.execute("//hi[. &= 'nested']/ancestor::*[2]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+
+            String query =
+                    "let $results := for $m in //para[. &= 'mixed']/hi order by $m return $m/parent::para " +
+                    "return $results";
+            seq = xquery.execute(query, null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
     /**
      * Test match highlighting for index configured by QName, e.g.
      * &lt;create qname="a"/&gt;.
@@ -226,13 +282,18 @@ public class FTMatchListenerTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-        	transact.abort(transaction);
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
             if (pool != null)
                 pool.release(broker);
         }
+        HashMap m = new HashMap();
+        m.put("exist", "http://exist.sourceforge.net/NS/exist");
+        NamespaceContext ctx = new SimpleNamespaceContext(m);
+        XMLUnit.setXpathNamespaceContext(ctx);
     }
 
     @AfterClass
