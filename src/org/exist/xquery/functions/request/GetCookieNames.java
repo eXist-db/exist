@@ -69,7 +69,7 @@ public class GetCookieNames extends BasicFunction {
 
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if (var == null || var.getValue().getItemType() != Type.JAVA_OBJECT)
+		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT)
 			return Sequence.EMPTY_SEQUENCE;
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
