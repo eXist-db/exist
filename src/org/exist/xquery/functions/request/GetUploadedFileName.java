@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: GetUploadedFileName.java 790 2004-10-29 09:20:54 +0100 (Fri, 29 Oct 2004) wolfgang_m $
+ *  $Id$
  */
 package org.exist.xquery.functions.request;
 
@@ -51,7 +51,7 @@ public class GetUploadedFileName extends BasicFunction {
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 	
 	public GetUploadedFileName(XQueryContext context) {
 		super(context, signature);
