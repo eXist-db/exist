@@ -82,7 +82,7 @@ public class SetCurrentUser extends BasicFunction {
 		
 		// request object is read from global variable $session
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if(var == null)
+		if(var == null || var.getValue() == null)
 			throw new XPathException("No request object found in the current XQuery context.");
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
 			throw new XPathException("Variable $request is not bound to an Java object.");

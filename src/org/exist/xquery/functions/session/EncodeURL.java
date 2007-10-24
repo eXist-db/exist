@@ -78,7 +78,7 @@ public class EncodeURL extends BasicFunction {
 			
 		// request object is read from global variable $response
 		Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
-		if(var == null)
+		if(var == null || var.getValue() == null)
 			throw new XPathException("No request object found in the current XQuery context.");
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
 			throw new XPathException("Variable $response is not bound to an Java object.");
