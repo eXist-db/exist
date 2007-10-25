@@ -395,8 +395,18 @@
             Can be used to define an explicit period for firing the job instead
             of a Cron style syntax. The period should be in milliseconds. All
             job's with a period trigger will be launched at startup.
+        
+            - delay:
+            Can be used to define an explicit delay for first firing of a job with period attribute.
+            The delay should be in milliseconds. If delay is not specified then
+            job's with a period trigger will be launched immediately at startup.
+        
+            - repeat:
+            Can be used to define an explicit repetition count for a job with period attribute.
+            The default value, if not specified, is to repeat forever
         -->
-        <!-- job class="bar.foo.myjob" period="600000" /-->
+        
+        <!-- job class="bar.foo.myjob" period="600000" delay="300000" repeat="10" /-->
         
     </scheduler>
 
