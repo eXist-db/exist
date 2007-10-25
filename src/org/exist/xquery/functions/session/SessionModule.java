@@ -44,7 +44,8 @@ public class SessionModule extends AbstractInternalModule {
 		new FunctionDef(GetAttributeNames.signature, GetAttributeNames.class),
 		new FunctionDef(Invalidate.signature, Invalidate.class),
 		new FunctionDef(SetAttribute.signature, SetAttribute.class),
-		new FunctionDef(SetCurrentUser.signature, SetCurrentUser.class)
+		new FunctionDef(SetCurrentUser.signature, SetCurrentUser.class),
+		new FunctionDef(GetExists.signature, GetExists.class)
 	};
 	
 	public SessionModule() throws XPathException {
