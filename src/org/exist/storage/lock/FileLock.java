@@ -154,7 +154,7 @@ public class FileLock {
         //Schedule the heartbeat for the file lock
         HashMap params = new HashMap();
         params.put(FileLock.class.getName(), this);
-        pool.getScheduler().createPeriodicJob(HEARTBEAT, new FileLockHeartBeat(lockFile.getName()), true, params);
+        pool.getScheduler().createPeriodicJob(HEARTBEAT, new FileLockHeartBeat(lockFile.getName()), -1, params);
         
         return true;
     }

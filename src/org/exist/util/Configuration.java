@@ -37,6 +37,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
+
 import org.exist.Indexer;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.journal.JournalManager;
@@ -66,9 +67,13 @@ import org.exist.xquery.FunctionFactory;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 import org.exist.xslt.TransformerFactoryAllocator;
+
+import org.quartz.SimpleTrigger;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -89,6 +94,8 @@ public class Configuration implements ErrorHandler {
     	public static final String CONFIGURATION_ELEMENT_NAME = "system-task";
         protected String className;
         protected long period = -1;
+        protected long delay = -1;
+        protected long repeat = SimpleTrigger.REPEAT_INDEFINITELY;
         protected String cronExpr = null;
         protected Properties params = new Properties();
         
@@ -106,6 +113,22 @@ public class Configuration implements ErrorHandler {
         
         public long getPeriod() {
             return period;
+        }
+		
+		public void setDelay(long delay) {
+            this.delay = delay;
+        }
+        
+        public long getDelay() {
+            return delay;
+        }
+		
+		public void setRepeat(long repeat) {
+            this.repeat = repeat;
+        }
+        
+        public long getRepeat() {
+            return repeat;
         }
         
         public String getCronExpr() {
@@ -489,9 +512,11 @@ public class Configuration implements ErrorHandler {
         if(nlJobs == null)
             return;
         
-        String jobList[][] = new String[nlJobs.getLength()][2];
+        String jobList[][] = new String[nlJobs.getLength()][4];
         String jobResource = null;
         String jobSchedule = null;
+		String jobDelay    = null;
+		String jobRepeat   = null;
         
         for(int i = 0; i < nlJobs.getLength(); i++) {
             Element job = (Element)nlJobs.item(i);
@@ -505,6 +530,15 @@ public class Configuration implements ErrorHandler {
             jobSchedule = job.getAttribute(Scheduler.JOB_CRON_TRIGGER_ATTRIBUTE);
             if(jobSchedule == null)
                 jobSchedule = job.getAttribute(Scheduler.JOB_PERIOD_ATTRIBUTE);
+			
+			//get the job delay
+            jobDelay = job.getAttribute(Scheduler.JOB_DELAY_ATTRIBUTE);
+			
+			//get the job delay
+            jobDelay = job.getAttribute(Scheduler.JOB_DELAY_ATTRIBUTE);
+			
+			//get the job repeat
+            jobRepeat = job.getAttribute(Scheduler.JOB_REPEAT_ATTRIBUTE);
             
             //check we have both a resource and a schedule
             if(jobResource == null | jobSchedule == null)
@@ -512,7 +546,12 @@ public class Configuration implements ErrorHandler {
             
             jobList[i][0] = jobResource;
             jobList[i][1] = jobSchedule;
-            LOG.debug("Configured scheduled job '" + jobResource + "' with trigger '" + jobSchedule + "'");
+			jobList[i][2] = jobDelay;
+			jobList[i][3] = jobRepeat;
+			
+            LOG.debug( "Configured scheduled job '" + jobResource + "' with trigger '" + jobSchedule + 
+				       ( jobDelay == null ? "" : "' with delay '" + jobDelay ) + 
+					   ( jobRepeat == null ? "" : "' repetitions '" + jobRepeat ) + "'" );
         }
         config.put(Scheduler.PROPERTY_SCHEDULER_JOBS, jobList);
     }
@@ -784,6 +823,8 @@ public class Configuration implements ErrorHandler {
             SystemTaskConfig sysTask = new SystemTaskConfig(classAttr);
             String cronAttr = taskDef.getAttribute("cron-trigger");
             String periodAttr = taskDef.getAttribute("period");
+			String delayAttr  = taskDef.getAttribute("delay");
+            String repeatAttr  = taskDef.getAttribute("repeat");
             if (cronAttr != null && cronAttr.length() > 0) {
                 sysTask.setCronExpr(cronAttr);
             } else {
@@ -795,7 +836,25 @@ public class Configuration implements ErrorHandler {
                 } catch (NumberFormatException e) {
                     throw new DatabaseConfigurationException("Attribute period is not a number: " + e.getMessage());
                 }
-                sysTask.setPeriod(period);
+				sysTask.setPeriod(period);
+				if( delayAttr != null && delayAttr.length() > 0) {
+					long delay;
+					try {
+	                    delay = Long.parseLong(delayAttr);
+	                } catch (NumberFormatException e) {
+	                    throw new DatabaseConfigurationException("Attribute delay is not a number: " + e.getMessage());
+	                }
+					sysTask.setDelay(delay);
+				}
+				if( repeatAttr != null && repeatAttr.length() > 0) {
+					int repeat;
+					try {
+	                    repeat = Integer.parseInt(repeatAttr);
+	                } catch (NumberFormatException e) {
+	                    throw new DatabaseConfigurationException("Attribute repeat is not a number: " + e.getMessage());
+	                }
+					sysTask.setRepeat(repeat);
+				}
             }
             NodeList params = taskDef.getElementsByTagName("parameter");
             for (int j = 0; j < params.getLength(); j++) {

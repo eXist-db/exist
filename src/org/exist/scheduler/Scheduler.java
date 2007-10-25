@@ -57,6 +57,8 @@ public class Scheduler
 	public static final String JOB_XQUERY_ATTRIBUTE = "xquery";
 	public static final String JOB_CRON_TRIGGER_ATTRIBUTE = "cron-trigger";
 	public static final String JOB_PERIOD_ATTRIBUTE = "period";
+	public static final String JOB_DELAY_ATTRIBUTE = "delay";
+	public static final String JOB_REPEAT_ATTRIBUTE = "repeat";
 	public static final String PROPERTY_SCHEDULER_JOBS = "scheduler.jobs";
 	
 	//the scheduler
@@ -132,28 +134,41 @@ public class Scheduler
 	/**
 	 * @param period	The period, in milliseconds.
 	 * @param job 	The job to trigger after each period
-	 * @param startNow	true if the cycle should start with execution
-	 * of the task now. Otherwise, the cycle starts with a delay of
-	 * <code>period</code> milliseconds.
+	 * @param delay	<= 0, start now, otherwise start in specified number of milliseconds
+	 * 
 	 * 
 	 * @return	true if the job was successfully scheduled, false otherwise
 	 */
-	public boolean createPeriodicJob(long period, JobDescription job, boolean startNow)
+	public boolean createPeriodicJob( long period, JobDescription job, long delay )
 	{
-		return createPeriodicJob(period, job, startNow, null);
+		return createPeriodicJob( period, job, delay, null, SimpleTrigger.REPEAT_INDEFINITELY );
 	}
+	
 	
 	/**
 	 * @param period	The period, in milliseconds.
 	 * @param job 	The job to trigger after each period
-	 * @param startNow	true if the cycle should start with execution
-	 * of the task now. Otherwise, the cycle starts with a delay of
-	 * <code>period</code> milliseconds.
+	 * @param delay	<= 0, start now, otherwise start in specified number of milliseconds
 	 * @param params	Any parameters to pass to the job
 	 * 
 	 * @return	true if the job was successfully scheduled, false otherwise
 	 */
-	public boolean createPeriodicJob(long period, JobDescription job, boolean startNow, Map params)
+	public boolean createPeriodicJob(long period, JobDescription job, long delay, Map params)
+	{
+		return createPeriodicJob( period, job, delay, params, SimpleTrigger.REPEAT_INDEFINITELY );
+	}
+		
+	
+	/**
+	 * @param period	The period, in milliseconds.
+	 * @param job 	The job to trigger after each period
+	 * @param delay	<= 0, start now, otherwise start in specified number of milliseconds
+	 * @param params	Any parameters to pass to the job
+	 * @param repeatCount	Number of times to repeat this job.
+	 * 
+	 * @return	true if the job was successfully scheduled, false otherwise
+	 */
+	public boolean createPeriodicJob( long period, JobDescription job, long delay, Map params, int repeatCount )
 	{
 		//Create the job details
 		JobDetail jobDetail = new JobDetail(job.getName(), job.getGroup(), job.getClass());
@@ -164,11 +179,12 @@ public class Scheduler
 		
 		//setup a trigger for the job, millisecond based
 		SimpleTrigger trigger = new SimpleTrigger();
+		
 		trigger.setRepeatInterval(period);
-		trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
+		trigger.setRepeatCount( repeatCount );
 
 		//when should the trigger start
-		if(startNow)
+		if( delay <= 0 )
 		{
 			//start now
 			trigger.setStartTime(new Date());
@@ -177,7 +193,7 @@ public class Scheduler
 		{
 			//start after period
 			Calendar start = Calendar.getInstance();
-			start.add(Calendar.MILLISECOND, (int)period);
+			start.add(Calendar.MILLISECOND, (int)delay);
 			trigger.setStartTime(start.getTime());
 		}
 		
@@ -398,6 +414,7 @@ public class Scheduler
 				{
 					//Check if the Class is a UserJob
 					Class jobClass = Class.forName(jobResource);
+					
 					job = (JobDescription)jobClass.newInstance();
 					if(!(job instanceof UserJavaJob))
 					{
@@ -427,8 +444,22 @@ public class Scheduler
 			else
 			{
 				//schedule job with periodic trigger
-				long period = Long.parseLong(jobSchedule);
-				createPeriodicJob(period, job, true);
+				
+				String jobDelay  = jobList[i][2];	
+				String jobRepeat = jobList[i][3];	
+				long period 	 = Long.parseLong(jobSchedule);
+				long delay 		 = -1;
+				int repeat 		 = SimpleTrigger.REPEAT_INDEFINITELY;
+				
+				if( jobDelay != null && jobDelay.length() > 0 ) {
+					delay = Long.parseLong( jobDelay ) ;
+				}
+				
+				if( jobRepeat != null && jobRepeat.length() > 0 ) {
+					repeat = Integer.parseInt( jobRepeat ) ;
+				}
+				
+				createPeriodicJob( period, job, delay, null, repeat );
 			}
 		}
 	}

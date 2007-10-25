@@ -610,7 +610,7 @@ public class BrokerPool {
 		//TODO : move this to initialize ?
         if (majorSyncPeriod > 0) {
         	//TODO : why not automatically register Sync in system tasks ?
-            scheduler.createPeriodicJob(2500, new Sync(), false);
+            scheduler.createPeriodicJob(2500, new Sync(), 2500);
         }
 	}
 	
@@ -817,7 +817,7 @@ public class BrokerPool {
             if (config.getCronExpr() == null) {
                 LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " +
                         config.getPeriod() + " ms");
-                scheduler.createPeriodicJob(config.getPeriod(), new SystemTaskJob(task), false);
+                scheduler.createPeriodicJob(config.getPeriod(), new SystemTaskJob(task), config.getPeriod());
             } else {
                 LOG.debug("Scheduling system maintenance task " + task.getClass().getName() +
                         " with cron expression: " + config.getCronExpr());
