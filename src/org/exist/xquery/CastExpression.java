@@ -81,8 +81,8 @@ public class CastExpression extends AbstractExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
 		//Should be handled by the parser
-        if (requiredType == Type.ATOMIC /*|| requiredType == Type.NOTATION*/) {
-			throw new XPathException("XPST0080: cannot cast to " +
+        if (requiredType == Type.ATOMIC || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
+			throw new XPathException("err:XPST0080: cannot cast to " +
 					Type.getTypeName(requiredType));
         	
         }

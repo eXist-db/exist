@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -98,6 +97,9 @@ public class CastableExpression extends AbstractExpression {
         
         if (requiredType == Type.ATOMIC)
             throw new XPathException(getASTNode(), "XPST0080: cannot convert to " + Type.getTypeName(Type.ATOMIC));
+
+        if (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)
+            throw new XPathException(getASTNode(), "err:XPST0080: cannot convert to " + Type.getTypeName(Type.NOTATION));
         
         Sequence result;
         //See : http://article.gmane.org/gmane.text.xml.xquery.general/1413
@@ -135,7 +137,7 @@ public class CastableExpression extends AbstractExpression {
         if (context.getProfiler().isEnabled())           
             context.getProfiler().end(this, "", result);   
      
-        return result;        
+        return result;
 	}
 	
 	/* (non-Javadoc)
