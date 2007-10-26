@@ -78,13 +78,22 @@ import org.xmldb.api.base.XMLDBException;
 public class LocalCollection extends Observable implements CollectionImpl {
     
     private static Logger LOG = Logger.getLogger(LocalCollection.class);
-    
+
+    /**
+     * Property to be passed to {@link #setProperty(String, String)}.
+     * When storing documents, pass HTML files through an HTML parser
+     * (NekoHTML) instead of the XML parser. The HTML parser will normalize
+     * the HTML into well-formed XML.
+     */
+    public final static String NORMALIZE_HTML = "normalize-html";
+
     protected final static Properties defaultProperties = new Properties();
     static {
         defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
+        defaultProperties.setProperty(NORMALIZE_HTML, "no");
     }
     
     protected XmldbURI path = null;
@@ -751,21 +760,22 @@ public class LocalCollection extends Observable implements CollectionImpl {
     }
     
     private void setupParser(Collection collection, LocalXMLResource res) throws XMLDBException {
-        if ( res.getMimeType().equals("text/html") 
-                || res.getId().endsWith(".htm") || res.getId().endsWith(".html") ) {
+        String normalize = properties.getProperty(NORMALIZE_HTML, "no");
+        if ((normalize.equalsIgnoreCase("yes") || normalize.equalsIgnoreCase("true")) &&
+                (res.getMimeType().equals("text/html") || res.getId().endsWith(".htm") || res.getId().endsWith(".html"))) {
             try {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Converting HTML to XML using NekoHTML parser.");
-                Class clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
+                Class clazz = Class.forName("org.cyberneko.html.parsers.SAXParser");
                 XMLReader htmlReader = (XMLReader) clazz.newInstance();
                 //do not modify the case of elements and attributes
                 htmlReader.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
                 htmlReader.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");
-                collection.setReader( htmlReader );
-            } catch ( Exception e) {
-                LOG.error("Error while involing NekoHTML parser. ("+e.getMessage()
-                        +"). If you want to parse non-wellformed HTML files, put "
-                        +"nekohtml.jar into directory 'lib/optional'.", e);
+                collection.setReader(htmlReader);
+            } catch (Exception e) {
+                LOG.error("Error while involing NekoHTML parser. (" + e.getMessage()
+                        + "). If you want to parse non-wellformed HTML files, put "
+                        + "nekohtml.jar into directory 'lib/optional'.", e);
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "NekoHTML parser error", e);
             }
         }
