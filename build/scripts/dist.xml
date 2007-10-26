@@ -126,6 +126,7 @@
         <mkdir dir="${dist.dir}/lib/optional"/>
         <mkdir dir="${dist.dir}/lib/endorsed"/>
         <mkdir dir="${dist.dir}/lib/user"/>
+        <mkdir dir="${dist.dir}/lib/extensions"/>
         <mkdir dir="${dist.dir}/tools"/>
         <mkdir dir="${dist.dir}/tools/ant"/>
         <mkdir dir="${jetty.dir}/logs"/>
@@ -203,6 +204,9 @@
         </copy>
         <copy todir="${dist.dir}/lib/endorsed">
             <fileset dir="${lib.endorsed}"/>
+        </copy>
+        <copy todir="${dist.dir}/lib/extensions">
+            <fileset dir="${lib.extensions}"/>
         </copy>
         <copy todir="${dist.dir}/lib/user">
             <fileset dir="${lib.user}"/>
