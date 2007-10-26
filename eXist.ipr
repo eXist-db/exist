@@ -9,11 +9,17 @@
       <maximumHeapSize value="128" />
       <properties />
     </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
     <option name="BUILD_JARS_ON_MAKE" value="false" />
   </component>
-  <component name="ClearCase" />
   <component name="CodeStyleProjectProfileManger">
     <option name="PROJECT_PROFILE" />
     <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
@@ -48,11 +54,12 @@
       <entry name="?*.tld" />
     </wildcardResourcePatterns>
   </component>
-  <component name="DataSourceManagerImpl" />
   <component name="DependenciesAnalyzeManager">
     <option name="myForwardDirection" value="false" />
   </component>
-  <component name="DependencyValidationManager" />
+  <component name="DependencyValidationManager">
+    <option name="SKIP_IMPORT_STATEMENTS" value="false" />
+  </component>
   <component name="EclipseCompilerSettings">
     <option name="DEBUGGING_INFO" value="true" />
     <option name="GENERATE_NO_WARNINGS" value="true" />
@@ -75,7 +82,6 @@
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
   </component>
-  <component name="GUI Designer component loader factory" />
   <component name="IdProvider" IDEtalkID="EDCB317F9C51C9BBC9F54E158B17D480" />
   <component name="InspectionProjectProfileManager">
     <option name="PROJECT_PROFILE" value="Project Default" />
@@ -85,26 +91,9 @@
       <profile version="1.0" is_locked="false">
         <option name="myName" value="Project Default" />
         <option name="myLocal" value="false" />
-        <used_levels>
-          <error>
-            <option name="myName" value="ERROR" />
-            <option name="myVal" value="400" />
-          </error>
-          <warning>
-            <option name="myName" value="WARNING" />
-            <option name="myVal" value="300" />
-          </warning>
-          <information>
-            <option name="myName" value="INFO" />
-            <option name="myVal" value="200" />
-          </information>
-          <server>
-            <option name="myName" value="SERVER PROBLEM" />
-            <option name="myVal" value="100" />
-          </server>
-        </used_levels>
       </profile>
     </profiles>
+    <list size="0" />
   </component>
   <component name="JavacSettings">
     <option name="DEBUGGING_INFO" value="true" />
@@ -265,15 +254,15 @@
       </item>
     </group>
   </component>
+  <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/eXist.iml" filepath="$PROJECT_DIR$/eXist.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
-  <component name="ProjectRunConfigurationManager" />
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
       <value>
@@ -288,12 +277,10 @@
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
-  <component name="StarteamVcsAdapter" />
-  <component name="SvnBranchConfigurationManager" />
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
   </component>
-  <component name="VssVcs" />
+  <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
     <option name="USER_DEFINED_CONFIGS">
       <value>
@@ -304,104 +291,58 @@
   <component name="libraryTable">
     <library name="tools">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/tools/ant/lib/junit-4.3.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/tools/ant/lib/xmlunit-1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/tools/jetty/lib/org.mortbay.jetty.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/tomcat5/server/lib/catalina-5.0.28.jar!/" />
         <root url="jar://$PROJECT_DIR$/tools/ircbot/lib/pircbot.jar!/" />
+        <root url="file://$PROJECT_DIR$/tools/ant/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/tools/ant/lib" recursive="false" />
     </library>
     <library name="core">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/core/antlr-2.7.6.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/commons-collections-3.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/commons-logging-1.0.4.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/commons-pool-1.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/excalibur-cli-1.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/javax.servlet-1.4.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/jEdit-syntax.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/jgroups-all.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/jline-0_9_5.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/jta.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/log4j-1.2.14.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/quartz-1.6.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/stax-api-1.0.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/sunxacml.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/xmldb.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/xmlrpc-1.2-patched.jar!/" />
+        <root url="file://$PROJECT_DIR$/lib/core" />
+        <root url="jar://$PROJECT_DIR$/exist.jar!/" />
+        <root url="jar://$PROJECT_DIR$/exist-fluent.jar!/" />
+        <root url="jar://$PROJECT_DIR$/start.jar!/" />
+        <root url="jar://$PROJECT_DIR$/exist-optional.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/core" recursive="false" />
     </library>
     <library name="optional">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/optional/axis-ant.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/axis-schema.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/axis.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/commons-discovery-0.4.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/commons-fileupload-1.1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/commons-httpclient-3.0.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/commons-io-1.3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/jaxrpc.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/saaj.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/wsdl4j-1.5.1.jar!/" />
+        <root url="file://$PROJECT_DIR$/lib/optional" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/optional" recursive="false" />
     </library>
     <library name="user">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/user/nekohtml-0.9.5.jar!/" />
+        <root url="file://$PROJECT_DIR$/lib/user" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/user" recursive="false" />
     </library>
     <library name="endorsed">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/endorsed/resolver-1.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/endorsed/serializer-2.9.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/endorsed/xalan-2.7.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/endorsed/xercesImpl-2.9.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/endorsed/xml-apis.jar!/" />
+        <root url="file://$PROJECT_DIR$/lib/endorsed" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/endorsed" recursive="false" />
     </library>
     <library name="cocoon">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/avalon-framework-api-4.1.5.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/avalon-framework-impl-4.1.5.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/cocoon-2.1.7-deprecated.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/cocoon-2.1.7.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/cocoon-databases-block.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/cocoon-xmldb-block.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/cocoon-xsp-block.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/commons-jexl-1.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/commons-jxpath-1.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/commons-lang-2.0-20041007T2305.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/ehcache-1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-component-1.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-datasource-1.1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-i18n-1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-instrument-1.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-instrument-manager-1.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-instrument-manager-interfaces-1.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-io-1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-logger-1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-naming-1.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-pool-1.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-sourceresolve-1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-store-1.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/excalibur-xmlutil-1.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/javacApi-0.9.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/javacImpl-0.9.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/logkit-1.2.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/cocoon/util.concurrent-1.3.4.jar!/" />
+        <root url="file://$PROJECT_DIR$/lib/cocoon" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/cocoon" recursive="false" />
     </library>
     <library name="ant">
       <CLASSES>
@@ -410,7 +351,21 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="test">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/test/classes" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="extensions">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/lib/extensions" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/extensions" recursive="false" />
+    </library>
   </component>
-  <component name="uidesigner-configuration" />
 </project>
 
