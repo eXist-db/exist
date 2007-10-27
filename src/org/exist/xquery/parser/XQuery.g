@@ -148,8 +148,6 @@ imaginaryTokenDefinitions
 	ORDER_BY 
     GROUP_BY 
 	POSITIONAL_VAR 
-	BEFORE 
-	AFTER 
 	MODULE_DECL 
 	MODULE_IMPORT
 	SCHEMA_IMPORT
@@ -685,15 +683,9 @@ castExpr throws XPathException
 comparisonExpr throws XPathException
 :
 	rangeExpr (
-		( LT LT ) => LT! LT! rangeExpr 
-			{
-				#comparisonExpr = #(#[BEFORE, "<<"], #comparisonExpr);
-			}
+		( BEFORE ) => BEFORE^ rangeExpr 
 		|
-		( GT GT ) => GT! GT! rangeExpr
-			{
-				#comparisonExpr = #(#[AFTER, ">>"], #comparisonExpr);
-			}
+		( AFTER ) => AFTER^ rangeExpr
 		| ( ( "eq"^ | "ne"^ | "lt"^ | "le"^ | "gt"^ | "ge"^ ) rangeExpr )
 		| ( ( EQ^ | NEQ^ | GT^ | GTEQ^ | LT^ | LTEQ^ ) rangeExpr )
 		| ( ( "is"^ | "isnot"^ ) rangeExpr )
@@ -1651,7 +1643,11 @@ protected QUOT options { paraphrase="double quote '\"'"; }: '"' ;
 protected APOS options { paraphrase="single quote '"; }: "'";
 protected LTEQ options { paraphrase="<="; }: "<=" ;
 
+protected BEFORE : "<<" ;
+protected AFTER : ">>" ;
+
 protected LT options { paraphrase="<"; }: '<' ;
+
 protected END_TAG_START 
 options { paraphrase="XML end tag"; }: "</" ;
 
@@ -1878,6 +1874,8 @@ options {
 		$setType(END_TAG_START);
 	}
 	|
+	BEFORE { $setType(BEFORE); }
+	|
 	LT
 	{
 		inElementContent= false;
@@ -2012,6 +2010,8 @@ options {
 	NEQ { $setType(NEQ); }
 	|
 	XML_COMMENT_END { $setType(XML_COMMENT_END); }
+	|
+	AFTER { $setType(AFTER); }
 	|
 	GT { $setType(GT); }
 	|
