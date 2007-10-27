@@ -172,7 +172,7 @@ public class RedirectorServlet extends HttpServlet {
             String redirectTo = null;
             String servletName = null;
             String path = null;
-            RequestWrapper modifiedRequest = new RequestWrapper(request);
+            RequestWrapper modifiedRequest = null;
             // parse the query result element
             if (result.getSize() == 1) {
                 XMLResource resource = (XMLResource) result.getResource(0);
@@ -211,6 +211,8 @@ public class RedirectorServlet extends HttpServlet {
                         if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
                             elem = (Element) node;
                             if ("add-parameter".equals(elem.getLocalName())) {
+                                if (modifiedRequest == null)
+                                    modifiedRequest = new RequestWrapper(request);
                                 modifiedRequest.addParameter(elem.getAttribute("name"), elem.getAttribute("value"));
                             }
                         }
@@ -241,11 +243,13 @@ public class RedirectorServlet extends HttpServlet {
                 return;
             }
 
+            if (modifiedRequest != null)
+                request = modifiedRequest;
             // store the original request URI to org.exist.forward.request-uri
-            modifiedRequest.setAttribute("org.exist.forward.request-uri", request.getRequestURI());
+            request.setAttribute("org.exist.forward.request-uri", request.getRequestURI());
 
             // finally, execute the forward
-            dispatcher.forward(modifiedRequest, response);
+            dispatcher.forward(request, response);
         } catch (XMLDBException e) {
             throw new ServletException("An error occurred while initializing RedirectorServlet: " + e.getMessage(), e);
         }

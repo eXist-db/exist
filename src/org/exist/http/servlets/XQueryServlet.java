@@ -252,7 +252,10 @@ public class XQueryServlet extends HttpServlet {
         
         
         if (request.getCharacterEncoding() == null)
-            request.setCharacterEncoding(formEncoding);
+            try {
+                request.setCharacterEncoding(formEncoding);
+            } catch (IllegalStateException e) {
+            }
         ServletOutputStream sout = response.getOutputStream();
         PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, formEncoding));
         response.setContentType(contentType + "; charset=" + formEncoding);
