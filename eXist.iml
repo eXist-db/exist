@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module relativePaths="true" type="JAVA_MODULE" version="4">
   <component name="FacetManager">
-    <facet type="web" name="Web" implicit="true">
+    <facet type="web" name="Web">
       <configuration>
         <descriptors>
           <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/webapp/WEB-INF/web.xml" optional="false" version="2.5" />
@@ -64,7 +64,7 @@
         </packaging>
       </configuration>
     </facet>
-    <facet type="web" name="Web2" implicit="true">
+    <facet type="web" name="Web2">
       <configuration>
         <descriptors>
           <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/tools/XFormsFilter/web.xml" optional="false" version="2.5" />
@@ -127,7 +127,7 @@
         </packaging>
       </configuration>
     </facet>
-    <facet type="web" name="Web3" implicit="true">
+    <facet type="web" name="Web3">
       <configuration>
         <descriptors>
           <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/tools/ircbot/webapp/WEB-INF/web.xml" optional="false" version="2.5" />
