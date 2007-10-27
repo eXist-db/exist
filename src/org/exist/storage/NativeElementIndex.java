@@ -478,7 +478,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * null, all elements or attributes matching qname will be returned.
      * 
      * @param type either {@link ElementValue#ATTRIBUTE}, {@link ElementValue#ELEMENT}
-     *      or {@link ElementValue#ATTRIBUTE_ID}
+     *      or {@link ElementValue#ATTRIBUTE_ID} or {@link ElementValue#ATTRIBUTE_IDREF}
+     *      or {@link ElementValue#ATTRIBUTE_IDREFS}
      * @param docs the set of documents to look up in the index
      * @param qname the QName of the attribute or element
      * @param selector an (optional) NodeSelector
@@ -566,7 +567,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * less comparisons than {@link #findElementsByTagName(byte, DocumentSet, QName, NodeSelector)}.
      * 
      * @param type either {@link ElementValue#ATTRIBUTE}, {@link ElementValue#ELEMENT}
-     *      or {@link ElementValue#ATTRIBUTE_ID}
+     *      or {@link ElementValue#ATTRIBUTE_ID} or {@link ElementValue#ATTRIBUTE_IDREF} 
+     *      or {@link ElementValue#ATTRIBUTE_IDREFS}
      * @param docs the set of documents to look up in the index
      * @param contextSet the set of ancestor nodes for which the method will try to find descendants
      * @param contextId id of the current context expression as passed by the query engine
@@ -802,13 +804,15 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     
     private short getIndexType(byte type) {
         switch (type) {   
-            case ElementValue.ATTRIBUTE_ID : //is this correct ? -pb
-            case ElementValue.ATTRIBUTE :
-                return Node.ATTRIBUTE_NODE;            
-            case ElementValue.ELEMENT :
-                return Node.ELEMENT_NODE;            
-            default :
-                throw new IllegalArgumentException("Invalid type");
+        case ElementValue.ATTRIBUTE_ID : //is this correct ? -pb
+        case ElementValue.ATTRIBUTE_IDREF : //is this correct ? -pb
+        case ElementValue.ATTRIBUTE_IDREFS : //is this correct ? -pb
+        case ElementValue.ATTRIBUTE :
+            return Node.ATTRIBUTE_NODE;            
+        case ElementValue.ELEMENT :
+            return Node.ELEMENT_NODE;            
+        default :
+            throw new IllegalArgumentException("Invalid type");
         }
     }
     
@@ -977,6 +981,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
    
     private Value computeTypedKey(byte type, int collectionId, QName qname) {
         if (type == ElementValue.ATTRIBUTE_ID) {
+            return new ElementValue(type, collectionId, qname.getLocalName());
+        } else if (type == ElementValue.ATTRIBUTE_IDREF) {
+            return new ElementValue(type, collectionId, qname.getLocalName());
+        } if (type == ElementValue.ATTRIBUTE_IDREFS) {
             return new ElementValue(type, collectionId, qname.getLocalName());
         } else {
             final SymbolTable symbols = broker.getSymbols();

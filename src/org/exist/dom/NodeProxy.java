@@ -260,9 +260,9 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @exception XPathException if an error occurs
      */
     public boolean equals(NodeValue other) throws XPathException {
-	if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-	    throw new XPathException("cannot compare persistent node with in-memory node");		
-	NodeProxy otherNode = (NodeProxy) other;
+    	if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
+    		throw new XPathException("cannot compare persistent node with in-memory node");		
+		NodeProxy otherNode = (NodeProxy) other;
         if (otherNode.doc.getDocId() != doc.getDocId())
             return false;
         return otherNode.nodeId.equals(nodeId);
@@ -277,11 +277,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @exception XPathException if an error occurs
      */
     public boolean before(NodeValue other, boolean isPreceding) throws XPathException {
-	if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-	    throw new XPathException("cannot compare persistent node with in-memory node");
-	NodeProxy otherNode = (NodeProxy) other;
-	if (doc.getDocId() < otherNode.doc.getDocId())
-		return doc.getDocId() > otherNode.doc.getDocId();	return nodeId.before(otherNode.nodeId, isPreceding);
+		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
+		    throw new XPathException("cannot compare persistent node with in-memory node");
+		NodeProxy otherNode = (NodeProxy) other;
+		if (doc.getDocId() != otherNode.doc.getDocId())
+			//Totally arbitrary
+			return doc.getDocId() < otherNode.doc.getDocId();	
+		return nodeId.before(otherNode.nodeId, isPreceding);
     }
 	
     /**
@@ -293,12 +295,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @exception XPathException if an error occurs
      */
     public boolean after(NodeValue other, boolean isFollowing) throws XPathException {
-	if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-	    throw new XPathException("cannot compare persistent node with in-memory node");
-	NodeProxy otherNode = (NodeProxy) other;
-	if (doc.getDocId() != otherNode.doc.getDocId())
-		return doc.getDocId() > otherNode.doc.getDocId();		
-	return nodeId.after(otherNode.nodeId, isFollowing);
+		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
+		    throw new XPathException("cannot compare persistent node with in-memory node");
+		NodeProxy otherNode = (NodeProxy) other;
+		if (doc.getDocId() != otherNode.doc.getDocId())
+			//Totally arbitrary
+			return doc.getDocId() > otherNode.doc.getDocId();		
+		return nodeId.after(otherNode.nodeId, isFollowing);
     }
 
     /**

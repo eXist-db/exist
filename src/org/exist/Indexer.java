@@ -77,6 +77,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
 
     private static final String ATTR_ID_TYPE = "ID";
+    private static final String ATTR_IDREF_TYPE = "IDREF";
+    private static final String ATTR_IDREFS_TYPE = "IDREFS";
 
     private final static Logger LOG = Logger.getLogger(Indexer.class);
     
@@ -622,6 +624,10 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		attr.setOwnerDocument(document);
 		if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
 		    attr.setType(AttrImpl.ID);
+		} else if (attributes.getType(i).equals(ATTR_IDREF_TYPE)) {
+			    attr.setType(AttrImpl.IDREF);
+		} else if (attributes.getType(i).equals(ATTR_IDREFS_TYPE)) {
+			    attr.setType(AttrImpl.IDREFS);
 		} else if (attr.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
 		    // an xml:id attribute. Normalize the attribute and set its type to ID
 		    attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));

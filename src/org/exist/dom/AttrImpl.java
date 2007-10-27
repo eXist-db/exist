@@ -46,7 +46,9 @@ public class AttrImpl extends NamedNode implements Attr {
 	public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
 	
     public final static int CDATA = 0;
-	public final static int ID = 1;
+    public final static int ID = 1;
+    public final static int IDREF = 2;
+    public final static int IDREFS = 3;
     
     public final static int DEFAULT_ATTRIBUTE_TYPE = CDATA;
 	
@@ -294,8 +296,7 @@ public class AttrImpl extends NamedNode implements Attr {
 	/** ? @see org.w3c.dom.Attr#isId()
 	 */
 	public boolean isId() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return false;
+		return this.getType() == ID;
 	}
 
 	/** ? @see org.w3c.dom.Node#getBaseURI()

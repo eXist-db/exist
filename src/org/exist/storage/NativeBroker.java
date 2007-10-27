@@ -2502,9 +2502,19 @@ public class NativeBroker extends DBBroker {
 	    // if the attribute has type ID, store the ID-value
 	    // to the element index as well
 	    if (((AttrImpl) node).getType() == AttrImpl.ID) {
-		qname = new QName(((AttrImpl) node).getValue(), "", null);
-		qname.setNameType(ElementValue.ATTRIBUTE_ID);
-		elementIndex.addNode(qname, p);
+	    	qname = new QName(((AttrImpl) node).getValue(), "", null);
+	    	qname.setNameType(ElementValue.ATTRIBUTE_ID);
+	    	elementIndex.addNode(qname, p);
+	    }                
+	    if (((AttrImpl) node).getType() == AttrImpl.IDREF) {
+	    	qname = new QName(((AttrImpl) node).getValue(), "", null);
+	    	qname.setNameType(ElementValue.ATTRIBUTE_IDREF);
+	    	elementIndex.addNode(qname, p);
+	    }                
+	    if (((AttrImpl) node).getType() == AttrImpl.IDREFS) {
+	    	qname = new QName(((AttrImpl) node).getValue(), "", null);
+	    	qname.setNameType(ElementValue.ATTRIBUTE_IDREFS);
+	    	elementIndex.addNode(qname, p);
 	    }                
 
 	    GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
@@ -3058,6 +3068,18 @@ public class NativeBroker extends DBBroker {
                         qname = new QName(((AttrImpl) node).getValue(), "", null);
                         //LOG.debug("found ID: " + qname.getLocalName());
                         qname.setNameType(ElementValue.ATTRIBUTE_ID);
+                        elementIndex.addNode(qname, tempProxy);
+                    }
+                    if (((AttrImpl) node).getType() == AttrImpl.IDREF) {
+                        qname = new QName(((AttrImpl) node).getValue(), "", null);
+                        //LOG.debug("found ID: " + qname.getLocalName());
+                        qname.setNameType(ElementValue.ATTRIBUTE_IDREF);
+                        elementIndex.addNode(qname, tempProxy);
+                    }
+                    if (((AttrImpl) node).getType() == AttrImpl.IDREFS) {
+                        qname = new QName(((AttrImpl) node).getValue(), "", null);
+                        //LOG.debug("found ID: " + qname.getLocalName());
+                        qname.setNameType(ElementValue.ATTRIBUTE_IDREFS);
                         elementIndex.addNode(qname, tempProxy);
                     }
 
