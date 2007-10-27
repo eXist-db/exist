@@ -337,8 +337,6 @@ public XQueryTreeParser() {
 					case VARIABLE_REF:
 					case ELEMENT:
 					case TEXT:
-					case BEFORE:
-					case AFTER:
 					case ATTRIBUTE_TEST:
 					case COMP_ELEM_CONSTRUCTOR:
 					case COMP_ATTR_CONSTRUCTOR:
@@ -369,8 +367,8 @@ public XQueryTreeParser() {
 					case LITERAL_treat:
 					case LITERAL_castable:
 					case LITERAL_cast:
-					case LT:
-					case GT:
+					case BEFORE:
+					case AFTER:
 					case LITERAL_eq:
 					case LITERAL_ne:
 					case LITERAL_lt:
@@ -378,7 +376,9 @@ public XQueryTreeParser() {
 					case LITERAL_gt:
 					case LITERAL_ge:
 					case NEQ:
+					case GT:
 					case GTEQ:
+					case LT:
 					case LTEQ:
 					case LITERAL_is:
 					case LITERAL_isnot:
@@ -517,8 +517,6 @@ public XQueryTreeParser() {
 					case VARIABLE_REF:
 					case ELEMENT:
 					case TEXT:
-					case BEFORE:
-					case AFTER:
 					case ATTRIBUTE_TEST:
 					case COMP_ELEM_CONSTRUCTOR:
 					case COMP_ATTR_CONSTRUCTOR:
@@ -549,8 +547,8 @@ public XQueryTreeParser() {
 					case LITERAL_treat:
 					case LITERAL_castable:
 					case LITERAL_cast:
-					case LT:
-					case GT:
+					case BEFORE:
+					case AFTER:
 					case LITERAL_eq:
 					case LITERAL_ne:
 					case LITERAL_lt:
@@ -558,7 +556,9 @@ public XQueryTreeParser() {
 					case LITERAL_gt:
 					case LITERAL_ge:
 					case NEQ:
+					case GT:
 					case GTEQ:
+					case LT:
 					case LTEQ:
 					case LITERAL_is:
 					case LITERAL_isnot:
@@ -719,8 +719,6 @@ public XQueryTreeParser() {
 							case ELEMENT:
 							case TEXT:
 							case POSITIONAL_VAR:
-							case BEFORE:
-							case AFTER:
 							case ATTRIBUTE_TEST:
 							case COMP_ELEM_CONSTRUCTOR:
 							case COMP_ATTR_CONSTRUCTOR:
@@ -751,8 +749,8 @@ public XQueryTreeParser() {
 							case LITERAL_treat:
 							case LITERAL_castable:
 							case LITERAL_cast:
-							case LT:
-							case GT:
+							case BEFORE:
+							case AFTER:
 							case LITERAL_eq:
 							case LITERAL_ne:
 							case LITERAL_lt:
@@ -760,7 +758,9 @@ public XQueryTreeParser() {
 							case LITERAL_gt:
 							case LITERAL_ge:
 							case NEQ:
+							case GT:
 							case GTEQ:
+							case LT:
 							case LTEQ:
 							case LITERAL_is:
 							case LITERAL_isnot:
@@ -833,8 +833,6 @@ public XQueryTreeParser() {
 							case VARIABLE_REF:
 							case ELEMENT:
 							case TEXT:
-							case BEFORE:
-							case AFTER:
 							case ATTRIBUTE_TEST:
 							case COMP_ELEM_CONSTRUCTOR:
 							case COMP_ATTR_CONSTRUCTOR:
@@ -865,8 +863,8 @@ public XQueryTreeParser() {
 							case LITERAL_treat:
 							case LITERAL_castable:
 							case LITERAL_cast:
-							case LT:
-							case GT:
+							case BEFORE:
+							case AFTER:
 							case LITERAL_eq:
 							case LITERAL_ne:
 							case LITERAL_lt:
@@ -874,7 +872,9 @@ public XQueryTreeParser() {
 							case LITERAL_gt:
 							case LITERAL_ge:
 							case NEQ:
+							case GT:
 							case GTEQ:
+							case LT:
 							case LTEQ:
 							case LITERAL_is:
 							case LITERAL_isnot:
@@ -995,8 +995,6 @@ public XQueryTreeParser() {
 							case VARIABLE_REF:
 							case ELEMENT:
 							case TEXT:
-							case BEFORE:
-							case AFTER:
 							case ATTRIBUTE_TEST:
 							case COMP_ELEM_CONSTRUCTOR:
 							case COMP_ATTR_CONSTRUCTOR:
@@ -1027,8 +1025,8 @@ public XQueryTreeParser() {
 							case LITERAL_treat:
 							case LITERAL_castable:
 							case LITERAL_cast:
-							case LT:
-							case GT:
+							case BEFORE:
+							case AFTER:
 							case LITERAL_eq:
 							case LITERAL_ne:
 							case LITERAL_lt:
@@ -1036,7 +1034,9 @@ public XQueryTreeParser() {
 							case LITERAL_gt:
 							case LITERAL_ge:
 							case NEQ:
+							case GT:
 							case GTEQ:
+							case LT:
 							case LTEQ:
 							case LITERAL_is:
 							case LITERAL_isnot:
@@ -1145,8 +1145,6 @@ public XQueryTreeParser() {
 			case TEXT:
 			case ORDER_BY:
 			case GROUP_BY:
-			case BEFORE:
-			case AFTER:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -1177,8 +1175,8 @@ public XQueryTreeParser() {
 			case LITERAL_treat:
 			case LITERAL_castable:
 			case LITERAL_cast:
-			case LT:
-			case GT:
+			case BEFORE:
+			case AFTER:
 			case LITERAL_eq:
 			case LITERAL_ne:
 			case LITERAL_lt:
@@ -1186,7 +1184,9 @@ public XQueryTreeParser() {
 			case LITERAL_gt:
 			case LITERAL_ge:
 			case NEQ:
+			case GT:
 			case GTEQ:
+			case LT:
 			case LTEQ:
 			case LITERAL_is:
 			case LITERAL_isnot:
@@ -1310,8 +1310,6 @@ public XQueryTreeParser() {
 			case ELEMENT:
 			case TEXT:
 			case ORDER_BY:
-			case BEFORE:
-			case AFTER:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -1342,8 +1340,8 @@ public XQueryTreeParser() {
 			case LITERAL_treat:
 			case LITERAL_castable:
 			case LITERAL_cast:
-			case LT:
-			case GT:
+			case BEFORE:
+			case AFTER:
 			case LITERAL_eq:
 			case LITERAL_ne:
 			case LITERAL_lt:
@@ -1351,7 +1349,9 @@ public XQueryTreeParser() {
 			case LITERAL_gt:
 			case LITERAL_ge:
 			case NEQ:
+			case GT:
 			case GTEQ:
+			case LT:
 			case LTEQ:
 			case LITERAL_is:
 			case LITERAL_isnot:
@@ -1473,8 +1473,6 @@ public XQueryTreeParser() {
 						case VARIABLE_REF:
 						case ELEMENT:
 						case TEXT:
-						case BEFORE:
-						case AFTER:
 						case ATTRIBUTE_TEST:
 						case COMP_ELEM_CONSTRUCTOR:
 						case COMP_ATTR_CONSTRUCTOR:
@@ -1507,8 +1505,8 @@ public XQueryTreeParser() {
 						case LITERAL_treat:
 						case LITERAL_castable:
 						case LITERAL_cast:
-						case LT:
-						case GT:
+						case BEFORE:
+						case AFTER:
 						case LITERAL_eq:
 						case LITERAL_ne:
 						case LITERAL_lt:
@@ -1516,7 +1514,9 @@ public XQueryTreeParser() {
 						case LITERAL_gt:
 						case LITERAL_ge:
 						case NEQ:
+						case GT:
 						case GTEQ:
+						case LT:
 						case LTEQ:
 						case LITERAL_is:
 						case LITERAL_isnot:
@@ -1616,8 +1616,6 @@ public XQueryTreeParser() {
 						case VARIABLE_REF:
 						case ELEMENT:
 						case TEXT:
-						case BEFORE:
-						case AFTER:
 						case ATTRIBUTE_TEST:
 						case COMP_ELEM_CONSTRUCTOR:
 						case COMP_ATTR_CONSTRUCTOR:
@@ -1649,8 +1647,8 @@ public XQueryTreeParser() {
 						case LITERAL_treat:
 						case LITERAL_castable:
 						case LITERAL_cast:
-						case LT:
-						case GT:
+						case BEFORE:
+						case AFTER:
 						case LITERAL_eq:
 						case LITERAL_ne:
 						case LITERAL_lt:
@@ -1658,7 +1656,9 @@ public XQueryTreeParser() {
 						case LITERAL_gt:
 						case LITERAL_ge:
 						case NEQ:
+						case GT:
 						case GTEQ:
+						case LT:
 						case LTEQ:
 						case LITERAL_is:
 						case LITERAL_isnot:
@@ -1737,8 +1737,6 @@ public XQueryTreeParser() {
 						case VARIABLE_REF:
 						case ELEMENT:
 						case TEXT:
-						case BEFORE:
-						case AFTER:
 						case ATTRIBUTE_TEST:
 						case COMP_ELEM_CONSTRUCTOR:
 						case COMP_ATTR_CONSTRUCTOR:
@@ -1769,8 +1767,8 @@ public XQueryTreeParser() {
 						case LITERAL_treat:
 						case LITERAL_castable:
 						case LITERAL_cast:
-						case LT:
-						case GT:
+						case BEFORE:
+						case AFTER:
 						case LITERAL_eq:
 						case LITERAL_ne:
 						case LITERAL_lt:
@@ -1778,7 +1776,9 @@ public XQueryTreeParser() {
 						case LITERAL_gt:
 						case LITERAL_ge:
 						case NEQ:
+						case GT:
 						case GTEQ:
+						case LT:
 						case LTEQ:
 						case LITERAL_is:
 						case LITERAL_isnot:
@@ -1852,8 +1852,6 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
-			case BEFORE:
-			case AFTER:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -1884,8 +1882,8 @@ public XQueryTreeParser() {
 			case LITERAL_treat:
 			case LITERAL_castable:
 			case LITERAL_cast:
-			case LT:
-			case GT:
+			case BEFORE:
+			case AFTER:
 			case LITERAL_eq:
 			case LITERAL_ne:
 			case LITERAL_lt:
@@ -1893,7 +1891,9 @@ public XQueryTreeParser() {
 			case LITERAL_gt:
 			case LITERAL_ge:
 			case NEQ:
+			case GT:
 			case GTEQ:
+			case LT:
 			case LTEQ:
 			case LITERAL_is:
 			case LITERAL_isnot:
@@ -2087,7 +2087,7 @@ public XQueryTreeParser() {
 					case ATTRIBUTE_TEST:
 					case LITERAL_element:
 					case LITERAL_empty:
-					case 96:
+					case 94:
 					case LITERAL_item:
 					case LITERAL_text:
 					case LITERAL_node:
@@ -2152,8 +2152,6 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
-			case BEFORE:
-			case AFTER:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -2184,8 +2182,8 @@ public XQueryTreeParser() {
 			case LITERAL_treat:
 			case LITERAL_castable:
 			case LITERAL_cast:
-			case LT:
-			case GT:
+			case BEFORE:
+			case AFTER:
 			case LITERAL_eq:
 			case LITERAL_ne:
 			case LITERAL_lt:
@@ -2193,7 +2191,9 @@ public XQueryTreeParser() {
 			case LITERAL_gt:
 			case LITERAL_ge:
 			case NEQ:
+			case GT:
 			case GTEQ:
+			case LT:
 			case LTEQ:
 			case LITERAL_is:
 			case LITERAL_isnot:
@@ -2398,8 +2398,6 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
-			case BEFORE:
-			case AFTER:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -2430,8 +2428,8 @@ public XQueryTreeParser() {
 			case LITERAL_treat:
 			case LITERAL_castable:
 			case LITERAL_cast:
-			case LT:
-			case GT:
+			case BEFORE:
+			case AFTER:
 			case LITERAL_eq:
 			case LITERAL_ne:
 			case LITERAL_lt:
@@ -2439,7 +2437,9 @@ public XQueryTreeParser() {
 			case LITERAL_gt:
 			case LITERAL_ge:
 			case NEQ:
+			case GT:
 			case GTEQ:
+			case LT:
 			case LTEQ:
 			case LITERAL_is:
 			case LITERAL_isnot:
@@ -2524,8 +2524,6 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
-			case BEFORE:
-			case AFTER:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -2556,8 +2554,8 @@ public XQueryTreeParser() {
 			case LITERAL_treat:
 			case LITERAL_castable:
 			case LITERAL_cast:
-			case LT:
-			case GT:
+			case BEFORE:
+			case AFTER:
 			case LITERAL_eq:
 			case LITERAL_ne:
 			case LITERAL_lt:
@@ -2565,7 +2563,9 @@ public XQueryTreeParser() {
 			case LITERAL_gt:
 			case LITERAL_ge:
 			case NEQ:
+			case GT:
 			case GTEQ:
+			case LT:
 			case LTEQ:
 			case LITERAL_is:
 			case LITERAL_isnot:
@@ -2663,10 +2663,10 @@ public XQueryTreeParser() {
 			break;
 		}
 		case EQ:
-		case LT:
-		case GT:
 		case NEQ:
+		case GT:
 		case GTEQ:
+		case LT:
 		case LTEQ:
 		{
 			step=generalComp(_t,path);
@@ -2894,8 +2894,6 @@ public XQueryTreeParser() {
 		case GLOBAL_VAR:
 		case FUNCTION_DECL:
 		case OPTION:
-		case BEFORE:
-		case AFTER:
 		case MODULE_DECL:
 		case MODULE_IMPORT:
 		case SCHEMA_IMPORT:
@@ -2910,11 +2908,11 @@ public XQueryTreeParser() {
 		case NCNAME:
 		case EQ:
 		case STRING_LITERAL:
-		case 64:
+		case 62:
 		case LITERAL_ordering:
 		case LITERAL_construction:
-		case 67:
-		case 68:
+		case 65:
+		case 66:
 		case LITERAL_element:
 		case LITERAL_order:
 		case COMMA:
@@ -2935,8 +2933,8 @@ public XQueryTreeParser() {
 		case LITERAL_treat:
 		case LITERAL_castable:
 		case LITERAL_cast:
-		case LT:
-		case GT:
+		case BEFORE:
+		case AFTER:
 		case LITERAL_eq:
 		case LITERAL_ne:
 		case LITERAL_lt:
@@ -2944,7 +2942,9 @@ public XQueryTreeParser() {
 		case LITERAL_gt:
 		case LITERAL_ge:
 		case NEQ:
+		case GT:
 		case GTEQ:
+		case LT:
 		case LTEQ:
 		case LITERAL_is:
 		case LITERAL_isnot:
@@ -3022,8 +3022,6 @@ public XQueryTreeParser() {
 		case GLOBAL_VAR:
 		case FUNCTION_DECL:
 		case OPTION:
-		case BEFORE:
-		case AFTER:
 		case MODULE_IMPORT:
 		case SCHEMA_IMPORT:
 		case ATTRIBUTE_TEST:
@@ -3037,11 +3035,11 @@ public XQueryTreeParser() {
 		case NCNAME:
 		case EQ:
 		case STRING_LITERAL:
-		case 64:
+		case 62:
 		case LITERAL_ordering:
 		case LITERAL_construction:
-		case 67:
-		case 68:
+		case 65:
+		case 66:
 		case LITERAL_element:
 		case LITERAL_order:
 		case COMMA:
@@ -3062,8 +3060,8 @@ public XQueryTreeParser() {
 		case LITERAL_treat:
 		case LITERAL_castable:
 		case LITERAL_cast:
-		case LT:
-		case GT:
+		case BEFORE:
+		case AFTER:
 		case LITERAL_eq:
 		case LITERAL_ne:
 		case LITERAL_lt:
@@ -3071,7 +3069,9 @@ public XQueryTreeParser() {
 		case LITERAL_gt:
 		case LITERAL_ge:
 		case NEQ:
+		case GT:
 		case GTEQ:
+		case LT:
 		case LTEQ:
 		case LITERAL_is:
 		case LITERAL_isnot:
@@ -3222,11 +3222,11 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case 64:
+			case 62:
 			{
 				AST __t16 = _t;
 				org.exist.xquery.parser.XQueryAST tmp30_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,64);
+				match(_t,62);
 				_t = _t.getFirstChild();
 				{
 				if (_t==null) _t=ASTNULL;
@@ -3306,12 +3306,12 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case 68:
+			case 66:
 			{
 				try {      // for error handling
 					AST __t20 = _t;
 					org.exist.xquery.parser.XQueryAST tmp36_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-					match(_t,68);
+					match(_t,66);
 					_t = _t.getFirstChild();
 					{
 					if (_t==null) _t=ASTNULL;
@@ -3327,10 +3327,10 @@ public XQueryTreeParser() {
 						
 						break;
 					}
-					case 85:
+					case 83:
 					{
 						org.exist.xquery.parser.XQueryAST tmp38_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-						match(_t,85);
+						match(_t,83);
 						_t = _t.getNextSibling();
 						
 						staticContext.setPreserveNamespaces(false);
@@ -3358,10 +3358,10 @@ public XQueryTreeParser() {
 						
 						break;
 					}
-					case 87:
+					case 85:
 					{
 						org.exist.xquery.parser.XQueryAST tmp40_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-						match(_t,87);
+						match(_t,85);
 						_t = _t.getNextSibling();
 						
 						staticContext.setInheritNamespaces(false);
@@ -3388,11 +3388,11 @@ public XQueryTreeParser() {
 				}
 				break;
 			}
-			case 67:
+			case 65:
 			{
 				AST __t23 = _t;
 				org.exist.xquery.parser.XQueryAST tmp41_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,67);
+				match(_t,65);
 				_t = _t.getFirstChild();
 				base = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,STRING_LITERAL);
@@ -3588,8 +3588,6 @@ public XQueryTreeParser() {
 				case VARIABLE_REF:
 				case ELEMENT:
 				case TEXT:
-				case BEFORE:
-				case AFTER:
 				case ATTRIBUTE_TEST:
 				case COMP_ELEM_CONSTRUCTOR:
 				case COMP_ATTR_CONSTRUCTOR:
@@ -3621,8 +3619,8 @@ public XQueryTreeParser() {
 				case LITERAL_treat:
 				case LITERAL_castable:
 				case LITERAL_cast:
-				case LT:
-				case GT:
+				case BEFORE:
+				case AFTER:
 				case LITERAL_eq:
 				case LITERAL_ne:
 				case LITERAL_lt:
@@ -3630,7 +3628,9 @@ public XQueryTreeParser() {
 				case LITERAL_gt:
 				case LITERAL_ge:
 				case NEQ:
+				case GT:
 				case GTEQ:
+				case LT:
 				case LTEQ:
 				case LITERAL_is:
 				case LITERAL_isnot:
@@ -3695,8 +3695,6 @@ public XQueryTreeParser() {
 				case VARIABLE_REF:
 				case ELEMENT:
 				case TEXT:
-				case BEFORE:
-				case AFTER:
 				case ATTRIBUTE_TEST:
 				case COMP_ELEM_CONSTRUCTOR:
 				case COMP_ATTR_CONSTRUCTOR:
@@ -3727,8 +3725,8 @@ public XQueryTreeParser() {
 				case LITERAL_treat:
 				case LITERAL_castable:
 				case LITERAL_cast:
-				case LT:
-				case GT:
+				case BEFORE:
+				case AFTER:
 				case LITERAL_eq:
 				case LITERAL_ne:
 				case LITERAL_lt:
@@ -3736,7 +3734,9 @@ public XQueryTreeParser() {
 				case LITERAL_gt:
 				case LITERAL_ge:
 				case NEQ:
+				case GT:
 				case GTEQ:
+				case LT:
 				case LTEQ:
 				case LITERAL_is:
 				case LITERAL_isnot:
@@ -3908,11 +3908,11 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			break;
 		}
-		case 96:
+		case 94:
 		{
 			AST __t67 = _t;
 			org.exist.xquery.parser.XQueryAST tmp54_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,96);
+			match(_t,94);
 			_t = _t.getFirstChild();
 			
 							type.setPrimaryType(Type.EMPTY);
@@ -5243,8 +5243,6 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
-			case BEFORE:
-			case AFTER:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -5275,8 +5273,8 @@ public XQueryTreeParser() {
 			case LITERAL_treat:
 			case LITERAL_castable:
 			case LITERAL_cast:
-			case LT:
-			case GT:
+			case BEFORE:
+			case AFTER:
 			case LITERAL_eq:
 			case LITERAL_ne:
 			case LITERAL_lt:
@@ -5284,7 +5282,9 @@ public XQueryTreeParser() {
 			case LITERAL_gt:
 			case LITERAL_ge:
 			case NEQ:
+			case GT:
 			case GTEQ:
+			case LT:
 			case LTEQ:
 			case LITERAL_is:
 			case LITERAL_isnot:
@@ -5921,8 +5921,6 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
-			case BEFORE:
-			case AFTER:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -5953,8 +5951,8 @@ public XQueryTreeParser() {
 			case LITERAL_treat:
 			case LITERAL_castable:
 			case LITERAL_cast:
-			case LT:
-			case GT:
+			case BEFORE:
+			case AFTER:
 			case LITERAL_eq:
 			case LITERAL_ne:
 			case LITERAL_lt:
@@ -5962,7 +5960,9 @@ public XQueryTreeParser() {
 			case LITERAL_gt:
 			case LITERAL_ge:
 			case NEQ:
+			case GT:
 			case GTEQ:
+			case LT:
 			case LTEQ:
 			case LITERAL_is:
 			case LITERAL_isnot:
@@ -6061,8 +6061,6 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
-			case BEFORE:
-			case AFTER:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -6093,8 +6091,8 @@ public XQueryTreeParser() {
 			case LITERAL_treat:
 			case LITERAL_castable:
 			case LITERAL_cast:
-			case LT:
-			case GT:
+			case BEFORE:
+			case AFTER:
 			case LITERAL_eq:
 			case LITERAL_ne:
 			case LITERAL_lt:
@@ -6102,7 +6100,9 @@ public XQueryTreeParser() {
 			case LITERAL_gt:
 			case LITERAL_ge:
 			case NEQ:
+			case GT:
 			case GTEQ:
+			case LT:
 			case LTEQ:
 			case LITERAL_is:
 			case LITERAL_isnot:
@@ -6574,8 +6574,6 @@ public XQueryTreeParser() {
 		case VARIABLE_REF:
 		case ELEMENT:
 		case TEXT:
-		case BEFORE:
-		case AFTER:
 		case ATTRIBUTE_TEST:
 		case COMP_ELEM_CONSTRUCTOR:
 		case COMP_ATTR_CONSTRUCTOR:
@@ -6606,8 +6604,8 @@ public XQueryTreeParser() {
 		case LITERAL_treat:
 		case LITERAL_castable:
 		case LITERAL_cast:
-		case LT:
-		case GT:
+		case BEFORE:
+		case AFTER:
 		case LITERAL_eq:
 		case LITERAL_ne:
 		case LITERAL_lt:
@@ -6615,7 +6613,9 @@ public XQueryTreeParser() {
 		case LITERAL_gt:
 		case LITERAL_ge:
 		case NEQ:
+		case GT:
 		case GTEQ:
+		case LT:
 		case LTEQ:
 		case LITERAL_is:
 		case LITERAL_isnot:
@@ -6776,8 +6776,6 @@ public XQueryTreeParser() {
 				case VARIABLE_REF:
 				case ELEMENT:
 				case TEXT:
-				case BEFORE:
-				case AFTER:
 				case ATTRIBUTE_TEST:
 				case COMP_ELEM_CONSTRUCTOR:
 				case COMP_ATTR_CONSTRUCTOR:
@@ -6808,8 +6806,8 @@ public XQueryTreeParser() {
 				case LITERAL_treat:
 				case LITERAL_castable:
 				case LITERAL_cast:
-				case LT:
-				case GT:
+				case BEFORE:
+				case AFTER:
 				case LITERAL_eq:
 				case LITERAL_ne:
 				case LITERAL_lt:
@@ -6817,7 +6815,9 @@ public XQueryTreeParser() {
 				case LITERAL_gt:
 				case LITERAL_ge:
 				case NEQ:
+				case GT:
 				case GTEQ:
+				case LT:
 				case LTEQ:
 				case LITERAL_is:
 				case LITERAL_isnot:
@@ -7507,8 +7507,6 @@ public XQueryTreeParser() {
 		"ORDER_BY",
 		"GROUP_BY",
 		"POSITIONAL_VAR",
-		"BEFORE",
-		"AFTER",
 		"MODULE_DECL",
 		"MODULE_IMPORT",
 		"SCHEMA_IMPORT",
@@ -7606,8 +7604,8 @@ public XQueryTreeParser() {
 		"\"treat\"",
 		"\"castable\"",
 		"\"cast\"",
-		"<",
-		">",
+		"BEFORE",
+		"AFTER",
 		"\"eq\"",
 		"\"ne\"",
 		"\"lt\"",
@@ -7615,7 +7613,9 @@ public XQueryTreeParser() {
 		"\"gt\"",
 		"\"ge\"",
 		"!=",
+		">",
 		">=",
+		"<",
 		"<=",
 		"\"is\"",
 		"\"isnot\"",
@@ -7698,26 +7698,26 @@ public XQueryTreeParser() {
 	
 	private static final long[] mk_tokenSet_0() {
 		long[] data = new long[8];
-		data[0]=3478745251442229138L;
-		data[1]=24786891954980864L;
-		data[2]=4611470512269295598L;
+		data[0]=869686209785003922L;
+		data[1]=-9217175313866030592L;
+		data[2]=4611470512269295611L;
 		data[3]=512L;
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
 		long[] data = new long[8];
-		data[0]=3478745251442229146L;
-		data[1]=24786891954980864L;
-		data[2]=4611470512269295598L;
+		data[0]=869686209785003930L;
+		data[1]=-9217175313866030592L;
+		data[2]=4611470512269295611L;
 		data[3]=512L;
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
 		long[] data = new long[8];
-		data[0]=835628841828352L;
-		data[1]=33554432L;
+		data[0]=208907213996032L;
+		data[1]=8388608L;
 		data[2]=52776558133248L;
 		data[3]=512L;
 		return data;
