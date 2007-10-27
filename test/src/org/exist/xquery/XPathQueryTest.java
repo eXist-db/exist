@@ -135,6 +135,19 @@ public class XPathQueryTest extends XMLTestCase {
     
     private final static String self =
             "<test-self><a>Hello</a><b>World!</b></test-self>";
+
+    private final static String predicates =
+        "<elem1>\n" +
+        " <elem2>\n" +
+        "    <elem3/>\n" +
+        " </elem2>\n" +
+        " <elem2>\n" +
+        "    <elem3>val1</elem3>\n" +
+        " </elem2>\n" +
+        " <elem2>\n" +
+        "    <elem3>val2</elem3>\n" +
+        " </elem2>\n" +
+        "</elem1>";
     
     // Added by Geoff Shuetrim (geoff@galexy.net) to highlight problems with XPath queries of elements called 'xpointer'.
     private final static String xpointerElementName =
@@ -1220,7 +1233,17 @@ public class XPathQueryTest extends XMLTestCase {
         assertEquals("Predicate bug wiki_1", "<el>2</el>",
                 rs.getResource(0).getContent());
     }
-    
+
+    public void testPredicateBUGAndrzej() throws Exception {
+        String xQuery =
+            "doc('/db/test/predicates.xml')//elem1/elem2[ string-length( ./elem3 ) > 0][1]/elem3/text()";
+        XQueryService service =
+            storeXMLStringAndGetQueryService("predicates.xml", predicates);
+        ResourceSet rs = service.query(xQuery);
+        assertEquals("testPredicateBUGAndrzej", 1, rs.getSize());
+        assertEquals("testPredicateBUGAndrzej", "val1", rs.getResource(0).getContent());
+    }
+
     /*
      * removing Self: makes the query work OK
      * @see http://wiki.exist-db.org/space/XQueryBugs

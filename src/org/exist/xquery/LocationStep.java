@@ -192,7 +192,7 @@ public class LocationStep extends Step {
             pred.setContextDocSet(getContextDocSet());
             result = pred.evalPredicate(outerSequence, result, axis);
             //subsequent predicates operate on the result of the previous one
-            outerSequence = result;
+            outerSequence = null;
         }
         return result;
     }
