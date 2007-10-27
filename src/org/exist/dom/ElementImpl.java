@@ -1177,7 +1177,7 @@ public class ElementImpl extends NamedNode implements Element {
                     "node is not a child of this element");
         if (newNode.getNodeType() == Node.ATTRIBUTE_NODE) {
         	if (newNode.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
-					// an xml:id attribute. Normalize the attribute and set its type to ID
+				// an xml:id attribute. Normalize the attribute and set its type to ID
         		AttrImpl attr = (AttrImpl) newNode;
         		attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
         		attr.setType(AttrImpl.ID);

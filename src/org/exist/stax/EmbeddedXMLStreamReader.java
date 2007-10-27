@@ -320,6 +320,10 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         final int type = attributes.getType(i);
         if (type == AttrImpl.ID)
             return "ID";
+        if (type == AttrImpl.IDREF)
+            return "IDREF";
+        if (type == AttrImpl.IDREFS)
+            return "IDREFS";
         return "CDATA";
     }
 
