@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- $Id$ -->
 <collection xmlns="http://exist-db.org/collection-config/1.0">
 	<index xmlns:catalog="http://www.w3.org/2005/02/query-test-XQTSCatalog">
         <fulltext default="none" attributes="no"/>
