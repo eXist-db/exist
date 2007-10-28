@@ -113,10 +113,12 @@ public class AnyUriResolver implements XMLEntityResolver {
             is = new URL(resourcePath).openStream();
         }
         
-        XMLInputSource retVal = new XMLInputSource(xri.getPublicId(), resourcePath,
+        XMLInputSource xis = new XMLInputSource(xri.getPublicId(), resourcePath,
             baseSystemId, is, "UTF-8");
         
-        return retVal;
+        LOG.debug( "XMLInputSource: "+getXisDetails(xis) );
+        
+        return xis;
         
     }
     
@@ -127,6 +129,15 @@ public class AnyUriResolver implements XMLEntityResolver {
         sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");
         sb.append("LiteralSystemId='").append(xrid.getLiteralSystemId()).append("' ");
         sb.append("Namespace='").append(xrid.getNamespace()).append("' ");
+        return sb.toString();
+    }
+
+    private String getXisDetails(XMLInputSource xis){
+        StringBuffer sb = new StringBuffer();
+        sb.append("PublicId='").append(xis.getPublicId()).append("' ");
+        sb.append("SystemId='").append(xis.getSystemId()).append("' ");
+        sb.append("BaseSystemId='").append(xis.getBaseSystemId()).append("' ");
+        sb.append("Encoding='").append(xis.getEncoding()).append("' ");
         return sb.toString();
     }
     
