@@ -1359,6 +1359,7 @@ public class ElementImpl extends NamedNode implements Element {
 
         getBroker().removeAllNodes(transaction, oldNode, oldPath, listener);
         getBroker().endRemove(transaction);
+        getBroker().flush();
         getBroker().getIndexController().setMode(StreamListener.STORE);
         listener = getBroker().getIndexController().getStreamListener();
         Node newNode = appendChild(transaction, oldNode.nodeId, new NodeImplRef(previous), getPath(), newChild, listener);
