@@ -277,6 +277,26 @@
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
+  <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://exist.svn.sourceforge.net/svnroot/exist/branches" />
+                  <option value="https://exist.svn.sourceforge.net/svnroot/exist/releases" />
+                  <option value="https://exist.svn.sourceforge.net/svnroot/exist/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://exist.svn.sourceforge.net/svnroot/exist/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
   </component>
