@@ -1,8 +1,9 @@
-<project basedir="." default="jar" name="fluent">
+<project basedir="." default="all" name="fluent">
 
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>
-	<property name="top.dir" value="../.."/>
+    <property name="javadoc" value="./javadoc"/>
+    <property name="top.dir" value="../.."/>
 	
     <property name="build.compiler" value="modern"/>
 	
@@ -24,7 +25,9 @@
         <pathelement path="${java.class.path}"/>
     </path>
 
-	<target name="prepare">
+    <target name="all" depends="jar,javadoc"/>
+
+    <target name="prepare">
 		<mkdir dir="${classes}"/>
 	</target>
 	
@@ -55,8 +58,26 @@
             </manifest>
         </jar>
 	</target>
-	
-	<target name="test" depends="compile">
+
+    <target name="javadoc" unless="java14-only">
+        <mkdir dir="${javadoc}"/>
+        <javadoc bottom="Copyright (C)  All rights reserved."
+            destdir="${javadoc}" doctitle="eXist Fluent Javadocs"
+            noindex="true" notree="true" access="public"
+            maxmemory="512M" source="1.5">
+            <packageset dir="${src}">
+                <include name="org/**"/>
+                <exclude name="org/exist/fluent/*$*Test*"/>
+            </packageset>
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+            <!--link href="http://jakarta.apache.org/commons/collections/api/"/-->
+        </javadoc>
+        
+    </target>
+
+    <target name="test" depends="compile">
 		<echo message="Running fluent extension tests"/>
 		<junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
