@@ -315,10 +315,12 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/tomcat5/server/lib/catalina-5.0.28.jar!/" />
         <root url="jar://$PROJECT_DIR$/tools/ircbot/lib/pircbot.jar!/" />
         <root url="file://$PROJECT_DIR$/tools/ant/lib" />
+        <root url="file://$PROJECT_DIR$/tools/wrapper/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/tools/ant/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/tools/wrapper/lib" recursive="false" />
     </library>
     <library name="core">
       <CLASSES>
@@ -382,9 +384,11 @@
       <CLASSES>
         <root url="file://$PROJECT_DIR$/lib/extensions" />
         <root url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" />
+        <root url="file://$PROJECT_DIR$/extensions/fluent/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/lib/extensions" recursive="false" />
     </library>
