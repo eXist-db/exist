@@ -5,6 +5,9 @@
 
         <create path="//catalog:source/@ID" type="xs:string"/>
 		<create path="//catalog:test-case/@name" type="xs:string"/>
-        <create path="//test-case/@result" type="xs:string"/>
-    </index>
+        <create path="//test-case/@result" type="xs:string"/>    
+    
+    </index>       
+
+	<validation mode="no"/> 
 </collection>
