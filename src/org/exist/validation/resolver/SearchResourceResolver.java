@@ -51,6 +51,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
     
     /** Creates a new instance of StoredResourceResolver */
     public SearchResourceResolver(String collectionPath, BrokerPool pool) {
+        LOG.debug("Specified collectionPath="+collectionPath);
         collection=collectionPath;
         brokerPool=pool;
     }
@@ -67,9 +68,8 @@ public class SearchResourceResolver implements XMLEntityResolver {
             return null;
         }
         LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
-        
-        
-        String documentName = null;
+
+
         String resourcePath = null;
         
         DatabaseResources databaseResources = new DatabaseResources(brokerPool);
@@ -121,7 +121,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
             return null;
         }
         
-        if(resourcePath!=null && resourcePath.startsWith("/")){
+        if(resourcePath.startsWith("/")){
             resourcePath="xmldb:exist://"+resourcePath;
         }
         
