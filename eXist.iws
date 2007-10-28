@@ -31,6 +31,7 @@
   <component name="ChangeListManager">
     <list default="true" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/validation/resolver/AnyUriResolver.java" afterPath="$PROJECT_DIR$/src/org/exist/validation/resolver/AnyUriResolver.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/validation/resolver/SearchResourceResolver.java" afterPath="$PROJECT_DIR$/src/org/exist/validation/resolver/SearchResourceResolver.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.ipr" afterPath="$PROJECT_DIR$/eXist.ipr" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iml" afterPath="$PROJECT_DIR$/eXist.iml" />
@@ -43,14 +44,6 @@
     <leftPanel url="file://$PROJECT_DIR$/src" />
     <rightPanel url="file://$PROJECT_DIR$" />
     <splitter proportion="0.5" />
-  </component>
-  <component name="CompilerWorkspaceConfiguration">
-    <option name="COMPILE_IN_BACKGROUND" value="false" />
-    <option name="AUTO_SHOW_ERRORS_IN_EDITOR" value="true" />
-    <option name="CLOSE_MESSAGE_VIEW_IF_SUCCESS" value="true" />
-    <option name="COMPILE_DEPENDENT_FILES" value="false" />
-    <option name="CLEAR_OUTPUT_DIRECTORY" value="false" />
-    <option name="ASSERT_NOT_NULL" value="true" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -136,13 +129,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="GMLIndexTest.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/org/exist/indexing/spatial/GMLIndexTest.java">
+      <file leaf-file-name="AnyUriResolver.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/validation/resolver/AnyUriResolver.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="93" column="54" selection-start="3451" selection-end="3455" vertical-scroll-proportion="0.88125">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state line="102" column="65" selection-start="3457" selection-end="3457" vertical-scroll-proportion="0.16155419">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SearchResourceResolver.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/validation/resolver/SearchResourceResolver.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="117" column="87" selection-start="4431" selection-end="4431" vertical-scroll-proportion="0.28834355">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -275,55 +275,7 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/extensions" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/extensions" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/extensions/indexes" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/extensions" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/extensions/indexes" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/extensions/indexes/spatial" />
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/tools" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -363,12 +315,13 @@
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="cvs_file_history_treeWidth0" value="292" />
     <property name="cvs_file_history_flatWidth2" value="292" />
-    <property name="cvs_file_history_treeOrder1" value="1" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web2" value="/private/tmp/webExplodedDir42908tmp" />
+    <property name="cvs_file_history_treeOrder1" value="1" />
     <property name="GoToFile.includeJavaFiles" value="false" />
     <property name="cvs_file_history_flatOrder1" value="1" />
     <property name="GenerateAntBuildDialog.forceTargetJdk" value="true" />
     <property name="cvs_file_history_flatWidth1" value="291" />
+    <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web" value="/private/tmp/webExplodedDir6263tmp" />
     <property name="cvs_file_history_treeWidth1" value="291" />
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
@@ -382,10 +335,10 @@
     <property name="cvs_file_history_flatOrder0" value="0" />
     <property name="cvs_file_history_treeOrder3" value="3" />
     <property name="GenerateAntBuildDialog.enableUiFormCompile" value="true" />
-    <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web3" value="/private/tmp/webExplodedDir6251tmp" />
     <property name="GenerateAntBuildDialog.backupFiles" value="true" />
-    <property name="cvs_file_history_treeWidth3" value="292" />
+    <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web3" value="/private/tmp/webExplodedDir6251tmp" />
     <property name="cvs_file_history_treeOrder2" value="2" />
+    <property name="cvs_file_history_treeWidth3" value="292" />
     <property name="GenerateAntBuildDialog.generateSingleFile" value="false" />
     <property name="cvs_file_history_flatWidth0" value="292" />
     <property name="cvs_file_history_flatWidth3" value="292" />
@@ -396,19 +349,161 @@
       <recent name="org.exist.xquery.functions.text" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.AllTests">
-    <tempConfiguration default="false" name="AllTests" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
-      <pattern value="org.exist.storage.test.*" />
+  <component name="RestoreUpdateTree">
+    <UpdateInfo date="10/28/07 6:35 PM" ActionInfo="_Update">
+      <UpdatedFiles>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Updated from server" />
+          <option name="myStatusName" value="Changed on server" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="CHANGED_ON_SERVER" />
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Updated" />
+            <option name="myStatusName" value="Changed" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="UPDATED" />
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/scheduler/GetScheduledJobs.java</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/config.xml.tmpl</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/xqts.xql</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/styles/report.css</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/styles/tableft1.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/styles/tree.css</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/styles/container.css</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/styles/tabright1.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/styles/SyntaxHighlighter.css</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/styles/xml2html.css</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/lp.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/tph.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/loading.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/vline.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/lmh.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/tm.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/tn.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/lph.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/tp.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/lm.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/tmh.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/images/ln.gif</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/skip.xml</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/progress.xql</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/treeview.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/report.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/shBrushXQuery.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/connection.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/dom.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/shBrushXml.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/yahoo.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/event.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/container.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/scripts/shCore.js</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/collectresults.xql</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/xqts.xconf</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/stylesheets/xml-highlight.xsl</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/build.xml</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/hacked-tests.xml</PATH>
+            <PATH vcs="svn" revision="6806">$PROJECT_DIR$/webapp/xqts/report.xql</PATH>
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Created" />
+            <option name="myStatusName" value="Created" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="CREATED" />
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Deleted" />
+            <option name="myStatusName" value="Deleted" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="true" />
+            <option name="myId" value="REMOVED_FROM_REPOSITORY" />
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Restored" />
+            <option name="myStatusName" value="Will be restored" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="RESTORED" />
+          </FILE-GROUP>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Modified" />
+          <option name="myStatusName" value="Modified" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MODIFIED" />
+          <PATH>$PROJECT_DIR$/eXist.ipr</PATH>
+          <PATH>$PROJECT_DIR$/eXist.iws</PATH>
+          <PATH>$PROJECT_DIR$/src/org/exist/collections/Collection.java</PATH>
+          <PATH>$PROJECT_DIR$/src/org/exist/validation/resolver/AnyUriResolver.java</PATH>
+          <PATH>$PROJECT_DIR$/VERSION.txt</PATH>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Skipped" />
+          <option name="myStatusName" value="Skipped" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="SKIPPED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with conflicts" />
+          <option name="myStatusName" value="Will be merged with conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_CONFLICTS" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged" />
+          <option name="myStatusName" value="Will be merged" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Not in repository" />
+          <option name="myStatusName" value="Not in repository" />
+          <option name="mySupportsDeletion" value="true" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="UNKNOWN" />
+          <PATH>$PROJECT_DIR$/collection.xconf</PATH>
+          <PATH>$PROJECT_DIR$/hamlet.xml</PATH>
+          <PATH>$PROJECT_DIR$/macbeth.xml</PATH>
+          <PATH>$PROJECT_DIR$/nbproject/existdb.properties</PATH>
+          <PATH>$PROJECT_DIR$/webapp/documentation.xml.bak</PATH>
+          <PATH>$PROJECT_DIR$/webapp/validation.xml.bak</PATH>
+          <PATH>$PROJECT_DIR$/webapp/WEB-INF/test.xsd</PATH>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally added" />
+          <option name="myStatusName" value="Locally added" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_ADDED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally removed" />
+          <option name="myStatusName" value="Locally removed" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_REMOVED" />
+        </FILE-GROUP>
+      </UpdatedFiles>
+    </UpdateInfo>
+  </component>
+  <component name="RunManager" selected="JUnit.XQueryTest">
+    <tempConfiguration default="false" name="XQueryTest" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
+      <pattern value="org.exist.xquery.*" />
       <module name="eXist" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="org.exist.storage.test" />
-      <option name="MAIN_CLASS_NAME" value="org.exist.storage.test.AllTests" />
-      <option name="METHOD_NAME" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="PACKAGE_NAME" value="org.exist.xquery" />
+      <option name="MAIN_CLASS_NAME" value="org.exist.xquery.XQueryTest" />
+      <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <option name="ADDITIONAL_CLASS_PATH" />
@@ -429,21 +524,6 @@
       <option name="HOST" value="localhost" />
       <option name="PORT" value="5005" />
     </configuration>
-    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="" />
-      <method>
-        <option name="Make" value="true" />
-      </method>
-    </configuration>
     <configuration default="true" type="Applet" factoryName="Applet">
       <module name="" />
       <option name="MAIN_CLASS_NAME" />
@@ -455,6 +535,34 @@
       <option name="VM_PARAMETERS" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
+    </configuration>
+    <configuration default="true" type="TestNG" factoryName="TestNG" enabled="false" merge="false">
+      <module name="" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="SUITE_NAME" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="GROUP_NAME" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="OUTPUT_DIRECTORY" />
+      <option name="ANNOTATION_TYPE" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="ADDITIONAL_CLASS_PATH" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="wholeProject" />
+      </option>
+      <option name="PROPERTIES_FILE" />
+      <properties />
+      <listeners />
+      <method>
+        <option name="Make" value="true" />
+      </method>
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
       <module name="" />
@@ -476,6 +584,21 @@
       <method>
         <option name="Make" value="false" />
         <option name="Run ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <method>
+        <option name="Make" value="true" />
       </method>
     </configuration>
     <configuration default="false" name="eXist Client" type="Application" factoryName="Application" enabled="false" merge="false">
@@ -525,7 +648,7 @@
       </method>
     </configuration>
     <list size="3">
-      <item index="0" class="java.lang.String" itemvalue="JUnit.AllTests" />
+      <item index="0" class="java.lang.String" itemvalue="JUnit.XQueryTest" />
       <item index="1" class="java.lang.String" itemvalue="Application.eXist Client" />
       <item index="2" class="java.lang.String" itemvalue="JUnit.XIncludeSerializerTest" />
     </list>
@@ -619,28 +742,28 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="10" y="22" width="1420" height="828" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32927817" order="3" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22566372" order="7" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21079504" order="0" x="72" y="49" width="451" height="485" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21836506" order="1" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21079504" order="0" x="72" y="49" width="451" height="485" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21702127" order="1" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24939074" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22553192" order="8" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22553192" order="8" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="6" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24856909" order="1" />
       <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32970026" order="8" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32922733" order="2" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32907802" order="8" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32907802" order="2" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24979724" order="2" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3990188" order="0" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29977876" order="4" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.32963374" order="8" x="4" y="2" width="968" height="391" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3281075" order="8" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32765958" order="8" />
       <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="0" />
       <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
@@ -667,7 +790,7 @@
     <option name="PERFORM_EDIT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added XIncludeSerializerTest." />
+    <option name="LAST_COMMIT_MESSAGE" value="minor changes for Intellij ; added spatial jars" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
@@ -688,6 +811,8 @@
     <MESSAGE value="Fixed: wrong line numbers in XQuery error messages: line breaks inside comments were not counted." />
     <MESSAGE value="Fixed: util:catch needs to push/pop local variables on the stack before executing the main expression. Fixes a problem with running the XQTS." />
     <MESSAGE value="Added XIncludeSerializerTest." />
+    <MESSAGE value="A" />
+    <MESSAGE value="minor changes for Intellij ; added spatial jars" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -874,90 +999,6 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/exist/dom/DocumentSet.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="261" column="30" selection-start="6864" selection-end="6864" vertical-scroll-proportion="0.6275116">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/dom/DocumentImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="242" column="17" selection-start="6817" selection-end="6817" vertical-scroll-proportion="0.47310126">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBHasLock.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="61" selection-start="1702" selection-end="1702" vertical-scroll-proportion="0.2420886">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/update/Modification.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="134" column="47" selection-start="4286" selection-end="4286" vertical-scroll-proportion="0.96677214">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/ant-tasks.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="436" column="42" selection-start="17075" selection-end="17075" vertical-scroll-proportion="0.37294334">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build/scripts/junit.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="164" column="80" selection-start="7581" selection-end="7581" vertical-scroll-proportion="1.1661538">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/journal/Journal.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="330" column="14" selection-start="12971" selection-end="12971" vertical-scroll-proportion="0.023483366">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/dom/StoredNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="24" selection-start="1336" selection-end="1336" vertical-scroll-proportion="0.023483366">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/cluster/cocoon/ClusterGenerator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="168" selection-start="855" selection-end="855" vertical-scroll-proportion="0.01832061">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/fluent/src/org/exist/fluent/Folder.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="78" column="9" selection-start="2524" selection-end="2524" vertical-scroll-proportion="0.01832061">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/AbstractGMLJDBCIndexWorker.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="70" column="33" selection-start="2580" selection-end="2580" vertical-scroll-proportion="0.01832061">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/http/realm/XmldbRealm.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="27" selection-start="220" selection-end="220" vertical-scroll-proportion="0.01832061">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tools/ircbot/src/org/exist/irc/IRCProxy.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="13" column="26" selection-start="362" selection-end="362" vertical-scroll-proportion="0.01832061">
@@ -974,10 +1015,119 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/org/exist/indexing/spatial/GMLIndexTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="93" column="54" selection-start="3451" selection-end="3455" vertical-scroll-proportion="0.88125">
+        <state line="53" column="123" selection-start="1934" selection-end="1934" vertical-scroll-proportion="0.2094763">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eXist.iml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eXist.iws">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/src/org/exist/validation/ValidationServiceTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="129" column="16" selection-start="4214" selection-end="4214" vertical-scroll-proportion="0.33173078">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/src/org/exist/validation/CollectionConfigurationTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="56" column="13" selection-start="1847" selection-end="1847" vertical-scroll-proportion="0.01832061">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/src/org/exist/validation/CollectionConfigurationValidationModeTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="138" column="137" selection-start="8283" selection-end="8283" vertical-scroll-proportion="0.01875">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/src/org/exist/xquery/XQueryTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="72" column="124" selection-start="3148" selection-end="3148" vertical-scroll-proportion="0.13125">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eXist.ipr">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="279" column="0" selection-start="15078" selection-end="15078" vertical-scroll-proportion="0.33333334">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/collections/Collection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="994" column="67" selection-start="36455" selection-end="36455" vertical-scroll-proportion="0.27363184">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/WEB-INF/web.xml">
+      <provider editor-type-id="com.intellij.javaee.module.view.web.viewlets.WebModuleAssemblyDescriptorProvider">
+        <state />
+      </provider>
+      <provider editor-type-id="com.intellij.javaee.module.view.web.viewlets.WebModuleGeneralEditorProvider">
+        <state />
+      </provider>
+      <provider editor-type-id="com.intellij.javaee.module.view.web.viewlets.WebModuleAssemblyDescriptorReferencesProvider">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="444" column="8" selection-start="16141" selection-end="16141" vertical-scroll-proportion="0.33252427">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/XFormsFilter/web.xml">
+      <provider editor-type-id="com.intellij.javaee.module.view.web.viewlets.WebModuleAssemblyDescriptorProvider">
+        <state />
+      </provider>
+      <provider editor-type-id="com.intellij.javaee.module.view.web.viewlets.WebModuleGeneralEditorProvider">
+        <state />
+      </provider>
+      <provider editor-type-id="com.intellij.javaee.module.view.web.viewlets.WebModuleAssemblyDescriptorReferencesProvider">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="79" column="6" selection-start="2569" selection-end="2569" vertical-scroll-proportion="0.33252427">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/fluent/src/org/exist/fluent/ListenerManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="66" selection-start="579" selection-end="579" vertical-scroll-proportion="0.48523206">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/validation/resolver/SearchResourceResolver.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="117" column="87" selection-start="4431" selection-end="4431" vertical-scroll-proportion="0.28834355">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/validation/resolver/AnyUriResolver.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="102" column="65" selection-start="3457" selection-end="3457" vertical-scroll-proportion="0.16155419">
+          <folding />
         </state>
       </provider>
     </entry>
