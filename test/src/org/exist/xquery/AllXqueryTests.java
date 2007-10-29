@@ -53,7 +53,6 @@ public class AllXqueryTests {
         suite.addTestSuite(SeqOpTest.class);
         suite.addTestSuite(XMLNodeAsXQueryParameterTest.class);
         suite.addTestSuite(OpNumericTest.class);
-        suite.addTestSuite(FtQueryTest.class);
         suite.addTestSuite(DocumentUpdateTest.class);
         suite.addTestSuite(AnyURITest.class);
         suite.addTestSuite(XQueryGroupByTest.class);

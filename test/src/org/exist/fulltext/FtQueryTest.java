@@ -19,26 +19,21 @@
  *  
  *  $Id$
  */
-package org.exist.xquery;
-
-import java.io.File;
+package org.exist.fulltext;
 
 import junit.textui.TestRunner;
-
 import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.TestUtils;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XQueryService;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
+
+import java.io.File;
 
 public class FtQueryTest extends XMLTestCase {
  
@@ -646,15 +641,7 @@ public class FtQueryTest extends XMLTestCase {
      */
     protected void tearDown() {
     	try {
-	        Collection root =
-	            DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-	        CollectionManagementService service =
-	            (CollectionManagementService) root.getService(
-	                "CollectionManagementService",
-	                "1.0");
-//	        service.removeCollection(TEST_COLLECTION_NAME);
-
-//            service.removeCollection("/db/system/config/db");
+	        TestUtils.cleanupDB();
 
             DatabaseManager.deregisterDatabase(database);
 	        DatabaseInstanceManager dim =
