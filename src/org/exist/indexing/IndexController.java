@@ -61,7 +61,17 @@ public class IndexController {
             indexWorkers.put(workers[i].getIndexId(), workers[i]);
         }
     }
-    
+
+    /**
+     * TODO: temporary method to plug in fulltext index.
+     * Remove once new fulltext index module is ready.
+     * 
+     * @param worker
+     */
+    public void addIndexWorker(IndexWorker worker) {
+        indexWorkers.put(worker.getIndexId(), worker);
+    }
+
     /**
      * Configures all index workers registered with the db instance.
      * 

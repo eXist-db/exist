@@ -275,7 +275,13 @@ public class SimpleTokenizer implements Tokenizer {
 		this.text = text;
 	}
 
-	protected TextToken whitespace() {
+    public void setText(CharSequence text, int offset) {
+		pos = offset;
+		len = text.length();
+		this.text = text;
+	}
+
+    protected TextToken whitespace() {
 		consume();
 		return TextToken.WS_TOKEN;
 	}

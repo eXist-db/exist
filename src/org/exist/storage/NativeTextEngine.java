@@ -23,59 +23,31 @@ package org.exist.storage;
 
 //import java.io.EOFException;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.regex.Pattern;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
-import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.*;
+import org.exist.fulltext.FTIndexWorker;
+import org.exist.fulltext.ElementContent;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.TextToken;
-import org.exist.storage.btree.BTreeCallback;
-import org.exist.storage.btree.BTreeException;
-import org.exist.storage.btree.DBException;
-import org.exist.storage.btree.IndexQuery;
-import org.exist.storage.btree.Value;
+import org.exist.storage.btree.*;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
-import org.exist.util.ByteArray;
-import org.exist.util.ByteConversion;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
-import org.exist.util.Occurrences;
-import org.exist.util.ProgressIndicator;
-import org.exist.util.ReadOnlyException;
-import org.exist.util.UTF8;
-import org.exist.util.XMLString;
+import org.exist.util.*;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * This class is responsible for fulltext-indexing. Text-nodes are handed over
@@ -131,8 +103,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	/** The datastore for this token index */
 	protected BFile dbTokens;
 	protected InvertedIndex invertedIndex;
-    
-	/** The current document */
+
+    FTIndexWorker worker;
+
+    /** The current document */
     private DocumentImpl doc;
 
     /** Work output Stream that should be cleared before every use */
@@ -150,12 +124,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, 
             		file, broker.getBrokerPool().getCacheManager(), 
-            		cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
+            		cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
             config.setProperty(getConfigKeyForFile(), nativeFile);             
         }        
         dbTokens = nativeFile;
         this.invertedIndex = new InvertedIndex();  
-        broker.addContentLoadingObserver(getInstance());	        
+//        broker.addContentLoadingObserver(getInstance());
+        worker = new FTIndexWorker(this);
+    }
+
+    public FTIndexWorker getWorker() {
+        return worker;
     }
     
     public String getFileName() {
@@ -300,30 +279,42 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     	}
     } 
 
-    public void storeText(StoredNode parent, String text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
+    public void storeText(StoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
         //final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         TextToken token;
-        tokenizer.setText(text.toLowerCase());
-        while (null != (token = tokenizer.nextToken())) {
-            if (token.length() > MAX_TOKEN_LENGTH) {
-            	LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
-                continue;
+        ElementContent.TextSpan span = text.getFirst();
+        XMLString data = null;
+        int currentOffset = 0;
+        while (span != null) {
+            if (data == null)
+                data = span.getContent().transformToLower();
+            else {
+                currentOffset = data.length();
+                data.append(span.getContent().transformToLower());
             }
-            if (stoplist.contains(token)) {
-                continue;
-            }
-            if (indexSpec != null) {
-                //TODO : the tokenizer should strip unwanted token types itself -pb
-                if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
+            tokenizer.setText(data, currentOffset);
+            while (null != (token = tokenizer.nextToken())) {
+                if (token.length() > MAX_TOKEN_LENGTH) {
+                    LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
                     continue;
                 }
+                if (stoplist.contains(token)) {
+                    continue;
+                }
+                if (indexSpec != null) {
+                    //TODO : the tokenizer should strip unwanted token types itself -pb
+                    if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
+                        continue;
+                    }
+                }
+                //invertedIndex.setDocument(doc);
+                if (indexingHint == TEXT_BY_QNAME)
+                    invertedIndex.addText(token, (ElementImpl) parent, remove);
+                else
+                    invertedIndex.addText(token, parent.getNodeId(), remove);
             }
-            //invertedIndex.setDocument(doc);
-            if (indexingHint == TEXT_BY_QNAME)
-                invertedIndex.addText(token, (ElementImpl) parent, remove);
-            else
-                invertedIndex.addText(token, parent.getNodeId(), remove);
+            span = span.getNext();
         }
     }
 
@@ -695,7 +686,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 final int collectionId = ((Collection) i.next()).getId();
                 final IndexQuery query;
                 if (start == null) {
-                    Value startRef = new QNameWordRef(collectionId);
+                    Value startRef = new QNameWordRef(collectionId, qnames[q], broker.getSymbols());
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else if (end == null) {
                     Value startRef = new QNameWordRef(collectionId, qnames[q],
@@ -1157,7 +1148,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		 */
         //TODO: use VariableInputStream
 		public void remove() {
-		    //Return early
+            //Return early
 			if (doc == null)
 				return;                    
             final int collectionId = this.doc.getCollection().getId();

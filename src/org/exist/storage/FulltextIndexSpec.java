@@ -20,18 +20,14 @@
  */
 package org.exist.storage;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.*;
 
 
 /**
@@ -72,7 +68,7 @@ public class FulltextIndexSpec {
     protected NodePath[] excludePath;
     protected NodePath[] mixedPath;
     protected NodePath[] preserveContent;
-    protected Set qnameSpecs = new TreeSet();
+    protected Map qnameSpecs = new TreeMap();
 
     protected boolean includeByDefault = true;
     protected boolean includeAttributes = true;
@@ -160,7 +156,7 @@ public class FulltextIndexSpec {
                 QName qname = new QName(localName, namespaceURI, null);
                 if (isAttribute)
                     qname.setNameType(ElementValue.ATTRIBUTE);
-                qnameSpecs.add(qname);
+                qnameSpecs.put(qname, new QNameSpec(qname, elem));
             }
 		}
         includePath = (NodePath[]) includeList.toArray(ARRAY_TYPE);
@@ -264,7 +260,15 @@ public class FulltextIndexSpec {
     }
 
     public boolean hasQNameIndex(QName qname) {
-        return qnameSpecs.contains(qname);
+        return qnameSpecs.containsKey(qname);
+    }
+
+    public boolean preserveMixedContent(QName qname) {
+        QNameSpec spec = (QNameSpec) qnameSpecs.get(qname);
+        if (spec != null) {
+            return spec.hasMixedContent();
+        }
+        return false;
     }
 
     /**
@@ -309,12 +313,53 @@ public class FulltextIndexSpec {
     					result.append("\tpreserve content : ").append(path.toString()).append('\n');   	  
     	  		}
     	  }  
-    	  for (Iterator i = qnameSpecs.iterator(); i.hasNext(); ) {
+    	  for (Iterator i = qnameSpecs.values().iterator(); i.hasNext(); ) {
     		  result.append("\tQName : ").append(i.next()).append('\n');   
     	  }
     	  return result.toString();
       }
 
+    private static class QNameSpec implements Comparable {
 
+        private QName qname;
+        private boolean mixedContent = false;
+        private Set preserve = new HashSet();
 
+        QNameSpec(QName qname, Element node) {
+            this.qname = qname;
+            String attr = node.getAttribute(CONTENT_ATTRIB);
+            if (attr != null && attr.length() > 0) {
+                this.mixedContent = CONTENT_MIXED.equalsIgnoreCase(attr);
+                if (!mixedContent) {
+                    attr = node.getAttribute("preserve");
+                    if (attr != null && attr.length() > 0) {
+                        StringTokenizer tok = new StringTokenizer(attr, ",;: \n\t");
+                        while (tok.hasMoreTokens()) {
+                            preserve.add(tok.nextToken());
+                        }
+                    }
+                }
+            }
+        }
+
+        public boolean hasMixedContent() {
+            return mixedContent;
+        }
+
+        public Set getPreserve() {
+            return preserve;
+        }
+
+        public boolean equals(Object obj) {
+            return ((QNameSpec) obj).qname.equals(qname);
+        }
+
+        public int compareTo(Object other) {
+            return ((QNameSpec) other).qname.compareTo(qname);
+        }
+
+        public String toString() {
+            return qname.toString() + " [" + mixedContent + ']';
+        }
+    }
 }
