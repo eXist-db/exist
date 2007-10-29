@@ -26,8 +26,9 @@ package org.exist.storage;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
-import org.exist.fulltext.FTIndexWorker;
 import org.exist.fulltext.ElementContent;
+import org.exist.fulltext.FTIndexWorker;
+import org.exist.fulltext.FTMatch;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.TextToken;
@@ -63,8 +64,6 @@ import java.util.regex.Pattern;
  * @author Wolfgang Meier
  */
 public class NativeTextEngine extends TextSearchEngine implements ContentLoadingObserver {
-
-    public static final String FT_MATCH_ID = NativeTextEngine.class.getName();
 
     public static final String FILE_NAME = "words.dbx";
     public static final String  FILE_KEY_IN_CONFIG = "db-connection.words";	
@@ -497,7 +496,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                             }
                             if (parent != null) {
-                                Match match = new FtMatch(-1, nodeId, token, freq);
+                                Match match = new FTMatch(-1, nodeId, token, freq);
                                 readOccurrences(freq, is, match, token.length());
                                 if (axis == NodeSet.ANCESTOR) {
                                     parent.addMatch(match);
@@ -513,7 +512,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             }
 						// otherwise, we add all text nodes without check
 						} else {
-                            Match match = new FtMatch(-1, nodeId, token, freq);
+                            Match match = new FTMatch(-1, nodeId, token, freq);
                             readOccurrences(freq, is, match, token.length());
                             storedNode.addMatch(match);
 							result.add(storedNode, Constants.NO_SIZE_HINT);							
@@ -1393,7 +1392,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                                 }
 								if (parentNode != null) {
-                                    Match match = new FtMatch(-1, nodeId, word.toString(), freq);
+                                    Match match = new FTMatch(-1, nodeId, word.toString(), freq);
                                     readOccurrences(freq, is, match, word.length());
                                     int sizeHint = contextSet.getSizeHint(storedDocument);
                                     if (axis == NodeSet.ANCESTOR) {
@@ -1406,7 +1405,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 } else
                                     is.skip(freq);
 							} else {
-                                Match match = new FtMatch(-1, nodeId, word.toString(), freq);
+                                Match match = new FTMatch(-1, nodeId, word.toString(), freq);
 							    readOccurrences(freq, is, match, word.length());
                                 storedNode.addMatch(match);
 							    result.add(storedNode, Constants.NO_SIZE_HINT);
@@ -1699,31 +1698,4 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			else return "no word";
 		}
 	}
-
-    public class FtMatch extends Match {
-
-        public FtMatch(int contextId, NodeId nodeId, String matchTerm) {
-            super(contextId, nodeId, matchTerm);
-        }
-
-        public FtMatch(int contextId, NodeId nodeId, String matchTerm, int frequency) {
-            super(contextId, nodeId, matchTerm, frequency);
-        }
-
-        public FtMatch(Match match) {
-            super(match);
-        }
-
-        public Match createInstance(int contextId, NodeId nodeId, String matchTerm) {
-            return new FtMatch(contextId, nodeId, matchTerm);
-        }
-
-        public Match newCopy() {
-            return new FtMatch(this);
-        }
-
-        public String getIndexId() {
-            return FT_MATCH_ID;
-        }
-    }
 }
