@@ -60,7 +60,13 @@ public final class XMLString implements CharSequence, Comparable {
 			length_ = length;
 	}
 
-	public final XMLString append(String str) {
+    public XMLString(XMLString other) {
+        value_ = CharArrayPool.getCharArray(other.length_);
+        System.arraycopy(other.value_, other.start_, value_, 0, other.length_);
+        length_ = other.length_;
+    }
+    
+    public final XMLString append(String str) {
 		append(str.toCharArray());
 		return this;
 	}

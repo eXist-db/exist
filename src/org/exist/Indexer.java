@@ -97,7 +97,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
     protected StreamListener indexListener;
     
-    protected FulltextIndexSpec ftIdx = null;
     protected XMLString charBuf = new XMLString();
     protected boolean inCDATASection = false;
     protected int currentLine = 0;  
@@ -210,7 +209,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         indexListener = null;
         rootNode = null;
         setPrevious(null);
-        ftIdx = doc.getCollection().getFulltextIndexConfiguration(broker);
     }
     
     /**
@@ -330,10 +328,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	    stack.pop();
 			
 	    XMLString elemContent = null;
-	    if (!validate && (GeneralRangeIndexSpec.hasQNameOrValueIndex(last.getIndexType()) ||
-			      (ftIdx != null && ftIdx.hasQNameIndex(last.getQName())))) {
-                elemContent = (XMLString) nodeContentStack.pop();
-            }
+	    if (!validate && GeneralRangeIndexSpec.hasQNameOrValueIndex(last.getIndexType())) {
+            elemContent = (XMLString) nodeContentStack.pop();
+        }
 			
 	    if (!validate) {
                 final String content = elemContent == null ? null : elemContent.toString();
@@ -679,8 +676,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         if (indexListener != null)
             indexListener.startElement(transaction, node, currentPath);
         node.setChildCount(0);
-	if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType()) ||
-	    (ftIdx != null && ftIdx.hasQNameIndex(node.getQName()))) {
+	if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
             XMLString contentBuf = new XMLString();
             nodeContentStack.push(contentBuf);
         }
@@ -708,20 +704,20 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     private void setPrevious(StoredNode previous) {
         if (prevNode != null) {
             switch (prevNode.getNodeType()) {
-		    case Node.ATTRIBUTE_NODE :
-		    	prevNode.release();
-		    	break;
-		    case Node.ELEMENT_NODE :
-				if (prevNode != rootNode) {
-				    prevNode.clear();
-				    usedElements.push(prevNode);
-				}
-				break;
-		    case Node.TEXT_NODE :
-		    	prevNode.clear();
-		    	break;
-	            }
-	        }
+                case Node.ATTRIBUTE_NODE :
+                    prevNode.release();
+                    break;
+                case Node.ELEMENT_NODE :
+                    if (prevNode != rootNode) {
+                        prevNode.clear();
+                        usedElements.push(prevNode);
+                    }
+                    break;
+                case Node.TEXT_NODE :
+                    prevNode.clear();
+                    break;
+            }
+        }
         prevNode = previous;
     }
 }

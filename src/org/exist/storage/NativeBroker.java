@@ -236,7 +236,7 @@ public class NativeBroker extends DBBroker {
             
 		    //Initialize collections storage            
             collectionsDb = (CollectionStore) config.getProperty(CollectionStore.getConfigKeyForFile());
-		    if (collectionsDb == null) 
+		    if (collectionsDb == null)
 		    	collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);	
 		    readOnly = readOnly || collectionsDb.isReadOnly();
             
@@ -249,8 +249,9 @@ public class NativeBroker extends DBBroker {
 	            
 		    elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
 		    valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-		    textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);    		
-				
+		    textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);
+            // TODO: temporary hack to plug in fulltext index
+            indexController.addIndexWorker(textEngine.getWorker());
 		    if (readOnly)
 		    	LOG.info("Database runs in read-only mode");
 	
@@ -410,37 +411,6 @@ public class NativeBroker extends DBBroker {
 				    NativeValueIndex.IDX_QNAME, remove);
 	    //            qnameValueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
 	    //            qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
-        }
-
-        // TODO : move to NativeTextEngine 
-        if (RangeIndexSpec.hasMixedTextIndex(indexType)) {
-        	node.getQName().setNameType(ElementValue.ELEMENT);
-            if (content == null) {
-                //NodeProxy p = new NodeProxy(node);
-                //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                //    p.setInternalAddress(node.getOldInternalAddress());
-                content = getNodeValue(node, false);
-                //Curious... I assume getNodeValue() needs the old address
-                //p.setInternalAddress(node.getInternalAddress());
-            }
-            textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
-            textEngine.storeText(node, content, NativeTextEngine.FOURTH_OPTION, null, remove);
-        }
-
-        FulltextIndexSpec ftIdx = ((DocumentImpl)node.getOwnerDocument()).getCollection().getFulltextIndexConfiguration(this);
-        if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
-        	node.getQName().setNameType(ElementValue.ELEMENT);
-            if (content == null) {
-                //NodeProxy p = new NodeProxy(node);
-                //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                //    p.setInternalAddress(node.getOldInternalAddress());
-                content = getNodeValue(node, false);
-                //Curious... I assume getNodeValue() needs the old address
-                //p.setInternalAddress(node.getInternalAddress());
-            }
-            //Grrr : unify with above !
-            textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
-            textEngine.storeText(node, content, NativeTextEngine.TEXT_BY_QNAME, ftIdx, remove);
         }
     }
 
@@ -2448,7 +2418,6 @@ public class NativeBroker extends DBBroker {
      */
     public void removeNode(final Txn transaction, final StoredNode node, NodePath currentPath, String content) {
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-        final FulltextIndexSpec ftIdx = doc.getCollection().getFulltextIndexConfiguration(this);
 
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             public Object start() {
@@ -2528,25 +2497,9 @@ public class NativeBroker extends DBBroker {
 		valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, qnSpec, false);
 	    }
                 
-	    // check if attribute value should be fulltext-indexed
-	    // by calling IndexPaths.match(path) 
-	    if(ftIdx != null && ftIdx.matchAttribute(currentPath)) {
-		textEngine.setDocument(doc);
-		textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx, false);
-	    }
-                
 	    currentPath.removeLastComponent();
 	    break;
 	case Node.TEXT_NODE :
-	    // check if this textual content should be fulltext-indexed
-	    // by calling IndexPaths.match(path)
-	    if (ftIdx == null) {
-		textEngine.setDocument(doc);
-		textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx, false);
-	    } else if (ftIdx.match(currentPath)) {
-		textEngine.setDocument(doc);
-		textEngine.storeText((TextImpl) node, NativeTextEngine.DO_NOT_TOKENIZE, ftIdx, false);
-	    }
 	    break;
         }
     }
@@ -2764,7 +2717,8 @@ public class NativeBroker extends DBBroker {
         try {
 	    elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);        	
 	    valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-	    textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);    		
+	    textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);
+            indexController.addIndexWorker(textEngine.getWorker());
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
@@ -2816,7 +2770,8 @@ public class NativeBroker extends DBBroker {
                     lock.release(Lock.WRITE_LOCK);
                 }
                 notifySync();
-		//              System.gc();
+                textEngine.sync();
+        //              System.gc();
                 NumberFormat nf = NumberFormat.getNumberInstance();
                 LOG.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
                         nf.format(run.maxMemory() / 1024) + "K max; " +
@@ -2838,6 +2793,7 @@ public class NativeBroker extends DBBroker {
 	    sync(Sync.MAJOR_SYNC);
             domDb.close();
             collectionsDb.close();
+        textEngine.close();
             notifyClose();
 	} catch (Exception e) {
 	    LOG.warn(e.getMessage(), e);
@@ -3037,18 +2993,6 @@ public class NativeBroker extends DBBroker {
                                     qnIdx, mode == MODE_REMOVE);
                         }
                     }
-                    //Special handling for fulltext index
-                    //TODO : harmonize
-                    if (fullTextIndexing && !isTemp ) {
-                        textEngine.setDocument((DocumentImpl)node.getOwnerDocument());
-                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx,
-                                mode == MODE_REMOVE);
-                    }
-                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
-                        textEngine.setDocument((DocumentImpl)node.getOwnerDocument());
-                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_BY_QNAME, ftIdx,
-                                mode == MODE_REMOVE);
-                    }
 
                     //notifyStoreAttribute((AttrImpl)node, currentPath, NativeValueIndex.WITH_PATH, null);
 
@@ -3089,21 +3033,6 @@ public class NativeBroker extends DBBroker {
                 }
 
                 case Node.TEXT_NODE:
-                    // --move to-- NativeTextEngine
-                    // TODO textEngine.storeText( (TextImpl) node, currentPath, index);
-                    // check if this textual content should be fulltext-indexed
-                    // by calling IndexPaths.match(path)
-                    if (fullTextIndex && !isTemp) {
-                        if (ftIdx == null || currentPath == null) {
-                            textEngine.setDocument(doc);
-                            textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx, mode == MODE_REMOVE);
-                        } else if (ftIdx.match(currentPath)) {
-                            int tokenize = ftIdx.preserveContent(currentPath) ?
-                                    NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE;
-                            textEngine.setDocument(doc);
-                            textEngine.storeText((TextImpl) node, tokenize, ftIdx, mode == MODE_REMOVE);
-                        }
-                    }
 
                     notifyStoreText( (TextImpl)node, currentPath,
                             fullTextIndex ? NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE);
