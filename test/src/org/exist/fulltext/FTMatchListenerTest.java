@@ -1,15 +1,18 @@
-package org.exist.storage.serializers;
+package org.exist.fulltext;
 
 import org.custommonkey.xmlunit.NamespaceContext;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -141,7 +144,7 @@ public class FTMatchListenerTest {
 
     @Test
     public void ancestorAxis() {
-        DBBroker broker;
+        DBBroker broker = null;
         try {
             configureAndStore(CONF1);
 
@@ -188,6 +191,8 @@ public class FTMatchListenerTest {
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
+        } finally {
+            pool.release(broker);
         }
     }
     
@@ -298,39 +303,9 @@ public class FTMatchListenerTest {
 
     @AfterClass
     public static void closeDB() {
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            pool = BrokerPool.getInstance();
-            assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
-
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.removeCollection(transaction, root);
-
-            Collection config = broker.getOrCreateCollection(transaction,
-                XmldbURI.create(CollectionConfigurationManager.CONFIG_COLLECTION + "/db"));
-            assertNotNull(config);
-            broker.removeCollection(transaction, config);
-
-            transact.commit(transaction);
-        } catch (Exception e) {
-        	transact.abort(transaction);
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (pool != null) pool.release(broker);
-        }
+        TestUtils.cleanupDB();
         BrokerPool.stopAll(false);
+        pool = null;
     }
 
     private void configureAndStore(String config) {
