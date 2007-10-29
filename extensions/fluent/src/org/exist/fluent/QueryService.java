@@ -442,33 +442,4 @@ public class QueryService implements Cloneable {
 		}
 	}
 	
-	/**
-	 * @deprecated for testing only
-	 */
-	@Deprecated public static class Test extends DatabaseTest {
-		public void testAnalyze1() {
-			QueryAnalysis qa = db.getFolder("/").query().analyze("zero-or-one(//blah)");
-			assertEquals(QueryAnalysis.Cardinality.ZERO_OR_ONE, qa.cardinality());
-			assertEquals("item", qa.returnTypeName());
-		}
-		public void testAnalyze2() {
-			QueryAnalysis qa = db.getFolder("/").query().analyze("exactly-one(//blah)");
-			assertEquals(QueryAnalysis.Cardinality.ONE, qa.cardinality());
-			assertEquals("item", qa.returnTypeName());
-		}
-		public void testAnalyze3() {
-			QueryAnalysis qa = db.getFolder("/").query().analyze("one-or-more(//blah)");
-			assertEquals(QueryAnalysis.Cardinality.ONE_OR_MORE, qa.cardinality());
-			assertEquals("item", qa.returnTypeName());
-		}
-		public void testAnalyze4() {
-			QueryAnalysis qa = db.getFolder("/").query().analyze("//blah");
-			assertEquals(QueryAnalysis.Cardinality.ZERO_OR_MORE, qa.cardinality());
-			assertEquals("node", qa.returnTypeName());
-		}
-		public void testAnalyze5() {
-			QueryAnalysis qa = db.getFolder("/").query().analyze("$blah");
-			assertEquals("[blah]", qa.requiredVariables().toString());
-		}
-	}
 }

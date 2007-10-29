@@ -14,12 +14,12 @@ import org.jmock.cglib.MockObjectTestCase;
  * A superclass for database unit tests.  It takes care of starting up and clearing the database in
  * its <code>setUp</code> method, and supports mocking with jMock.  By default, the database
  * will be configured from the file "conf.xml" in the current directory, but you can annotate your
- * test class with {@link DatabaseTest.ConfigFile} to specify a different one.
+ * test class with {@link DatabaseHelper.ConfigFile} to specify a different one.
  * 
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-@DatabaseTest.ConfigFile("conf.xml")
-public abstract class DatabaseTest extends MockObjectTestCase {
+@DatabaseHelper.ConfigFile("conf.xml")
+public abstract class DatabaseHelper extends MockObjectTestCase {
 	
 	/**
 	 * An annotation that specifies the path of the config file to use when setting up the database
@@ -33,7 +33,8 @@ public abstract class DatabaseTest extends MockObjectTestCase {
 	}
 	
 	protected Database db;
-	@Override protected void setUp() {
+    
+    @Override protected void setUp() {
 		ConfigFile configFileAnnotation = getClass().getAnnotation(ConfigFile.class);
 		assert configFileAnnotation != null;
 		Database.ensureStarted(new File(configFileAnnotation.value()));
@@ -54,4 +55,5 @@ public abstract class DatabaseTest extends MockObjectTestCase {
 			db.releaseBroker(broker);
 		}
 	}
+    
 }
