@@ -167,10 +167,6 @@ public abstract class Serializer implements XMLReader {
     protected LexicalHandler lexicalHandler = null;
     protected User user = null;
 
-    // match listener for the fulltext index. to be removed once the index has
-    // been moved to the new architecture
-    private FTMatchListener ftmatch = new FTMatchListener();
-
     public Serializer(DBBroker broker, Configuration config) {
 		this.broker = broker;
 		factory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
@@ -552,12 +548,6 @@ public abstract class Serializer implements XMLReader {
         if (root != null && getHighlightingMode() != TAG_NONE) {
             IndexController controller = broker.getIndexController();
             MatchListener listener = controller.getMatchListener(root);
-            if (ftmatch.hasMatches(root)) {
-                ftmatch.reset(root);
-                ftmatch.setNextInChain(receiver);
-                receiver = ftmatch;
-                LOG.debug("Applying FTMatchListener");
-            }
             if (listener != null) {
                 MatchListener last = (MatchListener) listener.getLastInChain();
                 last.setNextInChain(receiver);
@@ -571,12 +561,6 @@ public abstract class Serializer implements XMLReader {
         if (getHighlightingMode() != TAG_NONE) {
             IndexController controller = broker.getIndexController();
             MatchListener listener = controller.getMatchListener(p);
-            if (ftmatch.hasMatches(p)) {
-                ftmatch.reset(p);
-                ftmatch.setNextInChain(receiver);
-                receiver = ftmatch;
-                LOG.debug("Applying FTMatchListener");
-            }
             if (listener != null) {
                 MatchListener last = (MatchListener) listener.getLastInChain();
                 last.setNextInChain(receiver);
@@ -737,11 +721,6 @@ public abstract class Serializer implements XMLReader {
         if (root != null && getHighlightingMode() != TAG_NONE) {
             IndexController controller = broker.getIndexController();
             MatchListener listener = controller.getMatchListener(root);
-            if (ftmatch.hasMatches(root)) {
-                ftmatch.reset(root);
-                ftmatch.setNextInChain(receiver);
-                receiver = ftmatch;
-            }
             if (listener != null) {
                 MatchListener last = (MatchListener) listener.getLastInChain();
                 last.setNextInChain(receiver);
