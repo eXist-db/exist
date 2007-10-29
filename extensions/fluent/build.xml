@@ -2,11 +2,12 @@
 
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>
+    <property name="test" value="./test"/>
     <property name="javadoc" value="./javadoc"/>
     <property name="top.dir" value="../.."/>
-	
+
     <property name="build.compiler" value="modern"/>
-	
+
     <condition property="java14-only">
         <equals arg1="${ant.java.version}" arg2="1.4"/>
     </condition>
@@ -15,41 +16,51 @@
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${top.dir}/${lib.endorsed}">
+            <include name="*.jar"/>
+        </fileset>
         <fileset dir="${top.dir}/${tools.ant}/lib">
             <include name="*.jar"/>
         </fileset>
-		<fileset dir="./lib">
-			<include name="*.jar"/>
-		</fileset>
+        <fileset dir="./lib">
+            <include name="*.jar"/>
+        </fileset>
         <pathelement path="${top.dir}/exist.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
+    <path id="classpath.jar">
+        <pathelement path="${top.dir}/exist-fluent.jar"/>
+    </path>
+    <path id="classpath.test">
+        <pathelement path="${test}/classes"/>
+    </path>
 
-    <target name="all" depends="jar,javadoc"/>
+
+    <target name="all" depends="jar,javadoc"/>   <!-- test -->
 
     <target name="prepare">
-		<mkdir dir="${classes}"/>
-	</target>
-	
-	<target name="compile" depends="prepare" unless="java14-only">
-		<echo message="---------------------------"/>
+        <mkdir dir="${classes}"/>
+    </target>
+
+    <target name="compile" depends="prepare" unless="java14-only">
+        <echo message="---------------------------"/>
         <echo message="Compiling fluent extension"/>
         <echo message="---------------------------"/>
-		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
-			destdir="${classes}" encoding="UTF-8"
-			optimize="${build.optimize}" srcdir="${src}" 
-        	source="1.5"
-			target="1.5">
+        <javac debug="${build.debug}" deprecation="${build.deprecation}"
+               destdir="${classes}" encoding="UTF-8"
+               optimize="${build.optimize}" srcdir="${src}"
+               source="1.5"
+               target="1.5">
             <classpath>
-            	<path refid="classpath.core"/>
+                <path refid="classpath.core"/>
             </classpath>
         </javac>
-	</target>
-	
-	<target name="jar" depends="compile">
-		<echo message="Creating exist-fluent.jar ..."/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <echo message="Creating exist-fluent.jar ..."/>
         <jar basedir="${classes}" compress="true" jarfile="${top.dir}/exist-fluent.jar" update="true">
-        	<exclude name="org/exist/fluent/*$*Test*"/>     
+            <exclude name="org/exist/fluent/*$*Test*"/>
             <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
@@ -57,14 +68,14 @@
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>
         </jar>
-	</target>
+    </target>
 
     <target name="javadoc" unless="java14-only">
         <mkdir dir="${javadoc}"/>
         <javadoc bottom="Copyright (C)  All rights reserved."
-            destdir="${javadoc}" doctitle="eXist Fluent Javadocs"
-            noindex="true" notree="true" access="public"
-            maxmemory="512M" source="1.5">
+                 destdir="${javadoc}" doctitle="eXist Fluent Javadocs"
+                 noindex="true" notree="true" access="public"
+                 maxmemory="512M" source="1.5">
             <packageset dir="${src}">
                 <include name="org/**"/>
                 <exclude name="org/exist/fluent/*$*Test*"/>
@@ -74,28 +85,55 @@
             </classpath>
             <!--link href="http://jakarta.apache.org/commons/collections/api/"/-->
         </javadoc>
-        
+
     </target>
 
     <target name="test" depends="compile">
-		<echo message="Running fluent extension tests"/>
-		<junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
-            <sysproperty key="exist.home" value="${basedir}" />
-            <classpath refid="classpath.core"/>
-            <classpath refid="classpath.junit"/>
-            
+        <echo message="Running fluent extension tests"/>
+
+        <mkdir dir="${test}/classes"/>
+        <mkdir dir="${test}/reports/html"/>
+        <mkdir dir="${test}/reports/data"/>
+        <javac debug="${build.debug}" deprecation="${build.deprecation}"
+               destdir="${test}/classes" encoding="UTF-8"
+               optimize="${build.optimize}" srcdir="${test}/src"
+               source="1.5" target="1.5">
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.jar"/>
+            </classpath>
+        </javac>
+
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
+               maxmemory="${junit.forked.VM.maxmemory}">
+            <sysproperty key="exist.home" value="${basedir}"/>
+
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.jar"/>
+                <path refid="classpath.test"/>
+            </classpath>
+
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <batchtest fork="yes" todir="${junit.reports.dat}">
-                <fileset dir="${classes}">
-                	<include name="*Test*.class"/>
+            <batchtest fork="yes" todir="${test}/reports/data">
+                <fileset dir="${test}/classes">
+                    <include name="**/*Test.class"/>
                 </fileset>
             </batchtest>
         </junit>
-	</target>
 
-	<target name="clean">
-		<delete dir="${classes}"/>
-		<delete file="${top.dir}/exist-fluent.jar" failonerror="false"/>
-	</target>
+
+        <junitreport> <!-- todir="${test}/reports/html" -->
+            <fileset dir="${test}/reports/data">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${test}/reports/html"/>
+        </junitreport>
+    </target>
+
+    <target name="clean">
+        <delete dir="${classes}"/>
+        <delete file="${top.dir}/exist-fluent.jar" failonerror="false"/>
+    </target>
 </project>
