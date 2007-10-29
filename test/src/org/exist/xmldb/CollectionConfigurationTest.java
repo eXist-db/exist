@@ -113,6 +113,7 @@ public class CollectionConfigurationTest extends TestCase {
          		fail("Could not create config collection: "+CONF_COLL_URI);
          	}
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }

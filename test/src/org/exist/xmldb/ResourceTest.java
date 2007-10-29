@@ -314,7 +314,8 @@ public class ResourceTest extends TestCase {
                 testCollection.storeResource(res);
             }
 		} catch (Exception e) {
-			fail(e.getMessage());
+            e.printStackTrace();
+            fail(e.getMessage());
 		}
 	}
 	

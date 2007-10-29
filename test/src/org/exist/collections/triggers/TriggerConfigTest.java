@@ -1,22 +1,19 @@
 package org.exist.collections.triggers;
 
+import org.exist.TestUtils;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
-import org.exist.collections.CollectionConfigurationManager;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runners.Parameterized;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 
@@ -182,15 +179,9 @@ public class TriggerConfigTest {
 
     @AfterClass
     public static void closeDB() {
+        TestUtils.cleanupDB();
         try {
             Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-            CollectionManagementService cmgr = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            cmgr.removeCollection("triggers");
-
-            Collection configRoot = DatabaseManager.getCollection("xmldb:exist://" + CollectionConfigurationManager.CONFIG_COLLECTION,
-                    "admin", null);
-            cmgr = (CollectionManagementService) configRoot.getService("CollectionManagementService", "1.0");
-            cmgr.removeCollection("db");
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
         } catch (XMLDBException e) {

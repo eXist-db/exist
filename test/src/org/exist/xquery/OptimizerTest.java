@@ -21,19 +21,23 @@
  */
 package org.exist.xquery;
 
+import org.exist.TestUtils;
 import org.exist.storage.DBBroker;
+import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
-import org.exist.util.XMLFilenameFilter;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
-import org.junit.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -352,14 +356,7 @@ public class OptimizerTest {
     @AfterClass
     public static void shutdownDB() {
         try {
-            CollectionManagementService service =
-                    (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
-            service.removeCollection(".");
-
-            Collection system = DatabaseManager.getCollection("xmldb:exist:///db/system/config/db", "admin", null);
-            service = (CollectionManagementService) system.getService("CollectionManagementService", "1.0");
-            service.removeCollection(".");
-
+            TestUtils.cleanupDB();
             DatabaseInstanceManager dim =
                 (DatabaseInstanceManager) testCollection.getService(
                     "DatabaseInstanceManager", "1.0");
