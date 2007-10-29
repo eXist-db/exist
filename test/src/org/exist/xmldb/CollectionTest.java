@@ -57,8 +57,19 @@ public class CollectionTest extends TestCase {
             fail(e.getMessage());
         }
     }
-	
-	/**
+
+    protected void tearDown() {
+        try {
+            Collection root = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+            mgr.shutdown();
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
+    /**
 	 * @param args
 	 */
 	public static void main(String[] args) {

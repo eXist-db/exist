@@ -78,10 +78,12 @@ public class CustomIndexTest extends TestCase {
      */
     public void testXUpdateRemove() {
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
         	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
+            transact = pool.getTransactionManager();
+            transaction = transact.beginTransaction();
             
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
@@ -155,6 +157,7 @@ public class CustomIndexTest extends TestCase {
             
             transact.commit(transaction);
         } catch (Exception e) {
+            transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -166,10 +169,12 @@ public class CustomIndexTest extends TestCase {
 
     public void testXUpdateInsert() {
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
         	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
+            transact = pool.getTransactionManager();
+            transaction = transact.beginTransaction();
 
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
@@ -279,6 +284,7 @@ public class CustomIndexTest extends TestCase {
 
             transact.commit(transaction);
         } catch (Exception e) {
+            transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {

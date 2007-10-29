@@ -21,13 +21,16 @@
 package org.exist.collections.triggers;
 
 import static org.custommonkey.xmlunit.XMLAssert.*;
+import org.exist.TestUtils;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.DatabaseInstanceManager;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.fail;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -176,16 +179,16 @@ public class XQueryTriggerTest {
 
     @AfterClass
     public static void shutdownDB() {
+        TestUtils.cleanupDB();
         try {
-            Collection root = DatabaseManager.getCollection(URI, "admin", null);
-            CollectionManagementService service = (CollectionManagementService)
-                    root.getService("CollectionManagementService", "1.0");
-            service.removeCollection(TEST_COLLECTION);
-            testCollection = null;
+            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+            mgr.shutdown();
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
+        testCollection = null;
     }
 
     /** create "log" document that will be updated by the trigger,
