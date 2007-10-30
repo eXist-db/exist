@@ -7,7 +7,7 @@ package org.exist.fluent;
  * Time: 8:56:25 PM
  * To change this template use File | Settings | File Templates.
  */
-public class QueryServiceHelper extends DatabaseHelper {
+public class QueryServiceTest extends DatabaseHelper {
     public void testAnalyze1() {
         QueryService.QueryAnalysis qa = db.getFolder("/").query().analyze("zero-or-one(//blah)");
         assertEquals(QueryService.QueryAnalysis.Cardinality.ZERO_OR_ONE, qa.cardinality());

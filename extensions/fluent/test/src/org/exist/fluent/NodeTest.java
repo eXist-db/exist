@@ -7,7 +7,7 @@ package org.exist.fluent;
  * Time: 8:55:21 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NodeHelper extends DatabaseHelper {
+public class NodeTest extends DatabaseHelper {
     public void testAppend1() {
         XMLDocument doc = db.createFolder("/test").documents().build(Name.create("foo")).elem("top").end("top").commit();
         Node node = doc.root().append().elem("child").end("child").commit();

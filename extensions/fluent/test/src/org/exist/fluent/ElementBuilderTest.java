@@ -1,7 +1,8 @@
 package org.exist.fluent;
 
-import org.w3c.dom.*;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -10,7 +11,7 @@ import org.w3c.dom.Node;
  * Time: 8:48:19 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ElementBuilderHelper extends DatabaseHelper {
+public class ElementBuilderTest extends DatabaseHelper {
     public void testEmpty() {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(org.w3c.dom.Node[] node) {fail("completed called"); return null;}
@@ -174,7 +175,7 @@ public class ElementBuilderHelper extends DatabaseHelper {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(Node[] nodes) {
                 assertEquals(1, nodes.length);
-                assertEquals("<test/>", ElementBuilderHelper.toString(nodes[0]));
+                assertEquals("<test/>", ElementBuilderTest.toString(nodes[0]));
                 return null;
             }
         });
@@ -185,7 +186,7 @@ public class ElementBuilderHelper extends DatabaseHelper {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(Node[] nodes) {
                 assertEquals(1, nodes.length);
-                assertEquals("<test><test2/></test>", ElementBuilderHelper.toString(nodes[0]));
+                assertEquals("<test><test2/></test>", ElementBuilderTest.toString(nodes[0]));
                 return null;
             }
         });
@@ -196,7 +197,7 @@ public class ElementBuilderHelper extends DatabaseHelper {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(Node[] nodes) {
                 assertEquals(1, nodes.length);
-                assertEquals("<test foo='bar'/>", ElementBuilderHelper.toString(nodes[0]));
+                assertEquals("<test foo='bar'/>", ElementBuilderTest.toString(nodes[0]));
                 return null;
             }
         });
@@ -207,7 +208,7 @@ public class ElementBuilderHelper extends DatabaseHelper {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(Node[] nodes) {
                 assertEquals(1, nodes.length);
-                assertEquals("<test>blah</test>", ElementBuilderHelper.toString(nodes[0]));
+                assertEquals("<test>blah</test>", ElementBuilderTest.toString(nodes[0]));
                 return null;
             }
         });
@@ -218,7 +219,7 @@ public class ElementBuilderHelper extends DatabaseHelper {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(Node[] nodes) {
                 assertEquals(1, nodes.length);
-                assertEquals("<test foo='bar'/>", ElementBuilderHelper.toString(nodes[0]));
+                assertEquals("<test foo='bar'/>", ElementBuilderTest.toString(nodes[0]));
                 return null;
             }
         });
@@ -229,7 +230,7 @@ public class ElementBuilderHelper extends DatabaseHelper {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(Node[] nodes) {
                 assertEquals(1, nodes.length);
-                assertEquals("<test/>", ElementBuilderHelper.toString(nodes[0]));
+                assertEquals("<test/>", ElementBuilderTest.toString(nodes[0]));
                 return null;
             }
         });
@@ -240,7 +241,7 @@ public class ElementBuilderHelper extends DatabaseHelper {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), true, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(Node[] nodes) {
                 assertEquals(2, nodes.length);
-                assertEquals("<test1/><test2/>", ElementBuilderHelper.toString(nodes[0]) + ElementBuilderHelper.toString(nodes[1]));
+                assertEquals("<test1/><test2/>", ElementBuilderTest.toString(nodes[0]) + ElementBuilderTest.toString(nodes[1]));
                 return null;
             }
         });
@@ -251,7 +252,7 @@ public class ElementBuilderHelper extends DatabaseHelper {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), true, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(Node[] nodes) {
                 assertEquals(2, nodes.length);
-                assertEquals("blahfoo", ElementBuilderHelper.toString(nodes[0]) + ElementBuilderHelper.toString(nodes[1]));
+                assertEquals("blahfoo", ElementBuilderTest.toString(nodes[0]) + ElementBuilderTest.toString(nodes[1]));
                 return null;
             }
         });

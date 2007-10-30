@@ -7,7 +7,7 @@ package org.exist.fluent;
  * Time: 8:49:39 PM
  * To change this template use File | Settings | File Templates.
  */
-public class FolderHelper extends DatabaseHelper {
+public class FolderTest extends DatabaseHelper {
     public void testCreateTop() {
         db.createFolder("/top");
         try {

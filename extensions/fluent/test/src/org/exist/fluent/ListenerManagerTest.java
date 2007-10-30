@@ -1,9 +1,9 @@
 package org.exist.fluent;
 
-import org.jmock.core.Constraint;
-import org.jmock.core.Stub;
-import org.jmock.core.Invocation;
 import org.jmock.Mock;
+import org.jmock.core.Constraint;
+import org.jmock.core.Invocation;
+import org.jmock.core.Stub;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +12,7 @@ import org.jmock.Mock;
  * Time: 8:53:16 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ListenerManagerHelper extends DatabaseHelper {
+public class ListenerManagerTest extends DatabaseHelper {
     private Mock documentListener;
     private Mock folderListener;
     private Mock bothListener;

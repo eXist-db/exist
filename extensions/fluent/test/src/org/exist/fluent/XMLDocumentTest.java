@@ -7,7 +7,7 @@ package org.exist.fluent;
  * Time: 8:43:29 PM
  * To change this template use File | Settings | File Templates.
  */
-public class XMLDocumentHelper extends DatabaseHelper {
+public class XMLDocumentTest extends DatabaseHelper {
     public void testQuery1() {
         Folder c1 = db.createFolder("/c1");
         XMLDocument doc = c1.documents().build(Name.create("original")).elem("test").end("test").commit();
