@@ -1,14 +1,14 @@
 package org.exist.fluent;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.*;
-
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 import org.jmock.cglib.MockObjectTestCase;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.*;
 
 /**
  * A superclass for database unit tests.  It takes care of starting up and clearing the database in
@@ -53,7 +53,11 @@ public abstract class DatabaseHelper extends MockObjectTestCase {
 		} finally {
 			tx.abortIfIncomplete();
 			db.releaseBroker(broker);
-		}
+        }
+	}
+
+    @Override protected void tearDown() throws Exception {
+		Database.shutdown();
 	}
     
 }

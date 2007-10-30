@@ -22,7 +22,10 @@
         <fileset dir="${top.dir}/${tools.ant}/lib">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="./lib">
+        <fileset dir="${top.dir}/${lib.extensions}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/extensions/fluent/lib">
             <include name="*.jar"/>
         </fileset>
         <pathelement path="${top.dir}/exist.jar"/>
@@ -36,7 +39,7 @@
     </path>
 
 
-    <target name="all" depends="jar,javadoc"/>   <!-- test -->
+    <target name="all" depends="jar,javadoc"/>   <!-- ,test -->
 
     <target name="prepare">
         <mkdir dir="${classes}"/>

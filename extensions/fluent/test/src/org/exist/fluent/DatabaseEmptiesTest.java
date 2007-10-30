@@ -1,7 +1,5 @@
 package org.exist.fluent;
 
-import junit.framework.TestCase;
-
 import java.util.NoSuchElementException;
 
 /**
