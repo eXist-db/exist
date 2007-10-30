@@ -191,6 +191,10 @@
         <ant antfile="build.xml" dir="extensions/indexes" target="test"/>
     </target>
 
+    <target name="test-fluent" depends="prepare-extensions">
+        <ant antfile="build.xml" dir="extensions/fluent" target="test"/>
+    </target>
+    
     <!-- Helper target for starting server -->
     <target name="start-server">
         <echo message="---------------------------------------"/>

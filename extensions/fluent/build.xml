@@ -5,6 +5,7 @@
     <property name="test" value="./test"/>
     <property name="javadoc" value="./javadoc"/>
     <property name="top.dir" value="../.."/>
+    <property name="junit.index.reports" value="${top.dir}/test/junit/data"/>
 
     <property name="build.compiler" value="modern"/>
 
@@ -39,10 +40,11 @@
     </path>
 
 
-    <target name="all" depends="jar,javadoc"/>   <!-- ,test -->
+    <target name="all" depends="jar"/> <!-- ,javadoc -->
 
     <target name="prepare">
         <mkdir dir="${classes}"/>
+        <mkdir dir="${test}/classes"/>
     </target>
 
     <target name="compile" depends="prepare" unless="java14-only">
@@ -56,6 +58,19 @@
                target="1.5">
             <classpath>
                 <path refid="classpath.core"/>
+            </classpath>
+        </javac>
+
+        <echo message="----------------------"/>
+        <echo message="Compiling fluent tests"/>
+        <echo message="----------------------"/>
+        <javac debug="${build.debug}" deprecation="${build.deprecation}"
+               destdir="${test}/classes" encoding="UTF-8"
+               optimize="${build.optimize}" srcdir="${test}/src"
+               source="1.5" target="1.5">
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.jar"/>
             </classpath>
         </javac>
     </target>
@@ -94,19 +109,6 @@
     <target name="test" depends="compile">
         <echo message="Running fluent extension tests"/>
 
-        <mkdir dir="${test}/classes"/>
-        <mkdir dir="${test}/reports/html"/>
-        <mkdir dir="${test}/reports/data"/>
-        <javac debug="${build.debug}" deprecation="${build.deprecation}"
-               destdir="${test}/classes" encoding="UTF-8"
-               optimize="${build.optimize}" srcdir="${test}/src"
-               source="1.5" target="1.5">
-            <classpath>
-                <path refid="classpath.core"/>
-                <path refid="classpath.jar"/>
-            </classpath>
-        </javac>
-
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
                maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}"/>
@@ -119,7 +121,7 @@
 
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <batchtest fork="yes" todir="${test}/reports/data">
+            <batchtest fork="yes" todir="${junit.index.reports}">
                 <fileset dir="${test}/classes">
                     <include name="**/*Test.class"/>
                 </fileset>
@@ -127,12 +129,6 @@
         </junit>
 
 
-        <junitreport> <!-- todir="${test}/reports/html" -->
-            <fileset dir="${test}/reports/data">
-                <include name="TEST-*.xml"/>
-            </fileset>
-            <report format="frames" todir="${test}/reports/html"/>
-        </junitreport>
     </target>
 
     <target name="clean">
