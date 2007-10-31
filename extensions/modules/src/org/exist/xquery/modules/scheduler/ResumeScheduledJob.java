@@ -50,7 +50,6 @@ import org.exist.xquery.value.Type;
 public class ResumeScheduledJob extends BasicFunction
 {	
 	private Scheduler scheduler = null;
-	private User user = null;
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -72,7 +71,6 @@ public class ResumeScheduledJob extends BasicFunction
 		super(context, signature);
 		
 		scheduler = context.getBroker().getBrokerPool().getScheduler();
-		user = context.getUser();
     }
 
 	/**
@@ -88,6 +86,8 @@ public class ResumeScheduledJob extends BasicFunction
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
 		String jobName = args[0].getStringValue();
+		
+		User user = context.getUser();
 		
 		//Check if the user is a DBA
 		if(!user.hasDbaRole())

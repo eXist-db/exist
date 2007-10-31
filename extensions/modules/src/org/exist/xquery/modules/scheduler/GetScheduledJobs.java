@@ -57,7 +57,6 @@ import org.xml.sax.SAXException;
 public class GetScheduledJobs extends BasicFunction
 {	
 	private Scheduler 	scheduler 	= null;
-	private User 		user 		= null;
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -76,7 +75,6 @@ public class GetScheduledJobs extends BasicFunction
 		super( context, signature );
 		
 		scheduler 	= context.getBroker().getBrokerPool().getScheduler();
-		user 		= context.getUser();
     }
 
 	/**
@@ -91,6 +89,7 @@ public class GetScheduledJobs extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
+		User user 		= context.getUser();
 		
 		boolean userhasDBARole = user.hasDbaRole();
 		
