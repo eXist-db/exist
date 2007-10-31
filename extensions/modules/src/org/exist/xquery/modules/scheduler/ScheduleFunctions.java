@@ -52,7 +52,6 @@ import org.exist.xquery.value.Type;
 public class ScheduleFunctions extends BasicFunction
 {	
 	private Scheduler scheduler = null;
-	private User user = null;
 	
 	public final static FunctionSignature [] signatures = {
 		new FunctionSignature(
@@ -86,7 +85,6 @@ public class ScheduleFunctions extends BasicFunction
 		super(context, signature);
 		
 		scheduler = context.getBroker().getBrokerPool().getScheduler();
-		user = context.getUser();
     }
 
 	/**
@@ -103,6 +101,8 @@ public class ScheduleFunctions extends BasicFunction
 	{
 		String resource = args[0].getStringValue();
 		String cronExpression = args[1].getStringValue();
+		
+		User user = context.getUser();
 		
 		//Check if the user is a DBA
 		if(!user.hasDbaRole())
