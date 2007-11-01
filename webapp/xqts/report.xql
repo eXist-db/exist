@@ -15,7 +15,7 @@ declare variable $xqts:XQTS_HOME := $xqts:CONFIG/basedir/text();
 
 declare option exist:output-size-limit "-1";
 
-declare function xqts:initialize() as element() {
+declare function xqts:initialize() as element()? {
     let $collection := xdb:create-collection("/db", "XQTS")
     let $config := doc("/db/XQTS/config.xml")/config
     return
@@ -156,12 +156,11 @@ declare function xqts:display-page() as element() {
                             <a href="http://www.w3.org/XML/Query/test-suite/" target="_new">W3C site</a>. 
                             <b>Please note</b>: eXist 1.0 will only work with XQTS version 0.9.0. It won't run 
                             with later versions. eXist 1.1 can run all versions!</li>
-                        <li>Extract the file to a location remembered as "XQTS_HOME" on your local drive (not needed to create an 
+                        <li>Extract the file to a location remembered as "XQTS_HOME" on your local drive (it is not needed to create an 
                             environment variable).</li>
-                        <li>Modify the file <span class="filename">EXIST_HOME/webapp/xqts/config.xml</span> to match your 
-                            local setup (XQTS_HOME)</li>
-                        <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, change <b>validation="no"</b></li>
-                        <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, change <b>suppress-whitespace="none"</b></li>
+                        <li>Modify <span class="filename">EXIST_HOME/webapp/xqts/config.xml</span> to match your 
+                            local setup (XQTS_HOME)</li>                        
+                        <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, change <b>suppress-whitespace="none"</b> if required</li>
                         <li>Start eXist as full server in EXIST_HOME : <span class="filename">bin/startup.sh</span></li>
                         <li>Start data upload : <span class="filename">build.[sh|bat] -f webapp/xqts/build.xml</span></li>
                         <li>Reload this page!</li>
