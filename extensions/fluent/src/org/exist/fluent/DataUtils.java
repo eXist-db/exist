@@ -4,6 +4,8 @@ import java.util.*;
 
 import javax.xml.datatype.*;
 
+import org.exist.util.Base64Encoder;
+
 /**
  * A bunch of static data conversion utility methods.
  *
@@ -31,7 +33,7 @@ public class DataUtils {
 			throw new RuntimeException("unable to configure datatype factory", e);
 		}
 	}
-
+	
 	/**
 	 * Return a shared instance of a datatype factory, used for creating new XML data objects.
 	 *
@@ -77,9 +79,9 @@ public class DataUtils {
 
 	/**
 	 * Convert a Java object to its equivalent XML datatype string representation.
-	 * At the moment, there is special treatment for <code>java.util.Date</code>
-	 * and <code>java.util.Calendar</code>; for all other objects, we simply invoke
-	 * <code>toString()</code>.
+	 * At the moment, there is special treatment for <code>java.util.Date</code>,
+	 * <code>java.util.Calendar</code> and <code>byte[]</code> (Base64 encoding);
+	 * for all other objects, we simply invoke <code>toString()</code>.
 	 * 
 	 * @param o the object to convert
 	 * @return a string representation of the object, according to XML Schema Datatype rules if possible
@@ -89,6 +91,10 @@ public class DataUtils {
 			return toDateTime((Date) o).toString();
 		} else if (o instanceof Calendar) {
 			return toDateTime(((Calendar) o).getTimeInMillis()).toString();
+		} else if (o instanceof byte[]) {
+			Base64Encoder encoder = new Base64Encoder();
+			encoder.translate((byte[]) o);
+			return String.valueOf(encoder.getCharArray());
 		} else {
 			return o.toString();
 		}

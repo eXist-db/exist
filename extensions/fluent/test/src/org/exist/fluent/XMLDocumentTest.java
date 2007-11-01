@@ -1,13 +1,6 @@
 package org.exist.fluent;
 
-/**
- * Created by IntelliJ IDEA.
- * User: wessels
- * Date: Oct 29, 2007
- * Time: 8:43:29 PM
- * To change this template use File | Settings | File Templates.
- */
-public class XMLDocumentTest extends DatabaseHelper {
+public class XMLDocumentTest extends DatabaseTestCase {
     public void testQuery1() {
         Folder c1 = db.createFolder("/c1");
         XMLDocument doc = c1.documents().build(Name.create("original")).elem("test").end("test").commit();

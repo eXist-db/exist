@@ -12,8 +12,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
-import org.jmock.Mock;
-import org.jmock.core.*;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -24,7 +22,9 @@ import org.xml.sax.ext.LexicalHandler;
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class ListenerManager {
-
+	
+	private static final Logger LOG = Logger.getLogger(ListenerManager.class);
+	
 	static void configureTriggerDispatcher(Database db) {
 		Folder rootConfigFolder = db.createFolder(CollectionConfigurationManager.CONFIG_COLLECTION + Database.ROOT_PREFIX);
 		rootConfigFolder.namespaceBindings().put("", CollectionConfiguration.NAMESPACE);
@@ -32,23 +32,37 @@ public class ListenerManager {
 				"//trigger[" +
 				"	@event='store update remove create-collection rename-collection delete-collection' and" +
 				"	@class='org.exist.fluent.ListenerManager$TriggerDispatcher']");
-		if (!hasTrigger) {
-			org.exist.fluent.Node triggers = rootConfigFolder.documents().query().optional("//triggers").node();
+		if (hasTrigger) return;
+		
+		org.w3c.dom.Node trigger = createGlobalTrigger(rootConfigFolder.namespaceBindings());
+		boolean hadConfig = false;
+		try {
+			// We try to merge in our trigger if a config already exists, but if something goes wrong we'll just blow it away instead.
+			Document configDoc = rootConfigFolder.documents().get(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE);
+			hadConfig = true;
+			Node triggers = configDoc.query().optional("//triggers").node();
 			if (!triggers.extant()) {
-				org.exist.fluent.Node configRoot = rootConfigFolder.documents().query().optional("/collection").node();
-				if (!configRoot.extant()) {
-					rootConfigFolder.documents().build(Name.create(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE))
-						.elem("collection").elem("triggers").end("triggers").end("collection").commit();
-				} else {
-					configRoot.append().elem("triggers").end("triggers").commit();
-				}
+				// If no <collection> at root, let the exception take us to the "overwrite" path since the config isn't valid anyway.
+				Node configRoot = configDoc.query().single("/collection").node();
+				configRoot.append().elem("triggers").end("triggers").commit();
 				triggers = rootConfigFolder.documents().query().single("//triggers").node();
 			}
-			triggers.append().elem("trigger")
-				.attr("event", "store update remove create-collection rename-collection delete-collection")
-				.attr("class", "org.exist.fluent.ListenerManager$TriggerDispatcher")
-			.end("trigger").commit();
+			triggers.append().node(trigger).commit();
+			// Hack: collection config will only refresh on new document store, so move the document away and back.
+			configDoc.move(rootConfigFolder, Name.generate());
+			configDoc.move(rootConfigFolder, Name.create(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE));
+		} catch (DatabaseException e) {
+			rootConfigFolder.documents().build(Name.overwrite(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE))
+				.elem("collection").elem("triggers").node(trigger).end("triggers").end("collection").commit();
+			if (hadConfig) LOG.warn("forced to overwrite root collection config due to exception", e);
 		}
+	}
+	
+	private static org.w3c.dom.Node createGlobalTrigger(NamespaceMap namespaceBindings) {
+		return ElementBuilder.createScratch(namespaceBindings).elem("trigger")
+			.attr("event", "store update remove create-collection rename-collection delete-collection")
+			.attr("class", "org.exist.fluent.ListenerManager$TriggerDispatcher")
+		.end("trigger").commit();
 	}
 
 	static class EventKey implements Comparable<EventKey> {

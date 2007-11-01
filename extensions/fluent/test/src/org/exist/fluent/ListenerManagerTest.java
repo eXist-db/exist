@@ -5,14 +5,7 @@ import org.jmock.core.Constraint;
 import org.jmock.core.Invocation;
 import org.jmock.core.Stub;
 
-/**
- * Created by IntelliJ IDEA.
- * User: wessels
- * Date: Oct 29, 2007
- * Time: 8:53:16 PM
- * To change this template use File | Settings | File Templates.
- */
-public class ListenerManagerTest extends DatabaseHelper {
+public class ListenerManagerTest extends DatabaseTestCase {
     private Mock documentListener;
     private Mock folderListener;
     private Mock bothListener;

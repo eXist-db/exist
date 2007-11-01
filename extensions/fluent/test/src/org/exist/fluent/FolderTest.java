@@ -1,13 +1,6 @@
 package org.exist.fluent;
 
-/**
- * Created by IntelliJ IDEA.
- * User: wessels
- * Date: Oct 29, 2007
- * Time: 8:49:39 PM
- * To change this template use File | Settings | File Templates.
- */
-public class FolderTest extends DatabaseHelper {
+public class FolderTest extends DatabaseTestCase {
     public void testCreateTop() {
         db.createFolder("/top");
         try {

@@ -3,14 +3,12 @@ package org.exist.fluent;
 import java.io.File;
 import java.util.*;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
-import org.exist.security.*;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.storage.sync.Sync;
@@ -312,7 +310,6 @@ public class Database {
 	private static final WeakMultiValueHashMap<String, StaleMarker> staleMap = new WeakMultiValueHashMap<String, StaleMarker>();
 	
 	private static void stale(String key) {
-		System.out.println(">>> stale " + key);
 		synchronized(staleMap) {
 			for (StaleMarker value : staleMap.get(key)) value.mark();
 			staleMap.remove(key);
@@ -367,7 +364,7 @@ public class Database {
 	
 	private static final NodeIndexListener indexChangeListener = new NodeIndexListener() {
 		@SuppressWarnings("hiding")
-		private final Logger LOG = Logger.getLogger("com.ideanest.reef.Database.indexChangeListener");
+		private final Logger LOG = Logger.getLogger("org.exist.fluent.Database.indexChangeListener");
 		
 		public void nodeChanged(StoredNode node) {
 			int numUpdated = 0;
