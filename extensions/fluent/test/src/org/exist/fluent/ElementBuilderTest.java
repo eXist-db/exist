@@ -4,14 +4,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-/**
- * Created by IntelliJ IDEA.
- * User: wessels
- * Date: Oct 29, 2007
- * Time: 8:48:19 PM
- * To change this template use File | Settings | File Templates.
- */
-public class ElementBuilderTest extends DatabaseHelper {
+public class ElementBuilderTest extends DatabaseTestCase {
     public void testEmpty() {
         ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false, new ElementBuilder.CompletedCallback<Object>() {
             public Object completed(org.w3c.dom.Node[] node) {fail("completed called"); return null;}

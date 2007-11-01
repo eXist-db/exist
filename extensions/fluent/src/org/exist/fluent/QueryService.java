@@ -346,7 +346,7 @@ public class QueryService implements Cloneable {
 		return executeQuery(query, EXISTS, params).get(0).booleanValue();
 	}
 	
-	private static final Pattern VAR_NOT_BOUND_PATTERN = Pattern.compile("^variable \\$(\\S+) is not bound .*");
+	private static final Pattern VAR_NOT_BOUND_PATTERN = Pattern.compile("^XPDY0002 : variable '\\$(\\S+)' is not set\\..*");
 	
 	/**
 	 * Statically analyze a query for various properties.
@@ -392,14 +392,13 @@ public class QueryService implements Cloneable {
 		 * Return the name of the statically determined return type of the query expression.
 		 * The name is in a standard form, see {@link org.exist.xquery.value.Type} for a list
 		 * of possible values.  If the return type cannot be statically determined, it defaults to
-		 * <code>"item"</code>, the universal supertype in XQuery.
+		 * <code>Type.ITEM</code>, the universal supertype in XQuery.
 		 *
 		 * @return the name of the return type of the query being analyzed
 		 */
 		public String returnTypeName() {
-			if (query instanceof Expression)
-				return org.exist.xquery.value.Type.getTypeName(((PathExpr) query).returnsType());
-			return "item";
+			return org.exist.xquery.value.Type.getTypeName(
+					query instanceof Expression ? ((PathExpr) query).returnsType() : org.exist.xquery.value.Type.ITEM);
 		}
 		
 		/**
@@ -441,5 +440,4 @@ public class QueryService implements Cloneable {
 			return requiredVariables;
 		}
 	}
-	
 }
