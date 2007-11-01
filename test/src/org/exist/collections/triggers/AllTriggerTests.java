@@ -9,6 +9,4 @@ import org.junit.runners.Suite;
         XQueryTriggerTest.class
 })
 public class AllTriggerTests {
-    public static void main(String[] args) {
-    }
 }

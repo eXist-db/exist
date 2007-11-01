@@ -17,11 +17,7 @@ import java.util.Map;
 import java.io.StringReader;
 
 /**
- * Created by IntelliJ IDEA.
- * User: wolf
- * Date: Aug 28, 2007
- * Time: 6:41:26 PM
- * To change this template use File | Settings | File Templates.
+ * Test trigger to check if trigger configuration is working properly.
  */
 public class TestTrigger extends FilteringTrigger {
 
@@ -32,6 +28,7 @@ public class TestTrigger extends FilteringTrigger {
     public void configure(DBBroker broker, org.exist.collections.Collection parent, Map parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
         XmldbURI docPath = XmldbURI.create("messages.xml");
+        System.out.println("TestTrigger prepares");
         this.doc = parent.getDocument(broker, docPath);
         if (this.doc == null) {
             TransactionManager transactMgr = broker.getBrokerPool().getTransactionManager();
