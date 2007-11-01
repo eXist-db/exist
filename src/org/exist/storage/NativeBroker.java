@@ -21,47 +21,22 @@
  */
 package org.exist.storage;
 
-import java.io.*;
-import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.Observer;
-import java.util.Stack;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
+import org.exist.fulltext.FTIndex;
+import org.exist.fulltext.FTIndexWorker;
 import org.exist.indexing.StreamListener;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
-import org.exist.security.MD5;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.btree.BTree;
-import org.exist.storage.btree.BTreeCallback;
-import org.exist.storage.btree.BTreeException;
-import org.exist.storage.btree.DBException;
-import org.exist.storage.btree.IndexQuery;
-import org.exist.storage.btree.Paged;
-import org.exist.storage.btree.Value;
+import org.exist.storage.btree.*;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMTransaction;
@@ -78,18 +53,20 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteArrayPool;
-import org.exist.util.ByteConversion;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
-import org.exist.util.ReadOnlyException;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.xml.stream.XMLStreamException;
+import java.io.*;
+import java.text.NumberFormat;
+import java.util.Iterator;
+import java.util.Observer;
+import java.util.Stack;
 
 /**
  *  Main class for the native XML storage backend.
@@ -132,8 +109,7 @@ public class NativeBroker extends DBBroker {
     public static final String PROPERTY_INDEX_DEPTH = "indexer.index-depth";
     
     private static final byte[] ALL_STORAGE_FILES = {
-    	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID,
-    	WORDS_DBX_ID, DOM_DBX_ID
+    	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID, DOM_DBX_ID
     };
     
     //private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
@@ -164,7 +140,6 @@ public class NativeBroker extends DBBroker {
     /** the index processors */	
     protected NativeElementIndex elementIndex;
     protected NativeValueIndex valueIndex;
-    protected NativeTextEngine textEngine;
     
     protected IndexSpec indexConfiguration;
     
@@ -249,9 +224,6 @@ public class NativeBroker extends DBBroker {
 	            
 		    elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
 		    valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-		    textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);
-            // TODO: temporary hack to plug in fulltext index
-            indexController.addIndexWorker(textEngine.getWorker());
 		    if (readOnly)
 		    	LOG.info("Database runs in read-only mode");
 	
@@ -263,7 +235,7 @@ public class NativeBroker extends DBBroker {
         
     public void addObserver(Observer o) {
         super.addObserver(o);
-        textEngine.addObserver(o);
+//        textEngine.addObserver(o);
         elementIndex.addObserver(o);
         //TODO : what about other indexes observers ?
     }
@@ -273,8 +245,8 @@ public class NativeBroker extends DBBroker {
         if (elementIndex != null)
             elementIndex.deleteObservers();
         //TODO : what about other indexes observers ?
-        if (textEngine != null)
-            textEngine.deleteObservers();
+//        if (textEngine != null)
+//            textEngine.deleteObservers();
     }
   
     // ============ dispatch the various events to indexing classes ==========
@@ -454,8 +426,6 @@ public class NativeBroker extends DBBroker {
 	    return elementIndex.dbNodes;
 	case VALUES_DBX_ID :
 	    return valueIndex.dbValues;
-	case WORDS_DBX_ID :
-	    return textEngine.dbTokens;
 	default:
 	    return null;
         }
@@ -482,7 +452,7 @@ public class NativeBroker extends DBBroker {
     }
     
     public TextSearchEngine getTextEngine() {
-        return textEngine;
+        return ((FTIndexWorker)indexController.getWorkerByIndexId(FTIndex.ID)).getEngine();
     }
 
     public EmbeddedXMLStreamReader getXMLStreamReader(StoredNode node, boolean reportAttributes)
@@ -2717,8 +2687,6 @@ public class NativeBroker extends DBBroker {
         try {
 	    elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);        	
 	    valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-	    textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);
-            indexController.addIndexWorker(textEngine.getWorker());
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
@@ -2728,6 +2696,7 @@ public class NativeBroker extends DBBroker {
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Failed to reopen index files after repair: " + e.getMessage(), e);
         }
+        initIndexModules();
         LOG.info("Reindexing database files ...");
         //Reindex from root collection
         reindexCollection(null, getCollection(XmldbURI.ROOT_COLLECTION_URI), NodeProcessor.MODE_REPAIR);
@@ -2770,7 +2739,6 @@ public class NativeBroker extends DBBroker {
                     lock.release(Lock.WRITE_LOCK);
                 }
                 notifySync();
-                textEngine.sync();
         //              System.gc();
                 NumberFormat nf = NumberFormat.getNumberInstance();
                 LOG.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
@@ -2793,7 +2761,6 @@ public class NativeBroker extends DBBroker {
 	    sync(Sync.MAJOR_SYNC);
             domDb.close();
             collectionsDb.close();
-        textEngine.close();
             notifyClose();
 	} catch (Exception e) {
 	    LOG.warn(e.getMessage(), e);

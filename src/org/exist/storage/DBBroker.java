@@ -143,9 +143,13 @@ public abstract class DBBroker extends Observable {
 
 		this.pool = pool;
 		xqueryService = new XQuery(this);
-        indexController = new IndexController(this);
+        initIndexModules();
     }
 
+    public void initIndexModules() {
+        indexController = new IndexController(this);
+    }
+    
     /**
 	 * Set the user that is currently using this DBBroker object.
 	 *

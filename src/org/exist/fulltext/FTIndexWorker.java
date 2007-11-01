@@ -25,6 +25,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.indexing.*;
 import org.exist.storage.*;
+import org.exist.storage.btree.DBException;
 import org.exist.fulltext.FTMatchListener;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
@@ -44,9 +45,8 @@ import java.util.Stack;
  */
 public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
-    public final static String ID = FTIndexWorker.class.getName();
-
-    private NativeTextEngine index;
+    private NativeTextEngine engine;
+    private FTIndex index;
     private DocumentImpl document;
     private FulltextIndexSpec config;
     private int mode = StreamListener.UNKNOWN;
@@ -54,16 +54,25 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private FTStreamListener listener = new FTStreamListener();
     private FTMatchListener matchListener = null;
     
-    public FTIndexWorker(NativeTextEngine engine) {
-        this.index = engine;
+    public FTIndexWorker(FTIndex index, DBBroker broker) throws DatabaseConfigurationException {
+        this.index = index;
+        try {
+            this.engine = new NativeTextEngine(broker, index.getBFile(), broker.getConfiguration());
+        } catch (DBException e) {
+            throw new DatabaseConfigurationException(e.getMessage(), e);
+        }
     }
 
     public String getIndexId() {
-        return ID;
+        return FTIndex.ID;
     }
 
     public String getIndexName() {
         return "ft-index-old";
+    }
+
+    public TextSearchEngine getEngine() {
+        return engine;
     }
 
     public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
@@ -81,7 +90,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
         if (indexConf != null)
             config = indexConf.getFulltextIndexSpec();
-        index.setDocument(document);
+        engine.setDocument(document);
     }
 
     public void setMode(int newMode) {
@@ -135,7 +144,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         boolean needToFilter = false;
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
-            if (nextMatch.getIndexId() == ID) {
+            if (nextMatch.getIndexId() == FTIndex.ID) {
                 needToFilter = true;
                 break;
             }
@@ -153,19 +162,19 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void flush() {
         switch (mode) {
             case StreamListener.STORE :
-                index.flush();
+                engine.flush();
                 break;
             case StreamListener.REMOVE_ALL_NODES :
-                index.dropIndex(document);
+                engine.dropIndex(document);
                 break;
             case StreamListener.REMOVE_SOME_NODES :
-                index.remove();
+                engine.remove();
                 break;
         }
     }
 
     public void removeCollection(Collection collection, DBBroker broker) {
-        index.dropIndex(collection);
+        engine.dropIndex(collection);
     }
 
     public boolean checkIndex(DBBroker broker) {
@@ -203,7 +212,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (mixedContent || config.hasQNameIndex(element.getQName())) {
                     ElementContent contentBuf = (ElementContent) contentStack.pop();
                     element.getQName().setNameType(ElementValue.ELEMENT);
-                    index.storeText(element, contentBuf,
+                    engine.storeText(element, contentBuf,
                             mixedContent ? NativeTextEngine.FOURTH_OPTION : NativeTextEngine.TEXT_BY_QNAME,
                             null, mode == REMOVE_ALL_NODES);
                 }
@@ -219,10 +228,10 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
          */
         public void characters(Txn transaction, TextImpl text, NodePath path) {
             if (config == null) {
-                index.storeText(text, NativeTextEngine.TOKENIZE, config, mode == REMOVE_ALL_NODES);
+                engine.storeText(text, NativeTextEngine.TOKENIZE, config, mode == REMOVE_ALL_NODES);
             } else if (config.match(path)) {
                 int tokenize = config.preserveContent(path) ? NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE;
-                index.storeText(text, tokenize, config, mode == REMOVE_ALL_NODES);
+                engine.storeText(text, tokenize, config, mode == REMOVE_ALL_NODES);
             }
             if (!contentStack.isEmpty()) {
                 for (int i = 0; i < contentStack.size(); i++) {
@@ -236,10 +245,10 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
             path.addComponent(attrib.getQName());
             if (config == null || config.matchAttribute(path)) {
-                index.storeAttribute(attrib, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, config, mode == REMOVE_ALL_NODES);
+                engine.storeAttribute(attrib, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, config, mode == REMOVE_ALL_NODES);
             }
             if (config != null && config.hasQNameIndex(attrib.getQName())){
-                index.storeAttribute(attrib, null, NativeTextEngine.ATTRIBUTE_BY_QNAME, config, mode == REMOVE_ALL_NODES);
+                engine.storeAttribute(attrib, null, NativeTextEngine.ATTRIBUTE_BY_QNAME, config, mode == REMOVE_ALL_NODES);
             }
             path.removeLastComponent();
             super.attribute(transaction, attrib, path);

@@ -47,6 +47,6 @@ public class FTMatch extends Match {
     }
 
     public String getIndexId() {
-        return FTIndexWorker.ID;
+        return FTIndex.ID;
     }
 }

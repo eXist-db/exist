@@ -154,8 +154,6 @@ public abstract class TextSearchEngine extends Observable {
 	public Tokenizer getTokenizer() {
 		return tokenizer;
 	}
-
-    public abstract FTIndexWorker getWorker();
     
     /**
 	 * Tokenize and index the given text node.

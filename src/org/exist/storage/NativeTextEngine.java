@@ -103,37 +103,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	protected BFile dbTokens;
 	protected InvertedIndex invertedIndex;
 
-    FTIndexWorker worker;
-
     /** The current document */
     private DocumentImpl doc;
 
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream(7);    
 
-    public NativeTextEngine(DBBroker broker, byte id, String dataDir, Configuration config) throws DBException {
+    public NativeTextEngine(DBBroker broker, BFile dbFile, Configuration config) throws DBException {
 		super(broker, config);	
-        //TODO : read from configuration (key ?)
-    	double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
-    	double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
-    	double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
-    	BFile nativeFile = (BFile) config.getProperty(getConfigKeyForFile());        
-        if (nativeFile == null) {
-            File file = new File(dataDir + File.separatorChar + getFileName());
-            LOG.debug("Creating '" + file.getName() + "'...");
-            nativeFile = new BFile(broker.getBrokerPool(), id, false, 
-            		file, broker.getBrokerPool().getCacheManager(), 
-            		cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
-            config.setProperty(getConfigKeyForFile(), nativeFile);             
-        }        
-        dbTokens = nativeFile;
-        this.invertedIndex = new InvertedIndex();  
-//        broker.addContentLoadingObserver(getInstance());
-        worker = new FTIndexWorker(this);
-    }
 
-    public FTIndexWorker getWorker() {
-        return worker;
+        this.invertedIndex = new InvertedIndex();  
+        this.dbTokens = dbFile;
     }
     
     public String getFileName() {
