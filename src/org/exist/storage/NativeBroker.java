@@ -23,6 +23,7 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.Indexer;
+import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
@@ -96,8 +97,7 @@ public class NativeBroker extends DBBroker {
     public static final byte COLLECTIONS_DBX_ID = 0;
     public static final byte ELEMENTS_DBX_ID = 1;
     public static final byte VALUES_DBX_ID = 2;
-    public static final byte WORDS_DBX_ID = 3;
-    public static final byte DOM_DBX_ID = 4;
+    public static final byte DOM_DBX_ID = 3;
     //Note : no ID for symbols ? Too bad...
 
     public static final String PAGE_SIZE_ATTRIBUTE = "pageSize";
@@ -434,6 +434,23 @@ public class NativeBroker extends DBBroker {
     public byte[] getStorageFileIds() {
         return ALL_STORAGE_FILES;
     }        
+
+    public void backupToArchive(RawDataBackup backup) throws IOException {
+        for (byte i = 0; i < ALL_STORAGE_FILES.length; i++) {
+            Paged paged = getStorage(i);
+            if (paged == null) {
+                LOG.warn("Storage file is null: " + i);
+                continue;
+            }
+            OutputStream os = backup.newEntry(paged.getFile().getName());
+            paged.backupToStream(os);
+            backup.closeEntry();
+        }
+        OutputStream os = backup.newEntry(getSymbols().getFile().getName());
+        getSymbols().backupSymbolsTo(os);
+        backup.closeEntry();
+        pool.getIndexManager().backupToArchive(backup);
+    }
 
     public SymbolTable getSymbols() {
 	return symbols;
@@ -2731,8 +2748,7 @@ public class NativeBroker extends DBBroker {
                     }
                     return null;
                 }
-            }
-		.run();
+            }.run();
             if(syncEvent == Sync.MAJOR_SYNC) {
                 Lock lock = collectionsDb.getLock();
                 try {
@@ -2744,12 +2760,11 @@ public class NativeBroker extends DBBroker {
                     lock.release(Lock.WRITE_LOCK);
                 }
                 notifySync();
-        //              System.gc();
+                pool.getIndexManager().sync();
                 NumberFormat nf = NumberFormat.getNumberInstance();
                 LOG.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
                         nf.format(run.maxMemory() / 1024) + "K max; " +
                         nf.format(run.freeMemory() / 1024) + "K free");
-                
                 domDb.printStatistics();
                 collectionsDb.printStatistics();
                 notifyPrintStatistics();
