@@ -24,6 +24,7 @@ package org.exist.indexing;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -31,6 +32,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.backup.RawDataBackup;
 
 /**
  * Manages all custom indexes registered with the database instance.
@@ -172,6 +174,19 @@ public class IndexManager {
         }
     }
 
+    /**
+     * Call indexes to flush all data to disk.
+     *
+     * @throws DBException
+     */
+    public void sync() throws DBException {
+        Index index;
+        for (Iterator i = iterator(); i.hasNext(); ) {
+            index = (Index) i.next();
+            index.sync();
+        }
+    }
+
     /** 
      * Physically destroy the registered indexes by calling {@link org.exist.indexing.Index#remove()}
      * on them.
@@ -197,6 +212,15 @@ public class IndexManager {
         for (Iterator i = iterator(); i.hasNext();) {
             index = (Index) i.next();
             index.open();
+        }
+    }
+
+    public void backupToArchive(RawDataBackup backup) throws IOException {
+        Index index;
+        for (Iterator i = iterator(); i.hasNext();) {
+            index = (Index) i.next();
+            if (index instanceof RawBackupSupport)
+                ((RawBackupSupport)index).backupToArchive(backup);
         }
     }
 }

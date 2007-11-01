@@ -21,21 +21,25 @@
  */
 package org.exist.indexing.ngram;
 
-import java.io.File;
-
 import org.apache.log4j.Logger;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
+import org.exist.indexing.RawBackupSupport;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BFile;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.backup.RawDataBackup;
 import org.w3c.dom.Element;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  */
-public class NGramIndex extends AbstractIndex {
+public class NGramIndex extends AbstractIndex implements RawBackupSupport {
 	
     public final static String ID = NGramIndex.class.getName();
 
@@ -98,4 +102,9 @@ public class NGramIndex extends AbstractIndex {
         return gramSize;
     }
 
+    public void backupToArchive(RawDataBackup backup) throws IOException {
+        OutputStream os = backup.newEntry(db.getFile().getName());
+        db.backupToStream(os);
+        backup.closeEntry();
+    }
 }

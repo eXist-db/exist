@@ -22,26 +22,29 @@
 package org.exist.fulltext;
 
 import org.apache.log4j.Logger;
+import org.exist.backup.RawDataBackup;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
+import org.exist.indexing.RawBackupSupport;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BFile;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Implementation of the full text index. We are currently in a redesign process which is
  * not yet complete. We still have dependencies on FTIndex in the database core. Once
  * these dependencies were removed, FTIndex will be moved into a separate extension module.
  */
-public class FTIndex extends AbstractIndex {
+public class FTIndex extends AbstractIndex implements RawBackupSupport {
 
     private final static Logger LOG = Logger.getLogger(FTIndex.class);
 
@@ -72,7 +75,7 @@ public class FTIndex extends AbstractIndex {
     	double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
         LOG.debug("Creating '" + dataFile.getName() + "'...");
         try {
-            db = new BFile(pool, NativeBroker.WORDS_DBX_ID, false, dataFile, pool.getCacheManager(),
+            db = new BFile(pool, (byte)0, false, dataFile, pool.getCacheManager(),
                 cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         } catch (DBException e) {
             throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.getAbsolutePath() + ": " +
@@ -109,5 +112,11 @@ public class FTIndex extends AbstractIndex {
 
     public BFile getBFile() {
         return db;
+    }
+
+    public void backupToArchive(RawDataBackup backup) throws IOException {
+        OutputStream os = backup.newEntry(db.getFile().getName());
+        db.backupToStream(os);
+        backup.closeEntry();
     }
 }

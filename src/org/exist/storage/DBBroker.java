@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -778,4 +779,6 @@ public abstract class DBBroker extends Observable {
 
     public abstract EmbeddedXMLStreamReader getXMLStreamReader(NodeProxy node, boolean reportAttributes)
             throws IOException, XMLStreamException;
+
+    public abstract void backupToArchive(RawDataBackup backup) throws IOException;
 }

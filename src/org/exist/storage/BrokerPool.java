@@ -1310,7 +1310,7 @@ public class BrokerPool {
     		sync(broker, Sync.MAJOR_SYNC);
             LOG.debug("Running system maintenance task: " + task.getClass().getName());
     		task.execute(broker);
-    	} catch(EXistException e) {
+    	} catch(Exception e) {
     		LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
     	}
     }          

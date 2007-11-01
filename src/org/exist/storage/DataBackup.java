@@ -23,20 +23,21 @@
 
 package org.exist.storage;
 
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.backup.RawDataBackup;
+import org.exist.util.Configuration;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.apache.log4j.Logger;
-import org.exist.EXistException;
-import org.exist.storage.btree.Paged;
-import org.exist.util.Configuration;
 
 public class DataBackup implements SystemTask {
 
@@ -90,30 +91,32 @@ public class DataBackup implements SystemTask {
         
         try {
 			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
-			byte[] fileIds = nbroker.getStorageFileIds();
-			for (int i = 0; i < fileIds.length; i++) {
-				Paged paged = nbroker.getStorage(fileIds[i]);
-				
-				// create a new entry and copy the paged file contents to it
-				out.putNextEntry(new ZipEntry(paged.getFile().getName()));
-				paged.backupToStream(out);
-				
-				// Complete the entry
-	            out.closeEntry();
-			}
-			
-			//TODO : could we mutualize there ?
-			// backup the symbols.dbx file (not included above)
-			out.putNextEntry(new ZipEntry(broker.getSymbols().getFile().getName()));
-			broker.getSymbols().backupSymbolsTo(out);
-			out.closeEntry();
-			
-			// close the zip file
+            Callback cb = new Callback(out);
+            broker.backupToArchive(cb);
+            // close the zip file
 			out.close();
 		} catch (IOException e) {
 			LOG.warn("An IO error occurred while backing up data files: " + e.getMessage(), e);
 		}
 	}
+
+    private class Callback implements RawDataBackup {
+
+        private ZipOutputStream zout;
+
+        private Callback(ZipOutputStream out) {
+            zout = out;
+        }
+
+        public OutputStream newEntry(String name) throws IOException {
+            zout.putNextEntry(new ZipEntry(name));
+            return zout;
+        }
+
+        public void closeEntry() throws IOException {
+            zout.closeEntry();
+        }
+    }
 }
 
 
