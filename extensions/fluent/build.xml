@@ -7,6 +7,8 @@
     <property name="top.dir" value="../.."/>
     <property name="junit.index.reports" value="${top.dir}/test/junit/data"/>
 
+    <property name="fluent.jar" value="${top.dir}/exist-fluent.jar"/>
+
     <property name="build.compiler" value="modern"/>
 
     <condition property="java14-only">
@@ -40,7 +42,7 @@
     </path>
 
 
-    <target name="all" depends="jar"/> <!-- ,javadoc -->
+    <target name="all" depends="jar,javadoc"/> <!-- ,javadoc -->
 
     <target name="prepare">
         <mkdir dir="${classes}"/>
@@ -70,7 +72,7 @@
                source="1.5" target="1.5">
             <classpath>
                 <path refid="classpath.core"/>
-                <path refid="classpath.jar"/>
+                <pathelement path="${classes}"  />
             </classpath>
         </javac>
     </target>
@@ -117,6 +119,7 @@
                 <path refid="classpath.core"/>
                 <path refid="classpath.jar"/>
                 <path refid="classpath.test"/>
+                <pathelement path="${classes}"  />
             </classpath>
 
             <formatter type="plain"/>
