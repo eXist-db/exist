@@ -452,7 +452,12 @@ public class NativeBroker extends DBBroker {
     }
     
     public TextSearchEngine getTextEngine() {
-        return ((FTIndexWorker)indexController.getWorkerByIndexId(FTIndex.ID)).getEngine();
+        FTIndexWorker worker = (FTIndexWorker) indexController.getWorkerByIndexId(FTIndex.ID);
+        if (worker == null) {
+            LOG.warn("Fulltext index is not configured. Please check the <modules> section in conf.xml");
+            return null;
+        }
+        return worker.getEngine();
     }
 
     public EmbeddedXMLStreamReader getXMLStreamReader(StoredNode node, boolean reportAttributes)
