@@ -40,7 +40,7 @@ public class FTMatchListener extends AbstractMatchListener {
     public boolean hasMatches(NodeProxy proxy) {
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
-            if (nextMatch.getIndexId() == FTIndexWorker.ID) {
+            if (nextMatch.getIndexId() == FTIndex.ID) {
                 return true;
             }
             nextMatch = nextMatch.getNextMatch();
@@ -135,7 +135,7 @@ public class FTMatchListener extends AbstractMatchListener {
                 // scan all matches
                 Match next = match;
                 while (next != null) {
-                    if (next.getIndexId() == FTIndexWorker.ID && next.getNodeId().equals(no.nodeId)) {
+                    if (next.getIndexId() == FTIndex.ID && next.getNodeId().equals(no.nodeId)) {
                         int freq = next.getFrequency();
                         for (int j = 0; j < freq; j++) {
                             Match.Offset offset = next.getOffset(j);
@@ -167,7 +167,7 @@ public class FTMatchListener extends AbstractMatchListener {
         // walk through the matches a second time to find matches in the text node itself
         Match next = match;
         while (next != null) {
-            if (next.getIndexId() == FTIndexWorker.ID &&
+            if (next.getIndexId() == FTIndex.ID &&
                 next.getNodeId().equals(getCurrentNode().getNodeId())) {
                 if (offsets == null)
                     offsets = new ArrayList();

@@ -36,7 +36,7 @@ import org.xmldb.api.modules.XMLResource;
 import java.io.File;
 
 public class FtQueryTest extends XMLTestCase {
- 
+
 	private final static String TEST_XML =
 		"<test-doc>" +
 			"<test-elem id=\"1\" attribute1=\"test some text\"/>" +
