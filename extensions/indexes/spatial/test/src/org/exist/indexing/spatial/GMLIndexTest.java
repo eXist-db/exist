@@ -80,6 +80,7 @@ public class GMLIndexTest extends TestCase {
     	"	<index>" +
         "        <gml/>" +
         "	</index>" +
+        "   <validation mode=\"no\"/> " +
     	"</collection>";
 
     String IN_MEMORY_GML = "<gml:Polygon xmlns:gml = 'http://www.opengis.net/gml' srsName='osgb:BNG'>" +
