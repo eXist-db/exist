@@ -1,10 +1,10 @@
 package org.exist.collections.triggers;
 
 import org.exist.TestUtils;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
+import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -15,6 +15,7 @@ import org.junit.runners.Parameterized;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import java.util.LinkedList;
@@ -73,7 +74,7 @@ public class TriggerConfigTest {
             Resource resource = root.createResource("data.xml", "XMLResource");
             resource.setContent(DOCUMENT_CONTENT);
             root.storeResource(resource);
-
+            printMessages();
             XQueryService qs = (XQueryService) root.getService("XQueryService", "1.0");
             ResourceSet result = qs.queryResource("messages.xml", "string(//event[last()]/@collection)");
             assertEquals(1, result.getSize());
@@ -120,7 +121,7 @@ public class TriggerConfigTest {
 
             XQueryService qs = (XQueryService) root.getService("XQueryService", "1.0");
             ResourceSet result = qs.query("doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE']");
-            assertEquals("No trigger should have fired. Configuration was removed", 1, result.getSize());
+            assertEquals("No trigger should have fired. Configuration was removed", 0, result.getSize());
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -147,6 +148,40 @@ public class TriggerConfigTest {
             ResourceSet result = qs.query("doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE']/string(@collection)");
             assertEquals(1, result.getSize());
             assertEquals(testCollection, result.getResource(0).getContent());
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
+    private void printMessages() {
+        try {
+            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", null);
+            XMLResource messages = (XMLResource) root.getResource("messages.xml");
+            System.out.println(messages.getContent().toString());
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
+    @After
+    public void cleanDB() {
+        try {
+            Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", null);
+            if (config != null) {
+                CollectionManagementService mgmt = (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
+                mgmt.removeCollection(".");
+            }
+            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", null);
+            Resource resource = root.getResource("messages.xml");
+            if (resource != null) {
+                root.removeResource(resource);
+            }
+            resource = root.getResource("data.xml");
+            if (resource != null) {
+                root.removeResource(resource);
+            }
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
