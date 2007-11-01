@@ -299,9 +299,11 @@ public class IndexController {
             if (first == null) {
                 first = current;
             } else {
-                previous.setNextInChain(current);
+            	if (current != null)
+            		previous.setNextInChain(current);
             }
-            previous = current;
+            if (current != null)
+            	previous = current;
         }
         listener = first;
         return listener;
