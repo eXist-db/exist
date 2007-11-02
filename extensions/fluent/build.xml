@@ -1,4 +1,5 @@
-﻿<project basedir="." default="all" name="fluent">
+<!-- $Id$ -->
+<project basedir="." default="all" name="fluent">
 
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>
@@ -42,7 +43,7 @@
     </path>
 
 
-    <target name="all" depends="jar,javadoc"/> <!-- ,javadoc -->
+    <target name="all" depends="jar"/> 
 
     <target name="prepare">
         <mkdir dir="${classes}"/>
@@ -135,7 +136,9 @@
     </target>
 
     <target name="clean">
-        <delete dir="${classes}"/>
+    		<delete dir="${classes}"/>
+        <delete dir="${test}/classes"/>
         <delete file="${top.dir}/exist-fluent.jar" failonerror="false"/>
+        <delete dir="${javadoc}"/>
     </target>
 </project>

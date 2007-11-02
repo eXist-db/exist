@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ======================================================================= -->
 <!-- eXist build file                                                        -->
@@ -456,6 +456,9 @@
             <link href="http://xml.apache.org/xalan-j/apidocs/"/>
             <link href="http://jakarta.apache.org/commons/discovery/apidocs/"/>
         </javadoc>
+        
+        <ant antfile="build.xml" dir="extensions/fluent" target="javadoc"/>
+        
         <delete dir="${build.src}"/>
     </target>
 
@@ -507,10 +510,13 @@
         <delete>
             <fileset dir="installer" includes="eXist-*.jar,install.xml" />
         </delete>
+        
         <delete failonerror="no" dir="${dist}"/>
+        
         <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="clean"/>
+        <ant antfile="build.xml" dir="extensions/fluent"  target="clean"/>
     </target>
     
     <target name="clean-all" description="Cleanup deeper" depends="prepare-extensions">
