@@ -110,7 +110,7 @@
     <!-- Section: CATEGORIES -->
     
     <category name="xquery.profiling" additivity="false">
-        <priority value="debug"/>
+        <priority value="info"/>
         <appender-ref ref="exist.profiling"/>
     </category>
     
@@ -120,7 +120,7 @@
     </category>
     
     <category name="org.exist.xmldb" additivity="false">
-        <priority value="debug"/>
+        <priority value="info"/>
         <appender-ref ref="exist.xmldb"/>
     </category>
     
@@ -135,7 +135,7 @@
     </category>
     
     <category name="org.exist.validation" additivity="false">
-        <priority value="debug"/>
+        <priority value="info"/>
         <appender-ref ref="exist.validation"/>
     </category>
     
@@ -145,7 +145,7 @@
     </category-->
     
     <category name="net.sf.ehcache" additivity="false">
-        <priority value="debug"/>
+        <priority value="info"/>
         <appender-ref ref="exist.ehcache"/>
     </category>
     
@@ -170,8 +170,8 @@
     <!-- Section: ROOT logger -->
     
     <root>
-        <priority value="debug"/>
-        <appender-ref ref="console"/>
+        <priority value="info"/>
+        <appender-ref ref="exist.core"/>
     </root>
     
 </log4j:configuration>
