@@ -34,18 +34,27 @@ public abstract class DatabaseTestCase extends MockObjectTestCase {
 	
 	protected Database db;
     
-    @Override protected void setUp() {
+	@Override protected void setUp() {
 		ConfigFile configFileAnnotation = getClass().getAnnotation(ConfigFile.class);
 		assert configFileAnnotation != null;
 		Database.ensureStarted(new File(configFileAnnotation.value()));
 		db = new Database(SecurityManager.SYSTEM_USER);
+		wipeDatabase();
+		ListenerManager.configureTriggerDispatcher(db);	// config file gets erased by command above
+	}
+
+	@Override protected void tearDown() throws Exception {
+		wipeDatabase();
+		Database.shutdown();
+	}
+    
+	private void wipeDatabase() {
 		DBBroker broker = null;
 		Transaction tx = Database.requireTransaction();
 		try {
 			broker = db.acquireBroker();
 			broker.removeCollection(tx.tx, broker.getCollection(XmldbURI.ROOT_COLLECTION_URI));
 			tx.commit();
-			ListenerManager.configureTriggerDispatcher(db);	// config file gets erased by command above
 		} catch (PermissionDeniedException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
@@ -53,11 +62,7 @@ public abstract class DatabaseTestCase extends MockObjectTestCase {
 		} finally {
 			tx.abortIfIncomplete();
 			db.releaseBroker(broker);
-        }
+		}
 	}
 
-    @Override protected void tearDown() throws Exception {
-		Database.shutdown();
-	}
-    
 }
