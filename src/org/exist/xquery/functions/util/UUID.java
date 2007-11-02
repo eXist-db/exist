@@ -43,7 +43,7 @@ public class UUID extends Function {
     public final static FunctionSignature signature =
             new FunctionSignature(
             new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Generate an UUID string.",
+            "Generate a Universally Unique Identifier string.",
             FunctionSignature.NO_ARGS,
             new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
     
