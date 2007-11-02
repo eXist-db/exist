@@ -104,6 +104,7 @@ public class UserXQueryJob extends UserJob
 	{
 		JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
 		BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
+		DBBroker broker = null;
 		String xqueryresource = (String)jobDataMap.get("xqueryresource");
 		User user = (User)jobDataMap.get("user");
 		
@@ -116,7 +117,7 @@ public class UserXQueryJob extends UserJob
 		try
 		{
 			//get the xquery
-			DBBroker broker = pool.get(user);
+			broker = pool.get(user);
 			XmldbURI pathUri = XmldbURI.create(xqueryresource);
 			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 			Source source = new DBSource(broker, (BinaryDocument)resource, true);
@@ -177,6 +178,13 @@ public class UserXQueryJob extends UserJob
 		{
 			abort("XPathException in the Job: " + xpe.getMessage() + "!");
 		}
+		finally {
+	       	// Release the DBBroker
+				
+			if( pool != null && broker != null ) {
+				pool.release( broker );
+			}
+	    }
 		
 	}
 	
