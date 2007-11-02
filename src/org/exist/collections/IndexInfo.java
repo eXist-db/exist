@@ -48,11 +48,13 @@ public class IndexInfo {
 	private Indexer indexer;
 	private DOMStreamer streamer;
 	private DocumentTrigger trigger;
-	private int event;
-	
-	IndexInfo(Indexer indexer) {
+    private int event;
+	private CollectionConfiguration collectionConfig;
+    
+    IndexInfo(Indexer indexer, CollectionConfiguration collectionConfig) {
 		this.indexer = indexer;
-	}
+        this.collectionConfig = collectionConfig;
+    }
 	
 	public Indexer getIndexer() {
 		return indexer;
@@ -90,8 +92,12 @@ public class IndexInfo {
 	public DocumentImpl getDocument() {
 		return indexer.getDocument();
 	}
-	
-	void setTrigger(DocumentTrigger trigger, int event) {
+
+    public CollectionConfiguration getCollectionConfig() {
+        return collectionConfig;
+    }
+
+    void setTrigger(DocumentTrigger trigger, int event) {
 		this.trigger = trigger;
 		this.event = event;
 	}

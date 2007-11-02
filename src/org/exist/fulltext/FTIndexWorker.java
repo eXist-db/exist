@@ -94,7 +94,9 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public void setMode(int newMode) {
-        setDocument(document, newMode);
+        mode = newMode;
+        // wolf: unnecessary call to setDocument?
+//        setDocument(document, newMode);
     }
 
     public DocumentImpl getDocument() {

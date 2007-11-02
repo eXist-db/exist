@@ -868,7 +868,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
         }
     }
     
-    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(Txn, DBBroker, XmldbURI, org.exist.collections.Collection.ValidateBlock)} 
+    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
+     * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
      * @param transaction
      * @param broker
@@ -897,10 +898,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 } catch (IOException e) {
                     LOG.debug("could not reset input source", e);
                 }
-                
-                CollectionConfiguration colconf 
-                        = info.getDocument().getCollection().getConfiguration(broker);        
-                XMLReader reader = getReader(broker, colconf);
+
+                XMLReader reader = getReader(broker, info.getCollectionConfig());
 
                 info.setReader(reader, null);
                 try {
@@ -914,7 +913,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
         });
     }
     
-    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(Txn, DBBroker, XmldbURI, org.exist.collections.Collection.ValidateBlock)} 
+    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
+     * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
      * @param transaction
      * @param broker
@@ -948,7 +948,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
         });
     }
     
-    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(Txn, DBBroker, XmldbURI, org.exist.collections.Collection.ValidateBlock)} 
+    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
+     * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
      * @param transaction
      * @param broker
@@ -974,7 +975,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
         public void run() throws EXistException, SAXException;
     }
     
-    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(Txn, DBBroker, XmldbURI, org.exist.collections.Collection.ValidateBlock)} 
+    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
+     * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
      * @param transaction
      * @param broker
@@ -1079,11 +1081,9 @@ public  class Collection extends Observable implements Comparable, Cacheable
     public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final InputSource source)
     throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException, IOException {
-        return validateXMLResourceInternal(transaction, broker, docUri, new ValidateBlock() {
+        final CollectionConfiguration colconf = getConfiguration(broker);
+        return validateXMLResourceInternal(transaction, broker, docUri, colconf, new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException, EXistException {
-                
-                CollectionConfiguration colconf 
-                        = info.getDocument().getCollection().getConfiguration(broker);       
                 XMLReader reader = getReader(broker, colconf);
 
                 info.setReader(reader, null);
@@ -1114,7 +1114,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final Node node)
     throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException, IOException {
-        return validateXMLResourceInternal(transaction, broker, docUri, new ValidateBlock() {
+        return validateXMLResourceInternal(transaction, broker, docUri, getConfiguration(broker), new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException {
                 info.setDOMStreamer(new DOMStreamer());
                 info.getDOMStreamer().serialize(node, true);
@@ -1135,7 +1135,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
      * @throws SAXException
      * @throws LockException
      */
-    private IndexInfo validateXMLResourceInternal(Txn transaction, DBBroker broker, XmldbURI docUri, ValidateBlock doValidate)
+    private IndexInfo validateXMLResourceInternal(Txn transaction, DBBroker broker, XmldbURI docUri, CollectionConfiguration config, ValidateBlock doValidate)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
     	//Make the necessary operations if we process a collection configuration document
         checkConfigurationDocument(transaction, broker, docUri);
@@ -1149,7 +1149,6 @@ public  class Collection extends Observable implements Comparable, Cacheable
             
             oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
             if (oldDoc == null) {
-                CollectionConfiguration config = getConfiguration(broker);
                 if (config != null) {
                     document.setPermissions(config.getDefResPermissions());
                 }
@@ -1160,14 +1159,14 @@ public  class Collection extends Observable implements Comparable, Cacheable
             manageDocumentInformation(broker, oldDoc, document );
             
             Indexer indexer = new Indexer(broker, transaction);
-            IndexInfo info = new IndexInfo(indexer);
-            indexer.setDocument(document);
+            IndexInfo info = new IndexInfo(indexer, config);
+            indexer.setDocument(document, config);
             addObserversToIndexer(broker, indexer);
             indexer.setValidating(true);
             
             // if !triggersEnabled, setupTriggers will return null anyway, so no need to check
             info.setTrigger(
-                    setupTriggers(broker, docUri, oldDoc != null),
+                    setupTriggers(broker, docUri, oldDoc != null, config),
                     oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT);
             
             info.prepareTrigger(broker, transaction, getURI().append(docUri), oldDoc);
@@ -1314,7 +1313,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                     "User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getURI() + "'");
     }
     
-    private DocumentTrigger setupTriggers(DBBroker broker, XmldbURI docUri, boolean update) {
+    private DocumentTrigger setupTriggers(DBBroker broker, XmldbURI docUri, boolean update, CollectionConfiguration config) {
         
         //TODO : is this the right place for such a task ? -pb
         if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
@@ -1327,7 +1326,6 @@ public  class Collection extends Observable implements Comparable, Cacheable
         if (!triggersEnabled)
             return null;
         
-        CollectionConfiguration config = getConfiguration(broker);
         if (config == null)
             return null;
         
