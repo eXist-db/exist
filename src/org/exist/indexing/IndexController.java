@@ -284,7 +284,8 @@ public class IndexController {
         if (listener != null) {
             StreamListener next = listener;
             while (next != null) {
-                next.getWorker().setDocument(currentDoc, currentMode);
+                // wolf: setDocument() should have been called before
+//                next.getWorker().setDocument(currentDoc, currentMode);
                 next = next.getNextInChain();
             }
             return listener;
@@ -294,7 +295,8 @@ public class IndexController {
         IndexWorker worker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext();) {
             worker = (IndexWorker) i.next();
-            worker.setDocument(currentDoc, currentMode);
+            // wolf: setDocument() should have been called before
+//            worker.setDocument(currentDoc, currentMode);
             current = worker.getListener();
             if (first == null) {
                 first = current;

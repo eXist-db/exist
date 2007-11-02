@@ -616,7 +616,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public void setMode(int newMode) {
-    	setDocument(currentDoc, newMode);
+        // wolf: unnecessary call to setDocument?
+//    	setDocument(currentDoc, newMode);
+        mode = newMode;
     }
     
     public DocumentImpl getDocument() {

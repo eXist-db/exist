@@ -184,11 +184,10 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
      *
      * @param doc
      */
-    public void setDocument(DocumentImpl doc) {
+    public void setDocument(DocumentImpl doc, CollectionConfiguration collectionConfig) {
         document = doc;
-        CollectionConfiguration config = doc.getCollection().getConfiguration(broker);
-        if (config != null)
-            indexSpec = config.getIndexConfiguration();
+        if (collectionConfig != null)
+            indexSpec = collectionConfig.getIndexConfiguration();
         // reset internal fields
         level = 0;
         currentPath.reset();
