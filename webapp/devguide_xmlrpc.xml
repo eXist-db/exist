@@ -765,8 +765,8 @@ sub process {
                 <title>Managing Users and Permissions</title>
                 <itemizedlist>
                     <listitem>
-                        <synopsis>boolean setUser(String name, String passwd, Vector groups)</synopsis>
-                        <synopsis>boolean setUser(String name, String passwd, Vector groups, String home)</synopsis>
+                        <synopsis>boolean setUser(String name, String passwd, String digestPasswd, Vector groups)</synopsis>
+                        <synopsis>boolean setUser(String name, String passwd, String digestPasswd, Vector groups, String home)</synopsis>
                         <para>Modifies or creates a database user.</para>
                         <variablelist>
                             <title>Parameters:</title>
@@ -779,10 +779,13 @@ sub process {
                             <varlistentry>
                                 <term>passwd</term>
                                 <listitem>
-                                    <para>The MD5 encoded password for the user. Sending a readable
-                                        password through the network could pose a security problem,
-                                        and thus passwords are only sent and stored with MD5
-                                        encoding.</para>
+                                    <para>The plain-text password for the user.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>digestPasswd</term>
+                                <listitem>
+                                    <para>The md5 encoded password for the user.</para>
                                 </listitem>
                             </varlistentry>
                             <varlistentry>
