@@ -438,7 +438,7 @@
             <link href="http://jakarta.apache.org/commons/io/api-1.1/"/>
             <link href="http://jakarta.apache.org/commons/logging/apidocs/"/>
             <link href="http://jakarta.apache.org/commons/pool/apidocs/"/>
-            <link href="http://java.sun.com/j2ee/1.4/docs/api/"/>
+            <link href="http://java.sun.com/javaee/5/docs/api/"/>
             <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
             <link href="http://jline.sourceforge.net/javadoc/"/>
             <link href="http://jug.safehaus.org/curr/javadoc/"/>
