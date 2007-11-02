@@ -21,28 +21,27 @@
  */
 package org.exist.memtree;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.dom.AttrImpl;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.dom.*;
 import org.exist.dom.CommentImpl;
-import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ProcessingInstructionImpl;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.exist.util.pool.NodePool;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * Helper class to make a in-memory document fragment persistent.
@@ -66,6 +65,7 @@ public class DOMIndexer {
     private Txn transaction;
     private DocumentImpl doc;
     private org.exist.dom.DocumentImpl targetDoc;
+    private IndexSpec indexSpec = null;
     private Stack stack = new Stack();
     private TextImpl text = new TextImpl();
     private StoredNode prevNode = null;
@@ -78,6 +78,9 @@ public class DOMIndexer {
         this.transaction = transaction;
         this.doc = doc;
         this.targetDoc = targetDoc;
+        CollectionConfiguration config = targetDoc.getCollection().getConfiguration(broker);
+        if (config != null)
+            this.indexSpec = config.getIndexConfiguration();
     }
     
     /**
@@ -106,7 +109,7 @@ public class DOMIndexer {
         path.addComponent(ROOT_QNAME);
         
         stack.push(elem);
-        broker.storeNode(transaction, elem, path);
+        broker.storeNode(transaction, elem, path, indexSpec);
         targetDoc.appendChild(elem);
         elem.setChildCount(0);
         
@@ -158,7 +161,7 @@ public class DOMIndexer {
                 elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
                 initElement(nodeNr, elem);
                 stack.push(elem);
-                broker.storeNode(transaction, elem, currentPath);
+                broker.storeNode(transaction, elem, currentPath, indexSpec);
                 targetDoc.appendChild(elem);
                 elem.setChildCount(0);
             } else {
@@ -166,7 +169,7 @@ public class DOMIndexer {
                 initElement(nodeNr, elem);
                 last.appendChildInternal(prevNode, elem);
                 stack.push(elem);
-                broker.storeNode(transaction, elem, currentPath);
+                broker.storeNode(transaction, elem, currentPath, indexSpec);
                 elem.setChildCount(0);
             }
             setPrevious(null);
@@ -184,7 +187,7 @@ public class DOMIndexer {
             text.setOwnerDocument(targetDoc);
             last.appendChildInternal(prevNode, text);
             setPrevious(text);
-            broker.storeNode(transaction, text, null);
+            broker.storeNode(transaction, text, null, indexSpec);
             break;
         case Node.CDATA_SECTION_NODE :
             last = (ElementImpl) stack.peek();
@@ -194,7 +197,7 @@ public class DOMIndexer {
             cdata.setOwnerDocument(targetDoc);
             last.appendChildInternal(prevNode, cdata);
             setPrevious(cdata);
-            broker.storeNode(transaction, cdata, null);
+            broker.storeNode(transaction, cdata, null, indexSpec);
             break;
     	case Node.COMMENT_NODE :
             comment.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
@@ -202,11 +205,11 @@ public class DOMIndexer {
             if (stack.empty()) {
                 comment.setNodeId(NodeId.DOCUMENT_NODE);
                 targetDoc.appendChild(comment);
-                broker.storeNode(transaction, comment, null);
+                broker.storeNode(transaction, comment, null, indexSpec);
             } else {
                 last = (ElementImpl) stack.peek();
                 last.appendChildInternal(prevNode, comment);
-                broker.storeNode(transaction, comment, null);
+                broker.storeNode(transaction, comment, null, indexSpec);
                 setPrevious(comment);
             }
             break;
@@ -223,7 +226,7 @@ public class DOMIndexer {
                 last.appendChildInternal(prevNode, pi);
                 setPrevious(pi);
             }
-            broker.storeNode(transaction, pi, null);
+            broker.storeNode(transaction, pi, null, indexSpec);
             break;
         default:
             LOG.debug("Skipped indexing of in-memory node of type " 
@@ -278,7 +281,7 @@ public class DOMIndexer {
                 attrib.setOwnerDocument(targetDoc);
                 elem.appendChildInternal(prevNode, attrib);
                 setPrevious(attrib);
-                broker.storeNode(transaction, attrib, path);
+                broker.storeNode(transaction, attrib, path, indexSpec);
                 ++attr;
             }
         }

@@ -1537,7 +1537,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         } catch (CollectionConfigurationException e) {
             LOG.warn("Failed to load collection configuration for '" + getURI() + "'", e);
         }
-
+//        LOG.debug("Loaded configuration for collection:  " + getURI());
         return configuration;
     }
     

@@ -501,10 +501,10 @@ public abstract class DBBroker extends Observable {
 	 *            determine if a node's content should be fulltext-indexed).
 	 */
 	public abstract void storeNode(Txn transaction, StoredNode node,
-			NodePath currentPath, boolean index);
+			NodePath currentPath, IndexSpec indexSpec, boolean index);
 
-	public void storeNode(Txn transaction, StoredNode node, NodePath currentPath) {
-		storeNode(transaction, node, currentPath, true);
+	public void storeNode(Txn transaction, StoredNode node, NodePath currentPath, IndexSpec indexSpec) {
+		storeNode(transaction, node, currentPath, indexSpec, true);
 	}
 
 	public void endElement(final StoredNode node, NodePath currentPath, String content) {
