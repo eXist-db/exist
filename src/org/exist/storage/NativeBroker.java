@@ -2263,7 +2263,7 @@ public class NativeBroker extends DBBroker {
      *      the Broker to determine if a node's content should be
      *      fulltext-indexed).  @param index switch to activate fulltext indexation
      */
-    public void storeNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean fullTextIndex) {
+    public void storeNode(final Txn transaction, final StoredNode node, NodePath currentPath, IndexSpec indexSpec, boolean fullTextIndex) {
         checkAvailableMemory();
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
         final short nodeType = node.getNodeType();
@@ -2290,7 +2290,7 @@ public class NativeBroker extends DBBroker {
         ++nodesCount;
         ByteArrayPool.releaseByteArray(data);
         
-        nodeProcessor.reset(transaction, node, currentPath, fullTextIndex);
+        nodeProcessor.reset(transaction, node, currentPath, indexSpec, fullTextIndex);
         nodeProcessor.doIndex();
     }
     
@@ -2365,7 +2365,7 @@ public class NativeBroker extends DBBroker {
         final long oldAddress = node.getInternalAddress();
         node.setOwnerDocument(newDoc);
         node.setInternalAddress(BFile.UNKNOWN_ADDRESS);
-        storeNode(transaction, node, currentPath, index);
+        storeNode(transaction, node, currentPath, null, index);
         if (defrag && oldNodeId != null)
             pool.getNotificationService().notifyMove(oldNodeId, node);
         if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -2573,7 +2573,7 @@ public class NativeBroker extends DBBroker {
     
     public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, int repairMode) {
         elementIndex.setInUpdateMode(true);
-        nodeProcessor.reset(transaction, node, currentPath);
+        nodeProcessor.reset(transaction, node, currentPath, null, true);
         nodeProcessor.setMode(repairMode);
         nodeProcessor.index();
     }
@@ -2687,10 +2687,6 @@ public class NativeBroker extends DBBroker {
 		}
 	    }
 	    .run();
-    }
-    
-    public void storeNode(Txn transaction, StoredNode node, NodePath currentPath) {
-        super.storeNode(transaction, node, currentPath);
     }
     
     public void repair() throws PermissionDeniedException {
@@ -2875,8 +2871,8 @@ public class NativeBroker extends DBBroker {
 
         NodeProcessor() {
         }
-
-        public void reset(Txn transaction, StoredNode node, NodePath currentPath) {            
+        
+        public void reset(Txn transaction, StoredNode node, NodePath currentPath, IndexSpec indexSpec, boolean fullTextIndex) {
             if (node.getNodeId() == null)
                 LOG.warn("illegal node: " + node.getNodeName());
             //TODO : why continue processing ? return ? -pb
@@ -2884,17 +2880,15 @@ public class NativeBroker extends DBBroker {
             this.node = node;
             this.currentPath = currentPath;
             this.mode = MODE_STORE;
-            
+
             doc = (DocumentImpl) node.getOwnerDocument();
             address = node.getInternalAddress();
-            
-            idxSpec = doc.getCollection().getIndexConfiguration(NativeBroker.this);
-            ftIdx = doc.getCollection().getFulltextIndexConfiguration(NativeBroker.this);
+
+            if (indexSpec == null)
+                indexSpec = doc.getCollection().getIndexConfiguration(NativeBroker.this);
+            idxSpec = indexSpec;
+            ftIdx = idxSpec == null ? null : idxSpec.getFulltextIndexSpec();
             level = node.getNodeId().getTreeLevel();
-        }
-        
-        public void reset(Txn transaction, StoredNode node, NodePath currentPath, boolean fullTextIndex) {
-            reset(transaction, node, currentPath);
             this.fullTextIndex = fullTextIndex;
         }
 
