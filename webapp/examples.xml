@@ -78,6 +78,12 @@
                         the notice shown when you first access the page). The test runner is entirely written
                         in XQuery and is a good example for a complex script using lots of AJAX.</td>
                     </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/json-test.xql">Transform XML fragments to JSON</link>
+                        </td>
+                        <td width="70%">An XQuery does not necessarily need to return XML.</td>
+                    </tr>
                 </table>
             </section>
 
