@@ -139,6 +139,33 @@ public class FunReplace extends FunMatches {
     			translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
             String replace =
     			((StringValue) getArgument(2).eval(contextSequence, contextItem)).getStringValue(true);
+            //An error is raised [err:FORX0004] if the value of $replacement contains a "$" character that is not immediately followed by a digit 0-9 and not immediately preceded by a "\".
+            //An error is raised [err:FORX0004] if the value of $replacement contains a "\" character that is not part of a "\\" pair, unless it is immediately followed by a "$" character.            
+            for (int i = 0 ; i < replace.length() ; i++) {
+            	//Commented out : this seems to be a total non sense
+            	/*
+            	if (replace.charAt(i) == '$') {
+            		try {
+            			if (!(replace.charAt(i - 1) == '\\' || Character.isDigit(replace.charAt(i + 1))))
+            				throw new XPathException("err:FORX0004 The value of $replacement contains a '$' character that is not immediately followed by a digit 0-9 and not immediately preceded by a '\\'.");
+            		//Handle index exceptions
+            		} catch (Exception e){
+            			throw new XPathException("err:FORX0004 The value of $replacement contains a '$' character that is not immediately followed by a digit 0-9 and not immediately preceded by a '\\'.");
+            		}
+            	}
+            	*/
+            	if (replace.charAt(i) == '\\') {
+            		try {
+            			if (!(replace.charAt(i + 1) == '\\' || replace.charAt(i + 1) == '$'))
+            				throw new XPathException("err:FORX0004 The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.");
+            			i++;
+            		//Handle index exceptions
+            		} catch (Exception e){
+            			throw new XPathException("err:FORX0004 The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.");
+            		}
+            	}
+            	
+            }
 
             int flags = 0;
     		if (getSignature().getArgumentCount() == 4)
