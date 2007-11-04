@@ -404,8 +404,11 @@ public class XQueryContext {
 		} catch (DatatypeConfigurationException e) {
 			LOG.error(e.getMessage(), e);
 		}
-		if (implicitTimeZone == null)
+		if (implicitTimeZone == null) {
 			implicitTimeZone = TimeZone.getDefault();
+			if (implicitTimeZone.inDaylightTime(new Date()))
+				implicitTimeZone.setRawOffset(implicitTimeZone.getRawOffset() + implicitTimeZone.getDSTSavings());
+		}
 	}
 	
 	public AccessContext getAccessContext() {
@@ -841,8 +844,11 @@ public class XQueryContext {
 	}	
 	
 	 public TimeZone getImplicitTimeZone() { 	
-		 if (implicitTimeZone == null)
+		 if (implicitTimeZone == null) {
 			 implicitTimeZone = TimeZone.getDefault();
+			 if (implicitTimeZone.inDaylightTime(new Date()))
+				 implicitTimeZone.setRawOffset(implicitTimeZone.getRawOffset() + implicitTimeZone.getDSTSavings());
+		 }
 		//That's how we ensure stability of that static context function
 		return this.implicitTimeZone;
 	}	
@@ -1999,7 +2005,7 @@ public class XQueryContext {
         else if (Option.OPTIMIZE_IMPLICIT_TIMEZONE.compareTo(qn) == 0) {
         	//TODO : error check
         	Duration duration = TimeUtils.getInstance().newDuration(option.getContents());         	
-        	implicitTimeZone = new SimpleTimeZone((int)duration.getTimeInMillis(new Date()), "XQuery context");        
+        	implicitTimeZone = new SimpleTimeZone((int)duration.getTimeInMillis(new Date()), "XQuery context"); 
         }
         else if (Option.CURRENT_DATETIME.compareTo(qn) == 0) {
         	//TODO : error check
