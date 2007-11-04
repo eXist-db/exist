@@ -39,8 +39,7 @@ public class FunImplicitTimezone extends Function {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-        Sequence result = new DayTimeDurationValue(context.getImplicitTimeZone().getRawOffset() + context.getImplicitTimeZone().getDSTSavings());
+        Sequence result = new DayTimeDurationValue(context.getImplicitTimeZone().getRawOffset());
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
