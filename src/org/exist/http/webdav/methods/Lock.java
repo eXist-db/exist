@@ -147,7 +147,8 @@ public class Lock extends AbstractWebDAVMethod {
             txManager.commit(txn);
             
             try {
-                lockResource(request, response, lockToken);
+                lockResource(request, response, lockToken, HttpServletResponse.SC_CREATED);
+
             } catch (ServletException ex) {
                 LOG.error(ex);
             } catch (IOException ex) {
@@ -279,7 +280,7 @@ public class Lock extends AbstractWebDAVMethod {
                 LOG.debug("Sucessfully locked '"+path+"'.");
                 
                 // Write XML response to client
-                lockResource(request, response, lockToken);
+                lockResource(request, response, lockToken, HttpServletResponse.SC_OK);
                 
             }
         } catch (EXistException e) {
@@ -389,10 +390,11 @@ public class Lock extends AbstractWebDAVMethod {
     
     
     // Return Lock Info
-    private void lockResource(HttpServletRequest request, HttpServletResponse response,
-            LockToken lockToken) throws ServletException, IOException {
+    private void lockResource(HttpServletRequest request, HttpServletResponse response, 
+            LockToken lockToken, int status) throws ServletException, IOException {
         
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(status);
+        response.addHeader("Lock-Token", "opaquelocktoken:" + lockToken.getOpaqueLockToken());
         response.setContentType(MimeType.XML_CONTENT_TYPE.getName());
 //        response.setCharacterEncoding("utf-8");
         
