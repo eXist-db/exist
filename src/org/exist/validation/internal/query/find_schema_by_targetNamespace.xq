@@ -10,5 +10,5 @@
     
     $Id$
 :)
-for $schema in collection($collection)//xs:schema[@targetNamespace = $targetNamespace ] 
+for $schema in collection($collection)//xs:schema[@targetNamespace = $targetNamespace ]/root() 
 return document-uri($schema)

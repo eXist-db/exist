@@ -84,10 +84,10 @@ public class FunDocumentURI extends Function {
             if (value.getImplementationType() == NodeValue.PERSISTENT_NODE) { 
         		NodeProxy node = (NodeProxy) value;
         		//Returns the empty sequence if the node is not a document node. 
-        		//if (node.isDocument()) {
+        		if (node.isDocument()) {
         			XmldbURI path = node.getDocument().getURI(); 
         			result = new AnyURIValue(path);
-        		//}        		
+        		}        		
             } else {
         		if (value instanceof DocumentImpl && ((DocumentImpl)value).getDocumentURI() != null) {
         			result = new AnyURIValue(((DocumentImpl)value).getDocumentURI());
