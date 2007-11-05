@@ -1,4 +1,5 @@
 #!/bin/bash
+# $Id$
 
 if [ "$JAVA_HOME" = "" ] ; then
   echo "ERROR: JAVA_HOME not found in your environment."
