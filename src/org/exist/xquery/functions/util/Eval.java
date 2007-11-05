@@ -84,7 +84,7 @@ public class Eval extends BasicFunction {
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
-                "util:eval('xmldb:exist:///db/test/test.xq'). " +
+                "util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). " +
                 //TODO : to be discussed ; until now, it's been used with a null context
 				"The query inherits the current execution context, i.e. all " +
 				"namespace declarations and variable declarations are visible from within the " +
@@ -102,7 +102,7 @@ public class Eval extends BasicFunction {
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
-                "util:eval('xmldb:exist:///db/test/test.xq'). " +
+                "util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). " +
 				"The query inherits the current execution context, i.e. all " +
 				"namespace declarations and variable declarations are visible from within the " +
 				"inner expression. " +
@@ -122,7 +122,7 @@ public class Eval extends BasicFunction {
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
-                "util:eval('xmldb:exist:///db/test/test.xq').\n" +                
+                "util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')).\n" +                
 				"The query inherits the context described by the XML fragment in the second parameter. " +
 				"It should have the format:\n" +
 				"<static-context>\n" +
@@ -148,7 +148,7 @@ public class Eval extends BasicFunction {
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
-                "util:eval('xmldb:exist:///db/test/test.xq').\n" + 
+                "util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')).\n" + 
 				"The query inherits the context described by the XML fragment in the second parameter. " +
 				"It should have the format:\n" +
 				"<static-context>\n" +
@@ -176,7 +176,7 @@ public class Eval extends BasicFunction {
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
-                "util:eval('xmldb:exist:///db/test/test.xq'). " +
+                "util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). " +
 				"The query inherits the first argument's context, i.e. all " +
 				"namespace declarations and variable declarations are visible from within the " +
 				"inner expression. " +
