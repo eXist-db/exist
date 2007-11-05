@@ -13,22 +13,21 @@
             <title>Overview (Current Status of XQuery Support)</title>
 
             <para>eXist implements core XQuery syntax (with the exception of XML Schema-related
-                features) as specified in W3C's recommendations outlined in the <ulink
-                    url="http://www.w3.org/TR/xquery/">June 2006 candidate recommendation</ulink>.
-                Functions in the standard function library should also follow recommendations in the
-                    <ulink url="http://www.w3.org/TR/xpath-functions/">June 2006</ulink> version of
-                the "XQuery 1.0 and XPath 2.0 Functions and Operators" recommendation. However, the
+                features) as specified in the <ulink
+                    url="http://www.w3.org/TR/xquery/">W3C recommendation</ulink>.
+                Functions in the standard function library should also follow the
+                    <ulink url="http://www.w3.org/TR/xpath-functions/">"XQuery 1.0 and XPath 2.0 Functions and Operators" 
+                    recommendation</ulink>. However, the
                 function library is not yet completely aligned with the latest version of the spec.
-                Some function signatures may differ, other functions could be missing.
-                Please check against the local function library <ulink url="xquery/functions.xq"
-                    >documentation</ulink>.</para>
+                Some function signatures may differ.
+                Please check against the local function library <ulink url="xquery/functions.xq">documentation</ulink>.</para>
 
-            <para>The XQuery implementation is tested against the official XQuery Test Suite (XQTS).
-                This suite contains more than 10,000 tests. As of December 2006, eXist passes &gt;
-                93% of the test suite, but we are continuously trying to improve these results.
+            <para>The XQuery implementation is tested against the official XQuery Test Suite (XQTS version 1.0.2).
+                This suite contains more than 14,000 tests. As of November 2007, eXist passes more 
+                than 99% of the test suite, but we are continuously trying to improve these results.
                 Current test results are reported on the <ulink url="http://xqts.exist-db.org/">web
                     site</ulink>. A good part of the remaining failures is caused by smaller
-                problems with value comparisons, formatting of floating point numbers and the
+                problems in the XQuery parser, computed constructors and the
                 missing schema support in eXist.</para>
 
             <note>
@@ -140,7 +139,7 @@
                 <title>Using Relative URIs</title>
 
                 <para>If the location specified in an import statement is a relative URI, the query
-                    engine will try to load the module relativ to the current module load path. The
+                    engine will try to load the module relatively to the current module load path. The
                     module load path is determined as follows:</para>
 
                 <orderedlist>
@@ -209,13 +208,13 @@
             <para>Modules are cached along with the main query that imported them.</para>
         </section>
 
-        <section id="ext">
+        <section>
             <title>eXist Extension Functions</title>
 
             <para>eXist offers a number of additional functions and operators, which are discussed
                 in some detail in the following subsections.</para>
 
-            <section id="input_doc">
+            <section>
                 <title>Specifying the Input Document Set</title>
                 <para>A database can contain a virtually unlimited set of collections and documents.
                     By default, database queries that use the XML:DB API will only process the
@@ -306,7 +305,7 @@
                 </variablelist>
             </section>
 
-            <section id="query_func">
+            <section>
                 <title>Querying Text (Fulltext Searching)</title>
                 <para>The standard XPath/XQuery function library contains most of the common string
                     manipulation functions provided by most programming languages. However, these
@@ -498,7 +497,7 @@
                 </section>
             </section>
 
-            <section id="xmldb">
+            <section>
                 <title>Manipulating Database Contents</title>
                 <para>The XML:DB extension functions can be used to create new database collections,
                     or to store query output into the database. To illustrate, suppose we have a
@@ -1172,7 +1171,7 @@ example:echo(("Hello", "World!"))
                 (see the <ulink url="http://www.w3.org/TR/xquery/#id-extension-expressions">specificiation</ulink>).
             </para>
             <para>Currently, eXist recognizes only two pragmas: <option>exist:timer</option> and <option>exist:batch-transaction</option>.</para>
-            <section id="pragma_timer">
+            <section>
 	            <title>exist:timer</title>
 				<para>Provides a simple way to measure the time for executing a given expression. For example:</para>
 	            <synopsis>(# exist:timer #) { //some/path/expression }</synopsis>
@@ -1188,7 +1187,7 @@ example:echo(("Hello", "World!"))
 	                </programlisting>
 	            </example>
             </section>
-			<section id="pragma_batch-transaction">
+			<section>
 	            <title>exist:batch-transaction</title>
 				<para><b>Currently only for XQuery Update Extensions.</b> Provides a method for batching updates on the database into a single Transaction,
 				allowing a set of updates to be atomically guaranteed. Also for each affected document or collection, any configured Triggers will only be called once, the prepare()
@@ -1199,7 +1198,7 @@ example:echo(("Hello", "World!"))
 	             }</synopsis>
 	            <para>Uses a single Transaction and Trigger events for the expressions enclosed in curly braces.</para>
             </section>            
-			<section id="pragma_exception-if-index-not-used">
+			<section>
 	            <title>exist:force-index-use</title>
 				<para><b>For debugging purposes</b>. An expression that can be assisted by <i>range</i> or <i>QName</i> indexes - <b>comparisons</b>, <b>fn:matches()</b> - will raise an error if, for any reason, this assistance can not be performed.</para>
 				<para>This can help to check whether the indexes are correctly defined or not.</para>
@@ -1208,7 +1207,7 @@ example:echo(("Hello", "World!"))
 	             }</synopsis>
 	            <para>Raises an error (currently <b>XPDYxxxx</b> since this kind of dynamic error is not yet defined by the XQuery specifications) if the general comparison doesn't use a <i>range</i> or a <i>QName</i> index.</para>
             </section>  
-            <section id="pragma_no-index-use">
+            <section>
                 <title>exist:no-index</title>                
                 <para>This prevents the query engine to use the index in expressions that can be assisted by <i>range</i> 
                 or <i>QName</i> indexes - <b>comparisons</b>, <b>fn:matches()</b> - . Useful if the searched value isn't very selective or if 
@@ -1217,7 +1216,7 @@ example:echo(("Hello", "World!"))
                     //group[. = "dba"]
                  }</synopsis>
             </section>  
-            <section id="pragma_optimize">
+            <section>
                 <title>exist:optimize</title>                
                 <para>This pragma is normally inserted automatically by the query rewriter (if enabled) to optimize
                 an expression that implements the <classname>org.exist.xquery.Optimizable</classname> interface.</para>
