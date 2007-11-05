@@ -16,14 +16,14 @@ to the documents in a folder) or that view the object in a special way (e.g.
 {@link org.exist.fluent.ItemList#values() ItemList.values()} that views a list of items as a
 list of their effective string values).  Finally, some classes offer a {@link java.lang.StringBuffer StringBuffer}-style
 interface for chaining calls, providing a miniature domain specific language within their context (e.g.
-{@link org.exist.fluent.QueryService QueryService} or {@link org.exist.fluent.ElementBuilder ElementBuilder}.
+{@link org.exist.fluent.QueryService QueryService} or {@link org.exist.fluent.ElementBuilder ElementBuilder}).
 </p>
 
 <h3>Folders and documents</h3>
 <p>
 The entry point to this API is the {@link org.exist.fluent.Database Database} class.  After you've started up the database
 and obtained a handle by logging in a user, you can start accessing the database's contents.  The
-database is laid out as a hierarchy of {@link org.exist.fluent.Folder folders} (with the root folder called "/").  You
+database is laid out as a hierarchy of {@link org.exist.fluent.Folder folders}, with the root folder called "/".  You
 can obtain a reference to a folder via {@link org.exist.fluent.Database#getFolder(String) Database.getFolder()}, or create a folder via
 {@link org.exist.fluent.Database#createFolder(String) Database.createFolder()} (supplying an absolute path in each case, e.g. "/top/other").
 </p>
@@ -60,7 +60,7 @@ you could use the following code:
     .elem("contact")
       .elem("name").attr("kind", "first").text("Piotr").end("name")
       .elem("name").attr("kind", "family").text("Kaminski").end("name")
-    .elem("contact")
+    .end("contact")
   .commit();</pre> 
 </p>
 
