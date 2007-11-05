@@ -1,0 +1,28 @@
+/*
+ * CodePress color styles for Java syntax highlighting
+ */
+
+b {
+	color:#B100FF;
+	font-weight:bold;
+	font-style:normal;
+} /* reserved words */
+
+i, i b, i s {
+	color:#3F7F5F;
+	font-weight:bold;
+} /* comments */
+
+s, s b {
+	color:#0045B3;
+	font-weight:normal;
+} /* strings */
+
+.variable {
+	font-weight: bold;
+	color: #09B363;
+}
+
+.funcall {
+	color: #FFB419;
+}
