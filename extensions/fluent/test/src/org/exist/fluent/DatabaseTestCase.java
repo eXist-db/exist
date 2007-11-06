@@ -45,8 +45,10 @@ public abstract class DatabaseTestCase {
 	}
 
 	@After public void shutdownDatabase() throws Exception {
-		wipeDatabase();
-		Database.shutdown();
+		if (Database.isStarted()) {
+			wipeDatabase();
+			Database.shutdown();
+		}
 	}
     
 	private void wipeDatabase() {

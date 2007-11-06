@@ -82,13 +82,22 @@ public class Database {
 	 * @throws IllegalStateException if the database was already started with a different config file
 	 */
 	public static void ensureStarted(File configFile) {
-		if (BrokerPool.isConfigured(dbName)) {
+		if (isStarted()) {
 			String currentPath = pool.getConfiguration().getConfigFilePath();
 			if (!configFile.getAbsoluteFile().equals(new File(currentPath).getAbsoluteFile()))
 				throw new IllegalStateException("database already started with different configuration " + currentPath);
 		} else {
 			startup(configFile);
 		}
+	}
+	
+	/**
+	 * Return whether the database has been started and is currently running.
+	 *
+	 * @return <code>true</code> if the database has been started with any configuration file
+	 */
+	public static boolean isStarted() {
+		return BrokerPool.isConfigured(dbName);
 	}
 	
 	/**

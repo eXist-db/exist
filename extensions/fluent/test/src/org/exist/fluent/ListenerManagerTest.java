@@ -416,7 +416,7 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		createDocument("/top/test2.xml").delete();
 	}
 
-	public void bugtestListenBeforeCreateFolder1() {
+	@Test @Ignore("not yet implemented") public void listenBeforeCreateFolder1() {
 		final String folderPath = "/top/child";
 		final Folder.Event ev = new Folder.Event(Trigger.BEFORE_CREATE, folderPath, null);
 		context.checking(new Expectations() {{
@@ -427,7 +427,7 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		top.children().create("child");
 	}
 
-	public void bugtestListenBeforeCreateFolder2() {
+	@Test @Ignore("not yet implemented") public void listenBeforeCreateFolder2() {
 		final String folderPath = "/top/middle/child";
 		final Folder.Event ev = new Folder.Event(Trigger.BEFORE_CREATE, folderPath, null);
 		context.checking(new Expectations() {{
