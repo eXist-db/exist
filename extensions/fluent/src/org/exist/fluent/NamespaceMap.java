@@ -19,8 +19,7 @@ public class NamespaceMap implements Cloneable {
 			map.put("xmlns", "http://www.w3.org/2000/xmlns/");
 			assert parent == null;
 		}
-		@Override
-		public Map<String,String> getCombinedMap() {
+		@Override public Map<String,String> getCombinedMap() {
 			return new TreeMap<String,String>();
 		}
 	}
@@ -42,6 +41,17 @@ public class NamespaceMap implements Cloneable {
 	 */
 	protected NamespaceMap parent;
 
+	/**
+	 * Return whether the given prefix is reserved by the XML spec and should not be
+	 * manually bound to namespaces.
+	 *
+	 * @param prefix the prefix to check
+	 * @return <code>true</code> if the prefix is reserved, <code>false</code> if it's available for binding
+	 */
+	public static boolean isReservedPrefix(String prefix) {
+		return RESERVED.get(prefix) != null;
+	}
+	
 	/**
 	 * Create a new namespace map with no inherited bindings.  Immediate bindings can
 	 * be specified as a list of key-URI pairs.
