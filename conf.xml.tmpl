@@ -344,10 +344,10 @@
         <modules>
             <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
                 file="ngram.dbx" n="3"/>
-            <!--      -->
+            <!--
             <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
                 connectionTimeout="10000" flushAfter="300" />            
-            <!-- -->
+            -->
 			<!-- The full text index is always required and should
 				 not be disabled. We still have some dependencies on
                  this index in the database core. These will be removed
@@ -546,10 +546,10 @@
             <!-- New Modularized Indexes -->
             <module class="org.exist.xquery.modules.ngram.NGramModule"
                 uri="http://exist-db.org/xquery/ngram" />
-            <!--         -->
+            <!--
             <module class="org.exist.xquery.modules.spatial.SpatialModule"
                 uri="http://exist-db.org/xquery/spatial" />
-            <!-- -->
+            -->
 
             <!-- Optional Modules -->
             <!--
