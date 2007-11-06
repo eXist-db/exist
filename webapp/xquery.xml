@@ -973,7 +973,7 @@ public String getDefaultPrefix() {
                 <programlisting>
 <![CDATA[xquery version "1.0";
 
-import module namespace "http://exist-db.org/xquery/examples"
+import module namespace example="http://exist-db.org/xquery/examples"
 at "java:org.exist.examples.xquery.ExampleModule";
 
 example:echo(("Hello", "World!"))
