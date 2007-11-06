@@ -1,14 +1,15 @@
 package org.exist.fluent;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.*;
+
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
-import org.jmock.cglib.MockObjectTestCase;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.*;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * A superclass for database unit tests.  It takes care of starting up and clearing the database in
@@ -19,7 +20,7 @@ import java.lang.annotation.*;
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 @DatabaseTestCase.ConfigFile("conf.xml")
-public abstract class DatabaseTestCase extends MockObjectTestCase {
+public abstract class DatabaseTestCase {
 	
 	/**
 	 * An annotation that specifies the path of the config file to use when setting up the database
@@ -34,7 +35,7 @@ public abstract class DatabaseTestCase extends MockObjectTestCase {
 	
 	protected Database db;
     
-	@Override protected void setUp() {
+	@Before public void startupDatabase() {
 		ConfigFile configFileAnnotation = getClass().getAnnotation(ConfigFile.class);
 		assert configFileAnnotation != null;
 		Database.ensureStarted(new File(configFileAnnotation.value()));
@@ -43,7 +44,7 @@ public abstract class DatabaseTestCase extends MockObjectTestCase {
 		ListenerManager.configureTriggerDispatcher(db);	// config file gets erased by command above
 	}
 
-	@Override protected void tearDown() throws Exception {
+	@After public void shutdownDatabase() throws Exception {
 		wipeDatabase();
 		Database.shutdown();
 	}

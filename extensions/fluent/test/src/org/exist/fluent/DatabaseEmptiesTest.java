@@ -2,28 +2,28 @@ package org.exist.fluent;
 
 import java.util.NoSuchElementException;
 
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 public class DatabaseEmptiesTest extends DatabaseTestCase {
-    public void testHasNext() {
-        assertFalse(Database.EMPTY_ITERATOR.hasNext());
-    }
+	@Test public void hasNext() {
+		assertFalse(Database.EMPTY_ITERATOR.hasNext());
+	}
 
-    @SuppressWarnings("unchecked")
-		public void testNext() {
-        try {
-            Database.EMPTY_ITERATOR.next();
-            fail();
-        } catch (NoSuchElementException e) {}
-    }
+	@SuppressWarnings("unchecked")
+	@Test(expected = NoSuchElementException.class)
+	public void next() {
+		Database.EMPTY_ITERATOR.next();
+	}
 
-    public void testRemove() {
-        try {
-            Database.EMPTY_ITERATOR.remove();
-            fail();
-        } catch (UnsupportedOperationException e) {}
-    }
+	@Test(expected = UnsupportedOperationException.class)
+	public void remove() {
+		Database.EMPTY_ITERATOR.remove();
+	}
 
-    @SuppressWarnings("unchecked")
-		public void testIterator() {
-        assertSame(Database.EMPTY_ITERATOR, Database.EMPTY_ITERABLE.iterator());
-    }
+	@SuppressWarnings("unchecked")
+	@Test public void iterator() {
+		assertSame(Database.EMPTY_ITERATOR, Database.EMPTY_ITERABLE.iterator());
+	}
 }
