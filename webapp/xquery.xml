@@ -869,8 +869,8 @@ declare namespace file="java:java.io.File";
                 <classname>FunctionSignature</classname>), and the Java Class that implements the
                 function.</para>
 
-            <para>A function is a class extending <classname>org.exist.xpath.Function</classname> or
-                    <classname>org.exist.xpath.BasicFunction</classname>. Functions without special
+            <para>A function is a class extending <classname>org.exist.xquery.Function</classname> or
+                    <classname>org.exist.xquery.BasicFunction</classname>. Functions without special
                 requirements (e.g. overloading) should subclass BasicFunction. To illustrate, the
                 following is a simple function definition:</para>
 
