@@ -2,7 +2,7 @@
 
 rem will be set by the installer
 set EXIST_HOME=$INSTALL_PATH
-
+rem will be set by the installer
 set JAVA_HOME=$JAVA_HOME
 
 :gotJavaHome

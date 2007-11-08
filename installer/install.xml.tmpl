@@ -114,30 +114,30 @@
       <file src="installer/install.xml.tmpl" targetdir="$INSTALL_PATH/installer"/>
       <file src="tools/izpack/build.xml" targetdir="$INSTALL_PATH/tools/izpack"/>
 
-      <fileset dir="installer" targetdir="$INSTALL_PATH/bin">
+      <fileset dir="installer/scripts" targetdir="$INSTALL_PATH/bin">
 	<include name="setup.sh"/>
 	<include name="setup.bat"/>
       </fileset>
-      <fileset dir="bin" targetdir="$INSTALL_PATH/bin">
-	<include name="client.sh"/>
-	<include name="startup.sh"/>
-	<include name="server.sh"/>
-	<include name="shutdown.sh"/>
-	<include name="backup.sh"/>
-	<include name="client.bat"/>
-	<include name="startup.bat"/>
-	<include name="server.bat"/>
-	<include name="shutdown.bat"/>
-	<include name="backup.bat"/>
-      </fileset>
-      <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
-	<include name="*.sh"/>
-      </fileset>
-      <fileset dir="bin/batch.d" targetdir="$INSTALL_PATH/bin/batch.d">
-	<include name="*.bat"/>
-      </fileset>
-      <file src="installer/build.sh" targetdir="$INSTALL_PATH"/>
-      <file src="installer/build.bat" targetdir="$INSTALL_PATH"/>
+    <fileset dir="installer/scripts" targetdir="$INSTALL_PATH/bin">
+		<include name="client.sh"/>
+		<include name="startup.sh"/>
+		<include name="server.sh"/>
+		<include name="shutdown.sh"/>
+		<include name="backup.sh"/>
+		<include name="client.bat"/>
+		<include name="startup.bat"/>
+		<include name="server.bat"/>
+		<include name="shutdown.bat"/>
+		<include name="backup.bat"/>
+    </fileset>
+    <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
+		<include name="*.sh"/>
+    </fileset>
+    <fileset dir="bin/batch.d" targetdir="$INSTALL_PATH/bin/batch.d">
+		<include name="*.bat"/>
+    </fileset>
+      <file src="installer/scripts/build.sh" targetdir="$INSTALL_PATH"/>
+      <file src="installer/scripts/build.bat" targetdir="$INSTALL_PATH"/>
       <parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
       <parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
       <parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
