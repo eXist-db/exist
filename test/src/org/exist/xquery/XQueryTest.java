@@ -2693,7 +2693,7 @@ public class XQueryTest extends XMLTestCase {
     }
 
      // http://sourceforge.net/support/tracker.php?aid=1828168
-    public void testtestPredicateInPredicateEmptyResult_1828168() {
+    public void bugtestPredicateInPredicateEmptyResult_1828168() {
 
         try {
             String query = "let $docs := <Document/> return $docs[a[1] = 'b']";
