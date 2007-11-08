@@ -29,23 +29,23 @@
 
     <target depends="prepare-installer,commandline-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-${project.version}.jar"/>
+        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}.jar"/>
         <izpack input="installer/install.xml"
-            output="installer/${project.name}-${project.version}.jar"
+            output="${inst-jar}"
             basedir="." izPackDir="${izpack.dir}"
             installerType="standard"/>
         
         <mkdir dir="installer/temp"/>
         <tstamp/>
-        <unjar src="installer/${project.name}-${project.version}.jar"
+        <unjar src="${inst-jar}"
             dest="installer/temp"/>
         <delete>
             <fileset dir="installer/temp">
                 <include name="META-INF/EXIST.*"/>
             </fileset>
         </delete>
-        <delete file="installer/${project.name}-${project.version}.jar"/>
-        <jar destfile="installer/${project.name}-${project.version}.jar"
+        <delete file="${inst-jar}"/>
+        <jar destfile="${inst-jar}"
             basedir="installer/temp" compress="yes" update="yes">
             <manifest>
                 <attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
@@ -54,10 +54,22 @@
         <delete dir="installer/temp"/>
     </target>
 
+	<target depends="snapshot-installer" name="installer-exe" description="Create .exe from installer">
+		<taskdef name="launch4j"
+			classname="net.sf.launch4j.ant.Launch4jTask"
+			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
+		<property name="inst-jar" value="installer/${project.name}-setup-${project.version}-rev${svn.revision}.jar"/>
+		<property name="inst-exe" value="installer/${project.name}-setup-${project.version}-rev${svn.revision}.exe"/>
+		<launch4j configFile="installer/launch4j.xml" jar="${inst-jar}" 
+			outfile="${inst-exe}" fileVersion="${project.version.numeric}.${svn.revision}"
+			txtFileVersion="${project.version}-rev${svn.revision}"
+			productVersion="${project.version.numeric}.${svn.revision}"/>
+	</target>
+	
     <target depends="prepare-installer,commandline-installer"
             name="snapshot-installer" description="Create snapshot installer">
         <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-${project.version}-rev${svn.revision}.jar"/>
+        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}-rev${svn.revision}.jar"/>
 
         <property name="install-input" location="installer/install.xml"/>
         <property name="install-output" location="${inst-jar}"/>
