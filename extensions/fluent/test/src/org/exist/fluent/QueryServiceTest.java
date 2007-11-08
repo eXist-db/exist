@@ -31,6 +31,6 @@ public class QueryServiceTest extends DatabaseTestCase {
 
 	@Test public void analyze5() {
 		QueryService.QueryAnalysis qa = db.getFolder("/").query().analyze("$blah");
-		assertEquals("[blah]", qa.requiredVariables().toString());
+		assertEquals("[$blah]", qa.requiredVariables().toString());
 	}
 }

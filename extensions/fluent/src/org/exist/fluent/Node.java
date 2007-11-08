@@ -1,5 +1,7 @@
 package org.exist.fluent;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.xml.datatype.Duration;
@@ -7,6 +9,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.exist.dom.*;
 import org.exist.storage.DBBroker;
+import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.value.*;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NodeList;
@@ -48,9 +51,47 @@ public class Node extends Item {
 	 * 
 	 * @return this node
 	 */
-	@Override
-	public Node node() {
+	@Override public Node node() {
 		return this;
+	}
+	
+	/**
+	 * Return whether this node represents the same node in the database as the given object.
+	 */
+	@Override public boolean equals(Object o) {
+		if (!(o instanceof Node)) return false;
+		Node that = (Node) o;
+		if (item == that.item) return true;
+		if (this.item instanceof NodeProxy && that.item instanceof NodeProxy) {
+			NodeProxy thisProxy = (NodeProxy) this.item, thatProxy = (NodeProxy) that.item;
+			return
+				thisProxy.getDocument().getURI().equals(thatProxy.getDocument().getURI()) &&
+				thisProxy.getNodeId().equals(thatProxy.getNodeId());
+		}
+		return false;
+	}
+	
+	/**
+	 * Warning:  computing a node's hash code is surprisingly expensive, and the value is not cached.
+	 * You should not use nodes in situations where they might get hashed.
+	 */
+	@Override public int hashCode() {
+		return computeHashCode();
+	}
+	
+	private int computeHashCode() {
+		if (item instanceof NodeProxy) {
+			NodeProxy proxy = (NodeProxy) item;
+			VariableByteOutputStream buf = new VariableByteOutputStream();
+			try {
+				proxy.getNodeId().write(buf);
+			} catch (IOException e) {
+				throw new RuntimeException("unable to serialize node's id to compute hashCode", e);
+			}
+			return proxy.getDocument().getURI().hashCode() ^ Arrays.hashCode(buf.toByteArray());
+		} else {
+			return item.hashCode();
+		}
 	}
 
 	/**
