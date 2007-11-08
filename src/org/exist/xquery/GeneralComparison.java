@@ -515,7 +515,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 			context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare");
 
 		//get the NodeSet on the left
-		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
+		Sequence leftSeq = getLeft().eval(contextSequence);
+		NodeSet nodes = leftSeq.isEmpty() ? NodeSet.EMPTY_SET : (NodeSet)leftSeq;
 		//nothing on the left, so nothing to do
 		if(!(nodes instanceof VirtualNodeSet) && nodes.isEmpty()) {
 			//Well, we might discuss this one ;-)
