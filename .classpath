@@ -27,6 +27,10 @@
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/gt2-epsg-extension-2.4-M3.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/serializer-2.9.1.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.9.1.jar"/>
+	<classpathentry kind="lib" path="extensions/fluent/lib/hamcrest-core-1.1.jar"/>
+	<classpathentry kind="lib" path="extensions/fluent/lib/hamcrest-library-1.1.jar"/>
+	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-2.4.0.jar"/>
+	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-junit4-2.4.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-impl-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/cocoon-2.1.7-deprecated.jar"/>
@@ -92,8 +96,5 @@
 	<classpathentry kind="lib" path="lib/endorsed/resolver-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/stax-api-1.0.1.jar"/>
-	<classpathentry kind="lib" path="extensions/fluent/lib/cglib-nodep-2.1_3.jar"/>
-	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-1.0.1.jar"/>
-	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-cglib-1.0.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
