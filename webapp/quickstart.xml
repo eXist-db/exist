@@ -409,6 +409,12 @@ Logging already initialized. Skipping...
                 start menu. You can also call <filename>tools/wrapper/bin/install.bat</filename>
                 instead. This will install eXist and Jetty as a Windows service.</para>
 
+            <note>
+                <para>Installing eXist as a service on Windows Vista requires full administrator rights. 
+                    Right click on the start menu item and select "Run as administrator". You may need to
+                do this even if you are already logged in as an administrator.</para>
+            </note>
+            
             <para>After executing the install.bat script, you should find eXist listed in the
             list of services currently registered with Windows:</para>
 
