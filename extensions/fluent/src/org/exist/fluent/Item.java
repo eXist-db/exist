@@ -8,6 +8,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.exist.dom.NodeProxy;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
@@ -44,6 +45,40 @@ public class Item extends Resource {
 	 */
 	public Node node() {
 		throw new DatabaseException("this item is not a node: " + this);
+	}
+	
+	@Override public boolean equals(Object o) {
+		if (!(o instanceof Item)) return false;
+		Item that = (Item) o;
+		if (this.item == that.item) return true;
+		if (this.item instanceof AtomicValue && that.item instanceof AtomicValue) {
+			AtomicValue thisValue = (AtomicValue) this.item, thatValue = (AtomicValue) that.item;
+			try {
+				return
+						thisValue.getType() == thatValue.getType()
+						&& thisValue.compareTo(null, Constants.EQ, thatValue);
+			} catch (XPathException e) {
+				// fall through
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * The hash code computation can be expensive, and the hash codes may not be very well distributed.
+	 * You probably shouldn't use items in situations where they might get hashed.
+	 */
+	@Override public int hashCode() {
+		if (item instanceof AtomicValue) {
+			AtomicValue value = (AtomicValue) item;
+			try {
+				return value.getType() ^ value.getStringValue().hashCode();
+			} catch (XPathException e) {
+				return value.getType();
+			}
+		} else {
+			return item.hashCode();
+		}
 	}
 	
 	/**

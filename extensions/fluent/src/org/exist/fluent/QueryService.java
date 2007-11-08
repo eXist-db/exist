@@ -346,7 +346,7 @@ public class QueryService implements Cloneable {
 		return executeQuery(query, EXISTS, params).get(0).booleanValue();
 	}
 	
-	private static final Pattern VAR_NOT_BOUND_PATTERN = Pattern.compile("^XPDY0002 : variable '\\$(\\S+)' is not set\\..*");
+	private static final Pattern VAR_NOT_BOUND_PATTERN = Pattern.compile("^XPDY0002 : variable '*(\\$\\S+)' is not set\\..*");
 	
 	/**
 	 * Statically analyze a query for various properties.
@@ -367,7 +367,7 @@ public class QueryService implements Cloneable {
 					Matcher matcher = VAR_NOT_BOUND_PATTERN.matcher(e.getCause().getMessage());
 					if (!matcher.matches()) throw e;
 					String varName = matcher.group(1);
-					bindings.put(varName, null);
+					bindings.put(varName.substring(1), null);
 					requiredVariables.add(varName);
 				}
 			}
@@ -432,7 +432,7 @@ public class QueryService implements Cloneable {
 		/**
 		 * Return a list of variables that are required to be defined by this query, excluding any
 		 * positional variables that were provided to the {@link QueryService#analyze(String, Object[]) analyze}
-		 * method.
+		 * method.  The variable names will include the leading '$'.
 		 * 
 		 * @return a list of variables required by this query
 		 */

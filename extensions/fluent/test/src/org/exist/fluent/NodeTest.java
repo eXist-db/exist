@@ -5,6 +5,36 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class NodeTest extends DatabaseTestCase {
+	
+	@Test
+	public void equals1() {
+		XMLDocument doc = db.createFolder("/test").documents().build(Name.create("foo"))
+				.elem("top").elem("child").end("child").end("top").commit();
+		Object o1 = doc.query().single("//child"), o2 = doc.query().single("//child");
+		assertTrue(o1.equals(o2));
+		assertEquals(o1.hashCode(), o2.hashCode());
+	}
+	
+	@Test
+	public void equals2() {
+		XMLDocument doc = db.createFolder("/test").documents().build(Name.create("foo"))
+				.elem("top").elem("child").end("child").end("top").commit();
+		Object o1 = doc.query().single("//child"), o2 = doc.query().single("//top");
+		assertFalse(o1.equals(o2));
+		// can't assert unequal hashCodes, they're allowed to be the same
+	}
+	
+	@Test
+	public void equals3() {
+		Folder folder = db.createFolder("/test");
+		XMLDocument doc1 = folder.documents().build(Name.create("foo1"))
+				.elem("top").elem("child").end("child").end("top").commit();
+		XMLDocument doc2 = folder.documents().build(Name.create("foo2"))
+				.elem("top").elem("child").end("child").end("top").commit();
+		Object o1 = doc1.query().single("//top"), o2 = doc2.query().single("//top");
+		assertFalse(o1.equals(o2));
+	}
+
 	@Test
 	public void append1() {
 		XMLDocument doc = db.createFolder("/test").documents().build(Name.create("foo"))
