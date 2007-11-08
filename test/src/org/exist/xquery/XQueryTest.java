@@ -2707,6 +2707,21 @@ public class XQueryTest extends XMLTestCase {
             ex.printStackTrace();
             fail(ex.toString());
         }
+
+        try {
+            String query = "<a/>[() = 'b']";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(0, result.getSize());
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+
+
     }
        
     // ======================================
