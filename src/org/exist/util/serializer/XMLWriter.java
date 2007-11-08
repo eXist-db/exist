@@ -86,10 +86,14 @@ public class XMLWriter {
 	}
 
 	public XMLWriter() {
-	}
+        super();
+        charSet = CharacterSet.getCharacterSet("UTF-8");
+        if (charSet == null)
+            throw new IllegalStateException("Charset should never be null");
+    }
 
 	public XMLWriter(Writer writer) {
-		super();
+		this();
 		this.writer = writer;
 	}
 
@@ -106,7 +110,9 @@ public class XMLWriter {
 		String encoding = outputProperties.getProperty(OutputKeys.ENCODING,
 				"UTF-8");
 		charSet = CharacterSet.getCharacterSet(encoding);
-	}
+        if (charSet == null)
+            throw new IllegalStateException("Charset should never be null");
+    }
 
 	protected void reset() {
         writer = null;
