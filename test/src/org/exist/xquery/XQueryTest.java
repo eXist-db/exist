@@ -2691,6 +2691,23 @@ public class XQueryTest extends XMLTestCase {
             fail(ex.toString());
         }
     }
+
+     // http://sourceforge.net/support/tracker.php?aid=1828168
+    public void testtestPredicateInPredicateEmptyResult_1828168() {
+
+        try {
+            String query = "let $docs := <Document/> return $docs[a[1] = 'b']";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(0, result.getSize());
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
        
     // ======================================
     
