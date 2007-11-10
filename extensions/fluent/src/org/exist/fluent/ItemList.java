@@ -24,6 +24,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 */
 	public class ValuesFacet implements Iterable<String> {
 		private ValuesFacet() {}
+		
 		/**
 		 * Return an iterator over the effective string values of the item list.
 		 * 
@@ -49,6 +50,19 @@ public class ItemList extends Resource implements Iterable<Item> {
 				throw new DatabaseException("failed to construct iterator over sequence", e);
 			}
 		}
+
+		private ItemList itemList() {
+			return ItemList.this;
+		}
+		
+		public boolean equals(Object o) {
+			return (o instanceof ValuesFacet && ItemList.this.equals(((ValuesFacet) o).itemList()));
+		}
+		
+		public int hashCode() {
+			return ItemList.this.hashCode() + 2;
+		}
+		
 		/**
 		 * Return an unmodifiable list view over the effective string values of the item list.
 		 *
@@ -68,6 +82,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 				}
 			};
 		}
+		
 		/**
 		 * Convert the list of effective string values to an array.
 		 * 
@@ -76,6 +91,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 		public String[] toArray() {
 			return toArray(new String[size()]);
 		}
+		
 		/**
 		 * Convert the list of effective string values to an array.  If the supplied array is sufficient
 		 * for holding the strings, use it; if it's larger than necessary, put a <code>null</code> after
@@ -142,6 +158,18 @@ public class ItemList extends Resource implements Iterable<Item> {
 			Set<XMLDocument> docs = new HashSet<XMLDocument>();
 			for (Node node : this) docs.add(node.document());
 			return docs;
+		}
+		
+		private ItemList itemList() {
+			return ItemList.this;
+		}
+		
+		public boolean equals(Object o) {
+			return (o instanceof NodesFacet && ItemList.this.equals(((NodesFacet) o).itemList()));
+		}
+		
+		public int hashCode() {
+			return ItemList.this.hashCode() + 1;
 		}
 		
 		/**
@@ -257,6 +285,24 @@ public class ItemList extends Resource implements Iterable<Item> {
 		} finally {
 			tx.abortIfIncomplete();
 		}
+	}
+	
+	public boolean equals(Object o) {
+		if (!(o instanceof ItemList)) return false;
+		ItemList that = (ItemList) o;
+		if (this.size() != that.size()) return false;
+		for (int i=0; i<size(); i++) if (!this.get(i).equals(that.get(i))) return false;
+		return true;
+	}
+	
+	/**
+	 * The hash code computation can be expensive, and the hash codes may not be very well distributed.
+	 * You probably shouldn't use item lists in situations where they might get hashed.
+	 */
+	public int hashCode() {
+		int hashCode = 1;
+		for (Item item : this) hashCode = hashCode * 31 + item.hashCode();
+		return hashCode;
 	}
 	
 	/**

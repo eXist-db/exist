@@ -14,7 +14,7 @@ import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 
 /**
- * Provides facilities for performing queries on an XDatabase.  It cannot
+ * Provides facilities for performing queries on a database.  It cannot
  * be instantiated directly; you must obtain an instance from a resource or the database.
  * 
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
