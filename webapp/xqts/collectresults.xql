@@ -102,8 +102,9 @@ return
             else
                 <p>The following tests have been evaluated against results provided by other XQuery processors.</p>,
                 (: this paragraph element is not really wanted but we want it to be processed by the XSLT :)
+                (:see http://www.w3.org/Bugs/Public/show_bug.cgi?id=5217 :) 
                 <p> 
-                <table>
+                <table xmlns="" border="1">
                     <th><td>Test name</td><td>Reference software</td><td>Considered result</td></th>
                     {
                         for $hackedTest in doc('/db/XQTS/hacked-tests.xml')/hack:test-cases/hack:test-case/hack:expected-result
@@ -125,9 +126,9 @@ return
                 <p>No unusual comparisons</p>
             else
                 <p>The following tests have required a comparison method different from the standard one.</p>,
-                (: this paragraph element is not really wanted but we want it to be processed by the XSLT :)
-                <p>                
-                <table>
+                (:see http://www.w3.org/Bugs/Public/show_bug.cgi?id=5217 :)
+                <p> 
+                <table xmlns="" border="1">
                     <th><td>Test name</td><td>Comparison method</td></th>
                     {
                         for $hackedTest in doc('/db/XQTS/hacked-tests.xml')/hack:test-cases/hack:test-case[@compare]
