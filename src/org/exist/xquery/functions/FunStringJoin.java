@@ -81,11 +81,13 @@ public class FunStringJoin extends BasicFunction {
 			sep = null;
 		StringBuffer out = new StringBuffer();
 		Item next;
+		boolean gotOne = false;
 		for(SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
 			next = i.nextItem();
-			if(out.length() > 0 && sep != null)
+			if(gotOne && sep != null)
 				out.append(sep);
 			out.append(next.getStringValue());
+			gotOne = true;
 		}
 		Sequence result = new StringValue(out.toString());
         

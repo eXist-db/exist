@@ -827,6 +827,20 @@ public class XQueryFunctionsTest extends TestCase {
           fail(e.getMessage());
         }
       }    
+
+    public void testStringJoin() {
+        try {
+        	String query = "let $s := ('','a','b','') " +
+        		"return string-join($s,'/')";        	
+          ResourceSet result = service.query(query);
+          String r = (String) result.getResource(0).getContent();
+          assertEquals("/a/b/", r);         
+        
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }    
     
     
     public void testNodeName() {
