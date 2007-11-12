@@ -165,7 +165,8 @@ public class Query extends AtomModuleBase implements Atom {
          XQuery xquery = broker.getXQueryService();
 
          XQueryContext context = xquery.newContext(AccessContext.REST);
-
+        context.setModuleLoadPath(getContext().getModuleLoadPath());
+          
          String contentType = request.getHeader("Content-Type");
          String charset = getContext().getDefaultCharset();
 
@@ -264,6 +265,7 @@ public class Query extends AtomModuleBase implements Atom {
       XQueryContext context;
       if (feedQuery==null) {
          context = xquery.newContext(AccessContext.REST);
+         context.setModuleLoadPath(getContext().getModuleLoadPath());
          try {
             feedQuery = xquery.compile(context, config.querySource);
          } catch (XPathException ex) {
@@ -273,6 +275,7 @@ public class Query extends AtomModuleBase implements Atom {
          }
       } else {
          context = feedQuery.getContext();
+         context.setModuleLoadPath(getContext().getModuleLoadPath());
       }
  
       context.setStaticallyKnownDocuments(new XmldbURI[] { XmldbURI.create(request.getPath()).append(AtomProtocol.FEED_DOCUMENT_NAME) });

@@ -27,6 +27,7 @@ public interface AtomModule {
       String getParameter(String name);
       String getContextPath();
       URL getContextURL();
+      String getModuleLoadPath();
    }
    void init(Context context) throws EXistException;
    void process(DBBroker broker,IncomingMessage message,OutgoingMessage response)

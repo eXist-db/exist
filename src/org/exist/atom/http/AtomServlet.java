@@ -112,8 +112,11 @@ public class AtomServlet extends HttpServlet {
     */
    class ModuleContext implements AtomModule.Context {
       ServletConfig config;
-      ModuleContext(ServletConfig config,String subpath) {
+      String moduleLoadPath;
+
+      ModuleContext(ServletConfig config,String subpath, String moduleLoadPath) {
          this.config = config;
+         this.moduleLoadPath = moduleLoadPath;
       }
       
       public String getDefaultCharset() {
@@ -132,6 +135,10 @@ public class AtomServlet extends HttpServlet {
       public URL getContextURL() {
          // TODO: finish
          return null;
+      }
+
+      public String getModuleLoadPath() {
+          return moduleLoadPath;
       }
    }
    
@@ -236,9 +243,14 @@ public class AtomServlet extends HttpServlet {
       //modules = new HashMap<String,AtomModule>();
       modules = new HashMap();
       noAuth = new HashMap();
-      
+
+      String configFileOpt = config.getInitParameter("config-file");
       File dbHome = pool.getConfiguration().getExistHome();
-      File atomConf = new File(dbHome,"atom-services.xml");
+      File atomConf;
+      if (configFileOpt == null)
+         atomConf = new File(dbHome,"atom-services.xml");
+       else
+         atomConf = new File(config.getServletContext().getRealPath(configFileOpt)); 
       config.getServletContext().log("Checking for atom configuration in "+atomConf.getAbsolutePath());
       if (atomConf.exists()) {
          config.getServletContext().log("Loading configuration "+atomConf.getAbsolutePath());
@@ -251,7 +263,7 @@ public class AtomServlet extends HttpServlet {
             is = new FileInputStream(atomConf);
             InputSource src = new InputSource(new InputStreamReader(is,formEncoding));
             URI docBaseURI = atomConf.toURI();
-            src.setSystemId(docBaseURI.toString());
+            src.setSystemId(docBaseURI.toString()); 
             docBuilder = docFactory.newDocumentBuilder();
             confDoc = docBuilder.parse(src);
             
@@ -274,7 +286,7 @@ public class AtomServlet extends HttpServlet {
                      Class moduleClass = Class.forName(className);
                      AtomModule amodule = (AtomModule)moduleClass.newInstance();
                      modules.put(name,amodule);
-                     amodule.init(new ModuleContext(config,name));
+                     amodule.init(new ModuleContext(config,name, atomConf.getParent()));
                   } catch (Exception ex) {
                      throw new ServletException("Cannot instantiate class "+className+" for module '"+name+"' due to exception: "+ex.getMessage(),ex);
                   }
@@ -328,7 +340,7 @@ public class AtomServlet extends HttpServlet {
                      }
                      mconf.setQuerySource(queryURI);
                   }
-                  query.init(new ModuleContext(config,name));
+                  query.init(new ModuleContext(config,name, atomConf.getParent()));
                   
                }
             }
@@ -357,22 +369,22 @@ public class AtomServlet extends HttpServlet {
          try {
             AtomProtocol protocol = new AtomProtocol();
             modules.put("edit",protocol);
-            protocol.init(new ModuleContext(config,"edit"));
+            protocol.init(new ModuleContext(config,"edit", dbHome.getAbsolutePath()));
             AtomFeeds feeds = new AtomFeeds();
             modules.put("content",feeds);
-            feeds.init(new ModuleContext(config,"content"));
+            feeds.init(new ModuleContext(config,"content", dbHome.getAbsolutePath()));
             Query query = new Query();
             query.setQueryByPost(true);
             modules.put("query",query);
-            query.init(new ModuleContext(config,"query"));
+            query.init(new ModuleContext(config,"query", dbHome.getAbsolutePath()));
             Query topics = new Query();
             modules.put("topic",topics);
             topics.getMethodConfiguration("GET").setQuerySource(topics.getClass().getResource("topic.xq"));
-            topics.init(new ModuleContext(config,"topic"));
+            topics.init(new ModuleContext(config,"topic", dbHome.getAbsolutePath()));
             Query introspect = new Query();
             modules.put("introspect",introspect);
             introspect.getMethodConfiguration("GET").setQuerySource(introspect.getClass().getResource("introspect.xq"));
-            introspect.init(new ModuleContext(config,"introspect"));
+            introspect.init(new ModuleContext(config,"introspect", dbHome.getAbsolutePath()));
          } catch (EXistException ex) {
             throw new ServletException("Exception during module init(): "+ex.getMessage(),ex);
          }
