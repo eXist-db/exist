@@ -1,7 +1,9 @@
 package org.exist.collections.triggers;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
@@ -33,7 +35,9 @@ import org.xml.sax.SAXException;
  * The XQuery source executed is the value of the parameter named "query" or the
  * query at the url indicated by the parameter named "url".
  * 
- * These external variables are accessible to the user XQuery statement :
+ * Any additional parameters will be declared as external variables with the type xs:string
+ * 
+ * These external variables for the Trigger are accessible to the user XQuery statement
  * <code>xxx:eventType</code> : the type of event for the Trigger. Either "prepare" or "finish"
  * <code>xxx:collectionName</code> : the name of the collection from which the event is triggered
  * <code>xxx:documentName</code> : the name of the document from wich the event is triggered
@@ -48,12 +52,15 @@ public class XQueryTrigger extends FilteringTrigger
 	private final static String EVENT_TYPE_PREPARE = "pepare";
 	private final static String EVENT_TYPE_FINISH = "finish";
 	
+	private final static String DEFAULT_BINDING_PREFIX = "local:";
+	
 	private SAXAdapter adapter;
 	private Collection collection = null;
 	private String strQuery = null;
 	private String urlQuery = null;
+	private Properties userDefinedVariables = new Properties();
 	
-	/** namespace prefix associated to trigger */
+	/** Namespace prefix associated to trigger */
 	private String bindingPrefix = null;
 	private XQuery service;
 	private ContentHandler originalOutputHandler;
@@ -71,31 +78,62 @@ public class XQueryTrigger extends FilteringTrigger
 	{
  		this.collection = parent;
  		
- 		//for an xquery trigger there must be at least
- 		//one parameter to specify the xquery
+ 		//for an XQuery trigger there must be at least
+ 		//one parameter to specify the XQuery
  		if(parameters != null)
  		{
  			urlQuery = (String) parameters.get("url");
  			strQuery = (String) parameters.get("query");
  			
+ 			for(Iterator itParamName = parameters.keySet().iterator(); itParamName.hasNext();)
+ 			{
+ 				String paramName = (String)itParamName.next();
+ 				
+ 				//get the binding prefix (if any)
+ 				if(paramName.equals("bindingPrefix"))
+ 				{
+ 					String bindingPrefix = (String)parameters.get("bindingPrefix");
+ 					if(bindingPrefix != null && !"".equals(bindingPrefix.trim()))
+ 					{
+ 						this.bindingPrefix = bindingPrefix.trim() + ":";
+ 					}
+ 				}
+ 				
+ 				//get the URL of the query (if any)
+ 				else if(paramName.equals("url"))
+ 				{
+ 					urlQuery = (String)parameters.get("url");
+ 				}
+ 				
+ 				//get the query (if any)
+ 				else if(paramName.equals("query"))
+ 				{
+ 					strQuery = (String)parameters.get("query");
+ 				}
+ 				
+ 				//make any other parameters available as external variables for the query
+ 				else
+ 				{
+ 					userDefinedVariables.put(paramName, parameters.get(paramName));
+ 				}
+ 			}
+ 			
+ 			//set a default binding prefix if none was specified
+ 			if(this.bindingPrefix == null)
+ 			{
+ 				this.bindingPrefix = DEFAULT_BINDING_PREFIX;
+ 			}
+ 			
+ 			//old
  			if(urlQuery != null || strQuery != null)
  			{
-				this.bindingPrefix = (String) parameters.get("bindingPrefix");
-				if (this.bindingPrefix != null && !"".equals(this.bindingPrefix.trim()))
-				{
-					this.bindingPrefix = this.bindingPrefix.trim() + ":";
-				}
-				else
-				{
-					//if no binding prefix is specified default to local
-					this.bindingPrefix = "local:";
-				}
 				service = broker.getXQueryService();
 				
 				return;
  			}
  		}
  		
+ 		//no query to execute
  		LOG.error("XQuery Trigger for: '" + parent.getURI() + "' is missing its XQuery parameter");
 	}
 	
@@ -110,7 +148,7 @@ public class XQueryTrigger extends FilteringTrigger
 	{
 		Source querySource = null;
 		
-		//try and get the xquery from a url
+		//try and get the XQuery from a URL
 		if(urlQuery != null)
 		{
 			try
@@ -123,7 +161,7 @@ public class XQueryTrigger extends FilteringTrigger
 			}
 		}
 	
-		//try and get the xquery from a string
+		//try and get the XQuery from a string
 		else if(strQuery != null)
 		{
 			querySource = new StringSource(strQuery);
@@ -152,11 +190,11 @@ public class XQueryTrigger extends FilteringTrigger
 		TriggerStatePerThread.setTransaction(transaction);
 		
 		XQueryContext context = service.newContext(AccessContext.TRIGGER);
-         //TODO : futher initializations ?
+         //TODO : further initialisations ?
         CompiledXQuery compiledQuery;
         try
         {
-        	//compile the xquery
+        	//compile the XQuery
         	compiledQuery = service.compile(context, query);
 
         	//declare external variables
@@ -164,6 +202,15 @@ public class XQueryTrigger extends FilteringTrigger
         	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
         	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(documentName));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
+        	
+        	//declare user defined parameters as external variables
+        	for(Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
+        	{
+        		String varName = (String)itUserVarName.next();
+        		String varValue = userDefinedVariables.getProperty(varName);
+        	
+        		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
+        	}
         	
         	if(existingDocument == null)
         		context.declareVariable(bindingPrefix + "document", Sequence.EMPTY_SEQUENCE);
@@ -177,7 +224,7 @@ public class XQueryTrigger extends FilteringTrigger
         	}
         	else
         	{
-        		//xml document
+        		//XML document
         		context.declareVariable(bindingPrefix + "document", (DocumentImpl)existingDocument);
         	}
         }
@@ -190,7 +237,7 @@ public class XQueryTrigger extends FilteringTrigger
         	throw new TriggerException("Error during trigger prepare", e);
 	    }
 
-        //execute the xquery
+        //execute the XQuery
         try
         {
         	//TODO : should we provide another contextSet ?
@@ -227,7 +274,7 @@ public class XQueryTrigger extends FilteringTrigger
         CompiledXQuery compiledQuery = null;
         try
         {
-        	//compile the xquery
+        	//compile the XQuery
         	compiledQuery = service.compile(context, query);
         	
         	//declare external variables
@@ -235,6 +282,15 @@ public class XQueryTrigger extends FilteringTrigger
         	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
         	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(document.getURI()));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
+
+        	//declare user defined parameters as external variables
+        	for(Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
+        	{
+        		String varName = (String)itUserVarName.next();
+        		String varValue = userDefinedVariables.getProperty(varName);
+        	
+        		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
+        	}
         	
         	if(event == REMOVE_DOCUMENT_EVENT)
         	{
@@ -243,7 +299,7 @@ public class XQueryTrigger extends FilteringTrigger
         	}
         	else if (document instanceof BinaryDocument)
         	{
-        		//binary document
+        		//Binary document
         		BinaryDocument bin = (BinaryDocument)document;
                 byte[] data = context.getBroker().getBinaryResource(bin);
                 
@@ -251,7 +307,7 @@ public class XQueryTrigger extends FilteringTrigger
         	}	
         	else
         	{
-        		//xml document
+        		//XML document
         		context.declareVariable(bindingPrefix + "document", (DocumentImpl)document);
         	}
         }
@@ -266,7 +322,7 @@ public class XQueryTrigger extends FilteringTrigger
         	LOG.error(e);
 	    }
 
-	    //execute the xquery
+	    //execute the XQuery
         try
         {
         	//TODO : should we provide another contextSet ?
