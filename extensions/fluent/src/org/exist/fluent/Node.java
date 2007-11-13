@@ -118,29 +118,38 @@ public class Node extends Item {
 	 */
 	public ElementBuilder<Node> append() {
 		staleMarker.check();	// do an early check to fail-fast, we'll check again on completion
-		return new ElementBuilder<Node>(namespaceBindings, true, new ElementBuilder.CompletedCallback<Node>() {
-			public Node completed(org.w3c.dom.Node[] nodes) {
-				Transaction tx = Database.requireTransaction();
-				try {
-					StoredNode result = null;
-					if (nodes.length == 1) {
-						result = (StoredNode) getDOMNode().appendChild(nodes[0]);
-					} else {
-						((StoredNode) getDOMNode()).appendChildren(tx.tx, toNodeList(nodes), 0);
+		try {
+			final StoredNode node = (StoredNode) getDOMNode(); 
+			return new ElementBuilder<Node>(namespaceBindings, true, new ElementBuilder.CompletedCallback<Node>() {
+				public Node completed(org.w3c.dom.Node[] nodes) {
+					Transaction tx = Database.requireTransaction();
+					try {
+						StoredNode result = null;
+						if (nodes.length == 1) {
+							result = (StoredNode) node.appendChild(nodes[0]);
+						} else {
+							node.appendChildren(tx.tx, toNodeList(nodes), 0);
+						}
+						defrag(tx);
+						tx.commit();
+						if (result == null) return null;
+						NodeProxy proxy = new NodeProxy((DocumentImpl) result.getOwnerDocument(), result.getNodeId(), result.getNodeType(), result.getInternalAddress());
+						Database.trackNode(proxy);
+						return new Node(proxy, namespaceBindings.extend(), db);
+					} catch (DOMException e) {
+						throw new DatabaseException(e);
+					} finally {
+						tx.abortIfIncomplete();
 					}
-					defrag(tx);
-					tx.commit();
-					if (result == null) return null;
-					NodeProxy proxy = new NodeProxy((DocumentImpl) result.getOwnerDocument(), result.getNodeId(), result.getNodeType(), result.getInternalAddress());
-					Database.trackNode(proxy);
-					return new Node(proxy, namespaceBindings.extend(), db);
-				} catch (DOMException e) {
-					throw new DatabaseException(e);
-				} finally {
-					tx.abortIfIncomplete();
 				}
+			});
+		} catch (ClassCastException e) {
+			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
+				throw new UnsupportedOperationException("updates on in-memory nodes are not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
+			} else {
+				throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
 			}
-		});
+		}
 	}
 
 	/**
@@ -204,26 +213,34 @@ public class Node extends Item {
 	public ElementBuilder<?> replace() {
 		// TODO: right now, can only replace an element; what about other nodes?
 		// TODO: right now, can only replace with a single node, investigate multiple replace
-		final org.w3c.dom.Node oldNode = getDOMNode();
-		if (oldNode.getParentNode() == null) throw new UnsupportedOperationException("cannot replace a " + Type.getTypeName(item.getType()) + " with no parent");
-		return new ElementBuilder<Object>(namespaceBindings, false, new ElementBuilder.CompletedCallback<Object>() {
-			public Object completed(org.w3c.dom.Node[] nodes) {
-				assert nodes.length == 1;
-				Transaction tx = Database.requireTransaction();
-				try {
-					((NodeImpl) oldNode.getParentNode()).replaceChild(tx.tx, nodes[0], oldNode);
-					defrag(tx);
-					tx.commit();
-					// no point in returning the old node; we'd rather return the newly inserted one,
-					// but it's not easily available
-					return null;
-				} catch (DOMException e) {
-					throw new DatabaseException(e);
-				} finally {
-					tx.abortIfIncomplete();
+		try {
+			final NodeImpl oldNode = (NodeImpl) getDOMNode();
+			if (oldNode.getParentNode() == null) throw new UnsupportedOperationException("cannot replace a " + Type.getTypeName(item.getType()) + " with no parent");
+			return new ElementBuilder<Object>(namespaceBindings, false, new ElementBuilder.CompletedCallback<Object>() {
+				public Object completed(org.w3c.dom.Node[] nodes) {
+					assert nodes.length == 1;
+					Transaction tx = Database.requireTransaction();
+					try {
+						((NodeImpl) oldNode.getParentNode()).replaceChild(tx.tx, nodes[0], oldNode);
+						defrag(tx);
+						tx.commit();
+						// no point in returning the old node; we'd rather return the newly inserted one,
+						// but it's not easily available
+						return null;
+					} catch (DOMException e) {
+						throw new DatabaseException(e);
+					} finally {
+						tx.abortIfIncomplete();
+					}
 				}
+			});
+		} catch (RuntimeException e) {
+			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
+				throw new UnsupportedOperationException("updates on in-memory nodes are not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
+			} else {
+				throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
 			}
-		});
+		}
 	}
 
 	/**
@@ -248,7 +265,11 @@ public class Node extends Item {
 				}
 			});
 		} catch (ClassCastException e) {
-			throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
+			if (getDOMNode() instanceof org.exist.memtree.ElementImpl) {
+				throw new UnsupportedOperationException("updates on in-memory nodes are not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
+			} else {
+				throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
+			}
 		}
 	}
 

@@ -407,13 +407,16 @@ public class Database {
 		return EMPTY_ITERATOR;
 	}
 	
+	@SuppressWarnings("unchecked")
 	static final Iterator EMPTY_ITERATOR = new Iterator() {
 		public boolean hasNext() {return false;}
 		public Object next() {throw new NoSuchElementException();}
 		public void remove() {throw new UnsupportedOperationException();}
 	};
 	
+	@SuppressWarnings("unchecked")
 	static final Iterable EMPTY_ITERABLE = new Iterable() {
+		@SuppressWarnings("unchecked")
 		public Iterator iterator() {return EMPTY_ITERATOR;}
 	};
 

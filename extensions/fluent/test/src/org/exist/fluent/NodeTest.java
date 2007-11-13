@@ -6,6 +6,21 @@ import org.junit.Test;
 
 public class NodeTest extends DatabaseTestCase {
 	
+	@Test(expected = UnsupportedOperationException.class)
+	public void appendMemtree() {
+		db.query().single("<foo/>").node().append();
+	}
+	
+	@Test(expected = UnsupportedOperationException.class)
+	public void replaceMemtree() {
+		db.query().single("<foo/>").node().replace();
+	}
+	
+	@Test(expected = UnsupportedOperationException.class)
+	public void updateMemtree() {
+		db.query().single("<foo/>").node().update();
+	}
+	
 	@Test
 	public void equals1() {
 		XMLDocument doc = db.createFolder("/test").documents().build(Name.create("foo"))

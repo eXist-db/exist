@@ -55,11 +55,11 @@ public class ItemList extends Resource implements Iterable<Item> {
 			return ItemList.this;
 		}
 		
-		public boolean equals(Object o) {
+		@Override public boolean equals(Object o) {
 			return (o instanceof ValuesFacet && ItemList.this.equals(((ValuesFacet) o).itemList()));
 		}
 		
-		public int hashCode() {
+		@Override public int hashCode() {
 			return ItemList.this.hashCode() + 2;
 		}
 		
@@ -164,11 +164,11 @@ public class ItemList extends Resource implements Iterable<Item> {
 			return ItemList.this;
 		}
 		
-		public boolean equals(Object o) {
+		@Override public boolean equals(Object o) {
 			return (o instanceof NodesFacet && ItemList.this.equals(((NodesFacet) o).itemList()));
 		}
 		
-		public int hashCode() {
+		@Override public int hashCode() {
 			return ItemList.this.hashCode() + 1;
 		}
 		
