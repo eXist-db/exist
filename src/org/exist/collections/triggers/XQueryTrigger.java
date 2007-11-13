@@ -33,23 +33,24 @@ import org.xml.sax.SAXException;
  * A trigger that executes a user XQuery statement when invoked.
  * 
  * The XQuery source executed is the value of the parameter named "query" or the
- * query at the url indicated by the parameter named "url".
+ * query at the URL indicated by the parameter named "url".
  * 
  * Any additional parameters will be declared as external variables with the type xs:string
  * 
  * These external variables for the Trigger are accessible to the user XQuery statement
  * <code>xxx:eventType</code> : the type of event for the Trigger. Either "prepare" or "finish"
  * <code>xxx:collectionName</code> : the name of the collection from which the event is triggered
- * <code>xxx:documentName</code> : the name of the document from wich the event is triggered
+ * <code>xxx:documentName</code> : the name of the document from which the event is triggered
  * <code>xxx:triggerEvent</code> : the kind of triggered event
- * <code>xxx:document</code> : the document from wich the event is triggered
- * xxx is the namespace prefix within the XQuery
+ * <code>xxx:document</code> : the document from which the event is triggered
+ * xxx is the namespace prefix within the XQuery, can be set by the variable "bindingPrefix"
  * 
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author Adam Retter <adam.retter@devon.gov.uk>
 */
 public class XQueryTrigger extends FilteringTrigger
 {
-	private final static String EVENT_TYPE_PREPARE = "pepare";
+	private final static String EVENT_TYPE_PREPARE = "prepare";
 	private final static String EVENT_TYPE_FINISH = "finish";
 	
 	private final static String DEFAULT_BINDING_PREFIX = "local:";
