@@ -53,6 +53,7 @@
             <replacefilter token="documentation.xml" value="documentation.html"/>
             <replacefilter token="roadmap.xml" value="roadmap.html"/>
             <replacefilter token="indexing.xml" value="indexing.html"/>
+        	<replacefilter token="triggers.xml" value="triggers.html"/>
             <replacefilter token="facts.xml" value="facts.html"/>
             <replacefilter token="howtos.xml" value="howtos.html"/>
             <replacefilter token="performance.xml" value="performance.html"/>
@@ -128,6 +129,7 @@
                 <uri type="append" src="documentation.xml"/>
                 <uri type="append" src="examples.xml"/>
                 <uri type="append" src="indexing.xml"/>
+            	<uri type="append" src="triggers.xml"/>
                 <uri type="append" src="facts.xml"/>
                 <uri type="append" src="extensions.xml"/>
                 <uri type="append" src="summer.xml"/>
