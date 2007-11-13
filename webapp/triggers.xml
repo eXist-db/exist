@@ -46,7 +46,7 @@
         <section>
             <title>Trigger Types</title>
             <para>Triggers may be written in either XQuery or Java and will be Triggered twice,
-            once pre-event and once post-event. The Trigger may response to either or both the pre
+            once pre-event and once post-event. The Trigger may respond to either or both the pre
             and post events.</para>
             <section>
                 <title>XQuery Triggers</title>
@@ -86,11 +86,11 @@
                 as standard XML documents in the system collection:
                 <filename>/db/system/config</filename>, which can be accessed using the Admin
                 interface or Java Client. In addition to defining settings for Triggers
-                the configuration document specifies collection-specific other settings such as
+                the configuration document specifies other collection-specific settings such as
                 indexes or default permissions.</para>
 
-            <para>The contents of the system collection (<filename>/db/system/config</filename>)
-                mirror the hierarchical structure of the main collection. Configurations are
+            <para>The hierarchy of the system collection (<filename>/db/system/config</filename>)
+                mirrors the hierarchical structure of the main collection. Configurations are
                 therefore "inherited" by descendants in the hierarchy, (i.e. the configuration
                 settings for the child collection are added to or override those set for the
                 parent). It is furthermore possible for each collection in the hierarchy to have its
@@ -144,6 +144,9 @@
 						<listitem>
 							<para><emphasis>bindingPrefix</emphasis>: This should be the namespace that the XQuery resides in. If this is omitted then a default of "local" is assumed.</para>
 						</listitem>
+						<listitem>
+							<para>Any other parameters will be passed to the XQuery as external variables of type xs:string</para>
+						</listitem>
 					</unorderedlist>
                     <para>The following example shows two XQuery Triggers configured, the first executes an XQuery stored in the database
                     whereas the second executes XQuery placed inline in the collection.xconf:</para>
@@ -164,13 +167,16 @@
                 </section>
                 <section>
                     <title>Configuring a Java Trigger</title>
+                    <para>When configuring a Java Trigger any parameters defined will be passed in a named map to the <emphasis>configure</emphasis> function of the trigger.</para>
 					<para>The following example shows a Java trigger configured:</para>
 
                 	<example>
                    	 <title>Java Trigger Configuration</title>
                     	<programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
     <triggers>
-		<trigger event="store,update,remove" class="my.domain.testTrigger"/>
+		<trigger event="store,update,remove" class="my.domain.testTrigger">
+			<parameter name="myParam" value="myValue"/>
+		</trigger>
     </triggers>
 </collection>]]></markup></programlisting>
                 </example>
