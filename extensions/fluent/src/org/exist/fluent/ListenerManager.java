@@ -264,6 +264,7 @@ public class ListenerManager {
 		private ContentHandler contentHandler;
 		private LexicalHandler lexicalHandler;
 		
+		@SuppressWarnings("unchecked")
 		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map parameters) throws CollectionConfigurationException {
 			// nothing to do
 		}

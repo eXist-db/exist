@@ -186,7 +186,7 @@ public class QueryService implements Cloneable {
 			XQueryContext context = buildXQueryContext(params);
 			return wrap(xquery.compile(context, query), wrapperFactory, context);
 		} catch (XPathException e) {
-			LOG.debug("query compilation failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));
+			LOG.warn("query compilation failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));
 			throw new DatabaseException("failed to compile query", e);
 		} finally {
 			db.releaseBroker(broker);
