@@ -71,7 +71,7 @@ public class ExtendedDOMStreamer extends DOMStreamer {
         if(node.getNodeType() == NodeImpl.REFERENCE_NODE) {
             if(xmlSerializer == null)
                 throw new SAXException("Cannot serialize node reference. Serializer is undefined.");
-            xmlSerializer.toSAX(((ReferenceNode)node).getReference());
+            xmlSerializer.toReceiver(((ReferenceNode)node).getReference(), true);
         } else
             super.startNode(node);
     }
