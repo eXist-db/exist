@@ -1422,7 +1422,13 @@ public XQueryTreeParser() {
 						
 												OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
 												int modifiers= 0;
+												boolean orderDescending = false; 
 												orderBy.add(orderSpec);
+						
+						if (!context.orderEmptyGreatest()) {
+						modifiers |= OrderSpec.EMPTY_LEAST;
+						orderSpec.setModifiers(modifiers);
+						}
 											
 						{
 						if (_t==null) _t=ASTNULL;
@@ -1446,8 +1452,9 @@ public XQueryTreeParser() {
 								match(_t,LITERAL_descending);
 								_t = _t.getNextSibling();
 								
-																modifiers= OrderSpec.DESCENDING_ORDER;
+																modifiers |= OrderSpec.DESCENDING_ORDER;
 																orderSpec.setModifiers(modifiers);
+								orderDescending = true;
 															
 								break;
 							}
@@ -1581,6 +1588,13 @@ public XQueryTreeParser() {
 								org.exist.xquery.parser.XQueryAST tmp14_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 								match(_t,LITERAL_greatest);
 								_t = _t.getNextSibling();
+								
+								if (!context.orderEmptyGreatest())
+								modifiers &= OrderSpec.EMPTY_GREATEST;
+								if (orderDescending)
+								modifiers |= OrderSpec.DESCENDING_ORDER;
+								orderSpec.setModifiers(modifiers);
+								
 								break;
 							}
 							case LITERAL_least:
@@ -3281,6 +3295,9 @@ public XQueryTreeParser() {
 					org.exist.xquery.parser.XQueryAST tmp34_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,LITERAL_greatest);
 					_t = _t.getNextSibling();
+					
+					context.setOrderEmptyGreatest(true);
+					
 					break;
 				}
 				case LITERAL_least:
@@ -3288,6 +3305,9 @@ public XQueryTreeParser() {
 					org.exist.xquery.parser.XQueryAST tmp35_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,LITERAL_least);
 					_t = _t.getNextSibling();
+					
+					context.setOrderEmptyGreatest(false);
+					
 					break;
 				}
 				default:
@@ -3297,7 +3317,6 @@ public XQueryTreeParser() {
 				}
 				}
 				
-				// ignored
 				if (orderempty)
 				throw new XPathException("err:XQST0065: Ordering mode already declared.");
 				orderempty = true;
@@ -4044,7 +4063,7 @@ public XQueryTreeParser() {
 					match(_t,QNAME);
 					_t = _t.getNextSibling();
 					
-											throwException(qn1, "Tests of the form attribute(QName, TypeName) are not supported!");
+											throwException(qn2, "Tests of the form attribute(QName, TypeName) are not supported!");
 										
 					break;
 				}
@@ -6931,7 +6950,7 @@ public XQueryTreeParser() {
 						ElementConstructor c= new ElementConstructor(context, e.getText());
 						c.setASTNode(e);
 						step= c;
-			staticContext.pushInScopeNamespaces();
+						staticContext.pushInScopeNamespaces();
 					
 			{
 			_loop236:

@@ -275,9 +275,18 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
-			"order" ( "greatest" | "least" )	// ignored
+			"order" 
+            ( "greatest"
+              { 
+                context.setOrderEmptyGreatest(true);
+              }
+            |
+              "least" 
+              {
+                context.setOrderEmptyGreatest(false);
+              }
+            )
             {
-                // ignored
                 if (orderempty)
                     throw new XPathException("err:XQST0065: Ordering mode already declared.");
                 orderempty = true;
@@ -716,7 +725,7 @@ throws XPathException
 				}
 				( QNAME
 					{
-						throwException(qn1, "Tests of the form attribute(QName, TypeName) are not supported!");
+						throwException(qn2, "Tests of the form attribute(QName, TypeName) are not supported!");
 					}
 				)?
 			)?
@@ -1023,16 +1032,24 @@ throws PermissionDeniedException, EXistException, XPathException
 					{
 						OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
 						int modifiers= 0;
+						boolean orderDescending = false; 
 						orderBy.add(orderSpec);
+
+                        if (!context.orderEmptyGreatest()) {
+                            modifiers |= OrderSpec.EMPTY_LEAST;
+                            orderSpec.setModifiers(modifiers);
+                        }
 					}
 					(
 						(
-							"ascending"
+		
+                            "ascending"
 							|
 							"descending"
 							{
-								modifiers= OrderSpec.DESCENDING_ORDER;
+								modifiers |= OrderSpec.DESCENDING_ORDER;
 								orderSpec.setModifiers(modifiers);
+                                orderDescending = true;
 							}
 						)
 					)?
@@ -1040,6 +1057,13 @@ throws PermissionDeniedException, EXistException, XPathException
 						"empty"
 						(
 							"greatest"
+                            {  
+                                if (!context.orderEmptyGreatest())
+                                    modifiers &= OrderSpec.EMPTY_GREATEST;
+                                if (orderDescending)
+                                    modifiers |= OrderSpec.DESCENDING_ORDER;
+                                orderSpec.setModifiers(modifiers);
+                            }
 							|
 							"least"
 							{
@@ -1170,7 +1194,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				}
 			)
 		)+
-		(
+        (
 			"default"
 			{ 
 				PathExpr returnExpr = new PathExpr(context);
@@ -2093,7 +2117,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			ElementConstructor c= new ElementConstructor(context, e.getText());
 			c.setASTNode(e);
 			step= c;
-                        staticContext.pushInScopeNamespaces();
+			staticContext.pushInScopeNamespaces();
 		}
 		(
 			#(
