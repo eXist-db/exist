@@ -716,6 +716,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     if (next.getNodeId().isDescendantOf(ancestorId)) {
                                         // rewind the input stream to the position from where we started
                                         // for the previous ancestor node
+                                        prevPosition = markedPosition;
                                         ((BFile.PageInputStream)is).seek(markedPosition);
                                         nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(markedId, is);
                                         previousId = nodeId;
@@ -725,7 +726,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                         if (!next.getNodeId().isDescendantOf(lastMarked)) {
                                             lastMarked = next.getNodeId();
                                             markedPosition = prevPosition;
-                                            markedId = lastMarked;
+                                            markedId = nodeId;
                                         }
                                     }
                                     ancestor = next;
