@@ -830,7 +830,7 @@ public class BrokerPool {
     }  	
 
     public long getReservedMem() {
-        return reservedMem;
+        return reservedMem - cacheManager.getSizeInBytes();
     }
     
     /**

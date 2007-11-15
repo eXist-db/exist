@@ -102,7 +102,9 @@ public class DefaultCacheManager implements CacheManager {
      * single cache.
      */
     private int maxCacheSize;
-    
+
+    private int pageSize;
+
     /**
      * Signals that a resize had been requested by a cache, but
      * the request could not be accepted during normal operations.
@@ -115,7 +117,7 @@ public class DefaultCacheManager implements CacheManager {
 
     public DefaultCacheManager(BrokerPool pool) {
         this.instanceName = pool.getId();
-        int pageSize, cacheSize;
+        int cacheSize;
         if ((pageSize = pool.getConfiguration().getInteger(NativeBroker.PROPERTY_PAGE_SIZE)) < 0)
         	//TODO : should we share the page size with the native broker ?
             pageSize = NativeBroker.DEFAULT_PAGE_SIZE;
@@ -250,6 +252,10 @@ public class DefaultCacheManager implements CacheManager {
 
     public long getCurrentSize() {
         return currentPageCount;
+    }
+
+    public long getSizeInBytes() {
+        return currentPageCount * pageSize;
     }
 
     public long getMaxSingle() {
