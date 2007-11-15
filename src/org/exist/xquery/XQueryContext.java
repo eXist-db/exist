@@ -249,6 +249,11 @@ public class XQueryContext {
 	private boolean preserveNamespaces = true;	
     private boolean inheritNamespaces = true;
 
+    /**
+	 * Should empty order greatest or least?
+	 */
+    private boolean orderEmptyGreatest = true;
+
 	/**
 	 * The position of the currently processed item in the context 
 	 * sequence. This field has to be set on demand, for example,
@@ -370,6 +375,7 @@ public class XQueryContext {
         ctx.stripWhitespace = this.stripWhitespace;
         ctx.preserveNamespaces = this.preserveNamespaces;        
         ctx.inheritNamespaces = this.inheritNamespaces;
+        ctx.orderEmptyGreatest = this.orderEmptyGreatest;
 
         ctx.declaredFunctions = new TreeMap(this.declaredFunctions);
         ctx.globalVariables = new TreeMap(this.globalVariables);
@@ -1050,6 +1056,7 @@ public class XQueryContext {
     public void setPreserveNamespaces(final boolean preserve) {
 		this.preserveNamespaces = preserve;
 	}
+
 	/**
 	 * Returns true if namespaces for constructed element and document nodes
 	 * should be inherited on copy by default.
@@ -1065,6 +1072,23 @@ public class XQueryContext {
      */
     public void setInheritNamespaces(final boolean inherit) {
 		this.inheritNamespaces = inherit;
+	}
+
+	/**
+	 * Returns true if order empty is set to gretest, otherwise false
+     * for order empty is least.
+	 */
+	public boolean orderEmptyGreatest() {
+		return orderEmptyGreatest;
+	}
+	
+	/**
+     * The method <code>setOrderEmptyGreatest</code>
+     *
+     * @param order a <code>boolean</code> value
+     */
+    public void setOrderEmptyGreatest(final boolean order) {
+		this.orderEmptyGreatest = order;
 	}
 
 	/**
