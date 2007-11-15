@@ -163,7 +163,8 @@ class TriggersDialog extends JFrame {
 		c.gridy = 0;
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
-        c.fill = GridBagConstraints.NONE;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
         grid.setConstraints(cmbCollections, c);
         getContentPane().add(cmbCollections);
 
@@ -203,6 +204,8 @@ class TriggersDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.weighty = 1;
 		panelTriggersGrid.setConstraints(scrollFullTextIndexes, c);
 		panelTriggers.add(scrollFullTextIndexes);
 		
@@ -231,6 +234,8 @@ class TriggersDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
+        c.weightx = 0;
+        c.weighty = 0;
 		panelTriggersGrid.setConstraints(triggersToolbarBox, c);
 		panelTriggers.add(triggersToolbarBox);
 		
@@ -240,6 +245,8 @@ class TriggersDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 	    c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.weighty = 1;
 	    grid.setConstraints(panelTriggers, c);
 		getContentPane().add(panelTriggers);
 				

@@ -87,6 +87,8 @@ class UserDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 0.5;
 		grid.setConstraints(scroll, c);
 		getContentPane().add(scroll);
 
@@ -96,6 +98,8 @@ class UserDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 0;
 		grid.setConstraints(toolbar, c);
 		getContentPane().add(toolbar);
 
@@ -105,6 +109,8 @@ class UserDialog extends JFrame {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -113,6 +119,8 @@ class UserDialog extends JFrame {
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
 		grid.setConstraints(username, c);
 		getContentPane().add(username);
 
@@ -121,6 +129,8 @@ class UserDialog extends JFrame {
 		c.gridy = 3;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -129,6 +139,8 @@ class UserDialog extends JFrame {
 		c.gridy = 3;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
 		grid.setConstraints(password1, c);
 		getContentPane().add(password1);
 
@@ -137,6 +149,8 @@ class UserDialog extends JFrame {
 		c.gridy = 4;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -145,6 +159,8 @@ class UserDialog extends JFrame {
 		c.gridy = 4;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
 		grid.setConstraints(password2, c);
 		getContentPane().add(password2);
 
@@ -153,6 +169,8 @@ class UserDialog extends JFrame {
 		c.gridy = 5;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -161,6 +179,8 @@ class UserDialog extends JFrame {
 		c.gridy = 5;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
 		grid.setConstraints(homedir, c);
 		getContentPane().add(homedir);
 
@@ -170,6 +190,8 @@ class UserDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 1;
 		grid.setConstraints(groupsPanel, c);
 		getContentPane().add(groupsPanel);
 
@@ -360,7 +382,6 @@ class UserDialog extends JFrame {
 		}
 		
 		user.setPassword(pass1);
-		System.out.println("Pass = " + user.getPassword());
 		try {
 			user.setHome(XmldbURI.xmldbUriFor(homedir.getText()));
 		} catch (URISyntaxException e) {
