@@ -246,9 +246,10 @@
   
 		<!-- added section for Cache Used monitoring -->
   		<xsl:variable name="psize" select="number(../status:page-size)"/>
-		<xsl:variable name="tused" select="format-number(sum(status:file/status:buffer/status:used)*$psize div 1048576, '###.#')"/>
-  		<xsl:variable name="tsize" select="format-number(sum(status:file/status:buffer/status:size)*$psize div 1048576, '###.#')"/>
-		<xsl:variable name="tmax" select="number(../status:cache-size)"/>
+		<xsl:variable name="tused" select="format-number(sum(status:file[not(contains(@name, 'collections'))]/status:buffer/status:used)*$psize div 1048576, '###.#')"/>
+  		<xsl:variable name="tsize" select="format-number(sum(status:file[not(contains(@name, 'collections'))]//status:buffer/status:size)*$psize div 1048576, '###.#')"/>
+		<xsl:variable name="tmaxcol" select="number(../status:collection-cache-mem)"/>
+		<xsl:variable name="tmax" select="number(../status:cache-size) - $tmaxcol"/>
 		<xsl:variable name="tpcnt" select="format-number(($tused div $tmax) * 100, '#0')"/>
 
   		<xsl:variable name="tusedpcnt" select="round(($tused div $tmax) * 100)"/>
@@ -274,6 +275,41 @@
 									Used: <xsl:value-of select="$tused"/> Mb; 
 									Size: <xsl:value-of select="$tsize"/> Mb; 
 									Max: <xsl:value-of select="$tmax"/> Mb 
+								</small>
+							</td>
+						</tr>
+					</table>
+				</td>	
+			</tr> 
+  		</table>
+
+		<xsl:variable name="tusedcol" select="format-number(sum(status:file[contains(@name, 'collections')]/status:buffer/status:used)*$psize div 1048576, '###.#')"/>
+		<xsl:variable name="tsizecol" select="format-number(sum(status:file[contains(@name, 'collections')]/status:buffer/status:size)*$psize div 1048576, '###.#')"/>
+   		<xsl:variable name="tusedcolpcnt" select="round(($tusedcol div $tmaxcol) * 100)"/>
+  		<xsl:variable name="tsizecolpcnt" select="round(($tsizecol div $tmaxcol) * 100)"/>
+
+		<xsl:variable name="tpcntcol" select="format-number(($tusedcol div $tmaxcol) * 100, '#0')"/>
+
+ 		<table class="status" border="0" width="400" cellspacing="7">
+  			<tr>
+  				<th align="left" colspan="4">Collection Cache Usage: <xsl:value-of select="$tpcntcol"/> %</th>
+   			</tr>
+		 	<tr>
+				<td align="left">
+					<table border="0" width="400" cellpadding="0" cellspacing="0">
+						<tr>
+							<td/>
+							<td width="{$tusedcolpcnt * 4}" class="used"></td>
+							<td width="{($tsizecolpcnt - $tusedcolpcnt) * 4}" class="free"></td>
+							<td width="{(100 - ($tsizecolpcnt)) * 4}" class="max">:</td>
+						</tr>
+						 <tr>
+							 <td/>
+							 <td colspan="3">
+								 <small>
+									Used: <xsl:value-of select="$tusedcol"/> Mb; 
+									Size: <xsl:value-of select="$tsizecol"/> Mb; 
+									Max: <xsl:value-of select="$tmaxcol"/> Mb 
 								</small>
 							</td>
 						</tr>
