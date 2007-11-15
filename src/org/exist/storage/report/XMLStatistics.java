@@ -57,6 +57,7 @@ public class XMLStatistics {
             // values added for cache used % calc - Gary Larsen
             addValue("cache-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.cache-size")));
             addValue("page-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.page-size")));
+            addValue("collection-cache-mem", String.valueOf(instance.getConfiguration().getInteger("db-connection.collection-cache-mem")));
 
             this.contentHandler.startElement(NAMESPACE, "pool", PREFIX + ":pool", atts);
 			addValue("max", String.valueOf(instance.getMax()));
