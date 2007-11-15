@@ -108,30 +108,35 @@ public class ResourcePropertyDialog extends JDialog {
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
 		label = new JLabel(URIUtils.urlDecodeUtf8(resource));
 		c.gridx = 1;
 		c.gridy = 0;
-		c.anchor = GridBagConstraints.EAST;
+		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
         label = new JLabel("Mime:");
         c.gridx = 0;
         c.gridy = 1;
-        c.anchor = GridBagConstraints.EAST;
-        c.fill = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
         grid.setConstraints(label, c);
         getContentPane().add(label);
         
         label = new JLabel(mimeType);
         c.gridx = 1;
         c.gridy = 1;
-        c.anchor = GridBagConstraints.EAST;
+        c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
         grid.setConstraints(label, c);
         getContentPane().add(label);
         
@@ -140,6 +145,7 @@ public class ResourcePropertyDialog extends JDialog {
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -147,8 +153,9 @@ public class ResourcePropertyDialog extends JDialog {
 		label = new JLabel(date);
 		c.gridx = 1;
 		c.gridy = 2;
-		c.anchor = GridBagConstraints.EAST;
+		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -157,6 +164,7 @@ public class ResourcePropertyDialog extends JDialog {
 		c.gridy = 3;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -165,8 +173,9 @@ public class ResourcePropertyDialog extends JDialog {
 		label = new JLabel(date);
 		c.gridx = 1;
 		c.gridy = 3;
-		c.anchor = GridBagConstraints.EAST;
+		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -175,6 +184,7 @@ public class ResourcePropertyDialog extends JDialog {
 		c.gridy = 4;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -187,8 +197,9 @@ public class ResourcePropertyDialog extends JDialog {
 		owners.setSelectedItem(permissions.getOwner());
 		c.gridx = 1;
 		c.gridy = 4;
-		c.anchor = GridBagConstraints.EAST;
+		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(owners, c);
 		getContentPane().add(owners);
 
@@ -197,6 +208,7 @@ public class ResourcePropertyDialog extends JDialog {
 		c.gridy = 5;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -210,6 +222,7 @@ public class ResourcePropertyDialog extends JDialog {
 		c.gridy = 5;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(groups, c);
 		getContentPane().add(groups);
 
@@ -219,6 +232,7 @@ public class ResourcePropertyDialog extends JDialog {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(pc, c);
 		getContentPane().add(pc);
 
@@ -244,6 +258,7 @@ public class ResourcePropertyDialog extends JDialog {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(buttonBox, c);
 		getContentPane().add(buttonBox);
 	}

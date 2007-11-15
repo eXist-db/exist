@@ -142,6 +142,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 		
@@ -182,7 +184,9 @@ class IndexDialog extends JFrame {
 		c.gridy = 0;
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
-        c.fill = GridBagConstraints.NONE;
+        c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
         grid.setConstraints(cmbCollections, c);
         getContentPane().add(cmbCollections);
 
@@ -206,6 +210,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		panelFullTextIndexGrid.setConstraints(chkDefaultAll, c);
 		panelFullTextIndex.add(chkDefaultAll);
         
@@ -222,6 +228,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		panelFullTextIndexGrid.setConstraints(chkAlphanum, c);
 		panelFullTextIndex.add(chkAlphanum);
 
@@ -238,6 +246,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		panelFullTextIndexGrid.setConstraints(chkAttributes, c);
 		panelFullTextIndex.add(chkAttributes);
 		
@@ -256,6 +266,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 1;
 		panelFullTextIndexGrid.setConstraints(scrollFullTextIndexes, c);
 		panelFullTextIndex.add(scrollFullTextIndexes);
 		
@@ -284,6 +296,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 0;
 		panelFullTextIndexGrid.setConstraints(fulltextIndexToolbarBox, c);
 		panelFullTextIndex.add(fulltextIndexToolbarBox);
 		
@@ -293,6 +307,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 	    c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 1F / 3F;
 	    grid.setConstraints(panelFullTextIndex, c);
 		getContentPane().add(panelFullTextIndex);
 		
@@ -318,6 +334,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 1;
 		panelRangeIndexesGrid.setConstraints(scrollRangeIndexes, c);
 		panelRangeIndexes.add(scrollRangeIndexes);
         
@@ -346,6 +364,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 0;
+		c.weighty = 0;
 		panelRangeIndexesGrid.setConstraints(rangeIndexToolbarBox, c);
 		panelRangeIndexes.add(rangeIndexToolbarBox);
 
@@ -355,6 +375,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 	    c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 1F / 3F;
 	    grid.setConstraints(panelRangeIndexes, c);
 		getContentPane().add(panelRangeIndexes);
 
@@ -377,6 +399,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 1;
 		panelQNameIndexesGrid.setConstraints(scrollQNameIndexes, c);
 		panelQNameIndexes.add(scrollQNameIndexes);
         
@@ -405,6 +429,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 0;
+		c.weighty = 0;
 		panelQNameIndexesGrid.setConstraints(qnameIndexToolbarBox, c);
 		panelQNameIndexes.add(qnameIndexToolbarBox);
 
@@ -414,6 +440,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 	    c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 1F / 3F;
 	    grid.setConstraints(panelQNameIndexes, c);
 		getContentPane().add(panelQNameIndexes);
 

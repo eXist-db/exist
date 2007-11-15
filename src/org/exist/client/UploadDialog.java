@@ -45,6 +45,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -56,6 +57,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(byDirProgress, c);
 		getContentPane().add(byDirProgress);
 
@@ -64,6 +66,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -73,6 +76,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(currentDir, c);
 		getContentPane().add(currentDir);
 
@@ -81,6 +85,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -90,6 +95,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(currentFile, c);
 		getContentPane().add(currentFile);
 
@@ -98,6 +104,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 3;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
@@ -106,6 +113,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 3;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(currentSize, c);
 		getContentPane().add(currentSize);
 
@@ -114,6 +122,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 4;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		grid.setConstraints(status, c);
 		getContentPane().add(status);
 
@@ -124,6 +133,7 @@ class UploadDialog extends JFrame {
 		c.gridy = 4;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		grid.setConstraints(progress, c);
 		getContentPane().add(progress);
 
@@ -140,7 +150,9 @@ class UploadDialog extends JFrame {
 		c.gridy = 5;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.HORIZONTAL;
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1;
+		c.weighty = 1;
 		grid.setConstraints(scroll, c);
 		getContentPane().add(scroll);
 
@@ -160,6 +172,8 @@ class UploadDialog extends JFrame {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
 		grid.setConstraints(closeBtn, c);
 		getContentPane().add(closeBtn);
 		
