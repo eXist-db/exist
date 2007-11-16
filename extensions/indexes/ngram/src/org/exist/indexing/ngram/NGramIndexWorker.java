@@ -86,6 +86,7 @@ import org.exist.util.serializer.AttrList;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -486,6 +487,10 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public MatchListener getMatchListener(NodeProxy proxy) {
+        return getMatchListener(proxy, null);
+    }
+
+    public MatchListener getMatchListener(NodeProxy proxy, NGramMatchCallback callback) {
         boolean needToFilter = false;
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
@@ -501,6 +506,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             matchListener = new NGramMatchListener(proxy);
         else
             matchListener.reset(proxy);
+        matchListener.setMatchCallback(callback);
         return matchListener;
     }
 
@@ -687,12 +693,19 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         private Match match;
         private Stack offsetStack = null;
+        private NGramMatchCallback callback = null;
+        private NodeProxy root;
 
         public NGramMatchListener(NodeProxy proxy) {
             reset(proxy);
         }
+
+        protected void setMatchCallback(NGramMatchCallback cb) {
+            this.callback = cb;
+        }
         
         protected void reset(NodeProxy proxy) {
+            this.root = proxy;
             this.match = proxy.getMatches();
             setNextInChain(null);
             
@@ -818,9 +831,18 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     if (offset.getOffset() > pos) {
                         super.characters(s.substring(pos, pos + (offset.getOffset() - pos)));
                     }
-                    super.startElement(MATCH_ELEMENT, null);
-                    super.characters(s.substring(offset.getOffset(), offset.getOffset() + offset.getLength()));
-                    super.endElement(MATCH_ELEMENT);
+                    if (callback == null) {
+                        super.startElement(MATCH_ELEMENT, null);
+                        super.characters(s.substring(offset.getOffset(), offset.getOffset() + offset.getLength()));
+                        super.endElement(MATCH_ELEMENT);
+                    } else {
+                        try {
+                            callback.match(nextListener, s.substring(offset.getOffset(), offset.getOffset() + offset.getLength()),
+                                    new NodeProxy(getCurrentNode()));
+                        } catch (XPathException e) {
+                            throw new SAXException("An error occurred while calling match callback: " + e.getMessage(), e);
+                        }
+                    }
                     pos = offset.getOffset() + offset.getLength();
                 }
                 if (pos < s.length()) {
@@ -829,7 +851,6 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             } else
                 super.characters(seq);
         }
-
     }
 
     private class NodeOffset {
