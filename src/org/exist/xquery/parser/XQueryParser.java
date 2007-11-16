@@ -432,6 +432,10 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		catch (RecognitionException e) {
 			if (inputState.guessing==0) {
+				handleException(
+				new XPathException("err:XPST0003 in line " + e.getLine() +
+				", column " + e.getColumn() + ": " + e.getMessage())); 
+				
 			} else {
 				throw e;
 			}
