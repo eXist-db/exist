@@ -43,6 +43,7 @@ import org.exist.xquery.value.Sequence;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
+import antlr.NoViableAltException;
 import antlr.collections.AST;
 
 import com.sun.xacml.ctx.RequestCtx;
@@ -131,6 +132,8 @@ public class XQuery {
             }
 
             AST ast = parser.getAST();
+            if (ast == null)
+                throw new XPathException("Unknown XQuery parser error: the parser returned an empty syntax tree.");
 //            LOG.debug("Generated AST: " + ast.toStringTree());
             PathExpr expr = new PathExpr(context);
             if (xpointer)
@@ -138,7 +141,7 @@ public class XQuery {
             else
                 treeParser.xpath(ast, expr);
             if (treeParser.foundErrors()) {
-            	throw new StaticXQueryException(
+                throw new StaticXQueryException(
             		treeParser.getErrorMessage(),
             		treeParser.getLastException());
             }

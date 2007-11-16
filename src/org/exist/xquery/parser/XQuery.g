@@ -180,9 +180,16 @@ xpath throws XPathException
 :
 	( module )? EOF
 	;
-	exception catch [RecognitionException e] {}
-//	{ handleException(e); }
-    //{ throw new XPathException("err:XPST0003: A syntax or parsing error has occurred. " + e.getMessage()); }
+	exception catch [RecognitionException e]
+	{
+        // TODO: WM: not sure if we need handleException anymore.
+        // we could just throw the exception.
+        handleException(
+            new XPathException("err:XPST0003 in line " + e.getLine() +
+            ", column " + e.getColumn() + ": " + e.getMessage())
+        ); 
+    }
+
 module throws XPathException: 
 	( ( "xquery" "version" ) => v:versionDecl SEMICOLON! )?
 	(
