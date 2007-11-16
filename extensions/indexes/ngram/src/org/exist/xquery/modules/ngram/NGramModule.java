@@ -36,11 +36,12 @@ public class NGramModule extends AbstractInternalModule {
     public static final FunctionDef[] functions = {
         new FunctionDef(NGramSearch.signatures[0], NGramSearch.class),
         new FunctionDef(NGramSearch.signatures[1], NGramSearch.class),
-        new FunctionDef(NGramSearch.signatures[2], NGramSearch.class)
+        new FunctionDef(NGramSearch.signatures[2], NGramSearch.class),
+        new FunctionDef(HighlightMatches.signature, HighlightMatches.class)
     };
 
     public NGramModule() {
-        super(functions, true);
+        super(functions, false);
     }
 
     public String getNamespaceURI() {
