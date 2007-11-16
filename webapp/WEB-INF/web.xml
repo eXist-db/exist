@@ -117,6 +117,16 @@
         </init-param>
     </servlet>
 	
+    <servlet>
+        <servlet-name>RedirectorTest</servlet-name>
+        <servlet-class>org.exist.http.servlets.RedirectorServlet</servlet-class>
+        
+        <init-param>
+            <param-name>xquery</param-name>
+            <param-value>redirector/dispatch.xql</param-value>
+        </init-param>
+    </servlet>
+    
     <!--
         Configure the Axis servlets. 
         Axis provides eXist's web-services via SOAP.
@@ -491,6 +501,11 @@
         <url-pattern>*.xqy</url-pattern>
     </servlet-mapping>
       
+    <servlet-mapping>
+        <servlet-name>RedirectorTest</servlet-name>
+        <url-pattern>/redirect/*</url-pattern>
+    </servlet-mapping>
+    
     <!-- SOAP (Apache Axis) -->
     <servlet-mapping>
         <servlet-name>AxisServlet</servlet-name>

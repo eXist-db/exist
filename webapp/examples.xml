@@ -84,6 +84,15 @@
                         </td>
                         <td width="70%">An XQuery does not necessarily need to return XML.</td>
                     </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="redirect/search/db/my/collection/path">Redirecting HTTP requests</link>
+                        </td>
+                        <td width="70%">eXist's RedirectorServlet calls a user-defined XQuery to 
+                        decide how a HTTP request is handled. The XML fragment returned by the
+                        query determines where the request is directed to. This happens transparently
+                        to the client.</td>
+                    </tr>
                 </table>
             </section>
 
