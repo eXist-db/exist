@@ -100,10 +100,11 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(GetSequenceType.signature, GetSequenceType.class),
         new FunctionDef(Parse.signatures[0], Parse.class),
         new FunctionDef(Parse.signatures[1], Parse.class),
+        new FunctionDef(ExtractDocs.signature, ExtractDocs.class),
 
         // deprecated functions
         new FunctionDef(GetVersion.deprecated, GetVersion.class),
-	};
+    };
 
     static {
         Arrays.sort(functions, new FunctionComparator());
