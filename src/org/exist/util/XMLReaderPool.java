@@ -56,7 +56,7 @@ public class XMLReaderPool extends StackObjectPool {
         try {
             return (XMLReader) borrowObject();
         } catch (Exception e) {
-            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage());
+            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
         }
     }
 
@@ -79,7 +79,7 @@ public class XMLReaderPool extends StackObjectPool {
             
             returnObject(reader);
         } catch (Exception e) {
-            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage());
+            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
         }
     }
 }
