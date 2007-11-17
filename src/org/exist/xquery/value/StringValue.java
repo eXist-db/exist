@@ -381,7 +381,9 @@ public class StringValue extends AtomicValue {
 	}
 
 	public final static String normalizeWhitespace(CharSequence seq) {
-		StringBuffer copy = new StringBuffer(seq.length());
+        if (seq == null)
+            return "";
+        StringBuffer copy = new StringBuffer(seq.length());
 		char ch;
 		for (int i = 0; i < seq.length(); i++) {
 			ch = seq.charAt(i);
@@ -405,7 +407,9 @@ public class StringValue extends AtomicValue {
 	 * @param in
 	 */
 	public static String collapseWhitespace(CharSequence in) {
-		if (in.length() == 0) {
+        if (in == null)
+            return "";
+        if (in.length() == 0) {
 			return in.toString();
 		}
 		int i = 0;
@@ -466,7 +470,9 @@ public class StringValue extends AtomicValue {
 	}
 	
 	public final static String expand(CharSequence seq) throws XPathException {
-	    StringBuffer buf = new StringBuffer(seq.length());
+        if (seq == null)
+            return "";
+        StringBuffer buf = new StringBuffer(seq.length());
 	    StringBuffer entityRef = null;
 	    char ch;
 	    for (int i = 0; i < seq.length(); i++) {
