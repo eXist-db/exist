@@ -809,7 +809,7 @@ throws PermissionDeniedException, EXistException, XPathException
         {
             // Added for handling empty mainModule /ljo
             // System.out.println("EMPTY EXPR");
-            if ("".equals(eof.getText()))
+            if (eof.getText() == null || "".equals(eof.getText()))
                 throw new XPathException("err:XPST0003: Parse error: The zero-length string is not a valid XPath expression.");     
 
         }
