@@ -6,7 +6,8 @@ var Dom = YAHOO.util.Dom,
  */
 var DocQuery = function () {
 
-    var form;
+    var queryForm;
+    var moduleForm;
     var results;
     var timer = null;
 
@@ -23,7 +24,7 @@ var DocQuery = function () {
      * Received a key event, check if we should send a query.
      */
     this.autoQuery = function () {
-        if (form.elements['q'].value.length > 1)
+        if (queryForm.elements['q'].value.length > 1)
             this.doQuery();
         else
             results.innerHTML = '';
@@ -37,7 +38,7 @@ var DocQuery = function () {
         if (ev) Event.stopEvent(ev);
         results.innerHTML = '';
 
-        var query = form.elements['q'].value;
+        var query = queryForm.elements['q'].value;
         var callback = {
             success: this.queryResult,
             failure: function () {
@@ -46,10 +47,27 @@ var DocQuery = function () {
             },
             scope: this
         }
-        var typeSel = form.elements['type'];
+        var typeSel = queryForm.elements['type'];
         Dom.setStyle('f-loading', 'visibility', '');
         YAHOO.util.Connect.asyncRequest('POST', '#', callback, 'mode=ajax&q=' + query +
             '&type=' + typeSel.options[typeSel.selectedIndex].value);
+    }
+
+    this.doBrowse = function (ev) {
+        Event.stopEvent(ev);
+        results.innerHTML = '';
+        var modSel = moduleForm.elements['module'];
+        var module = modSel.options[modSel.selectedIndex].value;
+        var callback = {
+            success: this.queryResult,
+            failure: function () {
+                alert('An unknown error occurred while querying the server.');
+                Dom.setStyle('f-loading', 'visibility', 'hidden');
+            },
+            scope: this
+        }
+        Dom.setStyle('f-loading', 'visibility', '');
+        YAHOO.util.Connect.asyncRequest('POST', '#', callback, 'mode=ajax&module=' + module);
     }
 
     /**
@@ -84,11 +102,13 @@ var DocQuery = function () {
     // Setup
     Event.onDOMReady(function () {
         Dom.setStyle('f-loading', 'visibility', 'hidden');
-        form = document.forms['f-query'];
+        queryForm = document.forms['f-query'];
+        moduleForm = document.forms['f-browse'];
         results = document.getElementById('f-result');
-        Event.addListener(form, 'submit', this.doQuery, this, true);
+        Event.addListener(queryForm, 'submit', this.doQuery, this, true);
+        Event.addListener(moduleForm, 'submit', this.doBrowse, this, true);
         Event.addListener(window, 'resize', this.resize, this, true);
-        var query = form.elements['q'];
+        var query = queryForm.elements['q'];
         Event.addListener(query, 'keypress', this.keyHandler, this, true);
         this.resize();
     }, this, true);
