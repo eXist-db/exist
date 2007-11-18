@@ -215,7 +215,7 @@ declare function xqts:normalize-text($result as item()*) as xs:string {
     let $str := string-join(for $i in $result return string($i), " ")
     return
         (: Remove leading and trailing whitespace :)
-        replace(replace($str, "^\s+", ""), "\s+$", "")
+        replace(replace(replace($str, "^\s+", ""), "\s+$", ""), "&#x0D;&#x0A;", "&#x0A;")
 };
 
 declare function xqts:normalize-and-expand($text as item()*) as xs:string {
