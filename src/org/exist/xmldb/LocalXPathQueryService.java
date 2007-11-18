@@ -170,7 +170,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			try {
 				broker = brokerPool.get(user);
 //				DocumentSet docs = collection.getCollection().allDocs(broker, new DocumentSet(), true, true);
-				XmldbURI[] docs = new XmldbURI[] { XmldbURI.create("/db") };
+				XmldbURI[] docs = new XmldbURI[] { XmldbURI.create(collection.getName()) };
 
 				XQuery xquery = broker.getXQueryService();
 				XQueryPool pool = xquery.getXQueryPool();
