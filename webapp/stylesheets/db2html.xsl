@@ -238,6 +238,7 @@
 
     <xsl:template match="para">
         <p>
+            <xsl:copy-of select="@class"/>
             <xsl:apply-templates/>
         </p>
     </xsl:template>

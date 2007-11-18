@@ -7,7 +7,6 @@ var Dom = YAHOO.util.Dom,
 var DocQuery = function () {
 
     var queryForm;
-    var moduleForm;
     var results;
     var timer = null;
 
@@ -25,7 +24,7 @@ var DocQuery = function () {
      */
     this.autoQuery = function () {
         if (queryForm.elements['q'].value.length > 1)
-            this.doQuery();
+            this.submit();
         else
             results.innerHTML = '';
     }
@@ -34,11 +33,14 @@ var DocQuery = function () {
      * Send query request to the server.
      * @param ev
      */
-    this.doQuery = function (ev) {
+    this.submit = function (ev) {
         if (ev) Event.stopEvent(ev);
-        results.innerHTML = '';
 
-        var query = queryForm.elements['q'].value;
+        var action = 'search';
+        if (ev) {
+            action = Event.getTarget(ev).value;
+        }
+
         var callback = {
             success: this.queryResult,
             failure: function () {
@@ -47,27 +49,36 @@ var DocQuery = function () {
             },
             scope: this
         }
-        var typeSel = queryForm.elements['type'];
-        Dom.setStyle('f-loading', 'visibility', '');
-        YAHOO.util.Connect.asyncRequest('POST', '#', callback, 'mode=ajax&q=' + query +
-            '&type=' + typeSel.options[typeSel.selectedIndex].value);
+        Dom.setStyle('f-loading', 'visibility', 'visible');
+        var params = this.getQuery() + '&action=' + action + '&mode=ajax';
+
+        var animOut = new YAHOO.util.Anim(results, { opacity: { to: 0 } }, 0.3, YAHOO.util.Easing.easeNone);
+        animOut.onComplete.subscribe(function () {
+            results.innerHTML = '';
+            YAHOO.util.Connect.asyncRequest('POST', '?', callback, params);
+        });
+        animOut.animate();
+
+        // remember the last action. needed for printing.
+        queryForm.elements['prev'].value = action;
     }
 
-    this.doBrowse = function (ev) {
+    this.getQuery = function () {
+        var query = queryForm.elements['q'].value;
+        var modSel = queryForm.elements['module'];
+        var prev = queryForm.elements['prev'].value;
+        var module = modSel.options.length > 0 ? modSel.options[modSel.selectedIndex].value : '';
+        var typeSel = queryForm.elements['type'];
+
+        return 'q=' + query +
+            '&type=' + typeSel.options[typeSel.selectedIndex].value + '&module=' + module +
+            '&prev=' + prev;
+    }
+
+    this.print = function (ev) {
         Event.stopEvent(ev);
-        results.innerHTML = '';
-        var modSel = moduleForm.elements['module'];
-        var module = modSel.options[modSel.selectedIndex].value;
-        var callback = {
-            success: this.queryResult,
-            failure: function () {
-                alert('An unknown error occurred while querying the server.');
-                Dom.setStyle('f-loading', 'visibility', 'hidden');
-            },
-            scope: this
-        }
-        Dom.setStyle('f-loading', 'visibility', '');
-        YAHOO.util.Connect.asyncRequest('POST', '#', callback, 'mode=ajax&module=' + module);
+        var params = '?action=Print&' + this.getQuery();
+        window.open(params, 'f-print');
     }
 
     /**
@@ -87,6 +98,8 @@ var DocQuery = function () {
                     Dom.setStyle(this, 'display', 'none');
             }, descriptions[i], true);
         }
+        var animIn = new YAHOO.util.Anim(results, { opacity: { to: 1 } }, 0.3, YAHOO.util.Easing.easeNone);
+        animIn.animate();
     }
 
     /**
@@ -103,13 +116,15 @@ var DocQuery = function () {
     Event.onDOMReady(function () {
         Dom.setStyle('f-loading', 'visibility', 'hidden');
         queryForm = document.forms['f-query'];
-        moduleForm = document.forms['f-browse'];
         results = document.getElementById('f-result');
-        Event.addListener(queryForm, 'submit', this.doQuery, this, true);
-        Event.addListener(moduleForm, 'submit', this.doBrowse, this, true);
-        Event.addListener(window, 'resize', this.resize, this, true);
+
+        Event.addListener('f-btn-browse', 'click', this.submit, this, true);
+        Event.addListener('f-btn-search', 'click', this.submit, this, true);
+        Event.addListener('f-btn-print', 'click', this.print, this, true);
+        
+//        Event.addListener(window, 'resize', this.resize, this, true);
         var query = queryForm.elements['q'];
         Event.addListener(query, 'keypress', this.keyHandler, this, true);
-        this.resize();
+//        this.resize();
     }, this, true);
 }();
