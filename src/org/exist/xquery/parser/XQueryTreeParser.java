@@ -4151,10 +4151,10 @@ public XQueryTreeParser() {
 			value = nc.getText();
 			if (sl != null)
 			value = sl.getText();
-			
 			QName qname= new QName(value, "", null);
 			qname.setNamespaceURI(null);
-			NameTest test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
+			if (!"".equals(value))
+			type.setNodeName(qname);
 			
 			_t = __t77;
 			_t = _t.getNextSibling();
