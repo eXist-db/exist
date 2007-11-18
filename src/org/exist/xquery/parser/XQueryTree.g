@@ -736,7 +736,20 @@ throws XPathException
 		)
 		|
 		#(
-			"processing-instruction" { type.setPrimaryType(Type.PROCESSING_INSTRUCTION); }
+			"processing-instruction" 
+            { type.setPrimaryType(Type.PROCESSING_INSTRUCTION); }
+            ( nc:NCNAME | sl:STRING_LITERAL )?
+            {
+                String value = "";
+                if (nc != null)
+                    value = nc.getText();
+                if (sl != null)
+                    value = sl.getText();
+
+                QName qname= new QName(value, "", null);
+                qname.setNamespaceURI(null);
+                NameTest test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
+            }
 		)
 		|
 		#(
@@ -744,7 +757,33 @@ throws XPathException
 		)
 		|
 		#(
-			"document-node" { type.setPrimaryType(Type.DOCUMENT); }
+			"document-node"
+            { type.setPrimaryType(Type.DOCUMENT); }
+            (
+                #( "element"
+                    (
+                    dnqn:QNAME
+                    {
+					    QName qname= QName.parse(staticContext, dnqn.getText());
+                        type.setNodeName(qname);
+                        NameTest test= new NameTest(Type.DOCUMENT, qname);
+                    }
+                    | 
+                    WILDCARD
+                    {
+                        TypeTest test= new TypeTest(Type.DOCUMENT);
+                    }
+                    )?
+                    
+				    ( QNAME
+					{
+						throwException(dnqn, "Tests of the form element(QName, TypeName) are not supported!");
+					}
+                    )?
+                )
+                |
+                #( "schema-element" QNAME)
+            )?
 		)
 	)
 	(
@@ -1176,23 +1215,28 @@ throws PermissionDeniedException, EXistException, XPathException
 			path.add(tswitch); 
 		}
 		(
-			{ 
+			{
 				SequenceType type = new SequenceType();
 				PathExpr returnExpr = new PathExpr(context);
 				QName qn = null;
 			}
 			#(
-				"case"
+				"case"                     
 				(
 					var:VARIABLE_BINDING
 					{ qn = QName.parse(staticContext, var.getText()); }
 				)?
-				sequenceType [type]
-				step=expr [returnExpr]
-				{
-					tswitch.addCase(type, qn, returnExpr);
-				}
+                sequenceType [type]
+                // Need return as root in following to disambiguate 
+                // e.g. ( case a xs:integer ( * 3 3 ) )
+                // which gives xs:integer* and no operator left for 3 3 ...
+                // Now ( case a xs:integer ( return ( + 3 3 ) ) ) /ljo
+                #( "return"
+		        step= expr [returnExpr]
+				{ tswitch.addCase(type, qn, returnExpr); }
+                )
 			)
+
 		)+
         (
 			"default"
@@ -1524,7 +1568,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 slpi:STRING_LITERAL
                 { 
                     QName qname;
-                    qname= new QName(slpi.getText(), "", null);                        
+                    qname= new QName(slpi.getText(), "", null);                
                     test= new NameTest(Type.PROCESSING_INSTRUCTION, qname);
                 }
             )?
@@ -1532,6 +1576,30 @@ throws PermissionDeniedException, EXistException, XPathException
 		|
 		"document-node"
 		{ test= new TypeTest(Type.DOCUMENT); }
+            (
+                #( "element"
+                    (
+                    dnqn:QNAME
+                        {
+                        QName qname= QName.parse(staticContext, dnqn.getText());
+                        test= new NameTest(Type.DOCUMENT, qname);
+                        }
+                    |
+                    WILDCARD
+                        {
+                        //Unneccessary?/ljo
+                        test= new TypeTest(Type.DOCUMENT);
+                        }
+                    )?
+				    ( QNAME
+					{
+						throwException(dnqn, "Tests of the form element(QName, TypeName) are not supported!");
+					}
+                    )?
+                )
+                |
+                #( "schema-element" QNAME)
+            )?
 	)
 	{
 		step= new LocationStep(context, axis, test);
