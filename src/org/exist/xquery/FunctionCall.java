@@ -172,7 +172,7 @@ public class FunctionCall extends Function {
 				!(result instanceof VirtualNodeSet))
 				getSignature().getReturnType().checkType(result.getItemType()); 
 		} catch (XPathException e) {
-			throw new XPathException(getASTNode(), "err:XPTY004 in function '" + getSignature().getName() + "'. " + 
+			throw new XPathException(getASTNode(), "err:XPTY0004 in function '" + getSignature().getName() + "'. " + 
 					e.getMessage());
 		}
 
