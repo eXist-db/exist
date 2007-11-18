@@ -39,11 +39,8 @@
 			</map:match>
 
             <map:match pattern="functions.xq">
-                <map:generate src="functions.xq" type="xquery">
-                	<map:parameter name="create-session" value="true"/>
-                </map:generate>
+                <map:generate src="functions.xq" type="xquery"/>
                 <map:transform type="xinclude"/>
-                <map:transform src="stylesheets/functions.xsl"/>
                 <map:transform src="context://stylesheets/db2html.xsl"/>
 				<map:serialize encoding="UTF-8" type="html"/>
             </map:match>
