@@ -12,16 +12,25 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace ngram="http://exist-db.org/xquery/ngram" at
     "java:org.exist.xquery.modules.ngram.NGramModule";
 
+(:~
+    Collection configuration for the function docs. We use an ngram
+    index for fast substring searches.
+:)
 declare variable $xqdoc:config :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xqdoc="http://www.xqdoc.org/1.0">
             <fulltext default="none" attributes="no">
-                <create qname="xqdoc:description"/>
             </fulltext>
             <ngram qname="xqdoc:name"/>
+            <ngram qname="xqdoc:description"/>
         </index>
     </collection>;
 
+(:~
+    Before the function document can be searched, it needs to be extracted
+    from the Java files. We use util:extract-docs() to generate one XQDoc
+    document for each module and store it into /db/xqdocs.
+:)
 declare function xqdoc:setup($adminPass as xs:string) {
     if (empty(//xqdoc:module)) then
         let $setuser := xdb:login("/db", "admin", $adminPass)
@@ -45,13 +54,19 @@ declare function xqdoc:setup($adminPass as xs:string) {
         ()
 };
 
-declare function xqdoc:do-query($type as xs:string, $qs as xs:string) as element()* {
-    if ($qs != '') then
+(:~
+    Execute a query or list all functions in a given module.
+:)
+declare function xqdoc:do-query($module as xs:string?, $type as xs:string?, 
+$qs as xs:string?) as element()* {
+    if ($qs != '' or $module != '') then
         let $matches :=
-            if ($type eq 'name') then
+            if ($module) then
+                /xqdoc:xqdoc[xqdoc:module/xqdoc:uri = $module]//xqdoc:function
+            else if ($type eq 'name') then
                 //xqdoc:function[ngram:contains(xqdoc:name, $qs)]
             else
-                //xqdoc:function[xqdoc:comment/xqdoc:description &= $qs]
+                //xqdoc:function[ngram:contains(xqdoc:comment/xqdoc:description, $qs)]
         for $match in $matches
         order by $match/xqdoc:name
         return
@@ -67,8 +82,14 @@ declare function xqdoc:do-query($type as xs:string, $qs as xs:string) as element
         ()
 };
 
-declare function xqdoc:get-page($type as xs:string?, $query as xs:string?, $askPass as xs:boolean) 
-as element() {
+(:~
+    Return the main XML page, which will be transformed into HTML by Cocoon.
+    If Javascript is enabled on the client, this function will only be called
+    once. All subsequent calls to this script will be made via AJAX and we don't
+    need to return the entire page.
+:)
+declare function xqdoc:get-page($module as xs:string?, $type as xs:string?, 
+$query as xs:string?, $askPass as xs:boolean) as element() {
     <book>
         <bookinfo>
             <graphic fileref="logo.jpg"/>
@@ -96,7 +117,7 @@ as element() {
                     </form>
                 else (
                     <div id="f-search">
-                        <form id="f-query" name="f-query" action="fundocs.xql" method="POST">
+                        <form name="f-query" action="functions.xq" method="POST">
                             <img id="f-loading" src="../resources/loading.gif"/>
                             <label for="q">Search:</label>
                             <input name="q" type="text" value="{$query}"/>
@@ -105,11 +126,23 @@ as element() {
                                 <option value="name">Function Name</option>
                                 <option value="desc">Description</option>
                             </select>
-                            <button type="submit">Find</button>
+                            <button type="submit">Find</button><br/>
                         </form>
-                        
+                        <form name="f-browse" action="functions.xq" method="POST">
+                            <label for="module">Or display <b>all</b> functions in module:</label>
+                            <select name="module">
+                            {
+                                for $module in //xqdoc:module
+                                return
+                                    <option value="{$module/xqdoc:uri}">
+                                    {$module/xqdoc:uri/text()}
+                                    </option>
+                            }
+                            </select>
+                            <button type="submit">Browse</button>
+                        </form>
                         <div id="f-result">
-                        { if ($query) then xqdoc:do-query($type, $query) else () }
+                        { if ($query or $module) then xqdoc:do-query($module, $type, $query) else () }
                         </div>
                     </div>,
                     
@@ -122,6 +155,11 @@ as element() {
     </book>
 };
 
+(:
+    The mainline of the script. First checks if the documentation has
+    already been extracted. If not, ask for the admin password and
+    call xqdoc:setup() to generate the documentation. 
+:)
 let $askPass :=
     if (empty(//xqdoc:module)) then
         let $adminPass := request:get-parameter("pass", ())
@@ -137,8 +175,9 @@ let $askPass :=
 let $query := request:get-parameter("q", ())
 let $type := request:get-parameter("type", "name")
 let $mode := request:get-parameter("mode", ())
+let $module := request:get-parameter("module", ())
 return
     if ($mode = 'ajax') then
-        xqdoc:do-query($type, $query)
+        xqdoc:do-query($module, $type, $query)
     else
-        xqdoc:get-page($type, $query, $askPass)
+        xqdoc:get-page($module, $type, $query, $askPass)
