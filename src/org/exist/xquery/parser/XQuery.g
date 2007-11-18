@@ -437,7 +437,7 @@ sequenceType throws XPathException
 
 occurrenceIndicator
 :
-	QUESTION | STAR | PLUS
+        ( QUESTION | STAR | PLUS )
 	;
 
 itemType throws XPathException
@@ -637,10 +637,15 @@ typeswitchExpr throws XPathException
 	
 caseClause throws XPathException
 { String varName; }:
-	"case"^ ( caseVar  )?
-	sequenceType "return"! exprSingle
+	"case"^ ( caseVar )?
+	sequenceType caseReturn
 	;
 	
+caseReturn throws XPathException
+:
+    "return"^ exprSingle
+    ;
+
 caseVar throws XPathException
 { String varName; }:
 	DOLLAR! varName=qName! "as"
