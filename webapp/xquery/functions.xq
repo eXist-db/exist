@@ -30,11 +30,17 @@ declare function xqdoc:setup($adminPass as xs:string) {
             xdb:create-collection("/db/system/config/db", "xqdocs")
         )
         let $confStored := xdb:store("/db/system/config/db/xqdocs", "collection.xconf", $xqdoc:config)
-        let $output := xdb:create-collection("/db", "xqdocs")
+        let $output := (
+            xdb:create-collection("/db", "xqdocs"),
+            xdb:chmod-collection("/db/xqdocs", 508)
+        )
         for $moduleURI in util:registered-modules()
         let $moduleDocs := util:extract-docs($moduleURI)
-        return
-            xdb:store("/db/xqdocs", concat(util:md5($moduleURI), ".xml"), $moduleDocs, "text/xml")
+        let $docName := concat(util:md5($moduleURI), ".xml")
+        return (
+            xdb:store("/db/xqdocs", $docName, $moduleDocs, "text/xml"),
+            xdb:chmod-resource("/db/xqdocs", $docName, 508)
+        )
     else
         ()
 };
@@ -45,7 +51,7 @@ declare function xqdoc:do-query($type as xs:string, $qs as xs:string) as element
             if ($type eq 'name') then
                 //xqdoc:function[ngram:contains(xqdoc:name, $qs)]
             else
-                //xqdoc:function[xqdoc:description &= $qs]
+                //xqdoc:function[xqdoc:comment/xqdoc:description &= $qs]
         for $match in $matches
         order by $match/xqdoc:name
         return
@@ -90,7 +96,7 @@ as element() {
                     </form>
                 else (
                     <div id="f-search">
-                        <form name="f-query" action="fundocs.xql" method="POST">
+                        <form id="f-query" name="f-query" action="fundocs.xql" method="POST">
                             <img id="f-loading" src="../resources/loading.gif"/>
                             <label for="q">Search:</label>
                             <input name="q" type="text" value="{$query}"/>
