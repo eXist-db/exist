@@ -405,12 +405,24 @@ select.choose {
     background-color: #fef3c1;
 }
 
-          .authors {
-            margin-top: 5px;
-            margin-bottom: 35px;
-            padding-left: 10px;
-            padding-right: 10px;                     
-          }
+.authors {
+    margin: 30px 0 50px 0;
+    border-top: 1px solid #CCC;
+}
+
+.author {
+    float: left;
+    margin: 8px 0 15px 20px;
+}
+
+.authors .first {
+    margin-left: 0;
+}
+
+.author a {
+    font-size: 85%;
+    font-style: italic;
+}
 
 .note, .example, .important {
     margin-top: 10px;

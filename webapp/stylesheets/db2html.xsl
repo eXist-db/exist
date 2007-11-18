@@ -18,24 +18,19 @@
                         <link rel="stylesheet" type="text/css" href="styles/default-style.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
-                <xsl:copy-of select="(bookinfo|articleinfo)/style[not(@href)]"/>
+                <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
+                <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
                 <script type="text/javascript" src="styles/niftycube.js"/>
-                <script type="text/javascript">
-                    window.onload = function() {
-                        Nifty("h1.chaptertitle", "transparent");
-                        Nifty("div.note", "transparent");
-                        Nifty("div.example", "transparent");
-                        Nifty("div.important", "transparent");
-                        Nifty("div.block div.head", "top");
-                        Nifty("div.block ul", "bottom");
-                    }
-                </script>
+                <script type="text/javascript"> window.onload = function() {
+                    Nifty("h1.chaptertitle", "transparent"); Nifty("div.note", "transparent");
+                    Nifty("div.example", "transparent"); Nifty("div.important", "transparent");
+                    Nifty("div.block div.head", "top"); Nifty("div.block ul", "bottom"); } </script>
             </head>
 
             <body bgcolor="#FFFFFF">
                 <xsl:apply-templates select="bookinfo|articleinfo"/>
                 <xsl:apply-templates select="sidebar:sidebar"/>
-                <div id="content2col">   
+                <div id="content2col">
                     <xsl:choose>
                         <xsl:when test="self::article">
                             <h1 class="chaptertitle">
@@ -47,6 +42,7 @@
                             <xsl:apply-templates select="chapter"/>
                         </xsl:otherwise>
                     </xsl:choose>
+                    <xsl:apply-templates select="bookinfo|articleinfo" mode="backmatter"/>
                 </div>
             </body>
         </html>
@@ -59,10 +55,12 @@
                     <a>
                         <xsl:choose>
                             <xsl:when test="@id">
-                                <xsl:attribute name="href">#<xsl:value-of select="@id"/></xsl:attribute>
+                                <xsl:attribute name="href">#<xsl:value-of select="@id"
+                                /></xsl:attribute>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:attribute name="href">#<xsl:value-of select="generate-id()"/></xsl:attribute>
+                                <xsl:attribute name="href">#<xsl:value-of select="generate-id()"
+                                /></xsl:attribute>
                             </xsl:otherwise>
                         </xsl:choose>
                         <xsl:number count="section" level="multiple" format="1. "/>
@@ -85,20 +83,38 @@
         </ul>
     </xsl:template>
 
-    <xsl:template match="author">
-        <div class="authors">           
+    <xsl:template match="author"/>
+
+    <xsl:template match="bookinfo|articleinfo" mode="backmatter">
+        <div class="authors">
+            <xsl:apply-templates select="date" mode="backmatter"/>
+            <xsl:apply-templates select="author|orgname" mode="backmatter"/>
+        </div>
+    </xsl:template>
+
+    <xsl:template match="date" mode="backmatter">
+        <div class="date">
+            <xsl:apply-templates/>
+        </div>
+    </xsl:template>
+
+    <xsl:template match="author" mode="backmatter">
+        <div class="author">
+            <xsl:if test="position() = 1">
+                <xsl:attribute name="class">author first</xsl:attribute>
+            </xsl:if>
             <xsl:value-of select="firstname"/>
             <xsl:text> </xsl:text>
             <xsl:value-of select="surname"/>
             <br/>
-        	<xsl:for-each select=".//jobtitle">
-        		<xsl:apply-templates/>
-        		<br/>
-        	</xsl:for-each>
-        	<xsl:for-each select=".//orgname">
-        		<xsl:apply-templates/>
-        		<br/>
-        	</xsl:for-each>                     
+            <xsl:for-each select=".//jobtitle">
+                <xsl:apply-templates/>
+                <br/>
+            </xsl:for-each>
+            <xsl:for-each select=".//orgname">
+                <xsl:apply-templates/>
+                <br/>
+            </xsl:for-each>
             <xsl:for-each select=".//email">
                 <a href="mailto:{.}">
                     <small>
@@ -107,26 +123,28 @@
                         </em>
                     </small>
                 </a>
-                <br/>
             </xsl:for-each>
         </div>
     </xsl:template>
 
+    <xsl:template match="orgname" mode="backmatter">
+        <div class="author">
+            <xsl:if test="position() = 1">
+                <xsl:attribute name="class">author first</xsl:attribute>
+            </xsl:if>
+            <xsl:value-of select="."/>
+        </div>
+    </xsl:template>
+    
     <xsl:template match="chapter">
         <div class="chapter">
-            <xsl:apply-templates select="title"/>            
+            <xsl:apply-templates select="title"/>
             <xsl:call-template name="toc"/>
             <xsl:apply-templates select="*[not(name()='title')]"/>
         </div>
     </xsl:template>
 
     <xsl:template match="chapter/title">
-        <xsl:for-each select="//bookinfo/date | //articleinfo/date">
-        	<xsl:value-of select= "." /><xsl:text> </xsl:text>
-        </xsl:for-each>
-        <xsl:for-each select="//author">
-        	<xsl:apply-templates select="."/>
-        </xsl:for-each>
         <h1 class="chaptertitle">
             <a>
                 <xsl:attribute name="name">
@@ -135,6 +153,9 @@
             </a>
             <xsl:apply-templates/>
         </h1>
+        <xsl:for-each select="author">
+            <xsl:apply-templates select="."/>
+        </xsl:for-each>
     </xsl:template>
 
     <xsl:template match="chapter/abstract|article/abstract">
@@ -148,10 +169,14 @@
             <a>
                 <xsl:choose>
                     <xsl:when test="@id">
-                        <xsl:attribute name="name"><xsl:value-of select="@id"/></xsl:attribute>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="@id"/>
+                        </xsl:attribute>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="generate-id()"/>
+                        </xsl:attribute>
                     </xsl:otherwise>
                 </xsl:choose>
             </a>
@@ -169,10 +194,14 @@
             <a>
                 <xsl:choose>
                     <xsl:when test="@id">
-                        <xsl:attribute name="name"><xsl:value-of select="@id"/></xsl:attribute>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="@id"/>
+                        </xsl:attribute>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="generate-id()"/>
+                        </xsl:attribute>
                     </xsl:otherwise>
                 </xsl:choose>
             </a>
@@ -199,13 +228,14 @@
     <xsl:template match="chapter/section/section/section/section|article/section/section/section">
         <xsl:apply-templates/>
     </xsl:template>
-    
-    <xsl:template match="chapter/section/section/section/section/title|article/section/section/section/title">
+
+    <xsl:template
+        match="chapter/section/section/section/section/title|article/section/section/section/title">
         <h5>
             <xsl:apply-templates/>
         </h5>
     </xsl:template>
-    
+
     <xsl:template match="para">
         <p>
             <xsl:apply-templates/>
@@ -224,7 +254,7 @@
             <xsl:apply-templates select="graphic"/>
         </div>
     </xsl:template>
-    
+
     <xsl:template match="bookinfo|articleinfo">
         <div id="page-head">
             <xsl:choose>
@@ -348,7 +378,9 @@
 
     <xsl:template match="term">
         <th width="20%" align="left" valign="top">
-            <p><xsl:apply-templates/></p>
+            <p>
+                <xsl:apply-templates/>
+            </p>
         </th>
     </xsl:template>
 
@@ -404,15 +436,12 @@
     </xsl:template>
 
     <xsl:template match="sgmltag">
-	    <xsl:choose>
-	    	<xsl:when test="@class = 'attribute'">
-	    		@<xsl:apply-templates/>
-	    	</xsl:when>
-	    	<xsl:otherwise>
-	 		    &lt;<xsl:apply-templates/>&gt; 
-	 		</xsl:otherwise>
-	 	</xsl:choose>
-	 </xsl:template>
+        <xsl:choose>
+            <xsl:when test="@class = 'attribute'"> @<xsl:apply-templates/>
+            </xsl:when>
+            <xsl:otherwise> &lt;<xsl:apply-templates/>&gt; </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
     <xsl:template name="returns2br">
         <xsl:param name="string"/>
@@ -513,29 +542,35 @@
             </table>
         </div>
     </xsl:template>
-    
+
     <xsl:template match="informaltable//td">
         <td valign="top">
             <xsl:apply-templates/>
         </td>
     </xsl:template>
-    
+
     <xsl:template match="table">
         <div class="formaltable">
             <xsl:if test="title">
-                <h1><xsl:apply-templates select="title"/></h1>
+                <h1>
+                    <xsl:apply-templates select="title"/>
+                </h1>
             </xsl:if>
             <table>
                 <xsl:apply-templates select="*[not(self::title)]"/>
             </table>
         </div>
     </xsl:template>
-    
+
     <xsl:template match="row">
-        <tr><xsl:apply-templates/></tr>
+        <tr>
+            <xsl:apply-templates/>
+        </tr>
     </xsl:template>
-    
+
     <xsl:template match="entry">
-        <td><xsl:apply-templates/></td>
+        <td>
+            <xsl:apply-templates/>
+        </td>
     </xsl:template>
 </xsl:stylesheet>
