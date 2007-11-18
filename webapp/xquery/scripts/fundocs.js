@@ -46,8 +46,10 @@ var DocQuery = function () {
             },
             scope: this
         }
+        var typeSel = form.elements['type'];
         Dom.setStyle('f-loading', 'visibility', '');
-        YAHOO.util.Connect.asyncRequest('POST', '#', callback, 'mode=ajax&q=' + query);
+        YAHOO.util.Connect.asyncRequest('POST', '#', callback, 'mode=ajax&q=' + query +
+            '&type=' + typeSel.options[typeSel.selectedIndex].value);
     }
 
     /**
