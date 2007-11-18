@@ -1,0 +1,59 @@
+#f-search {
+    font-family: "Liberation Sans", Corbel, Arial, Helvetica, sans-serif;
+}
+
+#f-search form {
+    margin-bottom: 10px;
+}
+
+#f-search label, #f-search input, #f-search button, #f-search select {
+    margin-right: .75em;
+}
+
+#f-pass input {
+    margin-left: 15px;
+}
+
+#f-result {
+    border: 1px solid #CCCCCC;
+    padding: 5px 0;
+    overflow: auto;
+}
+
+.f-function {
+    margin: 0 0 5px 0;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.f-function:hover {
+    background-color: #EEEEEE;
+}
+
+.f-module {
+    font-size: 85%;
+    border-bottom: 1px solid #0990EE;
+}
+
+.f-function h3 {
+    margin: 5px 0 8px 0;
+    padding: 3px 0 3px 5px;
+    background-color: #FAC783;
+}
+
+.f-signature, .f-description {
+    margin-left: 15px;
+}
+
+.f-signature {
+    font-family: "Liberation Mono", Consolas, "Bitstream Vera Sans Mono", monospace;
+    margin-bottom: 8px;
+}
+
+.f-description {
+    text-align: justify;
+}
+
+#f-loading {
+    float: right;
+}
