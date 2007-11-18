@@ -1,13 +1,28 @@
 #f-search {
-    font-family: "Liberation Sans", Corbel, Arial, Helvetica, sans-serif;
+    font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
 }
 
 #f-search form {
     margin-bottom: 10px;
 }
 
-#f-search label, #f-search input, #f-search button, #f-search select {
+#f-search label, #f-search input {
     margin-right: .75em;
+}
+
+#f-search table {
+    width: 100%;
+    border: 0;
+}
+
+#f-search td {
+    padding: 0;
+    margin: 4px 5px 0 0;
+}
+
+#f-search td.f-btn {
+    text-align: left;
+    width: 20%;
 }
 
 #f-pass input {
@@ -15,7 +30,6 @@
 }
 
 #f-result {
-    border: 1px solid #CCCCCC;
     padding: 5px 0;
     overflow: auto;
 }
@@ -46,7 +60,7 @@
 }
 
 .f-signature {
-    font-family: "Liberation Mono", Consolas, "Bitstream Vera Sans Mono", monospace;
+    font-family: "Liberation Mono", "Bitstream Vera Sans Mono", monospace;
     margin-bottom: 8px;
 }
 
@@ -55,5 +69,21 @@
 }
 
 #f-loading {
-    float: right;
+    visibility: hidden;
+}
+
+#f-btn-print {
+    text-align: right;
+}
+
+.f-info {
+    text-align: center;
+}
+
+.f-print .f-module {
+    border-bottom: 1px solid black;
+}
+
+.f-print .f-function h3 {
+    background-color: inherit;
 }

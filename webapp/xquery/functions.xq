@@ -57,13 +57,13 @@ declare function xqdoc:setup($adminPass as xs:string) {
 (:~
     Execute a query or list all functions in a given module.
 :)
-declare function xqdoc:do-query($module as xs:string?, $type as xs:string?, 
+declare function xqdoc:do-query($action as xs:string, $module as xs:string?, $type as xs:string?, 
 $qs as xs:string?) as element()* {
     if ($qs != '' or $module != '') then
         let $matches :=
-            if ($module) then
+            if ($action eq "Browse") then
                 /xqdoc:xqdoc[xqdoc:module/xqdoc:uri = $module]//xqdoc:function
-            else if ($type eq 'name') then
+            else if ($type eq "name") then
                 //xqdoc:function[ngram:contains(xqdoc:name, $qs)]
             else
                 //xqdoc:function[ngram:contains(xqdoc:comment/xqdoc:description, $qs)]
@@ -88,7 +88,7 @@ $qs as xs:string?) as element()* {
     once. All subsequent calls to this script will be made via AJAX and we don't
     need to return the entire page.
 :)
-declare function xqdoc:get-page($module as xs:string?, $type as xs:string?, 
+declare function xqdoc:get-page($action as xs:string, $module as xs:string?, $type as xs:string?, 
 $query as xs:string?, $askPass as xs:boolean) as element() {
     <book>
         <bookinfo>
@@ -118,41 +118,88 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                 else (
                     <div id="f-search">
                         <form name="f-query" action="functions.xq" method="POST">
-                            <img id="f-loading" src="../resources/loading.gif"/>
-                            <label for="q">Search:</label>
-                            <input name="q" type="text" value="{$query}"/>
-                            <label for="type">in</label>
-                            <select name="type">
-                                <option value="name">Function Name</option>
-                                <option value="desc">Description</option>
-                            </select>
-                            <button type="submit">Find</button><br/>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <label for="q">Search:</label>
+                                        <input name="q" type="text" value="{$query}"/>
+                                        <label for="type">in</label>
+                                        <select name="type">
+                                            <option value="name">Function Name</option>
+                                            <option value="desc">Description</option>
+                                        </select>
+                                    </td>
+                                    <td class="f-btn">
+                                        <input id="f-btn-search" type="submit" 
+                                            name="action" value="Search"/>
+                                    </td>
+                                    <td>
+                                        <input id="f-btn-print" type="submit" 
+                                            name="action" value="Print"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label for="module">Or display <b>all</b> in:</label>
+                                        <select name="module">
+                                        {
+                                            for $mod in //xqdoc:module
+                                            let $uri := $mod/xqdoc:uri/text()
+                                            return
+                                                <option value="{$uri}">
+                                                { if ($uri eq $module) then attribute selected { "true" } else () }
+                                                { $uri }
+                                                </option>
+                                        }
+                                        </select>
+                                    </td>
+                                    <td class="f-btn">
+                                        <input id="f-btn-browse" type="submit" name="action" value="Browse"/>
+                                    </td>
+                                    <td><img id="f-loading" src="../resources/loading.gif"/></td>
+                                </tr>
+                            </table>
+                            <input type="hidden" name="prev" value="{$action}"/>
                         </form>
-                        <form name="f-browse" action="functions.xq" method="POST">
-                            <label for="module">Or display <b>all</b> functions in module:</label>
-                            <select name="module">
-                            {
-                                for $module in //xqdoc:module
-                                return
-                                    <option value="{$module/xqdoc:uri}">
-                                    {$module/xqdoc:uri/text()}
-                                    </option>
-                            }
-                            </select>
-                            <button type="submit">Browse</button>
-                        </form>
+                        <p class="f-info">(<b>eXist version: {util:system-property("product-version")}, build: {util:system-property("product-build")}</b>).
+                        Modules have to be enabled in conf.xml to appear here. 
+                        </p>
                         <div id="f-result">
-                        { if ($query or $module) then xqdoc:do-query($module, $type, $query) else () }
+                        { if ($query or $module) then xqdoc:do-query($action, $module, $type, $query) else () }
                         </div>
-                    </div>,
-                    
-                    <para>(<b>eXist version: {util:system-property("product-version")}, build: {util:system-property("product-build")}</b>).
-                    Modules have to be enabled in conf.xml to appear here. 
-                    </para>
+                    </div>
                 )
             }
         </chapter>
     </book>
+};
+
+declare function xqdoc:print-page($module as xs:string?, $type as xs:string?,
+$query as xs:string?) as element() {
+    let $prevAction := request:get-parameter("prev", "Browse")
+    return
+        <html>
+            <head>
+                <title>XQuery Function Documentation</title>
+                <link rel="stylesheet" type="text/css" href="styles/fundocs.css"/>
+            </head>
+            <body class="f-print">
+        		<h1>XQuery Function Documentation</h1>
+        		{
+        		    if ($module) then
+        		        <p>Module: {$module}</p>
+        	        else
+        	            <p>Query: "{$query}" in {$type}.</p>
+                }
+        		{ xqdoc:do-query($prevAction, $module, $type, $query) }
+        	</body>
+        </html>
+};
+
+declare function xqdoc:debug-parameters() {
+    for $param in request:get-parameter-names()
+    return
+        util:log("DEBUG", ($param , " = ", request:get-parameter($param, ())))
 };
 
 (:
@@ -172,12 +219,16 @@ let $askPass :=
                 true()
     else
         false()
+let $log := xqdoc:debug-parameters()
+let $action := request:get-parameter("action", "Search")
 let $query := request:get-parameter("q", ())
 let $type := request:get-parameter("type", "name")
 let $mode := request:get-parameter("mode", ())
 let $module := request:get-parameter("module", ())
 return
-    if ($mode = 'ajax') then
-        xqdoc:do-query($module, $type, $query)
+    if ($mode = "ajax") then
+        xqdoc:do-query($action, $module, $type, $query)
+    else if ($action eq "Print") then
+        xqdoc:print-page($module, $type, $query)
     else
-        xqdoc:get-page($module, $type, $query, $askPass)
+        xqdoc:get-page($action, $module, $type, $query, $askPass)
