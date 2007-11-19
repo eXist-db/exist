@@ -26,9 +26,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -104,12 +106,34 @@ public class MimeTable {
         return (MimeType) mimeTypes.get(mimeType);
     }
     
-    public String getPreferredExtension(String mimeType) {
-       return (String)preferredExtension.get(mimeType);
+    public Vector getAllExtensions(MimeType mimeType)
+    {
+    	return getAllExtensions(mimeType.getName());
+    }
+    
+    public Vector getAllExtensions(String mimeType)
+    {
+    	Vector extns = new Vector();
+    	
+    	for(Iterator itExtensions = extensions.keySet().iterator(); itExtensions.hasNext();)
+    	{
+    		String extKey = (String)itExtensions.next();
+    		MimeType mt = (MimeType)extensions.get(extKey);
+    		if(mt.getName().equals(mimeType))
+    		{
+    			extns.add(extKey);
+    		}
+    	}
+    	
+    	return extns;
     }
     
     public String getPreferredExtension(MimeType mimeType) {
-       return (String)preferredExtension.get(mimeType.getName());
+        return getPreferredExtension(mimeType.getName());
+     }
+    
+    public String getPreferredExtension(String mimeType) {
+       return (String)preferredExtension.get(mimeType);
     }
     
     public boolean isXMLContent(String fileName) {
