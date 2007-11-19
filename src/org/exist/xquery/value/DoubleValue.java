@@ -30,7 +30,9 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 public class DoubleValue extends NumericValue {
-
+    // m × 2^e, where m is an integer whose absolute value is less than 2^53,
+    // and e is an integer between -1075 and 970, inclusive.
+    // In addition also -INF, +INF and NaN.
 	public final static DoubleValue ZERO = new DoubleValue(0.0E0);
 	public final static DoubleValue POSITIVE_INFINITY = new DoubleValue(Double.POSITIVE_INFINITY);
 	public final static DoubleValue NEGATIVE_INFINITY = new DoubleValue(Double.NEGATIVE_INFINITY);
@@ -125,13 +127,18 @@ public class DoubleValue extends NumericValue {
 				return new StringValue(getStringValue());
 			case Type.DECIMAL :
 				if (isNaN())
-					throw new XPathException("FORG0001: can not convert " + 
-							Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
-							Type.getTypeName(requiredType));
+					throw new XPathException("FORG0001: can not convert "
+                                             + Type.getTypeName(getType())
+                                             + "('"
+                                             + getStringValue()
+                                             + "') to "
+                                             + Type.getTypeName(requiredType));
 				if (isInfinite())
-					throw new XPathException("FORG0001: can not convert " + 
-							Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
-							Type.getTypeName(requiredType));
+					throw new XPathException("FORG0001: can not convert "
+                                             + Type.getTypeName(getType()) 
+                                             + "('" + getStringValue() 
+                                             + "') to " 
+                                             + Type.getTypeName(requiredType));
 				return new DecimalValue(new BigDecimal(value));
 			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
@@ -147,22 +154,30 @@ public class DoubleValue extends NumericValue {
 			case Type.UNSIGNED_BYTE :
 			case Type.POSITIVE_INTEGER :
 				if (isNaN())
-					throw new XPathException("FORG0001: can not convert " + 
-							Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
-							Type.getTypeName(requiredType));
+					throw new XPathException("FORG0001: can not convert "
+                                             + Type.getTypeName(getType())
+                                             + "('" + getStringValue()
+                                             + "') to "
+                                             + Type.getTypeName(requiredType));
 				if (Double.isInfinite(value))
-					throw new XPathException("FORG0001: can not convert " + 
-							Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
-							Type.getTypeName(requiredType));
+					throw new XPathException("FORG0001: can not convert "
+                                             + Type.getTypeName(getType())
+                                             + "('"
+                                             + getStringValue()
+                                             + "') to "
+                                             + Type.getTypeName(requiredType));
 				if (value > Integer.MAX_VALUE)
 					throw new XPathException("err:FOCA0003: Value is out of range for type xs:integer");
 				return new IntegerValue((long) value, requiredType);
 			case Type.BOOLEAN :
 				return new BooleanValue(this.effectiveBooleanValue());				
 			default :
-				throw new XPathException("FORG0001: cannot cast '" + 
-						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
-						Type.getTypeName(requiredType));
+				throw new XPathException("FORG0001: cannot cast '"
+                                         + Type.getTypeName(this.getItemType())
+                                         + "(\""
+                                         + getStringValue()
+                                         + "\")' to "
+                                         + Type.getTypeName(requiredType));
 		}
 	}
 
