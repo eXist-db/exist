@@ -161,8 +161,10 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                             </table>
                             <input type="hidden" name="prev" value="{$action}"/>
                         </form>
-                        <p class="f-info">(<b>eXist version: {util:system-property("product-version")}, build: {util:system-property("product-build")}</b>).
-                        Modules have to be enabled in conf.xml to appear here. 
+                        <p class="f-info">(<b>eXist version: {util:system-property("product-version")}, 
+                        build: {util:system-property("product-build")},
+                        functions: {count(//xqdoc:function)}</b>). Modules have to be enabled 
+                        in conf.xml to appear here. 
                         </p>
                         <div id="f-result">
                         { if ($query or $module) then xqdoc:do-query($action, $module, $type, $query) else () }
