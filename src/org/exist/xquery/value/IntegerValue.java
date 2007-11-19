@@ -269,8 +269,12 @@ public class IntegerValue extends NumericValue {
 				return (value.compareTo(ZERO_BIGINTEGER) == 0 ) ? BooleanValue.FALSE : BooleanValue.TRUE;
 			default :
 				throw new XPathException(
-					"cannot convert '" +  Type.getTypeName(this.getType()) + "(" + value + ")' " +
-							Type.getTypeName(requiredType));
+					"err:FORG0001: cannot convert '" 
+                    +  Type.getTypeName(this.getType()) 
+                    + " (" 
+                    + value 
+                    + ")' into " 
+                    + Type.getTypeName(requiredType));
 		}
 	}
 

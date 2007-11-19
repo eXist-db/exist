@@ -33,7 +33,9 @@ import org.exist.xquery.XPathException;
  * @author wolf
  */
 public class FloatValue extends NumericValue {
-
+    // m × 2^e, where m is an integer whose absolute value is less than 2^24, 
+    // and e is an integer between -149 and 104, inclusive.
+    // In addition also -INF, +INF and NaN.
 	public final static FloatValue NaN = new FloatValue(Float.NaN);
 	public final static FloatValue ZERO = new FloatValue(0.0E0f);
 
@@ -54,8 +56,11 @@ public class FloatValue extends NumericValue {
 			else
 				value = Float.parseFloat(stringValue);
 		} catch (NumberFormatException e) {
-			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
-					" from \"" + getStringValue() + "\"");					
+			throw new XPathException("FORG0001: cannot construct " 
+                                     + Type.getTypeName(this.getItemType())
+                                     + " from \""
+                                     + getStringValue()
+                                     + "\"");					
 		}
 	}
 	
@@ -86,7 +91,7 @@ public class FloatValue extends NumericValue {
 		if (value == Float.NEGATIVE_INFINITY)
 			return "-INF";		
 		String s = String.valueOf(value);
-		s = s.replaceAll("\\.0+$", "");		
+		s = s.replaceAll("\\.0+$", "");
 		return s;	
 		*/		
 		
@@ -151,8 +156,10 @@ public class FloatValue extends NumericValue {
 				if (!(Float.isInfinite(value) || Float.isNaN(value)))
 					return new IntegerValue((long) value, requiredType);
 				else
-					throw new XPathException("FOCA0002: cannot convert ' xs:float(\"" + getStringValue() +
-							"\")' to " + Type.getTypeName(requiredType));
+					throw new XPathException("FOCA0002: cannot convert ' xs:float(\""
+                                             + getStringValue()
+                                             + "\")' to "
+                                             + Type.getTypeName(requiredType));
 			case Type.BOOLEAN :
 				return (value == 0.0f || Float.isNaN(value))
 					? BooleanValue.FALSE
@@ -160,9 +167,12 @@ public class FloatValue extends NumericValue {
 			case Type.UNTYPED_ATOMIC :
 				return new UntypedAtomicValue(getStringValue());
 			default :
-				throw new XPathException("FORG0001: cannot cast '" + 
-						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
-						Type.getTypeName(requiredType));
+				throw new XPathException("FORG0001: cannot cast '"
+                                         + Type.getTypeName(this.getItemType())
+                                         + "(\""
+                                         + getStringValue()
+                                         + "\")' to "
+                                         + Type.getTypeName(requiredType));
 		}
 	}
 

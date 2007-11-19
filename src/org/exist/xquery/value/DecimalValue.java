@@ -36,7 +36,9 @@ import org.exist.xquery.XPathException;
  * @author wolf
  */
 public class DecimalValue extends NumericValue {
-	
+    // i × 10^-n where i, n = integers  and n >= 0
+    // All ·minimally conforming· processors ·must· support decimal numbers 
+    // with a minimum of 18 decimal digits (i.e., with a ·totalDigits· of 18)	
 	private static final BigDecimal ZERO_BIGDECIMAL = new BigDecimal("0");
 	//Copied from Saxon 8.6.1    
 	private static final int DIVIDE_PRECISION = 18;
@@ -181,10 +183,12 @@ public class DecimalValue extends NumericValue {
 				return value.signum() == 0 ? BooleanValue.FALSE : BooleanValue.TRUE;
 			default :
 				throw new XPathException(
-					"cannot convert double value '"
-						+ value
-						+ "' into "
-						+ Type.getTypeName(requiredType));
+					"err:FORG0001: cannot convert  '" 
+                    +  Type.getTypeName(this.getType()) 
+                    + " ("
+                    + value
+                    + ")' into "
+                    + Type.getTypeName(requiredType));
 		}
 	}
 	
