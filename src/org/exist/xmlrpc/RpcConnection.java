@@ -2774,9 +2774,11 @@ public class RpcConnection extends Thread {
                 //TODO : register the lock within the transaction ?
                 LOG.debug("changing permissions on document " + uri);
                 Permission perm = doc.getPermissions();
-                if (perm.getOwner().equals(user.getName())
+                if (perm.validate(user, Permission.WRITE)
                 || manager.hasAdminPrivileges(user)) {
                     if (owner != null) {
+                        if (!(perm.getOwner().equals(user.getName()) || manager.hasAdminPrivileges(user)))
+                            throw new PermissionDeniedException("not allowed to change permissions");
                         perm.setOwner(owner);
                         if (!manager.hasGroup(ownerGroup))
                             manager.addGroup(ownerGroup);
@@ -2796,11 +2798,13 @@ public class RpcConnection extends Thread {
                 transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);            
                 LOG.debug("changing permissions on collection " + uri);
                 Permission perm = collection.getPermissions();
-                if (perm.getOwner().equals(user.getName())
+                if (perm.validate(user, Permission.WRITE)
                 || manager.hasAdminPrivileges(user)) {
                     if (permissions != null)
                         perm.setPermissions(permissions);
                     if (owner != null) {
+                        if (!(perm.getOwner().equals(user.getName()) || manager.hasAdminPrivileges(user)))
+                            throw new PermissionDeniedException("not allowed to change permissions");
                         perm.setOwner(owner);
                         if (!manager.hasGroup(ownerGroup))
                             manager.addGroup(ownerGroup);
@@ -2882,9 +2886,11 @@ public class RpcConnection extends Thread {
                 //TODO : register the lock within the transaction ?
                 LOG.debug("changing permissions on document " + uri);
                 Permission perm = doc.getPermissions();
-                if (perm.getOwner().equals(user.getName())
+                if (perm.validate(user, Permission.WRITE)
                 || manager.hasAdminPrivileges(user)) {
                     if (owner != null) {
+                        if (!(perm.getOwner().equals(user.getName()) || manager.hasAdminPrivileges(user)))
+                            throw new PermissionDeniedException("not allowed to change permissions");
                         perm.setOwner(owner);
                         if (!manager.hasGroup(ownerGroup))
                             manager.addGroup(ownerGroup);
@@ -2903,10 +2909,12 @@ public class RpcConnection extends Thread {
             transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             LOG.debug("changing permissions on collection " + uri);
             Permission perm = collection.getPermissions();
-            if (perm.getOwner().equals(user.getName())
+            if (perm.validate(user, Permission.WRITE)
             || manager.hasAdminPrivileges(user)) {
                 perm.setPermissions(permissions);
                 if (owner != null) {
+                    if (!(perm.getOwner().equals(user.getName()) || manager.hasAdminPrivileges(user)))
+                        throw new PermissionDeniedException("not allowed to change permissions");
                     perm.setOwner(owner);
                     if (!manager.hasGroup(ownerGroup))
                         manager.addGroup(ownerGroup);

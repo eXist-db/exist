@@ -47,7 +47,7 @@ public class LocalUserManagementService implements UserManagementService {
 		if (manager.hasUser(u.getName()))
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
-				"user " + user.getName() + " exists");
+				"user " + u.getName() + " exists");
 		manager.setUser(u);
 	}
 
@@ -61,8 +61,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 			broker = pool.get(user);
 			document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
-			if (!(document.getPermissions().getOwner().equals(user.getName())
-				|| manager.hasAdminPrivileges(user)))
+			if (!document.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user))
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this resource; owner = "
@@ -98,7 +97,7 @@ public class LocalUserManagementService implements UserManagementService {
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
-			if (!collection.checkOwner(coll, user) && !manager.hasAdminPrivileges(user)) {
+			if (!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
                 transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
@@ -153,7 +152,7 @@ public class LocalUserManagementService implements UserManagementService {
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
-			if (!collection.checkOwner(coll, user) && !manager.hasAdminPrivileges(user)) {
+            if (!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
                 transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
@@ -209,8 +208,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 			broker = pool.get(user);
 			document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
-			if (!document.getPermissions().getOwner().equals(user.getName())
-				&& !manager.hasAdminPrivileges(user)) {
+			if (!document.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
                 transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
@@ -243,7 +241,7 @@ public class LocalUserManagementService implements UserManagementService {
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
-			if (!collection.checkOwner(coll, user) && !manager.hasAdminPrivileges(user)) {
+			if (!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
                 transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
@@ -294,8 +292,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 			broker = pool.get(user);
 			document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
-			if (!document.getPermissions().getOwner().equals(user.getName())
-				&& !manager.hasAdminPrivileges(user)) {
+			if (!document.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
                 transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
