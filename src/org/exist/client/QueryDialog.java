@@ -47,6 +47,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -62,6 +63,7 @@ import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.storage.DBBroker;
+import org.exist.util.MimeTable;
 import org.exist.xmldb.XQueryService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -324,6 +326,8 @@ public class QueryDialog extends JFrame {
 		chooser.setCurrentDirectory(new File(workDir));
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		chooser.addChoosableFileFilter(new XQueryFileFilter());
+		
 		if (chooser.showDialog(this, "Select query file")
 			== JFileChooser.APPROVE_OPTION) {
 			File selectedDir = chooser.getCurrentDirectory();
@@ -518,5 +522,58 @@ public class QueryDialog extends JFrame {
 		if(query.length() > 40)
 			query = query.substring(0, 40);
 		history.addElement(Integer.toString(history.getSize()+1) + ". " + query);
+	}
+	
+	/**
+	 * A FileFilter that filters for XQuery files
+	 * Uses the XQuery filename extensions defined in mime-types.xml
+	 */
+	private class XQueryFileFilter extends FileFilter
+	{
+			private Vector xqueryExtensions = null;
+	
+			public XQueryFileFilter()
+			{
+				xqueryExtensions = MimeTable.getInstance().getAllExtensions("application/xquery");
+			}
+			
+			public boolean accept(File file)
+			{
+				if(file.isDirectory()) //permit directories to be viewed
+					return true;
+				
+				int extensionOffset = file.getName().lastIndexOf('.');	//do-not allow files without an extension
+				if(extensionOffset == -1)
+					return false;
+				
+				//check the extension is that of an XQuery file as defined in mime-types.xml
+				String fileExtension = file.getName().substring(extensionOffset);
+				
+				for(Iterator itXQueryExtensions = xqueryExtensions.iterator(); itXQueryExtensions.hasNext();)
+				{
+					String extension = (String)itXQueryExtensions.next();
+					
+					if(fileExtension.equals(extension))
+					{
+						return true;
+					}
+				}
+				
+				return false;
+			}
+			
+			public String getDescription()
+			{
+				String description = "XQuery ("; 
+				
+				for(Iterator itXQueryExtensions = xqueryExtensions.iterator(); itXQueryExtensions.hasNext();)
+				{
+					description += (String)itXQueryExtensions.next();
+					if(itXQueryExtensions.hasNext())
+						description += ' ';
+				}
+				
+				return description + ")";
+			}
 	}
 }
