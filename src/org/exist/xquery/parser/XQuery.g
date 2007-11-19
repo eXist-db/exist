@@ -1104,12 +1104,16 @@ compAttrConstructor throws XPathException
 }
 :
 	( "attribute" LCURLY ) =>
-	"attribute"! LCURLY! e1:expr RCURLY! LCURLY! (e2:expr)? RCURLY!
+	"attribute"! LCURLY! e1:expr RCURLY! e2:compAttrConstructorValue
 	{ #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR], #compAttrConstructor); }
 	|
-	"attribute"! qn=qName LCURLY! (e3:expr)? RCURLY!
-	{ #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
+	"attribute"! qn=qName e3:compAttrConstructorValue
+    { #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
 	;
+compAttrConstructorValue throws XPathException
+    :
+        LCURLY^ ( e2:expr )?  RCURLY!
+    ;
 
 compTextConstructor throws XPathException
 :
