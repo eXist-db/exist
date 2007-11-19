@@ -84,8 +84,12 @@ public class CastExpression extends AbstractExpression {
         if (requiredType == Type.ATOMIC || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
 			throw new XPathException("err:XPST0080: cannot cast to " +
 					Type.getTypeName(requiredType));
-        	
         }
+        if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED) {
+			throw new XPathException("err:XPST0051: cannot cast to " +
+					Type.getTypeName(requiredType));
+        }
+
         Sequence result;
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if (seq.isEmpty()) {
