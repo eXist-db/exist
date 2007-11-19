@@ -62,6 +62,8 @@ public class Type {
 	public final static int EMPTY = 10;
 	public final static int ITEM = 11;
 	public final static int ANY_TYPE = 12;
+	public final static int ANY_SIMPLE_TYPE = 13;
+	public final static int UNTYPED = 14;
 
 	public final static int ATOMIC = 20;
 	public final static int UNTYPED_ATOMIC = 21;
@@ -127,6 +129,11 @@ public class Type {
 	private final static Int2ObjectHashMap typeHierarchy = new Int2ObjectHashMap();
 
 	static {
+		defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
+        defineSubType(ANY_TYPE, UNTYPED);
+
+        defineSubType(ANY_SIMPLE_TYPE, ATOMIC);
+
 		defineSubType(ITEM, NODE);
 		defineSubType(NODE, ELEMENT);
 		defineSubType(NODE, ATTRIBUTE);
@@ -217,8 +224,11 @@ public class Type {
 		defineBuiltInType(JAVA_OBJECT, "object");
 		defineBuiltInType(FUNCTION_REFERENCE, "function");
 		defineBuiltInType(NUMBER, "numeric");
-		
+
 		defineBuiltInType(ANY_TYPE, "xs:anyType");
+		defineBuiltInType(ANY_SIMPLE_TYPE, "xs:anySimpleType");
+		defineBuiltInType(UNTYPED, "xs:untyped");
+
 		//Duplicate definition : new one first
 		defineBuiltInType(ATOMIC, "xs:anyAtomicType");
 		defineBuiltInType(ATOMIC, "xdt:anyAtomicType");
