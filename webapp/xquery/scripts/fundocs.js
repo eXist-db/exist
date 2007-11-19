@@ -13,17 +13,29 @@ var DocQuery = function () {
     /**
      * Queries are triggered by typing into the input box
      */
-    this.keyHandler = function () {
+    this.keyHandler = function (ev) {
         if (timer) clearTimeout(timer);
+        if (ev.altKey || ev.shiftKey || ev.metaKey || ev.ctrlKey)
+            return;
+        switch (ev.keyCode) {
+            case 9:
+            case 13:
+            case 27:
+            case 37:
+            case 38:
+            case 39:
+            case 40:
+                return;
+        }
         var self = this;
-        timer = setTimeout(function () { self.autoQuery() }, 500);
+        timer = setTimeout(function () { self.autoQuery() }, 750);
     }
 
     /**
      * Received a key event, check if we should send a query.
      */
     this.autoQuery = function () {
-        if (queryForm.elements['q'].value.length > 1)
+        if (queryForm.elements['q'].value.length > 2)
             this.submit();
         else
             results.innerHTML = '';
