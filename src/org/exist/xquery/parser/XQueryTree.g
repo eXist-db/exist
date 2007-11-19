@@ -39,6 +39,7 @@ header {
 	import org.exist.storage.DBBroker;
 	import org.exist.storage.analysis.Tokenizer;
 	import org.exist.EXistException;
+	import org.exist.Namespaces;
 	import org.exist.dom.DocumentSet;
 	import org.exist.dom.DocumentImpl;
 	import org.exist.dom.QName;
@@ -704,9 +705,9 @@ throws XPathException
 					QName qname= QName.parse(staticContext, qn1.getText());
 					type.setNodeName(qname);
 				}
-				( QNAME
+				( qn12:QNAME
 					{
-						throwException(qn1, "Tests of the form element(QName, TypeName) are not supported!");
+                        TypeTest test = new TypeTest(Type.getType(qn12.getText()));
 					}
 				)?
 			)?
@@ -723,9 +724,10 @@ throws XPathException
 					QName qname= QName.parse(staticContext, qn2.getText());
 					type.setNodeName(qname);
 				}
-				( QNAME
+				( qn21:QNAME
 					{
-						throwException(qn2, "Tests of the form attribute(QName, TypeName) are not supported!");
+                        QName qname21= QName.parse(staticContext, qn21.getText());
+                        TypeTest test = new TypeTest(Type.getType(qname21));
 					}
 				)?
 			)?
@@ -775,9 +777,9 @@ throws XPathException
                     }
                     )?
                     
-				    ( QNAME
+				    ( dnqn2:QNAME
 					{
-						throwException(dnqn, "Tests of the form element(QName, TypeName) are not supported!");
+                        TypeTest test = new TypeTest(Type.getType(dnqn2.getText()));
 					}
                     )?
                 )
@@ -1591,9 +1593,9 @@ throws PermissionDeniedException, EXistException, XPathException
                         test= new TypeTest(Type.DOCUMENT);
                         }
                     )?
-				    ( QNAME
+				    ( dnqn1:QNAME
 					{
-						throwException(dnqn, "Tests of the form element(QName, TypeName) are not supported!");
+                        test= new TypeTest(Type.getType(dnqn1.getText()));
 					}
                     )?
                 )
@@ -2159,8 +2161,18 @@ throws PermissionDeniedException, EXistException, XPathException
             elementContent = new PathExpr(context);
             a.setContentExpr(elementContent);
 		}
-		qnameExpr=expr [qnamePathExpr]
-		contentExpr=expr [elementContent]
+		qnameExpr=qna:expr [qnamePathExpr]
+        {
+            QName qname = QName.parse(staticContext, qna.getText());
+            if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI()) 
+                || ("".equals(qname.getNamespaceURI()) && qname.getLocalName().equals("xmlns")))
+                throw new XPathException("err:XQDY0044: the node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
+        }
+        #( LCURLY
+            (
+                contentExpr=expr [elementContent]
+            )?
+        )
 	)
 	|
 	#(
