@@ -707,7 +707,8 @@ throws XPathException
 				}
 				( qn12:QNAME
 					{
-                        TypeTest test = new TypeTest(Type.getType(qn12.getText()));
+                        QName qname12= QName.parse(staticContext, qn12.getText());
+                        TypeTest test = new TypeTest(Type.getType(qname12));
 					}
 				)?
 			)?
@@ -721,7 +722,9 @@ throws XPathException
 				|
 				qn2:QNAME
 				{
-					QName qname= QName.parse(staticContext, qn2.getText());
+                    // fixme! - need to check this and the other
+                    // type tests again. /ljo 
+					QName qname= QName.parse(staticContext, qn2.getText(), "");
 					type.setNodeName(qname);
 				}
 				( qn21:QNAME
@@ -775,16 +778,16 @@ throws XPathException
                     {
                         TypeTest test= new TypeTest(Type.DOCUMENT);
                     }
-                    )?
-                    
-				    ( dnqn2:QNAME
-					{
-                        TypeTest test = new TypeTest(Type.getType(dnqn2.getText()));
-					}
+                        ( dnqn2:QNAME
+                            {
+                            QName qname = QName.parse(staticContext, dnqn2.getText());
+                            test = new TypeTest(Type.getType(qname));
+                            }
+                        )?
                     )?
                 )
                 |
-                #( "schema-element" QNAME)
+                #( "schema-element" QNAME )
             )?
 		)
 	)
@@ -1529,6 +1532,12 @@ throws PermissionDeniedException, EXistException, XPathException
 				}
 				|
 				WILDCARD
+				( qn21:QNAME
+					{
+                        QName qname= QName.parse(staticContext, qn21.getText());
+                        test = new TypeTest(Type.getType(qname));
+					}
+				)?
 			)?
 		)
 		|
@@ -1543,6 +1552,12 @@ throws PermissionDeniedException, EXistException, XPathException
 				}
 				|
 				WILDCARD
+				( qn31:QNAME
+					{
+                        QName qname= QName.parse(staticContext, qn31.getText());
+                        test = new TypeTest(Type.getType(qname));
+					}
+				)?
 			)?
 		)
 		|
@@ -1588,19 +1603,16 @@ throws PermissionDeniedException, EXistException, XPathException
                         }
                     |
                     WILDCARD
-                        {
-                        //Unneccessary?/ljo
-                        test= new TypeTest(Type.DOCUMENT);
-                        }
-                    )?
-				    ( dnqn1:QNAME
-					{
-                        test= new TypeTest(Type.getType(dnqn1.getText()));
-					}
+                        ( dnqn1:QNAME
+                            {
+                            QName qname= QName.parse(staticContext, dnqn1.getText());
+                            test= new TypeTest(Type.getType(qname));
+                            }
+                        )?
                     )?
                 )
                 |
-                #( "schema-element" QNAME)
+                #( "schema-element" QNAME )
             )?
 	)
 	{
@@ -2187,7 +2199,15 @@ throws PermissionDeniedException, EXistException, XPathException
             pd.setContentExpr(elementContent);
 		}
 		qnameExpr=expr [qnamePathExpr]
-		contentExpr=expr [elementContent]
+        #( LCURLY
+            (
+                contentExpr=ex:expr [elementContent]
+                {
+                    if (ex.getText() != null && ex.getText().indexOf("?>") > Constants.STRING_NOT_FOUND)
+                throw new XPathException("err:XQDY0026: content expression of a computed processing instruction constructor contains the string '?>' which is not allowed.");
+                }
+            )?
+        )
 	)
 	|
 	// direct element constructor

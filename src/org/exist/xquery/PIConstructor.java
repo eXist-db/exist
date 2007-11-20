@@ -1,26 +1,28 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.xquery;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
@@ -36,6 +38,7 @@ import org.exist.xquery.value.Sequence;
  */
 public class PIConstructor extends NodeConstructor {
 
+	private static Pattern wsContentStart = Pattern.compile("^(\\s)*(.*)");
 	private final String target;
 	private String data = null;
 	
@@ -44,15 +47,20 @@ public class PIConstructor extends NodeConstructor {
         //TODO : handle this from the parser -pb
 		int p = pi.indexOf(" ");
 		if(p == Constants.STRING_NOT_FOUND) {
-                   target = pi;
-                } else {
-		   target = pi.substring(0, p);
-		   if(++p < pi.length())
-			data = pi.substring(p);
-                }
-                if (target.equalsIgnoreCase("xml")) {
-                    throw new XPathException("XPST0003 : The target 'xml' is not allowed in XML processing instructions.");
-                }
+            target = pi;
+        } else {
+            target = pi.substring(0, p);
+            if(++p < pi.length())
+                data = pi.substring(p);
+
+            Matcher m = wsContentStart.matcher(data);
+            if (m.matches()) {
+                data = m.group(2);
+            }
+        }
+        if (target.equalsIgnoreCase("xml")) {
+            throw new XPathException("XPST0003 : The target 'xml' is not allowed in XML processing instructions.");
+        }
 	}
 	
     /* (non-Javadoc)

@@ -1104,13 +1104,13 @@ compAttrConstructor throws XPathException
 }
 :
 	( "attribute" LCURLY ) =>
-	"attribute"! LCURLY! e1:expr RCURLY! e2:compAttrConstructorValue
+	"attribute"! LCURLY! e1:expr RCURLY! e2:compConstructorValue
 	{ #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR], #compAttrConstructor); }
 	|
-	"attribute"! qn=qName e3:compAttrConstructorValue
+	"attribute"! qn=qName e3:compConstructorValue
     { #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
 	;
-compAttrConstructorValue throws XPathException
+compConstructorValue throws XPathException
     :
         LCURLY^ ( e2:expr )?  RCURLY!
     ;
@@ -1133,10 +1133,10 @@ compXmlPI throws XPathException
 }
 :
 	( "processing-instruction" LCURLY ) =>
-	"processing-instruction"! LCURLY! e1:expr RCURLY! LCURLY! e2:expr RCURLY!
+	"processing-instruction"! LCURLY! e1:expr RCURLY! e2:compConstructorValue
 	{ #compXmlPI = #(#[COMP_PI_CONSTRUCTOR], #compXmlPI); }
 	|
-	"processing-instruction"! qn=qName LCURLY! e3:expr RCURLY!
+	"processing-instruction"! qn=qName e3:compConstructorValue
 	{ #compXmlPI = #(#[COMP_PI_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
 	;
 
