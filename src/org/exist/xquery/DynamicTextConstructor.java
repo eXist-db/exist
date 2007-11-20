@@ -71,7 +71,12 @@ public class DynamicTextConstructor extends NodeConstructor {
         
         Sequence result;
         Sequence contentSeq = content.eval(contextSequence, contextItem);
-        
+
+        //It is possible for a text node constructor to construct a text node containing a zero-length string. 
+        //However, if used in the content of a constructed element or document node, 
+        //such a text node will be deleted or merged with another text node.
+        //TODO : how to enforce this behaviour ? We have to detect that the parent of the text node
+        //is an element or a document node. Unfortunately, we are using a *new* MemTreeBuilder
         if(contentSeq.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {        

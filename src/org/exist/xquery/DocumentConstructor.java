@@ -88,8 +88,8 @@ public class DocumentConstructor extends NodeConstructor {
 		        while(next != null) {
 		            context.proceed(this, builder);
 		            if(next.getType() == Type.ATTRIBUTE || 
-	                   next.getType() == Type.NAMESPACE ||
-		               next.getType() == Type.DOCUMENT)
+	                   next.getType() == Type.NAMESPACE /*||
+		               next.getType() == Type.DOCUMENT*/)
 		                throw new XPathException(getASTNode(), "Found a node of type " + Type.getTypeName(next.getType()) +
 		                        " inside a document constructor");
 		            // if item is an atomic value, collect the string values of all
@@ -103,6 +103,13 @@ public class DocumentConstructor extends NodeConstructor {
 						next = i.nextItem();
 					// if item is a node, flush any collected character data and
 					//	copy the node to the target doc. 
+					} else if (next.getType() == Type.DOCUMENT) {		
+						if (buf != null && buf.length() > 0) {
+							receiver.characters(buf);
+							buf.setLength(0);
+						}
+						next.copyTo(context.getBroker(), receiver);
+						next = i.nextItem();
 					} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
 						if (buf != null && buf.length() > 0) {
 							receiver.characters(buf);
