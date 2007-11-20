@@ -186,6 +186,8 @@ public class ValueSequence extends AbstractSequence {
                     // persistent node. We scan the current sequence and replace all
                     // in-memory nodes with their new persistent node objects.
                     Int2ObjectHashMap newRoots = doc.makePersistent();
+                    if (newRoots == null)
+                    	return NodeSet.EMPTY_SET; 
                     for (int j = i; j <= size; j++) {
                         v = (NodeValue) values[j];
                         if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
