@@ -2,8 +2,6 @@ package org.exist.collections.triggers;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -15,6 +13,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.DateTimeValue;
 
 /**
  * This collection trigger will save all old versions of documents before
@@ -44,52 +44,74 @@ import org.exist.xmldb.XmldbURI;
  * @author Mark Spanbroek
  * @see org.exist.collections.triggers.Trigger
  */
-public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger {
+public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
+{
 
     protected XmldbURI rootPath = XmldbURI.ROOT_COLLECTION_URI.append("history");
 
-    public void configure(DBBroker broker, Collection parent, Map parameters) 
-      throws CollectionConfigurationException {
+    public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException
+    {
         super.configure(broker, parent, parameters);
-        if (parameters.containsKey("root")) {
-            try {
+        
+        if(parameters.containsKey("root"))
+        {
+            try
+            {
             	rootPath = XmldbURI.xmldbUriFor(parameters.get("root").toString());
-            } catch(URISyntaxException e) {
+            }
+            catch(URISyntaxException e)
+            {
             	throw new CollectionConfigurationException(e);
             }
         }
     }
     
-    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl doc) throws TriggerException{
-   	  if (doc == null) return;
-        // construct the destination path
-        XmldbURI path = rootPath.append(doc.getURI());
+    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl doc) throws TriggerException
+    {
+    	if(doc == null)
+    		return;
         
-        // construct the destination document name
-        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss:SSS");
-        XmldbURI name = XmldbURI.create(formatter.format(new Date(doc.getMetadata().getLastModified())));
+    	// construct the destination path
+   	  	XmldbURI path = rootPath.append(doc.getURI());
         
-        // create the destination document
-        try {
-        	//TODO : how is the transaction handled ? It holds the locks ! 
-            Collection destination = broker.getOrCreateCollection(transaction, path);
-            broker.saveCollection(transaction, destination);
-            broker.copyXMLResource(transaction, doc, destination, name);
-        } catch(IOException exception) {
-            throw new TriggerException(exception);
-        }
-        catch(PermissionDeniedException exception) {
-            throw new TriggerException(exception);
-        }
-        catch(LockException exception) {
-            throw new TriggerException(exception);
-        }
+   	  	try
+   	  	{
+   	  		//construct the destination document name
+   	  		String dtValue = new DateTimeValue(new Date(doc.getMetadata().getLastModified())).getStringValue();
+   	  		dtValue = dtValue.replaceAll(":", "-"); // multiple ':' are not allowed in URI so use '-'
+   	  		dtValue = dtValue.replaceAll("\\.", "-"); // as we are using '-' instead of ':' do the same for '.'
+   	  		XmldbURI name = XmldbURI.create(dtValue);
+        
+   	  		// create the destination document
+        
+   	  		//TODO : how is the transaction handled ? It holds the locks ! 
+   	  		Collection destination = broker.getOrCreateCollection(transaction, path);
+   	  		broker.saveCollection(transaction, destination);
+   	  		broker.copyXMLResource(transaction, doc, destination, name);
+   	  	}
+   	  	catch(XPathException xpe)
+   	  	{
+   	  		throw new TriggerException(xpe);
+   	  	}
+   	  	catch(IOException exception)
+   	  	{
+   	  		throw new TriggerException(exception);
+   	  	}
+   	  	catch(PermissionDeniedException exception)
+   	  	{
+   	  		throw new TriggerException(exception);
+   	  	}
+   	  	catch(LockException exception)
+   	  	{
+   	  		throw new TriggerException(exception);
+   	  	}
     }
     
     /* (non-Javadoc)
      * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
-    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {
+    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document)
+    {
     	super.finish(event, broker, transaction, document);
     }
 }
