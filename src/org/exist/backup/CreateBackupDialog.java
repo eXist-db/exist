@@ -18,7 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.exist.client.Messages;
-import org.exist.client.ZipFilter;
+import org.exist.client.MimeTypeFileFilter;
 import org.exist.storage.DBBroker;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -106,7 +106,7 @@ public class CreateBackupDialog extends JPanel {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                chooser.addChoosableFileFilter(new ZipFilter());
+                chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/zip"));
                 chooser.setSelectedFile(new File("eXist-backup.zip"));
 		chooser.setCurrentDirectory(null);
                
