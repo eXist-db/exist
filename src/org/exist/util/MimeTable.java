@@ -125,6 +125,12 @@ public class MimeTable {
     		}
     	}
     	
+    	String preferred = (String)preferredExtension.get(mimeType);
+    	if(preferred != null && !extns.contains(preferred))
+    	{
+    		extns.add(0, preferred);
+    	}
+    	
     	return extns;
     }
     

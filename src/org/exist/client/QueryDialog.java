@@ -326,7 +326,7 @@ public class QueryDialog extends JFrame {
 		chooser.setCurrentDirectory(new File(workDir));
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		chooser.addChoosableFileFilter(new XQueryFileFilter());
+		chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xquery"));
 		
 		if (chooser.showDialog(this, "Select query file")
 			== JFileChooser.APPROVE_OPTION) {
@@ -361,6 +361,15 @@ public class QueryDialog extends JFrame {
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setCurrentDirectory(new File(workDir));
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		if(fileCategory.equals("result"))
+		{
+			chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xhtml+xml"));
+			chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xml"));
+		}
+		else
+		{
+			chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xquery"));
+		}
 		if (chooser.showDialog(this, "Select file for " +fileCategory+ " export")
 			== JFileChooser.APPROVE_OPTION) {
 			File selectedDir = chooser.getCurrentDirectory();
@@ -522,58 +531,5 @@ public class QueryDialog extends JFrame {
 		if(query.length() > 40)
 			query = query.substring(0, 40);
 		history.addElement(Integer.toString(history.getSize()+1) + ". " + query);
-	}
-	
-	/**
-	 * A FileFilter that filters for XQuery files
-	 * Uses the XQuery filename extensions defined in mime-types.xml
-	 */
-	private class XQueryFileFilter extends FileFilter
-	{
-			private Vector xqueryExtensions = null;
-	
-			public XQueryFileFilter()
-			{
-				xqueryExtensions = MimeTable.getInstance().getAllExtensions("application/xquery");
-			}
-			
-			public boolean accept(File file)
-			{
-				if(file.isDirectory()) //permit directories to be viewed
-					return true;
-				
-				int extensionOffset = file.getName().lastIndexOf('.');	//do-not allow files without an extension
-				if(extensionOffset == -1)
-					return false;
-				
-				//check the extension is that of an XQuery file as defined in mime-types.xml
-				String fileExtension = file.getName().substring(extensionOffset);
-				
-				for(Iterator itXQueryExtensions = xqueryExtensions.iterator(); itXQueryExtensions.hasNext();)
-				{
-					String extension = (String)itXQueryExtensions.next();
-					
-					if(fileExtension.equals(extension))
-					{
-						return true;
-					}
-				}
-				
-				return false;
-			}
-			
-			public String getDescription()
-			{
-				String description = "XQuery ("; 
-				
-				for(Iterator itXQueryExtensions = xqueryExtensions.iterator(); itXQueryExtensions.hasNext();)
-				{
-					description += (String)itXQueryExtensions.next();
-					if(itXQueryExtensions.hasNext())
-						description += ' ';
-				}
-				
-				return description + ")";
-			}
 	}
 }
