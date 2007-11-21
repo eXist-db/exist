@@ -293,7 +293,9 @@ public abstract class Function extends PathExpr {
 		}
 
 		if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
-			if ((!Type.subTypeOf(type.getPrimaryType(), returnType))) {
+			if (!(Type.subTypeOf(type.getPrimaryType(), returnType) ||
+					//because () is seen as a node					
+					(type.getPrimaryType() == Type.EMPTY && returnType == Type.NODE))) {
                 LOG.debug(ExpressionDumper.dump(expr));
                 throw new XPathException(getASTNode(),
                         Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC, 
