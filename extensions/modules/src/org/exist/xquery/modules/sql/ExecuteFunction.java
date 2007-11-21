@@ -49,11 +49,11 @@ import org.xml.sax.SAXException;
 /**
  * eXist SQL Module Extension ExecuteFunction 
  * 
- * Execute a sql statement against a sql db
+ * Execute a SQL statement against a SQL capable Database
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-09-24
- * @version 1.0
+ * @serial 2007-11-21
+ * @version 1.1
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
@@ -84,18 +84,18 @@ public class ExecuteFunction extends BasicFunction
     }
 
 	/**
-	 * evaluate the call to the xquery execute() function,
+	 * evaluate the call to the XQuery execute() function,
 	 * it is really the main entry point of this class
 	 * 
 	 * @param args		arguments from the execute() function call
 	 * @param contextSequence	the Context Sequence to operate on (not used here internally!)
-	 * @return		An xs:node representing the sql result set
+	 * @return		A node representing the SQL result set
 	 * 
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		//was a connection and sql statement specified?
+		//was a connection and SQL statement specified?
 		if (args[0].isEmpty() || args[1].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 		
@@ -117,10 +117,10 @@ public class ExecuteFunction extends BasicFunction
 		{
 			StringBuffer xmlBuf = new StringBuffer();
 			
-			//get the sql statement
+			//get the SQL statement
 			String sql = args[1].getStringValue();
 			
-			//execute the sql statement
+			//execute the SQL statement
 			stmt = con.createStatement();
 			
 			//execute the query statement
@@ -128,7 +128,7 @@ public class ExecuteFunction extends BasicFunction
 			{
 				/* SQL Query returned results */
 				
-				//iterate through the result set building an xml document
+				//iterate through the result set building an XML document
 				rs = stmt.getResultSet();
 				ResultSetMetaData rsmd = rs.getMetaData();
 				int iColumns = rsmd.getColumnCount();
@@ -136,7 +136,7 @@ public class ExecuteFunction extends BasicFunction
 				
 				while(rs.next())
 				{
-					xmlBuf.append("<sql:row index=\"" + rs.getRow() + "\">");
+					xmlBuf.append("<" + SQLModule.PREFIX + ":row index=\"" + rs.getRow() + "\">");
 					
 					//get each tuple in the row
 					for(int i = 0; i < iColumns; i++)
@@ -147,37 +147,37 @@ public class ExecuteFunction extends BasicFunction
 						{
 							if(((BooleanValue)args[2].itemAt(0)).effectiveBooleanValue())
 							{
-								//use column names as the xml node
+								//use column names as the XML node
 								
 								/** Spaces in column names are replaced with underscore's */
-								xmlBuf.append("<" + columnName.replace(' ', '_') + " sql:type=\"" + rsmd.getColumnTypeName(i+1) + "\" xs:type=\"" + Type.getTypeName(sqlTypeToXMLType(rsmd.getColumnType(i+1))) + "\">");
-								xmlBuf.append(rs.getString(i+1));
-								xmlBuf.append("</" + columnName.replace(' ', '_') + ">");
+								xmlBuf.append("<" + escapeXmlAttr(columnName.replace(' ', '_')) + " " + SQLModule.PREFIX + ":type=\"" + rsmd.getColumnTypeName(i+1) + "\" xs:type=\"" + Type.getTypeName(sqlTypeToXMLType(rsmd.getColumnType(i+1))) + "\">");
+								xmlBuf.append(escapeXmlText(rs.getString(i+1)));
+								xmlBuf.append("</" + escapeXmlAttr(columnName.replace(' ', '_')) + ">");
 							}
 							else
 							{
-								//DONT use column names as the xml node
-								xmlBuf.append("<sql:field name=\"" + columnName + "\" sql:type=\"" + rsmd.getColumnTypeName(i+1) + "\" xs:type=\"" + Type.getTypeName(sqlTypeToXMLType(rsmd.getColumnType(i+1))) + "\">");
-								xmlBuf.append(rs.getString(i+1));
-								xmlBuf.append("</sql:field>");
+								//DONT use column names as the XML node
+								xmlBuf.append("<" + SQLModule.PREFIX + ":field name=\"" + escapeXmlAttr(columnName) + "\" sql:type=\"" + rsmd.getColumnTypeName(i+1) + "\" xs:type=\"" + Type.getTypeName(sqlTypeToXMLType(rsmd.getColumnType(i+1))) + "\">");
+								xmlBuf.append(escapeXmlText(rs.getString(i+1)));
+								xmlBuf.append("</" + SQLModule.PREFIX + ":field>");
 							}
 						}
 					}
 					
-					xmlBuf.append("</sql:row>");
+					xmlBuf.append("</" + SQLModule.PREFIX + ":row>");
 					
 					iRows++;
 				}
-				xmlBuf.insert(0, "<sql:result xmlns:sql=\"" + SQLModule.NAMESPACE_URI + "\" xmlns:xs=\"" + Namespaces.SCHEMA_NS + "\" count=\"" + iRows + "\">");
-				xmlBuf.append("</sql:result>");
+				xmlBuf.insert(0, "<" + SQLModule.PREFIX + ":result xmlns:" + SQLModule.PREFIX + "=\"" + SQLModule.NAMESPACE_URI + "\" xmlns:xs=\"" + Namespaces.SCHEMA_NS + "\" count=\"" + iRows + "\">");
+				xmlBuf.append("</" + SQLModule.PREFIX + ":result>");
 			}
 			else
 			{
 				/* SQL Query performed updates */
-				xmlBuf.append("<sql:result xmlns:sql=\"" + SQLModule.NAMESPACE_URI + "\" updateCount=\"" + stmt.getUpdateCount() + "\"/>");
+				xmlBuf.append("<" + SQLModule.PREFIX + ":result xmlns:" + SQLModule.PREFIX + "=\"" + SQLModule.NAMESPACE_URI + "\" updateCount=\"" + stmt.getUpdateCount() + "\"/>");
 			}
 			
-			//return the xml result set
+			//return the XML result set
 			return ModuleUtils.stringToXML(context, xmlBuf.toString());
 		}
 		catch(SAXException se)
@@ -190,7 +190,7 @@ public class ExecuteFunction extends BasicFunction
 		}
 		finally
 		{
-			//close any recordset or statement
+			//close any record set or statement
 			try
 			{
 				if(rs != null)
@@ -204,7 +204,7 @@ public class ExecuteFunction extends BasicFunction
 				LOG.debug("Unable to cleanup JDBC results", se);
 			}
 			
-			//explicitly ready for gc
+			//explicitly ready for Garbage Collection
 			rs = null;
 			stmt = null;
 		}
@@ -275,5 +275,25 @@ public class ExecuteFunction extends BasicFunction
 			default:
 				return Type.ANY_TYPE;
 		}
+	}
+	
+	private static String escapeXmlText(String text)
+	{
+		String work = text.replaceAll("\\&", "\\&amp;");
+		work = work.replaceAll("<", "\\&lt;");
+		work = work.replaceAll(">", "\\&gt;");
+		return work;
+	}
+	
+	private static String escapeXmlAttr(String attr)
+	{
+		if(attr != null)
+		{
+			String work = escapeXmlText(attr);
+			work = work.replaceAll("'", "\\&apos;");
+			work = work.replaceAll("\"", "\\&quot;");
+			return work;
+		}
+		return null;
 	}
 }
