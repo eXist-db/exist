@@ -111,7 +111,7 @@ public class BasicAuthenticator implements Authenticator {
 			session.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
 		}
 		
-		//return the authenicated user
+		//return the authenticated user
 		return user;
 	}
 	

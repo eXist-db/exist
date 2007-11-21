@@ -26,7 +26,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.security.Principal;
 
 import javax.servlet.ServletConfig;
@@ -61,7 +60,7 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  * Implements the REST-style interface if eXist is running within
- * a servlet engine. The real work is done by class 
+ * a Servlet engine. The real work is done by class 
  * {@link org.exist.http.RESTServer}.
  * 
  * @author wolf
@@ -299,7 +298,7 @@ public class EXistServlet extends HttpServlet {
 			return;
 		}
 
-		//fouth, process the request
+		//fourth, process the request
 		DBBroker broker = null;
 		try
 		{
@@ -480,7 +479,7 @@ public class EXistServlet extends HttpServlet {
 			return;
 		}
 		
-		//fouth, process the request
+		//fourth, process the request
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -522,7 +521,7 @@ public class EXistServlet extends HttpServlet {
 	private User authenticate(HttpServletRequest request,HttpServletResponse response)
           throws java.io.IOException
         {
-		// First try to validate the principial if passed from the servlet engine
+		// First try to validate the principal if passed from the Servlet engine
 		Principal principal = request.getUserPrincipal();
 		
 		if(principal instanceof XmldbPrincipal){
@@ -543,6 +542,8 @@ public class EXistServlet extends HttpServlet {
 			}	
 		}
 		
+		
+		//Secondly try basic authentication
 		String auth = request.getHeader("Authorization");
 		if(auth == null && defaultUser!=null) {
                    return defaultUser;
