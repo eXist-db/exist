@@ -1,11 +1,11 @@
+@echo off
+
 rem $Id$
 rem
 rem In addition to the other parameter options for the standalone server 
 rem pass -j or --jmx to enable JMX agent.  The port for it can be specified 
 rem with optional port number e.g. -j1099 or --jmx=1099.
 rem
-
-@echo off
 
 set JMX_ENABLED=0
 set JMX_PORT=1099
