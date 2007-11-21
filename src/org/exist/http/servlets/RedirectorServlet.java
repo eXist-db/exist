@@ -247,6 +247,7 @@ public class RedirectorServlet extends HttpServlet {
                 request = modifiedRequest;
             // store the original request URI to org.exist.forward.request-uri
             request.setAttribute("org.exist.forward.request-uri", request.getRequestURI());
+            request.setAttribute("org.exist.forward.servlet-path", request.getServletPath());
 
             // finally, execute the forward
             dispatcher.forward(request, response);
