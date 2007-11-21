@@ -4050,13 +4050,6 @@ public XQueryTreeParser() {
 			{
 			if (_t==null) _t=ASTNULL;
 			switch ( _t.getType()) {
-			case WILDCARD:
-			{
-				org.exist.xquery.parser.XQueryAST tmp61_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,WILDCARD);
-				_t = _t.getNextSibling();
-				break;
-			}
 			case QNAME:
 			{
 				qn2 = (org.exist.xquery.parser.XQueryAST)_t;
@@ -4068,6 +4061,13 @@ public XQueryTreeParser() {
 									QName qname= QName.parse(staticContext, qn2.getText(), "");
 									type.setNodeName(qname);
 								
+				break;
+			}
+			case WILDCARD:
+			{
+				org.exist.xquery.parser.XQueryAST tmp61_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+				match(_t,WILDCARD);
+				_t = _t.getNextSibling();
 				{
 				if (_t==null) _t=ASTNULL;
 				switch ( _t.getType()) {
@@ -5672,6 +5672,11 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 							QName qname= QName.parse(staticContext, qn.getText());
+				// fixme! - check why these two make for a 120
+				// xqts test score difference./ljo
+							// Should not this be in the default/empty namespace?
+				//QName qname= QName.parse(staticContext, qn.getText(), "");
+				
 							test= new NameTest(Type.ELEMENT, qname);
 							if (axis == Constants.ATTRIBUTE_AXIS)
 								test.setType(Type.ATTRIBUTE);
@@ -6090,20 +6095,18 @@ public XQueryTreeParser() {
 				attr = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,QNAME);
 				_t = _t.getNextSibling();
-				qname= QName.parse(staticContext, attr.getText(), null);
-				break;
-			}
-			case WILDCARD:
-			{
-				org.exist.xquery.parser.XQueryAST tmp101_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,WILDCARD);
-				_t = _t.getNextSibling();
+				
+				//qname= QName.parse(staticContext, attr.getText(), null);
+				//fixme! - kolla ovan./ljo
+				qname= QName.parse(staticContext, attr.getText(), "");
+				//qname.setNamespaceURI(null);
+				
 				break;
 			}
 			case PREFIX_WILDCARD:
 			{
 				AST __t181 = _t;
-				org.exist.xquery.parser.XQueryAST tmp102_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+				org.exist.xquery.parser.XQueryAST tmp101_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,PREFIX_WILDCARD);
 				_t = _t.getFirstChild();
 				nc2 = (org.exist.xquery.parser.XQueryAST)_t;
@@ -6111,7 +6114,10 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				_t = __t181;
 				_t = _t.getNextSibling();
+				
 				qname= new QName(nc2.getText(), null, null);
+				qname.setNamespaceURI(null);
+						
 				break;
 			}
 			case NCNAME:
@@ -6120,7 +6126,7 @@ public XQueryTreeParser() {
 				nc3 = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,NCNAME);
 				_t = _t.getFirstChild();
-				org.exist.xquery.parser.XQueryAST tmp103_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+				org.exist.xquery.parser.XQueryAST tmp102_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,WILDCARD);
 				_t = _t.getNextSibling();
 				_t = __t182;
@@ -6131,6 +6137,13 @@ public XQueryTreeParser() {
 								throw new EXistException("No namespace defined for prefix " + nc3.getText());
 							qname= new QName(null, namespaceURI, null);
 						
+				break;
+			}
+			case WILDCARD:
+			{
+				org.exist.xquery.parser.XQueryAST tmp103_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+				match(_t,WILDCARD);
+				_t = _t.getNextSibling();
 				break;
 			}
 			default:

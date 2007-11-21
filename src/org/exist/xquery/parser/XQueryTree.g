@@ -718,8 +718,6 @@ throws XPathException
 			ATTRIBUTE_TEST 
 			{ type.setPrimaryType(Type.ATTRIBUTE); }
 			(
-				WILDCARD
-				|
 				qn2:QNAME
 				{
                     // fixme! - need to check this and the other
@@ -727,6 +725,8 @@ throws XPathException
 					QName qname= QName.parse(staticContext, qn2.getText(), "");
 					type.setNodeName(qname);
 				}
+				|
+				WILDCARD
 				( qn21:QNAME
 					{
                         QName qname21= QName.parse(staticContext, qn21.getText());
@@ -1470,6 +1470,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		qn:QNAME
 		{
 			QName qname= QName.parse(staticContext, qn.getText());
+            // fixme! - check why these two make for a 120
+            // xqts test score difference./ljo
+			// Should not this be in the default/empty namespace?
+            //QName qname= QName.parse(staticContext, qn.getText(), "");
+
 			test= new NameTest(Type.ELEMENT, qname);
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				test.setType(Type.ATTRIBUTE);
@@ -1625,12 +1630,18 @@ throws PermissionDeniedException, EXistException, XPathException
 	{ QName qname= null; }
 	(
 		attr:QNAME
-		{ qname= QName.parse(staticContext, attr.getText(), null); }
-		|
-		WILDCARD
+		{
+          //qname= QName.parse(staticContext, attr.getText(), null);
+          //fixme! - kolla ovan./ljo
+          qname= QName.parse(staticContext, attr.getText(), "");
+          //qname.setNamespaceURI(null);
+        }
 		|
 		#( PREFIX_WILDCARD nc2:NCNAME )
-		{ qname= new QName(nc2.getText(), null, null); }
+		{ 
+          qname= new QName(nc2.getText(), null, null);
+          qname.setNamespaceURI(null);
+		}
 		|
 		#( nc3:NCNAME WILDCARD )
 		{
@@ -1639,6 +1650,8 @@ throws PermissionDeniedException, EXistException, XPathException
 				throw new EXistException("No namespace defined for prefix " + nc3.getText());
 			qname= new QName(null, namespaceURI, null);
 		}
+		|
+		WILDCARD
 	)
 	{
 		NodeTest test= qname == null ? new TypeTest(Type.ATTRIBUTE) : new NameTest(Type.ATTRIBUTE, qname);
