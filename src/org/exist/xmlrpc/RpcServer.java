@@ -586,7 +586,7 @@ public class RpcServer implements RpcAPI {
         else if (e instanceof PermissionDeniedException)
             throw (PermissionDeniedException) e;
         else {
-            System.out.println(e.getClass().getName());
+            //System.out.println(e.getClass().getName());
             throw new EXistException(e);
         }
     }
