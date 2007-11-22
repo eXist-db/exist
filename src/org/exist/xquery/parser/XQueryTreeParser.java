@@ -4056,9 +4056,11 @@ public XQueryTreeParser() {
 				match(_t,QNAME);
 				_t = _t.getNextSibling();
 				
-				// fixme! - need to check this and the other
-				// type tests again. /ljo 
-									QName qname= QName.parse(staticContext, qn2.getText(), "");
+									//QName qname= QName.parse(staticContext, qn2.getText(), ""); 
+				QName qname= QName.parse(staticContext, qn2.getText());
+				// fixme! - use arity two parse()
+				// plus qname.setNamespaceURI(null)? 
+				qname.setNamespaceURI(null);
 									type.setNodeName(qname);
 								
 				break;
@@ -5672,14 +5674,12 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 							QName qname= QName.parse(staticContext, qn.getText());
-				// fixme! - check why these two make for a 120
-				// xqts test score difference./ljo
-							// Should not this be in the default/empty namespace?
-				//QName qname= QName.parse(staticContext, qn.getText(), "");
-				
-							test= new NameTest(Type.ELEMENT, qname);
-							if (axis == Constants.ATTRIBUTE_AXIS)
-								test.setType(Type.ATTRIBUTE);
+							if (axis == Constants.ATTRIBUTE_AXIS) {
+				qname.setNamespaceURI(null);
+				test= new NameTest(Type.ATTRIBUTE, qname);
+				} else {
+				test= new NameTest(Type.ELEMENT, qname);
+				}
 						
 				break;
 			}
@@ -6096,10 +6096,8 @@ public XQueryTreeParser() {
 				match(_t,QNAME);
 				_t = _t.getNextSibling();
 				
-				//qname= QName.parse(staticContext, attr.getText(), null);
-				//fixme! - kolla ovan./ljo
-				qname= QName.parse(staticContext, attr.getText(), "");
-				//qname.setNamespaceURI(null);
+				qname= QName.parse(staticContext, attr.getText());
+				qname.setNamespaceURI(null);
 				
 				break;
 			}

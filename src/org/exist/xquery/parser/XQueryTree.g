@@ -720,9 +720,8 @@ throws XPathException
 			(
 				qn2:QNAME
 				{
-                    // fixme! - need to check this and the other
-                    // type tests again. /ljo 
-					QName qname= QName.parse(staticContext, qn2.getText(), "");
+                    QName qname= QName.parse(staticContext, qn2.getText());
+                    qname.setNamespaceURI(null);
 					type.setNodeName(qname);
 				}
 				|
@@ -1470,14 +1469,12 @@ throws PermissionDeniedException, EXistException, XPathException
 		qn:QNAME
 		{
 			QName qname= QName.parse(staticContext, qn.getText());
-            // fixme! - check why these two make for a 120
-            // xqts test score difference./ljo
-			// Should not this be in the default/empty namespace?
-            //QName qname= QName.parse(staticContext, qn.getText(), "");
-
-			test= new NameTest(Type.ELEMENT, qname);
-			if (axis == Constants.ATTRIBUTE_AXIS)
-				test.setType(Type.ATTRIBUTE);
+			if (axis == Constants.ATTRIBUTE_AXIS) {
+                qname.setNamespaceURI(null);
+                test= new NameTest(Type.ATTRIBUTE, qname);
+            } else {
+                test= new NameTest(Type.ELEMENT, qname);
+            }
 		}
 		|
 		#( PREFIX_WILDCARD nc1:NCNAME )
@@ -1631,10 +1628,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	(
 		attr:QNAME
 		{
-          //qname= QName.parse(staticContext, attr.getText(), null);
-          //fixme! - kolla ovan./ljo
-          qname= QName.parse(staticContext, attr.getText(), "");
-          //qname.setNamespaceURI(null);
+          qname= QName.parse(staticContext, attr.getText());
+          qname.setNamespaceURI(null);
         }
 		|
 		#( PREFIX_WILDCARD nc2:NCNAME )
