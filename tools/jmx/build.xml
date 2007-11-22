@@ -35,7 +35,7 @@
         <echo message="./build.sh -f build/scripts/jarsigner.xml jnlp-sign-exist"/>
         <echo message="-----------------------------------------"/>
 
-        <jar destfile="${server.dir}/exist.jar" basedir="${classes}"
+        <jar destfile="${server.dir}/lib/extensions/exist-jmx.jar" basedir="${classes}"
             keepcompression="true" update="true"/>
     </target>
 
