@@ -44,7 +44,9 @@ public class Database {
 
 	/**
 	 * Start up the database, configured using the given config file.  This method must be
-	 * called precisely once before making use of any facilities offered in this package.
+	 * called precisely once before making use of any facilities offered in this package.  The
+	 * configuration file is typically called 'conf.xml' and you can find a sample one in the root
+	 * directory of eXist's distribution.
 	 *
 	 * @param configFile the config file that specifies the database to use
 	 * @throws IllegalStateException if the database has already been started

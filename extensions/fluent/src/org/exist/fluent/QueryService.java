@@ -230,7 +230,9 @@ public class QueryService implements Cloneable {
 	/**
 	 * Convert the given object into a value appropriate for being defined as
 	 * the value of a variable in an XQuery.  This will extract a sequence out
-	 * of all database objects, and pass other objects through untouched.
+	 * of all database objects, convert collections and arrays into sequences
+	 * recursively, convert <code>null</code> into an empty sequence, and
+	 * pass other objects through untouched.
 	 * Convertible objects that are defined in the JDK will be automatically
 	 * converted by eXist.
 	 * @see org.exist.xquery.XPathUtil#javaObjectToXPath(Object, XQueryContext, boolean)
@@ -240,6 +242,7 @@ public class QueryService implements Cloneable {
 	 */
 	@SuppressWarnings("unchecked")
 	private Object convertValue(Object o) {
+		if (o == null) return Collections.emptyList();
 		if (o instanceof Resource) {
 			try {
 				return ((Resource) o).convertToSequence();
