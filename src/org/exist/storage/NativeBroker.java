@@ -1567,10 +1567,10 @@ public class NativeBroker extends DBBroker {
             LOG.debug("collection '" + collUri + "' not found!");
             return null;
         }
-        if (!collection.getPermissions().validate(user, Permission.READ))
-            throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "'");
-        
         try {
+           if (!collection.getPermissions().validate(user, Permission.READ))
+               throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "'");
+
             DocumentImpl doc = collection.getDocumentWithLock(this, docUri, lockMode);
             if (doc == null) {
 		//                LOG.debug("document '" + fileName + "' not found!");
