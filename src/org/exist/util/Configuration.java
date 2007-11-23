@@ -708,9 +708,9 @@ public class Configuration implements ErrorHandler {
             LOG.debug(BrokerPool.PROPERTY_SECURITY_CLASS + ": " + config.get(BrokerPool.PROPERTY_SECURITY_CLASS));
         } catch (Throwable ex) {
             if (ex instanceof ClassNotFoundException) {
-                throw new DatabaseConfigurationException("Cannot find security manager class "+securityManagerClassName);
+                throw new DatabaseConfigurationException("Cannot find security manager class "+securityManagerClassName,ex);
             } else {
-                throw new DatabaseConfigurationException("Cannot load security manager class "+securityManagerClassName+" due to "+ex.getMessage());
+                throw new DatabaseConfigurationException("Cannot load security manager class "+securityManagerClassName+" due to "+ex.getMessage(),ex);
             }
         }
         
