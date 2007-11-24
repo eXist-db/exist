@@ -46,9 +46,9 @@ public class JMXClient {
         this.instance = instanceName;
     }
 
-    public void connect(int port) throws IOException {
+    public void connect(String address,int port) throws IOException {
         JMXServiceURL url =
-                new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:" + port + "/jmxrmi");
+                new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+address+":" + port + "/jmxrmi");
         Map env = new HashMap();
         String[] creds = {"guest", "guest"};
         env.put(JMXConnector.CREDENTIALS, creds);
@@ -191,6 +191,7 @@ public class JMXClient {
     private final static int MEMORY_OPT = 'm';
     private final static int PORT_OPT = 'p';
     private final static int INSTANCE_OPT = 'i';
+    private final static int ADDRESS_OPT = 'a';
     
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
@@ -210,6 +211,8 @@ public class JMXClient {
             MEMORY_OPT, "display info on free and total memory. Can be combined with other parameters." ),
         new CLOptionDescriptor( "port", CLOptionDescriptor.ARGUMENT_REQUIRED,
             PORT_OPT, "RMI port of the server"),
+        new CLOptionDescriptor( "address", CLOptionDescriptor.ARGUMENT_REQUIRED,
+            ADDRESS_OPT, "RMI address of the server"),
         new CLOptionDescriptor( "instance", CLOptionDescriptor.ARGUMENT_REQUIRED,
             INSTANCE_OPT, "the ID of the database instance to connect to")
     };
@@ -230,6 +233,7 @@ public class JMXClient {
         CLOption option;
         int mode = -1;
         int port = 1099;
+        String address = "localhost";
         boolean displayMem = false;
         boolean displayInstance = false;
         for(int i = 0; i < size; i++) {
@@ -260,6 +264,14 @@ public class JMXClient {
                         return;
                     }
                     break;
+                case ADDRESS_OPT :
+                    try {
+                        address = option.getArgument();
+                    } catch (NumberFormatException e) {
+                        System.err.println("option -a|--address requires a numeric argument");
+                        return;
+                    }
+                    break;
                 case MEMORY_OPT :
                     displayMem = true;
                     break;
@@ -273,7 +285,7 @@ public class JMXClient {
         }
         try {
             JMXClient stats = new JMXClient(dbInstance);
-            stats.connect(port);
+            stats.connect(address,port);
             stats.memoryStats();
             while (true) {
                 switch (mode) {
