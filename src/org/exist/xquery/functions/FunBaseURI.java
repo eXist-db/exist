@@ -164,7 +164,8 @@ public class FunBaseURI extends BasicFunction {
                     URI relativeURI;
                     URI baseURI;
                     try {
-                        relativeURI = new URI(((ElementImpl)proxy.getNode()).getBaseURI());
+                       org.exist.dom.NodeImpl baseNode = (org.exist.dom.NodeImpl)proxy.getNode();
+                        relativeURI = new URI(baseNode.getBaseURI());
                         baseURI = new URI(context.getBaseURI() + "/");
                     } catch (URISyntaxException e) {
                         throw new XPathException(e.getMessage(), e);
