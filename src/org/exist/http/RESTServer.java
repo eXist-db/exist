@@ -305,25 +305,27 @@ public class RESTServer {
 			    return;
 			}
 		    } else { //Execute the XQuery
-			try {
-                            String result = executeXQuery(broker, resource, request, response, outputProperties);
-                            encoding = outputProperties.getProperty(OutputKeys.ENCODING);
-			    mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
-                            
-			    //only write the response if it is not already committed,
-			    //some xquery functions can write directly to the response
-                            if(!response.isCommitted()) {
-                           	writeResponse(response, result, mimeType, encoding);
-                            }
-                        } catch (XPathException e) {
-                            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			    if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-				writeResponse(response, formatXPathException(query, path, e), mimeType, encoding);				
-			    } else {
-				writeResponse(response, formatXPathExceptionHtml(query, path, e), MimeType.HTML_TYPE.getName(), encoding);
-			    }
-                        }
-		    }
+                try {
+                    String result = executeXQuery(broker, resource, request, response, outputProperties);
+                    encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+                    mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+
+                    //only write the response if it is not already committed,
+                    //some xquery functions can write directly to the response
+                    if(!response.isCommitted()) {
+                        writeResponse(response, result, mimeType, encoding);
+                    }
+                } catch (XPathException e) {
+                    if (LOG.isDebugEnabled())
+                        LOG.debug(e.getMessage(), e);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+                        writeResponse(response, formatXPathException(query, path, e), mimeType, encoding);
+                    } else {
+                        writeResponse(response, formatXPathExceptionHtml(query, path, e), MimeType.HTML_TYPE.getName(), encoding);
+                    }
+                }
+            }
                     return;
                 }
             }
