@@ -721,7 +721,9 @@ throws XPathException
 				qn2:QNAME
 				{
                     QName qname= QName.parse(staticContext, qn2.getText());
-                    qname.setNamespaceURI(null);
+                    // WM: namespace should not be null as null means: incomplete
+                    // QName == wildcard
+                    qname.setNamespaceURI("");
 					type.setNodeName(qname);
 				}
 				|
@@ -1629,7 +1631,9 @@ throws PermissionDeniedException, EXistException, XPathException
 		attr:QNAME
 		{
           qname= QName.parse(staticContext, attr.getText());
-          qname.setNamespaceURI(null);
+          // WM: namespace should not be null as null means: incomplete
+          // QName == wildcard
+//          qname.setNamespaceURI(null);
         }
 		|
 		#( PREFIX_WILDCARD nc2:NCNAME )

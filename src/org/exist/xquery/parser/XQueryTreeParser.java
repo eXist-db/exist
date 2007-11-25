@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (2006-11-01): "XQueryTree.g" -> "XQueryTreeParser.java"$
+// $ANTLR 2.7.4: "XQueryTree.g" -> "XQueryTreeParser.java"$
 
 	package org.exist.xquery.parser;
 
@@ -4056,11 +4056,10 @@ public XQueryTreeParser() {
 				match(_t,QNAME);
 				_t = _t.getNextSibling();
 				
-									//QName qname= QName.parse(staticContext, qn2.getText(), ""); 
 				QName qname= QName.parse(staticContext, qn2.getText());
-				// fixme! - use arity two parse()
-				// plus qname.setNamespaceURI(null)? 
-				qname.setNamespaceURI(null);
+				// WM: namespace should not be null as null means: incomplete
+				// QName == wildcard
+				qname.setNamespaceURI("");
 									type.setNodeName(qname);
 								
 				break;
@@ -6097,7 +6096,9 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 				qname= QName.parse(staticContext, attr.getText());
-				qname.setNamespaceURI(null);
+				// WM: namespace should not be null as null means: incomplete
+				// QName == wildcard
+				//          qname.setNamespaceURI(null);
 				
 				break;
 			}
