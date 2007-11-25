@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (2006-11-01): "XQuery.g" -> "XQueryParser.java"$
+// $ANTLR 2.7.4: "XQuery.g" -> "XQueryParser.java"$
 
 	package org.exist.xquery.parser;
 

@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (2006-11-01): XQuery.g -> XQueryTokenTypes.txt$
+// $ANTLR 2.7.4: XQuery.g -> XQueryTokenTypes.txt$
 XQuery    // output token vocab name
 QNAME=4
 PREDICATE=5

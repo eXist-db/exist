@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (2006-11-01): "XQuery.g" -> "XQueryParser.java"$
+// $ANTLR 2.7.4: "XQuery.g" -> "XQueryParser.java"$
 
 	package org.exist.xquery.parser;
 
@@ -470,7 +470,7 @@ public XQueryParser(ParserSharedInputState state) {
 				synPredMatched8 = false;
 			}
 			rewind(_m8);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched8 ) {
 			versionDecl();
@@ -501,7 +501,7 @@ inputState.guessing--;
 				synPredMatched11 = false;
 			}
 			rewind(_m11);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched11 ) {
 			libraryModule();
@@ -805,7 +805,7 @@ inputState.guessing--;
 							synPredMatched21 = false;
 						}
 						rewind(_m21);
-inputState.guessing--;
+						inputState.guessing--;
 					}
 					if ( synPredMatched21 ) {
 						setter();
@@ -834,7 +834,7 @@ inputState.guessing--;
 								synPredMatched23 = false;
 							}
 							rewind(_m23);
-inputState.guessing--;
+							inputState.guessing--;
 						}
 						if ( synPredMatched23 ) {
 							optionDecl();
@@ -859,7 +859,7 @@ inputState.guessing--;
 									synPredMatched25 = false;
 								}
 								rewind(_m25);
-inputState.guessing--;
+								inputState.guessing--;
 							}
 							if ( synPredMatched25 ) {
 								functionDecl();
@@ -884,7 +884,7 @@ inputState.guessing--;
 										synPredMatched27 = false;
 									}
 									rewind(_m27);
-inputState.guessing--;
+									inputState.guessing--;
 								}
 								if ( synPredMatched27 ) {
 									varDecl();
@@ -979,7 +979,7 @@ inputState.guessing--;
 				synPredMatched31 = false;
 			}
 			rewind(_m31);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched31 ) {
 			moduleImport();
@@ -1026,7 +1026,7 @@ inputState.guessing--;
 				synPredMatched37 = false;
 			}
 			rewind(_m37);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched37 ) {
 			match(LITERAL_declare);
@@ -1142,7 +1142,7 @@ inputState.guessing--;
 					synPredMatched41 = false;
 				}
 				rewind(_m41);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched41 ) {
 				match(LITERAL_declare);
@@ -1191,7 +1191,7 @@ inputState.guessing--;
 						synPredMatched44 = false;
 					}
 					rewind(_m44);
-inputState.guessing--;
+					inputState.guessing--;
 				}
 				if ( synPredMatched44 ) {
 					match(LITERAL_declare);
@@ -1220,7 +1220,7 @@ inputState.guessing--;
 							synPredMatched46 = false;
 						}
 						rewind(_m46);
-inputState.guessing--;
+						inputState.guessing--;
 					}
 					if ( synPredMatched46 ) {
 						match(LITERAL_declare);
@@ -1269,7 +1269,7 @@ inputState.guessing--;
 								synPredMatched49 = false;
 							}
 							rewind(_m49);
-inputState.guessing--;
+							inputState.guessing--;
 						}
 						if ( synPredMatched49 ) {
 							match(LITERAL_declare);
@@ -1318,7 +1318,7 @@ inputState.guessing--;
 									synPredMatched52 = false;
 								}
 								rewind(_m52);
-inputState.guessing--;
+								inputState.guessing--;
 							}
 							if ( synPredMatched52 ) {
 								match(LITERAL_declare);
@@ -1348,7 +1348,7 @@ inputState.guessing--;
 										synPredMatched54 = false;
 									}
 									rewind(_m54);
-inputState.guessing--;
+									inputState.guessing--;
 								}
 								if ( synPredMatched54 ) {
 									namespaceDecl();
@@ -1993,7 +1993,7 @@ inputState.guessing--;
 				synPredMatched333 = false;
 			}
 			rewind(_m333);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched333 ) {
 			name=ncnameOrKeyword();
@@ -2227,7 +2227,7 @@ inputState.guessing--;
 				synPredMatched90 = false;
 			}
 			rewind(_m90);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched90 ) {
 			org.exist.xquery.parser.XQueryAST tmp126_AST = null;
@@ -2254,7 +2254,7 @@ inputState.guessing--;
 					synPredMatched92 = false;
 				}
 				rewind(_m92);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched92 ) {
 				org.exist.xquery.parser.XQueryAST tmp129_AST = null;
@@ -2367,7 +2367,7 @@ inputState.guessing--;
 				synPredMatched98 = false;
 			}
 			rewind(_m98);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched98 ) {
 			org.exist.xquery.parser.XQueryAST tmp134_AST = null;
@@ -2394,7 +2394,7 @@ inputState.guessing--;
 					synPredMatched100 = false;
 				}
 				rewind(_m100);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched100 ) {
 				kindTest();
@@ -2669,7 +2669,7 @@ inputState.guessing--;
 				synPredMatched111 = false;
 			}
 			rewind(_m111);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched111 ) {
 			flworExpr();
@@ -2709,7 +2709,7 @@ inputState.guessing--;
 					synPredMatched114 = false;
 				}
 				rewind(_m114);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched114 ) {
 				quantifiedExpr();
@@ -2732,7 +2732,7 @@ inputState.guessing--;
 						synPredMatched116 = false;
 					}
 					rewind(_m116);
-inputState.guessing--;
+					inputState.guessing--;
 				}
 				if ( synPredMatched116 ) {
 					ifExpr();
@@ -2755,7 +2755,7 @@ inputState.guessing--;
 							synPredMatched118 = false;
 						}
 						rewind(_m118);
-inputState.guessing--;
+						inputState.guessing--;
 					}
 					if ( synPredMatched118 ) {
 						typeswitchExpr();
@@ -2810,7 +2810,7 @@ inputState.guessing--;
 								synPredMatched121 = false;
 							}
 							rewind(_m121);
-inputState.guessing--;
+							inputState.guessing--;
 						}
 						if ( synPredMatched121 ) {
 							updateExpr();
@@ -5471,7 +5471,7 @@ inputState.guessing--;
 					synPredMatched241 = false;
 				}
 				rewind(_m241);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched241 ) {
 				org.exist.xquery.parser.XQueryAST tmp248_AST = null;
@@ -5743,7 +5743,7 @@ inputState.guessing--;
 				synPredMatched249 = false;
 			}
 			rewind(_m249);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched249 ) {
 			axisStep();
@@ -5813,7 +5813,7 @@ inputState.guessing--;
 					synPredMatched252 = false;
 				}
 				rewind(_m252);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched252 ) {
 				filterStep();
@@ -5864,7 +5864,7 @@ inputState.guessing--;
 						synPredMatched255 = false;
 					}
 					rewind(_m255);
-inputState.guessing--;
+					inputState.guessing--;
 				}
 				if ( synPredMatched255 ) {
 					filterStep();
@@ -6029,7 +6029,7 @@ inputState.guessing--;
 							synPredMatched258 = false;
 						}
 						rewind(_m258);
-inputState.guessing--;
+						inputState.guessing--;
 					}
 					if ( synPredMatched258 ) {
 						filterStep();
@@ -6132,7 +6132,7 @@ inputState.guessing--;
 				synPredMatched267 = false;
 			}
 			rewind(_m267);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched267 ) {
 			forwardAxis();
@@ -6157,7 +6157,7 @@ inputState.guessing--;
 					synPredMatched269 = false;
 				}
 				rewind(_m269);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched269 ) {
 				reverseAxis();
@@ -6338,7 +6338,7 @@ inputState.guessing--;
 				synPredMatched278 = false;
 			}
 			rewind(_m278);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched278 ) {
 			kindTest();
@@ -6803,7 +6803,7 @@ inputState.guessing--;
 				synPredMatched282 = false;
 			}
 			rewind(_m282);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched282 ) {
 			wildcard();
@@ -6852,7 +6852,7 @@ inputState.guessing--;
 				synPredMatched285 = false;
 			}
 			rewind(_m285);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched285 ) {
 			match(STAR);
@@ -7010,7 +7010,7 @@ inputState.guessing--;
 					synPredMatched290 = false;
 				}
 				rewind(_m290);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched290 ) {
 				computedConstructor();
@@ -7061,7 +7061,7 @@ inputState.guessing--;
 						synPredMatched293 = false;
 					}
 					rewind(_m293);
-inputState.guessing--;
+					inputState.guessing--;
 				}
 				if ( synPredMatched293 ) {
 					computedConstructor();
@@ -7084,7 +7084,7 @@ inputState.guessing--;
 							synPredMatched295 = false;
 						}
 						rewind(_m295);
-inputState.guessing--;
+						inputState.guessing--;
 					}
 					if ( synPredMatched295 ) {
 						orderedExpr();
@@ -7107,7 +7107,7 @@ inputState.guessing--;
 								synPredMatched297 = false;
 							}
 							rewind(_m297);
-inputState.guessing--;
+							inputState.guessing--;
 						}
 						if ( synPredMatched297 ) {
 							unorderedExpr();
@@ -8500,7 +8500,7 @@ inputState.guessing--;
 					synPredMatched365 = false;
 				}
 				rewind(_m365);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched365 ) {
 				elementWithAttributes();
@@ -8585,7 +8585,7 @@ inputState.guessing--;
 				synPredMatched338 = false;
 			}
 			rewind(_m338);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched338 ) {
 			match(LITERAL_element);
@@ -8914,7 +8914,7 @@ inputState.guessing--;
 				synPredMatched352 = false;
 			}
 			rewind(_m352);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched352 ) {
 			match(LITERAL_attribute);
@@ -9043,7 +9043,7 @@ inputState.guessing--;
 				synPredMatched359 = false;
 			}
 			rewind(_m359);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched359 ) {
 			match(168);
@@ -9140,7 +9140,7 @@ inputState.guessing--;
 				synPredMatched344 = false;
 			}
 			rewind(_m344);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched344 ) {
 			localNamespaceDecl();
@@ -9177,7 +9177,7 @@ inputState.guessing--;
 						synPredMatched348 = false;
 					}
 					rewind(_m348);
-inputState.guessing--;
+					inputState.guessing--;
 				}
 				if ( synPredMatched348 ) {
 					localNamespaceDecl();
@@ -9867,7 +9867,7 @@ inputState.guessing--;
 				synPredMatched387 = false;
 			}
 			rewind(_m387);
-inputState.guessing--;
+			inputState.guessing--;
 		}
 		if ( synPredMatched387 ) {
 			org.exist.xquery.parser.XQueryAST tmp383_AST = null;
@@ -10036,7 +10036,7 @@ inputState.guessing--;
 					synPredMatched393 = false;
 				}
 				rewind(_m393);
-inputState.guessing--;
+				inputState.guessing--;
 			}
 			if ( synPredMatched393 ) {
 				org.exist.xquery.parser.XQueryAST tmp391_AST = null;
