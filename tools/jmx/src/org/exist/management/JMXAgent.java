@@ -100,7 +100,8 @@ public class JMXAgent implements Agent {
 
     private void addMBean(ObjectName name, Object mbean) throws DatabaseConfigurationException {
         try {
-            server.registerMBean(mbean, name);
+            if (!server.isRegistered(name))
+                server.registerMBean(mbean, name);
         } catch (InstanceAlreadyExistsException e) {
             LOG.warn("Problem registering mbean: " + e.getMessage(), e);
             throw new DatabaseConfigurationException("Exception while registering JMX mbean: " + e.getMessage());
