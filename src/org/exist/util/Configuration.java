@@ -21,23 +21,7 @@
  */
 package org.exist.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.log4j.Logger;
-
 import org.exist.Indexer;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.journal.JournalManager;
@@ -48,16 +32,7 @@ import org.exist.scheduler.Scheduler;
 import org.exist.security.User;
 import org.exist.security.XMLSecurityManager;
 import org.exist.security.xacml.XACMLConstants;
-import org.exist.storage.BrokerFactory;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.CollectionCacheManager;
-import org.exist.storage.DBBroker;
-import org.exist.storage.DefaultCacheManager;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NativeBroker;
-import org.exist.storage.NativeValueIndex;
-import org.exist.storage.TextSearchEngine;
-import org.exist.storage.XQueryPool;
+import org.exist.storage.*;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
@@ -67,18 +42,22 @@ import org.exist.xquery.FunctionFactory;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 import org.exist.xslt.TransformerFactoryAllocator;
-
 import org.quartz.SimpleTrigger;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.*;
 
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.*;
 
 public class Configuration implements ErrorHandler {
     private final static Logger LOG = Logger.getLogger(Configuration.class); //Logger
@@ -387,27 +366,8 @@ public class Configuration implements ErrorHandler {
         }
         
         //built-in-modules
-        NodeList builtins = xquery.getElementsByTagName(XQueryContext.CONFIGURATION_MODULES_ELEMENT_NAME);
-        if (builtins.getLength() > 0) {
-            Element elem = (Element) builtins.item(0);
-            NodeList modules = elem.getElementsByTagName(XQueryContext.CONFIGURATION_MODULE_ELEMENT_NAME);
-            if (modules.getLength() > 0) {
-	            String moduleList[][] = new String[modules.getLength()][2];
-	            for (int i = 0; i < modules.getLength(); i++) {
-	                elem = (Element) modules.item(i);
-	                String uri = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE);
-	                String clazz = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE);
-	                if (uri == null)
-	                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'uri'");
-	                if (clazz == null)
-	                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
-	                moduleList[i][0] = uri;
-	                moduleList[i][1] = clazz;
-	                LOG.debug("Configured module '" + uri + "' implemented in '" + clazz + "'");
-	            }
-	            config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, moduleList);
-            }
-        }
+        Map moduleMap = XQueryContext.loadModuleClasses(xquery);
+        config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, moduleMap);
     }
     
     private void configureXACML(Element xacml) {
