@@ -19,14 +19,15 @@
  *
  * $Id$
  */
-package org.exist.management;
+package org.exist.management.impl;
 
+import org.exist.management.LockManagerMBean;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.LockInfo;
 
 import javax.management.openmbean.*;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.

@@ -19,11 +19,12 @@
  *
  * $Id$
  */
-package org.exist.management;
+package org.exist.management.impl;
 
 import org.apache.log4j.Logger;
-import org.exist.util.DatabaseConfigurationException;
+import org.exist.management.Agent;
 import org.exist.storage.BrokerPool;
+import org.exist.util.DatabaseConfigurationException;
 
 import javax.management.*;
 import java.util.ArrayList;
