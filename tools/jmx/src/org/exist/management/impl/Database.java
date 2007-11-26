@@ -19,7 +19,7 @@
  *
  * $Id: Database.java 6177 2007-07-08 14:42:37Z wolfgang_m $
  */
-package org.exist.management;
+package org.exist.management.impl;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
