@@ -78,6 +78,11 @@
                     </varlistentry>
                 </variablelist>
                 
+                <para>Some examples:</para>
+                <synopsis><![CDATA[bin/startup.sh -j 1099
+bin\server.bat -jmx 1099
+]]></synopsis>
+
             </section>
 
             <section>
