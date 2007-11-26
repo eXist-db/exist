@@ -47,8 +47,9 @@
 
                 <synopsis>build.sh -f tools/jmx/build.xml</synopsis>
 
-                <para>after you built the core of eXist (or just installed it). The build adds a few
-                    extra jars to the main <filename>exist.jar</filename>.</para>
+                <para>after you built the core of eXist (or just installed it). The build creates
+                    the file <filename>exist-jmx.jar</filename> in the directory
+                        <filename>lib/extensions</filename>.</para>
             </section>
 
             <section>
@@ -58,17 +59,25 @@
                     pass a few Java system properties to the <filename>java</filename> executable.
                     The properties are:</para>
 
-                <synopsis><![CDATA[
--Dcom.sun.management.jmxremote
+                <synopsis><![CDATA[-Dcom.sun.management.jmxremote
 -Dcom.sun.management.jmxremote.port=1099
 -Dcom.sun.management.jmxremote.authenticate=false
 -Dcom.sun.management.jmxremote.ssl=false
 ]]></synopsis>
-
-                <para>You thus need to edit the start script which launches eXist, e.g.
-                        <filename>bin/startup.sh</filename> or <filename>bin\startup.bat</filename>
-                    and make sure these properties are passed to the executable. Search for the
-                    corresponding settings in the start scripts and uncomment them.</para>
+                <para>NOTE: this make the server accessible for anyone on the network. Please check
+                        <ulink url="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html"
+                        >this site</ulink> for details.</para>
+                <para>The extension can be activated by passing a command-line parameter
+                    to the exist start scripts (<filename>client.sh startup.sh</filename> etc.)</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>-j &lt;argument&gt;, --jmx &lt;argument&gt;</term>
+                        <listitem>
+                            <para>port number through which the JMX/RMI connections are enabled.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                
             </section>
 
             <section>
