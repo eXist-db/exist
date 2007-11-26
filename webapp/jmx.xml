@@ -9,97 +9,158 @@
     <ci:include src="sidebar.xml"/>
     <chapter>
         <title>Java Management Extensions (JMX)</title>
-        
+
         <section>
             <title>Intro</title>
-            
-            <para>eXist now provides access to various management interfaces
-                via Java Management Extensions (JMX). JMX is a standard
-                mechanism available in Java 5 and 6 (though there are some 
-                differences between the two versions). A agent in the Java
-                virtual machine exposes agent services (as so called
-                MBeans) which belong to different components running within the
-                virtual machine. A JMX-compliant management application can connect
-                to the agent and access the available services in a standardized 
-                way. The standard Java installation includes a simple client, jconsole,
-                which will also display the eXist-specific services. However, we
-                also provide a command-line client for quick access to server statistics
-                and other information.</para>
-                
-            <para>Right now, eXist only exports a limited set of read-only services. Most
-                of them are only useful for debugging. This will certainly change in the future
-                as we add more services. We also plan to provide write access to configuration
-                properties.</para>
+
+            <para>eXist now provides access to various management interfaces via Java Management
+                Extensions (JMX). JMX is a standard mechanism available in Java 5 and 6 (though
+                there are some differences between the two versions). A agent in the Java virtual
+                machine exposes agent services (as so called MBeans) which belong to different
+                components running within the virtual machine. A JMX-compliant management
+                application can connect to the agent and access the available services in a
+                standardized way. The standard Java installation includes a simple client, jconsole,
+                which will also display the eXist-specific services. However, we also provide a
+                command-line client for quick access to server statistics and other information.</para>
+
+            <para>Right now, eXist only exports a limited set of read-only services. Most of them
+                are only useful for debugging. This will certainly change in the future as we add
+                more services. We also plan to provide write access to configuration
+            properties.</para>
         </section>
-        
+
         <section>
             <title>Enabling the JMX agent</title>
-            
+
             <para>Right now, eXist does not enable JMX by default nor does it require any JMX
-            libraries to be present in the classpath. We don't want to force application developers
-            to use JMX or to ship JMX libraries. In order to enable JMX, you have to go through
-            a small number of simple steps:</para>
-            
+                libraries to be present in the classpath. We don't want to force application
+                developers to use JMX or to ship JMX libraries. In order to enable JMX, you have to
+                go through a small number of simple steps:</para>
+
             <section>
                 <title>Compile the Agent Services</title>
-                
+
                 <para>JMX support in eXist is split in two parts: the first part consists of a set
                     of interfaces compiled into the core. It has no dependencies on JMX libraries.
                     The second part is in directory <filename>tools/jmx</filename> and has to be
                     build manually. This part requires Java 5 or newer. To compile it, call</para>
-                
+
                 <synopsis>build.sh -f tools/jmx/build.xml</synopsis>
-                
-                <para>after you built the core of eXist (or just installed it). The build adds
-                    a few extra jars to the main <filename>exist.jar</filename>.</para>
+
+                <para>after you built the core of eXist (or just installed it). The build adds a few
+                    extra jars to the main <filename>exist.jar</filename>.</para>
             </section>
-            
+
             <section>
                 <title>Set Required Java Properties</title>
-                
+
                 <para>To enable the platform server within the host virtual machine, you need to
-                pass a few Java system properties to the <filename>java</filename> executable.
-                The properties are:</para>
-                
+                    pass a few Java system properties to the <filename>java</filename> executable.
+                    The properties are:</para>
+
                 <synopsis><![CDATA[
 -Dcom.sun.management.jmxremote
 -Dcom.sun.management.jmxremote.port=1099
 -Dcom.sun.management.jmxremote.authenticate=false
 -Dcom.sun.management.jmxremote.ssl=false
 ]]></synopsis>
-                
+
                 <para>You thus need to edit the start script which launches eXist, e.g.
-                    <filename>bin/startup.sh</filename> or <filename>bin\startup.bat</filename>
-                    and make sure these properties are passed to the executable. Search
-                    for the corresponding settings in the start scripts and uncomment them.</para>
+                        <filename>bin/startup.sh</filename> or <filename>bin\startup.bat</filename>
+                    and make sure these properties are passed to the executable. Search for the
+                    corresponding settings in the start scripts and uncomment them.</para>
             </section>
-            
+
             <section>
                 <title>Use jconsole</title>
-                
-                <para>Once you restarted eXist, you can use a JMX-compliant management console
-                    to access the management interfaces. For example, I can call jconsole, which
-                    is included with Java 5 and 6:</para>
-                
+
+                <para>Once you restarted eXist, you can use a JMX-compliant management console to
+                    access the management interfaces. For example, I can call jconsole, which is
+                    included with Java 5 and 6:</para>
+
                 <synopsis>jconsole localhost:1099</synopsis>
-                
-                <para>Clicking on the <menuchoice><guibutton>MBeans</guibutton></menuchoice> tab
-                    should show some eXist-specific MBeans below the standard Java MBeans in the
-                    tree component to the left.</para>
+
+                <para>Clicking on the <menuchoice>
+                        <guibutton>MBeans</guibutton>
+                    </menuchoice> tab should show some eXist-specific MBeans below the standard Java
+                    MBeans in the tree component to the left.</para>
             </section>
-            
+
             <section>
                 <title>Use JMXClient</title>
-                
+
                 <para>eXist includes a simple command-line JMX client which provides a quick access
-                    to some important server statistics. The following command should print some
-                    statistics about cache usage within eXist:</para>
-                
+                    to some important server statistics. The application accepts the following
+                    command-line parameters:</para>
+
+                <synopsis>java -jar start.jar org.exist.management.JMXClient &lt;params&gt;</synopsis>
+
+                <variablelist>
+                    <varlistentry>
+                        <term>-a, --address &lt;argument&gt;</term>
+                        <listitem>
+                            <para>RMI address of the server.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>-c, --cache</term>
+                        <listitem>
+                            <para>displays server statistics on cache and memory usage.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>-d, --db</term>
+                        <listitem>
+                            <para>display general info about the db instance.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>-h, --help</term>
+                        <listitem>
+                            <para>print help on command line options and exit.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>-i, --instance &lt;argument&gt;</term>
+                        <listitem>
+                            <para>the ID of the database instance to connect to</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>-l, --locks</term>
+                        <listitem>
+                            <para>lock manager: display locking information on all threads currently
+                                waiting for a lock on a resource or collection. Useful to debug
+                                deadlocks. During normal operation, the list will usually be empty
+                                (means: no blocked threads).</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>-m, --memory</term>
+                        <listitem>
+                            <para>display info on free and total memory. Can be combined with other
+                                parameters.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>-p, --port &lt;argument&gt;</term>
+                        <listitem>
+                            <para>RMI port of the server</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>-w, --wait &lt;argument&gt;</term>
+                        <listitem>
+                            <para> while displaying server statistics: keep retrieving statistics,
+                                but wait the specified number of seconds between calls.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                <para>The following command should print some statistics about cache usage within
+                    eXist:</para>
+
                 <synopsis>java -jar start.jar org.exist.management.JMXClient -c -w 2000</synopsis>
-                
-                <para>The <parameter>-c</parameter> parameter tells the client to retrieve caching
-                    statistics. Option <parameter>-w</parameter> makes it run in an endless loop,
-                    refreshing display every 2000 milliseconds.</para>
+
             </section>
         </section>
     </chapter>
