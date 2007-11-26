@@ -82,6 +82,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
@@ -94,6 +95,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.TimeUtils;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Element;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -127,8 +130,6 @@ public class XQueryContext {
     protected final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
 	private static final String TEMP_STORE_ERROR = "Error occurred while storing temporary data";
-	
-    private static final HashMap moduleClasses = new HashMap();
     
 	// Static namespace/prefix mappings
 	protected HashMap staticNamespaces = new HashMap();
@@ -1152,42 +1153,49 @@ public class XQueryContext {
     protected Module initBuiltInModule(String namespaceURI, String moduleClass) {
         Module module = null;
         try {
-            Class mClass = (Class) moduleClasses.get(moduleClass);
-            if (mClass == null) {
-    			mClass = Class.forName(moduleClass);
-    			if (!(Module.class.isAssignableFrom(mClass))) {
-    				LOG.info(
-    					"failed to load module. "
-    						+ moduleClass
-    						+ " is not an instance of org.exist.xquery.Module.");
-    				return null;
-    			}
-                moduleClasses.put(moduleClass, mClass);
+            // lookup the class
+            Class mClass = Class.forName(moduleClass);
+            if (!(Module.class.isAssignableFrom(mClass))) {
+                LOG.info(
+                        "failed to load module. "
+                                + moduleClass
+                                + " is not an instance of org.exist.xquery.Module.");
+                return null;
             }
-			module = (Module) mClass.newInstance();
-			if (!module.getNamespaceURI().equals(namespaceURI)) {
-				LOG.warn("the module declares a different namespace URI. Skipping...");
-				return null;
-			}
-			if (getPrefixForURI(module.getNamespaceURI()) == null
-				&& module.getDefaultPrefix().length() > 0)
-				declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
-
-			modules.put(module.getNamespaceURI(), module);
+            instantiateModule(namespaceURI, mClass);
 			//LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
 		} catch (ClassNotFoundException e) {
 			LOG.warn("module class " + moduleClass + " not found. Skipping...");
-		} catch (InstantiationException e) {
-			LOG.warn("error while instantiating module class " + moduleClass, e);
-		} catch (IllegalAccessException e) {
-			LOG.warn("error while instantiating module class " + moduleClass, e);
-		} catch (XPathException e) {
-			LOG.warn("error while instantiating module class " + moduleClass, e);
-		}		
-		return module;
+		}
+        return module;
 	}
 
-	/**
+    protected Module instantiateModule(String namespaceURI, Class mClass) {
+        Module module = null;
+        try {
+            module = (Module) mClass.newInstance();
+            if (!module.getNamespaceURI().equals(namespaceURI)) {
+                LOG.warn("the module declares a different namespace URI. Expected: " + namespaceURI +
+                        " found: " + module.getNamespaceURI());
+                return null;
+            }
+            if (getPrefixForURI(module.getNamespaceURI()) == null
+                && module.getDefaultPrefix().length() > 0)
+                declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
+
+            modules.put(module.getNamespaceURI(), module);
+            return module;
+        } catch (InstantiationException e) {
+            LOG.warn("error while instantiating module class " + mClass.getName(), e);
+        } catch (IllegalAccessException e) {
+            LOG.warn("error while instantiating module class " + mClass.getName(), e);
+        } catch (XPathException e) {
+            LOG.warn("error while instantiating module class " + mClass.getName(), e);
+        }
+        return null;
+    }
+
+    /**
 	 * Convenience method that returns the XACML Policy Decision Point for 
 	 * this database instance.  If XACML has not been enabled, this returns
 	 * null.
@@ -2316,21 +2324,21 @@ public class XQueryContext {
         backwardsCompatible = param == null ? true : param.equals("yes");
         
         // load built-in modules
-		
-		// these modules are loaded dynamically. It is not an error if the
-		// specified module class cannot be found in the classpath.
-		loadBuiltInModule(
-			Function.BUILTIN_FUNCTION_NS,
-			"org.exist.xquery.functions.ModuleImpl");
-		
-		String modules[][] = (String[][]) config.getProperty(PROPERTY_BUILT_IN_MODULES);
-		if ( modules != null ) {
-			for (int i = 0; i < modules.length; i++) {
-				//LOG.debug("Loading module " + modules[i][0]);
-				loadBuiltInModule(modules[i][0], modules[i][1]);
-			}
-		}		
-	}
+        Map modules = (Map) config.getProperty(PROPERTY_BUILT_IN_MODULES);
+        if (modules != null) {
+            for (Iterator i = modules.entrySet().iterator(); i.hasNext(); ) {
+                Map.Entry entry = (Map.Entry) i.next();
+                Class mClass = (Class) entry.getValue();
+                String namespaceURI = (String) entry.getKey();
+                // first check if the module has already been loaded
+                // in the parent context
+                Module module = getModule(namespaceURI);
+                if (module == null) {
+                    instantiateModule(namespaceURI, mClass);
+                }
+            }
+        }
+    }
 
     protected void loadDefaultNS() {
         try {
@@ -2389,6 +2397,60 @@ public class XQueryContext {
             LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
             properties.setProperty(pair[0], pair[1]);
         }
+    }
+    
+    /**
+     * Read list of built-in modules from the configuration. This method will only make sure
+     * that the specified module class exists and is a subclass of {@link org.exist.xquery.Module}.
+     *
+     * @param xquery configuration root
+     * @return class name mapped to Class object.
+     * @throws DatabaseConfigurationException
+     */
+    public static Map loadModuleClasses(Element xquery) throws DatabaseConfigurationException {
+        Map classMap = new HashMap();
+        // add the standard function module
+        classMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.ModuleImpl.class);
+        // add other modules specified in configuration
+        NodeList builtins = xquery.getElementsByTagName(CONFIGURATION_MODULES_ELEMENT_NAME);
+        if (builtins.getLength() > 0) {
+            Element elem = (Element) builtins.item(0);
+            NodeList modules = elem.getElementsByTagName(CONFIGURATION_MODULE_ELEMENT_NAME);
+            if (modules.getLength() > 0) {
+	            for (int i = 0; i < modules.getLength(); i++) {
+	                elem = (Element) modules.item(i);
+	                String uri = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE);
+	                String clazz = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE);
+	                if (uri == null)
+	                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'uri'");
+	                if (clazz == null)
+	                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
+
+                    Class mClass = lookupModuleClass(uri, clazz);
+                    if (mClass != null)
+                        classMap.put(uri, mClass);
+                    LOG.debug("Configured module '" + uri + "' implemented in '" + clazz + "'");
+                }
+            }
+        }
+        return classMap;
+    }
+
+    private static Class lookupModuleClass(String uri, String clazz) throws DatabaseConfigurationException {
+        try {
+            Class mClass = Class.forName(clazz);
+            if (!(Module.class.isAssignableFrom(mClass))) {
+                throw new DatabaseConfigurationException("Failed to load module: " + uri + ". Class " +
+                        clazz + " is not an instance of org.exist.xquery.Module.");
+            }
+            return mClass;
+        } catch (ClassNotFoundException e) {
+            // Note: can't throw an exception here since this would create
+            // problems with test cases and jar dependencies
+            LOG.warn("Configuration problem: failed to load class for module " +
+                    uri + "; class: " + clazz, e);
+        }
+        return null;
     }
 
     private class ContextUpdateListener implements UpdateListener {
