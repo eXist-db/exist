@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
 /**
  *  Defines the methods callable through the XMLRPC interface.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ * @author     Wolfgang Meier <wolfgang@exist-db.org>
  * modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
 public interface RpcAPI {
@@ -44,7 +44,8 @@ public interface RpcAPI {
 	public final static String VARIABLES = "variables";
 	public final static String BASE_URI = "base-uri";
 	public final static String STATIC_DOCUMENTS = "static-documents";
-	public static final String ERROR = "error";
+    public final static String PROTECTED_MODE = "protected";
+    public static final String ERROR = "error";
 	public static final String LINE = "line";
 	public static final String COLUMN = "column";
 	

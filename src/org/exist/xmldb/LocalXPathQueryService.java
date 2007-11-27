@@ -329,7 +329,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	                coll.allDocs(reservedBroker, docs, true, lockedDocuments, Lock.WRITE_LOCK);
 	            } catch (LockException e) {
 	                LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getLength() + "; locked: " +
-	                		lockedDocuments.size());
+                    lockedDocuments.size());
 					lockedDocuments.unlock();
                     brokerPool.release(reservedBroker);
                     deadlockCaught = true;

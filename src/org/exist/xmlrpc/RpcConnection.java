@@ -84,6 +84,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.DataBackup;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
@@ -120,6 +121,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.ErrorCodes;
 
 /**
  * This class implements the actual methods defined by
@@ -324,8 +327,12 @@ public class RpcConnection extends Thread {
         Source source = new StringSource(xpath);
         CompiledXQuery compiled = compile(user, broker, source, parameters);
         checkPragmas(compiled.getContext(), parameters);
+        LockedDocumentMap lockedDocuments = null;
         try {
             long start = System.currentTimeMillis();
+            lockedDocuments = beginProtected(broker, parameters);
+            if (lockedDocuments != null)
+                compiled.getContext().setProtectedDocs(lockedDocuments);
             Sequence result = xquery.execute(compiled, contextSet);
             // pass last modified date to the HTTP response
             HTTPUtils.addLastModifiedHeader( result, compiled.getContext() );
@@ -334,11 +341,35 @@ public class RpcConnection extends Thread {
         } catch (XPathException e) {
             return new QueryResult(e);
         } finally {
+            if(lockedDocuments != null) {
+                lockedDocuments.unlock();
+            }
             if(compiled != null)
                 pool.returnCompiledXQuery(source, compiled);
         }
     }
-    
+
+    protected LockedDocumentMap beginProtected(DBBroker broker, Hashtable parameters) throws EXistException {
+        String protectColl = (String) parameters.get(RpcAPI.PROTECTED_MODE);
+        if (protectColl == null)
+            return null;
+        boolean deadlockCaught;
+        do {
+            DocumentSet docs = null;
+            LockedDocumentMap lockedDocuments = new LockedDocumentMap();
+            try {
+                Collection coll = broker.getCollection(XmldbURI.createInternal(protectColl));
+                docs = new DocumentSet();
+                coll.allDocs(broker, docs, true, lockedDocuments, Lock.WRITE_LOCK);
+                return lockedDocuments;
+            } catch (LockException e) {
+                LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getLength() + "; locked: " +
+                lockedDocuments.size());
+                lockedDocuments.unlock();
+            }
+        } while (true);
+    }
+
     /**
      * The method <code>compile</code>
      *
