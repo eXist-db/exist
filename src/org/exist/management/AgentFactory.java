@@ -31,7 +31,7 @@ public class AgentFactory {
 
     public static Agent getInstance() {
         if (instance == null) {
-            String className = System.getProperty("exist.jmxagent", "org.exist.management.JMXAgent");
+            String className = System.getProperty("exist.jmxagent", "org.exist.management.impl.JMXAgent");
             try {
                 Class clazz = Class.forName(className);
                 if (!Agent.class.isAssignableFrom(clazz)) {
