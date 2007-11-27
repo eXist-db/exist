@@ -73,7 +73,7 @@ public class JMXAgent implements Agent {
     public synchronized void registerSystemMBeans() {
         try {
             ObjectName name = new ObjectName("org.exist.management:type=LockManager");
-            addMBean(name, new org.exist.management.LockManager());
+            addMBean(name, new org.exist.management.impl.LockManager());
         } catch (MalformedObjectNameException e) {
             LOG.warn("Exception while registering cache mbean.", e);
         } catch (DatabaseConfigurationException e) {
@@ -84,7 +84,7 @@ public class JMXAgent implements Agent {
     public void initDBInstance(BrokerPool instance) {
         try {
             addMBean("org.exist.management." + instance.getId() + ":type=Database",
-                    new org.exist.management.Database(instance));
+                    new org.exist.management.impl.Database(instance));
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Exception while registering database mbean.", e);
         }
