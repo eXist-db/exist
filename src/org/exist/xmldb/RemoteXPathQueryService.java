@@ -46,7 +46,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	protected Hashtable namespaceMappings = new Hashtable(5);
 	protected Hashtable variableDecls = new Hashtable();
 	protected Properties outputProperties = null;
-	
+	protected boolean protectedMode = false;
+    
     /**
      * Creates a new <code>RemoteXPathQueryService</code> instance.
      *
@@ -89,7 +90,9 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             	optParams.put(RpcAPI.VARIABLES, variableDecls);
             optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
-			Vector params = new Vector();
+            if (protectedMode)
+                optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
+            Vector params = new Vector();
 			params.addElement(query.getBytes("UTF-8"));
 			params.addElement(optParams);
             Hashtable result = (Hashtable) collection.getClient().execute("queryP", params);
@@ -235,6 +238,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         		optParams.put(RpcAPI.SORT_EXPR, sortExpr);
 			optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
+            if (protectedMode)
+                optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
             Vector params = new Vector();
             params.addElement(query.getBytes("UTF-8"));
             params.addElement(resource.path.toString());
@@ -453,13 +458,13 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      * @see org.exist.xmldb.XPathQueryServiceImpl#beginProtected()
      */
     public void beginProtected() {
-        // not yet supported
+        protectedMode = true;
     }
 
     /* (non-Javadoc)
      * @see org.exist.xmldb.XPathQueryServiceImpl#endProtected()
      */
     public void endProtected() {
-        // not yet supported
+        protectedMode = false;
     }
 }
