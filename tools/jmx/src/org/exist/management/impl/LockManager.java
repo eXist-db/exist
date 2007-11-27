@@ -21,7 +21,7 @@
  */
 package org.exist.management.impl;
 
-import org.exist.management.LockManagerMBean;
+import org.exist.management.impl.LockManagerMBean;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.LockInfo;
 
