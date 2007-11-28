@@ -1,4 +1,4 @@
-// $ANTLR 2.7.4: "DeclScanner.g" -> "DeclScanner.java"$
+// $ANTLR 2.7.7 (2006-11-01): "DeclScanner.g" -> "DeclScanner.java"$
 
 	package org.exist.xquery.parser;
 	
