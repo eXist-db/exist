@@ -1668,7 +1668,7 @@ protected END_TAG_START
 options { paraphrase="XML end tag"; }: "</" ;
 
 protected LCURLY options { paraphrase="opening curly brace '{'"; }: '{' ;
-protected RCURLY options { paraphrase="closing curly brace '{'"; }: '}' ;
+protected RCURLY options { paraphrase="closing curly brace '}'"; }: '}' ;
 
 protected XML_COMMENT_END options { paraphrase="end of XML comment"; }: "-->" ;
 protected XML_PI_START options { paraphrase="start of processing instruction"; }: "<?" ;
