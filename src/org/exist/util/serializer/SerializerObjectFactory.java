@@ -50,4 +50,11 @@ public class SerializerObjectFactory extends BaseKeyedPoolableObjectFactory {
         else if (key == DOMStreamer.class)
             ((DOMStreamer)obj).reset();
     }
+
+    public void passivateObject(Object key, Object obj) throws Exception {
+        if (key == SAXSerializer.class)
+            ((SAXSerializer)obj).reset();
+        else if (key == DOMStreamer.class)
+            ((DOMStreamer)obj).reset();
+    }
 }
