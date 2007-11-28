@@ -1,4 +1,4 @@
-// $ANTLR 2.7.4: "XQuery.g" -> "XQueryLexer.java"$
+// $ANTLR 2.7.7 (2006-11-01): "XQuery.g" -> "XQueryLexer.java"$
 
 	package org.exist.xquery.parser;
 
@@ -3820,7 +3820,7 @@ tryAgain:
 						synPredMatched509 = false;
 					}
 					rewind(_m509);
-					inputState.guessing--;
+inputState.guessing--;
 				}
 				if ( synPredMatched509 ) {
 					match('-');
@@ -3876,7 +3876,7 @@ tryAgain:
 							synPredMatched517 = false;
 						}
 						rewind(_m517);
-						inputState.guessing--;
+inputState.guessing--;
 					}
 					if ( synPredMatched517 ) {
 						match('?');
@@ -3927,7 +3927,7 @@ tryAgain:
 					synPredMatched524 = false;
 				}
 				rewind(_m524);
-				inputState.guessing--;
+inputState.guessing--;
 			}
 			if ( synPredMatched524 ) {
 				match(']');
@@ -3951,7 +3951,7 @@ tryAgain:
 						synPredMatched527 = false;
 					}
 					rewind(_m527);
-					inputState.guessing--;
+inputState.guessing--;
 				}
 				if ( synPredMatched527 ) {
 					{
@@ -4201,7 +4201,7 @@ tryAgain:
 						synPredMatched547 = false;
 					}
 					rewind(_m547);
-					inputState.guessing--;
+inputState.guessing--;
 				}
 				if ( synPredMatched547 ) {
 					mDOUBLE_LITERAL(false);
@@ -4270,7 +4270,7 @@ tryAgain:
 							synPredMatched556 = false;
 						}
 						rewind(_m556);
-						inputState.guessing--;
+inputState.guessing--;
 					}
 					if ( synPredMatched556 ) {
 						mDOUBLE_LITERAL(false);
@@ -4305,7 +4305,7 @@ tryAgain:
 								synPredMatched542 = false;
 							}
 							rewind(_m542);
-							inputState.guessing--;
+inputState.guessing--;
 						}
 						if ( synPredMatched542 ) {
 							mXML_PI(false);
@@ -4369,7 +4369,7 @@ tryAgain:
 									synPredMatched544 = false;
 								}
 								rewind(_m544);
-								inputState.guessing--;
+inputState.guessing--;
 							}
 							if ( synPredMatched544 ) {
 								mPARENT(false);
@@ -4511,7 +4511,7 @@ tryAgain:
 										synPredMatched549 = false;
 									}
 									rewind(_m549);
-									inputState.guessing--;
+inputState.guessing--;
 								}
 								if ( synPredMatched549 ) {
 									mDECIMAL_LITERAL(false);
@@ -4534,7 +4534,7 @@ tryAgain:
 											synPredMatched551 = false;
 										}
 										rewind(_m551);
-										inputState.guessing--;
+inputState.guessing--;
 									}
 									if ( synPredMatched551 ) {
 										mSELF(false);
@@ -4558,7 +4558,7 @@ tryAgain:
 												synPredMatched558 = false;
 											}
 											rewind(_m558);
-											inputState.guessing--;
+inputState.guessing--;
 										}
 										if ( synPredMatched558 ) {
 											mDECIMAL_LITERAL(false);
