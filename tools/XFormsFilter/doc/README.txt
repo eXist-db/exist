@@ -43,7 +43,7 @@ otherwise you may download these manually and place them in ${EXIST_HOME}/tools/
 By default the XFormsFilter will expect to generate XHTML 1.1 compatible
 output (if you wish to have HTML 4.01 output see the "Configuration Options" section at the
 end of the document). For XHTML 1.1 output to be generated eXist must first be configured to use
-Saxon. Follow the steps outlined here - http://wiki.exist-db.org/space/Howtos/Adding+XSLT+2.0+(Saxon)
+Saxon. Follow the steps outlined here - http://atomic.exist-db.org/wiki/HowTo/XSLT2
 If you want HTML 4.01 then you do not need Saxon, eXist's default of Xalan will be fine.
 
 
