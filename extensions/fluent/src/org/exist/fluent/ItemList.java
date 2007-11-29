@@ -248,12 +248,21 @@ public class ItemList extends Resource implements Iterable<Item> {
 	}
 	
 	/**
-	 * Return the number of elements in this item list
+	 * Return the number of elements in this item list.
 	 * 
 	 * @return the number of elements in this item list
 	 */
 	public int size() {
 		return seq.getItemCount();
+	}
+	
+	/**
+	 * Return whether this item list is empty.
+	 *
+	 * @return <code>true</code> if this item list has no elements
+	 */
+	public boolean isEmpty() {
+		return seq.isEmpty();
 	}
 	
 	Item wrap(org.exist.xquery.value.Item x) {
@@ -287,7 +296,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 		}
 	}
 	
-	public boolean equals(Object o) {
+	@Override public boolean equals(Object o) {
 		if (!(o instanceof ItemList)) return false;
 		ItemList that = (ItemList) o;
 		if (this.size() != that.size()) return false;
@@ -299,7 +308,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 * The hash code computation can be expensive, and the hash codes may not be very well distributed.
 	 * You probably shouldn't use item lists in situations where they might get hashed.
 	 */
-	public int hashCode() {
+	@Override public int hashCode() {
 		int hashCode = 1;
 		for (Item item : this) hashCode = hashCode * 31 + item.hashCode();
 		return hashCode;

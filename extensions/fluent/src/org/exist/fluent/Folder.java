@@ -1,11 +1,10 @@
 package org.exist.fluent;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
+import org.exist.collections.*;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -13,8 +12,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
 
@@ -129,7 +127,9 @@ public class Folder extends Resource implements Cloneable {
 		public Folder create(String descendantName) {
 			staleMarker.check();
 			if (descendantName.startsWith("/")) throw new IllegalArgumentException("descendant name starts with '/': " + descendantName);
-			return new Folder(path() + "/" + descendantName, true, Folder.this);
+			String parentPath = path();
+			if (parentPath.equals("/")) parentPath = "";
+			return new Folder(parentPath + "/" + descendantName, true, Folder.this);
 		}
 
 		/**

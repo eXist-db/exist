@@ -1,6 +1,7 @@
 package org.exist.fluent;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 public class XMLDocumentTest extends DatabaseTestCase {
@@ -46,4 +47,17 @@ public class XMLDocumentTest extends DatabaseTestCase {
 		assertEquals(2, c.query().all("/test").size());
 		assertEquals(1, c.query().all("$_1/test", new Object[] { doc }).size());
 	}
+	
+	@Test public void nameAndPathFromCreate() {
+		XMLDocument doc = db.createFolder("/top").documents().build(Name.create("foo")).elem("root").end("root").commit();
+		assertEquals("foo", doc.name());
+		assertEquals("/top/foo", doc.path());
+	}
+	
+	@Test public void nameAndPathFromLoad() {
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.create("foo"), Source.xml("<root/>"));
+		assertEquals("foo", doc.name());
+		assertEquals("/top/foo", doc.path());
+	}
+
 }
