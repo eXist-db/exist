@@ -7,17 +7,33 @@ import org.junit.Test;
 public class FolderTest extends DatabaseTestCase {
 
 	@Test public void createTop() {
-		db.createFolder("/top");
+		Folder f = db.createFolder("/top");
+		assertEquals("top", f.name());
+		assertEquals("/top", f.path());
 		db.getFolder("/top");
 	}
 
 	@Test public void createNested() {
-		db.createFolder("/top/nested");
+		Folder f = db.createFolder("/top/nested");
+		assertEquals("nested", f.name());
+		assertEquals("/top/nested", f.path());
 		db.getFolder("/top/nested");
 	}
 
 	@Test public void getRoot() {
 		assertEquals("", db.getFolder("/").name());
+	}
+	
+	@Test public void createTopChild() {
+		Folder f = db.getFolder("/").children().create("child");
+		assertEquals("child", f.name());
+		assertEquals("/child", f.path());
+	}
+
+	@Test public void createNestedChild() {
+		Folder f = db.createFolder("/top").children().create("child");
+		assertEquals("child", f.name());
+		assertEquals("/top/child", f.path());
 	}
 
 	@Test(expected = DatabaseException.class)
