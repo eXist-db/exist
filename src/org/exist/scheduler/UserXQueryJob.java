@@ -22,6 +22,8 @@
 package org.exist.scheduler;
 
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Properties;
 
 import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
@@ -40,6 +42,8 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.StringValue;
+
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -107,7 +111,8 @@ public class UserXQueryJob extends UserJob
 		DBBroker broker = null;
 		String xqueryresource = (String)jobDataMap.get("xqueryresource");
 		User user = (User)jobDataMap.get("user");
-		
+		Properties params = (Properties)jobDataMap.get("params"); 
+			
 		//if invalid arguments then abort
 		if(pool == null || xqueryresource == null || user == null)
 		{
@@ -143,6 +148,18 @@ public class UserXQueryJob extends UserJob
 	        context.setStaticallyKnownDocuments(
 	                 new XmldbURI[] { resource.getCollection().getURI() }
 	        );
+	        
+	        //declare any parameters as external variables
+	        String bindingPrefix = params.getProperty("bindingPrefix");
+	        if(bindingPrefix == null)
+	        	bindingPrefix = "local";
+	        Enumeration paramNames = params.keys();
+	        while(paramNames.hasMoreElements())
+	        {
+	        	String name = (String)paramNames.nextElement();
+	        	String value = params.getProperty(name);
+	        	context.declareVariable(bindingPrefix + ":" + name, new StringValue(value));
+	        }
 	        
 	        if(compiled == null)
 	        {

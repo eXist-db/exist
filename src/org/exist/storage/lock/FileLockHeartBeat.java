@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.exist.scheduler.JobDescription;
-import org.exist.scheduler.SystemJob;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -53,7 +52,7 @@ public class FileLockHeartBeat implements JobDescription, Job {
 	}
 
     public String getGroup() {
-        return SystemJob.JOB_GROUP;
+        return "eXist.internal";
     }
 
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {

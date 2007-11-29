@@ -21,18 +21,45 @@
  */
 package org.exist.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Logger;
+
 import org.exist.Indexer;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.journal.JournalManager;
 import org.exist.indexing.IndexManager;
 import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
+import org.exist.scheduler.JobException;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.User;
 import org.exist.security.XMLSecurityManager;
 import org.exist.security.xacml.XACMLConstants;
-import org.exist.storage.*;
+import org.exist.storage.BrokerFactory;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.CollectionCacheManager;
+import org.exist.storage.DBBroker;
+import org.exist.storage.DefaultCacheManager;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.NativeBroker;
+import org.exist.storage.NativeValueIndex;
+import org.exist.storage.TextSearchEngine;
+import org.exist.storage.XQueryPool;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
@@ -42,24 +69,21 @@ import org.exist.xquery.FunctionFactory;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 import org.exist.xslt.TransformerFactoryAllocator;
+
 import org.quartz.SimpleTrigger;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.*;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
-public class Configuration implements ErrorHandler {
+public class Configuration implements ErrorHandler
+{
     private final static Logger LOG = Logger.getLogger(Configuration.class); //Logger
     protected String configFilePath = null;
     protected File existHome = null;
@@ -67,60 +91,86 @@ public class Configuration implements ErrorHandler {
     protected DocumentBuilder builder = null;
     protected HashMap config = new HashMap(); //Configuration
     
-    //TODO : extract this
-    public static final class SystemTaskConfig {
-    	
-    	public static final String CONFIGURATION_ELEMENT_NAME = "system-task";
-        protected String className;
-        protected long period = -1;
-        protected long delay = -1;
-        protected long repeat = SimpleTrigger.REPEAT_INDEFINITELY;
-        protected String cronExpr = null;
-        protected Properties params = new Properties();
-        
-        public SystemTaskConfig(String className) {
-            this.className = className;
-        }
-        
-        public String getClassName() {
-            return className;
-        }
-        
-        public void setPeriod(long period) {
-            this.period = period;
-        }
-        
-        public long getPeriod() {
-            return period;
-        }
+    public static final class JobConfig
+    {
+    	private String type = null;
+        private String resourceName = null;
+        private String schedule = null;
+		private long delay = -1;
+		private int repeat = SimpleTrigger.REPEAT_INDEFINITELY;
+		private Properties parameters = new Properties();
+		
+		public JobConfig(String type, String resourceName, String schedule) throws JobException
+		{
+			if(type != null)
+			{
+				this.type = type;
+			}
+			else
+			{
+				this.type = Scheduler.JOB_TYPE_USER;
+			}
+			
+			if(resourceName != null)
+			{
+				this.resourceName = resourceName;
+			}
+			else
+			{
+				throw new JobException(JobException.JOB_ABORT, "Job must have a resource for execution");
+			}
+			
+			if(schedule == null && !type.equals(Scheduler.JOB_TYPE_STARTUP))
+			{
+				throw new JobException(JobException.JOB_ABORT, "Job must have a schedule");
+			}
+			else
+			{
+				this.schedule = schedule;
+			}
+		}
+
+		public String getType()
+		{
+			return type;
+		}
+		
+		public String getResourceName()
+		{
+			return resourceName;
+		}
+		
+		public String getSchedule()
+		{
+			return schedule;
+		}
 		
 		public void setDelay(long delay) {
-            this.delay = delay;
-        }
-        
-        public long getDelay() {
-            return delay;
-        }
+			this.delay = delay;
+		}
+
+		public void setRepeat(int repeat) {
+			this.repeat = repeat;
+		}
 		
-		public void setRepeat(long repeat) {
-            this.repeat = repeat;
-        }
-        
-        public long getRepeat() {
-            return repeat;
-        }
-        
-        public String getCronExpr() {
-            return cronExpr;
-        }
-        
-        public void setCronExpr(String cronExpr) {
-            this.cronExpr = cronExpr;
-        }
-        
-        public Properties getProperties() {
-            return params;
-        }
+		public long getDelay() {
+			return delay;
+		}
+
+		public int getRepeat() {
+			return repeat;
+		}
+		
+		public void addParameter(String name, String value)
+		{
+			parameters.put(name, value);
+		}
+		
+		public Properties getParameters()
+		{
+			return parameters;
+		}
+		
     }
     
     public static final class IndexModuleConfig {
@@ -466,20 +516,29 @@ public class Configuration implements ErrorHandler {
     /**
      * Reads the scheduler configuration
      */
-    private void configureScheduler(Element scheduler) {
+    private void configureScheduler(Element scheduler)
+    {
         NodeList nlJobs = scheduler.getElementsByTagName(Scheduler.CONFIGURATION_JOB_ELEMENT_NAME);
         
         if(nlJobs == null)
             return;
         
-        String jobList[][] = new String[nlJobs.getLength()][4];
+        ArrayList jobList = new ArrayList();
+        
+        String jobType = null;
         String jobResource = null;
         String jobSchedule = null;
 		String jobDelay    = null;
 		String jobRepeat   = null;
         
-        for(int i = 0; i < nlJobs.getLength(); i++) {
+        for(int i = 0; i < nlJobs.getLength(); i++)
+        {
             Element job = (Element)nlJobs.item(i);
+            
+            //get the job type
+            jobType = job.getAttribute(Scheduler.JOB_TYPE_ATTRIBUTE);
+            if(jobType == null)
+            	jobType = Scheduler.JOB_TYPE_USER; //default to user if unspecified
             
             //get the job resource
             jobResource = job.getAttribute(Scheduler.JOB_CLASS_ATTRIBUTE);
@@ -491,29 +550,64 @@ public class Configuration implements ErrorHandler {
             if(jobSchedule == null)
                 jobSchedule = job.getAttribute(Scheduler.JOB_PERIOD_ATTRIBUTE);
 			
-			//get the job delay
-            jobDelay = job.getAttribute(Scheduler.JOB_DELAY_ATTRIBUTE);
-			
-			//get the job delay
-            jobDelay = job.getAttribute(Scheduler.JOB_DELAY_ATTRIBUTE);
-			
-			//get the job repeat
-            jobRepeat = job.getAttribute(Scheduler.JOB_REPEAT_ATTRIBUTE);
-            
-            //check we have both a resource and a schedule
-            if(jobResource == null | jobSchedule == null)
-                return;
-            
-            jobList[i][0] = jobResource;
-            jobList[i][1] = jobSchedule;
-			jobList[i][2] = jobDelay;
-			jobList[i][3] = jobRepeat;
-			
-            LOG.debug( "Configured scheduled job '" + jobResource + "' with trigger '" + jobSchedule + 
-				       ( jobDelay == null ? "" : "' with delay '" + jobDelay ) + 
-					   ( jobRepeat == null ? "" : "' repetitions '" + jobRepeat ) + "'" );
+            //create the job config
+            try
+            {
+	            JobConfig jobConfig = new JobConfig(jobType, jobResource, jobSchedule);
+	            
+				//get and set the job delay
+	            jobDelay = job.getAttribute(Scheduler.JOB_DELAY_ATTRIBUTE);
+	            if(jobDelay != null && jobDelay.length() > 0)
+	            {
+	            	jobConfig.setDelay(Long.parseLong(jobDelay));
+	            }
+							
+				//get and set the job repeat
+	            jobRepeat = job.getAttribute(Scheduler.JOB_REPEAT_ATTRIBUTE);
+	            if(jobRepeat != null && jobRepeat.length() > 0)
+	            {
+	            	jobConfig.setRepeat(Integer.parseInt(jobRepeat));
+	            }
+	            
+	            NodeList params = job.getElementsByTagName(Scheduler.CONFIGURATION_JOB_PARAMETER_ELEMENT_NAME);
+	            for(int p = 0; p < params.getLength(); p++)
+	            {
+	                Element param = (Element)params.item(p);
+	                String name = param.getAttribute("name");
+	                String value = param.getAttribute("value");
+	                if(name == null || name.length() == 0)
+	                {
+	                	LOG.warn("Discarded invalid parameter for '" + jobType + "' job '" + jobResource + "'");
+	                }
+	                else
+	                {
+	                	jobConfig.addParameter(name, value);
+	                }
+	            }
+	            
+	            jobList.add(jobConfig);
+	            
+	            LOG.debug( "Configured scheduled '" + jobType + "' job '" + jobResource + 
+					       	( jobSchedule == null ? "" : "' with trigger '" + jobSchedule) +
+	            			( jobDelay == null ? "" : "' with delay '" + jobDelay ) + 
+						    ( jobRepeat == null ? "" : "' repetitions '" + jobRepeat ) + "'" );
+            }
+            catch(JobException je)
+            {
+            	LOG.warn(je);
+            }
         }
-        config.put(Scheduler.PROPERTY_SCHEDULER_JOBS, jobList);
+        
+        if(jobList.size() > 0)
+        {
+        	JobConfig[] configs = new JobConfig[jobList.size()];
+        	for(int i = 0; i < jobList.size(); i++)
+        	{
+        		configs[i] = (JobConfig)jobList.get(i);
+        	}
+        	
+        	config.put(Scheduler.PROPERTY_SCHEDULER_JOBS, configs);
+        }
     }
     
     /**
@@ -686,10 +780,6 @@ public class Configuration implements ErrorHandler {
         if (watchConf.getLength() > 0) {
             configureWatchdog((Element) watchConf.item(0));
         }
-        NodeList sysTasks = con.getElementsByTagName(SystemTaskConfig.CONFIGURATION_ELEMENT_NAME);
-        if (sysTasks.getLength() > 0) {
-            configureSystemTasks(sysTasks);
-        }
         NodeList recoveries = con.getElementsByTagName(BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME);
         if (recoveries.getLength() > 0) {
             configureRecovery((Element)recoveries.item(0));
@@ -768,67 +858,6 @@ public class Configuration implements ErrorHandler {
                     "to be an octal number");
             }
         }
-    }
-    
-    /**
-     * @param sysTasks
-     */
-    private void configureSystemTasks(NodeList sysTasks) throws DatabaseConfigurationException {
-        SystemTaskConfig taskList[] = new SystemTaskConfig[sysTasks.getLength()];
-        for (int i = 0; i < sysTasks.getLength(); i++) {
-            Element taskDef = (Element) sysTasks.item(i);
-            String classAttr = taskDef.getAttribute("class");
-            if (classAttr == null || classAttr.length() == 0)
-                throw new DatabaseConfigurationException("No class specified for system-task");
-            SystemTaskConfig sysTask = new SystemTaskConfig(classAttr);
-            String cronAttr = taskDef.getAttribute("cron-trigger");
-            String periodAttr = taskDef.getAttribute("period");
-			String delayAttr  = taskDef.getAttribute("delay");
-            String repeatAttr  = taskDef.getAttribute("repeat");
-            if (cronAttr != null && cronAttr.length() > 0) {
-                sysTask.setCronExpr(cronAttr);
-            } else {
-                if (periodAttr == null || periodAttr.length() == 0)
-                    throw new DatabaseConfigurationException("No period or cron-trigger specified for system-task");
-                long period;
-                try {
-                    period = Long.parseLong(periodAttr);
-                } catch (NumberFormatException e) {
-                    throw new DatabaseConfigurationException("Attribute period is not a number: " + e.getMessage());
-                }
-				sysTask.setPeriod(period);
-				if( delayAttr != null && delayAttr.length() > 0) {
-					long delay;
-					try {
-	                    delay = Long.parseLong(delayAttr);
-	                } catch (NumberFormatException e) {
-	                    throw new DatabaseConfigurationException("Attribute delay is not a number: " + e.getMessage());
-	                }
-					sysTask.setDelay(delay);
-				}
-				if( repeatAttr != null && repeatAttr.length() > 0) {
-					int repeat;
-					try {
-	                    repeat = Integer.parseInt(repeatAttr);
-	                } catch (NumberFormatException e) {
-	                    throw new DatabaseConfigurationException("Attribute repeat is not a number: " + e.getMessage());
-	                }
-					sysTask.setRepeat(repeat);
-				}
-            }
-            NodeList params = taskDef.getElementsByTagName("parameter");
-            for (int j = 0; j < params.getLength(); j++) {
-                Element param = (Element) params.item(j);
-                String name = param.getAttribute("name");
-                String value = param.getAttribute("value");
-                if (name == null || name.length() == 0)
-                    throw new DatabaseConfigurationException("No name specified for parameter");
-                sysTask.params.setProperty(name, value);
-            }
-            taskList[i] = sysTask;
-        }
-        config.put(BrokerPool.PROPERTY_SYSTEM_TASK_CONFIG, taskList);
-        LOG.debug(BrokerPool.PROPERTY_SYSTEM_TASK_CONFIG+ ": " + config.get(BrokerPool.PROPERTY_SYSTEM_TASK_CONFIG));
     }
     
     /**
