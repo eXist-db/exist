@@ -444,7 +444,7 @@ public class BrokerPool {
     // WM: yes, only used in initialization. Don't need a synchronized collection here
     private List systemTasks = new ArrayList();
     //TODO : remove when SystemTask has a getPeriodicity() method
-    private Vector systemTasksPeriods = new Vector();
+    //private Vector systemTasksPeriods = new Vector();
 	
 	/**
 	 * The pending system maintenance tasks of the database instance.
@@ -544,17 +544,14 @@ public class BrokerPool {
 		aLong = (Long) conf.getProperty(PROPERTY_SYNC_PERIOD);
 		if (aLong != null)
 			/*this.*/majorSyncPeriod = aLong.longValue();
-		//TODO : sanity check : the synch period should be reasonible
+		//TODO : sanity check : the synch period should be reasonable
 		LOG.info("database instance '" + instanceName + "' will be synchronized every " + nf.format(/*this.*/majorSyncPeriod) + " ms");
-
-		//TODO : move this to initialize ?
-		scheduler = new Scheduler(this, conf);
 
 		aLong = (Long) conf.getProperty("db-connection.pool.shutdown-wait");		
 		if (aLong != null) {
 			this.maxShutdownWait = aLong.longValue();			
 		}
-		//TODO : sanity check : the shutdown period should be reasonible
+		//TODO : sanity check : the shutdown period should be reasonable
 		LOG.info("database instance '" + instanceName + "' will wait  " + nf.format(this.maxShutdownWait) + " ms during shutdown");
 
 		aBoolean = (Boolean) conf.getProperty(PROPERTY_RECOVERY_ENABLED);
@@ -562,9 +559,12 @@ public class BrokerPool {
 			this.transactionsEnabled = aBoolean.booleanValue();
         }
 		LOG.info("database instance '" + instanceName + "' is enabled for transactions : " + this.transactionsEnabled);
+
+		
+/* TODO: start -adam- remove OLD SystemTask initialization */
 		
 		//How ugly : needs refactoring...
-		Configuration.SystemTaskConfig systemTasksConfigs[] = (Configuration.SystemTaskConfig[]) conf.getProperty(BrokerPool.PROPERTY_SYSTEM_TASK_CONFIG);
+/*		Configuration.SystemTaskConfig systemTasksConfigs[] = (Configuration.SystemTaskConfig[]) conf.getProperty(BrokerPool.PROPERTY_SYSTEM_TASK_CONFIG);
 		if (systemTasksConfigs != null) {
 	        for (int i = 0; i < systemTasksConfigs.length; i++) {
 	        	try {
@@ -594,6 +594,11 @@ public class BrokerPool {
 	        }
 			//TODO : why not add a default Sync task here if there is no instanceof Sync in systemTasks ?
 		}		
+*/
+/* TODO: end -adam- remove OLD SystemTask initialization */		
+		
+		//TODO : move this to initialize ? (cant as we need it for FileLockHeartBeat)
+		scheduler = new Scheduler(this, conf);
 		
 		//TODO : since we need one :-( (see above)	
 		this.isReadOnly = !canReadDataDir(conf);
@@ -604,10 +609,8 @@ public class BrokerPool {
 		//TODO : in the future, we should implement an Initializable interface
 		initialize();
 		
-		//setup any configured jobs for the scheduler
-		scheduler.setupConfiguredJobs(conf);
-		
 		//TODO : move this to initialize ?
+		//setup database synchronization job
         if (majorSyncPeriod > 0) {
         	//TODO : why not automatically register Sync in system tasks ?
             scheduler.createPeriodicJob(2500, new Sync(), 2500);
@@ -712,6 +715,7 @@ public class BrokerPool {
 
         indexManager = new IndexManager(this, conf);
         
+        
         //TODO : replace the following code by get()/release() statements ?
         // WM: I would rather tend to keep this broker reserved as a system broker.
         // create a first broker to initialize the security manager
@@ -792,12 +796,17 @@ public class BrokerPool {
         //collectionConfigurationManager.checkRootCollectionConfigCollection(broker);
         //collectionConfigurationManager.checkRootCollectionConfig(broker);		
 
+
+/* TODO: start adam */
+		
 		//Schedule the system tasks	            
-	    for (int i = 0; i < systemTasks.size(); i++) {
+	    /*for (int i = 0; i < systemTasks.size(); i++) {
 	    	//TODO : remove first argument when SystemTask has a getPeriodicity() method
 	        initSystemTask((SingleInstanceConfiguration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
 	    }		
-		systemTasksPeriods = null;
+		systemTasksPeriods = null;*/
+		
+/* TODO: end adam */		
 
 		//Create the minimal number of brokers required by the configuration 
 		for (int i = 1; i < minBrokers; i++)
@@ -808,11 +817,20 @@ public class BrokerPool {
         
         if (LOG.isDebugEnabled())
             LOG.debug("database instance '" + instanceName + "' initialized");
+        
+		
+        //setup any configured jobs
+        //scheduler.setupConfiguredJobs();
+        
+        //execute any startup jobs
+        //scheduler.executeStartupJobs();
+        
+        scheduler.run();
 	}
 	    
 	//TODO : remove the period argument when SystemTask has a getPeriodicity() method
 	//TODO : make it protected ?
-    private void initSystemTask(SingleInstanceConfiguration.SystemTaskConfig config, SystemTask task) throws EXistException {
+    /*private void initSystemTask(SingleInstanceConfiguration.SystemTaskConfig config, SystemTask task) throws EXistException {
         try {
             if (config.getCronExpr() == null) {
                 LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " +
@@ -827,7 +845,7 @@ public class BrokerPool {
 			LOG.warn(e.getMessage(), e);
             throw new EXistException("Failed to initialize system maintenance task: " + e.getMessage());
         }
-    }  	
+    }*/  	
 
     public long getReservedMem() {
         return reservedMem - cacheManager.getSizeInBytes();
@@ -921,6 +939,7 @@ public class BrokerPool {
     public SecurityManager getSecurityManager() {
     	return securityManager;
     }
+    
     
     /** Returns the Scheduler
      * @return The scheduler
@@ -1303,6 +1322,11 @@ public class BrokerPool {
     // WM: get/release may lead to deadlock!
 	//TODO : make it protected ?
     private void runSystemTask(DBBroker broker, SystemTask task) {
+    	
+    	//dont run the task if we are shutting down
+    	if(status == SHUTDOWN)
+    		return;
+    	
     	try {
     		//Flush everything
     		//TOUNDERSTAND (pb) : are we sure that this sync will be executed (see comments above) ?
@@ -1365,6 +1389,11 @@ public class BrokerPool {
 	 */
 	public synchronized void shutdown() {
 		shutdown(false);
+	}
+	
+	public boolean isShuttingDown()
+	{
+		return(status == SHUTDOWN);
 	}
 	
 	/**
@@ -1484,7 +1513,7 @@ public class BrokerPool {
         indexManager = null;
         scheduler = null;
         systemTasks = null;
-        systemTasksPeriods = null;
+        /* TODO: adam */ //systemTasksPeriods = null;
         waitingSystemTasks.clear();
         xmlReaderPool = null;
         shutdownListener = null;

@@ -25,15 +25,16 @@ package org.exist.storage.sync;
 import java.util.Map;
 
 import org.exist.scheduler.JobException;
-import org.exist.scheduler.SystemJob;
+import org.exist.scheduler.UserJavaJob;
 import org.exist.storage.BrokerPool;
 
 /**
  * It will periodically trigger a cache sync to write
  * cached pages to disk. 
  */
-public class Sync extends SystemJob {
+public class Sync extends UserJavaJob {
 
+	private final static String JOB_GROUP = "eXist.internal";
 	private final static String JOB_NAME = "Sync";
 	
 	public final static int MINOR_SYNC = 0;

@@ -29,7 +29,7 @@ import java.nio.channels.FileChannel;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -152,7 +152,7 @@ public class FileLock {
         }
         
         //Schedule the heartbeat for the file lock
-        HashMap params = new HashMap();
+        Properties params = new Properties();
         params.put(FileLock.class.getName(), this);
         pool.getScheduler().createPeriodicJob(HEARTBEAT, new FileLockHeartBeat(lockFile.getName()), -1, params);
         
@@ -215,18 +215,33 @@ public class FileLock {
         channel = raf.getChannel();
     }
     
-    protected void save() throws IOException {
-        if (channel == null)
-            open();
-        long now = System.currentTimeMillis();
-        buf.clear();
-        buf.put(MAGIC);
-        buf.putLong(now);
-        buf.flip();
-        channel.position(0);
-        channel.write(buf);
-        channel.force(true);
-        lastHeartbeat = now;
+    protected void save() throws IOException
+    {
+    	try
+    	{
+	        if (channel == null)
+	            open();
+	        long now = System.currentTimeMillis();
+	        buf.clear();
+	        buf.put(MAGIC);
+	        buf.putLong(now);
+	        buf.flip();
+	        channel.position(0);
+	        channel.write(buf);
+	        channel.force(true);
+	        lastHeartbeat = now;
+    	}
+    	catch(NullPointerException npe)
+    	{
+    		if(pool.isShuttingDown())
+    		{
+    			LOG.info("No need to save FileLock, database is shutting down");
+    		}
+    		else
+    		{
+    			throw npe;
+    		}
+    	}
     }
     
     private void read() throws IOException {

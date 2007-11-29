@@ -40,7 +40,7 @@ import org.quartz.JobExecutionException;
 public class SystemTaskJob implements JobDescription, org.quartz.StatefulJob
 {
 	private String JOB_NAME = "SystemTask";
-	private final static String JOB_GROUP = "eXist.SystemTask";
+	private final static String JOB_GROUP = "eXist.System";
 	
 	private SystemTask task = null;
 	
