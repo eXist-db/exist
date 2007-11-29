@@ -558,7 +558,7 @@
                 </h1>
             </xsl:if>
             <table>
-                <xsl:apply-templates select="*[not(self::title)]"/>
+                <xsl:apply-templates select="*[not(self::title)] | @*"/>
             </table>
         </div>
     </xsl:template>
