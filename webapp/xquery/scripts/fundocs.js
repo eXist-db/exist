@@ -97,6 +97,8 @@ var DocQuery = function () {
      * Handle query results.
      */
     this.queryResult = function (response) {
+        var element;
+        
         Dom.setStyle('f-loading', 'visibility', 'hidden');
         results.innerHTML = response.responseText;
         
@@ -128,6 +130,40 @@ var DocQuery = function () {
                 }
             }, modules[i], true);
         }
+
+        element = document.getElementById( 'showAllModules' );
+        Event.addListener( element, 'click', function () {
+            var modules = Dom.getElementsByClassName('f-module-heading-section', 'div', results);
+                for (var i = 0; i < modules.length; i++) {
+                    Dom.setStyle( modules[i], 'display', '' );
+                    Dom.getElementsByClassName('f-module-heading-hideshow', 'td', modules[i].parentNode)[0].innerHTML = "-";
+                }
+            }, element, true);
+        
+        element = document.getElementById( 'hideAllModules' );
+        Event.addListener( element, 'click', function () {
+            var modules = Dom.getElementsByClassName('f-module-heading-section', 'div', results);
+                for (var i = 0; i < modules.length; i++) {
+                    Dom.setStyle( modules[i], 'display', 'none' );
+                    Dom.getElementsByClassName('f-module-heading-hideshow', 'td', modules[i].parentNode)[0].innerHTML = "+";
+                }
+            }, element, true);
+        
+        element = document.getElementById( 'showAllDescriptions' );
+        Event.addListener( element, 'click', function () {
+            var modules = Dom.getElementsByClassName('f-description', 'div', results);
+                for (var i = 0; i < modules.length; i++) {
+                    Dom.setStyle( modules[i], 'display', '' );
+                }
+            }, element, true);
+        
+        element = document.getElementById( 'hideAllDescriptions' );
+        Event.addListener( element, 'click', function () {
+            var modules = Dom.getElementsByClassName('f-description', 'div', results);
+                for (var i = 0; i < modules.length; i++) {
+                    Dom.setStyle( modules[i], 'display', 'none' );
+                }
+            }, element, true);
 
         var animIn = new YAHOO.util.Anim(results, { opacity: { to: 1 } }, 0.3, YAHOO.util.Easing.easeNone);
         animIn.animate();

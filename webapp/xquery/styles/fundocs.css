@@ -121,3 +121,15 @@
     padding:            0px;
 }
 
+.f-show-buttons {
+    font-weight:        bold;
+    font-size:          130%;
+    width:              45%;
+}
+
+.f-hide-buttons {
+    font-weight:        bold;
+    font-size:          130%;
+    width:              55%;
+}
+
