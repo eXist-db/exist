@@ -62,21 +62,45 @@ $qs as xs:string?) as element()* {
     if ($qs != '' or $module != '') then
         let $matches :=
             if ($action eq "Browse") then
-                /xqdoc:xqdoc[xqdoc:module/xqdoc:uri = $module]//xqdoc:function
-            else if ($type eq "name") then
-                //xqdoc:function[ngram:contains(xqdoc:name, $qs)]
-            else
-                //xqdoc:function[ngram:contains(xqdoc:comment/xqdoc:description, $qs)]
-        for $match in $matches
-        order by $match/xqdoc:name
-        return
-            <div class="f-function">
-                <div class="f-module">
-                    {$match/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri/text()}
+                if( $module eq "All" ) then
+                    /xqdoc:xqdoc//xqdoc:function
+                else
+                    /xqdoc:xqdoc[xqdoc:module/xqdoc:uri = $module]//xqdoc:function
+            else if( $qs != '' ) then
+                if ($type eq "name") then
+                    //xqdoc:function[ngram:contains(xqdoc:name, $qs)]
+                else
+                    //xqdoc:function[ngram:contains(xqdoc:comment/xqdoc:description, $qs)]
+            else ()
+    
+        for $modURI in distinct-values( $matches/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri )
+        order by $modURI
+        return 
+            <div class="f-module-heading">
+                <br/>
+                <table class="f-module-heading-table">
+                    <tr>
+                        <td class="f-module-heading-namespace">{ $modURI }</td>
+                        <td class="f-module-heading-description">{  /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:description/text() }</td>
+                        <td class="f-module-heading-hideshow">-</td>
+                    </tr>
+                </table>
+                <div class="f-module-heading-section">
+                    <br/>
+                    {
+                        for $match in $matches[ ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri = $modURI ]
+                        order by $match/xqdoc:name
+                        return
+                            <div class="f-function">
+                                <div class="f-module">
+                                    {$match/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri/text()}
+                                </div>
+                                <h3>{$match/xqdoc:name/text()}</h3>
+                                <div class="f-signature">{$match/xqdoc:signature/text()}</div>
+                                <div class="f-description">{$match/xqdoc:comment/xqdoc:description/text()}</div>
+                            </div>
+                    } 
                 </div>
-                <h3>{$match/xqdoc:name/text()}</h3>
-                <div class="f-signature">{$match/xqdoc:signature/text()}</div>
-                <div class="f-description">{$match/xqdoc:comment/xqdoc:description/text()}</div>
             </div>
     else
         ()
@@ -104,7 +128,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     
         <chapter>
-    		<title>XQuery Function Documentation</title>
+            <title>XQuery Function Documentation</title>
             {
                 if ($askPass) then
                     <form id="f-pass" name="f-pass" action="functions.xq" method="POST">
@@ -143,8 +167,11 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                                         <label for="module">Or display <b>all</b> in:</label>
                                         <select name="module">
                                         {
-                                            for $mod in //xqdoc:module
+                                            let $all := <xqdoc:module><xqdoc:uri>All</xqdoc:uri></xqdoc:module>
+                                            
+                                            for $mod in ( $all, //xqdoc:module )
                                             let $uri := $mod/xqdoc:uri/text()
+                                            order by $uri
                                             return
                                                 <option value="{$uri}">
                                                 { if ($uri eq $module) then attribute selected { "true" } else () }
@@ -154,7 +181,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                                         </select>
                                     </td>
                                     <td class="f-btn">
-                                        <input id="f-btn-browse" type="submit" name="action" value="Browse"/>
+                                        <input id="f-btn-browse" type="submit" name="action" value="Browse"/> 
                                     </td>
                                     <td><img id="f-loading" src="../resources/loading.gif"/></td>
                                 </tr>
@@ -186,15 +213,14 @@ $query as xs:string?) as element() {
                 <link rel="stylesheet" type="text/css" href="styles/fundocs.css"/>
             </head>
             <body class="f-print">
-        		<h1>XQuery Function Documentation</h1>
-        		{
-        		    if ($module) then
-        		        <p>Module: {$module}</p>
-        	        else
-        	            <p>Query: "{$query}" in {$type}.</p>
+                <h1>XQuery Function Documentation</h1>
+                {
+                    if ($prevAction = "Search") then
+                        <p>Query: "{$query}" in {$type}.</p>
+                    else ()
                 }
-        		{ xqdoc:do-query($prevAction, $module, $type, $query) }
-        	</body>
+                { xqdoc:do-query($prevAction, $module, $type, $query) }
+            </body>
         </html>
 };
 

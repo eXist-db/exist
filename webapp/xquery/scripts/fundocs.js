@@ -99,17 +99,36 @@ var DocQuery = function () {
     this.queryResult = function (response) {
         Dom.setStyle('f-loading', 'visibility', 'hidden');
         results.innerHTML = response.responseText;
+        
         var descriptions = Dom.getElementsByClassName('f-description', 'div', results);
         for (var i = 0; i < descriptions.length; i++) {
             Dom.setStyle(descriptions[i], 'display', 'none');
-            descriptions[i].parentNode.title = 'Click to toggle description';
+            descriptions[i].parentNode.title = 'Click to toggle display of description';
             Event.addListener(descriptions[i].parentNode, 'click', function () {
-                if (Dom.getStyle(this, 'display') == 'none')
+                if (Dom.getStyle(this, 'display') == 'none') {
                     Dom.setStyle(this, 'display', '');
-                else
+                }  else {
                     Dom.setStyle(this, 'display', 'none');
+                }
             }, descriptions[i], true);
         }
+        
+        var modules = Dom.getElementsByClassName('f-module-heading-section', 'div', results);
+        for (var i = 0; i < modules.length; i++) {
+            Dom.setStyle(modules[i], 'display', '');
+            modules[i].parentNode.title = 'Click to toggle display of module';
+            Event.addListener(modules[i].parentNode, 'click', function () {
+                var hideshow = Dom.getElementsByClassName('f-module-heading-hideshow', 'td', this.parentNode);
+                if (Dom.getStyle(this, 'display') == 'none') {
+                    Dom.setStyle(this, 'display', '');
+                    hideshow[0].innerHTML = "-";
+                } else {
+                    Dom.setStyle(this, 'display', 'none');
+                    hideshow[0].innerHTML = "+";
+                }
+            }, modules[i], true);
+        }
+
         var animIn = new YAHOO.util.Anim(results, { opacity: { to: 1 } }, 0.3, YAHOO.util.Easing.easeNone);
         animIn.animate();
     }
