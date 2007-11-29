@@ -87,3 +87,37 @@
 .f-print .f-function h3 {
     background-color: inherit;
 }
+
+.f-module-heading-table {
+    background-color:   #dddddd;
+    width:              100%;
+    padding:            0px;
+}
+
+.f-module-heading-description {
+    text-align:         left;
+    width:              45%;
+    font-size:          140%;
+    font-weight:        bold;
+    background-color:   #dddddd;
+    padding:            0px;
+}
+
+.f-module-heading-namespace {
+    text-align:         left;
+    width:              45%;
+    font-size:          140%;
+    font-weight:        bold;
+    background-color:   #dddddd;
+    padding:            0px;
+}
+
+.f-module-heading-hideshow {
+    text-align:         center;
+    width:              10%;
+    font-size:          140%;
+    font-weight:        bold;
+    background-color:   #dddddd;
+    padding:            0px;
+}
+
