@@ -117,7 +117,7 @@ var DocQuery = function () {
         for (var i = 0; i < modules.length; i++) {
             Dom.setStyle(modules[i], 'display', '');
             modules[i].parentNode.title = 'Click to toggle display of module';
-            Event.addListener(modules[i].parentNode, 'click', function () {
+            Event.addListener( Dom.getElementsByClassName('f-module-heading-table', 'table', modules[i].parentNode), 'click', function () {
                 var hideshow = Dom.getElementsByClassName('f-module-heading-hideshow', 'td', this.parentNode);
                 if (Dom.getStyle(this, 'display') == 'none') {
                     Dom.setStyle(this, 'display', '');
