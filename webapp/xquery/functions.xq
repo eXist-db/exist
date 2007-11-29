@@ -58,7 +58,7 @@ declare function xqdoc:setup($adminPass as xs:string) {
     Execute a query or list all functions in a given module.
 :)
 declare function xqdoc:do-query($action as xs:string, $module as xs:string?, $type as xs:string?, 
-$qs as xs:string?) as element()* {
+$qs as xs:string?, $print as xs:boolean) as element()* {
     if ($qs != '' or $module != '') then
         let $matches :=
             if ($action eq "Browse") then
@@ -73,35 +73,57 @@ $qs as xs:string?) as element()* {
                     //xqdoc:function[ngram:contains(xqdoc:comment/xqdoc:description, $qs)]
             else ()
     
-        for $modURI in distinct-values( $matches/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri )
-        order by $modURI
-        return 
-            <div class="f-module-heading">
-                <br/>
-                <table class="f-module-heading-table">
-                    <tr>
-                        <td class="f-module-heading-namespace">{ $modURI }</td>
-                        <td class="f-module-heading-description">{  /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:description/text() }</td>
-                        <td class="f-module-heading-hideshow">-</td>
-                    </tr>
-                </table>
-                <div class="f-module-heading-section">
+        let $hideIndicator   := if( $print ) then "" else "-"
+    
+        let $hideshowButtons := if( $print ) then () 
+                                else 
+                                    <div>
+                                        <table class="f-hideshow-buttons">
+                                            <tr>
+                                                <td class="f-show-buttons">
+                                                    Modules:  <a id="showAllModules" href="#">Show All</a> | <a id="hideAllModules" href="#">Hide All</a>
+                                                </td>
+                                                <td class="f-hide-buttons">
+                                                    Function Descriptions: <a id="showAllDescriptions" href="#">Show All</a> | <a id="hideAllDescriptions" href="#">Hide All</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <br/>
+                                    </div>
+            
+    
+        let $return := 
+            for $modURI in distinct-values( $matches/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri )
+            order by $modURI
+            return 
+                <div class="f-module-heading">
                     <br/>
-                    {
-                        for $match in $matches[ ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri = $modURI ]
-                        order by $match/xqdoc:name
-                        return
-                            <div class="f-function">
-                                <div class="f-module">
-                                    {$match/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri/text()}
+                    <table class="f-module-heading-table">
+                        <tr>
+                            <td class="f-module-heading-namespace">{ $modURI }</td>
+                            <td class="f-module-heading-description">{  /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:description/text() }</td>
+                            <td class="f-module-heading-hideshow">{ $hideIndicator }</td>
+                        </tr>
+                    </table>
+                    <div class="f-module-heading-section">
+                        <br/>
+                        {
+                            for $match in $matches[ ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri = $modURI ]
+                            order by $match/xqdoc:name
+                            return
+                                <div class="f-function">
+                                    <div class="f-module">
+                                        {$match/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri/text()}
+                                    </div>
+                                    <h3>{$match/xqdoc:name/text()}</h3>
+                                    <div class="f-signature">{$match/xqdoc:signature/text()}</div>
+                                    <div class="f-description">{$match/xqdoc:comment/xqdoc:description/text()}</div>
                                 </div>
-                                <h3>{$match/xqdoc:name/text()}</h3>
-                                <div class="f-signature">{$match/xqdoc:signature/text()}</div>
-                                <div class="f-description">{$match/xqdoc:comment/xqdoc:description/text()}</div>
-                            </div>
-                    } 
+                        } 
+                    </div>
                 </div>
-            </div>
+    
+        return ( $hideshowButtons, $return )
     else
         ()
 };
@@ -194,7 +216,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                         in conf.xml to appear here. 
                         </p>
                         <div id="f-result">
-                        { if ($query or $module) then xqdoc:do-query($action, $module, $type, $query) else () }
+                            { if ($query or $module) then xqdoc:do-query($action, $module, $type, $query, false()) else () }
                         </div>
                     </div>
                 )
@@ -219,7 +241,7 @@ $query as xs:string?) as element() {
                         <p>Query: "{$query}" in {$type}.</p>
                     else ()
                 }
-                { xqdoc:do-query($prevAction, $module, $type, $query) }
+    { xqdoc:do-query($prevAction, $module, $type, $query, true() ) }
             </body>
         </html>
 };
@@ -255,7 +277,7 @@ let $mode := request:get-parameter("mode", ())
 let $module := request:get-parameter("module", ())
 return
     if ($mode = "ajax") then
-        xqdoc:do-query($action, $module, $type, $query)
+        xqdoc:do-query($action, $module, $type, $query, false())
     else if ($action eq "Print") then
         xqdoc:print-page($module, $type, $query)
     else
