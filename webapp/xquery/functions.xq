@@ -189,9 +189,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                                         <label for="module">Or display <b>all</b> in:</label>
                                         <select name="module">
                                         {
-                                            let $all := <xqdoc:module><xqdoc:uri>All</xqdoc:uri></xqdoc:module>
-                                            
-                                            for $mod in ( $all, //xqdoc:module )
+                                            for $mod in collection("/db")//xqdoc:module
                                             let $uri := $mod/xqdoc:uri/text()
                                             order by $uri
                                             return
@@ -200,6 +198,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                                                 { $uri }
                                                 </option>
                                         }
+                                            <option value="All">All</option>
                                         </select>
                                     </td>
                                     <td class="f-btn">
