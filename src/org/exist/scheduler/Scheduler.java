@@ -109,9 +109,6 @@ public class Scheduler
 
             SchedulerFactory schedulerFactory = new StdSchedulerFactory(properties);
 			scheduler = schedulerFactory.getScheduler();
-
-			//start quartz
-			//scheduler.start();
 		}
 		catch(SchedulerException se)
 		{
@@ -123,18 +120,11 @@ public class Scheduler
 	{
 		try
 		{
-		
-			//System.out.println("isStarted=" + scheduler.isStarted());
-		
 			setupConfiguredJobs();
-		
-			//System.out.println("isStarted=" + scheduler.isStarted());
 		
 			executeStartupJobs();
 		
 			scheduler.start();
-			
-			//System.out.println("isStarted=" + scheduler.isStarted());
 		}
 		catch(SchedulerException se)
 		{
