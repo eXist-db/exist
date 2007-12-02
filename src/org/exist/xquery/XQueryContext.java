@@ -758,7 +758,23 @@ public class XQueryContext {
 		return (String) staticPrefixes.get(uri);
 	}
 
-	/**
+    public String getInScopeNamespace(String prefix) {
+        return inScopeNamespaces == null ? null : (String) inScopeNamespaces.get(prefix);
+    }
+
+    public String getInScopePrefix(String uri) {
+        return inScopePrefixes == null ? null : (String) inScopePrefixes.get(uri);
+    }
+
+    public String getInheritedNamespace(String prefix) {
+        return inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
+    }
+
+    public String getInheritedPrefix(String uri) {
+        return inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);
+    }
+
+    /**
 	 * Removes the namespace URI from the prefix/namespace 
 	 * mappings table.
 	 * 

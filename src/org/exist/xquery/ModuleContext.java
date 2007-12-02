@@ -200,17 +200,15 @@ public class ModuleContext extends XQueryContext {
      * @return the namespace currently mapped to that prefix
      */
     public String getURIForPrefix(String prefix) {
-        String uri = parentContext.inScopeNamespaces == null ? null :
-            (String) parentContext.inScopeNamespaces.get(prefix);
+        String uri = getInScopeNamespace(prefix);
         if (uri != null)
             return uri;
         //TODO : test NS inheritance
-        uri = parentContext.inheritedInScopeNamespaces == null ? null :
-            (String) parentContext.inheritedInScopeNamespaces.get(prefix);
+        uri = getInheritedNamespace(prefix);
         if (uri != null)
             return uri;
         // Check global declarations
-        return (String)staticNamespaces.get(prefix);
+        return (String) staticNamespaces.get(prefix);
     }
 
     /**
@@ -221,16 +219,30 @@ public class ModuleContext extends XQueryContext {
      * @return a prefix for the URI
      */
     public String getPrefixForURI(String uri) {
-        String prefix = parentContext.inScopePrefixes == null ? null :
-            (String) parentContext.inScopePrefixes.get(uri);
+        String prefix = getInScopePrefix(uri);
 		if (prefix != null)
 			return prefix;
 		//TODO : test the NS inheritance
-		prefix = parentContext.inheritedInScopePrefixes == null ?	null : (String)
-            parentContext.inheritedInScopePrefixes.get(uri);
+        prefix = getInheritedPrefix(uri);
 		if (prefix != null)
 			return prefix;
 		return (String) staticPrefixes.get(uri);
+    }
+
+    public String getInScopeNamespace(String prefix) {
+        return parentContext.getInScopeNamespace(prefix);
+    }
+
+    public String getInScopePrefix(String uri) {
+        return parentContext.getInScopePrefix(uri);
+    }
+
+    public String getInheritedNamespace(String prefix) {
+        return parentContext.getInheritedNamespace(prefix);
+    }
+
+    public String getInheritedPrefix(String uri) {
+        return parentContext.getInheritedPrefix(uri);
     }
 
     public void declareInScopeNamespace(String prefix, String uri) {
