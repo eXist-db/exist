@@ -167,15 +167,15 @@ public class GrammarPool implements XMLGrammarPool {
     }
     
     /**
-     *  Removes all grammars from the pool.
+     *  Removes all DTD grammars from the pool. Workaround for Xerces bug.
      *
      * @see org.apache.xerces.xni.grammars.XMLGrammarPool#clear
      */
     public void clearDTDs() {
-        if (logger.isDebugEnabled())
-            logger.debug("Removing DTD's from grammarpool.");
+        //if (logger.isDebugEnabled())
+        //    logger.debug("Removing DTD's from grammarpool.");
+
         Grammar dtds[] = retrieveInitialGrammarSet(Namespaces.DTD_NS);
-        
         if(dtds.length>0){
             if (logger.isDebugEnabled())
                 logger.debug("Removing "+dtds.length+" DTDs.");
@@ -183,8 +183,8 @@ public class GrammarPool implements XMLGrammarPool {
             clear();
             cacheGrammars(Namespaces.SCHEMA_NS, schemas);
         } else {
-            if (logger.isDebugEnabled())
-                logger.debug("No DTDs to be removed.");
+            //if (logger.isDebugEnabled())
+            //    logger.debug("No DTDs to be removed.");
         }
     }
     
