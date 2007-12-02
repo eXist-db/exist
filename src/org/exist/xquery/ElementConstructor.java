@@ -216,8 +216,8 @@ public class ElementConstructor extends NodeConstructor {
 	 			qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
 	 		}
 	 		*/
-			if (qn.getPrefix() == null && context.inScopeNamespaces.get("") != null) {
-	 			qn.setNamespaceURI((String)context.inScopeNamespaces.get(""));
+			if (qn.getPrefix() == null && context.getInScopeNamespace("") != null) {
+	 			qn.setNamespaceURI(context.getInScopeNamespace(""));
 	 		}			
 	 	}
 		
