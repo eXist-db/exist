@@ -65,6 +65,7 @@ public class XQueryTest extends XMLTestCase {
 	private static final String MODULE4_NAME = "module4.xqm";
     private static final String MODULE5_NAME = "module5.xqm";
     private static final String MODULE6_NAME = "module6.xqm";
+    private static final String MODULE7_NAME = "module7.xqm";
     private static final String FATHER_MODULE_NAME = "father.xqm";
 	private static final String CHILD1_MODULE_NAME = "child1.xqm";
 	private static final String CHILD2_MODULE_NAME = "child2.xqm";
@@ -108,6 +109,12 @@ public class XQueryTest extends XMLTestCase {
 		+ "declare variable $foo:bar := \"bar\";"
         + "declare variable $foo:bar := \"bar\";";
 
+    private final static String module7 =
+        "module namespace foo=\"foo\";\n" +
+        "declare namespace xhtml=\"http://www.w3.org/1999/xhtml\";\n" +
+        "declare function foo:link() { <a href='#'>Link</a> };" +
+        "declare function foo:copy($node) { element { node-name($node) } { $node/text() } };";
+    
     private final static String fatherModule =
 		"module namespace foo=\"foo\";\n"
 		+ "import module namespace foo1=\"foo1\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n"
@@ -1448,9 +1455,48 @@ public class XQueryTest extends XMLTestCase {
 			
 		} catch (XMLDBException e) {
 			System.out.println("testModule : XMLDBException: "+e);
-			fail(e.getMessage());
+            e.printStackTrace();
+            fail(e.getMessage());
 		}
 	}	
+
+    public void testModulesAndNS() {
+        try {
+            Collection testCollection = getTestCollection();
+            Resource doc = testCollection.createResource(MODULE7_NAME, "BinaryResource");
+            doc.setContent(module7);
+            ((EXistResource) doc).setMimeType("application/xquery");
+            testCollection.storeResource(doc);
+
+            XPathQueryService service = (XPathQueryService)
+                testCollection.getService("XPathQueryService", "1.0");
+            service.setProperty(OutputKeys.INDENT, "no");
+            String query = "xquery version \"1.0\";\n" +
+				"import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE7_NAME + "\";\n" +
+				"<div xmlns='http://www.w3.org/1999/xhtml'>" +
+                "{ foo:link() }" +
+                "</div>";
+			ResourceSet result = service.query(query);
+            assertEquals(1, result.getSize());
+            System.out.println("testModulesAndNS result: " + result.getResource(0).getContent().toString());
+            assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a href='#'>Link</a></div>",
+                    result.getResource(0).getContent().toString());
+
+            query = "xquery version \"1.0\";\n" +
+				"import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE7_NAME + "\";\n" +
+				"<div xmlns='http://www.w3.org/1999/xhtml'>" +
+                "{ foo:copy(<a>Link</a>) }" +
+                "</div>";
+            result = service.query(query);
+            assertEquals(1, result.getSize());
+            System.out.println("testModulesAndNS result: " + result.getResource(0).getContent().toString());
+            assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a>Link</a></div>",
+                    result.getResource(0).getContent().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
 
     public void testGlobalVars() {
         try {
