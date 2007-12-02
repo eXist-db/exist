@@ -68,7 +68,9 @@ public class VariableReference extends AbstractExpression {
         }
         
 		Variable var = getVariable();
-		Sequence seq = var.getValue();
+        if (var == null)
+            throw new XPathException(getASTNode(), "XPDY0002 : variable '$" + qname + "' is not set.");
+        Sequence seq = var.getValue();
 		if (seq == null)
 			throw new XPathException(getASTNode(), "XPDY0002 : undefined value for variable '$" + qname + "'");
         Sequence result = seq;
