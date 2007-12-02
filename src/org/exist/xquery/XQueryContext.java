@@ -385,7 +385,7 @@ public class XQueryContext {
 
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
-        ctx.contextStack = this.contextStack;       
+        ctx.contextStack = this.contextStack;
     }
     
     /**
@@ -796,20 +796,21 @@ public class XQueryContext {
 	/**
 	 * Clear all user-defined prefix/namespace mappings.
 	 */
-	public void clearNamespaces() {
-		staticNamespaces.clear();
-		staticPrefixes.clear();
-		if (inScopeNamespaces != null) {
-			inScopeNamespaces.clear();
-			inScopePrefixes.clear();			
-		}
-		//TODO : it this relevant ?
-		if (inheritedInScopeNamespaces != null) {
-			inheritedInScopeNamespaces.clear();
-			inheritedInScopePrefixes.clear();
-		}		
-		loadDefaults(broker.getConfiguration());
-	}
+    // TODO: remove since never used?
+//	public void clearNamespaces() {
+//		staticNamespaces.clear();
+//		staticPrefixes.clear();
+//		if (inScopeNamespaces != null) {
+//			inScopeNamespaces.clear();
+//			inScopePrefixes.clear();
+//		}
+//		//TODO : it this relevant ?
+//		if (inheritedInScopeNamespaces != null) {
+//			inheritedInScopeNamespaces.clear();
+//			inheritedInScopePrefixes.clear();
+//		}
+//		loadDefaults(broker.getConfiguration());
+//	}
 
 	/**
 	 * Set the set of statically known documents for the current
@@ -1682,7 +1683,7 @@ public class XQueryContext {
 	 * Push all in-scope namespace declarations onto the stack.
 	 */
 	public void pushInScopeNamespaces() {
-		//TODO : push into an inheritedInScopeNamespaces HashMap... and return an empty HashMap		
+		//TODO : push into an inheritedInScopeNamespaces HashMap... and return an empty HashMap
 		HashMap m = (HashMap) inScopeNamespaces.clone();
 		HashMap p = (HashMap) inScopePrefixes.clone();
 		namespaceStack.push(inheritedInScopeNamespaces);

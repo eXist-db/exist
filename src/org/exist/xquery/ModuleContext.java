@@ -191,7 +191,60 @@ public class ModuleContext extends XQueryContext {
 	public void popDocumentContext() {
 		parentContext.popDocumentContext();
 	}
-	
+
+    /**
+     * First checks the parent context for in-scope namespaces,
+     * then the module's static context.
+     *
+     * @param prefix the prefix to look up
+     * @return the namespace currently mapped to that prefix
+     */
+    public String getURIForPrefix(String prefix) {
+        String uri = parentContext.inScopeNamespaces == null ? null :
+            (String) parentContext.inScopeNamespaces.get(prefix);
+        if (uri != null)
+            return uri;
+        //TODO : test NS inheritance
+        uri = parentContext.inheritedInScopeNamespaces == null ? null :
+            (String) parentContext.inheritedInScopeNamespaces.get(prefix);
+        if (uri != null)
+            return uri;
+        // Check global declarations
+        return (String)staticNamespaces.get(prefix);
+    }
+
+    /**
+     * First checks the parent context for in-scope namespaces,
+     * then the module's static context.
+     *
+     * @param uri the URI to look up
+     * @return a prefix for the URI
+     */
+    public String getPrefixForURI(String uri) {
+        String prefix = parentContext.inScopePrefixes == null ? null :
+            (String) parentContext.inScopePrefixes.get(uri);
+		if (prefix != null)
+			return prefix;
+		//TODO : test the NS inheritance
+		prefix = parentContext.inheritedInScopePrefixes == null ?	null : (String)
+            parentContext.inheritedInScopePrefixes.get(uri);
+		if (prefix != null)
+			return prefix;
+		return (String) staticPrefixes.get(uri);
+    }
+
+    public void declareInScopeNamespace(String prefix, String uri) {
+        parentContext.declareInScopeNamespace(prefix, uri);
+    }
+
+    public void pushInScopeNamespaces() {
+        parentContext.pushInScopeNamespaces();
+    }
+
+    public void popInScopeNamespaces() {
+        parentContext.popInScopeNamespaces();
+    }
+
     public void registerUpdateListener(UpdateListener listener) {
 		parentContext.registerUpdateListener(listener);
 	}

@@ -206,9 +206,9 @@ public class Variable {
         }
         if(!type.checkType(value))
         	throw new XPathException( Messages.getMessage( Error.VAR_TYPE_MISMATCH, 
-        		toString(), 
-        		type.toString(),
-        		new SequenceType(value.getItemType(), value.getCardinality()).toString()
+        		    toString(),
+        		    type.toString(),
+        		    new SequenceType(value.getItemType(), value.getCardinality()).toString()
         		)
         	);
     }
