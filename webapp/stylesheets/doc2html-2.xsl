@@ -45,7 +45,7 @@
                     <xsl:copy-of select="header/script"/>
                 </xsl:if>
                 <script type="text/javascript" src="styles/niftycube.js"></script>
-                <script language="Javascript" type="text/javascript" src="scripts/prototype.js"/>
+                <script language="Javascript" type="text/javascript" src="scripts/yui/utilities.js"/>
                 <script language="Javascript" type="text/javascript" src="scripts/main.js"/>
             </head>
 
