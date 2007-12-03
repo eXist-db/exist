@@ -3,7 +3,7 @@
 #
 # Shell script to start up the eXist command line client.
 #
-# $Id: startup.sh,v 1.6 2002/12/28 17:37:22 wolfgang_m Exp $
+# $Id$
 # -----------------------------------------------------------------------------
 
 # will be set by the installer

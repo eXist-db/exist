@@ -3,6 +3,7 @@
 rem $Id$
 
 if not "%JAVA_HOME%" == "" goto gotJavaHome
+
 echo Java environment not found. Please set
 echo your JAVA_HOME environment variable to
 echo the home of your JDK.

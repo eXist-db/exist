@@ -1,10 +1,15 @@
 @echo off
+
+rem $Id$
+
 if not "%JAVA_HOME%" == "" goto gotJavaHome
+
 rem will be set by the installer
 set JAVA_HOME=$JAVA_HOME
 
 :gotJavaHome
 if not "%EXIST_HOME%" == "" goto gotExistHome
+
 rem will be set by the installer
 set EXIST_HOME=$INSTALL_PATH
 
