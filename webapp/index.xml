@@ -78,13 +78,13 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0.1-build4311.jar">eXist-1.0.1.jar</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0.2-rev5396.jar">eXist-1.0.2-rev5396.jar</a>
                     </td>
-                    <td> Installer based on IzPack. Includes source. Run with <tt>java -jar eXist-1.0.1.jar</tt></td>
+                    <td> Installer based on IzPack. Includes source. Run with <tt>eXist-1.0.2-rev5396.jar</tt></td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.0.1.war">exist-1.0.1.war</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.0.2-rev5397.war">exist-1.0.2-rev5397.war</a>
                     </td>
                     <td>Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
