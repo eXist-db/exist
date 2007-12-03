@@ -1,5 +1,5 @@
 @echo off
-rem $Id: client.bat 6880 2007-11-07 10:10:27Z ellefj $
+rem $Id$
 rem
 rem In addition to the other parameter options for the interactive client 
 rem pass -j or --jmx to enable JMX agent.  The port for it can be specified 
