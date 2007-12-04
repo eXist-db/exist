@@ -67,21 +67,6 @@
                                     <xs:attribute name="password-realm" type="xs:string" use="optional"/>
                                 </xs:complexType>
                             </xs:element>
-                            <xs:element name="system-task" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:attribute name="name" type="xs:string"/>
-                                                <xs:attribute name="value" type="xs:string"/>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                    <xs:attribute name="class" type="xs:string"/>
-                                    <xs:attribute name="period" type="xs:integer" use="optional"/>
-                                    <xs:attribute name="cron-trigger" type="xs:string" use="optional"/>
-                                </xs:complexType>
-                            </xs:element>
                             <xs:element name="watchdog">
                                 <xs:complexType>
                                     <xs:attribute name="output-size-limit" type="xs:integer"/>
@@ -183,16 +168,34 @@
                         <xs:sequence>
                             <xs:element name="job" minOccurs="0" maxOccurs="unbounded">
                                 <xs:complexType>
+                                    <xs:sequence>
+                                            <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
+                                                <xs:complexType>
+                                                    <xs:attribute name="name" type="xs:string"/>
+                                                    <xs:attribute name="value" type="xs:string"/>
+                                                </xs:complexType>
+                                            </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="type" use="optional" default="user">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="startup"/>
+                                                <xs:enumeration value="system"/>
+                                                <xs:enumeration value="user"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
                                     <xs:attribute name="class" type="xs:string" use="optional"/>
                                     <xs:attribute name="xquery" type="xs:string" use="optional"/>
                                     <xs:attribute name="cron-trigger" type="xs:string" use="optional"/>
                                     <xs:attribute name="period" type="xs:string" use="optional"/>
+                                    <xs:attribute name="delay" type="xs:long" use="optional"/>
+                                    <xs:attribute name="repeat" type="xs:integer" use="optional"/>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-                
                 <xs:element name="serializer">
                     <xs:complexType>
                         <xs:attribute name="add-exist-id" default="none">
