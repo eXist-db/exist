@@ -35,7 +35,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -46,11 +45,11 @@ import org.xml.sax.SAXException;
 /**
  * eXist Scheduler Module Extension GetScheduledJobs
  * 
- * Retreives details of Jobs that have been Scheduled
+ * Retrieves details of Jobs that have been Scheduled
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-11-15
- * @version 1.0
+ * @serial 2007-12-04
+ * @version 1.1
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
@@ -87,9 +86,9 @@ public class GetScheduledJobs extends BasicFunction
 	 * 
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
+	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		User user 		= context.getUser();
+		User user = context.getUser();
 		
 		boolean userhasDBARole = user.hasDbaRole();
 		
@@ -99,72 +98,82 @@ public class GetScheduledJobs extends BasicFunction
 		String[] groups = scheduler.getJobGroupNames();
 		ScheduledJobInfo[] scheduledJobs = scheduler.getScheduledJobs();
 		
-		for( int g = 0; g < groups.length; g++ ) {
-			if( userhasDBARole || groups[g].equals( UserJob.JOB_GROUP ) ) {
-				xmlBuf.append( "<scheduler:group name=\"" + groups[g] + "\">" );
-				for( int j = 0; j < scheduledJobs.length; j++ ) {
-					if( scheduledJobs[j].getGroup().equals( groups[g] ) ) {
-						xmlBuf.append( "<scheduler:job name=\"" + scheduledJobs[j].getName() + "\">" );
-						xmlBuf.append( "<scheduler:trigger name=\"" + scheduledJobs[j].getTriggerName() + "\">" );
-						xmlBuf.append( "<expression>" );
-						xmlBuf.append( scheduledJobs[j].getTriggerExpression() );
-						xmlBuf.append( "</expression>" );
-						xmlBuf.append( "<state>" );
-						xmlBuf.append( scheduledJobs[j].getTriggerState() );
-						xmlBuf.append( "</state>" );
-						xmlBuf.append( "<start>" );
-						xmlBuf.append( new DateTimeValue( scheduledJobs[j].getStartTime() ) );
-						xmlBuf.append( "</start>" );
-						xmlBuf.append( "<end>" );
+		for(int g = 0; g < groups.length; g++)
+		{
+			if(userhasDBARole || groups[g].equals(UserJob.JOB_GROUP))
+			{
+				xmlBuf.append("<" + SchedulerModule.PREFIX + ":group name=\"" + groups[g] + "\">");
+				for(int j = 0; j < scheduledJobs.length; j++)
+				{
+					if(scheduledJobs[j].getGroup().equals(groups[g]))
+					{
+						xmlBuf.append("<" + SchedulerModule.PREFIX + ":job name=\"" + scheduledJobs[j].getName() + "\">");
+						xmlBuf.append("<" + SchedulerModule.PREFIX + ":trigger name=\"" + scheduledJobs[j].getTriggerName() + "\">");
+						xmlBuf.append("<expression>");
+						xmlBuf.append(scheduledJobs[j].getTriggerExpression());
+						xmlBuf.append("</expression>");
+						xmlBuf.append("<state>");
+						xmlBuf.append(scheduledJobs[j].getTriggerState());
+						xmlBuf.append("</state>");
+						xmlBuf.append("<start>");
+						xmlBuf.append(new DateTimeValue(scheduledJobs[j].getStartTime()));
+						xmlBuf.append("</start>");
+						xmlBuf.append("<end>");
 						
 						Date endTime = scheduledJobs[j].getEndTime();
-						if( endTime != null ) {
-							xmlBuf.append( new DateTimeValue( endTime ) );
+						if(endTime != null)
+						{
+							xmlBuf.append(new DateTimeValue(endTime));
 						}
 					
-						xmlBuf.append( "</end>" );
-						xmlBuf.append( "<previous>" );
+						xmlBuf.append("</end>");
+						xmlBuf.append("<previous>");
 						
 						Date previousTime = scheduledJobs[j].getPreviousFireTime();
-						if( previousTime != null ) {
-							xmlBuf.append( new DateTimeValue( scheduledJobs[j].getPreviousFireTime() ) );
+						if(previousTime != null)
+						{
+							xmlBuf.append(new DateTimeValue(scheduledJobs[j].getPreviousFireTime()));
 						}
 				
-						xmlBuf.append(" </previous>" );
-						xmlBuf.append( "<next>" );
+						xmlBuf.append("</previous>");
+						xmlBuf.append("<next>");
 						
 						Date nextTime = scheduledJobs[j].getNextFireTime();
-						if( nextTime != null) {
-							xmlBuf.append( new DateTimeValue() );
+						if(nextTime != null)
+						{
+							xmlBuf.append(new DateTimeValue());
 						}
 
-						xmlBuf.append( "</next>" );
-						xmlBuf.append( "<final>" );
+						xmlBuf.append("</next>");
+						xmlBuf.append("<final>");
 						
 						Date finalTime = scheduledJobs[j].getFinalFireTime();
-						if( endTime != null && finalTime != null ) {
-							xmlBuf.append( new DateTimeValue() );
+						if(endTime != null && finalTime != null)
+						{
+							xmlBuf.append(new DateTimeValue());
 						}
 		
-						xmlBuf.append( "</final>" );
-						xmlBuf.append( "</scheduler:trigger>" );
-						xmlBuf.append( "</scheduler:job>" );
+						xmlBuf.append("</final>");
+						xmlBuf.append("</" + SchedulerModule.PREFIX + ":trigger>");
+						xmlBuf.append("</" + SchedulerModule.PREFIX + ":job>");
 						iJobs++;
 					}
 				}
 				
-				xmlBuf.append( "</scheduler:group>" );
+				xmlBuf.append("</" + SchedulerModule.PREFIX + ":group>");
 			}
 		}
 		
-		xmlBuf.insert( 0, "<scheduler:jobs xmlns:scheduler=\"" + SchedulerModule.NAMESPACE_URI + "\" count=\"" + iJobs + "\">" );
-		xmlBuf.append( "</scheduler:jobs>" );
+		xmlBuf.insert(0, "<" + SchedulerModule.PREFIX + ":jobs xmlns:scheduler=\"" + SchedulerModule.NAMESPACE_URI + "\" count=\"" + iJobs + "\">");
+		xmlBuf.append("</" + SchedulerModule.PREFIX + ":jobs>");
 		
-		try {
-			return( ModuleUtils.stringToXML( context, xmlBuf.toString() ) );
+		try
+		{
+			return(ModuleUtils.stringToXML(context, xmlBuf.toString()));
 		}
-		catch( SAXException se ) {
-			throw( new XPathException( se ) );
+		catch(SAXException se)
+		{
+			throw(new XPathException(se));
 		}
 	}
 }
