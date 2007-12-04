@@ -277,7 +277,6 @@ public class NativeSerializer extends Serializer {
             break;
         case Node.CDATA_SECTION_NODE:
             String str = ((CDATASectionImpl)node).getData();
-            LOG.debug("CDATA section found: " + str);
             data = new char[str.length()];
             str.getChars(0,str.length(), data, 0);
             receiver.cdataSection(data, 0, data.length);
