@@ -14,7 +14,6 @@
                 pool
                 recovery
                 security
-                system-task
                 watchdog
             indexer
             scheduler
@@ -241,41 +240,6 @@
         <!-- security class="org.exist.security.LDAPSecurityManager" /-->
 
         <!--
-            Tasks used for system maintenance. System tasks require the database
-            to be in a consistent state. All database operations will be stopped
-            until method returned or throws an exception. Any exception will be
-            caught and a warning written to the log.
-           
-            Currently only the databackup task is available.
-        -->
-        <!--system-task class="org.exist.storage.DataBackup" period="120000">
-            <parameter name="output-dir" value="backup" />
-        </system-task-->
-        <!-- Automatically creates a backup of the database every 6 hours.
-
-            Parameters:
-                dir:
-                    The directory into which the backup will be written.
-                suffix:
-                    File suffix for the generated backup file or directory. Specify .zip to write the
-                    backup into a .zip. Otherwise, the backup will be written to a plain directory.
-                    The name of the final backup file or directory will be:
-                    prefix + current-date + suffix.
-                prefix:
-                    File prefix for the generated backup file or directory.
-
-                -->
-        <!--system-task class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
-            <parameter name="dir" value="backup"/>
-            <parameter name="suffix" value=".zip"/>
-            <parameter name="prefix" value="backup-"/>
-            <parameter name="collection" value="/db"/>
-            <parameter name="user" value="admin"/>
-            <parameter name="password" value=""/>
-            <parameter name="zip-files-max" value="28"/>
-        </system-task-->
-
-        <!--
             This is the global configuration for the query watchdog. The 
             watchdog monitors all query processes, and can terminate any 
             long-running queries if they exceed one of the predefined limits. 
@@ -380,38 +344,88 @@
         <!-- 
             Job definitions:
             
+            - type:
+            The type of the job to schedule. Must be either "startup", "system" or "user".
+            
+	            startup - Startup jobs are executed once during the
+	            database startup but before the database becomes available,
+	            these jobs are synchronous.
+	            
+	            system - System jobs require the database to be in a consistent state.
+	            All database operations will be stopped until the method returns or throws
+	            an exception. Any exception will be caught and a warning written to the
+	            log.
+	            
+	            user - User jobs may be scheduled at any time and may be mutually exclusive
+	            or non-exclusive
+            
             - class:
-            If scheduling a Java job then this should be the name of the
-            class that extends org.exist.scheduler.UserJavaJob
+            If the job is written in Java then this should be the name of the
+            class that extends either -
+            	org.exist.scheduler.StartupJob
+            	org.exist.storage.SystemTask
+            	org.exist.scheduler.UserJavaJob
             
             - xquery:
-            If scheduling an XQuery job then this should be a path to an XQuery
-            stored in the database. e.g. /db/myCollection/myJob.xql
+            If the job is written in XQuery (not suitable for system jobs) then this should
+            be a path to an XQuery stored in the database. e.g. /db/myCollection/myJob.xql
             XQuery job's will be launched under the guest account initially,
-            although the running XQuery may switch permisssions through
-            calls to the xmldb module
+            although the running XQuery may switch permissions through
+            calls to xmldb:login().
             
             - cron-trigger:
             To define a firing pattern for the Job using Cron style syntax
             use this attribute otherwise for a periodic job use the period
-            attribute.
+            attribute. Not applicable to startup jobs.
             
             - period:
             Can be used to define an explicit period for firing the job instead
-            of a Cron style syntax. The period should be in milliseconds. All
-            job's with a period trigger will be launched at startup.
-        
+            of a Cron style syntax. The period should be in milliseconds.
+            Not applicable to startup jobs.
+            
             - delay:
-            Can be used to define an explicit delay for first firing of a job with period attribute.
-            The delay should be in milliseconds. If delay is not specified then
-            job's with a period trigger will be launched immediately at startup.
-        
+            Can be used with a period to delay the start of a job. If unspecified jobs
+            will start as soon as the database and scheduler are initialised.
+            
             - repeat:
-            Can be used to define an explicit repetition count for a job with period attribute.
-            The default value, if not specified, is to repeat forever
+            Can be used with a period to define for how many periods a job should be
+            executed. If unspecified jobs will repeat for every period indefinitely.
         -->
         
         <!-- job class="bar.foo.myjob" period="600000" delay="300000" repeat="10" /-->
+        
+        <!-- Automatically creates a copy of the database .dbx files every 2 minutes
+        	Parameters:
+        		output-dir:
+        			The directory into which the copy will be written
+        -->
+        <!--job type="system" class="org.exist.storage.DataBackup" period="120000">
+            <parameter name="output-dir" value="backup" />
+        </job-->
+        
+        <!-- Automatically creates a backup of the database every 6 hours.
+
+            Parameters:
+                dir:
+                    The directory into which the backup will be written.
+                suffix:
+                    File suffix for the generated backup file or directory. Specify .zip to write the
+                    backup into a .zip. Otherwise, the backup will be written to a plain directory.
+                    The name of the final backup file or directory will be:
+                    prefix + current-date + suffix.
+                prefix:
+                    File prefix for the generated backup file or directory.
+
+		-->
+        <!--job type="system" class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
+            <parameter name="dir" value="backup"/>
+            <parameter name="suffix" value=".zip"/>
+            <parameter name="prefix" value="backup-"/>
+            <parameter name="collection" value="/db"/>
+            <parameter name="user" value="admin"/>
+            <parameter name="password" value=""/>
+            <parameter name="zip-files-max" value="28"/>
+        </job-->
         
     </scheduler>
 
