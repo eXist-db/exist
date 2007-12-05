@@ -135,14 +135,21 @@ public class Delete extends Modification {
                     
                     //update the document
                     parent = (StoredNode) node.getParentNode();
-                    if (parent.getNodeType() != Node.ELEMENT_NODE) {
+                    if (parent==null) {
+                        LOG.debug("Cannot remove the document element (no parent node)");
+                        throw new XPathException(getASTNode(),
+                                "It is not possible to remove the document element.");
+
+                    } else if (parent.getNodeType() != Node.ELEMENT_NODE) {
                         LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
                         //transact.abort(transaction);
                         throw new XPathException(getASTNode(),
                                 "you cannot remove the document element. Use update "
                                         + "instead");
-                    } else
+                    } else {
                         parent.removeChild(transaction, node);
+                    }
+                    
                     doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
