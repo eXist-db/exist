@@ -216,7 +216,13 @@ public class XQueryContext {
 	 */
 	protected DBBroker broker;
 
-	protected AnyURIValue baseURI = AnyURIValue.EMPTY_URI;
+    /**
+     * A general-purpose map to set attributes in the current
+     * query context.
+     */
+    protected Map attributes = new HashMap();
+    
+    protected AnyURIValue baseURI = AnyURIValue.EMPTY_URI;
 	
     protected boolean baseURISetInProlog = false;
     
@@ -380,9 +386,20 @@ public class XQueryContext {
 
         ctx.declaredFunctions = new TreeMap(this.declaredFunctions);
         ctx.globalVariables = new TreeMap(this.globalVariables);
-        ctx.modules = new HashMap(this.modules);
-        ctx.watchdog = this.watchdog;
+        // make imported modules available in the new context
+        ctx.modules = new HashMap();
+        for (Iterator i = this.modules.values().iterator(); i.hasNext(); ) {
+            try {
+                Module module = (Module) i.next();
+                ctx.modules.put(module.getNamespaceURI(), module);
+                String prefix = (String) this.staticPrefixes.get(module.getNamespaceURI());
+                ctx.declareNamespace(prefix, module.getNamespaceURI());
+            } catch (XPathException e) {
+                // ignore
+            }
+        }
 
+        ctx.watchdog = this.watchdog;
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
         ctx.contextStack = this.contextStack;
@@ -2123,8 +2140,16 @@ public class XQueryContext {
 			throw new XPathException(TEMP_STORE_ERROR, e);
 		}
 	}
-	
-	/**
+
+    public void setAttribute(String attribute, Object value) {
+        attributes.put(attribute, value);
+    }
+
+    public Object getAttribute(String attribute) {
+        return attributes.get(attribute);
+    }
+    
+    /**
 	 * Set an XQuery Context variable.
 	 * Used by the context extension module; called by context:set-var().
 	 * 
