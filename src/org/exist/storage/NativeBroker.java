@@ -1557,6 +1557,11 @@ public class NativeBroker extends DBBroker {
     }
     
     public DocumentImpl getXMLResource(XmldbURI fileName, int lockMode) throws PermissionDeniedException {
+
+        if(fileName==null){
+          return null;
+        }
+
         fileName = prepend(fileName.toCollectionPathURI());
         //TODO : resolve URIs !
         XmldbURI collUri = fileName.removeLastSegment();
