@@ -64,25 +64,33 @@
 -Dcom.sun.management.jmxremote.authenticate=false
 -Dcom.sun.management.jmxremote.ssl=false
 ]]></synopsis>
-                <para>NOTE: this option makes the server publicly accessible. Please check the 
-                        <ulink url="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html"
-                        >Sun JMX</ulink> documentation for details.</para>
-                <para>The extension can be activated by passing a command-line parameter
-                    to the exist start scripts (<filename>client.sh startup.sh</filename> etc.)</para>
+                <note>
+                    <para>This option makes the server publicly accessible. Please check the <ulink
+                            url="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html"
+                            >Sun JMX</ulink> documentation for details.</para>
+                </note>
+
+                <para>The extension can be activated by passing a command-line parameter to the
+                    exist start scripts (<filename>client.sh startup.sh</filename> etc.)</para>
                 <variablelist>
                     <varlistentry>
                         <term>-j &lt;argument&gt;, --jmx &lt;argument&gt;</term>
                         <listitem>
-                            <para>set port number through which the JMX/RMI connections are enabled.</para>
+                            <para>set port number through which the JMX/RMI connections are
+                            enabled.</para>
                         </listitem>
                     </varlistentry>
                 </variablelist>
-                
+
                 <para>Some examples:</para>
                 <synopsis><![CDATA[bin/startup.sh -j 1099
 bin\server.bat -jmx 1099
 ]]></synopsis>
-
+                <note>
+                    <para>In the Sun Java SE 6 platform the JMX agent for Local monitoring is <ulink
+                            url="http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html"
+                            >enabled</ulink> by default.</para>
+                </note>
             </section>
 
             <section>
