@@ -66,6 +66,16 @@
             
             <table cellpadding="5" cellspacing="5">
                 <tr>
+                    <th style="background-color: #C5DAFF" align="left" colspan="2">1.2 Pre-Release</th>
+                </tr>
+                <tr>
+                    <td align="left" colspan="2">
+                        We are currently preparing for a new release, which will be made available soon.
+                        Preview builds can be found here: 
+                        <a href="http://www.exist-db.nl/files/">http://www.exist-db.nl/files/</a>
+                    </td>
+                </tr>
+                <tr>
                     <th style="background-color: #C5DAFF" align="left" colspan="2">1.0</th>
                 </tr>
                 <tr>
