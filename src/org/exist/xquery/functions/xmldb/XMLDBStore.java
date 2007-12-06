@@ -116,7 +116,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		String docName = args[1].isEmpty() ? null : args[1].getStringValue();
 		if(docName != null && docName.length() == 0)
 			docName = null;
-		else 
+		else if(docName != null)
 			docName = new AnyURIValue(docName).toXmldbURI().toString();
 		
         String mimeType = MimeType.XML_TYPE.getName();
