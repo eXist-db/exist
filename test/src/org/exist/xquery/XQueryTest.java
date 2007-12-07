@@ -2769,6 +2769,35 @@ public class XQueryTest extends XMLTestCase {
 
 
     }
+
+         // http://sourceforge.net/support/tracker.php?aid=1846228
+    public void bugtestNamespaceHandlingSameModule_1846228() {
+
+        try {
+            String query = "declare option exist:serialize 'indent=no';"+
+                    "declare function local:table () {" +
+                    "<d>Bar</d>};"+
+                    "<foobar xmlns=\"http://www.w3.org/1999/xhtml\">" +
+                    "<a><b>Foo</b></a>" +
+                    "<c>{local:table()}</c>" +
+                    "</foobar>";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query,
+                    "<foobar xmlns=\"http://www.w3.org/1999/xhtml\">" +
+                    "<a><b>Foo</b></a>" +
+                    "<c><d xmlns=\"\">Bar</d></c>" +
+                    "</foobar>", result.getResource(0).getContent().toString());
+
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+         }
        
     // ======================================
     
