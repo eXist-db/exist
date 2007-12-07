@@ -2770,7 +2770,7 @@ public class XQueryTest extends XMLTestCase {
 
     }
 
-         // http://sourceforge.net/support/tracker.php?aid=1846228
+    // http://sourceforge.net/support/tracker.php?aid=1846228
     public void bugtestNamespaceHandlingSameModule_1846228() {
 
         try {
@@ -2797,7 +2797,27 @@ public class XQueryTest extends XMLTestCase {
             ex.printStackTrace();
             fail(ex.toString());
         }
-         }
+    }
+
+
+    // regression http://sourceforge.net/support/tracker.php?aid=1841105
+    public void bugtestStringOfEmptySequence_1841105() {
+
+        // OK
+        try {
+            String query = "empty( ()/string() )";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "true",
+                    result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
        
     // ======================================
     
