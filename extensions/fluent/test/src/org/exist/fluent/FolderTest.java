@@ -2,6 +2,8 @@ package org.exist.fluent;
 
 import static org.junit.Assert.*;
 
+import java.util.*;
+
 import org.junit.Test;
 
 public class FolderTest extends DatabaseTestCase {
@@ -218,6 +220,16 @@ public class FolderTest extends DatabaseTestCase {
 		Folder c1 = db.getFolder("/top");
 		c1.documents().build(Name.generate()).elem("test").end("test").commit();
 		assertEquals(2, c1.children().size());
+	}
+	
+	@Test public void iterateChildren1() {
+		db.createFolder("/top1");
+		db.createFolder("/top2");
+		Collection<Folder> children = new ArrayList<Folder>();
+		for (Folder child : db.getFolder("/").children()) {
+			children.add(child);
+		}
+		assertEquals(3, children.size());
 	}
 
 	@Test public void clear1() {
