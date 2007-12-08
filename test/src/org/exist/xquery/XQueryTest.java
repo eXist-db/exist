@@ -2624,7 +2624,7 @@ public class XQueryTest extends XMLTestCase {
         
     }
     
-    //    An exception occurred during query execution: XPTY004: Invalid type for
+    //    An exception occurred during query execution: XPTY0004: Invalid type for
     //variable $arg1. Expected xs:string, got xs:integer
     // http://sourceforge.net/tracker/index.php?func=detail&aid=1787285&group_id=17691&atid=117691
     
@@ -2800,7 +2800,9 @@ public class XQueryTest extends XMLTestCase {
     }
 
 
-    // regression http://sourceforge.net/support/tracker.php?aid=1841105
+    // http://sourceforge.net/support/tracker.php?aid=1841105
+    // in a path expression, a step returning an empty sequence stops the evaluation
+    // (and return an empty sequence) as confirmed by Michael Kay on the XQuery mailing list
     public void bugtestStringOfEmptySequence_1841105() {
 
         // OK
