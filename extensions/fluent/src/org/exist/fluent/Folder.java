@@ -185,7 +185,7 @@ public class Folder extends Resource implements Cloneable {
 			staleMarker.check();
 			return new Iterator<Folder>() {
 				@SuppressWarnings("unchecked")
-				private Iterator<String> delegate = getQuickHandle().collectionIterator();
+				private Iterator<XmldbURI> delegate = getQuickHandle().collectionIterator();
 				private Folder last;
 				public void remove() {
 					staleMarker.check();
@@ -199,7 +199,7 @@ public class Folder extends Resource implements Cloneable {
 				}
 				public Folder next() {
 					staleMarker.check();
-					last = get(delegate.next());
+					last = get(delegate.next().getCollectionPath());
 					return last;
 				}
 			};
