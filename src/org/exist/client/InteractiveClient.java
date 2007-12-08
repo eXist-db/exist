@@ -987,7 +987,6 @@ public class InteractiveClient {
                         }
                         String key = tok.nextToken();
                         String val = tok.nextToken();
-                        System.out.println(key + " = " + val);
                         properties.setProperty(key, val);
                         current.setProperty(key, val);
                         getResources();
