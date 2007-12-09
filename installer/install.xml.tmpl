@@ -43,71 +43,71 @@
     <pack name="core" required="yes">
       <description>Everything needed for the database core, including Jetty + Cocoon</description>
       <fileset targetdir="$INSTALL_PATH" dir=".">
-	<include name="client.properties.tmpl"/>
-	<include name="client.properties"/>
-	<include name="backup.properties"/>
-	<include name="build.properties"/>
-	<include name="server.xml.tmpl"/>
-	<include name="server.xml"/>
-	<include name="conf.xml"/>
-	<include name="conf.xml.tmpl"/>
-	<include name="descriptor.xml.tmpl"/>
-	<include name="descriptor.xml"/>
-	<include name="build.xml"/>
-	<include name="log4j.xml"/>
-	<include name="log4j.dtd"/>
-	<include name="LICENSE"/>
-	<include name="README"/>
-	<include name="VERSION.txt"/>
-	<include name="exist.jar"/>
-	<include name="exist-optional.jar"/>
-	<include name="exist-modules.jar"/>
-	<include name="start.jar"/>
-	<include name="examples.jar"/>
-	<include name="mime-types.xml.tmpl"/>
-	<include name="mime-types.xml"/>
-	<include name="atom-example.xq"/>
-	<include name="atom-services.xml"/>
-	<include name="lib/"/>
-	<include name="samples/**"/>
-	<include name="schema/"/>
-	<include name="thirdparty/"/>
-	<exclude name="**/CVS/"/>
-	<exclude name="**/*~"/>
-	<exclude name="**/*.log*"/>
-	<exclude name="**/.*"/>
+        <include name="client.properties.tmpl"/>
+        <include name="client.properties"/>
+        <include name="backup.properties"/>
+        <include name="build.properties"/>
+        <include name="server.xml.tmpl"/>
+        <include name="server.xml"/>
+        <include name="conf.xml"/>
+        <include name="conf.xml.tmpl"/>
+        <include name="descriptor.xml.tmpl"/>
+        <include name="descriptor.xml"/>
+        <include name="build.xml"/>
+        <include name="log4j.xml"/>
+        <include name="log4j.dtd"/>
+        <include name="LICENSE"/>
+        <include name="README"/>
+        <include name="VERSION.txt"/>
+        <include name="exist.jar"/>
+        <include name="exist-optional.jar"/>
+        <include name="exist-modules.jar"/>
+        <include name="start.jar"/>
+        <include name="examples.jar"/>
+        <include name="mime-types.xml.tmpl"/>
+        <include name="mime-types.xml"/>
+        <include name="atom-example.xq"/>
+        <include name="atom-services.xml"/>
+        <include name="lib/"/>
+        <include name="samples/**"/>
+        <include name="schema/"/>
+        <include name="thirdparty/"/>
+        <exclude name="**/CVS/"/>
+        <exclude name="**/*~"/>
+        <exclude name="**/*.log*"/>
+        <exclude name="**/.*"/>
       </fileset>
       <fileset targetdir="$INSTALL_PATH/build/scripts" dir="build/scripts">
-	<exclude name="**/.*"/>
-	<exclude name="**/*~"/>
+        <exclude name="**/.*"/>
+        <exclude name="**/*~"/>
       </fileset>
       <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
-	<include name="**/*.jar"/>
-	<include name="wrapper/**"/>
-	<include name="requestlog/**"/>
-	<include name="rulesets/**"/>
-	<include name="ant/**"/>
-	<include name="XFormsFilter/**"/>
-	<exclude name="ant/lib/javasvn*.jar"/>
-	<include name="jetty/**"/>
-	<exclude name="jetty/logs/*"/>
-	<exclude name="ircbot/**"/>
-	<exclude name="ant/lib/svnkit*.jar"/>
+        <include name="**/*.jar"/>
+        <include name="wrapper/**"/>
+        <include name="requestlog/**"/>
+        <include name="rulesets/**"/>
+        <include name="ant/**"/>
+        <include name="XFormsFilter/**"/>
+        <exclude name="ant/lib/javasvn*.jar"/>
+        <include name="jetty/**"/>
+        <exclude name="jetty/logs/*"/>
+        <exclude name="ircbot/**"/>
+        <exclude name="ant/lib/svnkit*.jar"/>
       </fileset>
       <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
-	<exclude name="**/*.dbx"/>
-	<exclude name="**/*.log*"/>
-	<exclude name="api/**"/>
-	<!--exclude name="xqts/**"/-->
-	<exclude name="**/CVS/"/>
-	<exclude name="**/*~"/>
+        <exclude name="**/*.dbx"/>
+        <exclude name="**/*.log*"/>
+        <exclude name="api/**"/>
+        <!--exclude name="xqts/**"/-->
+        <exclude name="**/CVS/"/>
+        <exclude name="**/*~"/>
       </fileset>
       <fileset targetdir="$INSTALL_PATH/webapp/WEB-INF" dir="webapp/WEB-INF">
-	<include name="data/"/>
-	<include name="logs/"/>
-	<exclude name="**/*.dbx"/>
-	<exclude name="**/CVS/"/>
-	<exclude name="**/*.log"/>
+        <include name="data/"/>
+        <include name="logs/"/>
+        <exclude name="**/*.dbx"/>
+        <exclude name="**/CVS/"/>
+        <exclude name="**/*.log"/>
       </fileset>
       <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
       <file src="installer/icon.bmp" targetdir="$INSTALL_PATH"/>
@@ -115,27 +115,27 @@
       <file src="tools/izpack/build.xml" targetdir="$INSTALL_PATH/tools/izpack"/>
 
       <fileset dir="installer/scripts" targetdir="$INSTALL_PATH/bin">
-	<include name="setup.sh"/>
-	<include name="setup.bat"/>
+        <include name="setup.sh"/>
+        <include name="setup.bat"/>
       </fileset>
-    <fileset dir="installer/scripts" targetdir="$INSTALL_PATH/bin">
-		<include name="client.sh"/>
-		<include name="startup.sh"/>
-		<include name="server.sh"/>
-		<include name="shutdown.sh"/>
-		<include name="backup.sh"/>
-		<include name="client.bat"/>
-		<include name="startup.bat"/>
-		<include name="server.bat"/>
-		<include name="shutdown.bat"/>
-		<include name="backup.bat"/>
-    </fileset>
-    <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
-		<include name="*.sh"/>
-    </fileset>
-    <fileset dir="bin/batch.d" targetdir="$INSTALL_PATH/bin/batch.d">
-		<include name="*.bat"/>
-    </fileset>
+      <fileset dir="installer/scripts" targetdir="$INSTALL_PATH/bin">
+        <include name="client.sh"/>
+        <include name="startup.sh"/>
+        <include name="server.sh"/>
+        <include name="shutdown.sh"/>
+        <include name="backup.sh"/>
+        <include name="client.bat"/>
+        <include name="startup.bat"/>
+        <include name="server.bat"/>
+        <include name="shutdown.bat"/>
+        <include name="backup.bat"/>
+      </fileset>
+      <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
+        <include name="*.sh"/>
+      </fileset>
+      <fileset dir="bin/batch.d" targetdir="$INSTALL_PATH/bin/batch.d">
+        <include name="*.bat"/>
+      </fileset>
       <file src="installer/scripts/build.sh" targetdir="$INSTALL_PATH"/>
       <file src="installer/scripts/build.bat" targetdir="$INSTALL_PATH"/>
       <parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
@@ -153,7 +153,7 @@
       <parsable targetfile="$INSTALL_PATH/bin/setup.bat"/>
       <parsable targetfile="$INSTALL_PATH/build.bat"/>
       <singlefile src="tools/wrapper/conf/wrapper.conf.install"
-		  target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
+        target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
       <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
       <executable targetfile="$INSTALL_PATH/bin/client.sh" stage="never" os="unix"/>
       <executable targetfile="$INSTALL_PATH/bin/setup.sh" stage="never" os="unix"/>
@@ -168,43 +168,43 @@
     <pack name="sources" required="no">
       <description>Java source files</description>
       <fileset targetdir="$INSTALL_PATH/src" dir="src">
-	<exclude name="**/*~"/>
-	<exclude name="**/.*"/>
-	<exclude name="**/CVS/"/>
-	<exclude name=".*"/>
+        <exclude name="**/*~"/>
+        <exclude name="**/.*"/>
+        <exclude name="**/CVS/"/>
+        <exclude name=".*"/>
       </fileset>
       <fileset targetdir="$INSTALL_PATH/extensions/modules/src" dir="extensions/modules/src">
-	<exclude name="**/*~"/>
-	<exclude name="**/.*"/>
-	<exclude name="**/CVS/"/>
-	<exclude name=".*"/>
+        <exclude name="**/*~"/>
+        <exclude name="**/.*"/>
+        <exclude name="**/CVS/"/>
+        <exclude name=".*"/>
       </fileset>
       <fileset targetdir="$INSTALL_PATH/test/src" dir="test/src">
-	<exclude name="**/*~"/>
-	<exclude name="**/.*"/>
-	<exclude name="**/CVS/"/>
-	<exclude name=".*"/>
+        <exclude name="**/*~"/>
+        <exclude name="**/.*"/>
+        <exclude name="**/CVS/"/>
+        <exclude name=".*"/>
       </fileset>
       <fileset targetdir="$INSTALL_PATH/tools/izpack/src" dir="tools/izpack/src">
-	<exclude name="**/*~"/>
-	<exclude name="**/.*"/>
-	<exclude name="**/CVS/"/>
-	<exclude name=".*"/>
+        <exclude name="**/*~"/>
+        <exclude name="**/.*"/>
+        <exclude name="**/CVS/"/>
+        <exclude name=".*"/>
       </fileset>
       <fileset targetdir="$INSTALL_PATH/installer" dir="installer">
-	<exclude name="**/hs_err_pid*.log"/>
-	<exclude name="**/*.jar"/>
-	<exclude name="**/*~"/>
-	<exclude name="**/.*"/>
-	<exclude name="**/CVS/"/>
-	<exclude name=".*"/>
+        <exclude name="**/hs_err_pid*.log"/>
+        <exclude name="**/*.jar"/>
+        <exclude name="**/*~"/>
+        <exclude name="**/.*"/>
+        <exclude name="**/CVS/"/>
+        <exclude name=".*"/>
       </fileset>
       <file src="extensions/modules/build.xml" targetdir="$INSTALL_PATH/extensions/modules"/>
     </pack>
     <pack name="javadoc" required="no">
       <description>Generated Javadocs</description>
       <fileset targetdir="$INSTALL_PATH/webapp/api" dir="webapp/api">
-	<exclude name="**/CVS/"/>
+        <exclude name="**/CVS/"/>
       </fileset>
     </pack>
   </packs>
