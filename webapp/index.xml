@@ -23,8 +23,9 @@
                 extensions for full-text search, <a
                     href="http://xmldb-org.sourceforge.net/xupdate/">XUpdate</a> support,
                 XQuery <a href="update_ext.xml">update extensions</a> and tight integration with
-                existing XML development tools. The database implements the current XQuery 1.0
-                working drafts, with exception of the schema import and schema validation features
+                existing XML development tools. The database implements the current
+                <a href="http://www.w3.org/TR/xquery/">XQuery 1.0 recommendation</a>,
+                with exception of the schema import and schema validation features
                 defined as optional in the XQuery specification.</p>
 
             <p>eXist provides a powerful environment for the development of web applications
@@ -39,8 +40,7 @@
         </section>
 
         <section id="download" title="Download">
-            <p> eXist is released to the public under the terms of the <link
-                    href="http://www.gnu.org/copyleft/lesser.html"> GNU LGPL </link> license.</p>
+
             
             <note>
                 <p><b>Even</b> release numbers indicate 'production' releases
@@ -177,6 +177,11 @@
                     href="irc://irc.freenode.net/existdb">irc.freenode.net</link>. The channel is
                 open for general discussions on eXist and related subjects.</p>
 
+        </section>
+        
+        <section id="license" title="License">
+            <p> eXist is released to the public under the terms of the <link
+                    href="http://www.gnu.org/copyleft/lesser.html"> GNU LGPL </link> license.</p>
         </section>
     </body>
 </document>
