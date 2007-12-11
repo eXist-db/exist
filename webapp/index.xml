@@ -164,27 +164,20 @@
         </section>
         <section title="Community Support" id="mailing">
             <p>The primary medium for asking questions, getting help or posting bug reports or fixes
-                is the project mailing list. To subscribe/unsubscribe visit the mailing lists page
-                on sourceforge.</p>
+                is the project mailing list. To subscribe/unsubscribe visit the
+                <a href="http://sourceforge.net/mail/?group_id=17691">mailing lists page</a> on sourceforge.</p>
 
-            <p>
-                <link href="http://sourceforge.net/mail/?group_id=17691">
-                    http://sourceforge.net/mail/?group_id=17691 </link>
-            </p>
 
-            <p> The <b>list archive</b> can be found on the same page. However, most people find
-                    <b>Gmane</b> more convenient:</p>
-
-            <p>
-                <link href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">
-                    http://news.gmane.org/thread.php?group=gmane.text.xml.exist</link> or, via NNTP, 
+            <p>Previous messages posted on the are archived on <a href="http://www.nabble.com/eXist-f4072.html">nabble.com</a> and
+                <link href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">gmane.org</link> provides a
                 <link href="news://news.gmane.org/gmane.text.xml.exist">
-                    news://news.gmane.org/gmane.text.xml.exist</link>
+                    NNTP</link> interface.
             </p>
 
-            <p>The project also has an <b>IRC channel</b>
-                <link href="http://irc.exist-db.org">#existdb</link> at <link
-                    href="irc://irc.freenode.net/existdb">irc.freenode.net</link>. The channel is
+            <p>The project also has an online chat box <b>#existdb</b> which is accessible via IRC on <link
+                    href="irc://irc.freenode.net/existdb">irc.freenode.net</link> and via
+                an AJAX based
+                <link href="http://irc.exist-db.org">web</link> interface. The channel is
                 open for general discussions on eXist and related subjects.</p>
 
         </section>
