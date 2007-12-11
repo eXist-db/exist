@@ -2820,7 +2820,29 @@ public class XQueryTest extends XMLTestCase {
             fail(ex.toString());
         }
     }
-       
+
+    // http://sourceforge.net/support/tracker.php?aid=1848497
+    public void bugtestAttributeNamespaceDeclaration_1848497() {
+
+        // OK
+        try {
+            String query = "declare namespace foo = \"foo\";" +
+                    "declare function foo:boe() { \"boe\" };" +
+                    "<xml xmlns:foo2=\"foo\">{ foo2:boe() }</xml>";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "<xml xmlns:foo2=\"foo\">boe</xml>",
+                    result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
+
     // ======================================
     
 	/**
