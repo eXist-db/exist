@@ -182,7 +182,8 @@
 
             <p>All eXist-db sources are freely available on SourceForge
                 <link href="http://sourceforge.net/svn/?group_id=17691">subversion</link> repositories.
-                The code is made <link href="http://www.koders.com/info.aspx?c=ProjectInfo&amp;pid=VUM641QG5USW5EHRSLWDSDVM6G">browsable</link>
+                The <a href="http://www.ohloh.net/projects/252?p=eXist">OpenSource</a> code is made
+                <link href="http://www.koders.com/info.aspx?c=ProjectInfo&amp;pid=VUM641QG5USW5EHRSLWDSDVM6G">browsable</link>
                 and is continuously <link href="http://fisheye3.cenqua.com/browse/exist/">monitored</link> 
                 and <link href="http://parabuild.viewtier.com:8080/parabuild/index.htm?cid=b26f">built</link>.</p>
 
