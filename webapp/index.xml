@@ -174,11 +174,19 @@
                     NNTP</link> interface.
             </p>
 
-            <p>The project also has an online chat box <b>#existdb</b> which is accessible via IRC on <link
+            <p>The project has an chat box <b>#existdb</b> which is accessible via IRC on <link
                     href="irc://irc.freenode.net/existdb">irc.freenode.net</link> and via
                 an AJAX based
                 <link href="http://irc.exist-db.org">web</link> interface. The channel is
                 open for general discussions on eXist and related subjects.</p>
+
+            <p>All eXist-db sources are freely available on SourceForge
+                <link href="http://sourceforge.net/svn/?group_id=17691">subversion</link> repositories.
+                The code is made <link href="http://www.koders.com/info.aspx?c=ProjectInfo&amp;pid=VUM641QG5USW5EHRSLWDSDVM6G">browsable</link>
+                and is continuously <link href="http://fisheye3.cenqua.com/browse/exist/">monitored</link> 
+                and <link href="http://parabuild.viewtier.com:8080/parabuild/index.htm?cid=b26f">built</link>.</p>
+
+
 
         </section>
         
