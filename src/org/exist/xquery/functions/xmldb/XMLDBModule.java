@@ -83,6 +83,7 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBChmodCollection.signature, XMLDBChmodCollection.class),
         new FunctionDef(XMLDBChmodResource.signature, XMLDBChmodResource.class),
         new FunctionDef(XMLDBCollectionExists.signature, XMLDBCollectionExists.class),
+        new FunctionDef(XMLDBDocumentExists.signature, XMLDBDocumentExists.class),
         new FunctionDef(XMLDBPermissionsToString.signature, XMLDBPermissionsToString.class),
         new FunctionDef(XMLDBIsAdmin.signature, XMLDBIsAdmin.class),
         new FunctionDef(XMLDBURIFunctions.signatures[0], XMLDBURIFunctions.class),
