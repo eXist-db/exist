@@ -101,6 +101,7 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(Parse.signatures[0], Parse.class),
         new FunctionDef(Parse.signatures[1], Parse.class),
         new FunctionDef(ExtractDocs.signature, ExtractDocs.class),
+        new FunctionDef(NodeXPath.signature, NodeXPath.class),
 
         // deprecated functions
         new FunctionDef(GetVersion.deprecated, GetVersion.class),
