@@ -257,6 +257,9 @@
           <option>-x</option>, the client will try to read the query from standard input. For
         example, on Unix you may do</para>
       <synopsis format="linespecific">echo "//SPEECH[LINE &amp;= 'love']" | bin/client.sh -x</synopsis>
+      <para>NB! remember to type Ctrl-d when working without pipe.</para>
+      <synopsis format="linespecific">bin/client.sh -x ENTER
+      //SPEECH[LINE &amp;= 'love'] ENTER Ctrl-d</synopsis>
       <para>Queries can also be read from a file. For example,</para>
       <synopsis>bin/client.sh -F samples/xquery/fibo.xq</synopsis>
       <para>executes the XQuery contained in <filename>fibo.xq</filename>.</para>
