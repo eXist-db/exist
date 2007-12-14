@@ -307,9 +307,11 @@ public class CollectionConfiguration {
 //                trigger.configure(broker, collection, parameters);
             return triggerConf;
         } catch (ClassNotFoundException e) {
-			throw new CollectionConfigurationException(e.getMessage(), e);
+            LOG.warn("Trigger class not found: " + e.getMessage(), e);
+//			throw new CollectionConfigurationException(e.getMessage(), e);
 		}
-	}
+        return null;
+    }
 	
 	public String toString() {
 		StringBuffer result = new StringBuffer();
