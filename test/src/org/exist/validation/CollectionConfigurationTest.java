@@ -132,9 +132,17 @@ public class CollectionConfigurationTest {
     
     // ==========
 
-    @Ignore("This tests fails") 
+
     @Test
     public void insertInvalidCollectionXconf() {
+
+        try {
+            createCollection("/db/system/config/db/foobar");
+            storeCollectionXconf("/db/system/config/db/foobar", invalidConfig);
+        } catch (XMLDBException ex) {
+            LOG.error(ex);
+            fail(ex.getMessage());
+        }
 
         try {
             createCollection("/db/system/config/db/foobar");
