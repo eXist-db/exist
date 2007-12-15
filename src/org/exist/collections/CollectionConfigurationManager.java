@@ -192,7 +192,20 @@ public class CollectionConfigurationManager {
                     if (LOG.isTraceEnabled())
                         LOG.trace("Reading collection configuration from '" + confDoc.getURI() + "'");
                     CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
-                    conf.read(broker, confDoc, configCollection.getURI(), confDoc.getFileURI());
+
+                    // TODO DWES Temporary workaround for bug 
+                    // [ 1807744 ] Invalid collection.xconf causes a non startable database
+                    // http://sourceforge.net/tracker/index.php?func=detail&aid=1807744&group_id=17691&atid=117691
+                    try {
+                        conf.read(broker, confDoc, configCollection.getURI(), confDoc.getFileURI());
+                    } catch (CollectionConfigurationException e) {
+                        String message = "Failed to read configuration document " + confDoc.getFileURI() + " in "
+                                + configCollection.getURI() + ". "
+                                + e.getMessage();
+                        LOG.error(message);
+                        System.out.println(message);
+                    }
+
                     synchronized (latch) {
                         configurations.put(new CollectionURI(configCollection.getURI().getRawCollectionPath()), conf);
                     }
