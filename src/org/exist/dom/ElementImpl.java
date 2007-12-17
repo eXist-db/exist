@@ -21,49 +21,23 @@
  */
 package org.exist.dom;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeSet;
+import java.io.*;
+import java.util.*;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.*;
 
 import org.exist.Namespaces;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.ElementValue;
-import org.exist.storage.NodePath;
-import org.exist.storage.RangeIndexSpec;
-import org.exist.storage.Signatures;
+import org.exist.storage.*;
 import org.exist.storage.btree.Value;
-import org.exist.storage.txn.TransactionException;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.exist.util.ByteArrayPool;
-import org.exist.util.ByteConversion;
-import org.exist.util.UTF8;
+import org.exist.storage.txn.*;
+import org.exist.util.*;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
-import org.w3c.dom.Attr;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Comment;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.Text;
-import org.w3c.dom.TypeInfo;
-import org.w3c.dom.UserDataHandler;
+import org.w3c.dom.*;
 
 /**
  * ElementImpl.java
@@ -653,7 +627,7 @@ public class ElementImpl extends NamedNode implements Element {
                 Map.Entry entry = (Map.Entry) i.next();
                 String prefix = entry.getKey().toString();
                 String ns = entry.getValue().toString();
-                QName attrName = new QName(prefix, Namespaces.XML_NS, "xmlns");
+                QName attrName = new QName(prefix, Namespaces.XMLNS_NS, "xmlns");
                 AttrImpl attr = new AttrImpl(attrName, ns);
                 map.setNamedItem(attr);
             }
