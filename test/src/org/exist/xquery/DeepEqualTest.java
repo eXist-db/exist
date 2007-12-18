@@ -427,6 +427,11 @@ public class DeepEqualTest extends TestCase {
 		createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:bar'><p:a/><q:a/></test>");
 		assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
 	}
+	
+	public void testNSElements3() {
+		createDocument("test", "<test><a/><a xmlns:z='foo'/></test>");
+		assertQuery(true, "deep-equal(/test/*[1], /test/*[2])");
+	}
         
 
 	
