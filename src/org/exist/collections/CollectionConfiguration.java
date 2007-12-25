@@ -103,21 +103,31 @@ public class CollectionConfiguration {
      * @param doc collection configuration document
      * @throws CollectionConfigurationException
      */
-    protected void read(DBBroker broker, DocumentImpl doc, XmldbURI srcCollectionURI, XmldbURI docName) throws CollectionConfigurationException {
-        doc.setBroker(broker);
-        Element root = doc.getDocumentElement();
-        if (root == null)
-            throw new CollectionConfigurationException("Configuration document can not be parsed"); 
-        if (!ROOT_ELEMENT.equals(root.getLocalName()))
-            throw new CollectionConfigurationException("Expected element '" + ROOT_ELEMENT +
-                    "' in configuration document. Got element '" + root.getLocalName() + "'");               
-		if(!NAMESPACE.equals(root.getNamespaceURI()))
-            throw new CollectionConfigurationException("Expected namespace '" + NAMESPACE +                            
-                    "' for element '" + PARAMETER_ELEMENT + 
-                    "' in configuration document. Got '" + root.getNamespaceURI() + "'");     
+    protected void read(DBBroker broker, Document doc, boolean checkOnly, XmldbURI srcCollectionURI, XmldbURI docName) throws CollectionConfigurationException {
+        if (doc instanceof DocumentImpl)
+            ((DocumentImpl)doc).setBroker(broker);
         
-        this.docName = docName;        
-        this.srcCollectionURI = srcCollectionURI;
+        if (!checkOnly) {
+            this.docName = docName;
+            this.srcCollectionURI = srcCollectionURI;
+        }
+        
+        Element root = doc.getDocumentElement();
+        if (root == null) {
+            throwOrLog("Configuration document can not be parsed", checkOnly);
+            return;
+        }
+        if (!ROOT_ELEMENT.equals(root.getLocalName())) {
+            throwOrLog("Expected element '" + ROOT_ELEMENT +
+                    "' in configuration document. Got element '" + root.getLocalName() + "'", checkOnly);
+            return;
+        }
+        if(!NAMESPACE.equals(root.getNamespaceURI())) {
+            throwOrLog("Expected namespace '" + NAMESPACE +
+                    "' for element '" + PARAMETER_ELEMENT + 
+                    "' in configuration document. Got '" + root.getNamespaceURI() + "'", checkOnly);
+            return;
+        }
         
         NodeList childNodes = root.getChildNodes();
 		Node node;
@@ -129,7 +139,7 @@ public class CollectionConfiguration {
 					for(int j = 0; j < triggers.getLength(); j++) {
 						node = triggers.item(j);
 						if(node.getNodeType() == Node.ELEMENT_NODE)
-							createTrigger(broker, (Element)node);
+							createTrigger(broker, (Element)node, checkOnly);
 					}
                     
 			    } else if(INDEX_ELEMENT.equals(node.getLocalName())) {
@@ -140,7 +150,10 @@ public class CollectionConfiguration {
                         else
                             indexSpec.read(broker, elem);
                     } catch (DatabaseConfigurationException e) {
-                        throw new CollectionConfigurationException(e.getMessage(), e);
+                        if (checkOnly)
+                            throw new CollectionConfigurationException(e.getMessage(), e);
+                        else
+                            LOG.warn(e.getMessage(), e);
                     }
                     
 			    } else if (PERMISSIONS_ELEMENT.equals(node.getLocalName())) {
@@ -151,9 +164,13 @@ public class CollectionConfiguration {
 						try {
 							defResPermissions = Integer.parseInt(permsOpt, 8);
 						} catch (NumberFormatException e) {
-							throw new CollectionConfigurationException("Ilegal value for permissions in configuration document : " +                                    
-								e.getMessage(), e);
-						}
+                            if (checkOnly)
+                                throw new CollectionConfigurationException("Ilegal value for permissions in configuration document : " +
+								    e.getMessage(), e);
+                            else
+                                LOG.warn("Ilegal value for permissions in configuration document : " +
+								    e.getMessage(), e);
+                        }
 					}
 					permsOpt = elem.getAttribute(COLLECTION_PERMISSIONS_ATTR);
 					if (permsOpt != null && permsOpt.length() > 0) {
@@ -161,8 +178,12 @@ public class CollectionConfiguration {
 						try {
 							defCollPermissions = Integer.parseInt(permsOpt, 8);
 						} catch (NumberFormatException e) {
-							throw new CollectionConfigurationException("Ilegal value for permissions in configuration document : " +                                     
-								e.getMessage(), e);
+							if (checkOnly)
+                                throw new CollectionConfigurationException("Ilegal value for permissions in configuration document : " +
+								    e.getMessage(), e);
+                            else
+                                LOG.warn("Ilegal value for permissions in configuration document : " +
+								    e.getMessage(), e);
 						}
 					}
                     
@@ -178,16 +199,23 @@ public class CollectionConfiguration {
                     }                
                     
 			    } else {
-                    LOG.info("Ignored node '" + node.getLocalName() + "' in configuration document");
+                    throwOrLog("Ignored node '" + node.getLocalName() + "' in configuration document", checkOnly);
                     //TODO : throw an exception like above ? -pb
                 }
 			} else if (node.getNodeType() == Node.ELEMENT_NODE) {
-                LOG.info("Ignored node '" + node.getLocalName() + "' in namespace '" + 
-                        node.getNamespaceURI() + "' in configuration document");                
+                throwOrLog("Ignored node '" + node.getLocalName() + "' in namespace '" +
+                        node.getNamespaceURI() + "' in configuration document", checkOnly);
             }
 		}
     }
-    
+
+    private void throwOrLog(String message, boolean throwExceptions) throws CollectionConfigurationException {
+        if (throwExceptions)
+            throw new CollectionConfigurationException(message);
+        else
+            LOG.warn(message);
+    }
+
     public XmldbURI getDocName() {
         return docName;
     }
@@ -226,63 +254,67 @@ public class CollectionConfiguration {
 		return triggers[eventType];
 	}
 	
-	private void createTrigger(DBBroker broker, Element node) 
+	private void createTrigger(DBBroker broker, Element node, boolean testConfig)
             throws CollectionConfigurationException {
         
 		String eventAttr = node.getAttribute(EVENT_ATTRIBUTE);
-		if(eventAttr == null)
-			throw new CollectionConfigurationException("'" + node.getNodeName() + 
-                    "' requires an attribute '"+ EVENT_ATTRIBUTE + "'");
-		String classAttr = node.getAttribute(CLASS_ATTRIBUTE);
-		if(classAttr == null)
-			throw new CollectionConfigurationException("'" + node.getNodeName() + 
-                    "' requires an attribute '"+ CLASS_ATTRIBUTE + "'"); 
+		if(eventAttr == null) {
+			throwOrLog("'" + node.getNodeName() +
+                    "' requires an attribute '"+ EVENT_ATTRIBUTE + "'", testConfig);
+            return;
+        }
+        String classAttr = node.getAttribute(CLASS_ATTRIBUTE);
+		if(classAttr == null) {
+			throwOrLog("'" + node.getNodeName() +
+                    "' requires an attribute '"+ CLASS_ATTRIBUTE + "'", testConfig);
+            return;
+        }
         
-        TriggerConfig trigger = instantiate(broker, node, classAttr);
-        
-        StringTokenizer tok = new StringTokenizer(eventAttr, ", ");
-        String event;             
-		while(tok.hasMoreTokens()) {
-			event = tok.nextToken();
-            LOG.debug("Registering trigger '" + classAttr + "' for event '" + event + "'");
-			if(event.equalsIgnoreCase("store")) {
-                if (triggers[Trigger.STORE_DOCUMENT_EVENT] != null)
-                    throw new CollectionConfigurationException("Trigger '" + classAttr + "' already registered");                    
-                triggers[Trigger.STORE_DOCUMENT_EVENT] = trigger;
-			} else if(event.equalsIgnoreCase("update")) {
-                if (triggers[Trigger.UPDATE_DOCUMENT_EVENT] != null)
-                    throw new CollectionConfigurationException("Trigger '" + classAttr + "' already registered");                     
-				triggers[Trigger.UPDATE_DOCUMENT_EVENT] = trigger;
-			} else if(event.equalsIgnoreCase("remove")) {
-                if (triggers[Trigger.REMOVE_DOCUMENT_EVENT] != null)
-                    throw new CollectionConfigurationException("Trigger '" + classAttr + "' already registered");                     
-				triggers[Trigger.REMOVE_DOCUMENT_EVENT] = trigger;
-			} else if(event.equalsIgnoreCase("create-collection")) {
-                if (triggers[Trigger.CREATE_COLLECTION_EVENT] != null)
-                    throw new CollectionConfigurationException("Trigger '" + classAttr + "' already registered");                     
-				triggers[Trigger.CREATE_COLLECTION_EVENT] = trigger;
-			} else if(event.equalsIgnoreCase("rename-collection")) {
-                if (triggers[Trigger.RENAME_COLLECTION_EVENT] != null)
-                    throw new CollectionConfigurationException("Trigger '" + classAttr + "' already registered");                     
-				triggers[Trigger.RENAME_COLLECTION_EVENT] = trigger;
-			} else if(event.equalsIgnoreCase("delete-collection")) {
-                if (triggers[Trigger.DELETE_COLLECTION_EVENT] != null)
-                    throw new CollectionConfigurationException("Trigger '" + classAttr + "' already registered");                     
-				triggers[Trigger.DELETE_COLLECTION_EVENT] = trigger;
-			} else
-                throw new CollectionConfigurationException("Unknown event type '" + event + 
-                        "' in trigger '" + classAttr + "'");
-		}
-	}
+        TriggerConfig trigger = instantiate(broker, node, classAttr, testConfig);
+        if (!testConfig) {
+            StringTokenizer tok = new StringTokenizer(eventAttr, ", ");
+            String event;
+            while(tok.hasMoreTokens()) {
+                event = tok.nextToken();
+                LOG.debug("Registering trigger '" + classAttr + "' for event '" + event + "'");
+                if(event.equalsIgnoreCase("store")) {
+                    if (triggers[Trigger.STORE_DOCUMENT_EVENT] != null)
+                        LOG.warn("Trigger '" + classAttr + "' already registered");
+                    triggers[Trigger.STORE_DOCUMENT_EVENT] = trigger;
+                } else if(event.equalsIgnoreCase("update")) {
+                    if (triggers[Trigger.UPDATE_DOCUMENT_EVENT] != null)
+                        LOG.warn("Trigger '" + classAttr + "' already registered");
+                    triggers[Trigger.UPDATE_DOCUMENT_EVENT] = trigger;
+                } else if(event.equalsIgnoreCase("remove")) {
+                    if (triggers[Trigger.REMOVE_DOCUMENT_EVENT] != null)
+                        LOG.warn("Trigger '" + classAttr + "' already registered");
+                    triggers[Trigger.REMOVE_DOCUMENT_EVENT] = trigger;
+                } else if(event.equalsIgnoreCase("create-collection")) {
+                    if (triggers[Trigger.CREATE_COLLECTION_EVENT] != null)
+                        LOG.warn("Trigger '" + classAttr + "' already registered");
+                    triggers[Trigger.CREATE_COLLECTION_EVENT] = trigger;
+                } else if(event.equalsIgnoreCase("rename-collection")) {
+                    if (triggers[Trigger.RENAME_COLLECTION_EVENT] != null)
+                        LOG.warn("Trigger '" + classAttr + "' already registered");
+                    triggers[Trigger.RENAME_COLLECTION_EVENT] = trigger;
+                } else if(event.equalsIgnoreCase("delete-collection")) {
+                    if (triggers[Trigger.DELETE_COLLECTION_EVENT] != null)
+                        LOG.warn("Trigger '" + classAttr + "' already registered");
+                    triggers[Trigger.DELETE_COLLECTION_EVENT] = trigger;
+                } else
+                    LOG.warn("Unknown event type '" + event + "' in trigger '" + classAttr + "'");
+            }
+        }
+    }
 	
-	private TriggerConfig instantiate(DBBroker broker, Element node, String classname)
+	private TriggerConfig instantiate(DBBroker broker, Element node, String classname, boolean testOnly)
             throws CollectionConfigurationException {
 		try {
 			Class clazz = Class.forName(classname);
-			if(!Trigger.class.isAssignableFrom(clazz))
-				throw new CollectionConfigurationException("Trigger's class '" + classname + 
-                        "' is not assignable from '" + Trigger.class + "'");
-//            Trigger trigger = (Trigger)clazz.newInstance();
+			if(!Trigger.class.isAssignableFrom(clazz)) {
+				throwOrLog("Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'", testOnly);
+                return null;
+            }
             TriggerConfig triggerConf = new TriggerConfig(clazz);
 			NodeList nodes = node.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
             //TODO : rely on schema-driven validation -pb
@@ -292,23 +324,26 @@ public class CollectionConfiguration {
                     Element param = (Element)nodes.item(i);
                     //TODO : rely on schema-driven validation -pb
                     String name = param.getAttribute(PARAM_NAME_ATTRIBUTE);
-                    if(name == null)
-                        throw new CollectionConfigurationException("Expected attribute '" + PARAM_NAME_ATTRIBUTE +
-                                "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration."); 
-                    String value = param.getAttribute(PARAM_VALUE_ATTRIBUTE);
-                    if(value == null)
-                        throw new CollectionConfigurationException("Expected attribute '" + PARAM_VALUE_ATTRIBUTE +
-                                "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration."); 
-                    
-                    parameters.put(name, value);  
+                    if(name == null) {
+                        throwOrLog("Expected attribute '" + PARAM_NAME_ATTRIBUTE +
+                                "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration.", testOnly);
+                    } else {
+                        String value = param.getAttribute(PARAM_VALUE_ATTRIBUTE);
+                        if(value == null) {
+                            throwOrLog("Expected attribute '" + PARAM_VALUE_ATTRIBUTE +
+                                    "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration.", testOnly);
+                        } else
+                            parameters.put(name, value);
+                    }
                 }
                 triggerConf.setParameters(parameters);
             }
-//                trigger.configure(broker, collection, parameters);
             return triggerConf;
         } catch (ClassNotFoundException e) {
-            LOG.warn("Trigger class not found: " + e.getMessage(), e);
-//			throw new CollectionConfigurationException(e.getMessage(), e);
+            if (testOnly)
+                throw new CollectionConfigurationException(e.getMessage(), e);
+            else
+                LOG.warn("Trigger class not found: " + e.getMessage(), e);
 		}
         return null;
     }

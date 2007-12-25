@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -34,9 +35,16 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -74,8 +82,8 @@ public class CollectionConfigurationManager {
         defaultConfig = new CollectionConfiguration(broker.getBrokerPool());
         defaultConfig.setIndexConfiguration(broker.getIndexConfiguration());
     }
-    
-	/**
+
+    /**
 	 * Add a new collection configuration. The XML document is passed as a string.
 	 * 
      * @param transaction The transaction that will hold the WRITE locks until they are released by commit()/abort()
@@ -84,9 +92,9 @@ public class CollectionConfigurationManager {
 	 * @param config the xconf document as a String.
 	 * @throws CollectionConfigurationException
 	 */
-    public void addConfiguration(Txn transaction, DBBroker broker, Collection collection, String config) 
+    public void addConfiguration(Txn transaction, DBBroker broker, Collection collection, String config)
     throws CollectionConfigurationException {
-    	try {
+        try {
     		//TODO : use XmldbURI.resolve() !
 			XmldbURI path = XmldbURI.CONFIG_COLLECTION_URI.append(collection.getURI());
 			Collection confCol = broker.getOrCreateCollection(transaction, path);
@@ -116,8 +124,6 @@ public class CollectionConfigurationManager {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
-		} catch (CollectionConfigurationException e) {
-			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		} catch (EXistException e) {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		} catch (TriggerException e) {
@@ -128,7 +134,39 @@ public class CollectionConfigurationManager {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		}
     }
-    
+
+    /**
+     * Check the passed collection configuration. Throws an exception if errors are detected in the
+     * configuration document. Note: some configuration settings depend on the current environment, in particular
+     * the availability of trigger or index classes.
+     *
+     * @param broker DBBroker
+     * @param config the configuration to test
+     * @throws CollectionConfigurationException if errors were detected
+     */
+    public void testConfiguration(DBBroker broker, String config) throws CollectionConfigurationException {
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            InputSource src = new InputSource(new StringReader(config));
+            SAXParser parser = factory.newSAXParser();
+            XMLReader reader = parser.getXMLReader();
+            SAXAdapter adapter = new SAXAdapter();
+            reader.setContentHandler(adapter);
+            reader.parse(src);
+
+            Document doc = adapter.getDocument();
+            CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
+            conf.read(broker, doc, true, null, null);
+        } catch (ParserConfigurationException e) {
+            throw new CollectionConfigurationException(e.getMessage(), e);
+        } catch (SAXException e) {
+            throw new CollectionConfigurationException(e.getMessage(), e);
+        } catch (IOException e) {
+            throw new CollectionConfigurationException(e.getMessage(), e);
+        }
+    }
+
     /**
      * Retrieve the collection configuration instance for the given collection. This
      * creates a new CollectionConfiguration object and recursively scans the collection
@@ -197,7 +235,7 @@ public class CollectionConfigurationManager {
                     // [ 1807744 ] Invalid collection.xconf causes a non startable database
                     // http://sourceforge.net/tracker/index.php?func=detail&aid=1807744&group_id=17691&atid=117691
                     try {
-                        conf.read(broker, confDoc, configCollection.getURI(), confDoc.getFileURI());
+                        conf.read(broker, confDoc, false, configCollection.getURI(), confDoc.getFileURI());
                     } catch (CollectionConfigurationException e) {
                         String message = "Failed to read configuration document " + confDoc.getFileURI() + " in "
                                 + configCollection.getURI() + ". "
