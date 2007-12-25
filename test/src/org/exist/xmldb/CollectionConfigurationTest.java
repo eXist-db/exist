@@ -88,6 +88,16 @@ public class CollectionConfigurationTest extends TestCase {
         + "  </index>"
         + "</collection>";
 
+    private String INVALID_CONFIG1 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n"
+        + " <triggers>\n"
+        + "     <trigger event=\"store,update,remove\" class=\"org.exist.NonExistingTrigger\">\n"
+        + "     </trigger>\n"
+        + " </triggers>\n"
+        + " <index>\n"
+        + "     <create foo=\"a\" type=\"xs:integer\"/>\n"
+        + " </index>\n"
+        + "</collection>";
+
     private Collection testCollection;
 
     protected void setUp() {
@@ -701,6 +711,35 @@ public class CollectionConfigurationTest extends TestCase {
         }
    }
 
+    public void testInvalidConfiguration1() {
+        ResourceSet result;
+        try {
+            CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+            Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+
+            IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(INVALID_CONFIG1);
+
+            //... then index document
+            XMLResource doc = (XMLResource)
+                    sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+            doc.setContent(DOCUMENT_CONTENT);
+            sub2.storeResource(doc);
+
+            XPathQueryService service = (XPathQueryService) sub2.getService("XPathQueryService", "1.0");
+            
+            // index should be empty since configuration was invalid
+            result = service.query("util:index-key-occurrences(/test/a, 1)");
+            assertEquals(0, result.getSize());
+
+            result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) ");
+            assertEquals(0, result.getSize());
+        } catch(Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
    public void testRangeIndex1() { 
        ResourceSet result; 
        try {
