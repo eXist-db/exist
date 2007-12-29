@@ -254,6 +254,10 @@ public class EntitiesTest extends XMLTestCase {
             result = queryAndAssert(service, "xs:anyURI(\"index.xql?a=1&amp;b=2\")", 1, null);
             // TODO: could check result
             
+            result = queryAndAssert(service, "xs:anyURI('a') le xs:anyURI('b')", 1, null);
+            assertEquals("true",result.getResource(0).getContent());
+
+            
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
