@@ -282,7 +282,7 @@ public class AnyURIValue extends AtomicValue {
 				case Constants.LT :
 					return cmp < 0;
 				case Constants.LTEQ :
-					return cmp >= 0;					
+					return cmp <= 0;					
 				default :
 					throw new XPathException(
 						"XPTY0004: cannot apply operator "
