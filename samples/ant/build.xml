@@ -36,18 +36,16 @@
     <antcall target="xpath"/>
     <antcall target="copy"/>
     <antcall target="move"/>
-    <!--
     <antcall target="xquery"/>
+    <!--
     <antcall target="xupdate"/>
     -->
     <antcall target="backup"/>
     <antcall target="remove"/>
     <antcall target="groups"/>
     <antcall target="users"/>
-    <!--
     <antcall target="adduser"/>
     <antcall target="rmuser"/>
-    -->
     <antcall target="restore"/>
   </target>
 
@@ -144,10 +142,14 @@
   </target>
 
   <target name="xquery" description="test xquery task">
-    <xdb:xquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" query=""/>
-    <xdb:xquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"> </xdb:xquery>
+    <xdb:xquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}"
+                query="collection('/db/test')//*:publisher" outputproperty="query1"/>
+    <echo>${query1}</echo>
+    <!--
     <xdb:xquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
-      queryFile="../xquery/"/>
+      queryUri=".. .. .." outputproperty="query2"/>
+    <echo>${query2}</echo>
+    -->
   </target>
 
   <target name="xupdate" description="test xupdate task">
@@ -186,15 +188,18 @@
       outputproperty="groups"/>
     <echo message="groups=${groups}"/>
   </target>
+
   <target name="users" description="test users task">
     <xdb:users user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}"
       outputproperty="users"/>
     <echo message="users=${users}"/>
   </target>
+
   <target name="adduser" description="test add user task">
     <xdb:adduser user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" name="test"
       secret="test" primarygroup="guest"/>
   </target>
+    
   <target name="rmuser" description="test remove user task">
     <xdb:rmuser user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" name="test"/>
   </target>
