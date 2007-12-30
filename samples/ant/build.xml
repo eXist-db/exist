@@ -168,8 +168,8 @@
   </target>
 
   <target name="restore" description="test restore task">
-    <xdb:restore user="${xmldb.user}" password="${xmldb.passwd}"
-      uri="${xmldb.url}" dir="backup/db/test"/>
+    <xdb:restore user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}"
+      dir="backup/db/test"/>
 
     <!--
     <xdb:restore user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}">
