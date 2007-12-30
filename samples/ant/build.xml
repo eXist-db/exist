@@ -7,12 +7,14 @@
       <fileset dir="../../lib/core">
         <include name="*.jar"/>
       </fileset>
-      <!--     <fileset dir="../../lib/endorsed">
+      <!--
+      <fileset dir="../../lib/endorsed">
         <include name="*.jar"/>
       </fileset>
       <fileset dir="../../lib/optional">
         <include name="*.jar"/>
-      </fileset>-->
+      </fileset>
+      -->
       <pathelement location="../../exist.jar"/>
       <pathelement location="../../exist-optional.jar"/>
     </classpath>
@@ -34,14 +36,18 @@
     <antcall target="xpath"/>
     <antcall target="copy"/>
     <antcall target="move"/>
-    <!--antcall target="xquery"/>
-    <antcall target="xupdate"/-->
+    <!--
+    <antcall target="xquery"/>
+    <antcall target="xupdate"/>
+    -->
     <antcall target="backup"/>
     <antcall target="remove"/>
     <antcall target="groups"/>
     <antcall target="users"/>
-    <!--antcall target="adduser"/>
-    <antcall target="rmuser"/-->
+    <!--
+    <antcall target="adduser"/>
+    <antcall target="rmuser"/>
+    -->
     <antcall target="restore"/>
   </target>
 
@@ -133,8 +139,8 @@
   <target name="move" description="test move task">
     <xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test/sub1"
       resource="new.xml" destination="sub11" name="moved.xml"/>
-    <!--xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
-      collection="sub2" destination="sub1" name="moved"/-->
+    <xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      collection="sub2" destination="sub1" name="moved"/>
   </target>
 
   <target name="xquery" description="test xquery task">
@@ -165,11 +171,13 @@
     <xdb:restore user="${xmldb.user}" password="${xmldb.passwd}"
       uri="${xmldb.url}" dir="backup/db/test"/>
 
-    <!--xdb:restore user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}">
+    <!--
+    <xdb:restore user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}">
       <dirset dir="backup/db">
         <include name="*"/>
       </dirset>
-    </xdb:restore-->
+    </xdb:restore>
+    -->
 
   </target>
 
