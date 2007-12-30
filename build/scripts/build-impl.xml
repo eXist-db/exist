@@ -395,7 +395,7 @@
     <!-- ================================================================== -->
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
-    <target name="all" depends="jar,wrapper,extension-modules,extension-indexes,extension-fluent,test-compile" 
+    <target name="all" depends="jar,wrapper,extension-modules,extension-indexes,extension-fluent,tools-jmx,test-compile" 
 	        description="Build all">
 		<antcall target="sign"/>
 	</target>
@@ -566,7 +566,11 @@
 		<ant antfile="build.xml" dir="extensions/fluent"/>
 	</target>
 
-	<target name="cleandocs">
+    <target name="tools-jmx" depends="jar">
+        <ant antfile="build.xml" dir="tools/jmx"/>
+    </target>
+    
+    <target name="cleandocs">
         <replaceregexp>
             <regexp pattern="/\*.*Description of the Method.*\*/"/>
             <substitution expression=""/>
