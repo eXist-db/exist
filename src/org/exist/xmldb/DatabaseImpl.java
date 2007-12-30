@@ -280,7 +280,7 @@ public class DatabaseImpl implements Database {
      * RpcClients are cached by address+user. The password is transparently changed.
      * @param user
      * @param password
-     * @param address
+     * @param url
      * @throws XMLDBException
      */
     private XmlRpcClient getRpcClient(String user, String password, URL url) throws XMLDBException {
@@ -288,11 +288,9 @@ public class DatabaseImpl implements Database {
         XmlRpcClient client = (XmlRpcClient) rpcClients.get(key);
         if (client == null) {         
            client = new XmlRpcClient(url);
-           if (client != null) {
-        	   client.setBasicAuthentication(user, password);           
-        	   rpcClients.put(key, client);
-           }
-        }            
+           rpcClients.put(key, client);
+        }
+        client.setBasicAuthentication(user, password);
         return client;
     }
     
