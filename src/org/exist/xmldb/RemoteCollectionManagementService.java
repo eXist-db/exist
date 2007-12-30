@@ -190,7 +190,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void moveResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
-    		move(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    		moveResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
     	} catch(URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
