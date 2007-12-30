@@ -50,8 +50,10 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
       try
       {
         Collection base = DatabaseManager.getCollection(uri, user, password);
-        if (base == null)
-          throw new BuildException("Collection " + uri + " not found.");
+          
+        if(base==null){
+          throw new BuildException("Collection " + uri + " could not be found.");
+        }
 
         if (resource != null)
         {

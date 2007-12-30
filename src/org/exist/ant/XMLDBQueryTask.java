@@ -63,7 +63,12 @@ public class XMLDBQueryTask extends AbstractXMLDBTask {
 		registerDatabase();
 		try {
 			Collection collection = DatabaseManager.getCollection(uri, user, password);
-			XPathQueryService service = (XPathQueryService) 
+
+            if(collection==null){
+               throw new BuildException("Collection " + uri + " could not be found.");
+            }
+
+            XPathQueryService service = (XPathQueryService)
 				collection.getService("XPathQueryService", "1.0");
 			ResourceSet results = service.query(query);
 			log("Found " + results.getSize());

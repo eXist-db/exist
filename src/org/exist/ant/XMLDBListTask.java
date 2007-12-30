@@ -56,6 +56,11 @@ public class XMLDBListTask extends AbstractXMLDBTask
     {
       log("Get base collection: " + uri, Project.MSG_DEBUG);
       Collection base = DatabaseManager.getCollection(uri, user, password);
+
+      if(base==null){
+         throw new BuildException("Collection " + uri + " could not be found.");
+      }
+        
       StringBuffer buf = new StringBuffer();
       if (collections)
       {

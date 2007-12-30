@@ -90,6 +90,11 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
             log("Get base collection: " + uri, Project.MSG_DEBUG);
             Collection base = DatabaseManager
                     .getCollection(uri, user, password);
+
+            if(base==null){
+                throw new BuildException("Collection " + uri + " could not be found.");
+            }
+
             XPathQueryService service = (XPathQueryService) base.getService(
                     "XPathQueryService", "1.0");
             // set pretty-printing on

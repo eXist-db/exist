@@ -57,11 +57,13 @@ public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
     {
       log("Checking collection: " + uri, Project.MSG_INFO);
       Collection base = DatabaseManager.getCollection(uri, user, password);
+
       if (base != null)
       {
         log("Base collection found", Project.MSG_DEBUG);
         exist = true;
       }
+
       if (base != null && resource != null)
       {
         log("Checking resource: " + resource, Project.MSG_INFO);
@@ -72,6 +74,7 @@ public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
           exist = false;
         }
       }
+        
     } catch (XMLDBException e)
     {
       // ignore is false already

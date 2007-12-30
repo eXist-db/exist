@@ -54,8 +54,10 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
     {
       log("Get base collection: " + uri, Project.MSG_DEBUG);
       Collection base = DatabaseManager.getCollection(uri, user, password);
-      if (base == null)
-        throw new BuildException("collection " + uri + " not found");
+
+      if(base==null){
+         throw new BuildException("Collection " + uri + " could not be found.");
+      }
 
       Collection root = null;
       if (collection != null)

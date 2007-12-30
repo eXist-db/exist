@@ -53,6 +53,11 @@ public class XMLDBShutdownTask extends AbstractXMLDBTask
     {
       log("Get base collection: " + uri, Project.MSG_DEBUG);
       Collection root = DatabaseManager.getCollection(uri, user, password);
+
+      if(root==null){
+         throw new BuildException("Collection " + uri + " could not be found.");
+      }
+
       DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
       log("Shutdown database instance", Project.MSG_INFO);
       mgr.shutdown();

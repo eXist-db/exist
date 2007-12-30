@@ -96,8 +96,10 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
         root = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION, path);
       } else
         root = DatabaseManager.getCollection(uri, user, password);
-      if (root == null)
-        throw new BuildException("collection " + uri + " not found");
+
+      if(root==null){
+         throw new BuildException("Collection " + uri + " could not be found.");
+      }
 
       MimeType mime = null;
       if (type != null) {
