@@ -1,4 +1,4 @@
-<project basedir="." default="jar" name="JMX">
+<project basedir="." default="all" name="JMX">
 
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>
@@ -12,13 +12,31 @@
         </fileset>
     </path>
 
-    <available classname="javax.management.MBeanServer" property="jmx.present"/>
-    
-    <target name="prepare">
+    <condition property="java14-only">
+        <and>
+            <not><equals arg1="${ant.java.version}" arg2="1.4"/></not>
+            <available classname="javax.management.MBeanServer"/>
+        </and>
+    </condition>
+
+    <target name="check-java-version" unless="java14-only">
+        <echo message="Java version warning"/>
+        <echo message="--------------------"/>
+        <echo message="Java 5 is required to use eXist's management extensions (JMX) "/>
+        <echo message="interface. Your version is ${ant.java.version}. The JMX interface "/>
+        <echo message="will be disabled."/>
+    </target>
+
+    <target name="all">
+        <antcall target="check-java-version"/>
+        <antcall target="jar"/>
+    </target>
+
+    <target name="prepare" if="java14-only">
         <mkdir dir="${classes}"/>
     </target>
 
-    <target name="compile" depends="prepare">
+    <target name="compile" depends="prepare" if="java14-only">
         <echo message="Compiling JMX agent and client tools"/>
         <echo message="-----------------------------------------"/>
         <javac debug="true" destdir="${classes}" encoding="UTF-8"
@@ -30,17 +48,12 @@
         </javac>
     </target>
 
-    <target name="jar" depends="compile">
+    <target name="jar" depends="compile" if="java14-only">
         <echo message="Don't forget to resign the jar files when needed:"/>
         <echo message="./build.sh -f build/scripts/jarsigner.xml jnlp-sign-exist"/>
         <echo message="-----------------------------------------"/>
 
         <jar destfile="${server.dir}/lib/extensions/exist-jmx.jar" basedir="${classes}"
             keepcompression="true" update="true"/>
-    </target>
-
-    <target name="jmx-check" unless="jmx.present">
-        <echo message="The javax.managment package does not seem to be available."/>
-        <echo message="You are probably using a Java version &lt; 1.5. JMX will be disabled."/>
     </target>
 </project>
