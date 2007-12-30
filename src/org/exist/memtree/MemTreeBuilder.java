@@ -90,7 +90,7 @@ public class MemTreeBuilder {
 	 * @return the node number of the created element
 	 */
 	public int startElement(String namespaceURI, String localName, String qname, Attributes attributes) {
-		int p = qname.indexOf(':');
+        int p = qname.indexOf(':');
 		String prefix = null;
 		if(context != null) {
 			prefix = context.getPrefixForURI(namespaceURI);
@@ -107,8 +107,8 @@ public class MemTreeBuilder {
 	 * @return the node number of the created element
 	 */
 	public int startElement(QName qn, Attributes attributes) {
-		int nodeNr = doc.addNode(Node.ELEMENT_NODE, level, qn);
-		if(attributes != null) {
+        int nodeNr = doc.addNode(Node.ELEMENT_NODE, level, qn);
+        if(attributes != null) {
 			// parse attributes	
 			for (int i = 0; i < attributes.getLength(); i++) {
                 String attrNS = attributes.getURI(i);
@@ -127,7 +127,7 @@ public class MemTreeBuilder {
 		// update links
 		if (level + 1 >= prevNodeInLevel.length) {
 			int[] t = new int[level + 2];
-			System.arraycopy(prevNodeInLevel, 0, t, 0, level);
+			System.arraycopy(prevNodeInLevel, 0, t, 0, prevNodeInLevel.length);
 			prevNodeInLevel = t;
 		}
 		int prevNr = prevNodeInLevel[level];
