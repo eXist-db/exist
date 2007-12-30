@@ -115,6 +115,11 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
             log("Get base collection: " + uri, Project.MSG_DEBUG);
             Collection base = DatabaseManager
                     .getCollection(uri, user, password);
+
+            if(base==null){
+               throw new BuildException("Collection " + uri + " could not be found.");
+            }
+
             XQueryService service = (XQueryService) base.getService(
                     "XQueryService", "1.0");
             // set pretty-printing on

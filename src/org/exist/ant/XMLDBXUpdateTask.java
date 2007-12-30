@@ -55,6 +55,11 @@ public class XMLDBXUpdateTask extends AbstractXMLDBTask
     {
       log("Get base collection: " + uri, Project.MSG_DEBUG);
       Collection base = DatabaseManager.getCollection(uri, user, password);
+
+      if(base==null){
+         throw new BuildException("Collection " + uri + " could not be found.");
+      }
+
       XUpdateQueryService service = (XUpdateQueryService) base.getService("XUpdateQueryService", "1.0");
       if (resource != null)
       {
