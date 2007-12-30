@@ -133,8 +133,8 @@
   <target name="move" description="test move task">
     <xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test/sub1"
       resource="new.xml" destination="sub11" name="moved.xml"/>
-    <xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
-      collection="sub2" destination="sub1" name="moved"/>
+    <!--xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      collection="sub2" destination="sub1" name="moved"/-->
   </target>
 
   <target name="xquery" description="test xquery task">
@@ -163,12 +163,14 @@
 
   <target name="restore" description="test restore task">
     <xdb:restore user="${xmldb.user}" password="${xmldb.passwd}"
-      uri="xmldb:exist://${xmldb.host}:${xmldb.port}/exist/xmlrpc/" dir="backup/db/test"/>
+      uri="${xmldb.url}" dir="backup/db/test"/>
+
     <!--xdb:restore user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}">
       <dirset dir="backup/db">
         <include name="*"/>
       </dirset>
     </xdb:restore-->
+
   </target>
 
   <target name="groups" description="test groups task">
