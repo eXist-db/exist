@@ -278,9 +278,8 @@ public class DefaultCacheManager implements CacheManager {
     private void registerMBean() {
         Agent agent = AgentFactory.getInstance();
         try {
-            agent.addMBean("org.exist.management." + instanceName +
-                ":type=CacheManager",
-                    new org.exist.management.CacheManager(this));
+            agent.addMBean(instanceName, "org.exist.management." + instanceName +
+                ":type=CacheManager", new org.exist.management.CacheManager(this));
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Exception while registering cache mbean.", e);
         }
@@ -289,7 +288,7 @@ public class DefaultCacheManager implements CacheManager {
     private void registerMBean(Cache cache) {
         Agent agent = AgentFactory.getInstance();
         try {
-            agent.addMBean("org.exist.management." + instanceName + ":type=CacheManager.Cache,name=" +
+            agent.addMBean(instanceName, "org.exist.management." + instanceName + ":type=CacheManager.Cache,name=" +
                 cache.getFileName() + ",cache-type=" + cache.getType(),
                     new org.exist.management.Cache(cache));
         } catch (DatabaseConfigurationException e) {

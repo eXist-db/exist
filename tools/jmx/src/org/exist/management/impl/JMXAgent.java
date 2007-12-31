@@ -28,13 +28,13 @@ import org.exist.util.DatabaseConfigurationException;
 
 import javax.management.*;
 import java.util.ArrayList;
+import java.util.Stack;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
- * Created by IntelliJ IDEA.
- * User: wolf
- * Date: Jun 9, 2007
- * Time: 8:53:41 PM
- * To change this template use File | Settings | File Templates.
+ * Real implementation of interface {@link org.exist.management.Agent}
+ * which registers MBeans with the MBeanServer.
  */
 public class JMXAgent implements Agent {
 
@@ -49,7 +49,8 @@ public class JMXAgent implements Agent {
     }
 
     private MBeanServer server;
-
+    private Map registeredMBeans = new HashMap();
+    
     public JMXAgent() {
         if (LOG.isDebugEnabled())
             LOG.debug("Creating the JMX MBeanServer.");
@@ -83,16 +84,40 @@ public class JMXAgent implements Agent {
 
     public void initDBInstance(BrokerPool instance) {
         try {
-            addMBean("org.exist.management." + instance.getId() + ":type=Database",
+            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=Database",
                     new org.exist.management.impl.Database(instance));
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Exception while registering database mbean.", e);
         }
     }
 
-    public synchronized void addMBean(String name, Object mbean) throws DatabaseConfigurationException {
+    public synchronized void closeDBInstance(BrokerPool instance) {
         try {
-            addMBean(new ObjectName(name), mbean);
+            Stack stack = (Stack) registeredMBeans.get(instance.getId());
+            while (!stack.isEmpty()) {
+                ObjectName on = (ObjectName) stack.pop();
+                LOG.debug("deregistering JMX MBean: " + on);
+                server.unregisterMBean(on);
+            }
+        } catch (InstanceNotFoundException e) {
+            LOG.warn("Problem found while unregistering JMX", e);
+        } catch (MBeanRegistrationException e) {
+            LOG.warn("Problem found while unregistering JMX", e);
+        }
+    }
+
+    public synchronized void addMBean(String dbInstance, String name, Object mbean) throws DatabaseConfigurationException {
+        try {
+            ObjectName on = new ObjectName(name);
+            addMBean(on, mbean);
+            if (dbInstance != null) {
+                Stack stack = (Stack) registeredMBeans.get(dbInstance);
+                if (stack == null) {
+                    stack = new Stack();
+                    registeredMBeans.put(dbInstance, stack);
+                }
+                stack.push(on);
+            }
         } catch (MalformedObjectNameException e) {
             LOG.warn("Problem registering mbean: " + e.getMessage(), e);
             throw new DatabaseConfigurationException("Exception while registering JMX mbean: " + e.getMessage());
