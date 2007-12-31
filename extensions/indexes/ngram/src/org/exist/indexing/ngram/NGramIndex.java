@@ -68,7 +68,7 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
     
     public void open() throws DatabaseConfigurationException {
         try {
-            db = new BFile(pool, (byte) 0, false, dataFile, pool.getCacheManager(), 0.1, 0.1, 0.1);
+            db = new BFile(pool, (byte) 0, false, dataFile, pool.getCacheManager(), 1.4, 0.01, 0.07);
         } catch (DBException e) {
             throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.getAbsolutePath() + ": " +
                 e.getMessage());
@@ -78,10 +78,12 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public void close() throws DBException {
+		LOG.debug("SYNC NGRAM");
         db.close();
     }
 
     public void sync() throws DBException {
+		LOG.debug("SYNC NGRAM");
         db.flush();
     }
 
