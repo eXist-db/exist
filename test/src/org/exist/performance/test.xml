@@ -76,7 +76,8 @@
     <group name="ft-tests">
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>
-            <store collection="/db/system/config/db" name="collection.xconf">
+            <store collection="/db/system/config/db" name="collection.xconf"
+                    overwrite="yes">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
                         <fulltext default="none" attributes="false">
@@ -174,10 +175,11 @@
             <!--remove-collection parent="/db" collection="jgoethe" description="remove /db/jgoethe"/-->
         </tear-down>
     </group>
-    <group name="large-documents-optimized">
+    <group name="large-documents">
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>
-            <store collection="/db/system/config/db" name="collection.xconf">
+            <store collection="/db/system/config/db" name="collection.xconf"
+                    overwrite="yes">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
                         <fulltext default="none" attributes="false">
@@ -189,6 +191,9 @@
                         <create qname="title" type="xs:string"/>
                         <create qname="author" type="xs:string"/>
                         <create qname="year" type="xs:integer"/>
+
+                        <ngram qname="title"/>
+                        <ngram qname="author"/>
                     </index>
                 </collection>
             </store>
@@ -197,68 +202,7 @@
             <create-collection parent="/db" name="library"/>
             <store-files dir="test/benchmark/data/dblp" includes="*.xml" collection="/db/library"
                 description="storing DBLP library data" overwrite="no"/>
-            <sequence repeat="15" description="Fulltext queries">
-                <xquery collection="/db/library" query="//((#exist:optimize#) { book[author &amp;= 'kernighan'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { book[author &amp;= 'brian kernighan'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { *[author &amp;= 'brian kernighan'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { book[author &amp;= 'kernighan'] })/title"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xml'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xml xquery'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xslt'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { *[title &amp;= 'xslt'] })"/>
-            </sequence>
-            <sequence repeat="15" description="General comparisons/regular expressions">
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[author = 'Bjarne Stroustrup'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { article[author = 'Linus Torvalds'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { *[author = 'Bjarne Stroustrup'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { *[author = 'Linus Torvalds'] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[starts-with(author, 'Bjarne')] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { article[starts-with(author, 'Erich')] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[ends-with(author, 'strup')] })"/>
-
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[matches(author, '^Bjarne.*')] })"/>
-                <!--xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[matches(title, 'xml', 'i')] })"/-->
-                <!--xquery collection="/db/library" query="//((#exist:optimize#) { *[matches(title, 'xml', 'i')] })"/-->
-                <xquery collection="/db/library" query="//((#exist:optimize#) { *[matches(title, '^XML')] })"/>
-
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[year = 2002] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[year > 2005] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[year &lt; 2000] })"/>
-
-				<xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xslt'][year = 2006] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xml'][year = 2005] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { *[title &amp;= 'xml'][year = 2005] })"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { *[author &amp;= 'brian kernighan'][title &amp;= 'C'] })"/>
-            </sequence>
-        </thread>
-        <tear-down connection="con">
-            <remove-collection parent="/db" collection="library" description="remove /db/library"/>
-        </tear-down>
-    </group>
-    <group name="large-documents">
-        <setup connection="con">
-            <create-collection parent="/db/system/config" name="db"/>
-            <store collection="/db/system/config/db" name="collection.xconf">
-                <collection xmlns="http://exist-db.org/collection-config/1.0">
-                    <index>
-                        <fulltext default="none" attributes="false">
-                            <include path="author"/>
-                            <include path="title"/>
-                            <include path="booktitle"/>
-                        </fulltext>
-
-                        <create path="//title" type="xs:string"/>
-                        <create path="//author" type="xs:string"/>
-                        <create path="//year" type="xs:int"/>
-                    </index>
-                </collection>
-            </store>
-        </setup>
-        <thread connection="con" name="main">
-            <create-collection parent="/db" name="library"/>
-            <store-files dir="test/benchmark/data/dblp" includes="*.xml" collection="/db/library"
-                description="storing DBLP library data" overwrite="no"/>
-            <sequence repeat="15" description="Fulltext queries">
+            <sequence repeat="15" description="Fulltext queries" optimize="yes">
                 <xquery collection="/db/library" query="//book[author &amp;= 'kernighan']"/>
                 <xquery collection="/db/library" query="//book[author &amp;= 'brian kernighan']"/>
                 <xquery collection="/db/library" query="//*[author &amp;= 'brian kernighan']"/>
@@ -268,7 +212,7 @@
                 <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt']"/>
                 <xquery collection="/db/library" query="//*[title &amp;= 'xslt']"/>
             </sequence>
-            <sequence repeat="15" description="General comparisons/regular expressions">
+            <sequence repeat="15" description="General comparisons/regular expressions" optimize="yes">
                 <xquery collection="/db/library" query="//inproceedings[author = 'Bjarne Stroustrup'] "/>
                 <xquery collection="/db/library" query="//article[author = 'Linus Torvalds']"/>
                 <xquery collection="/db/library" query="//inproceedings[starts-with(author, 'Bjarne')]"/>
@@ -288,6 +232,21 @@
 				<xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml'][year = 2005]"/>
 				<xquery collection="/db/library" query="//*[title &amp;= 'xml'][year = 2005]"/>
 				<xquery collection="/db/library" query="//*[author &amp;= 'brian kernighan'][title &amp;= 'C']"/>
+            </sequence>
+            <sequence repeat="15" description="NGram index" optimize="yes">
+                <xquery collection="/db/library" query="//*[ngram:contains(author, 'Bjarne')]"/>
+                <xquery collection="/db/library" query="//inproceedings[ngram:contains(author, 'bjarne')]"/>
+                <xquery collection="/db/library" query="//inproceedings[ngram:starts-with(author, 'bjarne')]"/>
+                <xquery collection="/db/library" query="//*[ngram:contains(author, 'erich')]"/>
+                <xquery collection="/db/library" query="//book[ngram:contains(author, 'erich')]"/>
+                <xquery collection="/db/library" query="//book[ngram:contains(author, 'kernighan')]"/>
+                <xquery collection="/db/library" query="//book[ngram:contains(author, 'brian w. kernighan')]"/>
+                <xquery collection="/db/library" query="//*[ngram:contains(author, 'brian w. kernighan')]"/>
+                <xquery collection="/db/library" query="//inproceedings[ngram:contains(title, 'xml')]"/>
+                <xquery collection="/db/library" query="//*[ngram:contains(title, 'xml')]"/>
+                <xquery collection="/db/library" query="//inproceedings[ngram:contains(title, 'xquery')]"/>
+                <xquery collection="/db/library" query="//*[ngram:contains(title, 'xquery')]"/>
+                <xquery collection="/db/library" query="//*[ngram:contains(title, 'xml')][year = 2005]"/>
             </sequence>
         </thread>
     </group>

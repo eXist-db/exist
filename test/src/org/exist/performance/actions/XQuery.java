@@ -37,13 +37,20 @@ import org.apache.log4j.Logger;
 
 public class XQuery extends AbstractAction {
 
+    private final static String OPTIMIZE = "declare option exist:optimize 'enable=yes';\n";
+
     private String query = null;
     private String collectionPath;
     private boolean retrieve = false;
+    private boolean forceOptimize = false;
     private int lastResult = 0;
 
     public void configure(Runner runner, Action parent, Element config) throws EXistException {
         super.configure(runner, parent, config);
+        if (config.hasAttribute("optimize"))
+            forceOptimize = getBooleanValue(config, "optimize", false);
+        else
+            forceOptimize = getBooleanValue((Element) config.getParentNode(), "optimize", false);
         if (config.hasAttribute("query"))
             query = config.getAttribute("query");
         else {
@@ -71,7 +78,7 @@ public class XQuery extends AbstractAction {
         if (collection == null)
             throw new EXistException("collection " + collectionPath + " not found");
         XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
-        ResourceSet result = service.query(query);
+        ResourceSet result = service.query(forceOptimize ? OPTIMIZE + query : query);
         lastResult = (int) result.getSize();
         if (retrieve) {
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
