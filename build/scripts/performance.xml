@@ -41,9 +41,6 @@
         <test:benchmark outputFile="${benchmark.output}/ft-tests-result.xml"
                 source="${benchmark.src}/org/exist/performance/test.xml"
                 group="ft-tests"/>
-        <test:benchmark outputFile="${benchmark.output}/large-optimized-result.xml"
-                source="${benchmark.src}/org/exist/performance/test.xml"
-                group="large-documents-optimized"/>
         <test:benchmark outputFile="${benchmark.output}/large-docs-result.xml"
                 source="${benchmark.src}/org/exist/performance/test.xml"
                 group="large-documents"/>
