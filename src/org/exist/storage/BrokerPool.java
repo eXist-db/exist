@@ -1480,7 +1480,10 @@ public class BrokerPool {
         
         transactionManager.shutdown();
 
-		//Invalidate the configuration
+        // deregister JMX MBeans
+        AgentFactory.getInstance().closeDBInstance(this);
+        
+        //Invalidate the configuration
 		conf = null;
 		//Clear the living instances container
 		instances.remove(instanceName);

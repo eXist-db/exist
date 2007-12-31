@@ -25,11 +25,14 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.storage.BrokerPool;
 
 /**
+ * Interface to allow the JMX classes to be plugged in on systems which
+ * support it. A dummy implementation will be used if JMX is not available.
  */
 public interface Agent {
 
     void initDBInstance(BrokerPool instance);
 
-    void addMBean(String name, Object mbean) throws DatabaseConfigurationException;
+    void closeDBInstance(BrokerPool instance);
 
+    void addMBean(String dbInstance, String name, Object mbean) throws DatabaseConfigurationException;
 }

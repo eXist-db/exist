@@ -34,7 +34,11 @@ public class DummyAgent implements Agent {
         // do nothing
     }
 
-    public void addMBean(String name, Object mbean) throws DatabaseConfigurationException {
+    public void closeDBInstance(BrokerPool instance) {
+        // nothing to do
+    }
+    
+    public void addMBean(String dbInstance, String name, Object mbean) throws DatabaseConfigurationException {
         // just do nothing
     }
 }
