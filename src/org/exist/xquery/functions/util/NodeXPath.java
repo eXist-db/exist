@@ -50,7 +50,8 @@ public class NodeXPath extends Function
 		 * - node names become path names 
 		 * - attributes become predicates
 		 */
-		StringBuffer buf = new StringBuffer(nodeToXPath(n));
+        // TODO DIZZZZ Java5 remove toString()
+        StringBuffer buf = new StringBuffer(nodeToXPath(n).toString());
 		while((n = n.getParentNode()) != null)
 		{
 			if(n.getNodeType() == Node.ELEMENT_NODE)
