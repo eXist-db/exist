@@ -23,6 +23,7 @@ package org.exist.collections.triggers;
 import static org.custommonkey.xmlunit.XMLAssert.*;
 import org.exist.TestUtils;
 import org.exist.storage.DBBroker;
+import org.exist.util.Base64Decoder;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -34,6 +35,7 @@ import static org.junit.Assert.fail;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.*;
@@ -109,6 +111,9 @@ public class XQueryTriggerTest {
     private final static String MODIFIED_DOCUMENT_CONTENT = 
     	DOCUMENT_CONTENT.replaceAll("<price>18.4</price>", "<price>15.2</price>");
    
+    private final static String BINARY_DOCUMENT_NAME = "1x1.gif";
+    private final static String BINARY_DOCUMENT_CONTENT = "R0lGODlhAQABAIABAAD/AP///yH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAAQABAAACAkQBADs=";    
+    
     /** "log" document that will be updated by the trigger */
     private final static String LOG_NAME = "XQueryTriggerLog.xml";
     
@@ -356,6 +361,84 @@ public class XQueryTriggerTest {
     	} catch (Exception e) {
             e.printStackTrace();
     		fail(e.getMessage());    		
-    	}	
+    	}
+    }
+    
+	/** test a trigger fired by storing a Binary Document  */
+    @Test
+    public void storeBinaryDocument() {
+    	
+    	ResourceSet result;
+    	
+    	try {    		
+    		// configure the Collection with the trigger under test
+			IndexQueryService idxConf = (IndexQueryService)
+			testCollection.getService("IndexQueryService", "1.0");
+			idxConf.configureCollection(COLLECTION_CONFIG);
+			
+			// this will fire the trigger
+			Resource res = testCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
+			Base64Decoder dec = new Base64Decoder();
+			dec.translate(BINARY_DOCUMENT_CONTENT);
+			res.setContent(dec.getByteArray());
+			testCollection.storeResource(res);
+			
+    		// remove the trigger for the Collection under test
+			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
+
+	        XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+	        //TODO : understand why it is necessary !
+	        service.setProperty(OutputKeys.INDENT, "no");
+
+	        //TODO : consistent URI !	        
+	        result = service.query("/events/event[@id = 'trigger1'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][triggerEvent = 'STORE']");
+	        assertEquals(2, result.getSize());
+	        
+	        //TODO : consistent URI !	        
+	        result = service.query("/events/event[@id = 'trigger1'][@type = 'finish'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][triggerEvent = 'STORE']/document");
+	        assertEquals(1, result.getSize());
+	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());
+	        
+    	}
+    	catch(Exception e)
+    	{
+            e.printStackTrace();
+    		fail(e.getMessage());    		
+    	}
+    }
+    
+    /** test a trigger fired by a Binary Document Delete */
+    @Test
+    public void deleteBinaryDocument() {
+    	
+    	ResourceSet result;
+    	
+    	try {
+			IndexQueryService idxConf = (IndexQueryService)
+			testCollection.getService("IndexQueryService", "1.0");
+			idxConf.configureCollection(COLLECTION_CONFIG);
+	
+			testCollection.removeResource(testCollection.getResource(BINARY_DOCUMENT_NAME));
+
+			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
+			
+	        XPathQueryService service = (XPathQueryService) testCollection
+	        	.getService("XPathQueryService", "1.0");
+
+	        service.setProperty(OutputKeys.INDENT, "no");        
+
+	        //TODO : consistent URI !	        
+	        result = service.query("/events/event[@id = 'trigger3'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][triggerEvent = 'REMOVE']");
+	        assertEquals(2, result.getSize());	        
+	        
+	        //TODO : consistent URI !	        
+	        result = service.query("/events/event[@id = 'trigger3'][@type = 'prepare'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][triggerEvent = 'REMOVE']/document");
+	        assertEquals(1, result.getSize());
+	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());        
+			
+    	} catch (Exception e) {
+            e.printStackTrace();
+    		fail(e.getMessage());    		
+    	}
     }
 }
