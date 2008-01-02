@@ -299,7 +299,7 @@ public abstract class Modification extends AbstractExpression
             {
                 try
                 {
-                    trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
+                    trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc.getURI(), doc);
                 }
                 catch(Exception e)
                 {

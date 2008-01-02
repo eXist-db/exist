@@ -786,7 +786,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             documents.remove(docUri.getRawCollectionPath());
 	        
 	        if (trigger != null) {
-	            trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc);
+	            trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, getURI().append(docUri), null);
 	        }
 	        
 	        broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
@@ -861,7 +861,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             documents.remove(doc.getFileURI().getRawCollectionPath());
             
             if (trigger != null) {
-                trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, null);
+                trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), null);
             }
         } finally {
        		getLock().release(Lock.WRITE_LOCK);
@@ -1017,7 +1017,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         
         collectionConfEnabled = true;
         broker.deleteObservers();
-        info.finishTrigger(broker, transaction, document);
+        info.finishTrigger(broker, transaction, document.getURI(), document);
         broker.getBrokerPool().getNotificationService().notifyUpdate(document,
                 (info.getEvent() == Trigger.UPDATE_DOCUMENT_EVENT ? UpdateListener.UPDATE : UpdateListener.ADD));
         
@@ -1434,7 +1434,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        broker.closeDocument();
 	        
 	        if (trigger != null) {
-	            trigger.finish(event, broker, transaction, blob);
+	            trigger.finish(event, broker, transaction, blob.getURI(), blob);
 	        }
 	        return blob;
 	        

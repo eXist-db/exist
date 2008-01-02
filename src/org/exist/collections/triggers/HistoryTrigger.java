@@ -110,8 +110,8 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
     /* (non-Javadoc)
      * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
-    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document)
+    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)
     {
-    	super.finish(event, broker, transaction, document);
+    	super.finish(event, broker, transaction, documentPath, document);
     }
 }

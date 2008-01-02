@@ -106,12 +106,14 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
      * @param event the type of event that triggered this call (see the constants defined in this interface).
      * @param broker the database instance used to process the current action.
      * @param transaction the current transaction context
-     * @param document the stored document
+     * @param The path of the document, if removed the old path of the document
+     * @param document the stored document or null if the document is removed
      **/
     public void finish(
         int event,
         DBBroker broker,
         Txn transaction,
+        XmldbURI documentPath,
         DocumentImpl document);
     
     /**

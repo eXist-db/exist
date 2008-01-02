@@ -174,9 +174,9 @@ public class XQueryTrigger extends FilteringTrigger
 	/**
 	 * @link org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument) throws TriggerException
+	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException
 	{
-		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document: '" + documentName + "'");
+		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document: '" + documentPath + "'");
 		
 		//get the query
 		Source query = getQuerySource(broker);
@@ -184,7 +184,7 @@ public class XQueryTrigger extends FilteringTrigger
 			return;        
                         
 		// avoid infinite recursion by allowing just one trigger per thread		
-		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforePrepare(this, existingDocument))
+		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforePrepare(this, documentPath))
 		{
 			return;
 		}
@@ -201,7 +201,7 @@ public class XQueryTrigger extends FilteringTrigger
         	//declare external variables
         	context.declareVariable(bindingPrefix + "eventType", EVENT_TYPE_PREPARE);
         	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
-        	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(documentName));
+        	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(documentPath));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
         	
         	//declare user defined parameters as external variables
@@ -256,9 +256,9 @@ public class XQueryTrigger extends FilteringTrigger
     /**
      * @link org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
-    public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document)
+    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)
     {
-    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for document : '" + document.getURI() + "'");
+    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for document : '" + documentPath + "'");
     	
     	//get the query
     	Source query = getQuerySource(broker);
@@ -266,7 +266,7 @@ public class XQueryTrigger extends FilteringTrigger
 			return;
     	
 		// avoid infinite recursion by allowing just one trigger per thread
-		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforeFinish(this, document))
+		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforeFinish(this, documentPath))
 		{
 			return;
 		}
@@ -281,7 +281,7 @@ public class XQueryTrigger extends FilteringTrigger
         	//declare external variables
         	context.declareVariable(bindingPrefix + "eventType", EVENT_TYPE_FINISH);
         	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
-        	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(document.getURI()));
+        	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(documentPath));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
 
         	//declare user defined parameters as external variables
