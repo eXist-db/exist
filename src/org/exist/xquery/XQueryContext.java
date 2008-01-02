@@ -2262,7 +2262,7 @@ public class XQueryContext {
     	        	{
     	        		try
     	        		{
-    	        			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), TriggerStatePerThread.getTransaction(), doc);
+    	        			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), TriggerStatePerThread.getTransaction(), doc.getURI(), doc);
     	        		}
     	        		catch(Exception e)
     	        		{

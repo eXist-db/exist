@@ -268,12 +268,12 @@ public class ListenerManager {
 		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map parameters) throws CollectionConfigurationException {
 			// nothing to do
 		}
-		public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentName, DocumentImpl existingDocument) throws TriggerException {
-			EventKey key = new EventKey(documentName.getCollectionPath(), event, true);
+		public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
+			EventKey key = new EventKey(documentPath.getCollectionPath(), event, true);
 			INSTANCE.fire(key, existingDocument);
 		}
-		public void finish(int event, DBBroker broker, Txn txn, DocumentImpl document) {
-			EventKey key = new EventKey(document.getURI().getCollectionPath(), event, false);
+		public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
+			EventKey key = new EventKey(documentPath.getCollectionPath(), event, false);
 			INSTANCE.fire(key, key.trigger == Trigger.AFTER_DELETE ? null : document);
 		}
 		public void prepare(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, String newName) throws TriggerException {

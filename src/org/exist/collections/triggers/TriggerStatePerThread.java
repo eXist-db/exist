@@ -1,11 +1,11 @@
 package org.exist.collections.triggers;
 
-import org.exist.dom.DocumentImpl;
+import org.exist.xmldb.XmldbURI;
 import org.exist.storage.txn.Txn;
 
 /** Finite State Machine, managing the state of a Running trigger;
  * allows to avoid infinite recursions by forbidding another trigger to run
- * where there is allready one; feature trigger_update .
+ * where there is already one; feature trigger_update .
  * I implemented that when a trigger is running , another trigger in the same
  * Thread cannot be fired .
  * There is a second condition that  when a trigger is running triggered by 
@@ -26,7 +26,7 @@ public class TriggerStatePerThread {
 
 	/** */
 	public static boolean verifyUniqueTriggerPerThreadBeforePrepare(
-			DocumentTrigger trigger, DocumentImpl modifiedDocument) {
+			DocumentTrigger trigger, XmldbURI modifiedDocument) {
 		if (getTriggerRunningState() == NO_TRIGGER_RUNNING) {
 			setTriggerRunningState(TRIGGER_RUNNING_PREPARE, trigger,
 					modifiedDocument);
@@ -41,9 +41,9 @@ public class TriggerStatePerThread {
 	 *            the document whose modification triggered the trigger
 	 */
 	public static boolean verifyUniqueTriggerPerThreadBeforeFinish(
-			DocumentTrigger trigger, DocumentImpl modifiedDocument) {
+			DocumentTrigger trigger, XmldbURI modifiedDocument) {
 
-		// another trigger is allready running
+		// another trigger is already running
 		DocumentTrigger runningTrigger = getRunningTrigger();
 		if ( runningTrigger != null && 
 			trigger != runningTrigger ) {
@@ -51,11 +51,11 @@ public class TriggerStatePerThread {
 		}
 
 		// current trigger is busy with another document
-		if ( getModifiedDocument() != null && 
-				modifiedDocument != getModifiedDocument() ) {
+		if(getModifiedDocument() != null && !modifiedDocument.equals(getModifiedDocument()))
+		{
 			return false;
 		}
-
+		
 		if (getTriggerRunningState() == TRIGGER_RUNNING_PREPARE) {
 			setTriggerRunningState(TRIGGER_RUNNING_FINISH, trigger,
 					modifiedDocument);
@@ -69,14 +69,13 @@ public class TriggerStatePerThread {
 		private int state;
 		private DocumentTrigger currentTrigger;
 		private Txn transaction;
-		private DocumentImpl modifiedDocument;
+		private XmldbURI modifiedDocument;
 		public TriggerState(int state) {
 			super();
 			this.setState(state, null, null);
 		}
 		
-		private void setState(int state, DocumentTrigger trigger,
-				DocumentImpl modifiedDocument) {
+		private void setState(int state, DocumentTrigger trigger, XmldbURI modifiedDocument) {
 			this.state = state;
 			if (state == NO_TRIGGER_RUNNING) {
 				this.currentTrigger = null;
@@ -102,11 +101,11 @@ public class TriggerStatePerThread {
 			return currentTrigger;
 		}
 
-		private void setModifiedDocument(DocumentImpl modifiedDocument) {
+		private void setModifiedDocument(XmldbURI modifiedDocument) {
 			this.modifiedDocument = modifiedDocument;
 		}
 
-		private DocumentImpl getModifiedDocument() {
+		private XmldbURI getModifiedDocument() {
 			return modifiedDocument;
 		}	
 	}
@@ -121,7 +120,7 @@ public class TriggerStatePerThread {
 	
 	public static void setTriggerRunningState( int state, 
 			DocumentTrigger trigger,
-			DocumentImpl modifiedDocument ) {
+			XmldbURI modifiedDocument ) {
 		((TriggerState)triggerRunningState.get()).setState(state, trigger, modifiedDocument);
 	}
 
@@ -132,7 +131,7 @@ public class TriggerStatePerThread {
         ((TriggerState)triggerRunningState.get()).setTransaction(transaction);
 	}
 	
-	public static DocumentImpl getModifiedDocument() {
+	public static XmldbURI getModifiedDocument() {
 		return ((TriggerState)triggerRunningState.get()).getModifiedDocument();		
 	}
 

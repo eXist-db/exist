@@ -119,8 +119,8 @@ public class IndexInfo {
 		trigger.setValidating(false);
 	}
 	
-	void finishTrigger(DBBroker broker, Txn transaction, DocumentImpl doc) {
+	void finishTrigger(DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl doc) {
 		if (trigger == null) return;
-		trigger.finish(event, broker, transaction, doc);
+		trigger.finish(event, broker, transaction, documentPath, doc);
 	}
 }

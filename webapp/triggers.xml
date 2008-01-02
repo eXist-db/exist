@@ -219,7 +219,7 @@ if(not(doc-available($local:triggersLogFile)))then
 else(),
 
 (: log the trigger details to the log file :)
-update insert <trigger event="{$local:triggerEvent}" eventType="{$local:eventType}" collectionName="{$local:collectionName}" documentName="{$local:documentName}">{current-dateTime()}</trigger>  into doc("/db/triggersLog.xml")/triggers
+update insert <trigger event="{$local:triggerEvent}" eventType="{$local:eventType}" collectionName="{$local:collectionName}" documentName="{$local:documentName}" timestamp="{current-dateTime()}">{$local:document}</trigger>  into doc("/db/triggersLog.xml")/triggers
 ]]>
         			</programlisting>
         		</example>
@@ -263,7 +263,7 @@ public class loggingTrigger extends FilteringTrigger
 	}
 	
 	//trigger finish event
-	public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document)
+	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)
 	{	
 		//log the trigger event
 		log(event, "prepare", documentPath.getCollectionPath(), documentPath.toString());
@@ -284,9 +284,8 @@ public class loggingTrigger extends FilteringTrigger
 					+ " eventType=\"" + eventType + "\""		
 					+ " collectionName=\"" + collectionName + "\""
 					+ " documentName=\"" + documentName + "\""
-					+ ">"
-					+ (new DateTimeValue()).getStringValue()
-					+ "</trigger>\n";
+					+ "timestamp=\"" + (new DateTimeValue()).getStringValue() + "\"" 
+					+ "/>\n";
 			
 			//write the xml string to the log file
 			out.write(xml.getBytes());
