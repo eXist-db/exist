@@ -69,8 +69,14 @@
                     url="http://atomic.exist-db.org/wiki/blogs/eXist/NewIndexing">article</ulink>
                 for a description of the new architecture.</para>
         </section>
+
         <section>
             <title>Index Types</title>
+
+            <para>This section describes the features of those indexes that are part of the eXist
+                distribution. Some of those indexes (n-gram, spatial) may need to be enabled first
+                (see below). </para>
+
             <section id="structuralidx">
                 <title>Structural index</title>
                 <para>This index keeps track of the elements (tags), attributes, and nodal structure
@@ -102,35 +108,21 @@
                     inspection of the DOM, which can be extremly slow if eXist has to search through
                     thousands or millions of nodes.</para>
 
-                <!--para>They are "type-specific" - 
-                    meaning it is based on the data type of specific node values in the document. Unlike structural
-                    and fulltext Indexes, range indexes can be created and configured directly by
-                    the user, and in this sense, they are similar to indexes used by relational
-                    databases. eXist therefore does not come installed with configured range
-                    indexes. However, configured indexes are created when loading a document, and
-                    are automatically maintained during subsequent updates to the document or a part
-                    of it. </para-->
-                <!--para> Whenever these functions or operators are used,
-                    eXist looks for, and implements, any user-defined range index that applies.
-                    Unlike fulltext indexing, eXist will return the correct query results even if no
-                    range index applies - defaulting to a "brute-force" inspection of the DOM if
-                    necessary.</para-->
-
                 <para>To see how range indexes work, consider the following fragment:</para>
 
                 <example>
                     <title>Example: List Entry</title>
                     <programlisting>
-                        <markup><![CDATA[<items>
-                            <item n="1">
-                               <name>Tall Bookcase</name>
-                               <price>299.99</price>
-                            </item>
-                            <item n="2">
-                               <name>Short Bookcase</name>
-                               <price>199.99</price>
-                            </item>
-                        </items>]]></markup>
+<markup><![CDATA[<items>
+    <item n="1">
+       <name>Tall Bookcase</name>
+       <price>299.99</price>
+    </item>
+    <item n="2">
+       <name>Short Bookcase</name>
+       <price>199.99</price>
+    </item>
+</items>]]></markup>
                     </programlisting>
                 </example>
 
@@ -244,6 +236,14 @@
                         <synopsis>//item[price = self]</synopsis>
                     </listitem>
                 </orderedlist>
+
+                <para>Concerning range indexes on strings there's another restriction to be
+                    considered: up to version 1.3, range indexes on strings can only be used with
+                    the default unicode collation. Also, string indexes will always be case
+                    sensitive (while n-gram and full text indexes are not). It is not possible to
+                    define a string index on a different collation (e.g. for German or French) or to
+                    make it case insensitve. This is a limitation we plan to address in the next
+                    release.</para>
             </section>
 
             <section id="ftidx">
@@ -339,6 +339,47 @@
                     the implementation can be found in the <ulink url="devguide_indexes.xml"
                         >Developer's Guide to Modularized Indexes</ulink>.</para>
             </section>
+        </section>
+
+        <section>
+            <title>Enabling Index Modules in conf.xml</title>
+
+            <para>Since version 1.2, eXist features a <emphasis>modularized indexing architecture</emphasis>, 
+                which allows arbitrary indexes to be plugged into an indexing pipeline. Consequently, some
+                indexes were moved out of the database core and are now available as plugins. For
+                the DB core, those indexes are a black box: they handle their own creation,
+                configuration, destruction etc. To activate an index plugin, it needs to be added to
+                the <sgmltag>modules</sgmltag> section within the global configuration file
+                    <filename>conf.xml</filename>:</para>
+
+            <example>
+                <title>Index Plugin Configuration in conf.xml</title>
+                
+                <programlisting>
+<markup><![CDATA[<modules>
+    <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
+        file="ngram.dbx" n="3"/>
+    <!-- The full text index is always required and should
+         not be disabled. We still have some dependencies on
+         this index in the database core. These will be removed
+         once the redesign has been completed. -->
+    <module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
+</modules>]]></markup>
+                </programlisting>
+            </example>
+
+            <para>Every <sgmltag>module</sgmltag> element needs at least an <option>id</option> and
+                    <option>class</option> attribute. The class attribute contains the name of the
+                plugin class, which has to be an implementation of
+                    <classname>org.exist.indexing.Index</classname>.</para>
+            
+            <para>All other attributes or nested configuration elements below the <sgmltag>module</sgmltag>
+            element are specific to the implementation and will differ between indexes. They should be
+            documented by the index implementor.</para>
+            
+            <para>If an index implementation can not be loaded from the specified class, the entry will
+            simply be ignored. A warning will be written to the logs which should provide more information
+            on the issue which caused the configuration to fail.</para>
         </section>
 
         <section>
@@ -472,169 +513,19 @@
                 <section>
                     <title>Configuration by path vs. configuration by qname</title>
 
-                    <para>It is important to note the difference between the <sgmltag>path</sgmltag>
-                        and <sgmltag>qname</sgmltag> attributes used throughout above example. Both
+                    <para>It is important to note the difference between the <option>path</option>
+                        and <option>qname</option> attributes used throughout above example. Both
                         attributes are used to define the elements or attributes to which the index
-                        should be applied. However, the <sgmltag>path</sgmltag> attribute creates
+                        should be applied. However, the <option>path</option> attribute creates
                             <emphasis>context-dependant</emphasis> indexes, while the
-                        <sgmltag>qname</sgmltag> attribute does not. The path attribute takes a
-                        simple path expression: </para>
+                        <option>qname</option> attribute does not. The path attribute takes a simple
+                        path expression: </para>
 
                     <synopsis><![CDATA[<create path="//book/title" type="xs:string"/>]]></synopsis>
 
-                    <para>The path expression looks like XPath, but it's really not. Only / and //
-                        are allowed, defining either a child or descendant relation. Attributes are
-                        selected by prepending a @. The above example creates a range index of type
-                        string on all <sgmltag>title</sgmltag> elements which are children of
-                            <sgmltag>book</sgmltag> elements, which may occur at an arbitrary
-                        position in the document tree. All other <sgmltag>title</sgmltag> elements,
-                        e.g. those being children of <sgmltag>section</sgmltag> nodes, are not
-                        indexed. The path expression thus defines a <emphasis>selective</emphasis>
-                        index, which is also <emphasis>context-dependant</emphasis>: we always need
-                        look at the context of each <sgmltag>title</sgmltag> node before we can
-                        determine if this particular title is to be indexed or not.</para>
+                    <para>The path expression looks like XPath, but it's really not. Index path
+                        syntax uses the following components to constrcut paths:</para>
 
-                    <para>This kind of context-dependant index definition helps to
-                        keep the index small. But unfortunately, it makes it hard for the query optimizer 
-                        to properly
-                        rewrite the expression tree without missing some nodes. The optimizer needs
-                        to make an optimization decision at compile time, where the context of an
-                        expression is unknown or at least not exactly known (read the <ulink
-                            url="http://atomic.exist-db.org/wiki/blogs/eXist/">blog article</ulink>
-                        to get the whole picture). This means that some of the highly efficient optimization
-                        techniques can not be applied to context-dependant indexes!</para>
-                        
-                    <para>We thus had to introduce an alternative
-                        configuration method which is not context-dependant. To keep things simple,
-                        we decided to define the index on the QName of the node alone and to ignore
-                        the context altogether:</para>
-
-                    <synopsis><![CDATA[<create qname="title" type="xs:string"/>]]></synopsis>
-
-                    <para>This results in an index being created on every <sgmltag>title</sgmltag>
-                        element found in the document node tree. Section titles will be indexed as
-                        well as chapter or book titles. This may result in a considerably larger index,
-                        but it also allows the query engine to apply all available optimization techniques,
-                        which can improve query times by an order of magnitude. As so often, there's a
-                        trade-off between performance and storage space. In many cases, the performance 
-                        win can be dramatic enough to justify an increase in index size.</para>
-                    
-                    <important><para>To be on the safe side and to benefit from current and future improvements in the query engine, 
-                        you should prefer <sgmltag>qname</sgmltag> over <sgmltag>path</sgmltag>, unless you really
-                        need to exclude certain nodes from indexing.</para></important>
-                </section>
-
-                <section>
-                    <title/>
-                    <para>The <emphasis>fulltext index</emphasis> is defined by the
-                            <sgmltag>fulltext</sgmltag> element - along with
-                        <sgmltag>include</sgmltag>, <sgmltag>exclude</sgmltag> and
-                        <sgmltag>create</sgmltag> elements that provide specific index paths.</para>
-
-                    <para><emphasis>Range indexes</emphasis> are configured through a simple create
-                        tag.</para>
-
-                    <para>To illustrate how basic configuration document is created, let's suppose
-                        we have a collection of XML documents with the following structure:</para>
-                    <example>
-                        <title>Sample XML Document</title>
-                        <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<items xmlns:x="http://www.foo.com">
-    <item n="1"">
-        <name>Red Bicycle</name>
-        <price specialprice="false">645.50</price>
-        <stock>15</stock>
-        <x:rating>8.7</x:rating>
-    </item>
-</items>]]></programlisting>
-                    </example>
-                    <para>A configuration document for this collection might look like the
-                        following:</para>
-                    <example>
-                        <title>Configuration Document (<filename>collection.xconf</filename>)</title>
-                        <programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
-	<index xmlns:x="http://www.foo.com">
-		<fulltext default="none" attributes="false" alphanum="false">
-			<include path="//item/name"/>
-		</fulltext>
-		<create path="//item/@n" type="xs:integer"/>
-		<create path="//item/name" type="xs:string"/>
-		<create path="//item/stock" type="xs:integer"/>
-		<create path="//item/price" type="xs:double"/>
-		<create path="//item/prices/@specialprice" type="xs:boolean"/>
-                  <create path="//item/x:rating" type="xs:double"/>
-	</index>
-</collection>]]></markup></programlisting>
-                    </example>
-
-                    <para>With this example, the fulltext default attribute is set to "none", which
-                        disables the default fulltext indexing for all document elements. The
-                        exception to this are the name elements using the <sgmltag>include</sgmltag>
-                        element.</para>
-
-                    <para>Notice as well that each <sgmltag>create</sgmltag> element has a
-                            <option>path</option> attribute that defines the nodes to which the
-                        configuration applies, and which are expressed as <emphasis>index
-                        paths</emphasis>. Notice also that each <sgmltag>include</sgmltag> has a
-                            <option>path</option> attribute, but not a type attribute. Since range
-                        indexes are "type-specific", a node will be ignored if its value cannot be
-                        cast to the specified type. For instance, if, in the above example, a price
-                        element contains the string "unknown" instead of a double value, the indexer
-                        will simply ignore this node. However, the value would still be found
-                        through a string comparison. Note that a path component may use a namespace
-                        prefix, for which a mapping has to be defined in the enclosing
-                        <option>index</option> tag. For example, the document node
-                        <sgmltag>x:rating</sgmltag> in the above sample XML uses the namespace
-                            <option>x</option>.</para>
-
-                    <para>Unlike the fulltext index, the range index applies ONLY to the element
-                        specified in the index path, and NOT to descendant nodes of that element.
-                        Returning to a previous example, consider the following markup:</para>
-
-                    <example>
-                        <title>Mixed Content Element</title>
-                        <programlisting>
-                        <markup><![CDATA[<mixed>
-    <span>un</span>
-    <span>even</span>
-</mixed>]]></markup>
-                    </programlisting>
-                    </example>
-
-                    <para>which has the index definition:</para>
-
-                    <synopsis>&lt;create path=&quot;//item/mixed&quot; type=&quot;xs:string&quot;/&gt;</synopsis>
-
-                    <para>In this case, the string added to the corresponding range index during
-                        indexing would be "uneven". In contrast, the fulltext index would (by
-                        default) add the strings "un" and "even".</para>
-
-                    <para>However, you can configure the fulltext index to treat mixed content in
-                        the same way as the range index. For this, we use a special type of
-                        &lt;include&gt;:</para>
-
-                    <example>
-                        <title>Configure the Fulltext Index for a Mixed Content Element</title>
-                        <programlisting>
-                        <markup><![CDATA[<fulltext default="none" attributes="false" alphanum="false">
-    <include path="//mixed" content="mixed"/>
-</fulltext>]]></markup>
-                    </programlisting>
-                    </example>
-
-                    <para>The concatenated text nodes of element mixed and all its descendants will
-                        be passed to the indexer as one single string. The indexer thus sees and
-                        indexes "uneven" as a single token. Accordingly, using this definition, the
-                        expression:</para>
-
-                    <synopsis>//mixed[. &amp;= 'uneven']</synopsis>
-
-                    <para>will return the mixed node. You can still explicitely query for child and
-                        descendant nodes (unless you excluded them from the index).</para>
-
-                    <para>Although the syntax of index paths appears similar to XPath syntax, it is
-                        not the same. Index path syntax is in fact much simpler than XPath, and uses
-                        the following components to construct paths:</para>
                     <itemizedlist>
                         <listitem>
                             <para>Elements are specified by their <emphasis>qname</emphasis></para>
@@ -652,18 +543,214 @@
                         </listitem>
                     </itemizedlist>
 
+                    <para>The example above creates a range index of type string on all
+                            <sgmltag>title</sgmltag> elements which are children of
+                        <sgmltag>book</sgmltag> elements, which may occur at an arbitrary position
+                        in the document tree. All other <sgmltag>title</sgmltag> elements, e.g.
+                        those being children of <sgmltag>section</sgmltag> nodes, are not indexed.
+                        The path expression thus defines a <emphasis>selective</emphasis> index,
+                        which is also <emphasis>context-dependant</emphasis>: we always need look at
+                        the context of each <sgmltag>title</sgmltag> node before we can determine if
+                        this particular title is to be indexed or not.</para>
+
+                    <para>This kind of context-dependant index definition helps to keep the index
+                        small. But unfortunately, it makes it hard for the query optimizer to
+                        properly rewrite the expression tree without missing some nodes. The
+                        optimizer needs to make an optimization decision at compile time, where the
+                        context of an expression is unknown or at least not exactly known (read the
+                            <ulink url="http://atomic.exist-db.org/wiki/blogs/eXist/">blog
+                        article</ulink> to get the whole picture). This means that some of the
+                        highly efficient optimization techniques can not be applied to
+                        context-dependant indexes!</para>
+
+                    <para>We thus had to introduce an alternative configuration method which is not
+                        context-dependant. To keep things simple, we decided to define the index on
+                        the QName of the node alone and to ignore the context altogether:</para>
+
+                    <synopsis><![CDATA[<create qname="title" type="xs:string"/>]]></synopsis>
+
+                    <para>This results in an index being created on every <sgmltag>title</sgmltag>
+                        element found in the document node tree. Section titles will be indexed as
+                        well as chapter or book titles. This may result in a considerably larger
+                        index, but it also allows the query engine to apply all available
+                        optimization techniques, which can improve query times by an order of
+                        magnitude. As so often, there's a trade-off between performance and storage
+                        space. In many cases, the performance win can be dramatic enough to justify
+                        an increase in index size.</para>
+
                     <important>
-                        <para>Please note that index paths are NOT the same as XPath expressions,
-                            even though the syntax is similar. The main reason for this difference
-                            is that index paths must be evaluated during the indexing phase. During
-                            this phase, eXist engine has only minimal structural information about
-                            the document, and so the use of XPath expressions is not possible. With
-                            improvements made to the search method for future versions of eXist,
-                            however, the full use of XPath in configuring indexes may become
-                            possible.</para>
+                        <para>To be on the safe side and to benefit from current and future
+                            improvements in the query engine, you should prefer
+                            <option>qname</option> over <option>path</option> - unless you really
+                            need to exclude certain nodes from indexing.</para>
                     </important>
                 </section>
+
+                <section>
+                    <title>Namespaces</title>
+
+                    <para>If the document to be indexed uses namespaces, you should add an
+                            <option>xmlns</option> attribute for each of the required namespaces to
+                        the <sgmltag>index</sgmltag> element:</para>
+
+                    <example>
+                        <title>Using Namespaces</title>
+                        <programlisting>
+<markup><![CDATA[
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index xmlns:atom="http://www.w3.org/2005/Atom">
+        <fulltext default="none" attributes="no">
+            <create qname="atom:title"/>
+        </fulltext>
+        <create qname="atom:id" type="xs:string"/>
+    </index>
+</collection>
+]]></markup>
+                        </programlisting>
+                    </example>
+
+                    <para>The example configuration above creates two indexes on a collection of
+                        atom documents. The two elements which should be indexed are both in the
+                        atom namespace and we thus need to declare a mapping for this namespace.
+                        Please note that the xmlns namespace attributes have to be specified on the
+                            <sgmltag>index</sgmltag> element, not the <sgmltag>create</sgmltag> or
+                            <sgmltag>fulltext</sgmltag> elements.</para>
+                </section>
+
+                <section>
+                    <title>Range index configuration</title>
+
+                    <example>
+                        <title>Range Index Configuration</title>
+                        <programlisting>
+<markup><![CDATA[<!-- Range indexes -->
+<create qname="title" type="xs:string"/>
+<create qname="author" type="xs:string"/>
+<create qname="year" type="xs:int"/>
+<!-- "old" context-dependant configuration using the path attribute: -->
+<create path="//booktitle" type="xs:string"/>]]></markup>
+                        </programlisting>
+                    </example>
+
+                    <para>A range index is configured by adding a <sgmltag>create</sgmltag> element
+                        directly below the root <sgmltag>index</sgmltag> node. As explained above,
+                        the node to be indexed is either specified through a <option>path</option>
+                        or a <option>qname</option> attribute.</para>
+
+                    <para>As range indexes are type specific, the <option>type</option> attribute is
+                        always required. The type should be one of the atomic XML schema types,
+                        currently including xs:string, xs:integer and derived types, xs:double,
+                        xs:float, xs:boolean and xs:dateTime. Futher types may be added in the
+                        future. If the name of the type is unknown, the index configuration will be
+                        ignored and you will get a warning written into the logs.</para>
+
+                    <para>Please note that the index configuration will only apply to the node
+                        specified via the <option>path</option> or <option>qname</option> attribute,
+                        not to descendants of that node. Consider a mixed content element like:</para>
+
+                    <example>
+                        <title>Mixed Content Element</title>
+                        <programlisting>
+                            <markup><![CDATA[<mixed><s>un</s><s>even</s></mixed>]]></markup>
+                        </programlisting>
+                    </example>
+
+                    <para>If an index is defined on <sgmltag>mixed</sgmltag>, the key for the index
+                        is build from the concatenated text nodes of element
+                        <sgmltag>mixed</sgmltag> and all its descendants, i.e. "uneven". The created
+                        index will only be used to evaluate queries on <sgmltag>mixed</sgmltag>, but
+                        not for queries on <sgmltag>s</sgmltag>. However, you can create an
+                        additional index on <sgmltag>s</sgmltag> without getting into conflict with
+                        the existing index on <sgmltag>mixed</sgmltag>.</para>
+                </section>
+
+                <section>
+                    <title>Full text index configuration</title>
+
+                    <para>The <emphasis>fulltext index</emphasis> is defined by the
+                            <sgmltag>fulltext</sgmltag> element - along with
+                        <sgmltag>include</sgmltag>, <sgmltag>exclude</sgmltag> and
+                        <sgmltag>create</sgmltag> elements. The full text index is currently subject
+                        to a major redesign and the configuration syntax somewhat reflects this
+                        because it is a bit inconsistent. eXist's current default behaviour is to
+                        create a full text index on all text nodes in a document. The include and
+                        exclude tags are used to add or hide nodes from the default indexing. The
+                        indexes created by the default indexing are always context-dependant. The
+                        nodes to include/exclude are thus specified via a <option>path</option>
+                        attribute, not a <option>qname</option> attribute. </para>
+
+                    <para>However, you can create explicit indexes on a qname using the
+                            <sgmltag>create</sgmltag> element. This is the recommended approach. In
+                        fact, as the full text index is currently being redesigned, we are not sure
+                        if we will keep the current default full text indexing in its current state.
+                        A fulltext configuration which only uses create elements is shown below: </para>
+
+                    <example>
+                        <title>Full text index configuration</title>
+                        <programlisting>
+                            <markup><![CDATA[
+<fulltext default="none" attributes="false">
+      <!-- Full text indexes -->
+      <create qname="author"/>
+      <create qname="title" content="mixed"/>
+</fulltext>
+]]></markup>
+                        </programlisting>
+                    </example>
+
+                    <para>With this example, the full text default attribute is set to "none", which
+                        disables the default full text indexing for all document elements. Attribute
+                        nodes are handled separately. Setting <option>attributes="false"</option>
+                        disables the default indexing for attributes as well. </para>
+
+                    <para>The first child element creates a standard full text index on all author
+                        elements, identified by their QName. The second one puts an index on title,
+                        but adds an option <option>content="mixed"</option>. This parameter causes
+                        the indexer to watch out for mixed-content nodes. For example, if your
+                        source XML contains markup like:</para>
+
+                    <example>
+                        <title>Mixed Content Element</title>
+                        <programlisting>
+                            <markup><![CDATA[<p>Some <span>un</span><span>even</span> amount.</p>]]></markup>
+                        </programlisting>
+                    </example>
+
+                    <para>You may want to treat "uneven" as a single word so you can query for p |=
+                        "uneven". In this case, you need to pass content="mixed" to the indexer. The
+                        concatenated text nodes of element mixed and all its descendants will be
+                        passed to the indexer as one single string. The indexer thus sees and
+                        indexes "uneven" as a single token.</para>
+
+                    <para>On the other hand, if you have</para>
+
+                    <example>
+                        <title>Not a Mixed Content Element</title>
+                        <programlisting>
+                            <markup><![CDATA[<date><year>1183</year><month>March</month><date>]]></markup>
+                        </programlisting>
+                    </example>
+
+                    <para>you probably want to be able to query for "March" even though there's no
+                        space between the year and month elements. In this case the standard
+                        settings are ok as they will add a virtual break between the elements.</para>
+
+                </section>
+
+                <section>
+                    <title>N-gram index configuration</title>
+
+                    <para>To create an n-gram index, add a <sgmltag>ngram</sgmltag> element directly
+                        below the root <sgmltag>index</sgmltag> node. The n-gram index only supports
+                        index definitions by <option>qname</option>. The <option>path</option>
+                        attribute is not supported (we currently don't see many real use cases for
+                        it). Right now, the n-gram index has no additional parameters to be
+                        specified; the default settings should just be ok for most cases (we may add
+                        extra parameters in the future, e.g. for collapsing/normalizing
+                    whitespace).</para>
+                </section>
             </section>
+
             <section>
                 <title>Document Elements and Attributes</title>
                 <para>The following table summarizes the function and syntax of elements used in a
