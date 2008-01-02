@@ -200,15 +200,15 @@ xquery version "1.0";
 	in the file /db/triggersLogs.xml
 :)
 
+declare namespace  xmldb="http://exist-db.org/xquery/xmldb";
+
 declare variable $local:triggerEvent external;
 declare variable $local:eventType external;
 declare variable $local:collectionName external;
 declare variable $local:documentName external;
 declare variable $local:document external;
 
-declare variable $local:triggersLogFile { "/db/triggersLog.xml" };
-
-declare namespace  xmldb="http://exist-db.org/xquery/xmldb";
+declare variable $local:triggersLogFile := "triggersLog.xml";
 
 
 (: create the log file if it does not exist :)
