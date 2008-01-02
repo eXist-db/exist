@@ -13,40 +13,72 @@
             <title>Overview</title>
             <para>In this section, we discuss the types of database indexes used by eXist, as well
                 as how they are created, configured and maintained. It assumes readers have a basic
-                understanding of XML and XQuery.</para>
+                understanding of XML and XQuery. For an introduction we suggest to first read the
+                wiki article <ulink url="http://atomic.exist-db.org/wiki/blogs/eXist/NewIndexing">
+                    "Understanding the new indexing features"</ulink>, which also lists some simple
+                guidelines on which index should be used for what.</para>
+
             <para>Database indexes are used extensively by eXist to facilitate efficient querying of
                 the database. This is accomplished both by system-generated and user-configured
-                database indexes. The current version of eXist uses three types of indexes:</para>
+                database indexes. The current version of eXist includes the following types of
+                indexes:</para>
+
             <orderedlist>
                 <listitem>
                     <para>
-                        <emphasis>Structural Indexes</emphasis>: These index the nodal structure,
-                        elements (tags), and attributes of documents in a collection.</para>
+                        <emphasis>
+                            <ulink url="#structuralidx">Structural Indexes</ulink>
+                        </emphasis>: These index the nodal structure, elements (tags), and
+                        attributes of documents in a collection.</para>
                 </listitem>
                 <listitem>
                     <para>
-                        <emphasis>Fulltext Indexes</emphasis>: These map text tokens to text nodes
-                        and attributes of documents in a collection.</para>
+                        <emphasis>
+                            <ulink url="#rangeidx">Range Indexes</ulink>
+                        </emphasis>: These index specific text nodes and attributes in a collection
+                        based on user-configured index paths and selected data types.</para>
                 </listitem>
                 <listitem>
                     <para>
-                        <emphasis>Range Indexes</emphasis>: These index specific text nodes and
-                        attributes in a collection based on user-configured index paths and selected
-                        data types.</para>
+                        <emphasis>
+                            <ulink url="#ftidx">Full Text Indexes</ulink>
+                        </emphasis>: These map text tokens to text nodes and attributes of documents
+                        in a collection.</para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>
+                            <ulink url="#ngramidx">NGram Indexes</ulink>
+                        </emphasis>: These split text into sequences of n-characters (where n = 3 by
+                        default). Very efficient for exact substring searches and for queries on
+                        non-European languages, which can not be easily split into whitespace
+                        separated tokens and are thus a bad match for the full text index. </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis><ulink url="#spatialidx">Spatial Indexes</ulink>
+                        (Experimental)</emphasis>: Listens for spatial geometries in an XML document
+                        and indexes them using specialized tools. </para>
                 </listitem>
             </orderedlist>
-            <para>These indexes are discussed in detail in the following section.</para>
+
+            <para>Since version 1.2, eXist features a new modularized indexing architecture. Most
+                types of indexes have been moved out of the database core and are now maintained as
+                pluggable extensions. The full text, ngram and spatial indexes fall under this
+                category. Please refer to the above-mentioned <ulink
+                    url="http://atomic.exist-db.org/wiki/blogs/eXist/NewIndexing">article</ulink>
+                for a description of the new architecture.</para>
         </section>
         <section>
             <title>Index Types</title>
-            <section>
+            <section id="structuralidx">
                 <title>Structural index</title>
                 <para>This index keeps track of the elements (tags), attributes, and nodal structure
                     for all XML documents in a collection. It is created and maintained
                     automatically in eXist, and can neither be reconfigured nor disabled by the
-                    user. The structural index is also required for executing nearly all XPath and
-                    XQuery expressions in eXist (with the exception of wildcard-only expressions
-                    such as "<command>//*</command>"). This index is stored in the database file
+                    user. The structural index is required for nearly all XPath and XQuery
+                    expressions in eXist (with the exception of wildcard-only expressions such as
+                        "<command>//*</command>"). This index is stored in the database file
                         <filename>elements.dbx</filename>. </para>
                 <para>Technically, the structural index maps every element and attribute
                         <emphasis>qname</emphasis> (or <emphasis>qualified name</emphasis>) in a
@@ -60,62 +92,29 @@
                     join</emphasis> between these node sets to determine which "section" elements
                     are in fact children of "book" elements.</para>
             </section>
-            <section>
-                <title>Fulltext Index</title>
-                <para>This index maps text tokens (or blocks of structured text) to the document
-                    text and attribute nodes in which they occur. It is also created and maintained
-                    automatically, and stored in <filename>words.dbx</filename>. You can, however,
-                    select specific documents and collections you would like eXist to index by
-                    creating a configuration file. A fulltext index can also be configured to select
-                    specific parts of a document. For instance, it is possible to include or exclude
-                    certain elements or attributes from being indexed. Without any such
-                    configuration, eXist defaults to index the entire text. (For more information on
-                    user-based configuration, see <emphasis>Configuring Indexes</emphasis> below). </para>
-                <para>The fulltext Index is also required for eXist's fulltext search extensions. In
-                    particular, you can use the following eXist-specific operators and functions
-                    that apply a fulltext index:</para>
-                <itemizedlist>
-                    <listitem>
-                        <para>Operators: <command>&amp;=</command> and
-                        <command>|=</command></para>
-                    </listitem>
-                    <listitem>
-                        <para>Main Functions: <function>text:match-all()</function>,
-                                <function>text:match-any()</function> and
-                        <function>near()</function></para>
-                    </listitem>
-                </itemizedlist>
 
-                <para>Check the <ulink url="xquery.xml">XQuery Documentation</ulink> for more
-                    information.</para>
-
-                <para>It is important to note that, if you have disabled fulltext indexing for
-                    certain elements, these operators and functions will also be effectively
-                    disabled, and will not return matches. Furthermore, eXist has NO fallback to
-                    "brute-force" searching. As a result, eXist will not return results for queries
-                    that normally would have results provided fulltext indexing was enabled. Note
-                    also that this is in direct contrast to the operation of range indexing, which
-                    does fallback to full searching of the document if no range index applies (see
-                    below).</para>
-            </section>
-
-            <section>
+            <section id="rangeidx">
                 <title>Range index</title>
-                <para>This index is "type-specific" - meaning it is based on the data type of
-                    specific node values in the document. These indexes provide a shortcut for the
-                    database to directly select nodes based on these type values. Unlike structural
+                <para>Range indexes provide a shortcut for the database to directly select nodes
+                    based on their typed values. They are used when matching or comparing nodes by
+                    way of standard XPath operators and functions. Without a range index, comparison
+                    operators like =, &gt; or &lt; will default to a "brute-force"
+                    inspection of the DOM, which can be extremly slow if eXist has to search through
+                    thousands or millions of nodes.</para>
+
+                <!--para>They are "type-specific" - 
+                    meaning it is based on the data type of specific node values in the document. Unlike structural
                     and fulltext Indexes, range indexes can be created and configured directly by
                     the user, and in this sense, they are similar to indexes used by relational
                     databases. eXist therefore does not come installed with configured range
                     indexes. However, configured indexes are created when loading a document, and
                     are automatically maintained during subsequent updates to the document or a part
-                    of it. </para>
-                <para>Range indexes are used when matching or comparing nodes by way of standard
-                    XPath operators and functions. Whenever these functions or operators are used,
+                    of it. </para-->
+                <!--para> Whenever these functions or operators are used,
                     eXist looks for, and implements, any user-defined range index that applies.
                     Unlike fulltext indexing, eXist will return the correct query results even if no
                     range index applies - defaulting to a "brute-force" inspection of the DOM if
-                    necessary.</para>
+                    necessary.</para-->
 
                 <para>To see how range indexes work, consider the following fragment:</para>
 
@@ -132,11 +131,11 @@
                                <price>199.99</price>
                             </item>
                         </items>]]></markup>
-                        </programlisting>
+                    </programlisting>
                 </example>
 
                 <para>With this short inventory, the <sgmltag>price</sgmltag> elements have dollar
-                    values expressed as a floating-point numbers, (e.g. "299.99"), which have an
+                    values expressed as a floating-point number, (e.g. "299.99"), which has an
                         <ulink url="http://www.w3.org/TR/xmlschema-0/">XML Schema Definition</ulink>
                     (XSD) data type of <command>xs:double</command>. Using this builtin type to
                     define a range index, we can improve the efficiency of searches for price
@@ -151,21 +150,20 @@
 
                 <synopsis>//item[price &gt; 100.0]</synopsis>
 
-                <para>For non-string data types, the range index also provides the query engine a
-                    more efficient method of data conversion. Instead of retrieving the value of
-                    each selected element and casting it as a <command>xs:double</command> type, the
+                <para>For non-string data types, the range index provides the query engine a more
+                    efficient method of data conversion. Instead of retrieving the value of each
+                    selected element and casting it as a <command>xs:double</command> type, the
                     engine can evaluate the expression by using the range index as a form of lookup
-                    index.</para>
+                    index. Without an index, eXist has to do a full scan over all price tags,
+                    retrieve their string values and cast them to a double number. This is a
+                    time-consuming process which also scales very bad with growing data sets. With a
+                    proper index, eXist needs just a single index lookup to evaluate <command>price
+                        = 100.0</command>. The range expression <command>price &gt;
+                    100.0</command> is processed with an index scan starting at 100. </para>
 
-                <para>The benefits of a range index can apply to string values as well. When working
-                    without a range index, eXist employs the fulltext index to scan for the correct
-                    nodes - but this index then requires eXist to scan the resulting nodes to filter
-                    wrong matches. Using a range index, this extra scan is not required. In addtion,
-                    the range index can be used for equality comparisons;
-                    "<option>&lt;</option>" (less-than) and "<option>&gt;</option>"
-                    (greater-than) comparisons; regular expression searches using the fn:matches()
-                    function, or standard string search functions like
-                    <function>fn:starts-with()</function> and <function>fn:contains()</function>.</para>
+                <para>For string data, the index will also be used by the standard functions
+                        <function>fn:contains()</function>, <function>fn:starts-with()</function>,
+                        <function>fn:ends-with()</function> and <function>fn:matches()</function>.</para>
 
                 <para>To illustrate this functionality, let's return to the previous example. If you
                     define a range index of type <command>xs:string</command> for element
@@ -175,26 +173,18 @@
 
                 <synopsis>//item[fn:matches(name, '[Tt]all\s[Bb]')]</synopsis>
 
-                <para>Another advantage of using the range index for strings is that it can be
-                    defined for elements with mixed content. For example, suppose you have the
-                    following:</para>
+                <para>Note that fn:matches will by default try to match the regular expression
+                        <emphasis>anywhere</emphasis> in the string. We can thus speed up the query
+                    dramatically by using "^" to restrict the match to the start of the string: </para>
 
-                <example>
-                    <title>Mixed Content Element</title>
-                    <programlisting>
-                        <markup><![CDATA[
-                            <mixed>
-                               <span>un</span>
-                               <span>even</span>
-                            </mixed>]]></markup>
-                    </programlisting>
-                </example>
+                <synopsis>//item[fn:matches(name, '^[Tt]all\s[Bb]')]</synopsis>
 
-                <para>In this case, you can query the database using an index-assisted regular
-                    expression that applies across the entire <sgmltag>mixed</sgmltag> node - for
-                    instance:</para>
-
-                <synopsis>//item[fn:matches(mixed, 'un.*')]</synopsis>
+                <para>Also, if you really need to search for an exact substring in a longer text
+                    sequence, it is often better to use the NGram index instead of the range index,
+                    i.e. use <function>ngram:contains()</function> instead of
+                        <function>fn:contains()</function>. Unfortunately, there's no equivalent
+                    NGram function for fn:matches() yet, but we may add one in the future as it
+                    could help to increase performance dramatically.</para>
 
                 <para>In general, three conditions must be met in order to optimize a search using a
                     range index:</para>
@@ -205,19 +195,21 @@
                             <emphasis>The range index must be defined on <emphasis>all</emphasis>
                                 items in the input sequence.</emphasis>
                         </para>
+
                         <para>For example, suppose you have two collections in the database: C1 and
                             C2. If you have a range index defined for collection C1, but your query
                             happens to operate on both C1 and C2, then the range index would NOT be
-                            used. The eXist "Query Optimizer" selects an optimization strategy based
-                            on the entire input sequence of the query. Since, in this example, since
-                            only nodes in C1 have a range index, no range index optimization would
-                            be applied.</para>
+                            used. The query optimizer selects an optimization strategy based on the
+                            entire input sequence of the query. Since, in this example, since only
+                            nodes in C1 have a range index, no range index optimization would be
+                            applied.</para>
                     </listitem>
                     <listitem>
                         <para>
                             <emphasis>The index data type (first argument type) must match the test
                                 data type (second argument type).</emphasis>
                         </para>
+
                         <para>In other words, with range indexes, there is no promotion of data
                             types (i.e. no data type precedes or replaces another data type). For
                             example, if you defined an index of type <command>xs:double</command> on
@@ -253,85 +245,179 @@
                     </listitem>
                 </orderedlist>
             </section>
+
+            <section id="ftidx">
+                <title>Fulltext Index</title>
+
+                <para>This index is used to query for a sequence of separate "words" or tokens in a
+                    longer stream of text. While building the index, the text is parsed into single
+                    tokens which are then stored in the index.</para>
+
+                <para>Historically, eXist has been creating a default full text index on all text
+                    nodes and attribute values. This will likely change in the future as the index
+                    is undergoing a major redesign. As the index becomes more configurable, we may
+                    drop the current default indexing behaviour.</para>
+
+                <para>Anyway, as for the other index types, you can configure the full text index in
+                    the collection configuration and we will try to keep the configuration of the
+                    new index backwards compatible. We thus recommend to create a collection
+                    configuration file, disable the default index-all behaviour and define some
+                    explicit full text indexes on your documents. The details of this process will
+                    be described below.</para>
+
+                <para>The full text index is only used in combination with eXist's fulltext search
+                    extensions. In particular, you can use the following eXist-specific operators
+                    and functions that apply a fulltext index:</para>
+
+                <itemizedlist>
+                    <listitem>
+                        <para>Operators: <command>&amp;=</command> and
+                        <command>|=</command></para>
+                    </listitem>
+                    <listitem>
+                        <para>Main Functions: <function>text:match-all()</function>,
+                                <function>text:match-any()</function> and
+                            <function>near()</function></para>
+                    </listitem>
+                </itemizedlist>
+
+                <para>Check the <ulink url="xquery.xml#ftidx">XQuery Documentation</ulink> for more
+                    information.</para>
+
+                <note>
+                    <para>It is important to note that, if you have disabled full text indexing for
+                        certain elements, these operators and functions will also be effectively
+                        disabled, and will not return matches. As a result, eXist will not return
+                        results for queries that normally would have results provided fulltext
+                        indexing was enabled. Note also that this is in direct contrast to the
+                        operation of range indexing, which does fallback to full searching of the
+                        document if no range index applies (see below).</para>
+                </note>
+            </section>
+
+            <section id="ngramidx">
+                <title>NGram Index</title>
+
+                <para>The n-gram index splits the text it receives into sequences of n-characters
+                    (where n = 3 by default). For example, the text "love me" will be split into the
+                    tri-grams: "lov", "ove", "ve_", "e_m", "_me" (I replaced the space char by a _).</para>
+
+                <para>The main motivation for creating the n-gram index was to better support
+                    non-european languages (like Chinese). The full text index is a bad match for
+                    these languages (and terribly slow) as they can not be easily split into
+                    whitespace separated tokens (or "words").</para>
+
+                <para>However, this type of index is also very efficient for exact substring
+                    matches. The ngram:contains() function is much faster than the equivalent
+                    fn:contains() with a range index. Contrary to the full text index, the n-gram
+                    index does not split the text at word boundaries or whitespace. Whitespace and
+                    punctuation are included in the index. To understand the difference, imagine you
+                    have a paragraph:</para>
+
+                <synopsis><![CDATA[<para>Hello, my friend!</para>]]></synopsis>
+
+                <para>If you create a full text index on this paragraph, only the tokens "Hello",
+                    "my" and "friend" will be stored in the index. The query</para>
+
+                <synopsis>//para[near(., ", my friend")]</synopsis>
+
+                <para>will thus return all paragraphs containing the words "my friend", but
+                    punctuation and whitespace is simply ignored. Contrary to this, ngram:contains()
+                    - like fn:contains() - searches for the exact string ", my friend":</para>
+
+                <synopsis>//para[ngram:contains(., ", my friend")</synopsis>
+
+                <para>So the n-gram index is comparable to the range index, though it processes
+                    substring queries as fast as the full text index.</para>
+            </section>
+
+            <section id="spatialidx">
+                <title>Spatial Index</title>
+
+                <para>A working proof-of-concept index, which listens for spatial geometries
+                    described through the Geography Markup Language (GML). A detailed description of
+                    the implementation can be found in the <ulink url="devguide_indexes.xml"
+                        >Developer's Guide to Modularized Indexes</ulink>.</para>
+            </section>
         </section>
-        <section>
-            <title>Maintaining Indexes and Re-indexing</title>
-            <table>
-                <title/>
-                <tgroup cols="2">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <para>The current eXist index system automatically maintains and
-                                    updates indexes defined by the user. You therefore do not need
-                                    to update an index when you update a database document or
-                                    collection. eXist will even update indexes following partial
-                                    document updates via <emphasis>XUpdate</emphasis> or
-                                        <emphasis>XQuery Update</emphasis> expressions.</para>
-                                <para>The only exception to eXist's automatic update occurs when you
-                                        <emphasis>add a new index definition to an existing database
-                                        collection</emphasis>. In this case, the new index settings
-                                    will ONLY apply to new data added to this collection, or any of
-                                    its sub-collections, and NOT to previously existing data. To
-                                    apply the new settings to the entire collection, you need to
-                                    trigger a "manual reindex" of the collection being updated. You
-                                    can re-index collections using the Java Admin Client (shown on
-                                    the right). From the Admin menu, select
-                                        <guimenu>File</guimenu>&#187;<guimenuitem>Reindex
-                                        Collection</guimenuitem></para>
-                            </td>
-                            <td>
-                                <screenshot><graphic fileref="resources/client4.png"/></screenshot>
-                            </td>
-                        </tr>
-                    </tbody>
-                </tgroup>
-            </table>
-        </section>
+
         <section>
             <title>Configuring Indexes</title>
 
-            <para>For later versions of eXist, it is recommended that users configure fulltext and
-                range indexes using collection-specific configuration files. These files are stored
-                as standard XML documents in the system collection:
-                <filename>/db/system/config</filename>, which can be accessed using the Admin
-                interface or Java Client. In addition to defining settings for indexing collections,
-                the configuration document specifies collection-specific other settings such as
-                triggers or default permissions.</para>
+            <para>eXist has no "create index" command. Instead, indexes are configured in
+                collection-specific configuration files. These files are stored as standard XML
+                documents in the system collection: <filename>/db/system/config</filename>, which
+                can be accessed like any other document (e.g. using the Admin interface or Java
+                Client). In addition to defining settings for indexing collections, the
+                configuration document specifies collection-specific other settings such as triggers
+                or default permissions.</para>
 
             <para>The contents of the system collection (<filename>/db/system/config</filename>)
-                mirror the hierarchical structure of the main collection. Configurations are
-                therefore "inherited" by descendants in the hierarchy, (i.e. the configuration
-                settings for the child collection are added to or override those set for the
-                parent). It is furthermore possible for each collection in the hierarchy to have its
-                own <emphasis>index creation policy</emphasis> defined by a configuration file. If
-                no collection-specific configuration file is created for any document, the global
+                mirror the hierarchical structure of the main collection. Configurations are shared
+                by descendants in the hierarchy unless they have their own configuration (i.e. the
+                configuration settings for the child collection override those set for the parent).
+                If no collection-specific configuration file is created for any document, the global
                 settings in the main configuration file, <filename>conf.xml</filename>, will apply
                 by default. That being said, the <filename>conf.xml</filename> file should only
                 define the default global <emphasis>index creation policy</emphasis>.</para>
 
-			<para>
-			To configure a given collection - e.g. <filename>/db/foo</filename> - 
-			create a file <filename>collection.xconf</filename> and store it as 
-			<filename>/db/system/config/db/foo/collection.xconf</filename>. 
-			Note the replication of the <filename>/db/foo</filename> hierarchy inside 
-			<filename>/db/system/config/</filename>. Subcollections which do not have a 
-			<filename>collection.xconf</filename> file of their own will be governed
-            by the configuration policy specified for the closest ancestor collection
-            which does have such a file, so you are not required to specify a
-            configuration for every collection. Note, however, that configuration
-            settings do not cascade. If you choose to deploy a <filename>collection.xconf</filename> file in a
-            subcollection, you must specify in that file <emphasis>all</emphasis> the configuration options
-            you wish to have applied to that subcollection (and any lower-level
-            subcollections without <filename>collection.xconf</filename> files of their own).
-			</para>
-		
-		  <note>
-		  	<para>Due to backward compatibility concerns, the file does not have to be called 
-		  	<filename>collection.xconf</filename>, which is now the preferred file name, 
-		  	but it <emphasis>must</emphasis> have the <filename>.xconf</filename> extension.</para> 	  	
-		  	<para>You can only have <emphasis>one</emphasis> <filename>.xconf</filename> file at each level.</para>
-		  </note> 
+            <para> To configure a given collection - e.g. <filename>/db/foo</filename> - create a
+                file <filename>collection.xconf</filename> and store it as
+                    <filename>/db/system/config/db/foo/collection.xconf</filename>. Note the
+                replication of the <filename>/db/foo</filename> hierarchy inside
+                    <filename>/db/system/config/</filename>. Subcollections which do not have a
+                    <filename>collection.xconf</filename> file of their own will be governed by the
+                configuration policy specified for the closest ancestor collection which does have
+                such a file, so you are not required to specify a configuration for every
+                collection. Note, however, that configuration settings do not cascade. If you choose
+                to deploy a <filename>collection.xconf</filename> file in a subcollection, you must
+                specify in that file <emphasis>all</emphasis> the configuration options you wish to
+                have applied to that subcollection (and any lower-level subcollections without
+                    <filename>collection.xconf</filename> files of their own). </para>
+
+            <note>
+                <para>Due to backward compatibility concerns, the file does not have to be called
+                        <filename>collection.xconf</filename>, which is now the preferred file name,
+                    but it <emphasis>must</emphasis> have the <filename>.xconf</filename> extension.</para>
+                <para>You can only have <emphasis>one</emphasis>
+                    <filename>.xconf</filename> file at each level.</para>
+            </note>
+
+            <section>
+                <title>Maintaining Indexes and Re-indexing</title>
+                <table>
+                    <title/>
+                    <tgroup cols="2">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <para>The eXist index system automatically maintains and updates
+                                        indexes defined by the user. You therefore do not need to
+                                        update an index when you update a database document or
+                                        collection. eXist will even update indexes following partial
+                                        document updates via <emphasis>XUpdate</emphasis> or
+                                            <emphasis>XQuery Update</emphasis> expressions.</para>
+                                    <para>The only exception to eXist's automatic update occurs when
+                                        you <emphasis>add a new index definition to an existing
+                                            database collection</emphasis>. In this case, the new
+                                        index settings will ONLY apply to new data added to this
+                                        collection, or any of its sub-collections, and NOT to
+                                        previously existing data. To apply the new settings to the
+                                        entire collection, you need to trigger a "manual reindex" of
+                                        the collection being updated. You can re-index collections
+                                        using the Java Admin Client (shown on the right). From the
+                                        Admin menu, select
+                                            <guimenu>File</guimenu>&#187;<guimenuitem>Reindex
+                                            Collection</guimenuitem></para>
+                                </td>
+                                <td>
+                                    <screenshot><graphic fileref="resources/client4.png"/></screenshot>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </section>
 
             <section>
                 <title>Configuration Structure and Syntax</title>
@@ -341,38 +427,118 @@
 
                 <synopsis>http://exist-db.org/collection-config/1.0</synopsis>
 
-                <para>The following example shows a simple configuration document:</para>
+                <para>The following example shows a configuration example:</para>
 
                 <example>
-                    <title>Simple Configuration Document</title>
-                    <programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
-    <index xmlns:x="http://www.foo.com">
-       <fulltext>
-           <include path="//item/name"/>
-       </fulltext>
-       <create path="//item/price" type="xs:double"/>
+                    <title>Configuration Document</title>
+                    <programlisting><markup><![CDATA[
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index>
+        <fulltext default="none" attributes="false">
+            <!-- Full text indexes -->
+            <create qname="author"/>
+            <create qname="title" content="mixed"/>
+            <!-- "old" context-dependant configuration using the path attribute: -->
+            <include path="booktitle"/>
+        </fulltext>
+        
+        <!-- Range indexes -->
+        <create qname="title" type="xs:string"/>
+        <create qname="author" type="xs:string"/>
+        <create qname="year" type="xs:int"/>
+        <!-- "old" context-dependant configuration using the path attribute: -->
+        <create path="//booktitle" type="xs:string"/>
+        
+        <!-- N-gram indexes -->
+        <ngram qname="author"/>
+        <ngram qname="title"/>
     </index>
-</collection>]]></markup></programlisting>
+</collection>
+]]></markup></programlisting>
                 </example>
 
                 <para>All configuration documents have the <sgmltag>collection</sgmltag> root
                     element. These documents also have an <sgmltag>index</sgmltag> element directly
                     below the root element, which encloses the index configuration. Only ONE
-                        <sgmltag>index</sgmltag> element is permitted in a document. </para>
+                        <sgmltag>index</sgmltag> element is permitted in a document. Apart from the
+                    index configuration, the document may also contain non index-related settings,
+                    e.g. for triggers, which will not be covered here. </para>
 
-                <para>In the <sgmltag>index</sgmltag> element are elements that define the fulltext
-                    index and range index settings. The fulltext index is defined by the
-                        <sgmltag>fulltext</sgmltag> element - along with <sgmltag>include</sgmltag>
-                    and <sgmltag>exclude</sgmltag> elements that provide specific index paths. Range
-                    indexes are defined by <sgmltag>create</sgmltag> elements. Note that an index
-                    element contains only ONE <sgmltag>fulltext</sgmltag> element, but may contain
-                    any number of <sgmltag>create</sgmltag> elements as range indexes.</para>
+                <para>In the <sgmltag>index</sgmltag> element are elements that define the various
+                    index types. Each index type can add its own configuration elements, which are
+                    directly forwarded to the corresponding index implementation. The example above
+                    configures three different types of indexes: full text, range and ngram.</para>
 
-                <para>To illustrate how basic configuration document is created, let's suppose we
-                    have a collection of XML documents with the following structure:</para>
-                <example>
-                    <title>Sample XML Document</title>
-                    <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+                <section>
+                    <title>Configuration by path vs. configuration by qname</title>
+
+                    <para>It is important to note the difference between the <sgmltag>path</sgmltag>
+                        and <sgmltag>qname</sgmltag> attributes used throughout above example. Both
+                        attributes are used to define the elements or attributes to which the index
+                        should be applied. However, the <sgmltag>path</sgmltag> attribute creates
+                            <emphasis>context-dependant</emphasis> indexes, while the
+                        <sgmltag>qname</sgmltag> attribute does not. The path attribute takes a
+                        simple path expression: </para>
+
+                    <synopsis><![CDATA[<create path="//book/title" type="xs:string"/>]]></synopsis>
+
+                    <para>The path expression looks like XPath, but it's really not. Only / and //
+                        are allowed, defining either a child or descendant relation. Attributes are
+                        selected by prepending a @. The above example creates a range index of type
+                        string on all <sgmltag>title</sgmltag> elements which are children of
+                            <sgmltag>book</sgmltag> elements, which may occur at an arbitrary
+                        position in the document tree. All other <sgmltag>title</sgmltag> elements,
+                        e.g. those being children of <sgmltag>section</sgmltag> nodes, are not
+                        indexed. The path expression thus defines a <emphasis>selective</emphasis>
+                        index, which is also <emphasis>context-dependant</emphasis>: we always need
+                        look at the context of each <sgmltag>title</sgmltag> node before we can
+                        determine if this particular title is to be indexed or not.</para>
+
+                    <para>This kind of context-dependant index definition helps to
+                        keep the index small. But unfortunately, it makes it hard for the query optimizer 
+                        to properly
+                        rewrite the expression tree without missing some nodes. The optimizer needs
+                        to make an optimization decision at compile time, where the context of an
+                        expression is unknown or at least not exactly known (read the <ulink
+                            url="http://atomic.exist-db.org/wiki/blogs/eXist/">blog article</ulink>
+                        to get the whole picture). This means that some of the highly efficient optimization
+                        techniques can not be applied to context-dependant indexes!</para>
+                        
+                    <para>We thus had to introduce an alternative
+                        configuration method which is not context-dependant. To keep things simple,
+                        we decided to define the index on the QName of the node alone and to ignore
+                        the context altogether:</para>
+
+                    <synopsis><![CDATA[<create qname="title" type="xs:string"/>]]></synopsis>
+
+                    <para>This results in an index being created on every <sgmltag>title</sgmltag>
+                        element found in the document node tree. Section titles will be indexed as
+                        well as chapter or book titles. This may result in a considerably larger index,
+                        but it also allows the query engine to apply all available optimization techniques,
+                        which can improve query times by an order of magnitude. As so often, there's a
+                        trade-off between performance and storage space. In many cases, the performance 
+                        win can be dramatic enough to justify an increase in index size.</para>
+                    
+                    <important><para>To be on the safe side and to benefit from current and future improvements in the query engine, 
+                        you should prefer <sgmltag>qname</sgmltag> over <sgmltag>path</sgmltag>, unless you really
+                        need to exclude certain nodes from indexing.</para></important>
+                </section>
+
+                <section>
+                    <title/>
+                    <para>The <emphasis>fulltext index</emphasis> is defined by the
+                            <sgmltag>fulltext</sgmltag> element - along with
+                        <sgmltag>include</sgmltag>, <sgmltag>exclude</sgmltag> and
+                        <sgmltag>create</sgmltag> elements that provide specific index paths.</para>
+
+                    <para><emphasis>Range indexes</emphasis> are configured through a simple create
+                        tag.</para>
+
+                    <para>To illustrate how basic configuration document is created, let's suppose
+                        we have a collection of XML documents with the following structure:</para>
+                    <example>
+                        <title>Sample XML Document</title>
+                        <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <items xmlns:x="http://www.foo.com">
     <item n="1"">
         <name>Red Bicycle</name>
@@ -381,11 +547,12 @@
         <x:rating>8.7</x:rating>
     </item>
 </items>]]></programlisting>
-                </example>
-                <para>A configuration document for this collection might look like the following:</para>
-                <example>
-                    <title>Configuration Document (<filename>collection.xconf</filename>)</title>
-                    <programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
+                    </example>
+                    <para>A configuration document for this collection might look like the
+                        following:</para>
+                    <example>
+                        <title>Configuration Document (<filename>collection.xconf</filename>)</title>
+                        <programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
 	<index xmlns:x="http://www.foo.com">
 		<fulltext default="none" attributes="false" alphanum="false">
 			<include path="//item/name"/>
@@ -398,98 +565,104 @@
                   <create path="//item/x:rating" type="xs:double"/>
 	</index>
 </collection>]]></markup></programlisting>
-                </example>
+                    </example>
 
-                <para>With this example, the fulltext default attribute is set to "none", which
-                    disables the default fulltext indexing for all document elements. The exception
-                    to this are the name elements using the <sgmltag>include</sgmltag> element.</para>
+                    <para>With this example, the fulltext default attribute is set to "none", which
+                        disables the default fulltext indexing for all document elements. The
+                        exception to this are the name elements using the <sgmltag>include</sgmltag>
+                        element.</para>
 
-                <para>Notice as well that each <sgmltag>create</sgmltag> element has a
-                    <option>path</option> attribute that defines the nodes to which the
-                    configuration applies, and which are expressed as <emphasis>index
-                    paths</emphasis>. Notice also that each <sgmltag>include</sgmltag> has a
-                        <option>path</option> attribute, but not a type attribute. Since range
-                    indexes are "type-specific", a node will be ignored if its value cannot be cast
-                    to the specified type. For instance, if, in the above example, a price element
-                    contains the string "unknown" instead of a double value, the indexer will simply
-                    ignore this node. However, the value would still be found through a string
-                    comparison. Note that a path component may use a namespace prefix, for which a
-                    mapping has to be defined in the enclosing <option>index</option> tag. For
-                    example, the document node <sgmltag>x:rating</sgmltag> in the above sample XML
-                    uses the namespace <option>x</option>.</para>
+                    <para>Notice as well that each <sgmltag>create</sgmltag> element has a
+                            <option>path</option> attribute that defines the nodes to which the
+                        configuration applies, and which are expressed as <emphasis>index
+                        paths</emphasis>. Notice also that each <sgmltag>include</sgmltag> has a
+                            <option>path</option> attribute, but not a type attribute. Since range
+                        indexes are "type-specific", a node will be ignored if its value cannot be
+                        cast to the specified type. For instance, if, in the above example, a price
+                        element contains the string "unknown" instead of a double value, the indexer
+                        will simply ignore this node. However, the value would still be found
+                        through a string comparison. Note that a path component may use a namespace
+                        prefix, for which a mapping has to be defined in the enclosing
+                        <option>index</option> tag. For example, the document node
+                        <sgmltag>x:rating</sgmltag> in the above sample XML uses the namespace
+                            <option>x</option>.</para>
 
-                <para>Unlike the fulltext index, the range index applies ONLY to the element
-                    specified in the index path, and NOT to descendant nodes of that element.
-                    Returning to a previous example, consider the following markup:</para>
+                    <para>Unlike the fulltext index, the range index applies ONLY to the element
+                        specified in the index path, and NOT to descendant nodes of that element.
+                        Returning to a previous example, consider the following markup:</para>
 
-                <example>
-                    <title>Mixed Content Element</title>
-                    <programlisting>
+                    <example>
+                        <title>Mixed Content Element</title>
+                        <programlisting>
                         <markup><![CDATA[<mixed>
     <span>un</span>
     <span>even</span>
 </mixed>]]></markup>
                     </programlisting>
-                </example>
+                    </example>
 
-                <para>which has the index definition:</para>
+                    <para>which has the index definition:</para>
 
-                <synopsis>&lt;create path=&quot;//item/mixed&quot; type=&quot;xs:string&quot;/&gt;</synopsis>
+                    <synopsis>&lt;create path=&quot;//item/mixed&quot; type=&quot;xs:string&quot;/&gt;</synopsis>
 
-                <para>In this case, the string added to the corresponding range index during
-                    indexing would be "uneven". In contrast, the fulltext index would (by default)
-                    add the strings "un" and "even".</para>
+                    <para>In this case, the string added to the corresponding range index during
+                        indexing would be "uneven". In contrast, the fulltext index would (by
+                        default) add the strings "un" and "even".</para>
 
-                <para>However, you can configure the fulltext index to treat mixed content in the same way as the
-                    range index. For this, we use a special type of &lt;include&gt;:</para>
-                
-                <example>
-                    <title>Configure the Fulltext Index for a Mixed Content Element</title>
-                    <programlisting>
+                    <para>However, you can configure the fulltext index to treat mixed content in
+                        the same way as the range index. For this, we use a special type of
+                        &lt;include&gt;:</para>
+
+                    <example>
+                        <title>Configure the Fulltext Index for a Mixed Content Element</title>
+                        <programlisting>
                         <markup><![CDATA[<fulltext default="none" attributes="false" alphanum="false">
     <include path="//mixed" content="mixed"/>
 </fulltext>]]></markup>
                     </programlisting>
-                </example>
-                
-                <para>The concatenated text nodes of element mixed and all its descendants will be passed to the indexer
-                    as one single string. The indexer thus sees and indexes "uneven" as a single token. Accordingly, using 
-                    this definition, the expression:</para>
-                
-                <synopsis>//mixed[. &amp;= 'uneven']</synopsis>
-                
-                <para>will return the mixed node. You can still explicitely query for child and descendant nodes (unless
-                you excluded them from the index).</para> 
-                    
-                <para>Although the syntax of index paths appears similar to XPath syntax, it is not
-                    the same. Index path syntax is in fact much simpler than XPath, and uses the
-                    following components to construct paths:</para>
-                <itemizedlist>
-                    <listitem>
-                        <para>Elements are specified by their <emphasis>qname</emphasis></para>
-                    </listitem>
-                    <listitem>
-                        <para>Attributes are specified by <option>@[ATTRIBUTE]</option></para>
-                    </listitem>
-                    <listitem>
-                        <para>Child nodes are selected using the forward-slash
-                        (<option>/</option>)</para>
-                    </listitem>
-                    <listitem>
-                        <para>All descendant nodes in a tree are selected using the double
-                            forward-slash (<option>//</option>)</para>
-                    </listitem>
-                </itemizedlist>
+                    </example>
 
-                <important>
-                    <para>Please note that index paths are NOT the same as XPath expressions, even
-                        though the syntax is similar. The main reason for this difference is that
-                        index paths must be evaluated during the indexing phase. During this phase,
-                        eXist engine has only minimal structural information about the document, and
-                        so the use of XPath expressions is not possible. With improvements made to
-                        the search method for future versions of eXist, however, the full use of
-                        XPath in configuring indexes may become possible.</para>
-                </important>
+                    <para>The concatenated text nodes of element mixed and all its descendants will
+                        be passed to the indexer as one single string. The indexer thus sees and
+                        indexes "uneven" as a single token. Accordingly, using this definition, the
+                        expression:</para>
+
+                    <synopsis>//mixed[. &amp;= 'uneven']</synopsis>
+
+                    <para>will return the mixed node. You can still explicitely query for child and
+                        descendant nodes (unless you excluded them from the index).</para>
+
+                    <para>Although the syntax of index paths appears similar to XPath syntax, it is
+                        not the same. Index path syntax is in fact much simpler than XPath, and uses
+                        the following components to construct paths:</para>
+                    <itemizedlist>
+                        <listitem>
+                            <para>Elements are specified by their <emphasis>qname</emphasis></para>
+                        </listitem>
+                        <listitem>
+                            <para>Attributes are specified by <option>@[ATTRIBUTE]</option></para>
+                        </listitem>
+                        <listitem>
+                            <para>Child nodes are selected using the forward-slash
+                                (<option>/</option>)</para>
+                        </listitem>
+                        <listitem>
+                            <para>All descendant nodes in a tree are selected using the double
+                                forward-slash (<option>//</option>)</para>
+                        </listitem>
+                    </itemizedlist>
+
+                    <important>
+                        <para>Please note that index paths are NOT the same as XPath expressions,
+                            even though the syntax is similar. The main reason for this difference
+                            is that index paths must be evaluated during the indexing phase. During
+                            this phase, eXist engine has only minimal structural information about
+                            the document, and so the use of XPath expressions is not possible. With
+                            improvements made to the search method for future versions of eXist,
+                            however, the full use of XPath in configuring indexes may become
+                            possible.</para>
+                    </important>
+                </section>
             </section>
             <section>
                 <title>Document Elements and Attributes</title>
@@ -598,8 +771,9 @@
                             <para>The following includes the values of all <option>id</option>
                                 attributes for all <sgmltag>article</sgmltag> elements.</para>
                             <synopsis format="linespecific"><sgmltag>include path="//article/@id" /</sgmltag></synopsis>
-                            <para>The optional attribute <option>content</option> can be used to create an additional
-                                index on the mixed content of a node (see description above):</para>
+                            <para>The optional attribute <option>content</option> can be used to
+                                create an additional index on the mixed content of a node (see
+                                description above):</para>
                             <synopsis><sgmltag>include path="//mixed" content="mixed"/</sgmltag></synopsis>
                         </listitem>
                     </varlistentry>
@@ -678,9 +852,10 @@
         </section>
         <section>
             <title>Debugging the Range Index</title>
-            <para>It is sometimes a bit difficult to see if a range index is correctly defined or not. The simplest way to get
-                some information on index usage is to set the priority for eXist's standard logger to <option>TRACE</option>.
-                For example, change the <sgmltag>root</sgmltag> category in <filename>log4j.xml</filename> as follows:</para>
+            <para>It is sometimes a bit difficult to see if a range index is correctly defined or
+                not. The simplest way to get some information on index usage is to set the priority
+                for eXist's standard logger to <option>TRACE</option>. For example, change the
+                    <sgmltag>root</sgmltag> category in <filename>log4j.xml</filename> as follows:</para>
             <example>
                 <title>Configure log4j to Display Trace Output</title>
                 <programlisting>
@@ -690,12 +865,14 @@
 </root>]]></markup>
                 </programlisting>
             </example>
-            <para>This enables trace and sends all log output to the console instead of the log files. For expressions that can
-                benefit from a range index, you should now see messages like "Checking if range index can be used ..." or
-                "Using range index for key...".</para>
-            
-            <para>Another possibility to see what's in your index is to use the util:index-keys function:</para>
-            
+            <para>This enables trace and sends all log output to the console instead of the log
+                files. For expressions that can benefit from a range index, you should now see
+                messages like "Checking if range index can be used ..." or "Using range index for
+                key...".</para>
+
+            <para>Another possibility to see what's in your index is to use the util:index-keys
+                function:</para>
+
             <example>
                 <title>Query to List Index Contents</title>
                 <programlisting><![CDATA[declare namespace f="http://exist-db.org/xquery/test";
@@ -709,8 +886,9 @@ declare function f:term-callback($term as xs:string, $data as xs:int+) as elemen
 };
 util:index-keys(//city/name, "T", util:function("f:term-callback", 2), 1000)]]></programlisting>
             </example>
-            <para>This query will show you 1000 keys (starting with the letter 'T') indexed for the element selected by the 
-                path expression <option>//city/name</option> together with some information about this key.</para>
+            <para>This query will show you 1000 keys (starting with the letter 'T') indexed for the
+                element selected by the path expression <option>//city/name</option> together with
+                some information about this key.</para>
         </section>
     </chapter>
 </book>
