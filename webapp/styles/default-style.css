@@ -5,14 +5,19 @@
 
 @media screen {
     body {
-        font-family: Verdana, Arial, Helvetica, sans-serif;
-        font-size: 76%;
         background-color: white;
     }
 }
 
+/* Font size adjustments. Copied from Yahoo YUI */
+body {font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;}
+table {font-size:inherit;font:100%;}
+/**
+ * Bump up IE to get to 13px equivalent
+ */
+pre,code,kbd,samp,tt {font-family:monospace;*font-size:108%;line-height:100%;}
+
 p, .synopsis, .note, .example, .important, .formaltable {
-    font-size: 1em;
     margin: 0 15px 1em 15px;
 }
 
@@ -420,7 +425,7 @@ select.choose {
 }
 
 .author a {
-    font-size: 85%;
+    font-size: .85em;
     font-style: italic;
 }
 
@@ -477,7 +482,11 @@ select.choose {
     border-left: 4px solid #c3d9ff;
     border-right: 4px solid #c3d9ff;
     border-bottom: 4px solid #c3d9ff;
-    padding: 5px 0;
+    padding: 0;
+}
+
+.example_content .dp-highlighter {
+    margin: 0 !important;
 }
 
 .important {
