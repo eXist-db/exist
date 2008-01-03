@@ -20,7 +20,7 @@
 
             <para>Database indexes are used extensively by eXist to facilitate efficient querying of
                 the database. This is accomplished both by system-generated and user-configured
-                database indexes. The current version of eXist includes the following types of
+                database indexes. The current version of eXist by default includes the following types of
                 indexes:</para>
 
             <orderedlist>
@@ -75,7 +75,7 @@
 
             <para>This section describes the features of those indexes that are part of the eXist
                 distribution. Some of those indexes (n-gram, spatial) may need to be enabled first
-                (see below). </para>
+                (see <ulink url="#moduleconf">below</ulink>). </para>
 
             <section id="structuralidx">
                 <title>Structural index</title>
@@ -106,7 +106,7 @@
                     way of standard XPath operators and functions. Without a range index, comparison
                     operators like =, &gt; or &lt; will default to a "brute-force"
                     inspection of the DOM, which can be extremly slow if eXist has to search through
-                    thousands or millions of nodes.</para>
+                    maybe millions of nodes: each node has to be loaded and cast to the target type.</para>
 
                 <para>To see how range indexes work, consider the following fragment:</para>
 
@@ -132,7 +132,7 @@
                     (XSD) data type of <command>xs:double</command>. Using this builtin type to
                     define a range index, we can improve the efficiency of searches for price
                     values. (Instructions on how to configure range indexes using configuration
-                    files are provided under the <emphasis>Configuring Indexes</emphasis> section
+                    files are provided under the <ulink url="#idxconf">Configuring Indexes</ulink> section
                     below.) During indexing, eXist will apply this data type selection by attempting
                     to cast all <sgmltag>price</sgmltag> values as double floating point numbers,
                     and add appropriate values to the index. Values that cannot be cast as double
@@ -300,7 +300,9 @@
 
                 <para>The n-gram index splits the text it receives into sequences of n-characters
                     (where n = 3 by default). For example, the text "love me" will be split into the
-                    tri-grams: "lov", "ove", "ve_", "e_m", "_me" (I replaced the space char by a _).</para>
+                    tri-grams: "lov", "ove", "ve_", "e_m", "_me" (I replaced the space char by a _).
+                    From a user point of view, the n-gram index is comparable to the range index, though it processes
+                    substring queries as fast as the full text index.</para>
 
                 <para>The main motivation for creating the n-gram index was to better support
                     non-european languages (like Chinese). The full text index is a bad match for
@@ -326,9 +328,6 @@
                     - like fn:contains() - searches for the exact string ", my friend":</para>
 
                 <synopsis>//para[ngram:contains(., ", my friend")</synopsis>
-
-                <para>So the n-gram index is comparable to the range index, though it processes
-                    substring queries as fast as the full text index.</para>
             </section>
 
             <section id="spatialidx">
@@ -341,7 +340,7 @@
             </section>
         </section>
 
-        <section>
+        <section id="moduleconf">
             <title>Enabling Index Modules in conf.xml</title>
 
             <para>Since version 1.2, eXist features a <emphasis>modularized indexing architecture</emphasis>, 
@@ -382,7 +381,7 @@
             on the issue which caused the configuration to fail.</para>
         </section>
 
-        <section>
+        <section id="idxconf">
             <title>Configuring Indexes</title>
 
             <para>eXist has no "create index" command. Instead, indexes are configured in
@@ -664,7 +663,7 @@
                         the existing index on <sgmltag>mixed</sgmltag>.</para>
                 </section>
 
-                <section>
+                <section id="ftidxconf">
                     <title>Full text index configuration</title>
 
                     <para>The <emphasis>fulltext index</emphasis> is defined by the
@@ -750,192 +749,6 @@
                     whitespace).</para>
                 </section>
             </section>
-
-            <section>
-                <title>Document Elements and Attributes</title>
-                <para>The following table summarizes the function and syntax of elements used in a
-                    configuration document:</para>
-
-                <variablelist>
-                    <varlistentry>
-                        <term>
-                            <sgmltag>collection</sgmltag>
-                        </term>
-                        <listitem>
-                            <para>Description: Configuration document root element.</para>
-                            <para>Namespace:
-                                <option>http://exist-db.org/collection-config/1.0</option></para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                        <term>
-                            <sgmltag>index</sgmltag>
-                        </term>
-                        <listitem>
-                            <para>Description: Container for the index configuration.</para>
-                            <para>Namespace: Optional collection namespace for prefixed index path
-                                components. (e.g. <option>xmlns:x="http://www.foo.com"</option> for
-                                the <option>x</option> namespace prefix).</para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                        <term>
-                            <sgmltag>fulltext</sgmltag>
-                        </term>
-                        <listitem>
-                            <para>Description: Specifies the default fulltext indexing settings, and
-                                contains <sgmltag>include</sgmltag> and <sgmltag>exclude</sgmltag>
-                                elements that specify which document nodes to include or exclude
-                                during indexing. </para>
-                            <para>Attributes:</para>
-                            <itemizedlist>
-                                <listitem>
-                                    <para><option>default</option>: Sets the default index range for
-                                        text nodes. All fulltext indexes must have this attribute
-                                        defined.</para>
-                                    <itemizedlist>
-                                        <title>Values</title>
-                                        <listitem>
-                                            <para><option>all</option>: All test nodes are indexed
-                                                (default). To exclude specific nodes, use the
-                                                  <sgmltag>exclude</sgmltag> element (see
-                                            below).</para>
-                                        </listitem>
-                                        <listitem>
-                                            <para><option>none</option>: No text nodes are indexed.
-                                                To include specific nodes, use the
-                                                <sgmltag>include</sgmltag> element (see
-                                            below).</para>
-                                        </listitem>
-                                    </itemizedlist>
-                                </listitem>
-                                <listitem>
-                                    <para><option>attributes</option>: Default setting to include
-                                        (or exclude) attribute values during the document indexing.
-                                        Compare this setting with the <option>default</option>
-                                        setting for text nodes.</para>
-                                    <itemizedlist>
-                                        <title>Values</title>
-                                        <listitem>
-                                            <para><option>true</option>: Attributes are indexed
-                                                (default).</para>
-                                        </listitem>
-                                        <listitem>
-                                            <para><option>false</option>: Attributes are not
-                                                indexed.</para>
-                                        </listitem>
-                                    </itemizedlist>
-                                </listitem>
-                                <listitem>
-                                    <para><option>alphanum</option>: Default setting to include (or
-                                        exclude) alpha-numeric values during the document indexing.
-                                        These sequences include: numbers, dates, and any
-                                        alpha-numeric sequence that is not a simple word string.</para>
-                                    <itemizedlist>
-                                        <title>Values</title>
-                                        <listitem>
-                                            <para><option>true</option>: Alpha-numeric strings are
-                                                indexed (default).</para>
-                                        </listitem>
-                                        <listitem>
-                                            <para><option>false</option>: Alpha-numeric strings are
-                                                not indexed.</para>
-                                        </listitem>
-                                    </itemizedlist>
-                                </listitem>
-                            </itemizedlist>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                        <term>
-                            <sgmltag>include</sgmltag>
-                        </term>
-                        <listitem>
-                            <para>Description: Specifies a document node to include in fulltext
-                                indexing. </para>
-                            <para>Attributes: <option>path</option> (Specifies the document node
-                                path).</para>
-                            <para>The following includes the values of all <option>id</option>
-                                attributes for all <sgmltag>article</sgmltag> elements.</para>
-                            <synopsis format="linespecific"><sgmltag>include path="//article/@id" /</sgmltag></synopsis>
-                            <para>The optional attribute <option>content</option> can be used to
-                                create an additional index on the mixed content of a node (see
-                                description above):</para>
-                            <synopsis><sgmltag>include path="//mixed" content="mixed"/</sgmltag></synopsis>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                        <term>
-                            <sgmltag>exclude</sgmltag>
-                        </term>
-                        <listitem>
-                            <para>Description: Specifies a document node to exclude in fulltext
-                                indexing. </para>
-                            <para>Attributes: <option>path</option> (Specifies the document node
-                                path).</para>
-                            <para>The following excludes the values of all <sgmltag>url</sgmltag>
-                                elements and their descendants.</para>
-                            <synopsis format="linespecific"><sgmltag>exclude path="//url" /</sgmltag></synopsis>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                        <term>
-                            <sgmltag>create</sgmltag>
-                        </term>
-                        <listitem>
-                            <para>Description: Defines a range index of selected elements or
-                                attributes.</para>
-                            <para>Attributes:</para>
-                            <itemizedlist>
-                                <listitem>
-                                    <para><option>path</option>: Specifies an index path that
-                                        defines the nodes to which the configuration applies. A
-                                        range index is created for all elements or attributes that
-                                        match this path.</para>
-                                </listitem>
-                                <listitem>
-                                    <para><option>type</option>: Defines the range index data type
-                                        (XSD). It is expected future versions of eXist will expand
-                                        on the following supported data types.</para>
-                                    <itemizedlist>
-                                        <title>Values</title>
-                                        <listitem>
-                                            <para>
-                                                <option>xs:string</option>
-                                            </para>
-                                        </listitem>
-                                        <listitem>
-                                            <para>
-                                                <option>xs:dateTime</option>
-                                            </para>
-                                        </listitem>
-                                        <listitem>
-                                            <para><option>xs:integer</option> (NOTE: integers are
-                                                limited to the range of values that can be
-                                                represented by a Java signed long).</para>
-                                        </listitem>
-                                        <listitem>
-                                            <para>
-                                                <option>xs:double</option>
-                                            </para>
-                                        </listitem>
-                                        <listitem>
-                                            <para>
-                                                <option>xs:float</option>
-                                            </para>
-                                        </listitem>
-                                        <listitem>
-                                            <para>
-                                                <option>xs:boolean</option>
-                                            </para>
-                                        </listitem>
-                                    </itemizedlist>
-                                </listitem>
-                            </itemizedlist>
-                        </listitem>
-                    </varlistentry>
-                </variablelist>
-            </section>
         </section>
         <section>
             <title>Debugging the Range Index</title>
@@ -962,7 +775,7 @@
 
             <example>
                 <title>Query to List Index Contents</title>
-                <programlisting><![CDATA[declare namespace f="http://exist-db.org/xquery/test";
+                <programlisting language="xquery"><![CDATA[declare namespace f="http://exist-db.org/xquery/test";
 declare function f:term-callback($term as xs:string, $data as xs:int+) as element() {
    <entry>
      <term>{$term}</term>
