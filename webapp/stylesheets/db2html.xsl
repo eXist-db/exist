@@ -9,6 +9,7 @@
                 <title>
                     <xsl:value-of select="(bookinfo|articleinfo)/title/text()"/>
                 </title>
+                <link type="text/css" href="styles/SyntaxHighlighter.css" rel="stylesheet" />
                 <xsl:variable name="styleref" select="(bookinfo|articleinfo)/style/@href"/>
                 <xsl:choose>
                     <xsl:when test="$styleref">
@@ -21,10 +22,19 @@
                 <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
                 <script type="text/javascript" src="styles/niftycube.js"/>
-                <script type="text/javascript"> window.onload = function() {
-                    Nifty("h1.chaptertitle", "transparent"); Nifty("div.note", "transparent");
-                    Nifty("div.example", "transparent"); Nifty("div.important", "transparent");
-                    Nifty("div.block div.head", "top"); Nifty("div.block ul", "bottom"); } </script>
+                <script type="text/javascript" src="scripts/syntax/sh-min.js"/>
+                <script type="text/javascript">
+                    window.onload = function() {
+                        Nifty("h1.chaptertitle", "transparent");
+                        Nifty("div.note", "transparent");
+                        Nifty("div.example", "transparent");
+                        Nifty("div.important", "transparent");
+                        Nifty("div.block div.head", "top");
+                        Nifty("div.block ul", "bottom");
+                        
+                        dp.SyntaxHighlighter.HighlightAll('code');
+                    }
+                </script>
             </head>
 
             <body bgcolor="#FFFFFF">
@@ -70,7 +80,17 @@
                         <ul>
                             <xsl:for-each select="section">
                                 <li>
-                                    <a href="#{generate-id()}">
+                                    <a>
+                                        <xsl:choose>
+                                            <xsl:when test="@id">
+                                                <xsl:attribute name="href">#<xsl:value-of select="@id"
+                                                /></xsl:attribute>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:attribute name="href">#<xsl:value-of select="generate-id()"
+                                                /></xsl:attribute>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                         <xsl:number count="section" level="multiple" format="1. "/>
                                         <xsl:value-of select="title"/>
                                     </a>
@@ -236,6 +256,10 @@
         </h5>
     </xsl:template>
 
+    <xsl:template match="listitem/para[count(../*) = 1]">
+        <xsl:apply-templates/>
+    </xsl:template>
+    
     <xsl:template match="para">
         <p>
             <xsl:copy-of select="@class"/>
@@ -328,9 +352,23 @@
     </xsl:template>
 
     <xsl:template match="programlisting">
-        <pre>
-            <xsl:apply-templates/>
-        </pre>
+        <xsl:choose>
+            <xsl:when test="markup">
+                <textarea class="xml" name="code">
+                    <xsl:apply-templates select="markup"/>
+                </textarea>
+            </xsl:when>
+            <xsl:when test="@language">
+                <textarea class="{@language}" name="code">
+                    <xsl:apply-templates/>
+                </textarea>
+            </xsl:when>
+            <xsl:otherwise>
+                <pre>
+                    <xsl:apply-templates/>
+                </pre>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template match="note">
