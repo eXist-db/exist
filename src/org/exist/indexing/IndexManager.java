@@ -88,13 +88,11 @@ public class IndexManager {
                     if (LOG.isInfoEnabled())
                         LOG.info("Registered index " + className + " as " + modConf[i].getId());
                 } catch (ClassNotFoundException e) {
-                    throw new DatabaseConfigurationException("Class " + className + " not found. Cannot configure index.");
+                    LOG.warn("Class " + className + " not found. Cannot configure index.", e);
                 } catch (IllegalAccessException e) {
-                    throw new DatabaseConfigurationException("Exception while configuring index " + className + ": " +
-                            e.getMessage());
+                    LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
                 } catch (InstantiationException e) {
-                    throw new DatabaseConfigurationException("Exception while configuring index " + className + ": " +
-                            e.getMessage());
+                    LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
                 }
             }
         }
