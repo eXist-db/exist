@@ -166,7 +166,6 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             }
         }
         catch( Exception e ) {
-            e.printStackTrace();
             encodedResponse = encodeErrorResponse( context, e.getMessage() );
         }
         
