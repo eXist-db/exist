@@ -28,39 +28,42 @@
                     <para>
                         <emphasis>
                             <ulink url="#structuralidx">Structural Indexes</ulink>
-                        </emphasis>: These index the nodal structure, elements (tags), and
-                        attributes of documents in a collection.</para>
+                        </emphasis>: These index the nodal structure, elements (tags) and
+                        attributes, of the documents in a collection.</para>
                 </listitem>
                 <listitem>
                     <para>
                         <emphasis>
                             <ulink url="#rangeidx">Range Indexes</ulink>
-                        </emphasis>: These index specific text nodes and attributes in a collection
-                        based on user-configured index paths and selected data types.</para>
+                        </emphasis>: These map specific text nodes and attributes of the documents in a collection
+                        to typed values.</para>
                 </listitem>
                 <listitem>
                     <para>
                         <emphasis>
                             <ulink url="#ftidx">Full Text Indexes</ulink>
-                        </emphasis>: These map text tokens to text nodes and attributes of documents
-                        in a collection.</para>
+                        </emphasis>: These map specific text nodes and attributes of the documents
+                        in a collection to text tokens.</para>
                 </listitem>
                 <listitem>
                     <para>
                         <emphasis>
                             <ulink url="#ngramidx">NGram Indexes</ulink>
-                        </emphasis>: These split text into sequences of n-characters (where n = 3 by
-                        default). Very efficient for exact substring searches and for queries on
-                        non-European languages, which can not be easily split into whitespace
+                        </emphasis>: These map specific text nodes and attributes of the documents in a collection
+                        to splitted tokens of n-characters (where n = 3 by default). Very efficient for exact substring searches and for queries on
+                        scripts (mostly non-european ones)  which can not be easily split into whitespace
                         separated tokens and are thus a bad match for the full text index. </para>
                 </listitem>
                 <listitem>
                     <para>
                         <emphasis><ulink url="#spatialidx">Spatial Indexes</ulink>
-                        (Experimental)</emphasis>: Listens for spatial geometries in an XML document
+                        (Experimental)</emphasis>: Listens for georeferenced geometries in an XML document
                         and indexes them using specialized tools. </para>
                 </listitem>
             </orderedlist>
+                <note>
+                    <para>Currently, comment and processing instruction nodes are not indexed.</para>
+                </note>
 
             <para>Since version 1.2, eXist features a new modularized indexing architecture. Most
                 types of indexes have been moved out of the database core and are now maintained as
@@ -93,10 +96,10 @@
                     expression.</para>
                 <para>For example, given the following query:</para>
                 <synopsis>//book/section</synopsis>
-                <para>eXist uses two index lookups: the first for the "book" node, and the second
-                    for the "section" node. It then computes the <emphasis>structural
-                    join</emphasis> between these node sets to determine which "section" elements
-                    are in fact children of "book" elements.</para>
+                <para>eXist uses two index lookups: the first for the <sgmltag>book</sgmltag> node, and the second
+                    for the <sgmltag>section</sgmltag> node. It then computes the <emphasis>structural
+                    join</emphasis> between these node sets to determine which <sgmltag>section</sgmltag> elements
+                    are in fact children of <sgmltag>book</sgmltag> elements.</para>
             </section>
 
             <section id="rangeidx">
@@ -126,7 +129,7 @@
                     </programlisting>
                 </example>
 
-                <para>With this short inventory, the <sgmltag>price</sgmltag> elements have dollar
+                <para>With this short inventory, the text nodes of the <sgmltag>price</sgmltag> elements have dollar
                     values expressed as a floating-point number, (e.g. "299.99"), which has an
                         <ulink url="http://www.w3.org/TR/xmlschema-0/">XML Schema Definition</ulink>
                     (XSD) data type of <command>xs:double</command>. Using this builtin type to
@@ -146,8 +149,8 @@
                     efficient method of data conversion. Instead of retrieving the value of each
                     selected element and casting it as a <command>xs:double</command> type, the
                     engine can evaluate the expression by using the range index as a form of lookup
-                    index. Without an index, eXist has to do a full scan over all price tags,
-                    retrieve their string values and cast them to a double number. This is a
+                    index. Without an index, eXist has to do a full scan over all price <sgmltag>price</sgmltag> elements,
+                    retrieve the string values of their text node and cast them to a double number. This is a
                     time-consuming process which also scales very bad with growing data sets. With a
                     proper index, eXist needs just a single index lookup to evaluate <command>price
                         = 100.0</command>. The range expression <command>price &gt;
@@ -165,7 +168,7 @@
 
                 <synopsis>//item[fn:matches(name, '[Tt]all\s[Bb]')]</synopsis>
 
-                <para>Note that fn:matches will by default try to match the regular expression
+                <para>Note that <function>fn:matches</function> will by default try to match the regular expression
                         <emphasis>anywhere</emphasis> in the string. We can thus speed up the query
                     dramatically by using "^" to restrict the match to the start of the string: </para>
 
@@ -175,7 +178,7 @@
                     sequence, it is often better to use the NGram index instead of the range index,
                     i.e. use <function>ngram:contains()</function> instead of
                         <function>fn:contains()</function>. Unfortunately, there's no equivalent
-                    NGram function for fn:matches() yet, but we may add one in the future as it
+                    NGram function for <function>fn:matches()</function> yet, but we may add one in the future as it
                     could help to increase performance dramatically.</para>
 
                 <para>In general, three conditions must be met in order to optimize a search using a
@@ -310,8 +313,8 @@
                     whitespace separated tokens (or "words").</para>
 
                 <para>However, this type of index is also very efficient for exact substring
-                    matches. The ngram:contains() function is much faster than the equivalent
-                    fn:contains() with a range index. Contrary to the full text index, the n-gram
+                    matches. The <function>ngram:contains()</function> function is much faster than the equivalent
+                    <function>fn:contains()</function> with a range index. Contrary to the full text index, the n-gram
                     index does not split the text at word boundaries or whitespace. Whitespace and
                     punctuation are included in the index. To understand the difference, imagine you
                     have a paragraph:</para>
@@ -324,8 +327,8 @@
                 <synopsis>//para[near(., ", my friend")]</synopsis>
 
                 <para>will thus return all paragraphs containing the words "my friend", but
-                    punctuation and whitespace is simply ignored. Contrary to this, ngram:contains()
-                    - like fn:contains() - searches for the exact string ", my friend":</para>
+                    punctuation and whitespace is simply ignored. Contrary to this, <function>ngram:contains()</function>
+                    - like <function>fn:contains()</function> - searches for the exact string ", my friend":</para>
 
                 <synopsis>//para[ngram:contains(., ", my friend")</synopsis>
             </section>
@@ -393,7 +396,7 @@
                 or default permissions.</para>
 
             <para>The contents of the system collection (<filename>/db/system/config</filename>)
-                mirror the hierarchical structure of the main collection. Configurations are shared
+                mirrors the hierarchical structure of the main collection. Configurations are shared
                 by descendants in the hierarchy unless they have their own configuration (i.e. the
                 configuration settings for the child collection override those set for the parent).
                 If no collection-specific configuration file is created for any document, the global
