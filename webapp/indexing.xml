@@ -57,12 +57,14 @@
                 <listitem>
                     <para>
                         <emphasis><ulink url="#spatialidx">Spatial Indexes</ulink>
-                        (Experimental)</emphasis>: Listens for georeferenced geometries in an XML document
-                        and indexes them using specialized tools. </para>
+                        (Experimental)</emphasis>: These map elements of the documents in a collection
+                        containing georeferenced geometries to dedicated data structures that allow efficient spatial queries. </para>                        
                 </listitem>
             </orderedlist>
                 <note>
                     <para>Currently, comment and processing instruction nodes are not indexed.</para>
+                    <para>Whether they should be or not, and how some processing instructions could "hint" the
+                    indexing process is still being considered.</para>
                 </note>
 
             <para>Since version 1.2, eXist features a new modularized indexing architecture. Most
@@ -133,14 +135,14 @@
                     values expressed as a floating-point number, (e.g. "299.99"), which has an
                         <ulink url="http://www.w3.org/TR/xmlschema-0/">XML Schema Definition</ulink>
                     (XSD) data type of <command>xs:double</command>. Using this builtin type to
-                    define a range index, we can improve the efficiency of searches for price
+                    define a range index, we can improve the efficiency of searches for <sgmltag>price</sgmltag>
                     values. (Instructions on how to configure range indexes using configuration
                     files are provided under the <ulink url="#idxconf">Configuring Indexes</ulink> section
                     below.) During indexing, eXist will apply this data type selection by attempting
                     to cast all <sgmltag>price</sgmltag> values as double floating point numbers,
                     and add appropriate values to the index. Values that cannot be cast as double
                     floating point numbers are therefore ignored. This range index will then be used
-                    by any expression that compares <sgmltag>price</sgmltag> to a numeric value -
+                    by any expression that compares <sgmltag>price</sgmltag> to an <command>xs:double</command> value -
                     for instance:</para>
 
                 <synopsis>//item[price &gt; 100.0]</synopsis>
@@ -193,7 +195,7 @@
 
                         <para>For example, suppose you have two collections in the database: C1 and
                             C2. If you have a range index defined for collection C1, but your query
-                            happens to operate on both C1 and C2, then the range index would NOT be
+                            happens to operate on both C1 and C2, then the range index would <emphasis>not</emphasis> be
                             used. The query optimizer selects an optimization strategy based on the
                             entire input sequence of the query. Since, in this example, since only
                             nodes in C1 have a range index, no range index optimization would be
@@ -243,7 +245,7 @@
                 <para>Concerning range indexes on strings there's another restriction to be
                     considered: up to version 1.3, range indexes on strings can only be used with
                     the default unicode collation. Also, string indexes will always be case
-                    sensitive (while n-gram and full text indexes are not). It is not possible to
+                    sensitive (while n-gram and full text indexes are not). It is not yet possible to
                     define a string index on a different collation (e.g. for German or French) or to
                     make it case insensitve. This is a limitation we plan to address in the next
                     release.</para>
@@ -443,8 +445,8 @@
                                     <para>The only exception to eXist's automatic update occurs when
                                         you <emphasis>add a new index definition to an existing
                                             database collection</emphasis>. In this case, the new
-                                        index settings will ONLY apply to new data added to this
-                                        collection, or any of its sub-collections, and NOT to
+                                        index settings will <emphasis>only</emphasis> apply to new data added to this
+                                        collection, or any of its sub-collections, and <emphasis>not</emphasis> to
                                         previously existing data. To apply the new settings to the
                                         entire collection, you need to trigger a "manual reindex" of
                                         the collection being updated. You can re-index collections
@@ -501,8 +503,9 @@
                 </example>
 
                 <para>All configuration documents have the <sgmltag>collection</sgmltag> root
-                    element. These documents also have an <sgmltag>index</sgmltag> element directly
-                    below the root element, which encloses the index configuration. Only ONE
+                    element (in the <literal>http://exist-db.org/collection-config/1.0 namespace</literal>). 
+                    These documents also have an <sgmltag>index</sgmltag> element directly
+                    below the root element, which encloses the index configuration. Only <emphasis>one</emphasis>
                         <sgmltag>index</sgmltag> element is permitted in a document. Apart from the
                     index configuration, the document may also contain non index-related settings,
                     e.g. for triggers, which will not be covered here. </para>
@@ -526,7 +529,7 @@
                     <synopsis><![CDATA[<create path="//book/title" type="xs:string"/>]]></synopsis>
 
                     <para>The path expression looks like XPath, but it's really not. Index path
-                        syntax uses the following components to constrcut paths:</para>
+                        syntax uses the following components to construct paths:</para>
 
                     <itemizedlist>
                         <listitem>
@@ -613,8 +616,8 @@
 
                     <para>The example configuration above creates two indexes on a collection of
                         atom documents. The two elements which should be indexed are both in the
-                        atom namespace and we thus need to declare a mapping for this namespace.
-                        Please note that the xmlns namespace attributes have to be specified on the
+                        <literal>atom</literal> namespace and we thus need to declare a mapping for this namespace.
+                        Please note that the <sgmltag type="attribute">xmlns</sgmltag> namespace attributes have to be specified on the
                             <sgmltag>index</sgmltag> element, not the <sgmltag>create</sgmltag> or
                             <sgmltag>fulltext</sgmltag> elements.</para>
                 </section>
@@ -641,8 +644,9 @@
 
                     <para>As range indexes are type specific, the <option>type</option> attribute is
                         always required. The type should be one of the atomic XML schema types,
-                        currently including xs:string, xs:integer and derived types, xs:double,
-                        xs:float, xs:boolean and xs:dateTime. Futher types may be added in the
+                        currently including <command>xs:string</command>, <command>xs:integer</command> and derived types, <command>xs:double</command>,
+                        <command>xs:float</command>, <command>xs:boolean</command> and <command>xs:dateTime</command>. 
+                        Further types may be added in the
                         future. If the name of the type is unknown, the index configuration will be
                         ignored and you will get a warning written into the logs.</para>
 
