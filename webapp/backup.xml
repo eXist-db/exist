@@ -55,7 +55,9 @@
             <title>Backing Up the Database</title>
             <para>You can backup your database either by using the Admin Client menu, or the backup
                 command line utility.</para>
+            
             <para>If you are using the Admin Client, do the following:</para>
+            
             <procedure>
                 <step>
                     <para>Select either the Backup Icon (arrow pointed upward) in the toolbar OR
@@ -71,7 +73,10 @@
                 </step>
                 <step>
                     <para>In the <command>Backup-Directory</command> field, enter the full directory
-                        path to the where you want the backup database files to be stored.</para>
+                        path to the where you want the backup database files to be stored or the path
+                        to a zip file into which the backup will be written. In general, if the
+                        file name ends with <filename>.zip</filename>, the client will attempt to
+                        write to a ZIP. Otherwise, it tries to create the specified directory.</para>
                 </step>
                 <step>
                     <para>Click <command>OK</command>.</para>
@@ -125,7 +130,11 @@
         <section>
             <title>Restoring the Database</title>
             <para>To restore the database files from a backup, you can again use either the Admin
-                Client, or the backup command line utility.</para>
+            Client, or the backup command line utility.</para>
+            <note>
+                <para>Currently, the restore tool can not directly read from a zipped backup. You have
+                to extract it before restoring.</para>
+            </note>
             <para>If you are using the Admin Client, do the following:</para>
             <procedure>
                 <step>
@@ -212,12 +221,17 @@
             
             <example>
                 <title>Configuring a BackupSystemTask</title>
-                <programlisting><![CDATA[<system-task class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
-    <parameter name="dir" value="backup"/>
-    <parameter name="suffix" value=".zip"/>
-    <parameter name="prefix" value="backup-"/>
-    <parameter name="collection" value="/db"/>
-</system-task>]]></programlisting>
+<programlisting><markup><![CDATA[<scheduler>
+    <job type="system" class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
+        <parameter name="dir" value="backup"/>
+        <parameter name="suffix" value=".zip"/>
+        <parameter name="prefix" value="backup-"/>
+        <parameter name="collection" value="/db"/>
+        <parameter name="user" value="admin"/>
+        <parameter name="password" value=""/>
+        <parameter name="zip-files-max" value="28"/>
+    </job>
+</scheduler>]]></markup></programlisting>
             </example>
             
             <para>The backup task can either directly write into a <option>.zip</option> file or a plain directory. It will generate a zip file if the
@@ -237,7 +251,7 @@
             
             <example>
                 <title>Triggering a Backup From XQuery</title>
-                <programlisting><![CDATA[let $params :=
+                <programlisting language="xquery"><![CDATA[let $params :=
  <parameters>
    <param name="dir" value="backup"/>
    <param name="suffix" value=".zip"/>
