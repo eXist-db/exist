@@ -21,30 +21,20 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.OrderedValuesIndex;
+import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.Indexable;
 import org.exist.util.Occurrences;
 import org.exist.util.ValueOccurrences;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+
+import java.util.*;
 
 /**
  * @author wolf
@@ -57,6 +47,7 @@ public class IndexKeys extends BasicFunction {
                 new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Can be used to query existing range indexes defined on a set of nodes. " +
                 "All index keys defined for the given node set are reported to a callback function. " +
+                "The function will check for indexes defined on path as well as indexes defined by QName. " +
                 "The node set is specified in the first argument. The second argument specifies a start " +
                 "value. Only index keys of the same type but being greater than $b will be reported for non-string" +
                 "types. For string types, only keys starting with the given prefix are reported. " +
@@ -78,6 +69,7 @@ public class IndexKeys extends BasicFunction {
                 new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Can be used to query existing range indexes defined on a set of nodes. " +
                 "All index keys defined for the given node set are reported to a callback function. " +
+                "The function will check for indexes defined on path as well as indexes defined by QName. " +
                 "The node set is specified in the first argument. The second argument specifies a start " +
                 "value. Only index keys of the same type but being greater than $b will be reported for non-string" +
                 "types. For string types, only keys starting with the given prefix are reported. " +
@@ -134,7 +126,7 @@ public class IndexKeys extends BasicFunction {
         		hints.put(OrderedValuesIndex.START_VALUE, args[1]);
         	else
         		LOG.info(indexWorker + " isn't an instance of org.exist.indexing.OrderedIndexWorker. " + args[1] + " ignored." );
-        	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);        	
+        	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
         	//TODO : add an extra argument to pass the END_VALUE ?
 	        int len = (occur.length > max ? max : occur.length);
 	        Sequence params[] = new Sequence[2];
@@ -152,8 +144,26 @@ public class IndexKeys extends BasicFunction {
 	            data.clear();
 	        }
         } else {
-	        ValueOccurrences occur[] = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, (Indexable) args[1]);
-		    int len = (occur.length > max ? max : occur.length);
+            int idxType = nodes.getIndexType();
+            Indexable indexable = (Indexable) args[1].itemAt(0);
+            ValueOccurrences occur[] = null;
+            // First check for indexes defined on qname
+            QName[] qnames = getDefinedIndexes(context.getBroker(), docs);
+            if (qnames != null && qnames.length > 0)
+                occur = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, qnames, indexable);
+            // Also check if there's an index defined by path
+            ValueOccurrences occur2[] = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, indexable);
+            // Merge the two results
+            if (occur == null || occur.length == 0)
+                occur = occur2;
+            else {
+                ValueOccurrences t[] = new ValueOccurrences[occur.length + occur2.length];
+                System.arraycopy(occur, 0, t, 0, occur.length);
+                System.arraycopy(occur2, 0, t, occur.length, occur2.length);
+                occur = t;
+            }
+
+            int len = (occur.length > max ? max : occur.length);
 		    Sequence params[] = new Sequence[2];
 		    ValueSequence data = new ValueSequence();
 		    for (int j = 0; j < len; j++) {
@@ -174,4 +184,28 @@ public class IndexKeys extends BasicFunction {
         return result;
     }
 
+    /**
+     * Check index configurations for all collection in the given DocumentSet and return
+     * a list of QNames, which have indexes defined on them.
+     *
+     * @param broker
+     * @param docs
+     * @return
+     */
+    private QName[] getDefinedIndexes(DBBroker broker, DocumentSet docs) {
+        Set indexes = new HashSet();
+        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
+            final org.exist.collections.Collection collection = (org.exist.collections.Collection) i.next();
+            final IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            if (idxConf != null) {
+                final List qnames = idxConf.getIndexedQNames();
+                for (int j = 0; j < qnames.size(); j++) {
+                    final QName qName = (QName) qnames.get(j);
+                    indexes.add(qName);
+                }
+            }
+        }
+        QName qnames[] = new QName[indexes.size()];
+        return (QName[]) indexes.toArray(qnames);
+    }
 }
