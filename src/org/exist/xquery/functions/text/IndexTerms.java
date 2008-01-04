@@ -21,30 +21,17 @@
  */
 package org.exist.xquery.functions.text;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Vector;
-
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
 import org.exist.util.Occurrences;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+
+import java.util.*;
 
 /**
  * @author wolf
@@ -115,7 +102,8 @@ public class IndexTerms extends BasicFunction {
                 qnames[q] = qnv.getQName();
             }
             ++arg;
-        }
+        } else
+            qnames = getDefinedIndexes(context.getBroker(), docs);
         String start = null;
         if (!args[arg].isEmpty())
             start = args[arg].getStringValue();
@@ -124,11 +112,18 @@ public class IndexTerms extends BasicFunction {
         FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
         try {
-            Occurrences occur[];
-            if (qnames == null)
-                occur = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, start, null);
-            else
-                occur = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, qnames, start, null);
+            Occurrences occur[] = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, qnames, start, null);
+            if (args.length == 4) {
+                Occurrences occur2[] = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, start, null);
+                if (occur == null || occur.length == 0)
+                    occur = occur2;
+                else {
+                    Occurrences t[] = new Occurrences[occur.length + occur2.length];
+                    System.arraycopy(occur, 0, t, 0, occur.length);
+                    System.arraycopy(occur2, 0, t, occur.length, occur2.length);
+                    occur = t;
+                }
+            }
             int len = (occur.length > max ? max : occur.length);
             Sequence params[] = new Sequence[2];
             ValueSequence data = new ValueSequence();
@@ -166,4 +161,28 @@ public class IndexTerms extends BasicFunction {
         }
     }
 
+     /**
+     * Check index configurations for all collection in the given DocumentSet and return
+     * a list of QNames, which have indexes defined on them.
+     *
+     * @param broker
+     * @param docs
+     * @return
+     */
+    private QName[] getDefinedIndexes(DBBroker broker, DocumentSet docs) {
+        Set indexes = new HashSet();
+        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
+            final org.exist.collections.Collection collection = (org.exist.collections.Collection) i.next();
+            final IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            if (idxConf != null) {
+                final List qnames = idxConf.getIndexedQNames();
+                for (int j = 0; j < qnames.size(); j++) {
+                    final QName qName = (QName) qnames.get(j);
+                    indexes.add(qName);
+                }
+            }
+        }
+        QName qnames[] = new QName[indexes.size()];
+        return (QName[]) indexes.toArray(qnames);
+    }
 }
