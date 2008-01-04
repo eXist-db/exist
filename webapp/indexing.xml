@@ -758,7 +758,8 @@
             </section>
         </section>
         <section>
-            <title>Debugging the Range Index</title>
+            <title>Check Index Usage</title>
+            
             <para>It is sometimes a bit difficult to see if a range index is correctly defined or
                 not. The simplest way to get some information on index usage is to set the priority
                 for eXist's standard logger to <option>TRACE</option>. For example, change the
@@ -807,12 +808,11 @@
             </example>
 
             <para>Another possibility to see what's in your index is to use the util:index-keys
-                function:</para>
+                function (for range indexes):</para>
 
             <example>
                 <title>Query to List Index Contents</title>
-                <programlisting language="xquery"><![CDATA[declare namespace f="http://exist-db.org/xquery/test";
-declare function f:term-callback($term as xs:string, $data as xs:int+) as element() {
+                <programlisting language="xquery"><![CDATA[declare function local:term-callback($term as xs:string, $data as xs:int+) as element() {
    <entry>
      <term>{$term}</term>
      <frequency>{$data[1]}</frequency>
@@ -820,11 +820,38 @@ declare function f:term-callback($term as xs:string, $data as xs:int+) as elemen
      <position>{$data[3]}</position>
    </entry>
 };
-util:index-keys(//city/name, "T", util:function("f:term-callback", 2), 1000)]]></programlisting>
+
+util:index-keys(//name, "A", util:function("local:term-callback", 2), 1000)]]></programlisting>
             </example>
-            <para>This query will show you 1000 keys (starting with the letter 'T') indexed for the
+            
+            <para>This query will show you the first 1000 keys (starting with the letter 'A') indexed for the
                 element selected by the path expression <option>//city/name</option> together with
-                some information about this key.</para>
+                some information about this key. The first argument to index-keys specifies the node set for
+                which index entries should be listed. The second argument contains a start value which also 
+                determines the index type. For example, if the start value is a string, eXist will only search for indexes
+                configured with type <option>xs:string</option>, if it is an integer number, only indexes with
+                type <option>xs:integer</option> will be considered. For a string index, you may also pass
+                the empty string to retrieve all keys in the index.</para>
+            
+            <para>Finally, to view the contents of the full text index instead of the range index, a different
+            function needs to be used:</para>
+            
+            <example>
+                <title>Query to List Full Test Index Contents</title>
+                
+                <programlisting language="xquery">
+<![CDATA[declare function local:term-callback($term as xs:string, $data as xs:int+) as element() {
+   <entry>
+     <term>{$term}</term>
+     <frequency>{$data[1]}</frequency>
+     <documents>{$data[2]}</documents>
+     <position>{$data[3]}</position>
+   </entry>
+};
+
+text:index-terms(//name, "A", util:function("local:term-callback", 2), 1000)]]>
+                </programlisting>
+            </example>
         </section>
     </chapter>
 </book>
