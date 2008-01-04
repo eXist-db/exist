@@ -69,7 +69,7 @@ import org.xml.sax.ext.LexicalHandler;
  *  but it is not allowed to throw an exception. Throwing an exception during the storage phase will result in an
  *  invalid document in the database. Use {@link #isValidating() isValidating} in your code to check that you're
  *  in validation phase.</li>
- *  <li>finalization: the method {@link #finish(int, DBBroker, Txn, DocumentImpl)} is called. At this point, the document
+ *  <li>finalization: the method {@link #finish(int, DBBroker, Txn, XmldbURI, DocumentImpl)} is called. At this point, the document
  *  has already been stored and is ready to be used or - for {@link #REMOVE_DOCUMENT_EVENT} - has been removed.
  *  </li>
  * </ol>
@@ -106,7 +106,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
      * @param event the type of event that triggered this call (see the constants defined in this interface).
      * @param broker the database instance used to process the current action.
      * @param transaction the current transaction context
-     * @param The path of the document, if removed the old path of the document
+     * @param documentPath the path of the document, if removed the old path of the document
      * @param document the stored document or null if the document is removed
      **/
     public void finish(
