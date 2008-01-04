@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="From Rennes to Amsterdam" company="exist-db.org" manager="wolf" phase="" project-start="20070907T000000Z" mrproject-version="2" calendar="1">
+<project name="From Rennes to Eindhoven" company="exist-db.org" manager="wolf" phase="" project-start="20070907T000000Z" mrproject-version="2" calendar="1">
   <properties/>
   <phases/>
   <calendars>
@@ -27,7 +27,7 @@
     </task>
     <task id="4" name="Validation documentation" note="" work="0" duration="432000" start="20070907T000000Z" end="20070926T110000Z" work-start="20070907T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration"/>
     <task id="5" name="Drop xmldb:collection()" note="" work="28800" duration="57600" start="20070907T000000Z" end="20070910T150000Z" work-start="20070907T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration"/>
-    <task id="6" name="Move fn:document() into xmldb module nad deprecate." note="" work="28800" duration="57600" start="20070907T000000Z" end="20070910T150000Z" work-start="20070907T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration"/>
+    <task id="6" name="Move fn:document() into xmldb module and deprecate." note="" work="28800" duration="57600" start="20070907T000000Z" end="20070910T150000Z" work-start="20070907T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration"/>
     <task id="7" name="DocumentSet refactoring into interface" note="" work="0" duration="432000" start="20071201T000000Z" end="20071220T110000Z" work-start="20071203T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
       <constraint type="start-no-earlier-than" time="20071201T000000Z"/>
     </task>
