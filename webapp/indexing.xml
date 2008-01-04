@@ -570,7 +570,7 @@
 
                     <para>We thus had to introduce an alternative configuration method which is not
                         context-dependant. To keep things simple, we decided to define the index on
-                        the QName of the node alone and to ignore the context altogether:</para>
+                        the <emphasis>qname</emphasis> of the node alone and to ignore the context altogether:</para>
 
                     <synopsis><![CDATA[<create qname="title" type="xs:string"/>]]></synopsis>
 
@@ -617,7 +617,7 @@
                     <para>The example configuration above creates two indexes on a collection of
                         atom documents. The two elements which should be indexed are both in the
                         <literal>atom</literal> namespace and we thus need to declare a mapping for this namespace.
-                        Please note that the <sgmltag type="attribute">xmlns</sgmltag> namespace attributes have to be specified on the
+                        Please note that the <option>xmlns</option> namespace attributes have to be specified on the
                             <sgmltag>index</sgmltag> element, not the <sgmltag>create</sgmltag> or
                             <sgmltag>fulltext</sgmltag> elements.</para>
                 </section>
@@ -644,7 +644,7 @@
 
                     <para>As range indexes are type specific, the <option>type</option> attribute is
                         always required. The type should be one of the atomic XML schema types,
-                        currently including <command>xs:string</command>, <command>xs:integer</command> and derived types, <command>xs:double</command>,
+                        currently including <command>xs:string</command>, <command>xs:integer</command> and its derived types, <command>xs:double</command>,
                         <command>xs:float</command>, <command>xs:boolean</command> and <command>xs:dateTime</command>. 
                         Further types may be added in the
                         future. If the name of the type is unknown, the index configuration will be
@@ -662,7 +662,7 @@
                     </example>
 
                     <para>If an index is defined on <sgmltag>mixed</sgmltag>, the key for the index
-                        is build from the concatenated text nodes of element
+                        is built from the concatenated text nodes of element
                         <sgmltag>mixed</sgmltag> and all its descendants, i.e. "uneven". The created
                         index will only be used to evaluate queries on <sgmltag>mixed</sgmltag>, but
                         not for queries on <sgmltag>s</sgmltag>. However, you can create an
@@ -679,8 +679,8 @@
                         <sgmltag>create</sgmltag> elements. The full text index is currently subject
                         to a major redesign and the configuration syntax somewhat reflects this
                         because it is a bit inconsistent. eXist's current default behaviour is to
-                        create a full text index on all text nodes in a document. The include and
-                        exclude tags are used to add or hide nodes from the default indexing. The
+                        create a full text index on all text nodes in a document. The <sgmltag>include</sgmltag> and
+                        <sgmltag>exclude</sgmltag> tags are used to add or hide nodes from the default indexing. The
                         indexes created by the default indexing are always context-dependant. The
                         nodes to include/exclude are thus specified via a <option>path</option>
                         attribute, not a <option>qname</option> attribute. </para>
@@ -689,7 +689,7 @@
                             <sgmltag>create</sgmltag> element. This is the recommended approach. In
                         fact, as the full text index is currently being redesigned, we are not sure
                         if we will keep the current default full text indexing in its current state.
-                        A fulltext configuration which only uses create elements is shown below: </para>
+                        A fulltext configuration which only uses <sgmltag>create</sgmltag> elements is shown below: </para>
 
                     <example>
                         <title>Full text index configuration</title>
@@ -709,8 +709,8 @@
                         nodes are handled separately. Setting <option>attributes="false"</option>
                         disables the default indexing for attributes as well. </para>
 
-                    <para>The first child element creates a standard full text index on all author
-                        elements, identified by their QName. The second one puts an index on title,
+                    <para>The first child element creates a standard full text index on all <sgmltag>author</sgmltag>
+                        elements, identified by their <emphasis>qname</emphasis>. The second one puts an index on <sgmltag>title</sgmltag>,
                         but adds an option <option>content="mixed"</option>. This parameter causes
                         the indexer to watch out for mixed-content nodes. For example, if your
                         source XML contains markup like:</para>
@@ -777,13 +777,13 @@
                 messages like "Checking if range index can be used ..." or "Using range index for
                 key...".</para>
 
-            <para>Another possibility to see what's in your index is to use the util:index-keys
+            <para>Another possibility to see what's in your index is to use the <function>util:index-keys</function>
                 function:</para>
 
             <example>
                 <title>Query to List Index Contents</title>
-                <programlisting language="xquery"><![CDATA[declare namespace f="http://exist-db.org/xquery/test";
-declare function f:term-callback($term as xs:string, $data as xs:int+) as element() {
+                <programlisting language="xquery"><![CDATA[
+declare function local:term-callback($term as xs:string, $data as xs:int+) as element() {
    <entry>
      <term>{$term}</term>
      <frequency>{$data[1]}</frequency>
@@ -791,7 +791,7 @@ declare function f:term-callback($term as xs:string, $data as xs:int+) as elemen
      <position>{$data[3]}</position>     
    </entry>
 };
-util:index-keys(//city/name, "T", util:function("f:term-callback", 2), 1000)]]></programlisting>
+util:index-keys(//city/name, "T", util:function("local:term-callback", 2), 1000)]]></programlisting>
             </example>
             <para>This query will show you 1000 keys (starting with the letter 'T') indexed for the
                 element selected by the path expression <option>//city/name</option> together with
