@@ -733,8 +733,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final Lock lock = dbValues.getLock();
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             try {
-                lock.acquire(Lock.READ_LOCK); 
-                final  int collectionId = ((Collection) i.next()).getId();
+                lock.acquire(Lock.READ_LOCK);
+                final Collection c = (Collection) i.next();
+                final  int collectionId = c.getId();
                 //Compute a key for the start value in the collection
                 if (stringType) {
                     final Value startKey = new SimpleValue(collectionId, start);
