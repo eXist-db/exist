@@ -21,15 +21,31 @@
             <title>Writing Web Applications using XQuery</title>
             <para>Not only is XQuery a powerful query language, it is also a functional programming
                 language with strong typing features, and can therefore be used to implement the
-                entire processing logic of a web application. Because of this functionality, much of
-                the Java code of eXist web applications has gradually been replaced by XQuery
-                scripts. As a result, eXist provides library modules for getting request parameters,
-                getting/setting session attributes, encoding URLs and so on. Developers who have
-                worked with other functional languages such as <emphasis>Lisp</emphasis> or
-                    <emphasis>Scheme</emphasis> will find XQuery very easy to learn.</para>
+                entire processing logic of a web application. eXist provides preinstalled library
+                modules for getting request parameters, getting/setting session attributes, encoding
+                URLs and so on. The directory <filename>extensions/modules</filename> in the eXist
+                distribution contains even more extension modules, e.g. for sending mails,
+                generating thumbnails or retrieving data from an SQL database. There's also a
+                complete, usable HTTP client implemented as an XQuery module.</para>
+
+            <para>XQuery is powerful enough to replace JSP or PHP as a server-side language. We
+                don't say that PHP or JSP are bad in any way. But if you start writing XQueries, you
+                may soon find it easier to write everything in XQuery (maybe with the help of some
+                XSLT) and stay within the XML world. The XSLT functions make it easy to prepare
+                the results of an XQuery for presentation (for transformations, XSLT is often more 
+                convenient than XQuery, though XQuery could be used as well). eXist provides many extension points. For
+                example, you can implement missing functionality in Java and deploy it as an XQuery
+                    <ulink url="xquery.xml#extension-modules">extension module</ulink>, whose
+                functions can then be called from your main XQuery application logic.</para>
+            
+            <para>Instead of directly producing HTML output, "XQuerylets" can also be designed as self-contained
+                services which deliver XML data to AJAX applications on the client.</para>
+            
+            <para>eXist provides at least 3 (!) different methods </para>
 
             <section>
                 <title>XQueryServlet and XQueryGenerator (Cocoon)</title>
+
                 <para>eXist generates HTML web pages from XQuery files in two ways: the
                     XQueryServlet and XQueryGenerator. With both the XQueryServlet and
                     XQueryGenerator the compiled XQuery script is stored in a cache for future use.
@@ -52,7 +68,7 @@
                                 <filename>WEB-INF/web.xml</filename> configuration file:</para>
                             <example>
                                 <title>Configuration for the Servlet</title>
-                                <programlisting><![CDATA[
+                                <programlisting><markup><![CDATA[
 <web-app>
     <display-name>eXist Server</display-name>
     <description>eXist Server Setup</description>
@@ -72,7 +88,7 @@
 	  <url-pattern>*.xql</url-pattern>
     </servlet-mapping>
 </web-app>
-]]></programlisting>
+]]></markup></programlisting>
                             </example>
                             <para>This will configure the servlet to respond to any URL-pattern
                                 ending with the <option>.xql</option> file extension as specified in
@@ -104,7 +120,7 @@
                             <para/>
                             <example>
                                 <title>Cocoon Sitemap</title>
-                                <programlisting><![CDATA[
+                                <programlisting><markup><![CDATA[
 <map:sitemap xmlns:map="http://apache.org/cocoon/sitemap/1.0">
     <map:components>
         <map:generators default="file">
@@ -127,7 +143,7 @@
             </map:match>
         </map:pipeline>
     </map:pipelines>
-</map:sitemap>]]></programlisting>
+</map:sitemap>]]></markup></programlisting>
                             </example>
                             <para>According to the above pipeline definition, any path ending with
                                 the <option>.xq</option> extension is matched and processed by the
@@ -150,7 +166,7 @@
                     script is as follows:</para>
                 <example>
                     <title>Guess a Number</title>
-                    <programlisting><![CDATA[
+                    <programlisting><markup><![CDATA[
 xquery version "1.0";
 
 declare namespace request="http://exist-db.org/xquery/request";
@@ -213,7 +229,7 @@ declare function local:main() as node()?
         { local:main() }
     </body>
 </html>
-]]></programlisting>
+]]></markup></programlisting>
                 </example>
                 <para>In this example, a random number is generated using the local function
                         <methodname>local:random</methodname>, which uses the Java binding to call

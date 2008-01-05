@@ -169,7 +169,7 @@ Location: http://example.org/edit/first-post.atom
       <example>
         <title>An Introspection Document</title>
 
-        <screen>&lt;?xml version="1.0" encoding='utf-8'?&gt;
+        <programlisting><markup>&lt;?xml version="1.0" encoding='utf-8'?&gt;
 &lt;service xmlns="http://purl.org/atom/app#"&gt;
   &lt;workspace title="Main Site" &gt;
     &lt;collection
@@ -185,9 +185,9 @@ Location: http://example.org/edit/first-post.atom
     &lt;collection title="Remaindered Links"
       href="http://example.org/reilly/list" /&gt;
   &lt;/workspace&gt;
-&lt;/service&gt;
+&lt;/service&gt;</markup>
 
-</screen>
+</programlisting>
       </example>
 
       <para>Each 'collection' element represents a feed that can be modified.
@@ -279,7 +279,7 @@ Location: http://example.org/edit/first-post.atom
       <example>
         <title>A Feed Query</title>
 
-        <screen>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:atom="http://www.w3.org/2005/Atom"&gt;
+        <programlisting><markup>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:atom="http://www.w3.org/2005/Atom"&gt;
    &lt;title&gt;All Feeds Example&lt;/title&gt;
    &lt;id&gt;id:all&lt;/id&gt;
    {
@@ -300,8 +300,8 @@ Location: http://example.org/edit/first-post.atom
                        &lt;/entry&gt;
                      )
    }
-&lt;/feed&gt;
-</screen>
+&lt;/feed&gt;</markup>
+</programlisting>
       </example>
     </section>
 
@@ -457,9 +457,9 @@ Content- Length: nnn
       Servlet implementation in server.xml:<example>
           <title>Addition for server.xml</title>
 
-          <programlisting>&lt;servlet enabled="yes"
+          <programlisting><markup>&lt;servlet enabled="yes"
          context="/atom/*"
-         class="org.exist.atom.http.AtomServlet"/&gt;
+         class="org.exist.atom.http.AtomServlet"/&gt;</markup>
 </programlisting>
         </example></para>
     </section>
@@ -474,7 +474,7 @@ Content- Length: nnn
       <example>
         <title>atom-services.xml</title>
 
-        <screen>&lt;atom-services xmlns="http://www.exist-db.org/Vocabulary/AtomConfiguration/2006/1/0"&gt;
+        <programlisting><markup>&lt;atom-services xmlns="http://www.exist-db.org/Vocabulary/AtomConfiguration/2006/1/0"&gt;
 &lt;module name="edit" class="org.exist.atom.modules.AtomProtocol"/&gt;
 &lt;module name="content" class="org.exist.atom.modules.AtomFeeds"/&gt;
 &lt;module name="query" query-by-post="true"/&gt;
@@ -487,8 +487,8 @@ Content- Length: nnn
 &lt;module name="example"&gt;
    &lt;method type="GET" query="atom-example.xq"/&gt;
 &lt;/module&gt;
-&lt;/atom-services&gt;
-</screen>
+&lt;/atom-services&gt;</markup>
+</programlisting>
       </example>
 
       <section>
