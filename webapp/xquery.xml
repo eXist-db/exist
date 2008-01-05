@@ -867,7 +867,7 @@ declare namespace file="java:java.io.File";
 
         </section>
 
-        <section>
+        <section id="extension-modules">
             <title>Creating XQuery Modules</title>
             <para>eXist supports XQuery-based library modules. These modules are simply collections
                 of function definitions and global variable declarations, of which eXist knows two
