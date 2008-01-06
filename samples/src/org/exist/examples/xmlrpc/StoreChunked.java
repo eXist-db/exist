@@ -19,7 +19,6 @@
  *
  * $Id$
  */
-
 package org.exist.examples.xmlrpc;
 
 import java.io.FileInputStream;
@@ -28,15 +27,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.Vector;
+
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.xmldb.XmldbURI;
 
 /**
- *  Example code for demonstrating XMLRPC methods upload
- * and parseLocal. Please run 'admin-examples setup' first, this will
- * download the required mondial.xml document.
+ *  Example code for demonstrating XMLRPC methods upload and parseLocal.
+ * 
+ * Execute: bin\run.bat org.exist.examples.xmlrpc.StoreChunked 
  *
  * @author dizzzz
  */
@@ -45,8 +45,8 @@ public class StoreChunked {
     
     public static void main(String args[])  {
         
-        // Download file (ohoh not in spec) using xmldb url
-        String xmldbUri = "xmldb:exist://guest:guest@localhost:8080/exist/xmlrpc/db/shakespeare/netbeans.png";
+        // Upload file to this uri:
+        String xmldbUri = "xmldb:exist://guest:guest@localhost:8080/exist/xmlrpc/db/admin2.png";
         XmldbURI uri = XmldbURI.create(xmldbUri);
         
         // Construct url for xmlrpc, without collections / document
@@ -54,8 +54,8 @@ public class StoreChunked {
         String url = "http://guest:guest@" + uri.getAuthority() + uri.getContext();
         String path =uri.getCollectionPath();
         
-        // Hardcoded yet too
-        String filename="netbeans.png";
+        // TODO: Filename hardcoded
+        String filename="webapp/resources/admin2.png";
         try {
             InputStream fis = new FileInputStream(filename);
             
