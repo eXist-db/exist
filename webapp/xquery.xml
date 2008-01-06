@@ -286,7 +286,7 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                                 Second, calling <command>xmldb:document()</command> without an
                                 argument includes <emphasis>EVERY</emphasis> document node in the
                                 current database instance. Some examples:</para>
-                            <synopsis format="linespecific">xmldb:document()//SPEAKER</synopsis>
+                            <synopsis format="linespecific">doc("/db/shakespeare/plays/hamlet.xml")//SPEAKER</synopsis>
                             <synopsis format="linespecific">xmldb:document('/db/test/abc.xml', '/db/test/def.xml')//title</synopsis>
                         </listitem>
                     </varlistentry>
@@ -406,9 +406,9 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                     <note>
                         <para>There is an important semantic difference between the following two
                             expressions:</para>
-                        <synopsis format="linespecific">xmldb:document()//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
+                        <synopsis format="linespecific">//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
                         <para>and</para>
-                        <synopsis format="linespecific">xmldb:document()//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
+                        <synopsis format="linespecific">//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
 
                         <para>The first expression selects all distinct <option>LINE</option> nodes
                             that contain both of the search terms. The second expression selects all
@@ -417,7 +417,7 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                             and should yield more results than the first one. To make the first
                             expression select the same nodes (at least, nearly the same nodes), you
                             would have to change the first expression to:</para>
-                        <synopsis format="linespecific">xmldb:document()//SPEECH[. &amp;= "cursed spite"]</synopsis>
+                        <synopsis format="linespecific">//SPEECH[. &amp;= "cursed spite"]</synopsis>
                         <para>Note, however, that this new expression will also include other nodes,
                             for instance <option>SPEAKER</option> or <option>STAGEDIR</option>,
                             which are children of the <option>SPEECH</option> parent node.</para>
@@ -446,7 +446,7 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                                     are ignored, and the function performs identically to the
                                     &amp;= operator. For example, with the following search
                                     expression:</para>
-                                <synopsis format="linespecific">xmldb:document()//SPEECH[near(., 'love marriage', 25)</synopsis>
+                                <synopsis format="linespecific">//SPEECH[near(., 'love marriage', 25)</synopsis>
                                 <para>the search engine will return any <option>SPEECH</option>
                                     elements containing the words "love" and "marriage" within the
                                     range of 25 words between them.</para>
@@ -458,7 +458,7 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
-                            <term>text:match-all()/text:match-any()</term>
+                            <term>text:match-all() / text:match-any()</term>
                             <listitem>
                                 <para>These two functions are variations of the <command
                                         moreinfo="none">&amp;=</command> and <command
@@ -468,7 +468,7 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                                     XQuery core library, <command>text:match-all()</command> and
                                         <command>text:match-any()</command> try to match the regular
                                     expression argument against the keywords contained in the
-                                    full-text index, but NOT against the entire text.</para>
+                                    full-text index, but <emphasis>NOT</emphasis> against the entire text.</para>
                                 <para>For example, assume you have a document that contains the
                                     following paragraph:</para>
                                 <synopsis>&lt;para&gt;Peter lives in Frankfurt&lt;/para&gt;</synopsis>
@@ -1025,7 +1025,7 @@ example:echo(("Hello", "World!"))
 
             <orderedlist>
                 <listitem>
-                    <synopsis>http://www.w3.org/2004/07/xpath-functions/collation/codepoint</synopsis>
+                    <synopsis>http://www.w3.org/2005/xpath-functions/collation/codepoint</synopsis>
                     <para>This URI selects the unicode codepoint collation. This is the default if
                         no collation is specified. Basically, it means that only the standard Java
                         implementations of the comparison and string search functions are
@@ -1248,9 +1248,8 @@ return $w</synopsis>
                 syntax is quite different: pragmas can now be wrapped around an arbitrary XQuery
                 expression (see the <ulink
                     url="http://www.w3.org/TR/xquery/#id-extension-expressions"
-                >specificiation</ulink>). </para>
-            <para>Currently, eXist recognizes only two pragmas: <option>exist:timer</option> and
-                    <option>exist:batch-transaction</option>.</para>
+                >specification</ulink>). </para>
+            <para>Currently, eXist recognizes the following pragmas:</para>
             <section>
                 <title>exist:timer</title>
                 <para>Provides a simple way to measure the time for executing a given expression.
@@ -1274,9 +1273,9 @@ return $w</synopsis>
                 <para><emphasis>Currently only for XQuery Update Extensions.</emphasis> Provides a method for
                     batching updates on the database into a single Transaction, allowing a set of
                     updates to be atomically guaranteed. Also for each affected document or
-                    collection, any configured Triggers will only be called once, the prepare()
+                    collection, any configured Triggers will only be called once, the <method>prepare()</method>
                     method will be fired before the first update to the configured resource and the
-                    finish() method fired after the last update to the configured resource.</para>
+                    <method>finish()</method> method fired after the last update to the configured resource.</para>
                 <synopsis>(# exist:batch-transaction #) {
 	            	update value //some/path/expressionA width "valueA",
             		update value //some/path/expressionB width "valueB"
@@ -1286,9 +1285,9 @@ return $w</synopsis>
             </section>
             <section>
                 <title>exist:force-index-use</title>
-                <para><emphasis>For debugging purposes</emphasis>. An expression that can be assisted by
-                    range or QName indexes - comparisons, <function>fn:matches()</function> -
-                    will raise an error if, for any reason, this assistance can not be performed.</para>
+                <para><emphasis>For debugging purposes</emphasis>. An expression that can be assisted by indexes: 
+                comparisons, <function>fn:matches()</function>...
+                    Will raise an error if, for any reason, this assistance can not be performed.</para>
                 <para>This can help to check whether the indexes are correctly defined or not.</para>
                 <synopsis>(# exist:force-index-use #) {
 	            	//group[. = "dba"]
@@ -1300,8 +1299,8 @@ return $w</synopsis>
             <section>
                 <title>exist:no-index</title>
                 <para>This prevents the query engine to use the index in expressions that can be
-                    assisted by <i>range</i> or <i>QName</i> indexes - <b>comparisons</b>,
-                        <b>fn:matches()</b> - . Useful if the searched value isn't very selective or
+                    assisted by indexes: comparisons, <function>fn:matches()</function>... 
+                    Useful if the searched value isn't very selective or
                     if it is cheaper to traverse the previous step of a path expression than
                     querying the index.</para>
                 <synopsis>(# exist:no-index #) {
