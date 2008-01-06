@@ -536,7 +536,7 @@
         <ant antfile="build.xml" dir="extensions/fluent"/>
     </target>
     
-    <target name="samples" depends="jar">
+    <target name="samples" depends="jar" description="Build samples">
         <ant antfile="build.xml" dir="samples"/>
     </target>
 
