@@ -57,11 +57,11 @@
               <td>compiling and building eXist distributions, using the Subversion repository.</td>
             </tr>
 
-            <tr>
+            <!--tr>
               <td class="doclink"><ulink url="http://wiki.exist-db.org/space/Change+Log"
                 >Changes</ulink>:</td>
               <td>detailed list of changes.</td>
-            </tr>
+            </tr-->
 
             <tr>
               <td class="doclink"><ulink url="cluster.xml">Cluster configuration</ulink>:</td>
