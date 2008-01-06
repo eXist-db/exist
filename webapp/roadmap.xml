@@ -4,7 +4,7 @@
         src="sidebar.xml"/>
     <title>eXist: Current State, Features and Roadmap</title>
     <comment>Due to size restrictions, longer remarks on some of the listed
-        topics are available in an extra document.</comment>
+        topics are available in separate documents. This is indicated with a reference.</comment>
     <module>
         <name>Document Storage</name>
         <part>
@@ -23,7 +23,7 @@
                     overall number of nodes and how deep elements were nested
                     within the document. The actual limit thus differed from
                     document to document and was difficult to compute in advance.
-                    eXist 1.1 fixes this.</p>
+                    In eXist releases 1.1 and later this is fixed.</p>
             </remark>
         </part>
         <part>
@@ -55,10 +55,32 @@
                     from the collection store. However, eXist will still load
                     all the document descriptors when the collection is accessed
                     the first time.</p>
-                <p>The switch to the DLN numbering scheme also results in smaller document
-                objects. TODO: re-check memory consumption with DLN scheme.</p>
+                <p>The switch in eXist 1.1 to the DLN numbering scheme also results in smaller document
+                objects.</p>
                 <p>For the second issue, a better, more dynamic caching
                     mechanism for collections needs to be implemented.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Document storage</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+	    <event start="20071201T000000Z" end="20071220T000000Z" task="18" isDuration="true" />
+            <who>wolf</who>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Node proxy redesign</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+	    <event start="20080201T000000Z" end="20080226T000000Z" task="20" isDuration="true" />
+            <who></who>
+            <remark>
+                <p>Redesign of node proxy lean objects.</p>
             </remark>
         </part>
         <part>
@@ -223,16 +245,6 @@
                 <p>Order-by expressions and other functions that need to access
                     atomized nodes are not supported by indexes.</p>
             </remark>
-        </part>
-        <part>
-            <name>Documentation on index creation, configuration and query rewriting</name>
-            <status>Open</status>
-            <priority>Avg</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>60</progress>
-	    <event start="20071001T000000Z" end="20071018T000000Z" task="10" isDuration="true" />
-            <who/>
-            <remark />
         </part>
     </module>
     <module>
@@ -489,16 +501,6 @@
             <test_coverage>N/A</test_coverage>
             <progress>0</progress>
 	    <event start="20080201T000000Z" end="20080226T000000Z" task="16" isDuration="true" />
-            <who>dizzzz</who>
-            <remark></remark>
-        </part>
-        <part>
-            <name>Validation documentation</name>
-            <status>Stable</status>
-            <priority>High</priority>
-            <test_coverage>No tests</test_coverage>
-            <progress>100</progress>
-	    <event start="20070907T000000Z" end="20070926T000000Z" task="4" isDuration="true" />
             <who>dizzzz</who>
             <remark></remark>
         </part>
@@ -777,6 +779,16 @@
             </remark>
         </part>
         <part>
+            <name>XForms filter</name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>70</progress>
+	    <event start="20070907T000000Z" end="20071015T000000Z" task="8" isDuration="true" />
+            <who>delirium</who>
+            <remark></remark>
+        </part>
+        <part>
             <name>XQuery Debuggger</name>
             <status>open</status>
             <priority>High</priority>
@@ -842,13 +854,23 @@
             </remark>
         </part>
         <part>
-            <name>Indexation and Index Configuration</name>
+            <name>Index creation, index configuration and query rewriting</name>
+            <status>Open</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>80</progress>
+	    <event start="20071001T000000Z" end="20071018T000000Z" task="10" isDuration="true" />
+            <who/>
+            <remark />
+        </part>
+        <part>
+            <name>Validation</name>
             <status>Stable</status>
             <priority>High</priority>
             <test_coverage>N/A</test_coverage>
             <progress>100</progress>
-	    <event start="20071020T000000Z" end="2008" isDuration="true" />
-            <who/>
+	    <event start="20070907T000000Z" end="20070926T000000Z" task="4" isDuration="true" />
+            <who>dizzzz</who>
             <remark></remark>
         </part>
         <part>
@@ -939,6 +961,67 @@
                 <p>All libraries included with eXist need to be checked.</p>
             </remark>
         </part>
+        <part>
+            <name>Java client query submit button</name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>20</progress>
+	    <event start="20070907T000000Z" end="20070907T000000Z" task="11" duration="57600" isDuration="true" />
+            <who>delirium</who>
+            <remark>
+                <p>Move the query submit button to its previous place in the java client.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Move to Java 1.5</name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+	    <event start="20071215T000000Z" end="20071215T000000Z" isDuration="false" />
+            <who/>
+            <remark>
+                <p>Change build taget in switch for development branch 1.3 to Java 1.5 after eXist version 1.2 is released.</p><p>This will make some more stuff easier. Especially since the jmx and tests are targetet for Java 1.5 already.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Move to ANTLR3 parser</name>
+            <status>Open</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+	    <event start="20080110T000000Z" end="20080228T000000Z" task="14" isDuration="true" />
+            <who>ljo</who>
+            <remark>
+                <p>Change the parser to ANTLR3 which is better performant, k* lookahead capable and processes whitespace in a better manner than ANTRR2 which we currently are using.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Move to AtomicWiki</name>
+            <status>Stable</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+	    <event start="20071101T000000Z" end="20071122T000000Z" task="15" duration="460800" isDuration="true" />
+            <who>wolf</who>
+            <remark>
+                <p>Change from the current spam-ridden and unmaintained wiki to our own Atom-based AtomicWiki.</p>
+            </remark>
+        </part>
+        <part>
+            <name>DB repair tool</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+	    <event start="20080101T000000Z" end="20080124T000000Z" task="19" isDuration="true" />
+            <who>wolf</who>
+            <remark>
+                <p>Commandline DB repair tool.</p>
+            </remark>
+        </part>
+
     </module>
     <legend>
         <title>Legend</title>
