@@ -18,7 +18,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 /**
  *  Retrieve a document from the database. To run this example enter:
  * 
- *  bin/run.sh org.exist.examples.xmldb.Retrieve collection document 
+ *  bin/run.sh org.exist.examples.xmldb.MultipleDatabases 
  * 
  *  in the root directory of the distribution.
  *
