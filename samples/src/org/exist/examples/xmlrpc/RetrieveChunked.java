@@ -48,7 +48,7 @@ public class RetrieveChunked {
      */
     public static void main(String[] args) {
         
-        // Download file (ohoh not in spec) using xmldb url
+        // Download file using xmldb url
         String xmldbUri = "xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays/macbeth.xml";
         XmldbURI uri = XmldbURI.create(xmldbUri);
         
@@ -56,7 +56,7 @@ public class RetrieveChunked {
         String url = "http://" + uri.getAuthority() + uri.getContext();
         String path =uri.getCollectionPath();
         
-        // Hardcoded yet too
+        // TODO file is hardcoded
         String filename="macbeth.xml";
         
         try {
