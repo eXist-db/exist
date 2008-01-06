@@ -33,7 +33,7 @@
                     >samples/org/exist/examples/xmldb/Retrieve.java</filename>.</para>
             <example>
                 <title>Retrieving a document from eXist</title>
-                <programlisting format="linespecific"> <![CDATA[
+                <programlisting format="linespecific" language="java"> <![CDATA[
 public class Retrieve {
 
 protected final static String uri = 
@@ -93,7 +93,7 @@ public static void main( String args[] ) throws Exception {
             <para>Querying is as easy using XML-RPC. The following example:</para>
             <example>
                 <title>Sending a Query to eXist (XML-RPC)</title>
-                <programlisting format="linespecific">
+                <programlisting format="linespecific" language="java">
 <![CDATA[#!/usr/bin/perl
 use RPC::XML;
 use RPC::XML::Client;
@@ -132,7 +132,7 @@ print $response->value;
                 the server and can be retrieved using the <methodname>retrieve</methodname> method. </para>
             <example>
                 <title>Another Query Examplet (XML-RPC)</title>
-                <programlisting format="linespecific"><![CDATA[use RPC::XML;
+                <programlisting format="linespecific" language="java"><![CDATA[use RPC::XML;
 #!/usr/bin/perl
 
 use RPC::XML;

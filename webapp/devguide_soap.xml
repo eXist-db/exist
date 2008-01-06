@@ -48,7 +48,7 @@
                 demonstrates how to retrieve a document from the database:</para>
             <example>
                 <title>Retrieving a document (SOAP)</title>
-                <programlisting format="linespecific"><![CDATA[
+                <programlisting format="linespecific" language="java"><![CDATA[
 package org.exist.examples.soap;
 
 import org.exist.soap.Query;
