@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-08 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -34,6 +34,7 @@ import java.net.URL;
 
 /**
  * PutExample
+ * Execute: bin\run.bat org.exist.examples.http.PutExample
  * 
  * @author wolf
  *
@@ -41,6 +42,12 @@ import java.net.URL;
 public class PutExample {
 
 	public static void main(String[] args) {
+	    
+        if(args.length != 1) {
+            System.out.println("Usage: org.exist.examples.http.PutExample <file>");
+            System.exit(0);
+        }
+        
 		String fileName =args[0];
 		File file =new File(fileName);
 		if(!file.canRead()) {

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-08 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -34,9 +34,9 @@ import org.exist.storage.DBBroker;
 
 /**
  * PostExample
- * 
- * @author wolf
+ * Execute: bin\run.bat org.exist.examples.http.PostExample
  *
+ * @author wolf
  */
 public class PostExample {
 
@@ -84,6 +84,7 @@ public class PostExample {
 			client.query("//rdf:Description[dc:subject &amp;= 'umw*']");
 		} catch (IOException e) {
 			System.err.println("An exception occurred: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }
