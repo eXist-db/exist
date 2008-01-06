@@ -389,6 +389,55 @@ $rand as xs:integer) as element()
                     if the guess was too high or too low. If the numbers match, a new random is
                     generated.</para>
             </section>
+            
+            <section id="storedxq">
+                <title>Using the REST Server and Stored XQueries</title>
+                
+                <para>Instead of executing XQueries on the file system, one can also use eXist's
+                REST-style HTTP interface to call queries which are stored in a database collection.
+                For the document to be recognized as an XQuery resource, the following two conditions
+                need to be met:</para>
+                
+                <orderedlist>
+                    <listitem>
+                        <para>the XQuery document should be stored as a <emphasis>binary resource</emphasis></para>
+                    </listitem>
+                    <listitem>
+                        <para>the <emphasis>mime-type</emphasis> of the resource has to be
+                            <option>application/xquery</option>. The Java admin client will
+                        usually assign this mime-type automatically. If in doubt, use the
+                        Java client to check the resource properties:</para>
+                        
+                        <screenshot>
+                            <graphic fileref="resources/bin-properties.png"/>
+                        </screenshot>
+                    </listitem>
+                </orderedlist>
+                
+                <para>As an example, you can use the above number-guessing game. Store the
+                XQuery file into a database collection, e.g. as <filename>/db/test/guess.xql</filename>.Next,
+                point you web browser to the REST URL:</para>
+                
+                <synopsis>
+                    <ulink url="rest/db/test/guess.xql">http://localhost:8080/exist/rest/db/test/guess.xql</ulink>
+                </synopsis>
+                
+                <para>However, what you see is probably not what you expected: depending on your
+                web browser, you will get the raw XML (or rather HTML) of the page. Obviously,
+                the browser does not recognize it as HTML yet. This happens because, by default, the REST server sets the <parameter>Content-Type</parameter>
+                header in the HTTP response to "text/xml". We thus need to change this to "text/html"
+                to tell the web browser that the received content can be displayed as HTML.</para>
+                
+                <para>The REST server copies the value for the content type header from the
+                XQuery serialization parameter <option>media-type</option>. You can set this parameter
+                in the XQuery itself. Just add a line</para>
+                
+                <synopsis language="xquery">declare option exist:serialize "method=xhtml media-type=text/html";</synopsis>
+                
+                <para>after the "import module" statements and before the first function declaration.
+                With this change in place, the XQuery output should properly display as HTML and
+                the game should work as before.</para>
+            </section>
         </section>
     </chapter>
 </book>

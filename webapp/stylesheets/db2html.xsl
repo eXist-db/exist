@@ -332,7 +332,9 @@
     </xsl:template>
 
     <xsl:template match="graphic">
-        <img src="{@fileref}" border="0"/>
+        <img src="{@fileref}" border="0">
+            <xsl:copy-of select="@width|@height"/>
+        </img>
     </xsl:template>
 
     <xsl:template

@@ -355,7 +355,7 @@ if($res->is_success) {
                     element, which are shown below for the above example:</para>
                 <example>
                     <title>Returned Results for POST Request</title>
-                    <screen><markup><![CDATA[
+                    <programlisting><markup><![CDATA[
 <exist:result xmlns:exist="http://exist.sourceforge.net/NS/exist" hits="2628" start="1" count="10">
 <SPEECH xmlns:exist="http://exist.sourceforge.net/NS/exist">
     <SPEAKER>BERNARDO</SPEAKER>
@@ -363,8 +363,18 @@ if($res->is_success) {
 </SPEECH>
 ... more items follow ...
 </exist:result>
-]]></markup></screen>
+]]></markup></programlisting>
                 </example>
+            </section>
+            <section>
+                <title>Calling Stored XQueries</title>
+                
+                <para>The REST interface supports stored XQueries on the server: if the target
+                resource of a GET or POST request is a binary resource with the mime-type
+                <option>application/xquery</option>, the REST server will try to compile and
+                execute it as an XQuery. The XQuery has access to the entire HTTP context, including
+                parameters and session attributes. Please have a look at the example given
+                in section <ulink url="devguide_rest.xml#storedxq">Using the REST Server and Stored XQueries</ulink>.</para>
             </section>
         </section>
     </chapter>
