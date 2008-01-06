@@ -22,7 +22,7 @@ import org.xmldb.api.modules.XMLResource;
 /**
  *  Reads an XQuery file and executes it. To run this example enter: 
  * 
- *  bin/run.sh examples.xmldb.XQueryExample xquery
+ *  bin/run.sh examples.xmldb.XQueryExample <xqueryfile>
  *  
  *  in the root directory of the distribution.
  *
@@ -90,11 +90,13 @@ public class XQueryExample {
                 XMLResource resource = (XMLResource) result.getResource( (long) i ); 
                 resource.getContentAsSAX(serializer);
             }
+            
             SerializerPool.getInstance().returnObject(serializer);
             long rtime = System.currentTimeMillis() - start;
 			System.out.println("hits:          " + result.getSize());
             System.out.println("query time:    " + qtime);
             System.out.println("retrieve time: " + rtime);
+            
         } catch ( Exception e ) {
             e.printStackTrace();
         }

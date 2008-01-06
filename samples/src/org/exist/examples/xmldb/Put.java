@@ -12,9 +12,7 @@ import org.xmldb.api.modules.XMLResource;
 /**
  * Add a document to the database.
  * 
- * Call with
- * 
- * java -jar start.jar org.exist.examples.xmldb.Put collection docName
+ * Call with java -jar start.jar org.exist.examples.xmldb.Put collection docName
  *
  */
 public class Put {
