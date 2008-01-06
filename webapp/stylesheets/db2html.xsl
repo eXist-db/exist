@@ -156,11 +156,34 @@
         </div>
     </xsl:template>
     
+    <xsl:template match="toc">
+        <ul class="toc">
+            <xsl:apply-templates/>
+        </ul>
+    </xsl:template>
+    
+    <xsl:template match="tocpart">
+        <li>
+            <xsl:apply-templates/>
+        </li>
+    </xsl:template>
+    
+    <xsl:template match="tocentry">
+        <xsl:apply-templates/>
+    </xsl:template>
+    
     <xsl:template match="chapter">
         <div class="chapter">
             <xsl:apply-templates select="title"/>
-            <xsl:call-template name="toc"/>
-            <xsl:apply-templates select="*[not(name()='title')]"/>
+            <xsl:choose>
+                <xsl:when test="toc">
+                    <xsl:apply-templates select="toc"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:call-template name="toc"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            <xsl:apply-templates select="*[not(name()='title' or name() = 'toc')]"/>
         </div>
     </xsl:template>
 
@@ -256,9 +279,9 @@
         </h5>
     </xsl:template>
 
-    <xsl:template match="listitem/para[count(../*) = 1]">
+    <!--xsl:template match="listitem/para[count(../*) = 1]">
         <xsl:apply-templates/>
-    </xsl:template>
+    </xsl:template-->
     
     <xsl:template match="para">
         <p>
@@ -321,11 +344,20 @@
     </xsl:template>
 
     <xsl:template match="synopsis">
-        <div class="synopsis">
-            <xsl:call-template name="returns2br">
-                <xsl:with-param name="string" select="."/>
-            </xsl:call-template>
-        </div>
+        <xsl:choose>
+            <xsl:when test="@language">
+                <textarea class="{@language}" name="code">
+                    <xsl:apply-templates/>
+                </textarea>
+            </xsl:when>
+            <xsl:otherwise>
+                <div class="synopsis">
+                    <xsl:call-template name="returns2br">
+                        <xsl:with-param name="string" select="."/>
+                    </xsl:call-template>
+                </div>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template match="example">
@@ -355,7 +387,7 @@
         <xsl:choose>
             <xsl:when test="markup">
                 <textarea class="xml" name="code">
-                    <xsl:apply-templates select="markup"/>
+                    <xsl:apply-templates select="markup/node()"/>
                 </textarea>
             </xsl:when>
             <xsl:when test="@language">
