@@ -31,20 +31,78 @@
             <para>XQuery is powerful enough to replace JSP or PHP as a server-side language. We
                 don't say that PHP or JSP are bad in any way. But if you start writing XQueries, you
                 may soon find it easier to write everything in XQuery (maybe with the help of some
-                XSLT) and stay within the XML world. The XSLT functions make it easy to prepare
-                the results of an XQuery for presentation (for transformations, XSLT is often more 
-                convenient than XQuery, though XQuery could be used as well). eXist provides many extension points. For
-                example, you can implement missing functionality in Java and deploy it as an XQuery
-                    <ulink url="xquery.xml#extension-modules">extension module</ulink>, whose
-                functions can then be called from your main XQuery application logic.</para>
-            
-            <para>Instead of directly producing HTML output, "XQuerylets" can also be designed as self-contained
-                services which deliver XML data to AJAX applications on the client.</para>
-            
-            <para>eXist provides at least 3 (!) different methods </para>
+                XSLT) and stay within the XML world. The XSLT functions make it easy to prepare the
+                results of an XQuery for presentation (for transformations, XSLT is often more
+                convenient than XQuery, though XQuery could be used as well). eXist provides many
+                extension points. For example, you can implement missing functionality in Java and
+                deploy it as an XQuery <ulink url="xquery.xml#extension-modules">extension
+                module</ulink>, whose functions can then be called from your main XQuery application
+                logic.</para>
+
+            <para>Instead of directly producing HTML output, "XQuerylets" can also be designed as
+                self-contained services which deliver XML data to applications on the client.
+                Creating AJAX applications with eXist is straight-forward. No complex framework is
+                required on the server. No need for an additional persistence layer. XQuery
+                integrates it all.</para>
+
+            <para>Beyond the simple examples, the distribution contains a number of web applications
+                which can be used as a starting point to learn more about XQuery as a server-side
+                language, e.g. the web-based <ulink url="admin/admin.xql">admin interface</ulink>,
+                which doesn't use any AJAX but demonstrates various extension functions to
+                manipulate the database</para>
 
             <section>
-                <title>XQueryServlet and XQueryGenerator (Cocoon)</title>
+                <title>Executing XQueries on the Server</title>
+
+                <para>eXist provides 3 different ways (if you include Atom, there are even 4) to
+                    call an XQuery over the web:</para>
+
+                <variablelist>
+                    <varlistentry>
+                        <term>XQueryServlet</term>
+                        <listitem>
+                            <para>The XQueryServlet reads an XQuery script from the file system,
+                                usually from the directory in which the web application resides, and
+                                executes it with the current HTTP context. The result of the query
+                                is returned as the content of the HTTP response.</para>
+
+                            <para>Using the XQueryServlet is thus similar to calling a JSP page or
+                                PHP script, which resides on the file system of the server.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>XQueryGenerator</term>
+                        <listitem>
+                            <para>The XQueryGenerator integrates eXist's XQuery capabilities with
+                                Apache's Cocoon framework. As with the servlet, the XQueryGenerator
+                                (usually) reads XQuery scripts from the file system, but instead of
+                                directly returning the query results in the HTTP response, it passes
+                                them to a Cocoon pipeline.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>REST Server</term>
+                        <listitem>
+                            <para>The <ulink url="devguide_rest.xml#serialization">REST
+                                servlet</ulink> can be used to execute <emphasis>stored
+                                XQueries</emphasis> on the server! If the target resource of a
+                                    <option>GET</option> or <option>POST</option> request is a
+                                binary document with mime-type <option>application/xquery</option>,
+                                the REST server will try to load and execute this resource with the
+                                current HTTP context.</para>
+
+                            <para>This is a very powerful concept as it allows you to store entire
+                                web applications into the database. Links to images or other
+                                resources will be resolved relative to the database collection in
+                                which the called XQuery is stored.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+
+            </section>
+
+            <section>
+                <title>XQueryServlet and XQueryGenerator</title>
 
                 <para>eXist generates HTML web pages from XQuery files in two ways: the
                     XQueryServlet and XQueryGenerator. With both the XQueryServlet and
@@ -52,7 +110,17 @@
                     For this, eXist compiles XQuery into a tree of expression objects, which can be
                     repeatedly executed. This code will only be recompiled if the source file has
                     changed.</para>
-
+                
+                <para>Both XQueryServlet and the XQueryGenerator provide initialization parameters
+                    to set the username and password used for requests. However, the code will also
+                    check if the current HTTP session contains the session attributes
+                    <option>user</option> and <option>password</option>. If so, the session settings
+                    will overwrite any previous settings. For more information on changing user
+                    identities, see the <ulink url="xquery/login.xql">Session Example</ulink>. The
+                    user identity under which the current query executes can also be changed
+                    from within the query itself, using the <methodname>xmldb:login()</methodname>
+                    function.</para>
+                
                 <variablelist>
                     <varlistentry>
                         <term>XQueryServlet</term>
@@ -62,7 +130,13 @@
                                 defined in the <filename>web.xml</filename> configuration file of
                                 the application. The servlet will interpret this pattern as pointing
                                 to a valid XQuery file. The XQuery file is then loaded, compiled and
-                                executed, and the results are then sent to the client.</para>
+                                executed with the current HTTP context. The results are then sent to
+                                the client in the content of the HTTP response.</para>
+                            <para>The <option>Content-Type</option> header of the HTTP response will
+                                be set to the value of the <option>media-type</option> serialization
+                                property defined by the XQuery (see <ulink
+                                    url="xquery.xml#serialization">serialization
+                                parameters</ulink>).</para>
                             <para>To use the servlet, you must define the URL-patterns for your web
                                 application by adding the following to the
                                 <filename>WEB-INF/web.xml</filename> configuration file:</para>
@@ -156,108 +230,164 @@
             </section>
 
             <section>
-                <title>Example XQuery Script</title>
-                <para>A script example provided with eXist offers a simple number guessing game that
-                    illustrates many of the features of XQuery. The source code for this game is
-                    found in <ulink url="xquery/guess.xql">webapp/xquery/guess.xql</ulink>, and can
-                    be viewed locally at <ulink url="http://localhost:8080/exist/examples.xml"
-                        >http://localhost:8080/exist/examples.xml</ulink>. As the file extension
-                    indicates, this particular script is processed by the XQueryServlet. The full
-                    script is as follows:</para>
+                <title>A Simple Example</title>
+
+                <para>To illustrate the use of the XQueryServlet and the HTTP extension functions,
+                    let's have a look at a very basic example: a simple <ulink
+                        url="xquery/guess.xql">number guessing</ulink> game running on the server.
+                    The source code for this game is found in
+                    <filename>webapp/xquery/guess.xql</filename>. As the file extension indicates,
+                    this particular script is processed by the XQueryServlet. The full script is as
+                    follows:</para>
                 <example>
                     <title>Guess a Number</title>
                     <programlisting><markup><![CDATA[
 xquery version "1.0";
+(: $Id: guess.xql 6434 2007-08-28 18:59:23Z ellefj $ :)
 
-declare namespace request="http://exist-db.org/xquery/request";
-declare namespace math="java:java.lang.Math";
+import module namespace request="http://exist-db.org/xquery/request";
+import module namespace session="http://exist-db.org/xquery/session";
+import module namespace util="http://exist-db.org/xquery/util";
 
 declare function local:random($max as xs:integer) 
 as empty()
 {
-    let $r := ceiling(math:random() * $max) cast as xs:integer
-    return
-        request:set-session-attribute("random", $r)
+    let $r := ceiling(util:random() * $max) cast as xs:integer
+    return (
+        session:set-attribute("random", $r),
+        session:set-attribute("guesses", 0)
+    )
 };
 
 declare function local:guess($guess as xs:integer,
 $rand as xs:integer) as element()
 {
-    if ($guess lt $rand) then
-        <p>Your number is too small!</p>
-    else if ($guess gt $rand) then
-        <p>Your number is too large!</p>
-    else (
-        local:random(100),
-        <p>Congratulations! You guessed the right number.
-        Try again!</p> 
+    let $count := session:get-attribute("guesses") + 1
+    return (
+        session:set-attribute("guesses", $count),
+        if ($guess lt $rand) then
+            <p>Your number is too small!</p>
+        else if ($guess gt $rand) then
+            <p>Your number is too large!</p>
+        else
+            let $newRandom := local:random(100)
+            return
+                <p>Congratulations! You guessed the right number with
+                {$count} tries. Try again!</p>
     )
 };
 
 declare function local:main() as node()?
 {
-    request:create-session(),
-    let $rand := request:get-session-attribute("random"),
-        $guess := request:request-parameter("guess", ())
+    session:create(),
+    let $rand := session:get-attribute("random"),
+        $guess := xs:integer(request:get-parameter("guess", ()))
     return
-        if ($rand) then local:guess($guess, $rand)
-        else local:random(100)
+		if ($rand) then 
+			if ($guess) then
+				local:guess($guess, $rand)
+			else
+				<p>No input!</p>
+		else 
+		    local:random(100)
 };
 
 <html>
     <head><title>Number Guessing</title></head>
     <body>
-        <form action="{request:encode-url(request:request-uri())}">
+        <form action="{session:encode-url(request:get-uri())}">
             <table border="0">
                 <tr>
-                    <th colspan="2">
-                        Guess a number
-                    </th>
+                    <th colspan="2">Guess a number</th>
                 </tr>
                 <tr>
                     <td>Number:</td>
-                    <td><input type="text" name="guess"
-                        size="3"/></td>
+                    <td><input type="text" name="guess" size="3"/></td>
                 </tr>
                 <tr>
-                    <td colspan="2" align="left">
-                        <input type="submit"/>
-                    </td>
+                    <td colspan="2" align="left"><input type="submit"/></td>
                 </tr>
             </table> 
         </form>
         { local:main() }
+        <p><small>View <a href="guess.xql?_source=yes">source code</a></small></p>
     </body>
 </html>
 ]]></markup></programlisting>
                 </example>
-                <para>In this example, a random number is generated using the local function
-                        <methodname>local:random</methodname>, which uses the Java binding to call
-                    the static method <methodname>Math.random</methodname>. (For information on the
-                    Java binding with eXist, check the <ulink url="xquery.xml">XQuery Docs</ulink>.)
-                    The generated number is stored as an HTTP session variable (attribute). The user
-                    is then asked to guess its value. If the user submits a guess, it is read from
-                    the HTTP request parameter and compared to the stored number. If the numbers
-                    match, a new random is generated and the game starts again. </para>
 
-                <para>Notice that you do not have to import the request module for handling HTTP
-                    parameter, but can simply declare its namespace (i.e.
-                        <filename>http://exist-db.org/xquery/request</filename>) in the document.
-                    The module, if it is available, is loaded automatically by the XQuery engine.
-                    How do the functions in this module access the HTTP request and session objects?
-                    The XQueryServlet and the XQueryGenerator both export a number of global
-                    variables to the XQuery script: <option>$request</option>,
-                    <option>$response</option> and <option>$session</option>. These variables store
-                    the corresponding HTTP objects as passed by the servlet engine (or Cocoon),
-                    which are accessed by the functions in the library module.</para>
+                <para>The mainline of this script simply creates an HTML document with a form. Since
+                    we need to store some information in the HTTP session, the
+                    <option>action</option> link of the form is encoded with the current session ID
+                    (the first time the script is called there will be no session yet, but that's
+                    not a problem). The main application logic is called in line 68:</para>
 
-                <para>Both XQueryServlet and the XQueryGenerator provide initialization parameters
-                    to set the username and password used for requests. However, the code will also
-                    check if the current HTTP session contains the session attributes
-                    <option>user</option> and <option>password</option>. If so, the session settings
-                    will overwrite any previous settings. For more information on changing user
-                    identities, see the <ulink url="xquery/login.xql">Session
-                Example</ulink>.</para>
+                <synopsis language="xquery">{ local:main() }</synopsis>
+                
+                <para>The <methodname>local:main()</methodname> function first calls
+                    <methodname>session:create()</methodname> to create a session if it has not already
+                    been generated before. The script uses two session attributes:</para>
+                
+                <variablelist>
+                    <varlistentry>
+                        <term>random</term>
+                        <listitem>
+                            <para>stores the random number the user should guess</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>guesses</term>
+                        <listitem>
+                            <para>keeps track of the number of attempts</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                
+                <para>If the session attribute "random" is empty, we need to create a new
+                    random number first. This is done by calling 
+                    <methodname>local:random()</methodname>:</para>
+                
+                <synopsis language="xquery">
+<![CDATA[declare function local:random($max as xs:integer) 
+as empty()
+{
+    let $r := ceiling(util:random() * $max) cast as xs:integer
+    return (
+        session:set-attribute("random", $r),
+        session:set-attribute("guesses", 0)
+    )
+};]]></synopsis>
+                
+                <para><methodname>local:random()</methodname> generates a new random and stores
+                    it into the session. The "guesses" session attribute is reset to 0.</para>
+                
+                <para>Back to <methodname>local:main()</methodname>: if <parameter>$rand</parameter>
+                    is set, the function checks if the user entered a guess, which should have been
+                    passed in the request parameter "guess". If a guess has been made, it needs to
+                    be checked by calling <methodname>local:guess()</methodname>:</para>
+                
+                <synopsis language="xquery">
+<![CDATA[declare function local:guess($guess as xs:integer,
+$rand as xs:integer) as element()
+{
+    let $count := session:get-attribute("guesses") + 1
+    return (
+        session:set-attribute("guesses", $count),
+        if ($guess lt $rand) then
+            <p>Your number is too small!</p>
+        else if ($guess gt $rand) then
+            <p>Your number is too large!</p>
+        else
+            let $newRandom := local:random(100)
+            return
+                <p>Congratulations! You guessed the right number with
+                {$count} tries. Try again!</p>
+    )
+};]]></synopsis>
+                
+                <para>The function checks the guess and returns an HTML paragraph to tell the user
+                    if the guess was too high or too low. If the numbers match, a new random is
+                    generated.</para>
             </section>
         </section>
     </chapter>

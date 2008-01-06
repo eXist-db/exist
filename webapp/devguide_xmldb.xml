@@ -58,7 +58,8 @@
                 printed to standard output.</para>
             <example>
                 <title>Retrieving a Document with XML:DB</title>
-                <programlisting format="linespecific"><![CDATA[
+                
+                <programlisting format="linespecific" language="java"><![CDATA[
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import org.xmldb.api.*;
@@ -139,7 +140,8 @@ public class RetrieveExample {
 
             <example>
                 <title>Querying the Database (XML:DB API)</title>
-                <programlisting format="linespecific"><![CDATA[import org.xmldb.api.base.*;
+                
+                <programlisting format="linespecific" language="java"><![CDATA[import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import org.xmldb.api.*;
 
@@ -182,7 +184,8 @@ public class QueryExample {
                 the previous example code would look as follows:</para>
             <example>
                 <title>Compiling a Query (XML:DB API)</title>
-                <programlisting format="linespecific"><![CDATA[import org.xmldb.api.base.*;
+                
+                <programlisting format="linespecific" language="java"><![CDATA[import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import org.xmldb.api.*;
 import org.exist.xmldb.XQueryService;
@@ -229,7 +232,8 @@ public class QueryExample {
                     <classname>CollectionManagementService</classname> service.</para>
             <example>
                 <title>Adding a File (XML:DB API)</title>
-                <programlisting format="linespecific"><![CDATA[public class StoreExample {
+                
+                <programlisting format="linespecific" language="java"><![CDATA[public class StoreExample {
     public final static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
 
     public static void main(String args[]) throws Exception {
@@ -325,7 +329,7 @@ public class QueryExample {
                     fragment sets up two instances:</para>
                 <example>
                     <title>Multiple Database Instances</title>
-                    <programlisting format="linespecific"><![CDATA[
+                    <programlisting format="linespecific" language="java"><![CDATA[
 // initialize driver
 String driver = "org.exist.xmldb.DatabaseImpl";
 Class cl = Class.forName(driver);			
@@ -349,7 +353,13 @@ DatabaseManager.registerDatabase(database1);
             </section>
         </section>
         <section>
-            <title>XMLDBTransformer for Cocoon</title>
+            <title>XMLDBTransformer for Cocoon (Deprecated)</title>
+            
+            <important>
+                <para>The XMLDBTransformer is no longer actively developed since all its
+                functionality can be replaced with simple XQuery.</para>
+            </important>
+            
             <para>eXist offers several ways to access the database from Cocoon-based applications.
                 This includes access via the XMLDB pseudo-protocol, through XSP pages, and through
                 the XMLDBTransformer. The XMLDBTransformer provides a simple way to query the
@@ -366,7 +376,7 @@ DatabaseManager.registerDatabase(database1);
                 >webapp/examples/simple2.xml</filename>):</para>
             <example>
                 <title>XMLDBTransformer Example</title>
-                <screen format="linespecific"><![CDATA[
+                <programlisting format="linespecific" language="java"><![CDATA[
 <xdb:collection xmlns:xdb="http://exist-db.org/transformer/1.0"
 	uri="xdb:exist:///db">
 	<!-- iterate through all rdf:Description elements containing the
@@ -386,7 +396,7 @@ DatabaseManager.registerDatabase(database1);
 		</book>
 	</xdb:for-each>
 </xdb:collection>
-]]></screen>
+]]></programlisting>
             </example>
             <para>As we can see above, before you can start to query the database, you must specify
                 a collection in the <sgmltag>collection</sgmltag> element, which accepts a standard
@@ -431,21 +441,24 @@ DatabaseManager.registerDatabase(database1);
                 the XMLDBTransformer for the above fragment is shown below:</para>
             <example>
                 <title>XMLDBTransformer Output</title>
-                <screen format="linespecific"><![CDATA[
-<xdb:result-set count="72" xpath="//rdf:Description[dc:title &= 'computer']"
+<programlisting format="linespecific"><markup><![CDATA[<xdb:result-set count="72" xpath="//rdf:Description[dc:title &= 'computer']"
 	query-time="370" from="0" to="9">
 	<book xdb:document-id="zit.rdf" xdb:collection="/db/library"> 
 		<title> A Centennial History of the American Society of Mechanical Engineers 1880-1980 </title> 
 		<creator xdb:document-id="zit.rdf" xdb:collection="/db/library"> Sinclair, Bruce </creator>
 	</book>
 	<!-- more books here ... -->
-</xdb:result-set>
-]]></screen>
+</xdb:result-set>]]></markup></programlisting>
             </example>
 
         </section>
         <section>
             <title>XML:DB Logicsheet for Cocoon</title>
+            <important>
+                <para>The XMLDB logicsheet is no longer actively developed. The XQueryGenerator
+                provides a much easier way to generate web page contents.</para>
+            </important>
+            
             <para>Cocoon offers a powerful mechanism called XSP (eXtensible Server Pages) to write
                 dynamic XML-based web pages. Similar to JSP, XSP embeds Java code in the XML pages.
                 However, embedding large sections of Java code in an XML document is usually
@@ -463,8 +476,8 @@ DatabaseManager.registerDatabase(database1);
                 document is retrieved and displayed:</para>
             <example>
                 <title>Simple XSP Page (example1.xsp)</title>
-                <programlisting format="linespecific"><![CDATA[
-<xsp:page xmlns:xsp="http://apache.org/xsp"
+                <programlisting format="linespecific">
+<markup><![CDATA[<xsp:page xmlns:xsp="http://apache.org/xsp"
           xmlns:xdb="http://exist-db.org/xmldb/1.0"
 >
 <document>
@@ -483,8 +496,7 @@ DatabaseManager.registerDatabase(database1);
         </section>
     </body>
 </document>
-</xsp:page>
-]]></programlisting>
+</xsp:page>]]></markup></programlisting>
             </example>
             <para>The Cocoon version included with eXist is already configured to recognize the
                     <filename>xmldb</filename> namespace and associate it with the XML:DB
@@ -509,18 +521,18 @@ DatabaseManager.registerDatabase(database1);
                     <sgmltag>map:match</sgmltag>pattern to the sitemap - for example:</para>
             <example>
                 <title>Cocoon Sitemap Snippet (XSP)</title>
-                <programlisting format="linespecific"><![CDATA[
+                <programlisting format="linespecific"><markup><![CDATA[
 <map:match pattern="test.xsp">
     <map:generate type="serverpages" src="test.xsp"/>
     <map:transform src="stylesheets/doc2html-2.xsl"/>
     <map:serialize type="xhtml"/>
 </map:match>
-]]></programlisting>
+]]></markup></programlisting>
             </example>
             <para>The next example shows how to query the database:</para>
             <example>
                 <title>Querying the Database (example2.xsp)</title>
-                <programlisting format="linespecific"><![CDATA[
+                <programlisting format="linespecific"><markup><![CDATA[
 <xsp:page xmlns:xsp="http://apache.org/xsp"
           xmlns:xdb="http://exist-db.org/xmldb/1.0"
 >
@@ -545,7 +557,7 @@ DatabaseManager.registerDatabase(database1);
         </body>
     </html>
 </xsp:page>
-]]></programlisting>
+]]></markup></programlisting>
             </example>
             <para>This XSP example page takes the HTTP request parameter
                 <parameter>title</parameter> as its input and creates an XPath expression that finds

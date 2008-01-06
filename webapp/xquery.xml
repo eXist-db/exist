@@ -1064,7 +1064,7 @@ return $w</synopsis>
                 collation instead, the comparison would evaluate to <option>false</option>.</para>
         </section>
 
-        <section>
+        <section id="serialization">
             <title>Serialization Options</title>
             <para>The serialization of query results into a binary stream is influenced by a number
                 of parameters. These parameters can be set within the query itself, however the

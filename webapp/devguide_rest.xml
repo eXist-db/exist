@@ -17,7 +17,7 @@
     <ci:include src="sidebar.xml"/>
     <chapter id="ch01">
         <title>Developer's Guide</title>
-        <section>
+        <section id="rest">
             <title>REST-Style Web API</title>
             <para>eXist provides a REST-style (or <emphasis>RESTful</emphasis>) API through HTTP,
                 which provides the simplest and quickest way to access the database. To implement
@@ -235,7 +235,7 @@
 
                 <example>
                     <title>PUT Example using Python (See: samples/http/put.py)</title>
-                    <programlisting><![CDATA[
+                    <programlisting language="java"><![CDATA[
 import httplib
 import sys
 from string import rfind
@@ -295,7 +295,7 @@ else:
                 <para>The structure of the POST XML request is as follows:</para>
                 <example>
                     <title>Extended Query Request</title>
-                    <programlisting><![CDATA[
+                    <programlisting><markup><![CDATA[
 <query xmlns="http://exist.sourceforge.net/NS/exist"
     start="[first item to be returned]" 
     max="[maximum number of items to be returned]">
@@ -304,7 +304,7 @@ else:
         <property name="[name1]" value="[value1]"/>
     </properties>
 </query>
-]]></programlisting>
+]]></markup></programlisting>
                 </example>
                 <para>The root element <option>query</option> identifies the fragment as an extended
                     query request, and the XQuery expression for this request is enclosed in the
@@ -313,7 +313,7 @@ else:
                     example of POST for Perl is provided below:</para>
                 <example>
                     <title>POST Example using Perl (See: samples/http/search.pl)</title>
-                    <programlisting><![CDATA[
+                    <programlisting language="java"><![CDATA[
 require LWP::UserAgent;
 
 $URL = 'http://localhost:8080/exist/rest/db/';
@@ -355,7 +355,7 @@ if($res->is_success) {
                     element, which are shown below for the above example:</para>
                 <example>
                     <title>Returned Results for POST Request</title>
-                    <screen><![CDATA[
+                    <screen><markup><![CDATA[
 <exist:result xmlns:exist="http://exist.sourceforge.net/NS/exist" hits="2628" start="1" count="10">
 <SPEECH xmlns:exist="http://exist.sourceforge.net/NS/exist">
     <SPEAKER>BERNARDO</SPEAKER>
@@ -363,7 +363,7 @@ if($res->is_success) {
 </SPEECH>
 ... more items follow ...
 </exist:result>
-]]></screen>
+]]></markup></screen>
                 </example>
             </section>
         </section>
