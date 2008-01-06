@@ -22,7 +22,7 @@ import org.xmldb.api.modules.XMLResource;
 /**
  *  Reads an XQuery file and executes it. To run this example enter: 
  * 
- *  bin/run.sh examples.xmldb.XQueryExample <xqueryfile>
+ *  bin/run.sh org.exist.examples.xmldb.XQueryExample <xqueryfile>
  *  
  *  in the root directory of the distribution.
  *
