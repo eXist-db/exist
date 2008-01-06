@@ -50,7 +50,7 @@ public class MultipleDatabases {
 		// configuration file "testConf.xml"
 		Database database2 = (Database) cl.newInstance();
 		database2.setProperty("create-database", "true");
-		database2.setProperty("configuration", "/home/wolf/test/conf.xml");
+		database2.setProperty("configuration", "path/to/testConf.xml");
 		database2.setProperty("database-id", "test");
 
 		DatabaseManager.registerDatabase(database2);
@@ -90,7 +90,7 @@ public class MultipleDatabases {
 	private static void loadFile(Collection collection, String path) throws XMLDBException {
 		// create new XMLResource; an id will be assigned to the new resource
 		XMLResource document = (XMLResource) 
-			collection.createResource(path.substring(path.lastIndexOf(File.separatorChar)), 
+			collection.createResource(path.substring(path.lastIndexOf('/')), 
 				"XMLResource");
 		document.setContent(new File(path));
 		collection.storeResource(document);

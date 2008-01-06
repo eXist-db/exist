@@ -10,6 +10,14 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XMLResource;
 
+/**
+ *  Execute 2 queries after inserting document. To run this example enter:
+ * 
+ *  java -jar start.jar org.exist.examples.xmldb.NestedExample 
+ * 
+ *  in the root directory of the distribution.
+ */
+
 public class NestedExample {
  
 	protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
@@ -38,8 +46,19 @@ public class NestedExample {
 		service.setProperty( OutputKeys.INDENT, "yes" );
 		service.setProperty( OutputKeys.ENCODING, "UTF-8" );
 		
-		ResourceSet set = service.query("/book/chapter");
+		// execute queries
+		ResourceSet set=null;
+		
+		System.out.println();
+		System.out.println("Query 1");
+		System.out.println("=======");
+		set = service.query("/book/chapter");
 		res = (XMLResource) set.getResource(0);
+		System.out.println(res.getContent());
+		
+		System.out.println();
+		System.out.println("Query 2");
+		System.out.println("=======");
 		set = service.query(res, "title");
 		res = (XMLResource) set.getResource(0);
 		System.out.println(res.getContent());
