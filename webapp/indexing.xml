@@ -807,7 +807,7 @@
 ]]></screen>
             </example>
 
-            <para>Another possibility to see what's in your index is to use the util:index-keys
+            <para>Another possibility to see what's in your index is to use the <function>util:index-keys</function>
                 function (for range indexes):</para>
 
             <example>
@@ -834,7 +834,7 @@ util:index-keys(//name, "A", util:function("local:term-callback", 2), 1000)]]></
                 the empty string to retrieve all keys in the index.</para>
             
             <para>Finally, to view the contents of the full text index instead of the range index, a different
-            function needs to be used:</para>
+            function needs to be used, <function>text:index-terms</function> :</para>
             
             <example>
                 <title>Query to List Full Test Index Contents</title>
