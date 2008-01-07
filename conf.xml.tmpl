@@ -93,11 +93,6 @@
         - files:
             path to the directory where database files are stored.
         
-        - free_mem_min:
-            minimum amount of free memory in percent during indexing. The
-            database will start to flush its internal buffers whenever
-            free memory drops below the specified limit.
-        
         - pageSize:
             the size of one page on the disk. This is the smallest unit
             transferred from and to the database files. Should be a multiple of
@@ -113,7 +108,7 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
-        files="webapp/WEB-INF/data" free_mem_min="5" pageSize="4096">
+        files="webapp/WEB-INF/data" pageSize="4096">
 
         <!--
             Specifies the default permissions for all resources and collections
