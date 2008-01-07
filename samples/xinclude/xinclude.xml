@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="db2html.xsl" type="text/xsl"?>
-
 <book xmlns:xi="http://www.w3.org/2001/XInclude">
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        <style href="default-style.css"/>
+        <style href="styles/default-style.css"/>
         <title>Open Source XML Database</title>
         <author>
             <firstname>Wolfgang M.</firstname>
@@ -17,19 +16,32 @@
         </author>
     </bookinfo>
     <xi:include href="sidebar.xml"/>
+    <!-- Cocoon include for the website docs -->
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
     <chapter>
         <title>XInclude Examples</title>
+        
         <para>Beginning with version 0.9, eXist comes with partial support for
-            the XInclude standard. If configured, the server will scan a
-            document stored in the database for XInclude tags and expand those
-            tags if possible. The expansion is applied during the serialization
-            of the document, i.e. whenever you retrieve a document containing
-            XInclude tags.</para>
+            the XInclude standard. If configured (as is the default), eXist's XML serializer will scan
+            all XML fragments for XInclude tags. Basically, the XInclude processor 
+            is implemented as a filter which sits between the
+            serializer's output event stream and the receiver. If it finds an XInclude
+            element, it will try to expand it. The current element in the stream
+            is replaced by the result of the XInclude operation. XInclude processing 
+            is thus applied whenever eXist serializes an XML fragment,
+            be it a document, the result of an XQuery or an XSLT stylesheet.</para>
         
         <para>eXist's support for XInclude is not complete. You cannot include
-            raw text, just XML. The fallback element is ignored. Also just basic
-            XPath is allowed for XPointers.</para>
-            
+            raw text, just XML. XPointers are restricted to XPath; the additional
+            features defined in the XPointer spec (points and ranges) are not supported.
+            Since version 1.2, the <sgmltag>xi:fallback</sgmltag> element is implemented properly.</para>
+        
+        <para>Another common misunderstanding: eXist expands XIncludes at serialization
+        time, which means that the query engine will see the XInclude tags <emphasis>before</emphasis> they
+        are expanded. You cannot query across XIncludes - unless you create your own code
+        (e.g. an XQuery function) for it. We would certainly like to support queries over xincluded content in the 
+            future though.</para>
+        
         <para>Why do we need XInclude? One reason is that eXist does not
             preserve entity declarations. Entities are resolved by the XML
             parser, so eXist just sees the expanded text, not the entity itself.
@@ -38,10 +50,13 @@
             navigation sidebar at the left will probably be used by several
             documents throughout a site, so it would be wise to keep it in an
             external file.</para>
+        
         <para>XInclude provides a powerful alternative. The following sections
-            present some examples.</para>
+        present some examples.</para>
+        
         <section>
             <title>Viewing the Examples</title>
+            
             <para>If you came here from the examples page, you are already looking at
             a page that has been passed through XInclude, and you can see the live effect
             of all the examples below. If not, try to browse to</para>
@@ -58,58 +73,75 @@
         
         <section>
             <title>Including a Document</title>
+            
             <para>To include an entire document, just specify its path
                 in the <option>href</option> attribute of an <sgmltag>xi:include</sgmltag>
                 tag. For example, the sidebar shown at the left of this
                 documents has been included as follows:</para>
+            
             <synopsis><![CDATA[<xi:include href="sidebar.xml"/>]]></synopsis>
+            
             <para>Please note that, as usual, you have to provide the correct namespace 
                 for XInclude, e.g. in the root element of the document. The official namespace is:
             </para>
+            
             <synopsis>http://www.w3.org/2001/XInclude</synopsis>
         </section>
         <section>
             <title>Shorthand Pointer</title>
-            <para>The fragment part of the URI reference in the href attribute
-                is interpreted as an XPointer. If the fragment is just a
-                barename - now called shorthand pointer - it will select the first 
-                element of the target
-                document that has an attribute of type ID matching the name. For
+            
+            <para>The <option>xpointer</option> attribute is used to identify a portion of the
+                resource to include. If the xpointer contains just a
+                barename - called shorthand pointer - it will select the first 
+                element of the target document that has an attribute of type ID matching the name. For
                 example, the following xinclude selects the p element from file
                 <filename>disclaimer.xml</filename>, which has an ID attribute
                 with value &quot;statement&quot;.</para>
+            
             <synopsis><![CDATA[<xi:include href="disclaimer.xml" xpointer="statement"/>]]></synopsis>
+            
             <para>The result of the XInclude will be displayed below:</para>
+            
             <xml-source>
                 <xi:include href="disclaimer.xml" xpointer="statement"/>
             </xml-source>
         </section>
         <section>
             <title>Selecting Fragments by an XPath Expression</title>
-            <para>We may also use an XPath expression to select fragments. The
-                XPath expression is passed to the <command>xpointer()</command> 
-                scheme. The results of the expression will be included in place
+            
+            <para>We may also use an XPath expression to select fragments. The 
+                <option>xpointer</option> attribute contains an XPointer, which consists
+                of so called "schemes". An XPath expression can be passed to the <command>xpointer()</command> 
+                XPointer scheme. The results of the expression will be included in place
                 of the <sgmltag>xi:include</sgmltag> element. The following
                 expression includes a section taken from Shakespeare's Macbeth:</para>
+            
             <synopsis>&lt;xi:include href="/db/shakespeare/plays/macbeth.xml"
-                xpointer="xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])"/&gt;</synopsis>
+            xpointer="xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])"/&gt;</synopsis>
+            
             <para>As before, the results are included below:</para>
+            
             <xml-source>
                 <xi:include href="/db/shakespeare/plays/macbeth.xml"
                     xpointer="xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])"/>
             </xml-source>
             
             <para>An XPath expression will be applied to the entire collection if the
-                path in href points to a collection and not a single document:</para>
+            path in href points to a collection and not a single document:</para>
+            
             <synopsis>&lt;xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[near(LINE, 'cursed spite')])"/&gt;</synopsis>
+            
             <xml-source>
                 <xi:include href="/db/shakespeare"
                     xpointer="xpointer(//SPEECH[near(LINE, 'cursed spite')])"/>
 			</xml-source>
 
-			<para>Test namespaces: all namespace/prefix mappings declared in
+			<para>Concerning namespaces: all namespace/prefix mappings declared in
 				the source document are passed to the query context. 
 				Alternatively, you may declare mappings with xmlns().</para>
+
+            <synopsis>&lt;xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/&gt;</synopsis>
+            
 			<xml-source>
 				<xi:include
 					href="disclaimer.xml"
@@ -118,8 +150,52 @@
         </section>
         <section>
             <title>Including the Results of a Stored XQuery</title>
+            
+            <para>Another powerful feature: if the target of an XInclude reference points
+            to an XQuery resource stored in the database (i.e. a binary resource with mime-type
+            "application/xquery"), the XInclude processor will try to compile and execute
+            this query. The root element included will be the root element returned by the
+            XQuery script. For example:</para>
+            
+            <synopsis>&lt;xi:include href="display-collection.xq"/&gt;</synopsis>
+            
+            <para>Calls a query without parameters. The result is shown below:</para>
+            
             <xml-source>
                 <xi:include href="display-collection.xq"/>
+            </xml-source>
+            
+            <para>The XInclude processor declares two variables in the XQuery's static context:</para>
+            
+            <variablelist>
+                <varlistentry>
+                    <term>$xinclude:current-doc</term>
+                    <listitem>the name of the document which (x)includes the query (without
+                    the collection path)</listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>$xinclude:current-collection</term>
+                    <listitem>the collection in which the current document resides</listitem>
+                </varlistentry>
+            </variablelist>
+            
+            <para>The example above uses <option>xinclude:current-collection</option> to determine
+            the collection it should process. However, we can also pass explicit parameters
+            to the XQuery:</para>
+            
+            <synopsis>&lt;xi:include href="testvars.xq?var1=Hello&amp;var2=World"/&gt;</synopsis>
+            
+            <para>The parameters <parameter>var1</parameter> and <parameter>var2</parameter> will be available to the XQuery as an
+            external global variable. However, the XQuery needs to declare them or an error will be
+            thrown:</para>
+            
+            <synopsis language="xquery">declare variable $var1 external;
+declare variable $var2 external;</synopsis>
+            
+            <para>The result of the call is included below:</para>
+            
+            <xml-source>
+                <xi:include href="testvars.xq?var1=Hello&amp;var2=World"/>
             </xml-source>
         </section>
     </chapter>
