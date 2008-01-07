@@ -85,7 +85,7 @@
                         <a href="http://prdownloads.sourceforge.net/exist/eXist-1.2.0-revXXXX.exe"
                             >eXist-1.2.0-revXXXX.exe</a>
                     </td>
-                    <td> Installer based on IzPack. Includes source. required voor MS Vista.</td>
+                    <td> Installer based on IzPack. Includes source. Required for MS Vista.</td>
                 </tr>
                 <tr>
                     <td>
@@ -185,7 +185,7 @@
             <section>
                 <title>Java versions</title>
                 <p>eXist-db versions <b>1.0.x</b>, <b>1.1.x</b> and <b>1.2.x</b> require at least
-                    java <b>1.4.2</b>. Starting with eXist-db version <b>1.3.x</b> at least
+                    java <b>1.4.2</b>. Starting with eXist-db version <b>1.3.x</b>, at least
                     <b>Java5</b> is required. The database has been implemented and tested with the
                     Java implementation of Sun. Implementations of other vendors will probably work
                     but has not been tested.</p>
