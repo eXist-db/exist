@@ -75,11 +75,30 @@ public class XIncludeFilter implements Receiver {
     private final static QName HREF_ATTRIB = new QName("href", "");
 
     private static final QName XPOINTER_ATTRIB = new QName("xpointer", "");
-    
+
+    private static final String XI_INCLUDE = "include";
+
+    private static final String XI_FALLBACK = "fallback";
+
+    private static class ResourceError extends Exception {
+
+        private ResourceError(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        private ResourceError(String message) {
+            super(message);
+        }
+    }
+
     private Receiver receiver;
     private Serializer serializer;
     private DocumentImpl document = null;
     private HashMap namespaces = new HashMap(10);
+
+    private boolean inFallback = false;
+
+    private ResourceError error = null;
 
     public XIncludeFilter(Serializer serializer, Receiver receiver) {
 		this.receiver = receiver;
@@ -100,20 +119,24 @@ public class XIncludeFilter implements Receiver {
 
 	public void setDocument(DocumentImpl doc) {
 		document = doc;
-	}
+        inFallback = false;
+        error = null;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.Receiver#characters(java.lang.CharSequence)
 	 */
 	public void characters(CharSequence seq) throws SAXException {
-		receiver.characters(seq);
+        if (!inFallback || error != null)
+            receiver.characters(seq);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.Receiver#comment(char[], int, int)
 	 */
 	public void comment(char[] ch, int start, int length) throws SAXException {
-		receiver.comment(ch, start, length);
+        if (!inFallback || error != null)
+            receiver.comment(ch, start, length);
 	}
 	
 	/**
@@ -126,10 +149,22 @@ public class XIncludeFilter implements Receiver {
 	/**
 	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
 	 */
-	public void endElement(QName qname) throws SAXException {
-		if( !XINCLUDE_NS.equals( qname.getNamespaceURI() ) )
-			receiver.endElement(qname);
-	}
+    public void endElement(QName qname) throws SAXException {
+        if (XINCLUDE_NS.equals(qname.getNamespaceURI())) {
+            if (XI_FALLBACK.equals(qname.getLocalName())) {
+                inFallback = false;
+                // clear error
+                error = null;
+            } else if (XI_INCLUDE.equals(qname.getLocalName()) && error != null) {
+                // found an error, but there was no fallback element.
+                // throw the exception now
+                Exception e = error;
+                error = null;
+                throw new SAXException(e.getMessage(), e);
+            }
+        } else if (!inFallback || error != null)
+            receiver.endElement(qname);
+    }
 	
 	public void endPrefixMapping(String prefix) throws SAXException {
 		namespaces.remove(prefix);
@@ -140,14 +175,16 @@ public class XIncludeFilter implements Receiver {
 	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
 	 */
 	public void processingInstruction(String target, String data) throws SAXException {
-		receiver.processingInstruction(target, data);
+        if (!inFallback || error != null)
+            receiver.processingInstruction(target, data);
 	}
 
     /**
      * @see org.exist.util.serializer.Receiver#cdataSection(char[], int, int)
      */
     public void cdataSection(char[] ch, int start, int len) throws SAXException {
-        receiver.cdataSection(ch, start, len);
+        if (!inFallback || error != null)
+            receiver.cdataSection(ch, start, len);
     }
     
 	/**
@@ -161,7 +198,8 @@ public class XIncludeFilter implements Receiver {
 	 * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.QName, java.lang.String)
 	 */
 	public void attribute(QName qname, String value) throws SAXException {
-		receiver.attribute(qname, value);
+        if (!inFallback || error != null)
+            receiver.attribute(qname, value);
 	}
 	
 	/* (non-Javadoc)
@@ -169,11 +207,20 @@ public class XIncludeFilter implements Receiver {
 	 */
 	public void startElement(QName qname, AttrList attribs) throws SAXException {
 		if (qname.getNamespaceURI() != null && qname.getNamespaceURI().equals(XINCLUDE_NS)) {
-			if (qname.getLocalName().equals("include")) {
-				LOG.debug("processing include ...");
-				processXInclude(attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB));
-			}
-		} else {
+			if (qname.getLocalName().equals(XI_INCLUDE)) {
+                if (LOG.isDebugEnabled())
+                    LOG.debug("processing include ...");
+                try {
+                    processXInclude(attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB));
+                } catch (ResourceError resourceError) {
+                    if (LOG.isDebugEnabled())
+                        LOG.debug(resourceError.getMessage(), resourceError);
+                    error = resourceError;
+                }
+            } else if (qname.getLocalName().equals(XI_FALLBACK)) {
+                inFallback = true;
+            }
+        } else if (!inFallback || error != null) {
 			//LOG.debug("start: " + qName);
 			receiver.startElement(qname, attribs);
 		}
@@ -188,7 +235,7 @@ public class XIncludeFilter implements Receiver {
         // not supported with this receiver
     }
 
-    protected void processXInclude(String href, String xpointer) throws SAXException {
+    protected void processXInclude(String href, String xpointer) throws SAXException, ResourceError {
         if(href == null)
             throw new SAXException("No href attribute found in XInclude include element");
         // save some settings
@@ -272,10 +319,10 @@ public class XIncludeFilter implements Receiver {
         try {
             doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
             if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
-                throw new PermissionDeniedException("Permission denied to read xincluded resource");
+                throw new ResourceError("Permission denied to read xincluded resource");
         } catch (PermissionDeniedException e) {
             LOG.warn("permission denied", e);
-            throw new SAXException(e);
+            throw new ResourceError("Permission denied to read xincluded resource", e);
         }
         /* if document has not been found and xpointer is
                * null, throw an exception. If xpointer != null
@@ -283,7 +330,7 @@ public class XIncludeFilter implements Receiver {
                * a collection.
                */
         if (doc == null && xpointer == null)
-            throw new SAXException("document " + docUri + " not found");
+            throw new ResourceError("document " + docUri + " not found");
 
         /* Check if the document is a stored XQuery */
         boolean xqueryDoc = false;
@@ -445,5 +492,5 @@ public class XIncludeFilter implements Receiver {
     public Document getDocument() {
     	//ignored
     	return null;
-    }     
+    }
 }
