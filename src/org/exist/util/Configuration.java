@@ -431,7 +431,7 @@ public class Configuration implements ErrorHandler
     }
     
     /**
-     * @param xupdates
+     * @param xupdate
      * @throws NumberFormatException
      */
     private void configureXUpdate(Element xupdate) throws NumberFormatException {
@@ -467,7 +467,7 @@ public class Configuration implements ErrorHandler
     }
     
     /**
-     * @param serializers
+     * @param serializer
      */
     private void configureSerializer(Element serializer) {
         String xinclude = serializer.getAttribute(Serializer.ENABLE_XINCLUDE_ATTRIBUTE);
@@ -612,7 +612,7 @@ public class Configuration implements ErrorHandler
     
     /**
      * @param dbHome
-     * @param dbcon
+     * @param con
      * @throws DatabaseConfigurationException
      */
     private void configureBackend(String dbHome, Element con) throws DatabaseConfigurationException {
@@ -663,16 +663,6 @@ public class Configuration implements ErrorHandler
             try {
                 config.put(NativeBroker.PROPERTY_PAGE_SIZE, new Integer(pageSize));
                 LOG.debug(NativeBroker.PROPERTY_PAGE_SIZE + ": " + config.get(NativeBroker.PROPERTY_PAGE_SIZE));
-            } catch (NumberFormatException nfe) {
-                LOG.warn(nfe);
-            }
-        }
-        
-        String freeMem = con.getAttribute(NativeBroker.MIN_FREE_MEMORY_ATTRIBUTE);
-        if (freeMem != null) {
-            try {
-                config.put(NativeBroker.PROPERTY_MIN_FREE_MEMORY, new Integer(freeMem));
-                LOG.debug(NativeBroker.PROPERTY_MIN_FREE_MEMORY + ": " + config.get(NativeBroker.PROPERTY_MIN_FREE_MEMORY));
             } catch (NumberFormatException nfe) {
                 LOG.warn(nfe);
             }
@@ -861,7 +851,7 @@ public class Configuration implements ErrorHandler
     }
     
     /**
-     * @param watchConf
+     * @param watchDog
      */
     private void configureWatchdog(Element watchDog) {
         String timeout = watchDog.getAttribute("query-timeout");
@@ -886,7 +876,7 @@ public class Configuration implements ErrorHandler
     }
     
     /**
-     * @param queryPoolConf
+     * @param queryPool
      */
     private void configureXQueryPool(Element queryPool) {
         String maxStackSize = queryPool.getAttribute(XQueryPool.MAX_STACK_SIZE_ATTRIBUTE);
@@ -931,7 +921,7 @@ public class Configuration implements ErrorHandler
     }
     
     /**
-     * @param poolConf
+     * @param pool
      */
     private void configurePool(Element pool) {
         String min = pool.getAttribute(BrokerPool.MIN_CONNECTIONS_ATTRIBUTE);
