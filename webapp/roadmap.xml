@@ -994,7 +994,7 @@
 	    <event start="20080110T000000Z" end="20080228T000000Z" task="14" isDuration="true" />
             <who>ljo</who>
             <remark>
-                <p>Change the parser to ANTLR3 which is better performant, k* lookahead capable and processes whitespace in a better manner than ANTRR2 which we currently are using.</p>
+                <p>Change the parser to ANTLR3 which is better performant, k* lookahead capable and processes whitespace in a better manner than ANTLR2 which we currently are using.</p>
             </remark>
         </part>
         <part>
