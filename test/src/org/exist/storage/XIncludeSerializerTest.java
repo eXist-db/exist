@@ -21,25 +21,29 @@
  */
 package org.exist.storage;
 
+import junit.textui.TestRunner;
+import org.apache.xmlrpc.XmlRpc;
+import org.apache.xmlrpc.XmlRpcClient;
+import org.custommonkey.xmlunit.Diff;
+import org.exist.StandaloneServer;
+import org.exist.xmldb.XmldbURI;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.mortbay.util.MultiException;
+import org.xml.sax.SAXException;
+
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Vector;
 
-import junit.textui.TestRunner;
-
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLTestCase;
-import org.exist.StandaloneServer;
-import org.exist.xmldb.XmldbURI;
-import org.mortbay.util.MultiException;
- 
 
 /**
  * @author jim fuller at webcomposite.com
@@ -50,7 +54,7 @@ import org.mortbay.util.MultiException;
  * 
  * 
  */
-public class XIncludeSerializerTest extends XMLTestCase {
+public class XIncludeSerializerTest {
 
 	private static StandaloneServer server = null;
     
@@ -102,6 +106,22 @@ public class XIncludeSerializerTest extends XMLTestCase {
     	"</root>" +
     	"</test>";
 
+    private final static String XML_DATA7 =
+        "<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+    	"<root>" +
+    	"<xi:include href='data/unknown.xml'>" +
+        "<xi:fallback><warning>Not found</warning></xi:fallback>" +
+        "</xi:include>" +
+        "</root>" +
+    	"</test>";
+
+    private final static String XML_DATA8 =
+        "<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+    	"<root>" +
+    	"<xi:include href='data/unknown.xml'/>" +
+        "</root>" +
+    	"</test>";
+
     private final static String XML_RESULT ="<test xmlns:xi='http://www.w3.org/2001/XInclude'>"+
     "<root>" +
     "<html>" +
@@ -118,13 +138,11 @@ public class XIncludeSerializerTest extends XMLTestCase {
     "</root>"+
     "</test>";
 
-    public XIncludeSerializerTest() {
-        try {
-	    setUp();
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-    }//xincludeserializertest
+    private final static String XML_RESULT_FALLBACK1 = "<test xmlns:xi='http://www.w3.org/2001/XInclude'>"+
+        "<root>" +
+        "<warning>Not found</warning>" +
+        "</root>" +
+    	"</test>";
 
 
 
@@ -132,7 +150,8 @@ public class XIncludeSerializerTest extends XMLTestCase {
      * REST tests
      *
      */
-    public void testABSSimpleREST() {
+    @Test
+    public void absSimpleREST() {
        try { 
 
     	    // path needs to indicate indent and wrap is off
@@ -165,10 +184,10 @@ public class XIncludeSerializerTest extends XMLTestCase {
             fail(e.getMessage());
         }
         
-    }//testABSSimpleREST
+    }//absSimpleREST
 
-
-    public void testRELSimpleREST1() {
+    @Test
+    public void relSimpleREST1() {
         try { 
          	String uri = REST_URI + "/test_relative1.xml?_indent=no&_wrap=no";
       
@@ -196,10 +215,11 @@ public class XIncludeSerializerTest extends XMLTestCase {
              fail(e.getMessage());
          }
          
-     }//testRELSimpleREST1
+     }//relSimpleREST1
 
-    
-    public void testRELSimpleREST2() {
+
+    @Test
+    public void relSimpleREST2() {
         try { 
          // path needs to indicate indent and wrap is off
          	String uri = REST_URI + "/test_relative2.xml?_indent=no&_wrap=no";
@@ -228,9 +248,10 @@ public class XIncludeSerializerTest extends XMLTestCase {
              fail(e.getMessage());
          }
          
-     }//testRELSimpleREST
+     }//relSimpleREST
 
-    public void testXPointerREST3() {
+    @Test
+    public void xPointerREST3() {
         try {
             String uri = REST_URI + "/test_xpointer1.xml?_indent=no&_wrap=no";
 
@@ -259,7 +280,8 @@ public class XIncludeSerializerTest extends XMLTestCase {
         }
     }
 
-    public void testXPointerREST4() {
+    @Test
+    public void xPointerREST4() {
         try {
             String uri = REST_URI + "/test_xpointer2.xml?_indent=no&_wrap=no";
 
@@ -286,6 +308,56 @@ public class XIncludeSerializerTest extends XMLTestCase {
         } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    public void fallback1() {
+        try {
+            String uri = REST_URI + "/test_fallback1.xml?_indent=no&_wrap=no";
+
+            HttpURLConnection connect = getConnection(uri);
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+            String line;
+            StringBuffer out = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+                out.append("\r\n");
+            }
+            String responseXML = out.toString();
+
+            System.out.println("response XML:"+ responseXML);
+            System.out.println("control XML" + XML_RESULT_FALLBACK1);
+
+            Diff myDiff = new Diff(XML_RESULT_FALLBACK1, responseXML);
+            assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
+            assertTrue("but are they identical? " + myDiff, myDiff.identical());
+
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void fallback2() throws Exception {
+        String uri = REST_URI + "/test_fallback2.xml?_indent=no&_wrap=no";
+
+        HttpURLConnection connect = getConnection(uri);
+        connect.setRequestMethod("GET");
+        connect.connect();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+        String line;
+        StringBuffer out = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+            out.append(line);
+            out.append("\r\n");
+        }
+        String responseXML = out.toString();
+
+        System.out.println("response XML:"+ responseXML);
     }
 
     // @TODO add full url test e.g. http://www.example.org/test.xml for xinclude
@@ -340,7 +412,7 @@ public class XIncludeSerializerTest extends XMLTestCase {
 
     }//httpurlconnection
        
-	protected XmlRpcClient getClient() {
+	protected static XmlRpcClient getClient() {
 
 		try {
 			XmlRpc.setEncoding("UTF-8");
@@ -361,7 +433,8 @@ public class XIncludeSerializerTest extends XMLTestCase {
      * SetUp / TearDown functions
      *
      */
-    protected void setUp() {
+    @BeforeClass
+    public static void startDB() {
         //Don't worry about closing the server : the shutdown hook will do the job
         try {
             if (server == null) {
@@ -443,13 +516,25 @@ public class XIncludeSerializerTest extends XMLTestCase {
 			params.addElement("/db/xinclude_test/test_xpointer2.xml");
 			params.addElement(new Integer(1));
 			Boolean resultFile8 = (Boolean)xmlrpc.execute("parse", params);
+
+            params.clear();
+			params.addElement(XML_DATA7);
+			params.addElement("/db/xinclude_test/test_fallback1.xml");
+			params.addElement(new Integer(1));
+			Boolean resultFile9 = (Boolean)xmlrpc.execute("parse", params);
+
+            params.clear();
+			params.addElement(XML_DATA8);
+			params.addElement("/db/xinclude_test/test_fallback2.xml");
+			params.addElement(new Integer(1));
+			Boolean resultFile10 = (Boolean)xmlrpc.execute("parse", params);
         } catch (Exception e) {
             fail(e.getMessage());
         }
     }
 
-
-    protected void tearDown() throws Exception {
+    @AfterClass
+    public static void stopDB() throws Exception {
     	try{
 			XmlRpcClient xmlrpc = getClient();
 			Vector params = new Vector();
@@ -463,7 +548,7 @@ public class XIncludeSerializerTest extends XMLTestCase {
 
     
     public static void main(String[] args) {
-    	TestRunner.run(XIncludeSerializerTest.class);
+        org.junit.runner.JUnitCore.runClasses(XIncludeSerializerTest.class);
     }
 
 }//XIncludeserializertest
