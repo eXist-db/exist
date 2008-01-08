@@ -57,12 +57,12 @@
             </note>
 
             <para>Perform the following steps in Internet Explorer: <itemizedlist>
-                    <listitem>Select <command>File -> Open</command>.</listitem>
-                    <listitem>Fill in URL like
+                    <listitem><para>Select <command>File -&gt; Open</command>.</para></listitem>
+                    <listitem><para>Fill in URL like
                         <command>http://localhost:8080/exist/webdav/db/</command> or
-                            <command>https://localhost:8443/exist/webdav/db/</command>.</listitem>
-                    <listitem>Check "Open as Web Folder".</listitem>
-                    <listitem>Click OK.</listitem>
+                            <command>https://localhost:8443/exist/webdav/db/</command>.</para></listitem>
+                    <listitem><para>Check "Open as Web Folder".</para></listitem>
+                    <listitem><para>Click OK.</para></listitem>
                 </itemizedlist>
                 <screenshot>
                     <graphic fileref="resources/webdav_xp_webfolders.png"/>
@@ -129,25 +129,24 @@
 
             <para>
                 <itemizedlist>
-                    <listitem>Select <command>File -> Open URL</command>.</listitem>
-                    <listitem>Fill <command>User</command> and <command>Password</command>.</listitem>
-                    <listitem>Enter <command>Server Url</command>
-                        http://localhost:8080/exist/webdav/db/.</listitem>
-                    <listitem>Click <command>Browse</command>.</listitem>
+                    <listitem><para>Select <command>File -&gt; Open URL</command>.</para></listitem>
+                    <listitem><para>Fill <command>User</command> and <command>Password</command>.</para></listitem>
+                    <listitem><para>Enter <command>Server Url</command>
+                        http://localhost:8080/exist/webdav/db/.</para></listitem>
+                    <listitem><para>Click <command>Browse</command>.</para></listitem>
                 </itemizedlist>
                 <screenshot>
                     <graphic fileref="resources/webdav_oxygen.png"/>
                 </screenshot>
             </para>
             <note>
-                <para>Note on SSL; Probably you'll het the message: Error:
+                <para>Note on SSL; Probably you'll get the message: Error:
                     sun.security.validator.ValidatorException: PKIX path building failed:
                     sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid
                     certification path to requested target.</para>
                 <para>You'll need to add the Server certificate to your trusted certificates
-                    keystore (<a
-                        href="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores"
-                        >more info</a>). </para>
+                    keystore (<ulink
+                        url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores">more info</ulink>).</para>
             </note>
 
             <note>
@@ -166,12 +165,12 @@
 
             <para>
                 <itemizedlist>
-                    <listitem>Select <command>File -> Open URL</command>
+                    <listitem><para>Select <command>File -&gt; Open URL</command></para>
                     </listitem>
-                    <listitem>Enter <command>Username, Password</command>
-                    </listitem>
-                    <listitem>Enter <command>Server URL</command> without a slash on the end
-                        (otherwise you'll see 2x 'db')</listitem>
+                    <listitem><para>Enter <command>Username, Password</command>
+                    </para></listitem>
+                    <listitem><para>Enter <command>Server URL</command> without a slash on the end
+                        (otherwise you'll see 2x 'db')</para></listitem>
                 </itemizedlist>
                 <screenshot>
                     <graphic fileref="resources/webdav_xmlspy.png"/>
