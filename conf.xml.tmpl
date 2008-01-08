@@ -153,9 +153,6 @@
             - enabled:
                 if this attribute is set to yes, automatic recovery is enabled.
             
-            - group-commit:
-                not documented.
-            
             - journal-dir:     
                 this attribute sets the directory where journal files are to be
                 written. If no directory is specified, the default path is to
@@ -184,6 +181,16 @@
                 in which there is a complete system failure, some committed 
                 transactions might not have yet been written to the journal, 
                 and so will be rolled back.
+
+            - group-commit:
+                If set to "yes", eXist will not sync the journal file 
+                immediately after every transaction commit. Instead, 
+                it will wait until the current file buffer (32kb)
+                is really full. This can speed up eXist on some systems 
+                where a file sync is an expensive operation (mainly windows 
+                XP; not necessary on Linux). However, group-comit="yes"
+                will increase the risk of an already committed 
+                operation being rolled back after a database crash.
         -->
         <recovery enabled="yes" group-commit="no"
             journal-dir="webapp/WEB-INF/data" size="100M" sync-on-commit="no" />
@@ -591,13 +598,8 @@
     </xquery>
 
     <!-- 
-      During XUpdates, the database needs to do a partial reindex of the
-      document whenever the internal node-id structure has changed. Reindex
-      runs can occur quite frequently and slow down the XUpdate process.
-    
-      Frequent reindex runs can be avoided by leaving some space between the
-      numeric identifiers assigned to every node. Future insertions will first
-      fill up these spare identifiers, so no reindex is required.
+      Inserting new nodes into a document can lead to fragmentation
+      in the DOM storage file.
 
         - allowed-fragmentation:
             defines the maximum number of page splits allowed within a document
@@ -610,15 +612,7 @@
             pointers in the structural index point to valid storage addresses 
             containing valid nodes.
         
-        - growth-factor: 
-            determines the number of spare ids to be inserted whenever the node
-            id scheme is recomputed after an XUpdate.
-            Increase the setting to have less reindex runs. However, you have
-            to be aware that leaving spare ids also limits the maximum size of
-            a document that can be indexed. 
-        
     -->
-    <xupdate allowed-fragmentation="5" enable-consistency-checks="no"
-        growth-factor="20" />
+    <xupdate allowed-fragmentation="5" enable-consistency-checks="no"/>
 
 </exist>

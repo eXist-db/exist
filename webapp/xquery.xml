@@ -1013,7 +1013,7 @@ example:echo(("Hello", "World!"))
                 class name leading to the driver class of the module.</para>
         </section>
 
-        <section>
+        <section id="collations">
             <title>Using Collations</title>
 
             <para>Collations are used to compare strings in a <emphasis>locale-sensitive</emphasis>
@@ -1062,6 +1062,13 @@ return $w</synopsis>
 
             <para>Which returns <option>true</option>. Note that if you use the default codepoint
                 collation instead, the comparison would evaluate to <option>false</option>.</para>
+            
+            <note>
+                <para>eXist's range index is currently only usable with the default codepoint
+                collation. This means that comparisons using a different collation will not be
+                index-assisted and will thus be slow. We plan to support collation-aware indexes
+                in the 1.3 release.</para>
+            </note>
         </section>
 
         <section id="serialization">
@@ -1202,7 +1209,7 @@ return $w</synopsis>
                 However, attribute values, processing instructions, comments, etc. are all
             ignored.</para>
         </section>
-        <section>
+        <section id="xqopts">
             <title>Other Options</title>
 
             <para>To avoid that the server is blocked by a badly formulated query, eXist watches all
