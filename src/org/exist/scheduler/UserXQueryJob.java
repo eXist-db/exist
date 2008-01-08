@@ -150,16 +150,19 @@ public class UserXQueryJob extends UserJob
 	        );
 	        
 	        //declare any parameters as external variables
-	        String bindingPrefix = params.getProperty("bindingPrefix");
-	        if(bindingPrefix == null)
-	        	bindingPrefix = "local";
-	        Enumeration paramNames = params.keys();
-	        while(paramNames.hasMoreElements())
-	        {
-	        	String name = (String)paramNames.nextElement();
-	        	String value = params.getProperty(name);
-	        	context.declareVariable(bindingPrefix + ":" + name, new StringValue(value));
-	        }
+			if( params != null ) {
+		        String bindingPrefix = params.getProperty("bindingPrefix");
+		        if( bindingPrefix == null ) {
+		        	bindingPrefix = "local";
+				}
+		        Enumeration paramNames = params.keys();
+		        while(paramNames.hasMoreElements())
+		        {
+		        	String name = (String)paramNames.nextElement();
+		        	String value = params.getProperty(name);
+		        	context.declareVariable(bindingPrefix + ":" + name, new StringValue(value));
+		        }
+			}
 	        
 	        if(compiled == null)
 	        {
