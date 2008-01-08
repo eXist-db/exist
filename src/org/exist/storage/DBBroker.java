@@ -86,12 +86,6 @@ public abstract class DBBroker extends Observable {
 
 	//TODO : move elsewhere
 	public static final String CONFIGURATION_ELEMENT_NAME = "xupdate";
-	
-    //TODO : move elsewhere
-    public final static String XUPDATE_GROWTH_FACTOR_ATTRIBUTE = "growth-factor";
-
-    //TODO : move elsewhere
-    public final static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";
     
     //TODO : move elsewhere
     public final static String XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE = "allowed-fragmentation";
@@ -134,8 +128,6 @@ public abstract class DBBroker extends Observable {
 
 		//Copy specific properties
 		//TODO : think about an automatic copy
-		customProperties.put(PROPERTY_XUPDATE_GROWTH_FACTOR,
-				new Integer(config.getInteger(PROPERTY_XUPDATE_GROWTH_FACTOR)));
 		customProperties.put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR,
 				new Integer(config.getInteger(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)));
 		temp = (Boolean) config.getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS);

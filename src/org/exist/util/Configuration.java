@@ -435,12 +435,6 @@ public class Configuration implements ErrorHandler
      * @throws NumberFormatException
      */
     private void configureXUpdate(Element xupdate) throws NumberFormatException {
-        String growth = xupdate.getAttribute(DBBroker.XUPDATE_GROWTH_FACTOR_ATTRIBUTE);
-        if (growth != null) {
-            config.put(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR, new Integer(growth));
-            LOG.debug(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR + ": "
-                + config.get(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR));
-        }
         
         String fragmentation = xupdate.getAttribute(DBBroker.XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE);
         if (fragmentation != null) {
