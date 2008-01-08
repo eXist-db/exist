@@ -462,34 +462,6 @@ Logging already initialized. Skipping...
                 (client-side messages such as browser errors are not useful for
             troubleshooting).</para>
         </section>
-        <section id="sect11">
-            <title>Resources</title>
-            <itemizedlist>
-                <listitem>
-                    <para>
-                        <ulink url="http://www.w3.org/XML/">W3C Extensible Markup Language
-                        (XML)</ulink>
-                    </para>
-                </listitem>
-                <listitem>
-                    <para>
-                        <ulink url="http://www.w3.org/TR/xquery/">W3C XML Query Language</ulink>
-                    </para>
-                </listitem>
-                <listitem>
-                    <para>
-                        <ulink url="http://wiki.exist-db.org/space/Tutorials/">User-contributed
-                            (Wiki) Tutorials</ulink>
-                    </para>
-                </listitem>
-                <listitem>
-                    <para>
-                        <ulink url="http://wiki.exist-db.org/space/HowTos/">User-contributed (Wiki)
-                            How-Tos</ulink>
-                    </para>
-                </listitem>
-            </itemizedlist>
-        </section>
         <section id="appendix">
             <title>Running Executable Files</title>
             <para>Included in the distribution are a number of useful <filename>.sh</filename> (Unix
