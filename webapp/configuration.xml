@@ -1,503 +1,433 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
-  <bookinfo>
-    <graphic fileref="logo.jpg"/>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
 
-    <productname>Open Source Native XML Database</productname>
-    <title>Server Configuration</title>
+        <productname>Open Source Native XML Database</productname>
+        <title>Server Configuration</title>
 
-    <author>
-      <firstname>Wolfgang M.</firstname>
-      <surname>Meier</surname>
-      <affiliation>
-        <address format="linespecific">
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
           <email>wolfgang at exist-db.org</email>
         </address>
-      </affiliation>
-    </author>
+            </affiliation>
+        </author>
 
-    <author>
-      <surname>Milowski</surname>
+        <author>
+            <surname>Milowski</surname>
 
-      <firstname>Alex</firstname>
+            <firstname>Alex</firstname>
 
-      <email>alexmilowski@users.sourceforge.net</email>
-    </author>
-  </bookinfo>
+            <email>alexmilowski@users.sourceforge.net</email>
+        </author>
+    </bookinfo>
 
-  <ci:include src="sidebar.xml"/>
+    <ci:include src="sidebar.xml"/>
 
-  <chapter>
-    <title>Server Configuration</title>
+    <chapter>
+        <title>Server Configuration</title>
 
-    <section>
-      <title>Overview</title>
-      <para>This section deals with the configuration of the eXist server. The main configuration
-        file for <application>eXist</application> is called <filename>conf.xml</filename>, which is
-        loaded from different directories depending on the server set-up (see <ulink
-          url="deployment.xml">Server Deployment</ulink> for more information).</para>
-      <para>Specifically, if you run a <emphasis>standalone</emphasis> database server, the
-          <filename>conf.xml</filename> file located in the root directory of the distribution (as
-        specified by the system property <option>exist.home</option>) will be loaded by default.
-        Note as well that in standalone mode, the server reads <filename>server.xml</filename> for
-        its configuration values. This file resides in eXist's root directory and is used to control
-        the Jetty server (e.g. port settings), URL forwarding, and the servlets (i.e. WebDAV,
-        XML-RPC and REST services). On the other hand, if eXist is running in a servlet-context,
-          <filename moreinfo="none"> conf.xml</filename> is read from the <filename moreinfo="none"
-          >WEB-INF</filename> directory of the web application.</para>
-      <para>Why is the configuration file placed in two separate locations? The reason is that eXist
-        normally has no access to files outside the context in which it is running when it is
-        deployed as part of a web application - i.e. packaged in a <filename>.war</filename> file.
-        Therefore, when eXist is deployed in this way, the configuration is read from the
-          <filename>WEB-INF</filename> directory.</para>
-    </section>
+        <section>
+            <title>Overview</title>
+            <para>This section deals with the configuration of the eXist server. The main
+                configuration file for <application>eXist</application> is called
+                <filename>conf.xml</filename>, which is loaded from different directories depending
+                on the server set-up (see <ulink url="deployment.xml">Server Deployment</ulink> for
+                more information).</para>
+            <para>Specifically, if you installed the standalone eXist distribution with the
+                installer, the <filename>conf.xml</filename> file located in the root directory of
+                the distribution (as specified by the system property <option>exist.home</option>)
+                will be loaded by default. On the other hand, if eXist is installed as a web
+                application (packaged in a <filename>.war</filename> file) in a servlet engine like
+                tomcat, <filename moreinfo="none"> conf.xml</filename> is read from the <filename
+                    moreinfo="none">WEB-INF</filename> directory of the web application.</para>
+            <para>Why is the configuration file placed in two separate locations? The reason is that
+                eXist normally has no access to files outside the context in which it is running
+                when it is deployed as part of a web application. Therefore, when eXist is deployed
+                in this way, the configuration is read from the <filename>WEB-INF</filename>
+                directory.</para>
+        </section>
 
-    <section>
-      <title>eXist Configuration: Editing conf.xml</title>
-      <para>The configuration file <filename moreinfo="none">conf.xml</filename> can be divided into
-        four sections with the following elements:</para>
-      <variablelist>
-        <varlistentry>
-          <term>&lt;db-connection&gt;</term>
-          <listitem>
-            <para>Configures the storage back-end.</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>&lt;serializer&gt;</term>
-          <listitem>
-            <para>Default settings for the serializer (external data representation).</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>&lt;indexer&gt;</term>
-          <listitem>
-            <para>Controls the indexing process.</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>&lt;xupdate&gt;</term>
-          <listitem>
-            <para>Configuration options related to XUpdate processing.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
+        <section>
+            <title>eXist Configuration: Editing conf.xml</title>
+            <para>The configuration file <filename moreinfo="none">conf.xml</filename> can be
+                divided into four sections with the following elements:</para>
+            <variablelist>
+                <varlistentry>
+                    <term>&lt;db-connection&gt;</term>
+                    <listitem>
+                        <para>Configures the storage back-end.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>&lt;serializer&gt;</term>
+                    <listitem>
+                        <para>Default settings for the serializer (external data
+                        representation).</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>&lt;indexer&gt;</term>
+                    <listitem>
+                        <para>Controls the indexing process.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>&lt;xupdate&gt;</term>
+                    <listitem>
+                        <para>Configuration options related to XUpdate processing.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
 
-      <para>The following sections describe the attributes and child elements of the above elements.</para>
+            <para>The following sections describe the attributes and child elements of the above
+                elements.</para>
 
-      <section>
-        <title>&lt;db-connection&gt;</title>
-        <para>This element contains basic default storage settings for eXist, including memory and
-          system limits. Only one <sgmltag>db-connection</sgmltag> should be specified. An example
-          configuration for the native back-end is shown below:</para>
+            <section>
+                <title>&lt;db-connection&gt;</title>
+                <para>This element contains basic default storage settings for eXist, including
+                    memory and system limits. Only one <sgmltag>db-connection</sgmltag> should be
+                    specified. An example configuration for the native back-end is shown below:</para>
 
-        <example>
-          <title>Basic &lt;db-connection&gt; Entry</title>
+                <example>
+                    <title>Basic &lt;db-connection&gt; Entry</title>
 
-          <programlisting format="linespecific"><![CDATA[<db-connection database="native" files="data" 
-      cacheSize="48M" free_mem_min="5" pageSize="4096">
+                    <programlisting format="linespecific">
+  <markup><![CDATA[<db-connection cacheSize="64M" collectionCache="24M" database="native"
+        files="webapp/WEB-INF/data" free_mem_min="5" pageSize="4096">
       <pool min="1" max="15" sync-period="240000" wait-before-shutdown="60000"/>
+      <!--default-permissions collection="0775" resource="0775" /-->
       <recovery enabled="yes" sync-on-commit="no" group-commit="no" size="100M" 
             journal-dir="webapp/WEB-INF/data"/>
+      <!-- security class="org.exist.security.LDAPSecurityManager" /-->
       <watchdog query-timeout="-1" output-size-limit="10000"/>
       <default-permissions collection="0775" resource="0775"/>
-</db-connection>]]>
+</db-connection>]]></markup>
 </programlisting>
-        </example>
-
-        <section>
-          <title>&lt;db-connection&gt; Attributes</title>
-          <variablelist>
-            <varlistentry>
-              <term>database</term>
-              <listitem>
-                <para>This attribute selects a database system type. Since relational database
-                  back-ends are no longer supported by the current release of eXist, only
-                    "<option>native</option>" and "<option>native_cluster</option>" are
-                available.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>files</term>
-              <listitem>
-                <para>This attribute specifies the directory where the native back-end will keep its
-                  database files, and so it is necessary that this directory exists. If a relative
-                  path is specified, it will be based on the root directory as defined in the
-                    <option>exist.home</option> system property. If this data directory does not
-                  have write permissions (see <ulink url="security.xml"> User Authentication and
-                    Access Control</ulink>), eXist will internally switch to <emphasis>read-only
-                    mode</emphasis> such that any attempt to change the database will throw an
-                  exception.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>cacheSize</term>
-              <listitem>
-                <para>This attribute sets the maximum amount of main memory used by all page buffers
-                  (i.e. assuming all page buffers are at full capacity). The database uses this
-                  parameter to calculate the maximum size of each internal cache. You can increase
-                  this value if your system allows for greater memory use.</para>
-                <para>The cacheSize should not be more than half of the size of the JVM 
-            heap size (set by the JVM -Xmx parameter).</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>pageSize</term>
-              <listitem>
-                <para>This specifies the number of bytes used for internal data and B-tree pages.
-                  This should be equal to or a multiple of the page size used by the filesystem
-                  (usually a multiple of 4096).</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>free_mem_min</term>
-              <listitem>
-                <para>This attribute sets the amount of free memory (expressed as a percentage of
-                  the total memory) available for the Java virtual machine, beyond which eXist will
-                  begin to flush its internal caches. During indexing, eXist caches index data in
-                  memory to avoid frequent disk look-ups (see <ulink url="indexing.xml">Configuring
-                    Database Indexes</ulink>). If the amount of free memory drops below the defined
-                  limit, eXist will write all cached data to disk and trigger the garbage
-                  collection.</para>
-                <para>If your database files are relatively large (i.e. &gt; 50MB) or if you
-                  experience <option>OutOfMemory</option> errors during indexing, you may consider
-                  increasing this setting to &gt; 10%.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-
-        <section>
-          <title>&lt;pool&gt;</title>
-          <para>These settings control the internal database connection pool.</para>
-          <variablelist>
-            <title>&lt;pool&gt; Attributes</title>
-            <varlistentry>
-              <term>min | max</term>
-              <listitem>
-                <para>These options specify the minimum and maximum size of the connection pool.
-                  This pool restricts the number of parallel (basic) operations that can be executed
-                  by the database. Settings should be somewhere between 1 and 20. (Please note that
-                  this has nothing to do with the HTTP and XMLRPC server settings - these servers
-                  have their own connection pools.)</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>sync-period</term>
-              <listitem>
-                <para>This option defines how often the database will flush its internal buffers to
-                  disk (in milliseconds). The sync-thread will interrupt normal database operation
-                  after the specified time and write all dirty pages to disk.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>wait-before-shutdown</term>
-              <listitem>
-                <para>This option specifies the maximum amount of time (in milliseconds) that the
-                  database will allow for any running processes to complete upon database
-                shutdown.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-
-        <section>
-          <title>&lt;recovery&gt;</title>
-          <para>This element configures the journaling and recovery of the database. With recovery
-            enabled, the database is able to recover from an unclean database shutdown due to, for
-            example, power failures, OS reboots, and hanging processes. For this to work correctly,
-            all database operations must be logged to a journal file. The location, size and other
-            parameters for this file can be set using the <sgmltag>recovery</sgmltag> element.</para>
-          <variablelist>
-            <title>&lt;recovery&gt; Attributes</title>
-            <varlistentry>
-              <term>enabled</term>
-              <listitem>
-                <para>If this attribute is set to <option>yes</option>, automatic recovery is
-                  enabled.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>size</term>
-              <listitem>
-                <para>This attributes sets the maximum allowed size of the journal file. Once the
-                  journal reaches this limit, a checkpoint will be triggered and the journal will be
-                  cleaned. However, the database waits for running transactions to return before
-                  processing this checkpoint. In the event one of these transactions writes a lot of
-                  data to the journal file, the file will grow until the transaction has completed.
-                  Hence, the size limit is not enforced in all cases.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>journal-dir</term>
-              <listitem>
-                <para>This attribute sets the directory where journal files are to be written. If no
-                  directory is specified, the default path is to the <filename>data</filename>
-                  directory.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>sync-on-commit</term>
-              <listitem>
-                <para>This attribute determines whether or not to protect the journal during
-                  operating system failures. That is, it determines whether the database forces a
-                  file-sync on the journal after every commit. If this attribute is set to
-                    "<option>yes</option>", the journal is protected against operating system
-                  failures. However, this will slow performance - especially on Windows systems. If
-                  set to "<option>no</option>", eXist will rely on the operating system to flush out
-                  the journal contents to disk. In the worst case scenario, in which there is a
-                  complete system failure, some committed transactions might not have yet been
-                  written to the journal, and so will be rolled back.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-
-        <section>
-          <title>&lt;watchdog&gt;</title>
-          <para>This is the global configuration for the <emphasis>query watchdog</emphasis>. The
-            watchdog monitors all query processes, and can terminate any long-running queries if
-            they exceed one of the predefined limits. These limits are as follows:</para>
-          <variablelist>
-            <title>&lt;watchdog&gt; Attributes</title>
-            <varlistentry>
-              <term>query-timeout</term>
-              <listitem>
-                <para>This attribute sets the maximum amount of time (expressed in milliseconds)
-                  that the query can take before it is killed..</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>output-size-limit</term>
-              <listitem>
-                <para>This attribute limits the size of XML fragments constructed using XQuery, and
-                  thus sets the maximum amount of main memory a query is allowed to use. This limit
-                  is expressed as the maximum number of nodes allowed for an in-memory DOM tree. The
-                  purpose of this option is to avoid memory shortages on the server in cases where
-                  users are allowed to run queries that produce very large output fragments.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-
-        <section>
-          <title>&lt;default-permissions&gt;</title>
-          <para>Specifies the default permissions for all resources and collections in eXist (see
-              <ulink url="security.xml"> User Authentication and Access Control</ulink>). When this
-            is not configured, the default "<option>mod</option>" (similar to the Unix "chmod"
-            command) is set to <option>0775</option> in the <option>resources</option> and
-              <option>collections</option> attributes. A different default value may be set for a
-            database instance, and local overrides are also possible.</para>
-        </section>
-
-        <section>
-          <title>&lt;security&gt;</title>
-          <para>The <sgmltag>security</sgmltag> element in the <sgmltag>db-connection</sgmltag> node
-            is used to select the security manager Class and control the database of users and
-            groups.</para>
-          <variablelist>
-            <title>&lt;security&gt; Attributes</title>
-            <varlistentry>
-              <term>class</term>
-              <listitem>
-                <para>This attribute is <emphasis>required</emphasis>, and specifies a Java class
-                  name used to implement the <code>org.exist.security.SecurityManager</code>
-                  interface, as in the following example:</para>
-                <example>
-                  <title>&lt;security&gt; <emphasis>class</emphasis> Attribute (LDAP)</title>
-                  <screen>&lt;security class="org.exist.security.LDAPSecurityManager" /&gt;</screen>
                 </example>
-                <para>eXist is distributed with the following built-in security manager
-                  implementations:</para>
-                <variablelist>
-                  <varlistentry>
-                    <term>org.exist.security.XMLSecurityManager</term>
-                    <listitem>
-                      <para>Stores the user information in the database. This is the default manager
-                        if the <sgmltag>security</sgmltag> element is not included in
-                          <sgmltag>db-connection</sgmltag>.</para>
-                    </listitem>
-                  </varlistentry>
-                  <varlistentry>
-                    <term>org.exist.security.LDAPSecurityManager</term>
-                    <listitem>
-                      <para>Retrieves the user and groups from the LDAP database. This requires
-                        addition configuration parameters which are described in the <ulink
-                          url="ldap-security.xml">LDAP Security Manager</ulink>
-                      documentation.</para>
-                    </listitem>
-                  </varlistentry>
-                </variablelist>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>password-encoding</term>
-              <listitem>
-                <para>Password encoding can be set to one of the following types:</para>
-                <orderedlist>
-                  <listitem>
-                    <para><option>plain</option> - Applies plain encryption.</para>
-                  </listitem>
-                  <listitem>
-                    <para><option>md5</option> (default) - Applies the MD5 algorithm to encrypt
-                      passwords.</para>
-                  </listitem>
-                  <listitem>
-                    <para><option>simple-md5</option> - Applies a simplified MD5 algorithm to
-                      encrypt passwords.</para>
-                  </listitem>
-                </orderedlist>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>password-realm</term>
-              <listitem>
-                <para>The realm to use for basic auth or http-digest password challenges.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-      </section>
 
-      <section>
-        <title>&lt;serializer&gt;</title>
+                <section>
+                    <title>&lt;db-connection&gt; Attributes</title>
+                    <variablelist>
+                        <varlistentry>
+                            <term>database</term>
+                            <listitem>
+                                <para>This attribute selects a database system type. Since
+                                    relational database back-ends are no longer supported by the
+                                    current release of eXist, only "<option>native</option>" and
+                                        "<option>native_cluster</option>" are available.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>files</term>
+                            <listitem>
+                                <para>This attribute specifies the directory where the native
+                                    back-end will keep its database files, and so it is necessary
+                                    that this directory exists. If a relative path is specified, it
+                                    will be based on the root directory as defined in the
+                                        <option>exist.home</option> system property. If this data
+                                    directory does not have write permissions (see <ulink
+                                        url="security.xml"> User Authentication and Access
+                                    Control</ulink>), eXist will internally switch to
+                                        <emphasis>read-only mode</emphasis> such that any attempt to
+                                    change the database will throw an exception.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>cacheSize</term>
+                            <listitem>
+                                <para>This attribute sets the maximum amount of main memory used by
+                                    all page buffers (i.e. assuming all page buffers are at full
+                                    capacity). The database uses this parameter to calculate the
+                                    maximum size of each internal cache. You can increase this value
+                                    if your system allows for greater memory use.</para>
+                                <para>While indexing documents, eXist will reserve the amount of
+                                    memory specified in cacheSize - even if not all caches are
+                                    filled - and will not use it for temporary data.</para>
+                                <para>The cacheSize should not be more than half of the size of the
+                                    JVM heap size (set by the JVM -Xmx parameter). If the JVM heap
+                                    is less than 512 megabyte, the cacheSize should even be smaller,
+                                    e.g. 1/3.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>pageSize</term>
+                            <listitem>
+                                <para>This specifies the number of bytes used for internal data and
+                                    B-tree pages. This should be equal to or a multiple of the page
+                                    size used by the filesystem (usually a multiple of 4096).</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </section>
 
-        <para>The serializer is responsible for serializing XML documents or document fragments back
-          into XML. This configuration element defines default settings for various parameters,
-          which can also be specified programmatically.</para>
+                <section>
+                    <title>&lt;pool&gt;</title>
+                    <para>These settings control the internal database connection pool.</para>
+                    <variablelist>
+                        <title>&lt;pool&gt; Attributes</title>
+                        <varlistentry>
+                            <term>min | max</term>
+                            <listitem>
+                                <para>These options specify the minimum and maximum size of the
+                                    connection pool. This pool restricts the number of parallel
+                                    (basic) operations that can be executed by the database.
+                                    Settings should be somewhere between 1 and 20. (Please note that
+                                    this has nothing to do with the HTTP and XMLRPC server settings
+                                    - these servers have their own connection pools.)</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>sync-period</term>
+                            <listitem>
+                                <para>This option defines how often the database will flush its
+                                    internal buffers to disk (in milliseconds). The sync-thread will
+                                    interrupt normal database operation after the specified time and
+                                    write all dirty pages to disk. It also writes a checkpoint to
+                                    the transaction log. In case of a database crash, only
+                                    transactions which started after the last checkpoint have to be
+                                    redone or rolled back. The sync-period should thus not be set
+                                    too long.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>wait-before-shutdown</term>
+                            <listitem>
+                                <para>This option specifies the maximum amount of time (in
+                                    milliseconds) that the database will allow for any running
+                                    processes to complete upon database shutdown. After that, eXist
+                                    will try to kill the remaining processes.</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </section>
 
-        <section>
-          <title>&lt;serializer&gt; Attributes</title>
-          <variablelist>
-            <varlistentry>
-              <term>enable-xinclude</term>
-              <listitem>
-                <para>This attribute determines whether <sgmltag>xinclude</sgmltag> tags are to be
-                  expanded during serialization. Setting the value to "<option>false</option>" will
-                  leave <sgmltag>xinclude</sgmltag> tags unexpanded.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>enable-xsl</term>
-              <listitem>
-                <para>This attribute (when set to "<option>true</option>") tells the serializer to
-                  pass its output to an XSL stylesheet when it encounters an XSL
-                  processing-instruction at the start of the document.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>add-exist-id</term>
-              <listitem>
-                <para>This attribute tells the serializer to add debug information to each element
-                  expressed as additional attributes. This information includes the internal
-                  identifier of the node and source document. These are the accepted values:</para>
-                <orderedlist>
-                  <listitem>
-                    <para><option>all</option> - Adds debug information to every node in the
-                    output.</para>
-                  </listitem>
-                  <listitem>
-                    <para><option>element</option> - Adds debug information to top-level elements
-                      only.</para>
-                  </listitem>
-                  <listitem>
-                    <para><option>none</option> (default) - Disables debugging feature.</para>
-                  </listitem>
-                </orderedlist>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>indent</term>
-              <listitem>
-                <para>The serializer defaults to pretty-print the resulting XML source code. Set
-                  this option to "<option>no</option>" to disable pretty-printing.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>match-tagging-elements</term>
-              <listitem>
-                <para>The database can highlight matches in the text content of a node by tagging
-                  the matching text string with <sgmltag>exist:match</sgmltag>. Clearly, this only
-                  works for XPath expressions using the fulltext index. Set the parameter to
-                    "<option>yes</option>" to <emphasis>disable</emphasis> this feature.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>match-tagging-attributes</term>
-              <listitem>
-                <para>Matches for attribute values can also be tagged using the character sequence
-                    "<option>||</option>" to demarcate the matching text string. Since this changes
-                  the content of the attribute value, the feature is disabled by default.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-      </section>
+                <section>
+                    <title>&lt;recovery&gt;</title>
+                    <para>This element configures the journaling and recovery of the database. With
+                        recovery enabled, the database is able to recover from an unclean database
+                        shutdown due to, for example, power failures, OS reboots, and hanging
+                        processes. For this to work correctly, all database operations must be
+                        logged to a journal file. The location, size and other parameters for this
+                        file can be set using the <sgmltag>recovery</sgmltag> element.</para>
+                    <variablelist>
+                        <title>&lt;recovery&gt; Attributes</title>
+                        <varlistentry>
+                            <term>enabled</term>
+                            <listitem>
+                                <para>If this attribute is set to <option>yes</option>, automatic
+                                    recovery is enabled.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>size</term>
+                            <listitem>
+                                <para>This attributes sets the maximum allowed size of the journal
+                                    file. Once the journal reaches this limit, a checkpoint will be
+                                    triggered and the journal will be cleaned. However, the database
+                                    waits for running transactions to return before processing this
+                                    checkpoint. In the event one of these transactions writes a lot
+                                    of data to the journal file, the file will grow until the
+                                    transaction has completed. Hence, the size limit is not enforced
+                                    in all cases.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>journal-dir</term>
+                            <listitem>
+                                <para>This attribute sets the directory where journal files are to
+                                    be written. If no directory is specified, the default path is to
+                                    the <filename>data</filename> directory.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>sync-on-commit</term>
+                            <listitem>
+                                <para>This attribute determines whether or not to protect the
+                                    journal during operating system failures. That is, it determines
+                                    whether the database forces a file-sync on the journal after
+                                    every commit. If this attribute is set to
+                                    "<option>yes</option>", the journal is protected against
+                                    operating system failures. However, this will slow performance -
+                                    especially on Windows systems. If set to "<option>no</option>",
+                                    eXist will rely on the operating system to flush out the journal
+                                    contents to disk. In the worst case scenario, in which there is
+                                    a complete system failure, some committed transactions might not
+                                    have yet been written to the journal, and so will be rolled
+                                    back.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>group-commit</term>
+                            <listitem>
+                                <para>If set to "yes", eXist will not sync the journal file
+                                    immediately after every transaction commit. Instead, it will
+                                    wait until the current file buffer (32kb) is really full. This
+                                    can speed up eXist on some systems where a file sync is an
+                                    expensive operation (mainly windows XP; not necessary on Linux).</para>
+                                <para>However, <option>group-comit="yes"</option> will increase the
+                                    chance that an already committed operation is rolled back after
+                                    a database crash.</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </section>
+                <section>
+                    <title>&lt;watchdog&gt;</title>
+                    <para>This is the global configuration for the <emphasis>query
+                        watchdog</emphasis>. The watchdog monitors all query processes, and can
+                        terminate any long-running queries if they exceed one of the predefined
+                        limits. These limits are as follows:</para>
+                    <variablelist>
+                        <title>&lt;watchdog&gt; Attributes</title>
+                        <varlistentry>
+                            <term>query-timeout</term>
+                            <listitem>
+                                <para>This attribute sets the maximum amount of time (expressed in
+                                    milliseconds) that the query can take before it is killed. The
+                                    setting can be overwritten in an XQuery by specifiying the
+                                    option <option>exist:timeout</option>:</para>
 
-      <section>
-        <title>&lt;xupdate&gt;</title>
-        <para>During XUpdates, the database performs a partial reindexing of the document whenever
-          the internal node-id structure has changed. Reindexes can occur quite frequently and slow
-          down the XUpdate process. However, the frequency of reindex runs can be specified (with
-          limitations) in the <sgmltag>xupdate</sgmltag> section.</para>
-        <para>Furthermore, when nodes are inserted into a document repeatedly, a page fragmentation
-          within the database files can result. A defragmentation run is triggered if this
-          fragmentation exceeds a predefined limit that can be configured here. A typical
-          &lt;xupdate&gt; entry looks like the following:</para>
+                                <synopsis language="xquery">declare option exist:timeout "time-in-ms";</synopsis>
 
-        <example>
-          <title>XUpdate-Options in conf.xml</title>
-          <programlisting format="linespecific"><![CDATA[<xupdate growth-factor="20" allowed-fragmentation="20"
-		enable-consistency-checks="no" />]]></programlisting>
-        </example>
-        <section>
-          <title>&lt;xupdate&gt; Attributes</title>
-          <variablelist>
-            <varlistentry>
-              <term>growth-factor</term>
-              <listitem>
-                <para>Frequent reindexing can be avoided by leaving space between the numeric
-                  identifiers assigned to every node. Future insertions will first use these spare
-                  identifiers, and therefore the document will not need to be reindexed.</para>
-                <para>The <option>growth-factor</option> attribute allows the user to specify the
-                  number of spare ids to be inserted whenever the node id scheme is recomputed after
-                  an XUpdate. As discussed, increasing this setting will result in fewer reindex
-                  runs. However, be aware that by leaving spare ids, you limits the maximum size of
-                  a document that can be indexed.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>allowed-fragmentation</term>
-              <listitem>
-                <para>This attribute defines the maximum number of page splits allowed within a
-                  document before a defragmentation run is triggered.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>enable-consistency-checks</term>
-              <listitem>
-                <para>This attribute is for or debugging purposes only. If the parameter is set to
-                    "<option>yes</option>", a <emphasis>consistency check</emphasis> will be run on
-                  modified documents after every XUpdate request. This checks whether the persistent
-                  DOM is complete, and all pointers in the structural index point to valid storage
-                  addresses that contain valid nodes.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-      </section>
+                                <para>Please check the documentation on <ulink
+                                        url="xquery.xml#xqopts">XQuery options</ulink>.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>output-size-limit</term>
+                            <listitem>
+                                <para>This attribute limits the size of XML fragments constructed
+                                    using XQuery, and thus sets the maximum amount of main memory a
+                                    query is allowed to use. This limit is expressed as the maximum
+                                    number of nodes allowed for an in-memory DOM tree. The purpose
+                                    of this option is to avoid memory shortages on the server in
+                                    cases where users are allowed to run queries that produce very
+                                    large output fragments. The setting can be overwritten in an
+                                    XQuery by specifying the option
+                                    <option>exist:output-size-limit</option>:</para>
 
-      <section>
-        <title>&lt;indexer&gt;</title>
-        <para>This element sets parameters on how XML files are to be indexed by eXist. An example
-          configuration is shown below:</para>
-        <example>
-          <title>Specifying Indexer-Options in conf.xml</title>
-          <programlisting format="linespecific"><![CDATA[<indexer caseSensitive="no"
+                                <synopsis language="xquery">declare option exist:output-size-limit "size-hint";</synopsis>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </section>
+
+                <section>
+                    <title>&lt;default-permissions&gt;</title>
+                    <para>Specifies the default permissions for all resources and collections in
+                        eXist (see <ulink url="security.xml"> User Authentication and Access
+                        Control</ulink>). When this is not configured, the default
+                        "<option>mod</option>" (similar to the Unix "chmod" command) is set to
+                            <option>0775</option> in the <option>resources</option> and
+                            <option>collections</option> attributes. A different default value may
+                        be set for a database instance, and local overrides are also
+                    possible.</para>
+                </section>
+
+                <section>
+                    <title>&lt;security&gt;</title>
+                    <para>The <sgmltag>security</sgmltag> element in the
+                        <sgmltag>db-connection</sgmltag> node is used to select the security manager
+                        Class and control the database of users and groups.</para>
+                    <variablelist>
+                        <title>&lt;security&gt; Attributes</title>
+                        <varlistentry>
+                            <term>class</term>
+                            <listitem>
+                                <para>This attribute is <emphasis>required</emphasis>, and specifies
+                                    a Java class name used to implement the
+                                        <code>org.exist.security.SecurityManager</code> interface,
+                                    as in the following example:</para>
+                                <example>
+                                    <title>&lt;security&gt; <emphasis>class</emphasis>
+                                        Attribute (LDAP)</title>
+                                    <programlisting><markup>&lt;security class="org.exist.security.LDAPSecurityManager" /&gt;</markup></programlisting>
+                                </example>
+                                <para>eXist is distributed with the following built-in security
+                                    manager implementations:</para>
+                                <variablelist>
+                                    <varlistentry>
+                                        <term>org.exist.security.XMLSecurityManager</term>
+                                        <listitem>
+                                            <para>Stores the user information in the database. This
+                                                is the default manager if the
+                                                <sgmltag>security</sgmltag> element is not included
+                                                in <sgmltag>db-connection</sgmltag>.</para>
+                                        </listitem>
+                                    </varlistentry>
+                                    <varlistentry>
+                                        <term>org.exist.security.LDAPSecurityManager</term>
+                                        <listitem>
+                                            <para>Retrieves the user and groups from the LDAP
+                                                database. This requires addition configuration
+                                                parameters which are described in the <ulink
+                                                  url="ldap-security.xml">LDAP Security
+                                                Manager</ulink> documentation.</para>
+                                        </listitem>
+                                    </varlistentry>
+                                </variablelist>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>password-encoding</term>
+                            <listitem>
+                                <para>Password encoding can be set to one of the following types:</para>
+                                <orderedlist>
+                                    <listitem>
+                                        <para><option>plain</option> - Applies plain
+                                        encryption.</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para><option>md5</option> (default) - Applies the MD5
+                                            algorithm to encrypt passwords.</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para><option>simple-md5</option> - Applies a simplified MD5
+                                            algorithm to encrypt passwords.</para>
+                                    </listitem>
+                                </orderedlist>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>password-realm</term>
+                            <listitem>
+                                <para>The realm to use for basic auth or http-digest password
+                                    challenges.</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </section>
+            </section>
+
+            <section>
+                <title>&lt;indexer&gt;</title>
+                <para>This element sets parameters on how XML files are to be indexed by eXist. An
+                    example configuration is shown below:</para>
+                <example>
+                    <title>Specifying Indexer-Options in conf.xml</title>
+                    <programlisting format="linespecific"><markup><![CDATA[<indexer caseSensitive="no"
 	suppress-whitespace="both" index-depth="1"
 	tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	validation="no">
-	  
+	
+	<modules>
+        <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
+            file="ngram.dbx" n="3"/>
+        <!--
+        <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
+            connectionTimeout="10000" flushAfter="300" />            
+        -->
+		<!-- The full text index is always required and should
+			 not be disabled. We still have some dependencies on
+             this index in the database core. These will be removed
+             once the redesign has been completed. -->
+		<module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
+    </modules>
+        
     <stopwords file="stopword"/>
     
 	<!-- Default index configuration -->
@@ -510,147 +440,348 @@
     <entity-resolver>
 	    <catalog file="samples/xcatalog.xml"/>
     </entity-resolver>
-</indexer>]]>
+</indexer>]]></markup>
 </programlisting>
-        </example>
+                </example>
 
-        <section>
-          <title>&lt;indexer&gt; Attributes</title>
-          <variablelist>
-            <varlistentry>
-              <term>caseSensitive</term>
-              <listitem>
-                <para>Specifies whether string comparisons are to be case-sensitive. This option
-                  applies to XPath equality tests (i.e. "<option>=</option>" operator), as well as
-                  functions such as <function>contains()</function>,
-                  <function>starts-with()</function> and <function>ends-with()</function>. Since
-                  index look-ups are <emphasis>NEVER</emphasis> case-sensitive, this setting does
-                  not apply to operators or functions of the fulltext index (e.g.
-                    "<option>&amp;=</option>", "<option>|=</option>",
-                  "<function>near()</function>").</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>suppress-whitespace</term>
-              <listitem>
-                <para>Specifies how the &lt;indexer&gt; is to treat whitespace at the start
-                  or end of a character sequence. This option <emphasis>ONLY</emphasis> applies to
-                  newly stored files, and therefore changing it has no effect on previously stored
-                  documents. Possible values for this attribute are:</para>
-                <orderedlist>
-                  <listitem>
-                    <para><option>leading</option> - Suppresses leading whitespace.</para>
-                  </listitem>
-                  <listitem>
-                    <para><option>trailing</option> - Suppresses trailing whitespace.</para>
-                  </listitem>
-                  <listitem>
-                    <para><option>both</option> - Suppresses leading and trailing whitespace.</para>
-                  </listitem>
-                  <listitem>
-                    <para><option>none</option> - Preserves all whitespace.</para>
-                  </listitem>
-                </orderedlist>
-                <para/>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>tokenizer</term>
-              <listitem>
-                <para>This attribute invokes the Java class used to tokenize a string into a
-                  sequence of single words or tokens, which are stored to the fulltext index.
-                  Currently only the <classname>SimpleTokenizer</classname> is available.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>index-depth</term>
-              <listitem>
-                <para>This attribute specifies the depth of the DOM index, or the tree level up to
-                  which elements will be added to the index. For example, a value of
-                  "<option>2</option>" results in the document root node and all its child elements
-                  being indexed; a value of "<option>1</option>" only indexes the root node.</para>
-                <para>The DOM index maps unique node identifiers to the nodes' storage locations in
-                  the DOM file. Generating this index is time- and memory-consuming. It is
-                  furthermore primarily needed to access nodes by their unique node identifier - for
-                  example, when serializing XML data for query results or XUpdate - which are
-                  operations not normally considered time-critical. Moreover, most XPath expressions
-                  can do without this index since they use short-cuts to access the node directly.</para>
-                <para>Beginning with version 0.9, only top-level elements are added to the DOM
-                  index, whereas attributes and text nodes are always excluded. This results in much
-                  smaller index sizes and, consequently, a smaller <filename moreinfo="none"
-                  >dom.dbx</filename> file size. Usually, setting the <option>index-depth</option>
-                  to a value of "<option>2</option>" offers a reasonable compromise of index size
-                  and performance. However, if your documents are
-                  <emphasis>deeply-structured</emphasis>, you might consider increasing this setting
-                  to a level of 3, 4 or 5. For example, if the longest path from the document root
-                  to an element node has greater than ten node levels, an
-                  <option>index-depth</option> setting of <option>4</option> or <option>5</option>
-                  would probably help to increase overall query performance for some types of
-                  queries.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>validation</term>
-              <listitem>
-                <para>This attribute defines the default setting for the validation of documents by
-                  the XML parser. If it is set to "<option>no</option>", documents will never be
-                  validated against an existing DTD or schema. A value of "<option>auto</option>"
-                  will leave document validation to the SAX parser (i.e. the
-                  <emphasis>Xerces</emphasis> parser).</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>preserve-whitespace-mixed-content</term>
-              <listitem>
-                <para>This preserves whitespace for mixed content. The default value is
-                  "<option>no</option>".</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
+                <section>
+                    <title>&lt;indexer&gt; Attributes</title>
+                    <variablelist>
+                        <varlistentry>
+                            <term>caseSensitive</term>
+                            <listitem>
+                                <para>Specifies whether string comparisons are to be case-sensitive.
+                                    This option applies to XPath equality tests (i.e.
+                                    "<option>=</option>" operator), as well as functions such as
+                                        <function>contains()</function>,
+                                    <function>starts-with()</function> and
+                                    <function>ends-with()</function>. This setting does not apply to
+                                    operators or functions of the fulltext index (e.g.
+                                        "<option>&amp;=</option>", "<option>|=</option>",
+                                        "<function>near()</function>") or the n-gram index, which
+                                    are <emphasis>never</emphasis> case-sensitive</para>
+
+                                <para>Setting <option>caseSensitive="yes"</option> violates the
+                                    XQuery specs! The option should be regarded as a dirty
+                                    workaround, which will be removed in the future. Please use the
+                                    n-gram or full-text indexes for case-insensitive queries or - if
+                                    that is impossible - specify a <ulink
+                                        url="xquery.xml#collations">collation</ulink>.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>suppress-whitespace</term>
+                            <listitem>
+                                <para>Specifies how the &lt;indexer&gt; is to treat
+                                    whitespace at the start or end of a character sequence. This
+                                    option <emphasis>ONLY</emphasis> applies to newly stored files,
+                                    and therefore changing it has no effect on previously stored
+                                    documents. Possible values for this attribute are:</para>
+                                <orderedlist>
+                                    <listitem>
+                                        <para><option>leading</option> - Suppresses leading
+                                            whitespace.</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para><option>trailing</option> - Suppresses trailing
+                                            whitespace.</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para><option>both</option> - Suppresses leading and
+                                            trailing whitespace.</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para><option>none</option> - Preserves all
+                                        whitespace.</para>
+                                    </listitem>
+                                </orderedlist>
+                                <para/>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>tokenizer</term>
+                            <listitem>
+                                <para>This attribute invokes the Java class used to tokenize a
+                                    string into a sequence of single words or tokens, which are
+                                    stored to the fulltext index. Currently only the
+                                        <classname>SimpleTokenizer</classname> is available.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>index-depth</term>
+                            <listitem>
+                                <para>This attribute specifies the depth of the DOM index, or the
+                                    tree level up to which elements will be added to the index. For
+                                    example, a value of "<option>2</option>" results in the document
+                                    root node and all its child elements being indexed; a value of
+                                        "<option>1</option>" only indexes the root node.</para>
+                                <para>The DOM index maps unique node identifiers to the nodes'
+                                    storage locations in the DOM file. Generating this index is
+                                    time- and memory-consuming. It is furthermore primarily needed
+                                    to access nodes by their unique node identifier - for example,
+                                    when serializing XML data for query results or XUpdate - which
+                                    are operations not normally considered time-critical. Moreover,
+                                    most XPath expressions can do without this index since they use
+                                    short-cuts to access the node directly.</para>
+                                <para>Beginning with version 0.9, only top-level elements are added
+                                    to the DOM index, whereas attributes and text nodes are always
+                                    excluded. This results in much smaller index sizes and,
+                                    consequently, a smaller <filename moreinfo="none"
+                                    >dom.dbx</filename> file size. Usually, setting the
+                                        <option>index-depth</option> to a value of
+                                    "<option>2</option>" offers a reasonable compromise of index
+                                    size and performance. However, if your documents are
+                                        <emphasis>deeply-structured</emphasis>, you might consider
+                                    increasing this setting to a level of 3, 4 or 5. For example, if
+                                    the longest path from the document root to an element node has
+                                    greater than ten node levels, an <option>index-depth</option>
+                                    setting of <option>4</option> or <option>5</option> would
+                                    probably help to increase overall query performance for some
+                                    types of queries.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>validation</term>
+                            <listitem>
+                                <para>This attribute defines the default setting for the validation
+                                    of documents by the XML parser. If it is set to
+                                    "<option>no</option>", documents will never be validated against
+                                    an existing DTD or schema. A value of "<option>auto</option>"
+                                    will leave document validation to the SAX parser (i.e. the
+                                        <emphasis>Xerces</emphasis> parser).</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>preserve-whitespace-mixed-content</term>
+                            <listitem>
+                                <para>This preserves whitespace for mixed content. The default value
+                                    is "<option>no</option>".</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </section>
+
+                <section>
+                    <title>
+                        <sgmltag>modules</sgmltag>
+                    </title>
+
+                    <para>This section configures optional indexing modules. Beginning with version
+                        1.2, eXist features a modularized indexing architecture, which allows new
+                        indexes to be plugged into the indexing pipeline. The
+                        <sgmltag>modules</sgmltag> section lists and configures the indexes that
+                        will be available to the database: </para>
+
+                    <example>
+                        <title>Configuring Index Modules</title>
+                        <programlisting>
+                    <markup><![CDATA[<modules>
+    <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
+        file="ngram.dbx" n="3"/>
+    <!--
+    <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
+        connectionTimeout="10000" flushAfter="300" />            
+    -->
+	<!-- The full text index is always required and should
+		 not be disabled. We still have some dependencies on
+         this index in the database core. These will be removed
+         once the redesign has been completed. -->
+	<module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
+</modules>]]></markup>
+                </programlisting>
+                    </example>
+
+                    <para>The only common attributes for each <sgmltag>module</sgmltag> element are
+                            <option>class</option> and <option>id</option>. The other attributes as
+                        well as any nested elements are specific to the index implementation.
+                        Detailed information is available in the document on <ulink
+                            url="indexing.xml#moduleconf">Configuring Database
+                    Indexes</ulink>.</para>
+                </section>
+
+                <section>
+                    <title>
+                        <sgmltag>stopwords</sgmltag>
+                    </title>
+                    <para>The <option>file</option> for this element points to a file containing a
+                        list of <emphasis>stopwords</emphasis>. Note that stopwords are
+                            <emphasis>NOT</emphasis> added to the fullext index.</para>
+                </section>
+
+                <section>
+                    <title>
+                        <sgmltag>index</sgmltag>
+                    </title>
+                    <para>This configuration element specifies the default index settings. These
+                        settings are applied if neither the collection nor any of its ancestors
+                        provide a collection configuration. Configuring indexes via the default
+                        settings is not recommended. If you need a global collection configuration,
+                        store one for the root collection <filename>/db</filename>. For more
+                        information, read the <ulink url="indexing.xml"> Configuring Indexes</ulink>
+                        documentation.</para>
+                </section>
+
+            </section>
+
+            <section>
+                <title>&lt;serializer&gt;</title>
+
+                <para>The serializer is responsible for serializing XML documents or document
+                    fragments back into XML. This configuration element defines default settings for
+                    various parameters, which can also be specified programmatically. All settings
+                    can be overwritten by XQuery <ulink url="xquery.xml#serialization">serialization
+                        options</ulink>.</para>
+
+                <section>
+                    <title>&lt;serializer&gt; Attributes</title>
+                    <variablelist>
+                        <varlistentry>
+                            <term>enable-xinclude</term>
+                            <listitem>
+                                <para>This attribute determines whether <sgmltag>xinclude</sgmltag>
+                                    tags are to be expanded during serialization. Setting the value
+                                    to "<option>false</option>" will leave
+                                    <sgmltag>xinclude</sgmltag> tags unexpanded.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>enable-xsl</term>
+                            <listitem>
+                                <para>This attribute (when set to "<option>true</option>") tells the
+                                    serializer to pass its output to an XSL stylesheet when it
+                                    encounters an XSL processing-instruction at the start of the
+                                    document.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>add-exist-id</term>
+                            <listitem>
+                                <para>This attribute tells the serializer to add debug information
+                                    to each element expressed as additional attributes. This
+                                    information includes the internal identifier of the node and
+                                    source document. These are the accepted values:</para>
+                                <orderedlist>
+                                    <listitem>
+                                        <para><option>all</option> - Adds debug information to every
+                                            node in the output.</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para><option>element</option> - Adds debug information to
+                                            top-level elements only.</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para><option>none</option> (default) - Disables debugging
+                                            feature.</para>
+                                    </listitem>
+                                </orderedlist>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>indent</term>
+                            <listitem>
+                                <para>The serializer defaults to pretty-print the resulting XML
+                                    source code. Set this option to "<option>no</option>" to disable
+                                    pretty-printing.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>match-tagging-elements</term>
+                            <listitem>
+                                <para>The database can highlight matches in the text content of a
+                                    node by tagging the matching text string with
+                                        <sgmltag>exist:match</sgmltag>. Clearly, this only works for
+                                    XPath expressions using the fulltext index. Set the parameter to
+                                        "<option>yes</option>" to <emphasis>disable</emphasis> this
+                                    feature.</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </section>
+            </section>
+
+            <section>
+                <title><sgmltag>transformer</sgmltag></title>
+                
+                <para>This section determines which XSLT processor will be used by eXist.
+                    By default, eXist relies on Xalan, which is an XSLT 1.0 engine. Please refer
+                    to <ulink url="http://atomic.exist-db.org/wiki/HowTo/XSLT2/">this howto</ulink>
+                    to switch to an XSLT 2.0 processor like saxon.</para>
+            </section>
+            
+            <section>
+                <title><sgmltag>validation</sgmltag></title>
+                
+                <para>Defines the default validation settings that will be active when parsing
+                    XML and links to catalog files. Catalog files are used to locate DTDs, schemas and
+                    resolve external entities in general.</para>
+                <para>Please refer to the corresponding documentation on 
+                    <ulink url="validation.xml">XML Validation</ulink>.</para>
+            </section>
+            
+            <section>
+                <title>&lt;xupdate&gt;</title>
+                <para>Inserting new nodes into a document can lead to fragmentation in the DOM
+                    storage file. eXist will thus trigger a defragmentation run if the fragmentation
+                    exceeds a certain limit. The frequency of such defragmentation runs can be
+                    configured in the <sgmltag>xupdate</sgmltag> section. The main parameter is
+                    called <option>allowed-fragmentation</option>:</para>
+
+                <example>
+                    <title>XUpdate-Options in conf.xml</title>
+                    <programlisting format="linespecific"><markup><![CDATA[<xupdate allowed-fragmentation="20" enable-consistency-checks="no" />]]></markup></programlisting>
+                </example>
+                <section>
+                    <title>&lt;xupdate&gt; Attributes</title>
+                    <variablelist>
+                        <varlistentry>
+                            <term>allowed-fragmentation</term>
+                            <listitem>
+                                <para>This attribute defines the maximum number of page splits
+                                    allowed within a document before a defragmentation run is
+                                    triggered.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>enable-consistency-checks</term>
+                            <listitem>
+                                <para>This attribute is for or debugging purposes only. If the
+                                    parameter is set to "<option>yes</option>", a
+                                        <emphasis>consistency check</emphasis> will be run on
+                                    modified documents after every XUpdate request. This checks
+                                    whether the persistent DOM is complete, and all pointers in the
+                                    structural index point to valid storage addresses that contain
+                                    valid nodes.</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </section>
+            </section>
         </section>
 
         <section>
-          <title>
-            <sgmltag>stopwords</sgmltag>
-          </title>
-          <para>The <option>file</option> for this element points to a file containing a list of
-              <emphasis>stopwords</emphasis>. Note that stopwords are <emphasis>NOT</emphasis> added
-            to the fullext index.</para>
-        </section>
+            <title>Cocoon Sitemap Configuration</title>
 
-        <section>
-          <title>
-            <sgmltag>index</sgmltag>
-          </title>
-          <para>This configuration element specifies the default index settings. These settings are
-            applied if a collection is not configured differently in its collection configuration
-            file. For more information, read the <ulink url="indexing.xml"> Configuring
-            Indexes</ulink> documentation.</para>
-        </section>
-      </section>
-    </section>
+            <para>Cocoon uses a sitemap XML file called <filename moreinfo="none"
+                >sitemap.xmap</filename> to configure the processing pipelines it uses to process
+                HTTP requests. eXist's integration with Cocoon is completely based on the XML:DB
+                database API, however any XML:DB-enabled database (e.g.
+                <emphasis>Xindice</emphasis>) can be integrated with Cocoon.</para>
 
-    <section>
-      <title>Cocoon Sitemap Configuration</title>
-      
-      <para>Cocoon uses a sitemap XML file called <filename moreinfo="none">sitemap.xmap</filename>
-        to configure the processing pipelines it uses to process HTTP requests. eXist's integration
-        with Cocoon is completely based on the XML:DB database API, however any XML:DB-enabled
-        database (e.g. <emphasis>Xindice</emphasis>) can be integrated with Cocoon.</para>
-        
-      <para>Beginning with Cocoon version 2.0, <emphasis>pseudo-protocols</emphasis> are supported.
-        Pseudo-protocols allow you to register handlers for special URLs via so-called "source
-        factories". In essence, these protocols specify resources wherever a known protocol such as
-          <filename>http://</filename> or <filename>file://</filename> is specified in the sitemap.
-        Currently, the distribution defines a pseudo-protocol to access XML:DB-enabled databases. </para>
-        
-      <para>In eXist, pseudo-protocols are configured in Cocoon's main configuration file <filename
-          moreinfo="none">WEB-INF/cocoon.xconf</filename>. To make use of these protocols, simply
-        specify the correct database driver class, as in the following example:</para>
+            <para>Beginning with Cocoon version 2.0, <emphasis>pseudo-protocols</emphasis> are
+                supported. Pseudo-protocols allow you to register handlers for special URLs via
+                so-called "source factories". In essence, these protocols specify resources wherever
+                a known protocol such as <filename>http://</filename> or
+                <filename>file://</filename> is specified in the sitemap. Currently, the
+                distribution defines a pseudo-protocol to access XML:DB-enabled databases. </para>
 
-      <example>
-        <title>Defining the XML:DB Database Driver</title>
-        <programlisting><![CDATA[<source-handler logger="core.source-handler"&gt;
+            <para>In eXist, pseudo-protocols are configured in Cocoon's main configuration file
+                    <filename moreinfo="none">WEB-INF/cocoon.xconf</filename>. To make use of these
+                protocols, simply specify the correct database driver class, as in the following
+                example:</para>
+
+            <example>
+                <title>Defining the XML:DB Database Driver</title>
+                <programlisting><![CDATA[<source-handler logger="core.source-handler"&gt;
         <!-- xmldb pseudo protocol -->
      <protocol 
             class="org.apache.cocoon.components.source.XMLDBSourceFactory" 
@@ -660,18 +791,19 @@
       </protocol>
 </source-handler>]]>
           </programlisting>
-      </example>
+            </example>
 
-      <para>Once the database driver has been registered with the handler, it is possible to use an
-        XML:DB URI wherever Cocoon expects a URI in its site configuration file <filename
-          moreinfo="none">sitemap.xmap</filename>. For example, to access our collection of
-        Shakespeare plays from the web-browser, and with a stylesheet applied to each document, we
-        could use the following code fragment in the sitemap's processing pipeline:</para>
+            <para>Once the database driver has been registered with the handler, it is possible to
+                use an XML:DB URI wherever Cocoon expects a URI in its site configuration file
+                    <filename moreinfo="none">sitemap.xmap</filename>. For example, to access our
+                collection of Shakespeare plays from the web-browser, and with a stylesheet applied
+                to each document, we could use the following code fragment in the sitemap's
+                processing pipeline:</para>
 
-      <example>
-        <title>Using XML:DB URIs in the Sitemap</title>
+            <example>
+                <title>Using XML:DB URIs in the Sitemap</title>
 
-        <programlisting><![CDATA[<!-- apply stylesheet shakes.xsl to all XML documents
+                <programlisting><![CDATA[<!-- apply stylesheet shakes.xsl to all XML documents
 in xmldb-collection /db/shakespeare/plays --> 
 <map:match pattern="xmldb/db/shakespeare/plays/**.xml">
     <map:generate src="xmldb:exist:///db/shakespeare/plays/{1}.xml"/>
@@ -680,10 +812,10 @@ in xmldb-collection /db/shakespeare/plays -->
 </map:match>
 </programlisting>]]>
         </programlisting>
-      </example>
+            </example>
 
-      <para>The <ulink url="sitemap.xmap">sitemap.xmap</ulink> delivered with eXist also contains
-        more complex examples.</para>
-    </section>
-  </chapter>
+            <para>The <ulink url="sitemap.xmap">sitemap.xmap</ulink> delivered with eXist also
+                contains more complex examples.</para>
+        </section>
+    </chapter>
 </book>
