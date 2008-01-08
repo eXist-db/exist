@@ -192,7 +192,7 @@
 
         </section>
         
-        <section>
+        <section id="backuptask">
             <title>Automatic Backup/Restore</title>
             
             <para>In addition to the manual backup, you can also schedule automatic backups in eXist's configuration file

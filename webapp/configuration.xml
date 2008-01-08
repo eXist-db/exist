@@ -495,7 +495,18 @@
                                         whitespace.</para>
                                     </listitem>
                                 </orderedlist>
-                                <para/>
+                                <para>Note that suppressing whitespace at the start or end of character
+                                sequences does effectively change the document!</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>preserve-whitespace-mixed-content</term>
+                            <listitem>
+                                <para>controls how ignorable whitespace is handled. If set to <literal>no</literal>,
+                                ignorable whitespace, e.g. between the end tag of an element and the start tag of another,
+                                will not be stored into the persistent DOM. This leads to a smaller DOM and usually increases
+                                the readability of the XML. Ignorable whitespace is not considered as a part of
+                                the logical document model, so removing it doesn't change the document.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
@@ -549,13 +560,6 @@
                                     an existing DTD or schema. A value of "<option>auto</option>"
                                     will leave document validation to the SAX parser (i.e. the
                                         <emphasis>Xerces</emphasis> parser).</para>
-                            </listitem>
-                        </varlistentry>
-                        <varlistentry>
-                            <term>preserve-whitespace-mixed-content</term>
-                            <listitem>
-                                <para>This preserves whitespace for mixed content. The default value
-                                    is "<option>no</option>".</para>
                             </listitem>
                         </varlistentry>
                     </variablelist>
@@ -623,6 +627,129 @@
 
             </section>
 
+            <section>
+                <title><sgmltag>scheduler</sgmltag></title>
+                
+                <para>This section is used to configure asynchronous jobs with eXist's internal
+                scheduler. Three types of jobs are supported:</para>
+                
+                <variablelist>
+                    <varlistentry>
+                        <term>startup jobs</term>
+                        <listitem>
+                            <para>Startup jobs are executed once during database startup, but
+                            before the database becomes available. These jobs are synchronous.
+                            The database is blocked to outside requests and no other operations 
+                            will run at the same time.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>system jobs</term>
+                        <listitem>
+                            <para>System jobs require the database to be in a consistent state.
+                            The scheduler will run them in an exclusive environment. Once the
+                            job is triggered, the database will block all new requests and wait
+                            for running operations to complete. It then executes the job. All other
+                            database operations will be stopped until the job returns or throws
+                            an exception. Any exception will be caught and a warning written to
+                            the log.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>user jobs</term>
+                        <listitem>
+                            <para>User jobs may be scheduled at any time and may be mutually exclusive
+                                or non-exclusive</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                
+                <para>Below is an example which configures a <ulink url="backup.xml#backuptask">BackupSystemTask</ulink>:
+                </para>
+                
+                <example>
+                    <title>Configuring a BackupSystemTask</title>
+                    <programlisting><markup><![CDATA[<scheduler>
+    <job type="system" class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
+        <parameter name="dir" value="backup"/>
+        <parameter name="suffix" value=".zip"/>
+        <parameter name="prefix" value="backup-"/>
+        <parameter name="collection" value="/db"/>
+        <parameter name="user" value="admin"/>
+        <parameter name="password" value=""/>
+        <parameter name="zip-files-max" value="28"/>
+    </job>
+</scheduler>]]></markup></programlisting>
+                </example>
+                
+                <para>Each job is configured in a <sgmltag>job</sgmltag> element which accepts
+                a number of standard attributes:</para>
+                
+                <section>
+                    <title><sgmltag>job</sgmltag> attributes</title>
+                    <variablelist>
+                        <varlistentry>
+                            <term>type</term>
+                            <listitem>
+                                <para>The type of the job to schedule. Must be either "startup", "system" or "user".</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>class</term>
+                            <listitem>
+                                <para>If the job is written in Java then this should be the name of the
+                                class that extends either</para>
+                                <itemizedlist>
+                                    <listitem><para>org.exist.scheduler.StartupJob</para></listitem>
+                                    <listitem><para>org.exist.storage.SystemTask</para></listitem>
+                                    <listitem><para>org.exist.scheduler.UserJavaJob</para></listitem>
+                                </itemizedlist>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>xquery</term>
+                            <listitem><para>If the job is written in XQuery (not suitable for system jobs) then this should
+                                be a path to an XQuery stored in the database. e.g. <filename>/db/myCollection/myJob.xql</filename>
+                                XQuery job's will be launched under the guest account initially,
+                                although the running XQuery may switch permissions through
+                                calls to <methodname>xmldb:login()</methodname>.</para></listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>cron-trigger</term>
+                            <listitem>
+                                <para>To define a firing pattern for the Job using Cron style syntax
+                                    use this attribute otherwise for a periodic job use the period
+                                    attribute. Not applicable to startup jobs.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>period</term>
+                            <listitem>
+                                <para>Can be used to define an explicit period for firing the job instead
+                                    of a Cron style syntax. The period should be in milliseconds.
+                                    Not applicable to startup jobs.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>delay</term>
+                            <listitem>
+                                <para>Can be used with a period to delay the start of a job. If unspecified jobs
+                                    will start as soon as the database and scheduler are initialised.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>repeat</term>
+                            <listitem>
+                                <para>Can be used with a period to define for how many periods a job should be
+                                    executed. If unspecified jobs will repeat for every period indefinitely.</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                    
+                    <para>Every job can take additional parameters, which are passed as name/value
+                        pairs (see example above).</para>
+                </section>
+            </section>
             <section>
                 <title>&lt;serializer&gt;</title>
 
@@ -756,6 +883,81 @@
                     </variablelist>
                 </section>
             </section>
+            <section>
+                <title><sgmltag>xquery</sgmltag></title>
+                
+                <example>
+                    <title>XQuery Engine Configuration</title>
+                    <programlisting>
+                        <markup><![CDATA[<xquery enable-java-binding="no" enable-query-rewriting="no"  backwardCompatible="no">
+    <builtin-modules>
+        <!-- Default Modules -->
+        <module class="org.exist.xquery.functions.util.UtilModule"
+            uri="http://exist-db.org/xquery/util" />
+        <!-- ... more modules ... -->
+    </builtin-modules>
+</xquery>]]></markup>
+                    </programlisting>
+                </example>
+                
+                <para>The <sgmltag>xquery</sgmltag> section is used to enable/disable certain
+                core features of the XQuery engine. It also lists the XQuery modules that will
+                be known to the query engine by default.</para>
+                
+                <section>
+                    <title><sgmltag>xquery</sgmltag> attributes</title>
+                    
+                    <variablelist>
+                        <varlistentry>
+                            <term>enable-java-binding=yes|no</term>
+                            <listitem>
+                                <para>enables or disables the <ulink url="xquery.xml#javamods">java
+                                binding</ulink>. Giving users full access to all Java classes should
+                                be considered a security risk and the feature is thus disabled by
+                                default. If you enable it, you should think about configuring 
+                                <ulink url="xacml.xml">XACML</ulink> to restrict Java access
+                                from XQuery.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>enable-query-rewriting=yes|no</term>
+                            <listitem>
+                                <para>the query engine can often achieve considerable performance
+                                improvements by rewriting an XQuery expression into a more efficient
+                                form (see the documentation about 
+                                    <ulink url="indexing.xml#pathvsqname">indexing</ulink>). However,
+                                    these features are relatively new. If you have doubts about the
+                                    correctness of a query result, you may temporarily set 
+                                    <option>enable-query-rewriting</option> to <literal>"no"</literal>
+                                    and see if the result changes in any way. If it does, you have hit a bug
+                                    which should be reported.
+                                </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>backwardCompatible=yes|no</term>
+                            <listitem>
+                                <para>enables or disables XPath 1.0 backwards compatibility. The setting
+                                mainly effects automatic type conversions, which were less strict in
+                                XPath 1.0 than in XQuery/XPath 2.0.</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </section>
+                
+                <section>
+                    <title><sgmltag>builtin-modules</sgmltag></title>
+                    
+                    <para>This section lists the XQuery modules which will be known to the query
+                    engine. The modules in this list can be imported into a query without specifying
+                    a location. For example, one can import the "util" module as follows:</para>
+                    
+                    <synopsis language="xquery">import module namespace util="http://exist-db.org/xquery/util";</synopsis>
+                    
+                    <para>This statement does not need an "at ..." clause since the location of the module (its class) is
+                        already known.</para>
+                </section>
+            </section>
         </section>
 
         <section>
@@ -781,7 +983,7 @@
 
             <example>
                 <title>Defining the XML:DB Database Driver</title>
-                <programlisting><![CDATA[<source-handler logger="core.source-handler"&gt;
+                <programlisting><markup><![CDATA[<source-handler logger="core.source-handler"&gt;
         <!-- xmldb pseudo protocol -->
      <protocol 
             class="org.apache.cocoon.components.source.XMLDBSourceFactory" 
@@ -789,7 +991,7 @@
         <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
         <!-- Add here other XML:DB compliant databases drivers -->
       </protocol>
-</source-handler>]]>
+</source-handler>]]></markup>
           </programlisting>
             </example>
 
@@ -803,14 +1005,14 @@
             <example>
                 <title>Using XML:DB URIs in the Sitemap</title>
 
-                <programlisting><![CDATA[<!-- apply stylesheet shakes.xsl to all XML documents
+                <programlisting><markup><![CDATA[<!-- apply stylesheet shakes.xsl to all XML documents
 in xmldb-collection /db/shakespeare/plays --> 
 <map:match pattern="xmldb/db/shakespeare/plays/**.xml">
     <map:generate src="xmldb:exist:///db/shakespeare/plays/{1}.xml"/>
     <map:transform src="xmldb:exist:///db/shakespeare/plays/shakes.xsl"/>
     <map:serialize type="html"/>
 </map:match>
-</programlisting>]]>
+</programlisting>]]></markup>
         </programlisting>
             </example>
 
