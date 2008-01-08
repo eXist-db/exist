@@ -20,6 +20,25 @@
     <title>Documentation</title>
 
     <section>
+        <title>Recommended Reading</title>
+        
+        <para>If you are new to eXist, we recommend to at least scan through the following 
+            documents to get an overview of the most important features:</para>
+        
+        <itemizedlist>
+            <listitem>
+                <para><ulink url="quickstart.xml">Quick Start</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink url="xquery.xml">XQuery</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink url="indexing.xml">Configuring Indexes</ulink></para>
+            </listitem>
+        </itemizedlist>
+    </section>
+      
+      <section>
       <title>Available Documentation</title>
 
       <para>We recommend to have a look at the <ulink url="quickstart.xml">Quick Start</ulink>
@@ -163,33 +182,33 @@
     <section>
       <title>Documentation on the Wiki</title>
 
-      <para>Further documentation can be found in the <ulink url="http://wiki.exist-db.org"
+      <para>Further documentation can be found in the <ulink url="http://atomic.exist-db.org"
         >Wiki</ulink>. Among other things, have a look at:</para>
 
       <itemizedlist>
         <listitem>
           <para>
-            <ulink url="http://wiki.exist-db.org/space/HowTos">Various HowTos</ulink>
+              <ulink url="http://atomic.exist-db.org/wiki/HowTo/">Various HowTos</ulink>
           </para>
         </listitem>
 
-        <listitem>
+        <!--listitem>
           <para>
             <ulink url="http://wiki.exist-db.org/space/FAQs">Some frequently asked questions</ulink>
           </para>
-        </listitem>
+        </listitem-->
 
         <listitem>
           <para>
-            <ulink url="http://wiki.exist-db.org/space/XMLPrague2006">XMLPrague 2006 papers and
-              presentations</ulink>
+              <ulink url="http://atomic.exist-db.org/wiki/articles/XMLPrague2006">XMLPrague 2006 papers and
+                  presentations</ulink>
           </para>
         </listitem>
 
-        <listitem>
+        <!--listitem>
           <para><ulink url="http://wiki.exist-db.org/space/NewSchemaValidation"> New Schema
               Validation</ulink>.</para>
-        </listitem>
+        </listitem-->
       </itemizedlist>
     </section>
 
@@ -197,14 +216,14 @@
       <title>Articles</title>
 
       <para>An up-to-date list of articles can be found <ulink
-          url="http://wiki.exist-db.org/space/Articles">on the wiki</ulink>.</para>
+          url="http://atomic.exist-db.org/wiki/articles/Articles">on the wiki</ulink>.</para>
 
       <para>If you would like to know more about the internal workings of eXist, you may read the
         following introductory article:</para>
 
       <para>Wolfgang Meier. <ulink url="xmlprague06.xml">Index-Driven XQuery Processing in the eXist
           XML Database</ulink>. Paper presented at XML Prague 2006. Presentation slides can be found
-          <ulink href="http://wiki.exist-db.org/space/XMLPrague2006/wolfgangs_talk.pdf">here</ulink>
+          <ulink url="http://atomic.exist-db.org/wiki/articles/wolfgangs_talk.pdf">here</ulink>
         as well.</para>
 
       <para>An older article is:</para>
