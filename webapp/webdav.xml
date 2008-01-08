@@ -18,59 +18,55 @@
     <ci:include src="sidebar.xml"/>
     <chapter id="webdav">
         <title>WebDAV</title>
-        
+
         <section id="webdav">
             <title>Introducing WebDAV</title>
-            <para>Beginning with version 1.0b2, eXist has its own WebDAV implementation.
-            WebDAV 	makes it possible to manage database collections in eXist just 
-			like directories in a file system. You may copy, remove, view 
-			or edit files with any application supporting the WebDAV 
-			protocol, including, for example, Windows Explorer, 
-            <ulink url="http://www.webdav.org/cadaver">cadaver</ulink>, 
-            <ulink url="http://www.konqueror.org/">KDE Konqueror</ulink>, 
-            <ulink url="http://www.oxygenxml.com/">OxygenXML</ulink>, 
-            <ulink url="http://www.altova.com/">XML Spy</ulink> and many others.</para>
-			            
-            <para>In the default installation, the WebDAV server listens on 
-            <ulink url="http://localhost:8080/exist/webdav/db">http://localhost:8080/exist/webdav/db</ulink>.
-            The implementation is almost complete, however the PROPSET method is missing.
-            MSOffice is reported to have LOCKing issues but most WebDAV clients should work
-            well.</para>
-            
+            <para>Beginning with version 1.0b2, eXist has its own WebDAV implementation. WebDAV
+                makes it possible to manage database collections in eXist just like directories in a
+                file system. You may copy, remove, view or edit files with any application
+                supporting the WebDAV protocol, including, for example, Windows Explorer, <ulink
+                    url="http://www.webdav.org/cadaver">cadaver</ulink>, <ulink
+                    url="http://www.konqueror.org/">KDE Konqueror</ulink>, <ulink
+                    url="http://www.oxygenxml.com/">OxygenXML</ulink>, <ulink
+                    url="http://www.altova.com/">XML Spy</ulink> and many others.</para>
+
+            <para>In the default installation, the WebDAV server listens on <ulink
+                    url="http://localhost:8080/exist/webdav/db"
+                    >http://localhost:8080/exist/webdav/db</ulink>. The implementation is almost
+                complete, however the PROPSET method is missing. MSOffice is reported to have
+                LOCKing issues but most WebDAV clients should work well.</para>
+
             <note>
-                <para>By default, the WebDAV server tries to use HTTP Digest Authentication
-                as required by the standard. However, some Windows clients refuse
-                to accept this, so the server has a fallback option and uses Basic Authentication
-                if the client insists on it.</para>
+                <para>By default, the WebDAV server tries to use HTTP Digest Authentication as
+                    required by the standard. However, some Windows clients refuse to accept this,
+                    so the server has a fallback option and uses Basic Authentication if the client
+                    insists on it.</para>
             </note>
         </section>
 
         <section>
             <title>WinXP Webfolder</title>
-            
+
             <note>
-            <para>Be aware that there are multiple 
-                  versions of webdav Microsoft libraries (and different flavours of bugs).
-                  To avoid some frustration if the steps below don't work for you,
-                  <ulink url="http://support.microsoft.com/?kbid=892211">update windows XP for web folders</ulink>,
-                  or take more information about 
-                  <ulink url="http://greenbytes.de/tech/webdav/webfolder-client-list.html">Web
-                   Folder Client (MSDAIPP.DLL) Versions and Issues</ulink>.</para>
+                <para>Be aware that there are multiple versions of webdav Microsoft libraries (and
+                    different flavours of bugs). To avoid some frustration if the steps below don't
+                    work for you, <ulink url="http://support.microsoft.com/?kbid=892211">update
+                        windows XP for web folders</ulink>, or take more information about <ulink
+                        url="http://greenbytes.de/tech/webdav/webfolder-client-list.html">Web Folder
+                        Client (MSDAIPP.DLL) Versions and Issues</ulink>.</para>
             </note>
 
-            <para>Perform the following steps in Internet Explorer:
-                <itemizedlist>
+            <para>Perform the following steps in Internet Explorer: <itemizedlist>
                     <listitem>Select <command>File -> Open</command>.</listitem>
-                    <listitem>Fill in URL like <command>http://localhost:8080/exist/webdav/db/</command>
-	                 or <command>https://localhost:8443/exist/webdav/db/</command>.</listitem>
+                    <listitem>Fill in URL like
+                        <command>http://localhost:8080/exist/webdav/db/</command> or
+                            <command>https://localhost:8443/exist/webdav/db/</command>.</listitem>
                     <listitem>Check "Open as Web Folder".</listitem>
                     <listitem>Click OK.</listitem>
                 </itemizedlist>
-
                 <screenshot>
                     <graphic fileref="resources/webdav_xp_webfolders.png"/>
                 </screenshot>
-
             </para>
 
         </section>
@@ -78,8 +74,8 @@
         <section>
             <title>WinXP My Network Places</title>
 
-            <para>This enables you to access eXist from almost any windowsXP application 
-                  that supports 'Network Places' in the standard File dialog:
+            <para>This enables you to access eXist from almost any windowsXP application that
+                supports 'Network Places' in the standard File dialog:
                 <screenshot><graphic fileref="resources/webdav_xp_mnp0.png"/>
                 </screenshot>
             </para>
@@ -88,7 +84,7 @@
                     <graphic fileref="resources/webdav_xp_mnp1.png"/>
                 </screenshot>
             </para>
-            <para>Then select the service provider. 
+            <para>Then select the service provider.
                 <screenshot>
                     <graphic fileref="resources/webdav_xp_mnp2.png"/>
                 </screenshot>
@@ -102,9 +98,29 @@
                 <screenshot>
                     <graphic fileref="resources/webdav_xp_mnp4.png"/>
                 </screenshot>
-
             </para>
 
+        </section>
+
+        <section>
+            <title>MacOsX Finder</title>
+            <para>The eXist database can be accessed easily with the MacOsX Finder. First select in
+                the Finder "Go" and "Connect to Server..."
+                <screenshot><graphic fileref="resources/webdav_macosx_1.png"/>
+                </screenshot>
+            </para>
+            <para>Fill in the webdav url http://localhost:8080/exist/webdav/db/
+                <screenshot><graphic fileref="resources/webdav_macosx_2.png"/>
+                </screenshot>
+            </para>
+            <para>Enter username and password...
+                <screenshot><graphic fileref="resources/webdav_macosx_3.png"/>
+                </screenshot>
+            </para>
+            <para>And the database is accessible!
+                <screenshot><graphic fileref="resources/webdav_macosx_4.png"/>
+                </screenshot>
+            </para>
         </section>
 
 
@@ -115,7 +131,8 @@
                 <itemizedlist>
                     <listitem>Select <command>File -> Open URL</command>.</listitem>
                     <listitem>Fill <command>User</command> and <command>Password</command>.</listitem>
-                    <listitem>Enter <command>Server Url</command> http://localhost:8080/exist/webdav/db/.</listitem>
+                    <listitem>Enter <command>Server Url</command>
+                        http://localhost:8080/exist/webdav/db/.</listitem>
                     <listitem>Click <command>Browse</command>.</listitem>
                 </itemizedlist>
                 <screenshot>
@@ -123,21 +140,22 @@
                 </screenshot>
             </para>
             <note>
-                <para>Note on SSL; Probably you'll het the message: Error: 
-                			sun.security.validator.ValidatorException: PKIX path building failed: 
-                			sun.security.provider.certpath.SunCertPathBuilderException: unable to find 
-                			valid certification path to requested target.</para>
-                <para>You'll need to add the Server certificate to your trusted certificates keystore 
-								(<a href="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores">more info</a>). 
-                </para>
+                <para>Note on SSL; Probably you'll het the message: Error:
+                    sun.security.validator.ValidatorException: PKIX path building failed:
+                    sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid
+                    certification path to requested target.</para>
+                <para>You'll need to add the Server certificate to your trusted certificates
+                    keystore (<a
+                        href="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores"
+                        >more info</a>). </para>
             </note>
 
             <note>
-                <para>Warning: when saving a document to the WebDAV server via Oxygen, remember 
-                			to double check if the document path in the File URL field at the top of the dialog 
-                			does really contain the URL to which you want to save the document. It happens very 
-                			easily that you click on another folder or resource by mistake and thus overwrite the 
-                			wrong resource. </para>
+                <para>Warning: when saving a document to the WebDAV server via Oxygen, remember to
+                    double check if the document path in the File URL field at the top of the dialog
+                    does really contain the URL to which you want to save the document. It happens
+                    very easily that you click on another folder or resource by mistake and thus
+                    overwrite the wrong resource. </para>
             </note>
 
 
@@ -152,7 +170,8 @@
                     </listitem>
                     <listitem>Enter <command>Username, Password</command>
                     </listitem>
-                    <listitem>Enter <command>Server URL</command> without a slash on the end (otherwise you'll see 2x 'db')</listitem>
+                    <listitem>Enter <command>Server URL</command> without a slash on the end
+                        (otherwise you'll see 2x 'db')</listitem>
                 </itemizedlist>
                 <screenshot>
                     <graphic fileref="resources/webdav_xmlspy.png"/>
@@ -167,9 +186,8 @@
         <section>
             <title>KDE Konqueror</title>
 
-            <para>Enter an URL like 
-                <command>webdav://localhost:8080/exist/webdav/db</command>. Use  
-                <command>webdavs://</command> for webDAV over SSL.
+            <para>Enter an URL like <command>webdav://localhost:8080/exist/webdav/db</command>. Use
+                    <command>webdavs://</command> for webDAV over SSL.
                 <screenshot>
                     <graphic fileref="resources/webdav_konqueror.png"/>
                 </screenshot>
