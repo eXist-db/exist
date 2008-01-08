@@ -74,7 +74,7 @@
                             </xsl:otherwise>
                         </xsl:choose>
                         <xsl:number count="section" level="multiple" format="1. "/>
-                        <xsl:value-of select="title"/>
+                        <xsl:apply-templates select="title/node()"/>
                     </a>
                     <xsl:if test="section">
                         <ul>
@@ -92,7 +92,7 @@
                                             </xsl:otherwise>
                                         </xsl:choose>
                                         <xsl:number count="section" level="multiple" format="1. "/>
-                                        <xsl:value-of select="title"/>
+                                        <xsl:apply-templates select="title/node()"/>
                                     </a>
                                 </li>
                             </xsl:for-each>
@@ -259,13 +259,24 @@
     </xsl:template>
 
     <xsl:template match="chapter/section/section/section|article/section/section/section">
-        <xsl:apply-templates/>
-    </xsl:template>
-
-    <xsl:template match="chapter/section/section/section/title|article/section/section/title">
         <h4>
-            <xsl:apply-templates/>
+            <a>
+                <xsl:choose>
+                    <xsl:when test="@id">
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="@id"/>
+                        </xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="generate-id()"/>
+                        </xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </a>
+            <xsl:apply-templates select="title"/>
         </h4>
+        <xsl:apply-templates select="*[not(name()='title')]"/>
     </xsl:template>
 
     <xsl:template match="chapter/section/section/section/section|article/section/section/section">

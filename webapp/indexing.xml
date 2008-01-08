@@ -515,7 +515,7 @@
                     directly forwarded to the corresponding index implementation. The example above
                     configures three different types of indexes: full text, range and ngram.</para>
 
-                <section>
+                <section id="pathvsqname">
                     <title>Configuration by path vs. configuration by qname</title>
 
                     <para>It is important to note the difference between the <option>path</option>
