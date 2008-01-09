@@ -18,7 +18,7 @@
   
   <chapter id="ch01">
     <title>Using the Java Client on the Command Line</title>
-    
+    <para>This document has been reviewed for eXist 1.2.</para>
     <para>eXist offers an integrated command-line and gui client. The <ulink url="quickstart.xml">QuickStart</ulink>
     shows a few screenshots of the graphical interface. However, it is also possible (and sometimes faster or 
     more convenient) to use the client on the command line. The following sections provide a quick introduction
@@ -256,10 +256,10 @@
         interprete whitespace characters as command separators. Thus, if no argument is passed to
           <option>-x</option>, the client will try to read the query from standard input. For
         example, on Unix you may do</para>
-      <synopsis format="linespecific">echo "//SPEECH[LINE &amp;= 'love']" | bin/client.sh -x</synopsis>
+      <synopsis format="linespecific">echo "//SPEECH[contains(LINE, 'love')]" | bin/client.sh -x</synopsis>
       <para>NB! remember to type Ctrl-d when working without pipe.</para>
       <synopsis format="linespecific">bin/client.sh -x ENTER
-      //SPEECH[LINE &amp;= 'love'] ENTER Ctrl-d</synopsis>
+      //SPEECH[contains(LINE, 'love')] ENTER Ctrl-d</synopsis>
       <para>Queries can also be read from a file. For example,</para>
       <synopsis>bin/client.sh -F samples/xquery/fibo.xq</synopsis>
       <para>executes the XQuery contained in <filename>fibo.xq</filename>.</para>
