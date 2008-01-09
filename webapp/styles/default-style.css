@@ -468,7 +468,7 @@ select.choose {
     border-bottom: 4px solid #fac783;
     padding: 5px 0;
 }
-
+    
 .example {
     background-color: #c3d9ff;
 }
@@ -506,7 +506,8 @@ select.choose {
 }
 
 @media print {
-    .note_content, .example_content, .important_content {
+    .note .note_content, .example .example_content, .important .important_content {
+        background-color: white;
         border: 0px;
     }
 }

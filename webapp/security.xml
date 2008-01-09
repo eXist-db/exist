@@ -35,7 +35,7 @@
                 The following is a simple example of a <filename>users.xml</filename> document: </para>
             <example>
                 <title><filename>users.xml</filename> User Information</title>
-                <programlisting><![CDATA[<auth>
+                <programlisting><markup><![CDATA[<auth>
     <groups last-id="3">
         <group name="dba" id="1"/>
         <group name="guest" id="2"/>
@@ -52,7 +52,7 @@
             <group>my-group</group>
         </user>
     </users>
-</auth>]]>
+</auth>]]></markup>
                 </programlisting>
             </example>
             <para>As we see from this example, passwords are encrypted using an
@@ -378,7 +378,7 @@ exist:/db/shakespeare/plays>]]></screen>
                     <filename>sitemap.xmap</filename> configuration:</para>
             <example>
                 <title>Snippet from Cocoon's <filename>sitemap.xmap</filename></title>
-                <screen><![CDATA[
+                <screen><markup><![CDATA[
 <!-- this is a protected resource: it uses the xmldb-login action
 to authenticate a user against the database -->
 <map:match pattern="xadmin.xsp">
@@ -397,7 +397,7 @@ to authenticate a user against the database -->
      <map:transform type="cinclude"/>
      <map:transform src="stylesheets/doc2html-2.xsl"/>
      <map:serialize type="xhtml"/>
-</map:match>]]></screen>
+</map:match>]]></markup></screen>
             </example>
         </section>
         <section>
