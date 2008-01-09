@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist team
+ * Copyright (C) 2001-2008 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -759,12 +759,12 @@ public class RESTServer {
             String charset = null;
             if (contentType != null) {
                 int semicolon = contentType.indexOf(';');
-                if (semicolon>0) {
+                if (semicolon > 0) {
                     contentType = contentType.substring(0,semicolon).trim();
                     int equals = contentType.indexOf('=',semicolon);
-                    if (equals>0) {
-                        String param = contentType.substring(semicolon+1,equals).trim();
-                        if (param.compareToIgnoreCase("charset=")==0) {
+                    if (equals > 0) {
+                        String param = contentType.substring(semicolon + 1, equals).trim();
+                        if (param.compareToIgnoreCase("charset=") == 0) {
                             charset = param.substring(equals+1).trim();
                         }
                     }
@@ -783,13 +783,13 @@ public class RESTServer {
                 IndexInfo info = collection.validateXMLResource(transaction, broker, docUri, createInputSource(charset,url));
                 info.getDocument().getMetadata().setMimeType(contentType);
                 collection.store(transaction, broker, info, createInputSource(charset,url), false);
-                response.sendError(HttpServletResponse.SC_OK, "Document " + docUri + " stored.");
+                response.setStatus(HttpServletResponse.SC_CREATED);
             } else {
 
                 FileInputStream is = new FileInputStream(tempFile);
                 collection.addBinaryResource(transaction, broker, docUri, is, contentType, (int) tempFile.length());
                 is.close();
-                response.sendError(HttpServletResponse.SC_OK, "Document " + docUri + " stored as binary resource.");
+                response.setStatus(HttpServletResponse.SC_CREATED);
             }
             
             transact.commit(transaction);
@@ -828,7 +828,7 @@ public class RESTServer {
                 // remove the collection
                 LOG.debug("removing collection " + path);
                 broker.removeCollection(txn, collection);
-                response.sendError(HttpServletResponse.SC_OK, "Collection " + path + " removed.");
+                response.setStatus(HttpServletResponse.SC_OK);
             } else {
                 DocumentImpl doc = (DocumentImpl) broker.getXMLResource(path);
                 if (doc == null) {
@@ -844,7 +844,7 @@ public class RESTServer {
                         		path.lastSegment());
                     else
                         doc.getCollection().removeXMLResource(txn, broker, path.lastSegment());
-                    response.sendError(HttpServletResponse.SC_OK, "Document " + path + " removed.");
+                    response.setStatus(HttpServletResponse.SC_OK);
                 }
             }
             transact.commit(txn);
