@@ -253,8 +253,7 @@
                 <xsl:variable name="year">
                     <xsl:choose>
                         <xsl:when test="chiba:data/text() = ''">
-                            <!-- default year -->
-                            2006
+                            <!-- default year (this year) -->
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:choose>
@@ -267,7 +266,8 @@
                 <xsl:variable name="month" as="xs:integer">
                     <xsl:choose>
                         <xsl:when test="chiba:data/text() = ''">
-                            <!-- default month -->0
+                            <!-- default month -->
+                            0
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:choose>
@@ -280,7 +280,8 @@
                 <xsl:variable name="day" as="xs:integer">
                     <xsl:choose>
                         <xsl:when test="chiba:data/text() = ''">
-                            <!-- default day -->0
+                            <!-- default day -->
+                            0
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:choose>
@@ -385,7 +386,8 @@
                     <xsl:variable name="hour" as="xs:integer">
                         <xsl:choose>
                             <xsl:when test="chiba:data/text() = ''">
-                                <!-- default hour value -->0
+                                <!-- default hour value -->
+                                0
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="hours-from-dateTime(chiba:data/text())"/>
@@ -395,7 +397,8 @@
                     <xsl:variable name="minute" as="xs:integer">
                         <xsl:choose>
                             <xsl:when test="chiba:data/text() = ''">
-                                <!-- default minute value -->0
+                                <!-- default minute value -->
+                                0
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="minutes-from-dateTime(chiba:data/text())"/>
@@ -405,17 +408,19 @@
                     <xsl:variable name="second" as="xs:integer">
                         <xsl:choose>
                             <xsl:when test="chiba:data/text() = ''">
-                                <!-- default second value -->0
+                                <!-- default second value -->
+                                0
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:value-of select="seconds-from-dateTime(chiba:data/text())"/>
+                                <xsl:value-of select="xs:integer(seconds-from-dateTime(chiba:data/text()))"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:variable>
                     <xsl:variable name="timezone" as="xs:integer">
                         <xsl:choose>
                             <xsl:when test="chiba:data/text() = '' or empty(timezone-from-dateTime(chiba:data/text()))">
-                                <!-- default timezone value -->0
+                                <!-- default timezone value (this timezone) -->
+                                <xsl:value-of select="hours-from-duration(timezone-from-dateTime(current-dateTime()))"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="hours-from-duration(timezone-from-dateTime(chiba:data/text()))"/>
