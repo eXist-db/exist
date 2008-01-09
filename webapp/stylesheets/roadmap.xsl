@@ -32,7 +32,7 @@
                                 <a href="index.xml#download">Download</a>
                             </li>
                             <li>
-                                <a href="http://wiki.exist-db.org">Wiki</a>
+                                <a href="http://atomic.exist-db.org">Wiki</a>
                             </li>
                             <li class="last">
                                 <a href="examples.xml">Demo</a>
