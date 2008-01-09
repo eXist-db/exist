@@ -18,7 +18,42 @@
     <body>
         <section id="overview" title="Overview">
 
-            <p>eXist is an Open Source native XML database featuring efficient, index-based <a
+            <p>eXist-db is an open source database management system entirely built on XML
+                technology. It is a "<a href="http://en.wikipedia.org/wiki/XML_database">Native XML
+                    Database</a>" (NXD) which means the database does not store XML data "as is" but
+                eXist will transform the XML data into its own internal logical model.</p>
+            <p>eXist-db uses XQuery to retrieve and manipulate data. The database supports many (<a
+                    href="http://en.wikipedia.org/wiki/Web_2">web</a>) technology standards making
+                it an excellent application platform: <ul>
+                    <li><a href="http://www.w3.org/TR/xquery/">XQuery 1.0</a> / <a
+                            href="http://www.w3.org/TR/xpath20/">XPath 2.0</a></li>
+                    <li><a href="http://www.w3.org/TR/xslt">XSLT 1.0</a> (using Apache Xalan) or <a
+                            href="http://www.w3.org/TR/xslt20">XSLT 2.0</a> (optional using <a
+                            href="http://saxon.sourceforge.net/">Saxon</a>)</li>
+                    <li>HTTP interfaces: <a
+                            href="http://en.wikipedia.org/wiki/Representational_State_Transfer"
+                        >REST</a>, <a href="http://www.webdav.org/">WebDAV</a>, <a
+                            href="http://www.w3.org/TR/soap/">SOAP</a>, <a
+                            href="http://en.wikipedia.org/wiki/XML-RPC">XMLRPC</a>, <a
+                            href="http://en.wikipedia.org/wiki/Atom_(standard)">Atom Publishing
+                            Protocol</a></li>
+                    <li>XML database specific: XMLDB, XQJ/<a
+                            href="http://jcp.org/en/jsr/detail?id=225">JSR-225</a> (under
+                        development)</li>
+                </ul>
+            </p>
+            <p>eXist-db is highly compliant with the <a href="http://www.w3.org/TR/xquery/"
+                >XQuery</a> standard (current <a href="http://www.w3.org/XML/Query/test-suite/"
+                >XQTS</a> score is <a
+                    href="http://www.w3.org/XML/Query/test-suite/XQTSReportSimple.html">99.4%</a>)
+                for the <a href="http://www.w3.org/TR/xpath-functions/">standard functions</a> for
+                querying data but it has also additional (non w3c) <a href="exist/update_ext.xml"
+                    >XQuery Update Extensions</a> for updating (insert, replace, value delete and
+                rename) data stored in the database. Out of the box eXist-db also provides a large
+                collection of XQuery Function Modules containing many handy functions that are not
+                (yet) defined in the XQuery specification.</p>
+
+            <!--p>eXist is an Open Source native XML database featuring efficient, index-based <a
                     href="http://www.w3.org/TR/xquery/">XQuery</a> processing, automatic structural
                 indexing, extensions for full-text search, <a
                     href="http://xmldb-org.sourceforge.net/xupdate/">XUpdate</a> support, XQuery <a
@@ -27,16 +62,16 @@
                 and tight integration with existing XML development tools. The database implements
                 most of the current <a href="http://www.w3.org/TR/xquery/">XQuery 1.0
                 recommendation</a>, with exception of the schema import and schema validation
-                features defined as optional in the XQuery specification.</p>
+                features defined as optional in the XQuery specification.</p-->
 
             <p>eXist provides a powerful environment for the development of web applications based
                 on XQuery and related standards. Entire web applications can be written in XQuery,
-                using XSLT, XHTML, CSS and maybe Javascript (for AJAX functionality). XQuery server
-                pages can be executed from the filesystem or stored in the database.</p>
+                using XSLT, XHTML, CSS and Javascript (for AJAX functionality). XQuery server pages
+                can be executed from the filesystem or stored in the database.</p>
 
-            <p> To avoid memory-intensive document tree traversals during query processing, eXist
+            <!--p> To avoid memory-intensive document tree traversals during query processing, eXist
                 uses an efficient structural index structure which is based on a numerical indexing
-                scheme for identifying XML nodes in the index.</p>
+                scheme for identifying XML nodes in the index.</p-->
 
         </section>
 
