@@ -21,28 +21,28 @@
  */
 package org.exist.storage;
 
-import junit.textui.TestRunner;
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
-import org.custommonkey.xmlunit.Diff;
-import org.exist.StandaloneServer;
-import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.mortbay.util.MultiException;
-import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Vector;
+
+import org.apache.xmlrpc.XmlRpc;
+import org.apache.xmlrpc.XmlRpcClient;
+import org.custommonkey.xmlunit.Diff;
+import org.exist.StandaloneServer;
+import org.exist.storage.serializers.XIncludeFilter;
+import org.exist.xmldb.XmldbURI;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mortbay.util.MultiException;
 
 
 /**
@@ -65,7 +65,7 @@ public class XIncludeSerializerTest {
     private final static String REST_URI = "http://admin:admin@127.0.0.1:8088/db/xinclude_test";
 
     private final static String XML_DATA1 =
-    	"<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+    	"<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>" +
     	"<root>" +
     	"<xi:include href='metatags.xml'/>" +
     	"</root>" +
@@ -79,35 +79,35 @@ public class XIncludeSerializerTest {
     	"</html>";
 
     private final static String XML_DATA3 =
-    	"<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+    	"<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>" +
     	"<root>" +
     	"<xi:include href='../xinclude_test/data/metatags.xml'/>" +
     	"</root>" +
     	"</test>";
 
     private final static String XML_DATA4 =
-    	"<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+    	"<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>" +
     	"<root>" +
     	"<xi:include href='data/metatags.xml'/>" +
     	"</root>" +
     	"</test>";
 
     private final static String XML_DATA5 =
-        "<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+        "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>" +
     	"<root>" +
     	"<xi:include href='data/metatags.xml' xpointer='xpointer(//metatag)'/>" +
     	"</root>" +
     	"</test>";
 
     private final static String XML_DATA6 =
-        "<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+        "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>" +
     	"<root>" +
     	"<xi:include href='data/metatags.xml' xpointer='metatag'/>" +
     	"</root>" +
     	"</test>";
 
     private final static String XML_DATA7 =
-        "<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+        "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>" +
     	"<root>" +
     	"<xi:include href='data/unknown.xml'>" +
         "<xi:fallback><warning>Not found</warning></xi:fallback>" +
@@ -116,13 +116,13 @@ public class XIncludeSerializerTest {
     	"</test>";
 
     private final static String XML_DATA8 =
-        "<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+        "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>" +
     	"<root>" +
     	"<xi:include href='data/unknown.xml'/>" +
         "</root>" +
     	"</test>";
 
-    private final static String XML_RESULT ="<test xmlns:xi='http://www.w3.org/2001/XInclude'>"+
+    private final static String XML_RESULT ="<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"+
     "<root>" +
     "<html>" +
     "<head>"+
@@ -132,13 +132,13 @@ public class XIncludeSerializerTest {
     "</root>"+
     "</test>";
 
-    private final static String XML_RESULT_XPOINTER = "<test xmlns:xi='http://www.w3.org/2001/XInclude'>"+
+    private final static String XML_RESULT_XPOINTER = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"+
     "<root>" +
     "<metatag xml:id='metatag' name='test' description='test'/>" +
     "</root>"+
     "</test>";
 
-    private final static String XML_RESULT_FALLBACK1 = "<test xmlns:xi='http://www.w3.org/2001/XInclude'>"+
+    private final static String XML_RESULT_FALLBACK1 = "<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>"+
         "<root>" +
         "<warning>Not found</warning>" +
         "</root>" +
