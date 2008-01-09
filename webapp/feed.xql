@@ -6,7 +6,8 @@ import module namespace httpclient="http://exist-db.org/xquery/httpclient"
     at "java:org.exist.xquery.modules.httpclient.HTTPClientModule";
 import module namespace json="http://www.json.org" at "resource:org/exist/xquery/lib/json.xq";
 
-declare variable $atom:uri := "http://atomic.exist-db.org/atom/summary/wiki/blogs/eXist/";
+declare variable $atom:server := "http://atomic.exist-db.org";
+declare variable $atom:uri := concat($atom:server, "/atom/summary/wiki/blogs/eXist/");
 
 declare function atom:format-entry($feed as element()) {
     <ul>
@@ -18,7 +19,7 @@ declare function atom:format-entry($feed as element()) {
                 <p class="date">
                     {substring($entry/atom:published, 1, 10)}
                 </p>
-                <a href="http://localhost:8000{$link}">
+                <a href="{$atom:server}{$link}">
                     {$entry/atom:title/text()}
                 </a>
             </li>
