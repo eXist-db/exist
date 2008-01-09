@@ -9,7 +9,7 @@ import module namespace request="http://exist-db.org/xquery/request";
 import module namespace session="http://exist-db.org/xquery/session";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
-declare option exist:serialize "method=xhtml indent=no";
+declare option exist:serialize "method=xhtml indent=no highlight-matches=elements";
 
 (:~ Points to the location of the xml-highlight.xsl stylesheet stored in the database :)
 declare variable $sandbox:XML_HIGHLIGHT_STYLE { "/db/sandbox/xml-highlight.xsl" };
@@ -168,7 +168,7 @@ declare function sandbox:display-page() as element() {
                 <ul id="menu">
                     <li><a href="../index.xml">Home</a></li>
                     <li><a href="../index.xml#download">Download</a></li>
-                    <li><a href="http://wiki.exist-db.org">Wiki</a></li>
+                    <li><a href="http://atomic.exist-db.org">Wiki</a></li>
                     <li><a href="../examples.xml">Demo</a></li>
                 </ul>
                 <h1>XQuery Sandbox</h1>

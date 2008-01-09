@@ -16,9 +16,7 @@
                 features) as specified in the <ulink url="http://www.w3.org/TR/xquery/">W3C
                     recommendation</ulink>. Functions in the standard function library should also
                 follow the <ulink url="http://www.w3.org/TR/xpath-functions/">"XQuery 1.0 and XPath
-                    2.0 Functions and Operators" recommendation</ulink>. However, the function
-                library is not yet completely aligned with the latest version of the spec. Some
-                function signatures may differ. Please check against the local function library
+                    2.0 Functions and Operators" recommendation</ulink>. Please check the local function library
                     <ulink url="xquery/functions.xq">documentation</ulink>.</para>
 
             <para>The XQuery implementation is tested against the official XQuery Test Suite (XQTS
