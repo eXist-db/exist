@@ -3,7 +3,7 @@
     <toolbar>
         <link href="index.xml">Home</link>
         <link href="index.xml#download">Download</link>
-        <link href="http://wiki.exist-db.org">Wiki</link>
+        <link href="http://atomic.exist-db.org">Wiki</link>
         <link href="examples.xml">Demo</link>
     </toolbar>
 
@@ -53,11 +53,11 @@
         <item>
             <link href="apps/applications.xml">Powered By eXist</link>
         </item>
-        <item>
+        <!--item>
             <link href="http://wiki.exist-db.org/space/ThirdPartyTools">
                 Third Party Tools
             </link>
-        </item>
+        </item-->
     </group>
     <group name="Development">
         <item>
@@ -67,7 +67,7 @@
             <link href="api/index.html">Javadocs</link>
         </item>
         <item>
-        	<link href="http://wiki.exist-db.org/space/Change+Log">ChangeLog</link>
+        	<link href="http://atomic.exist-db.org/wiki/changes/">ChangeLog</link>
         </item>
         <item>
             <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
@@ -110,10 +110,6 @@
     <banner>
         <link href="http://www.java.net"><img src="resources/javanet_button_90.gif" border="0" alt="java.net Member Button"/></link>
     </banner>
-    
-    <reference title="Tools We Use:">
-        <link href="http://www.yourkit.com"><img src="resources/yjp.gif" border="0" alt="YourKit Java Profiler"/></link>
-    </reference>
     
     <reference>
         <link href="http://www.izforge.com/izpack/"><img src="resources/izpack-88x31.png" border="0" 
