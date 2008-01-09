@@ -3,7 +3,7 @@
 <book xmlns:xi="http://www.w3.org/2001/XInclude">
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        <style href="default-style.css"/>
+        <style href="styles/default-style.css"/>
         <title>Open Source XML Database</title>
         <author>
             <firstname>Wolfgang M.</firstname>
