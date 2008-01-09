@@ -48,8 +48,15 @@
             <replacefilter token="atompub.xml" value="atompub.html"/>
             <replacefilter token="credits.xml" value="credits.html"/>
             <replacefilter token="deployment.xml" value="deployment.html"/>
+
         	<replacefilter token="devguide.xml" value="devguide.html"/>
-        	<replacefilter token="devguide_indexes.xml" value="devguide_indexes.html"/>        	
+        	<replacefilter token="devguide_indexes.xml" value="devguide_indexes.html"/>
+			<replacefilter token="devguide_rest.xml" value="devguide_rest.html"/>
+			<replacefilter token="devguide_soap.xml" value="devguide_soap.html"/>
+			<replacefilter token="devguide_xmldb.xml" value="devguide_xmldb.html"/>
+			<replacefilter token="devguide_xmlrpc.xml" value="devguide_xmlrpc.html"/>
+			<replacefilter token="devguide_xquery.xml" value="devguide_xquery.html"/>    
+    	
             <replacefilter token="documentation.xml" value="documentation.html"/>
             <replacefilter token="roadmap.xml" value="roadmap.html"/>
             <replacefilter token="indexing.xml" value="indexing.html"/>
@@ -75,6 +82,8 @@
 			<replacefilter token="soc-ft.xml" value="soc-ft.html"/>
 			<replacefilter token="soc-xqj.xml" value="soc-xqj.html"/>
 			<replacefilter token="tutorials.xml" value="tutorials.html"/>
+			<replacefilter token="validation.xml" value="validation.html"/>
+			<replacefilter token="jmx.xml" value="jmx.html"/>
 
             <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
             <replacefilter token="xquery/acronyms.xq" value="${demo.host}/xquery/acronyms.xq"/>
@@ -90,7 +99,7 @@
             <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
             <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
             <replacefilter token="apps/applications.xml" value="${demo.host}/apps/applications.xml"/>
-            <replacefilter token="webstart/exist.jnlp" value="${demo.host}/webstart/exist.jnlp"/>
+            <replacefilter token="webstart/exist.jnlp" value="${demo.host}:8080/webstart/exist.jnlp"/>
         </replace>
     </target>
 
@@ -124,8 +133,6 @@
                 <uri type="append" src="atompub.xml"/>
                 <uri type="append" src="credits.xml"/>
                 <uri type="append" src="deployment.xml"/>
-                <uri type="append" src="devguide.xml"/>	
-				<uri type="append" src="devguide_indexes.xml"/>
                 <uri type="append" src="documentation.xml"/>
                 <uri type="append" src="examples.xml"/>
                 <uri type="append" src="indexing.xml"/>
@@ -166,6 +173,30 @@
                 <uri type="append" src="backup.xml"/>
                 <uri type="append" src="building.xml"/>
                 <uri type="append" src="xmlprague06.xml"/>
+				<uri type="append" src="validation.xml"/>
+            </uris>
+        </cocoon>
+
+        <cocoon verbose="true"
+            classpathref="classpath.core"
+            precompile-only="false"
+            confirm-extensions="false"
+            context-dir="${build.docs.src}"
+            config-file="${build.docs.src}/WEB-INF/cocoon.xconf"
+            work-dir="${build}/work"
+            dest-dir="${build.docs.html}"
+            extension=".html"
+            accept="*/*">
+            <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
+            <uris name="site" follow-links="false">
+                <uri type="append" src="devguide.xml"/>	
+				<uri type="append" src="devguide_indexes.xml"/>
+				<uri type="append" src="devguide_soap.xml"/>
+				<uri type="append" src="devguide_xmlrpc.xml"/>
+				<uri type="append" src="devguide_rest.xml"/>
+				<uri type="append" src="devguide_xmldb.xml"/>
+				<uri type="append" src="devguide_xquery.xml"/>
+				<uri type="append" src="jmx.xml"/>
             </uris>
         </cocoon>
         
