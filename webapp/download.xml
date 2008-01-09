@@ -29,7 +29,7 @@
 
             <para>Release <emphasis>1.3</emphasis> is the <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge"
                     >bleeding edge</ulink> development release. New features will be added to this
-                release only. This version of eXist-db will require <emphasis>Java5</emphasis> or later.</para>
+                release only. This version of eXist-db will require <a href="http://java.sun.com/j2se/1.5.0/">Java5</a> or later.</para>
 
             <note>
                 <para><emphasis>Even</emphasis> release numbers (1.0.x, 1.2.x) indicate 'production' releases whose
