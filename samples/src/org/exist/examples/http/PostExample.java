@@ -1,29 +1,29 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-08 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.examples.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -35,6 +35,7 @@ import org.exist.storage.DBBroker;
 /**
  * PostExample
  * Execute: bin\run.bat org.exist.examples.http.PostExample
+ * Make sure you have the server started with bin\startup.bat beforehand.
  *
  * @author wolf
  */
@@ -63,23 +64,33 @@ public class PostExample {
 	}
 	
 	private void doPost(String request) throws IOException {
-		URL url = new URL("http://localhost:8080/exist/rest" + DBBroker.ROOT_COLLECTION + "/");
-		HttpURLConnection connect =(HttpURLConnection)url.openConnection();
+		URL url = new URL("http://localhost:8080/exist/rest" + DBBroker.ROOT_COLLECTION);
+		HttpURLConnection connect = (HttpURLConnection) url.openConnection();
 		connect.setRequestMethod("POST");
 		connect.setDoOutput(true);
 		
 		OutputStream os = connect.getOutputStream();
 		os.write(request.getBytes("UTF-8"));
 		connect.connect();
-		
-		BufferedReader is =new BufferedReader(new InputStreamReader(connect.getInputStream()));
-		String line;
-		while((line =is.readLine()) != null)
-			System.err.println(line);
-	}
+        InputStream iso = null;
+		try {
+            // For now catch the Http 400 if no result is produced.
+            // Why does it return that when it can just return:
+            // <exist:result xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:hits="0" exist:start="0" exist:count="0" />? /ljo
+            iso = connect.getInputStream();
+        } catch (IOException e) {
+		}
+
+        if (iso != null) {        
+            BufferedReader is = new BufferedReader(new InputStreamReader(iso));
+            String line;
+            while((line = is.readLine()) != null)
+                System.out.println(line);
+        }
+    }
 	
 	public static void main(String[] args) {
-		PostExample client =new PostExample();
+		PostExample client = new PostExample();
 		try {
 			client.query("//rdf:Description[dc:subject &amp;= 'umw*']");
 		} catch (IOException e) {
