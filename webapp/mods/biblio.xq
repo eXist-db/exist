@@ -318,7 +318,7 @@ return
                 <h3>Search</h3>
                 <form name="searchform" action="{$url}" method="GET">
                     <div id="livesearch">
-                        <input name="query" type="text" autocomplete="off" 
+                        <input class="textfield" name="query" type="text" autocomplete="off" 
                             onkeypress="liveSearchStart()" />
                     </div>
                     <div id="LSResult" style="display: none;"><div id="LSShadow"></div></div>
@@ -335,7 +335,7 @@ return
                     {bib:folders($homeCol, $collection)}
                     <fieldset>
                         <label for="name">Create a new folder</label>
-                        <input type="text" name="name"/>
+                        <input class="textfield" type="text" name="name"/>
                         <input class="button" type="submit" name="action" value="Create"/>
                      </fieldset>
                      <fieldset>
