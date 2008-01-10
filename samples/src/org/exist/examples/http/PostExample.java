@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2008 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -23,7 +23,6 @@ package org.exist.examples.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -72,27 +71,17 @@ public class PostExample {
 		OutputStream os = connect.getOutputStream();
 		os.write(request.getBytes("UTF-8"));
 		connect.connect();
-        InputStream iso = null;
-		try {
-            // For now catch the Http 400 if no result is produced.
-            // Why does it return that when it can just return:
-            // <exist:result xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:hits="0" exist:start="0" exist:count="0" />? /ljo
-            iso = connect.getInputStream();
-        } catch (IOException e) {
-		}
 
-        if (iso != null) {        
-            BufferedReader is = new BufferedReader(new InputStreamReader(iso));
-            String line;
-            while((line = is.readLine()) != null)
-                System.out.println(line);
-        }
+        BufferedReader is = new BufferedReader(new InputStreamReader(connect.getInputStream()));
+        String line;
+        while((line = is.readLine()) != null)
+            System.out.println(line);
     }
 	
 	public static void main(String[] args) {
 		PostExample client = new PostExample();
 		try {
-			client.query("//rdf:Description[dc:subject &amp;= 'umw*']");
+			client.query("declare namespace rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\";\ndeclare namespace dc=\"http://purl.org/dc/elements/1.1/\";\n//rdf:Description[dc:subject &amp;= 'umw*']");
 		} catch (IOException e) {
 			System.err.println("An exception occurred: " + e.getMessage());
 			e.printStackTrace();
