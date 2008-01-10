@@ -482,9 +482,11 @@
         <delete failonerror="no" dir="${dist}"/>
 
         <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
+        <ant antfile="build.xml" dir="tools/jmx" target="clean"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="clean"/>
         <ant antfile="build.xml" dir="extensions/fluent" target="clean"/>
+        <antcall target="extensions-xslt"/>
     </target>
 
     <target name="clean-all" description="Cleanup deeper" depends="prepare-extensions">
@@ -577,7 +579,9 @@
     <!-- ====================================================== -->
     <!-- Generate build files for index extensions -->
     <!-- ====================================================== -->
-    <target name="prepare-extensions" unless="extensions.uptodate">
+    <target name="prepare-extensions" depends="extensions-xslt" unless="extensions.uptodate"/>
+    
+    <target name="extensions-xslt" >
         <xslt basedir="${build.extensions.indexes}" in="${build.extensions.indexes}/modules.xml"
             out="${build.extensions.indexes}/build.xml"
             style="${build.extensions.indexes}/generate.xsl"/>

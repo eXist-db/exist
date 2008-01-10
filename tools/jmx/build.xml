@@ -13,13 +13,10 @@
     </path>
 
     <condition property="java14-only">
-        <and>
-            <not><equals arg1="${ant.java.version}" arg2="1.4"/></not>
-            <available classname="javax.management.MBeanServer"/>
-        </and>
+        <equals arg1="${ant.java.version}" arg2="1.4"/>
     </condition>
 
-    <target name="check-java-version" unless="java14-only">
+    <target name="check-java-version" if="java14-only">
         <echo message="Java version warning"/>
         <echo message="--------------------"/>
         <echo message="Java 5 is required to use eXist's management extensions (JMX) "/>
@@ -32,11 +29,16 @@
         <antcall target="jar"/>
     </target>
 
-    <target name="prepare" if="java14-only">
+    <target name="prepare" unless="java14-only">
         <mkdir dir="${classes}"/>
     </target>
 
-    <target name="compile" depends="prepare" if="java14-only">
+    <target name="clean">
+        <delete file="${server.dir}/lib/extensions/exist-jmx.jar"/>
+        <delete dir="${classes}"/>
+    </target>
+
+    <target name="compile" depends="prepare" unless="java14-only">
         <echo message="Compiling JMX agent and client tools"/>
         <echo message="-----------------------------------------"/>
         <javac debug="true" destdir="${classes}" encoding="UTF-8"
@@ -48,7 +50,7 @@
         </javac>
     </target>
 
-    <target name="jar" depends="compile" if="java14-only">
+    <target name="jar" depends="compile" unless="java14-only">
         <echo message="Don't forget to resign the jar files when needed:"/>
         <echo message="./build.sh -f build/scripts/jarsigner.xml jnlp-sign-exist"/>
         <echo message="-----------------------------------------"/>
