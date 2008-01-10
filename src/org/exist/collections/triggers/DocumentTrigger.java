@@ -21,13 +21,11 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.Map;
-
-import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -49,7 +47,7 @@ import org.xml.sax.ext.LexicalHandler;
  * 
  * The DocumentTrigger interface is also called for binary resources. However, in this case, the trigger can not function as
  * a filter and the SAX-related methods are useless. Only {@link #prepare(int, DBBroker, Txn, XmldbURI, DocumentImpl)} and
- * {@link #finish(int, DBBroker, Txn, DocumentImpl)} will be called. To determine if the document is a binary resource,
+ * {@link #finish(int, DBBroker, Txn, XmldbURI, DocumentImpl)} will be called. To determine if the document is a binary resource,
  * call {@link org.exist.dom.DocumentImpl#getResourceType()}.
  * 
  * The general contract for a trigger is as follows:
