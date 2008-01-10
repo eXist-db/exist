@@ -84,6 +84,7 @@
 			<replacefilter token="tutorials.xml" value="tutorials.html"/>
 			<replacefilter token="validation.xml" value="validation.html"/>
 			<replacefilter token="jmx.xml" value="jmx.html"/>
+			<replacefilter token="download.xml" value="download.html"/>
 
             <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
             <replacefilter token="xquery/acronyms.xq" value="${demo.host}/xquery/acronyms.xq"/>
@@ -197,6 +198,7 @@
 				<uri type="append" src="devguide_xmldb.xml"/>
 				<uri type="append" src="devguide_xquery.xml"/>
 				<uri type="append" src="jmx.xml"/>
+				<uri type="append" src="download.xml"/>
             </uris>
         </cocoon>
         
