@@ -346,13 +346,58 @@
         </section>
 
         <section id="moduleconf">
-            <title>Enabling Index Modules in conf.xml</title>
+            <title>Enabling Index Modules</title>
 
             <para>Since version 1.2, eXist features a <emphasis>modularized indexing architecture</emphasis>,
                 which allows arbitrary indexes to be plugged into an indexing pipeline. Consequently, some
                 indexes were moved out of the database core and are now available as plugins. For
                 the DB core, those indexes are a black box: they handle their own creation,
-                configuration, destruction etc. To activate an index plugin, it needs to be added to
+                configuration, destruction etc.</para>
+            
+            <para>While a few indexes (n-gram, full text) are already pre-build in the standard
+                eXist distribution, other modules may need to be enabled first. For example, the
+                spatial index depends on a bunch of external libraries, which do not ship with eXist.
+                However, enabling the spatial index is a simple process:</para>
+            
+            <procedure>
+                <step>
+                    <para>Copy the properties file <filename>extensions/indexes/build.properties</filename>
+                    and store it as <filename>local.properties</filename> in the same directory.</para>
+                </step>
+                
+                <step>
+                    <para>Edit <filename>extensions/indexes/local.properties</filename>:</para>
+                    
+                    <example>
+                        <title>local.properties</title>
+                        <programlisting>
+# N-gram module
+include.index.ngram = true
+
+# Spatial module
+include.index.spatial = false
+                        </programlisting>
+                    </example>
+                    
+                    <para>To include an index, change the corresponding property to "true".</para>
+                </step>
+                
+                <step>
+                    <para>Call the Ant build system once to regenerate the eXist libraries:</para>
+                    
+                    <synopsis>build.sh</synopsis>
+                    
+                    <para>or</para>
+                    
+                    <synopsis>build.bat</synopsis>
+                </step>
+            </procedure>
+            
+            <para>The build process should create a jar file for every index implementation in
+            directory <filename>lib/extensions</filename>. For example, the spatial index is
+            packaged into the jar <filename>exist-spatial-module.jar</filename>.</para>
+            
+            <para>Once the index module has been built, it can be announced to eXist. To activate an index plugin, it needs to be added to
                 the <sgmltag>modules</sgmltag> section within the global configuration file
                     <filename>conf.xml</filename>:</para>
 
