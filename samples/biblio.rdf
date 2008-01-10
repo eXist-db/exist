@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="utf-8"?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
          xmlns:dc="http://purl.org/dc/elements/1.1/"
          xmlns:x="http://exist.sourceforge.net/dc-ext">
-    <rdf:Description id="3">
+    <rdf:Description rdf:ID="3">
         <dc:title>
             A Centennial History of the American Society of Mechanical Engineers 1880-1980
         </dc:title>
@@ -31,7 +31,7 @@
         <dc:subject>Wirtschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="4">
+    <rdf:Description rdf:ID="4">
         <dc:title>
             A century of chemical engineering
         </dc:title>
@@ -70,7 +70,7 @@
         <dc:subject>System</dc:subject>
         <dc:subject>Technik</dc:subject>
         <dc:subject>Technische Chemie</dc:subject>
-        <dc:subject>Universität</dc:subject>
+        <dc:subject>UniversitÃ¤t</dc:subject>
         <dc:subject>Unternehmen</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Verfahrenstechnik</dc:subject>
@@ -79,7 +79,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="5">
+    <rdf:Description rdf:ID="5">
         <dc:title>
             A Concrete Atlantis : U.S. Industrial Building and European Modern Architecture 1900-1925
         </dc:title>
@@ -99,10 +99,10 @@
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>USA</dc:subject>
-        <dc:subject>Ästhetik</dc:subject>
+        <dc:subject>Ã„sthetik</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="6">
+    <rdf:Description rdf:ID="6">
         <dc:title>
             A fragile power : scientists and the state
         </dc:title>
@@ -130,12 +130,12 @@
         <dc:subject>Institution</dc:subject>
         <dc:subject>Kommunikation</dc:subject>
         <dc:subject>Konflikt</dc:subject>
-        <dc:subject>Militär</dc:subject>
+        <dc:subject>MilitÃ¤r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Organisation</dc:subject>
         <dc:subject>Partizipation</dc:subject>
         <dc:subject>Politik</dc:subject>
-        <dc:subject>Selbstverständnis</dc:subject>
+        <dc:subject>SelbstverstÃ¤ndnis</dc:subject>
         <dc:subject>Staat</dc:subject>
         <dc:subject>Struktur</dc:subject>
         <dc:subject>USA</dc:subject>
@@ -143,7 +143,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="7">
+    <rdf:Description rdf:ID="7">
         <dc:title>
             A guide to the culture of science, technology and medicine
         </dc:title>
@@ -164,7 +164,7 @@
         <dc:subject>Wissenschaftstheorie</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="8">
+    <rdf:Description rdf:ID="8">
         <dc:title>
             A History of Computing in the Twentieth Century
         </dc:title>
@@ -187,7 +187,7 @@
         <dc:subject>Technik</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="9">
+    <rdf:Description rdf:ID="9">
         <dc:title>
             A History of Engineering and Science in the Bell System : The Early Years (1875-1925)
         </dc:title>
@@ -211,7 +211,7 @@
         <dc:subject>Kommunikation</dc:subject>
         <dc:subject>Maschine</dc:subject>
         <dc:subject>Methode</dc:subject>
-        <dc:subject>Militär</dc:subject>
+        <dc:subject>MilitÃ¤r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Organisation</dc:subject>
@@ -225,7 +225,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="10">
+    <rdf:Description rdf:ID="10">
         <dc:title>
             A History of mechanical Inventions
         </dc:title>
@@ -238,10 +238,10 @@
         <dc:subject>Altertum</dc:subject>
         <dc:subject>Analyse</dc:subject>
         <dc:subject>Ausland</dc:subject>
-        <dc:subject>Bevölkerung</dc:subject>
+        <dc:subject>BevÃ¶lkerung</dc:subject>
         <dc:subject>Buchdruck</dc:subject>
         <dc:subject>China</dc:subject>
-        <dc:subject>Elektrizität</dc:subject>
+        <dc:subject>ElektrizitÃ¤t</dc:subject>
         <dc:subject>Elektrotechnik</dc:subject>
         <dc:subject>Energie</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
@@ -275,7 +275,7 @@
         <dc:subject>Zivilisation</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="11">
+    <rdf:Description rdf:ID="11">
         <dc:title>
             A History of Technology
         </dc:title>
@@ -283,14 +283,14 @@
         <dc:language>dt.</dc:language>
     </rdf:Description>
 
-    <rdf:Description id="12">
+    <rdf:Description rdf:ID="12">
         <dc:title>
             A Reneszansz Ember dt.
         </dc:title>
         <dc:language>dt.</dc:language>
     </rdf:Description>
 
-    <rdf:Description id="13">
+    <rdf:Description rdf:ID="13">
         <dc:title>
             A Search of Structure : Selected Essays on Science, Art and History
         </dc:title>
@@ -317,10 +317,10 @@
         <dc:subject>Technik</dc:subject>
         <dc:subject>Werkstoff</dc:subject>
         <dc:subject>Wissenschaft</dc:subject>
-        <dc:subject>Ästhetik</dc:subject>
+        <dc:subject>Ã„sthetik</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="14">
+    <rdf:Description rdf:ID="14">
         <dc:title>
             A small matter of programming : perspectives on end user computing
         </dc:title>
@@ -355,7 +355,7 @@
         <dc:subject>Verbraucher</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="15">
+    <rdf:Description rdf:ID="15">
         <dc:title>
             A system to assist Internet searches for environmental studies
         </dc:title>
@@ -367,14 +367,14 @@
         <dc:format>160 S.p.</dc:format>
     </rdf:Description>
 
-    <rdf:Description id="16">
+    <rdf:Description rdf:ID="16">
         <dc:title>
-            Abr‚g‚ d'histoire des math‚matiques 1700-1900 dt.
+            AbrÂ‚gÂ‚ d'histoire des mathÂ‚matiques 1700-1900 dt.
         </dc:title>
         <dc:language>dt.</dc:language>
     </rdf:Description>
 
-    <rdf:Description id="806">
+    <rdf:Description rdf:ID="806">
         <dc:title>
             Military enterprise and technological change : Perspectives on the American Experience
         </dc:title>
@@ -410,7 +410,7 @@
         <dc:subject>Management</dc:subject>
         <dc:subject>Massenfertigung</dc:subject>
         <dc:subject>Mechanisierung</dc:subject>
-        <dc:subject>Militär</dc:subject>
+        <dc:subject>MilitÃ¤r</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Organisation</dc:subject>
         <dc:subject>Physik</dc:subject>
@@ -432,7 +432,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="808">
+    <rdf:Description rdf:ID="808">
         <dc:title>
             Mind Children : The Future of Robot and Human Intelligence
         </dc:title>
@@ -451,7 +451,7 @@
         <dc:subject>Hardware</dc:subject>
         <dc:subject>Informatik</dc:subject>
         <dc:subject>Intelligenz</dc:subject>
-        <dc:subject>Künstliche Intelligenz</dc:subject>
+        <dc:subject>KÃ¼nstliche Intelligenz</dc:subject>
         <dc:subject>Lernen</dc:subject>
         <dc:subject>Maschine</dc:subject>
         <dc:subject>Mensch</dc:subject>
@@ -462,7 +462,7 @@
         <dc:subject>Zukunft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="817">
+    <rdf:Description rdf:ID="817">
         <dc:title>
             Modern Movements in Architecture
         </dc:title>
@@ -499,10 +499,10 @@
         <dc:subject>Wandel</dc:subject>
         <dc:subject>Wohnen</dc:subject>
         <dc:subject>Zukunft</dc:subject>
-        <dc:subject>Ästhetik</dc:subject>
+        <dc:subject>Ã„sthetik</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="823">
+    <rdf:Description rdf:ID="823">
         <dc:title>
             More Work for Mother : The Ironies of Household Technology from the open Hearth to the Microwave
         </dc:title>
@@ -525,7 +525,7 @@
         <dc:subject>Werkzeug</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="830">
+    <rdf:Description rdf:ID="830">
         <dc:title>
             National Politics and International Technology : Nuclear Reactor Development in Western Europe
         </dc:title>
@@ -543,7 +543,7 @@
         <dc:subject>Entscheidung</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Europa</dc:subject>
-        <dc:subject>Europäische Union</dc:subject>
+        <dc:subject>EuropÃ¤ische Union</dc:subject>
         <dc:subject>Forschung</dc:subject>
         <dc:subject>Fortschritt</dc:subject>
         <dc:subject>Frankreich</dc:subject>
@@ -568,22 +568,22 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="831">
+    <rdf:Description rdf:ID="831">
         <dc:title>
             National Regulations of Accounting for and Control of Tritium : Comparative Documentation
         </dc:title>
         <dc:creator>Kalinowski, Martin</dc:creator>
         <dc:creator>Vydra, Jan</dc:creator>
         <dc:creator>Colschen, Lars</dc:creator>
-        <dc:creator>Interdisziplinäre Arbeitsgruppe Naturwissenschaft, Technik und Sicherheitspolitik (IANUS) Darmstadt</dc:creator>
-        <dc:creator>Institut für Kernphysik an der Technischen Hochschule Darmstadt Darmstadt</dc:creator>
+        <dc:creator>InterdisziplinÃ¤re Arbeitsgruppe Naturwissenschaft, Technik und Sicherheitspolitik (IANUS) Darmstadt</dc:creator>
+        <dc:creator>Institut fÃ¼r Kernphysik an der Technischen Hochschule Darmstadt Darmstadt</dc:creator>
         <dc:language>dt.</dc:language>
         <x:place>Darmstadt</x:place>
         <dc:date>1991</dc:date>
         <dc:format>70 S.p.</dc:format>
     </rdf:Description>
 
-    <rdf:Description id="836">
+    <rdf:Description rdf:ID="836">
         <dc:title>
             Networks of Power : Electrification in Western Society 1880-1930
         </dc:title>
@@ -596,7 +596,7 @@
         <dc:description>History of inventions and development of electric power systems</dc:description>
         <dc:subject>Ausland</dc:subject>
         <dc:subject>Deutschland</dc:subject>
-        <dc:subject>Elektrizität</dc:subject>
+        <dc:subject>ElektrizitÃ¤t</dc:subject>
         <dc:subject>Elektrotechnik</dc:subject>
         <dc:subject>Energie</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
@@ -625,7 +625,7 @@
         <dc:subject>Struktur</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>Technik</dc:subject>
-        <dc:subject>Universität</dc:subject>
+        <dc:subject>UniversitÃ¤t</dc:subject>
         <dc:subject>Unternehmen</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Verwaltung</dc:subject>
@@ -635,12 +635,12 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="856">
+    <rdf:Description rdf:ID="856">
         <dc:title>
             New Technology at the Outset : Social Forces in the Shaping of Technological Innovations
         </dc:title>
         <dc:creator>Dierkes, Meinolf</dc:creator>
-        <dc:creator>Wissenschaftszentrum Berlin für Sozialforschung Berlin</dc:creator>
+        <dc:creator>Wissenschaftszentrum Berlin fÃ¼r Sozialforschung Berlin</dc:creator>
         <dc:language>engl.</dc:language>
         <x:place>Frankfurt / M.</x:place>
         <dc:date>1992</dc:date>
@@ -684,7 +684,7 @@
         <dc:subject>Wirtschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="860">
+    <rdf:Description rdf:ID="860">
         <dc:title>
             No Sense of Place : The Impact of Electronic Media on Social Behaviour
         </dc:title>
@@ -716,10 +716,10 @@
         <dc:subject>Lernen</dc:subject>
         <dc:subject>Medien</dc:subject>
         <dc:subject>Neue Medien</dc:subject>
-        <dc:subject>Persönlichkeit</dc:subject>
+        <dc:subject>PersÃ¶nlichkeit</dc:subject>
         <dc:subject>Politik</dc:subject>
         <dc:subject>Schule</dc:subject>
-        <dc:subject>Selbstverständnis</dc:subject>
+        <dc:subject>SelbstverstÃ¤ndnis</dc:subject>
         <dc:subject>Soziale Situation</dc:subject>
         <dc:subject>Sozialisation</dc:subject>
         <dc:subject>Sozialverhalten</dc:subject>
@@ -736,7 +736,7 @@
         <dc:subject>Zukunft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="1572">
+    <rdf:Description rdf:ID="1572">
         <dc:title>
             Art and artifact in laboratory science : a study of shop work and shop talk in a research laboratory
         </dc:title>
@@ -767,7 +767,7 @@
         <dc:subject>Organisation</dc:subject>
         <dc:subject>Physiologie</dc:subject>
         <dc:subject>Praxis</dc:subject>
-        <dc:subject>Selbstverständnis</dc:subject>
+        <dc:subject>SelbstverstÃ¤ndnis</dc:subject>
         <dc:subject>Soziale Situation</dc:subject>
         <dc:subject>Sozialverhalten</dc:subject>
         <dc:subject>Soziologie</dc:subject>
@@ -777,7 +777,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="1573">
+    <rdf:Description rdf:ID="1573">
         <dc:title>
             Artists and Revolution : Dada and the Bauhaus, 1917-1925
         </dc:title>
@@ -812,10 +812,10 @@
         <dc:subject>Utopie</dc:subject>
         <dc:subject>Vergleich</dc:subject>
         <dc:subject>Wandel</dc:subject>
-        <dc:subject>Ästhetik</dc:subject>
+        <dc:subject>Ã„sthetik</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="1590">
+    <rdf:Description rdf:ID="1590">
         <dc:title>
             Behind the Urals : An American Worker in Russia's City of Steel
         </dc:title>
@@ -831,7 +831,7 @@
         <dc:subject>Arbeitnehmer</dc:subject>
         <dc:subject>Arbeitsbedingungen</dc:subject>
         <dc:subject>Ausland</dc:subject>
-        <dc:subject>Bevölkerung</dc:subject>
+        <dc:subject>BevÃ¶lkerung</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Erfahrung</dc:subject>
         <dc:subject>Geschichte</dc:subject>
@@ -856,7 +856,7 @@
         <dc:subject>Politik</dc:subject>
         <dc:subject>Politisches System</dc:subject>
         <dc:subject>Produktion</dc:subject>
-        <dc:subject>Selbstverständnis</dc:subject>
+        <dc:subject>SelbstverstÃ¤ndnis</dc:subject>
         <dc:subject>Sowjetunion</dc:subject>
         <dc:subject>Soziale Situation</dc:subject>
         <dc:subject>Soziale Ungleichheit</dc:subject>
@@ -867,7 +867,7 @@
         <dc:subject>Weltbild</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="1599">
+    <rdf:Description rdf:ID="1599">
         <dc:title>
             A conceptual approach to social impact assessment : collection of writings by Rabel J. Burdge and colleagues
         </dc:title>
@@ -887,7 +887,7 @@
         <dc:subject>Entscheidung</dc:subject>
         <dc:subject>Kommunikation</dc:subject>
         <dc:subject>Infrastruktur</dc:subject>
-        <dc:subject>Umweltverträglichkeitsprüfung</dc:subject>
+        <dc:subject>UmweltvertrÃ¤glichkeitsprÃ¼fung</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Partizipation</dc:subject>
         <dc:subject>Konflikt</dc:subject>
@@ -898,7 +898,7 @@
         <dc:subject>Statistik</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="1600">
+    <rdf:Description rdf:ID="1600">
         <dc:title>
             A community guide to social impact assessment
         </dc:title>
@@ -917,7 +917,7 @@
         <dc:subject>Entscheidung</dc:subject>
         <dc:subject>Kommunikation</dc:subject>
         <dc:subject>Infrastruktur</dc:subject>
-        <dc:subject>Umweltverträglichkeitsprüfung</dc:subject>
+        <dc:subject>UmweltvertrÃ¤glichkeitsprÃ¼fung</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Partizipation</dc:subject>
         <dc:subject>Konflikt</dc:subject>
@@ -929,7 +929,7 @@
         <dc:subject>Statistik</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="1616">
+    <rdf:Description rdf:ID="1616">
         <dc:title>
             Bottled energy : Electrical engineering and the evolution of chemical energy storage
         </dc:title>
@@ -942,7 +942,7 @@
         <x:series>American Philosophical Society Memoirs series ; Bd.148</x:series>
         <dc:description>This book is a study of the evolution and interaction between changes in the needs for batteries and the response of battery designers to these needs.</dc:description>
         <dc:subject>Chemie</dc:subject>
-        <dc:subject>Elektrizität</dc:subject>
+        <dc:subject>ElektrizitÃ¤t</dc:subject>
         <dc:subject>Elektrotechnik</dc:subject>
         <dc:subject>Energie</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
@@ -953,7 +953,7 @@
         <dc:subject>Werkstoff</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="1619">
+    <rdf:Description rdf:ID="1619">
         <dc:title>
             Bullets and Bureaucrats : The Machine Gun and the United States Army, 1861-1916
         </dc:title>
@@ -971,7 +971,7 @@
         <dc:subject>Geschichte</dc:subject>
         <dc:subject>Innovation</dc:subject>
         <dc:subject>Krieg</dc:subject>
-        <dc:subject>Militär</dc:subject>
+        <dc:subject>MilitÃ¤r</dc:subject>
         <dc:subject>Modernisierung</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Organisation</dc:subject>
@@ -981,7 +981,7 @@
         <dc:subject>Wirkung</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="1620">
+    <rdf:Description rdf:ID="1620">
         <dc:title>
             Business and Government in the Oil Industry : A Case Study of Sun Oil, 1876-1945
         </dc:title>
@@ -1031,7 +1031,7 @@
         <dc:subject>Wirtschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2170">
+    <rdf:Description rdf:ID="2170">
         <dc:title>
             Nuclear Imperatives and Public Trust : Dealing with Radioactive Waste
         </dc:title>
@@ -1074,7 +1074,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2173">
+    <rdf:Description rdf:ID="2173">
         <dc:title>
             Object-Oriented Analysis
         </dc:title>
@@ -1105,7 +1105,7 @@
         <dc:subject>Systementwicklung</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2180">
+    <rdf:Description rdf:ID="2180">
         <dc:title>
             Organizational Symbolism
         </dc:title>
@@ -1153,10 +1153,10 @@
         <dc:subject>USA</dc:subject>
         <dc:subject>Vergleich</dc:subject>
         <dc:subject>Wahrnehmung</dc:subject>
-        <dc:subject>Ästhetik</dc:subject>
+        <dc:subject>Ã„sthetik</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2181">
+    <rdf:Description rdf:ID="2181">
         <dc:title>
             OSIRIS Vol.01 : historical writing on american science
         </dc:title>
@@ -1165,7 +1165,7 @@
         <dc:date>1985</dc:date>
         <dc:format>321 S.p.</dc:format>
         <dc:identifier>ISBN: 0-934235-03-1</dc:identifier>
-        <dc:description>Aufsätze zur Geschichte der Geschichtsschreibung der amerikanischen Wissenschaften</dc:description>
+        <dc:description>AufsÃ¤tze zur Geschichte der Geschichtsschreibung der amerikanischen Wissenschaften</dc:description>
         <dc:subject>Amerika</dc:subject>
         <dc:subject>Analyse</dc:subject>
         <dc:subject>Anthropologie</dc:subject>
@@ -1192,7 +1192,7 @@
         <dc:subject>Kernenergie</dc:subject>
         <dc:subject>Krieg</dc:subject>
         <dc:subject>Medizin</dc:subject>
-        <dc:subject>Militär</dc:subject>
+        <dc:subject>MilitÃ¤r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Organisation</dc:subject>
@@ -1216,7 +1216,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2182">
+    <rdf:Description rdf:ID="2182">
         <dc:title>
             OSIRIS Vol.02
         </dc:title>
@@ -1264,7 +1264,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2183">
+    <rdf:Description rdf:ID="2183">
         <dc:title>
             OSIRIS Vol.03
         </dc:title>
@@ -1280,7 +1280,7 @@
         <dc:subject>Ausbildung</dc:subject>
         <dc:subject>Ausland</dc:subject>
         <dc:subject>Deutschland</dc:subject>
-        <dc:subject>Elektrizität</dc:subject>
+        <dc:subject>ElektrizitÃ¤t</dc:subject>
         <dc:subject>Entdeckung</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Ethik</dc:subject>
@@ -1310,14 +1310,14 @@
         <dc:subject>Soziologie</dc:subject>
         <dc:subject>Struktur</dc:subject>
         <dc:subject>Theorie</dc:subject>
-        <dc:subject>Universität</dc:subject>
+        <dc:subject>UniversitÃ¤t</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Weltraum</dc:subject>
         <dc:subject>Wissenschaft</dc:subject>
-        <dc:subject>Österreich</dc:subject>
+        <dc:subject>Ã–sterreich</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2184">
+    <rdf:Description rdf:ID="2184">
         <dc:title>
             OSIRIS Vol.04 : the chemical revolution : essays in reinterpretation
         </dc:title>
@@ -1326,10 +1326,10 @@
         <dc:date>1988</dc:date>
         <dc:format>236 S.p.</dc:format>
         <dc:identifier>ISBN: 0-934235-10-4</dc:identifier>
-        <dc:description>Die Aufsätze behandeln die Entwicklung der chemischen Wissenschaften in den Zeiten Lavoisiers. Ihr werden revolutionäre Eigenschaften zugesprochen, die ein neues Paradigma entstehen ließen.</dc:description>
+        <dc:description>Die AufsÃ¤tze behandeln die Entwicklung der chemischen Wissenschaften in den Zeiten Lavoisiers. Ihr werden revolutionÃ¤re Eigenschaften zugesprochen, die ein neues Paradigma entstehen lieÃŸen.</dc:description>
         <dc:subject>Aufsatzsammlung</dc:subject>
         <dc:subject>Ausland</dc:subject>
-        <dc:subject>Beneluxländer</dc:subject>
+        <dc:subject>BeneluxlÃ¤nder</dc:subject>
         <dc:subject>Bildung</dc:subject>
         <dc:subject>Chemie</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
@@ -1346,7 +1346,7 @@
         <dc:subject>Institution</dc:subject>
         <dc:subject>Konflikt</dc:subject>
         <dc:subject>Methode</dc:subject>
-        <dc:subject>Militär</dc:subject>
+        <dc:subject>MilitÃ¤r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Ontologie</dc:subject>
@@ -1357,14 +1357,14 @@
         <dc:subject>Skandinavien</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>Theorie</dc:subject>
-        <dc:subject>Universität</dc:subject>
+        <dc:subject>UniversitÃ¤t</dc:subject>
         <dc:subject>Wahrnehmung</dc:subject>
         <dc:subject>Wandel</dc:subject>
         <dc:subject>Wirkung</dc:subject>
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2185">
+    <rdf:Description rdf:ID="2185">
         <dc:title>
             OSIRIS Vol.05 : science in Germany : the intersection of institutional and intellectual issues
         </dc:title>
@@ -1373,7 +1373,7 @@
         <dc:date>1989</dc:date>
         <dc:format>313 S.p.</dc:format>
         <dc:identifier>ISBN: 0-934235-12-0</dc:identifier>
-        <dc:description>Die Aufsätze über die Geschichte der Wissenschaften in Deutschland legen ihr Schwergewicht auf ihre Institutionalisierung</dc:description>
+        <dc:description>Die AufsÃ¤tze Ã¼ber die Geschichte der Wissenschaften in Deutschland legen ihr Schwergewicht auf ihre Institutionalisierung</dc:description>
         <dc:subject>Aufsatzsammlung</dc:subject>
         <dc:subject>Ausbildung</dc:subject>
         <dc:subject>Bildung</dc:subject>
@@ -1405,7 +1405,7 @@
         <dc:subject>Philosophie</dc:subject>
         <dc:subject>Physik</dc:subject>
         <dc:subject>Politik</dc:subject>
-        <dc:subject>Pädagogik</dc:subject>
+        <dc:subject>PÃ¤dagogik</dc:subject>
         <dc:subject>Reform</dc:subject>
         <dc:subject>Schule</dc:subject>
         <dc:subject>Staat</dc:subject>
@@ -1413,7 +1413,7 @@
         <dc:subject>Studium</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>Technik</dc:subject>
-        <dc:subject>Universität</dc:subject>
+        <dc:subject>UniversitÃ¤t</dc:subject>
         <dc:subject>Unternehmen</dc:subject>
         <dc:subject>Unterricht</dc:subject>
         <dc:subject>Verwaltung</dc:subject>
@@ -1423,7 +1423,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2186">
+    <rdf:Description rdf:ID="2186">
         <dc:title>
             OSIRIS Vol.06 : Renaissance medical learning : evolution of a tradition
         </dc:title>
@@ -1461,10 +1461,10 @@
         <dc:subject>Pharmazie</dc:subject>
         <dc:subject>Philosophie</dc:subject>
         <dc:subject>Praxis</dc:subject>
-        <dc:subject>Pädagogik</dc:subject>
+        <dc:subject>PÃ¤dagogik</dc:subject>
         <dc:subject>Studium</dc:subject>
         <dc:subject>Theorie</dc:subject>
-        <dc:subject>Universität</dc:subject>
+        <dc:subject>UniversitÃ¤t</dc:subject>
         <dc:subject>Vergleich</dc:subject>
         <dc:subject>Wandel</dc:subject>
         <dc:subject>Wirkung</dc:subject>
@@ -1472,7 +1472,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2187">
+    <rdf:Description rdf:ID="2187">
         <dc:title>
             OSIRIS Vol.07 : science after '40
         </dc:title>
@@ -1513,7 +1513,7 @@
         <dc:subject>Krise</dc:subject>
         <dc:subject>Kultur</dc:subject>
         <dc:subject>Landwirtschaft</dc:subject>
-        <dc:subject>Militär</dc:subject>
+        <dc:subject>MilitÃ¤r</dc:subject>
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Organisation</dc:subject>
         <dc:subject>Physik</dc:subject>
@@ -1528,7 +1528,7 @@
         <dc:subject>Staat</dc:subject>
         <dc:subject>System</dc:subject>
         <dc:subject>Technik</dc:subject>
-        <dc:subject>Universität</dc:subject>
+        <dc:subject>UniversitÃ¤t</dc:subject>
         <dc:subject>USA</dc:subject>
         <dc:subject>Wandel</dc:subject>
         <dc:subject>Weltraum</dc:subject>
@@ -1536,7 +1536,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2188">
+    <rdf:Description rdf:ID="2188">
         <dc:title>
             Osiris Vol.08 : research schools : historical reappraisals
         </dc:title>
@@ -1544,7 +1544,7 @@
         <dc:language>amerik.</dc:language>
         <dc:date>1993</dc:date>
         <dc:identifier>ISBN: 0-226-28545-6</dc:identifier>
-        <dc:description>Die Aufsätze reflektieren die Geschichtsschreibung der Institutionalisierung von naturwissenschaftlichen Forschungsgemeinschaften vor allem hinsichtlich der Weitergabe des Wissens.</dc:description>
+        <dc:description>Die AufsÃ¤tze reflektieren die Geschichtsschreibung der Institutionalisierung von naturwissenschaftlichen Forschungsgemeinschaften vor allem hinsichtlich der Weitergabe des Wissens.</dc:description>
         <dc:subject>Aufsatzsammlung</dc:subject>
         <dc:subject>Ausland</dc:subject>
         <dc:subject>Biologie</dc:subject>
@@ -1569,18 +1569,18 @@
         <dc:subject>Naturwissenschaften</dc:subject>
         <dc:subject>Neuzeit</dc:subject>
         <dc:subject>Physik</dc:subject>
-        <dc:subject>Pädagogik</dc:subject>
+        <dc:subject>PÃ¤dagogik</dc:subject>
         <dc:subject>Schule</dc:subject>
         <dc:subject>Sprache</dc:subject>
         <dc:subject>Studium</dc:subject>
-        <dc:subject>Universität</dc:subject>
+        <dc:subject>UniversitÃ¤t</dc:subject>
         <dc:subject>Wirkung</dc:subject>
         <dc:subject>Wirtschaft</dc:subject>
         <dc:subject>Wissen</dc:subject>
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2189">
+    <rdf:Description rdf:ID="2189">
         <dc:title>
             Osiris Vol.09 : instruments
         </dc:title>
@@ -1589,14 +1589,14 @@
         <dc:date>1994</dc:date>
         <dc:format>250 S.p.</dc:format>
         <dc:identifier>ISBN: 0-226-84883-3</dc:identifier>
-        <dc:description>Wie beschreibt die Wissenschaftsgeschichte die Rolle der Instrumente bzw. experimentellen Methoden für die Diskussion um das Verhältnis von Theorie und Praxis? The philosophical debate over wether theory drives experiment or experiment drives theory has tended to obscure the intependant role of instruments in science....The traditional mix of experiment and theory need a new ingrident - instruments.(S.6)</dc:description>
+        <dc:description>Wie beschreibt die Wissenschaftsgeschichte die Rolle der Instrumente bzw. experimentellen Methoden fÃ¼r die Diskussion um das VerhÃ¤ltnis von Theorie und Praxis? The philosophical debate over wether theory drives experiment or experiment drives theory has tended to obscure the intependant role of instruments in science....The traditional mix of experiment and theory need a new ingrident - instruments.(S.6)</dc:description>
         <dc:subject>Astronomie</dc:subject>
         <dc:subject>Aufsatzsammlung</dc:subject>
         <dc:subject>Ausland</dc:subject>
         <dc:subject>Chemie</dc:subject>
         <dc:subject>China</dc:subject>
         <dc:subject>Deutschland</dc:subject>
-        <dc:subject>Elektrizität</dc:subject>
+        <dc:subject>ElektrizitÃ¤t</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Erfindung</dc:subject>
         <dc:subject>Europa</dc:subject>
@@ -1635,7 +1635,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2190">
+    <rdf:Description rdf:ID="2190">
         <dc:title>
             Osiris Vol.10 : constructing knowledge in the history of science
         </dc:title>
@@ -1649,13 +1649,13 @@
         <dc:subject>Geistesgeschichte</dc:subject>
         <dc:subject>Geschichte</dc:subject>
         <dc:subject>Internationaler Vergleich</dc:subject>
-        <dc:subject>Universität</dc:subject>
+        <dc:subject>UniversitÃ¤t</dc:subject>
         <dc:subject>Wissen</dc:subject>
         <dc:subject>Wissenschaft</dc:subject>
         <dc:subject>Wissenschaftstheorie</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2221">
+    <rdf:Description rdf:ID="2221">
         <dc:title>
             Program verification : fundamental issues in computer science
         </dc:title>
@@ -1691,7 +1691,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2225">
+    <rdf:Description rdf:ID="2225">
         <dc:title>
             Public Communication, the new Imperatives : Future Directions for Media Research
         </dc:title>
@@ -1732,7 +1732,7 @@
         <dc:subject>Zukunft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2236">
+    <rdf:Description rdf:ID="2236">
         <dc:title>
             Reckoners : The Prehistory of Digital Computer, from Relays to the Stored Program Concept, 1933-1945
         </dc:title>
@@ -1761,18 +1761,18 @@
         <dc:subject>USA</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2249">
+    <rdf:Description rdf:ID="2249">
         <dc:title>
             Requirements Engineering
         </dc:title>
         <dc:creator>Partsch, Helmut</dc:creator>
         <dc:language>dt.</dc:language>
-        <x:place>München</x:place>
+        <x:place>MÃ¼nchen</x:place>
         <dc:date>1991</dc:date>
         <dc:format>335 S.p.</dc:format>
         <dc:identifier>ISBN: 3-486-20784-9</dc:identifier>
         <x:series>Handbuch der Informatik ; Bd. 5.5</x:series>
-        <dc:description>Voraussetzungen für die Konkretisierung und Spezifikation der Anforderungen, die an die Entwicklung von Informationsprogrammen gerichtet sind.</dc:description>
+        <dc:description>Voraussetzungen fÃ¼r die Konkretisierung und Spezifikation der Anforderungen, die an die Entwicklung von Informationsprogrammen gerichtet sind.</dc:description>
         <dc:subject>Analyse</dc:subject>
         <dc:subject>Entwicklung</dc:subject>
         <dc:subject>Informatik</dc:subject>
@@ -1789,7 +1789,7 @@
         <dc:subject>Verbraucher</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2250">
+    <rdf:Description rdf:ID="2250">
         <dc:title>
             Research and technology strategy to help overcome the environmental problems in relation to transport : transport demand study
         </dc:title>
@@ -1801,10 +1801,10 @@
         <dc:date>1991</dc:date>
         <dc:format>59 S.p.</dc:format>
         <x:series>Monitor - SAST Activity : Strategic Analysis in Science and Technology</x:series>
-        <dc:description>Möglichkeiten der Emissionsverminderung im Verkehrsbereich sollen in einem breiteren Rahmen bewertet werden, um eventuelle externe Entwicklungen, die diesen Bereich beeinflussen, zu erkennen; es geht vor allem um die Bewertung des Ausmasses der Nachfrage nach Transportmöglichkeiten.</dc:description>
+        <dc:description>MÃ¶glichkeiten der Emissionsverminderung im Verkehrsbereich sollen in einem breiteren Rahmen bewertet werden, um eventuelle externe Entwicklungen, die diesen Bereich beeinflussen, zu erkennen; es geht vor allem um die Bewertung des Ausmasses der Nachfrage nach TransportmÃ¶glichkeiten.</dc:description>
     </rdf:Description>
 
-    <rdf:Description id="2251">
+    <rdf:Description rdf:ID="2251">
         <dc:title>
             Research in Philosophy and Technology : An Annual Compilation of Research (1978)
         </dc:title>
@@ -1827,7 +1827,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2252">
+    <rdf:Description rdf:ID="2252">
         <dc:title>
             Research in Philosophy and Technology : Official Annual Publication of the Society for Philosophy and Technology (1979)
         </dc:title>
@@ -1841,7 +1841,7 @@
         <dc:subject>Bewusstsein</dc:subject>
         <dc:subject>Europa</dc:subject>
         <dc:subject>Fortschritt</dc:subject>
-        <dc:subject>Interdisziplinäre Forschung</dc:subject>
+        <dc:subject>InterdisziplinÃ¤re Forschung</dc:subject>
         <dc:subject>Kultur</dc:subject>
         <dc:subject>Maschine</dc:subject>
         <dc:subject>Natur</dc:subject>
@@ -1850,7 +1850,7 @@
         <dc:subject>Technikphilosophie</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2253">
+    <rdf:Description rdf:ID="2253">
         <dc:title>
             Research in Philosophy and Technology : Official Annual Publication of the Society for Philosophy and Technology (1980)
         </dc:title>
@@ -1873,7 +1873,7 @@
         <dc:subject>Technikphilosophie</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2254">
+    <rdf:Description rdf:ID="2254">
         <dc:title>
             Research in Philosophy and Technology : Official Annual Publication of the Society for Philosophy and Technology (1981)
         </dc:title>
@@ -1887,7 +1887,7 @@
         <dc:subject>Technikphilosophie</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2255">
+    <rdf:Description rdf:ID="2255">
         <dc:title>
             Research in Philosophy and Technology : Official Annual Publication of the Society for Philosophy and Technology (1982)
         </dc:title>
@@ -1909,7 +1909,7 @@
         <dc:subject>Verantwortung</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2256">
+    <rdf:Description rdf:ID="2256">
         <dc:title>
             Research in Philosophy and Technology : Official Annual Publication of the Society for Philosophy and Technology (1983)
         </dc:title>
@@ -1931,7 +1931,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2257">
+    <rdf:Description rdf:ID="2257">
         <dc:title>
             Research in Philosophy and Technology : Official Annual Publication of the Society for Philosophy and Technology (1984)
         </dc:title>
@@ -1943,7 +1943,7 @@
         <dc:identifier>ISBN: 0-89232-505-4</dc:identifier>
         <x:series>Research of Philosophy and Technology : An Annual Compilation of Research ; Bd. 7</x:series>
         <dc:subject>Computer</dc:subject>
-        <dc:subject>Entwicklungsländer</dc:subject>
+        <dc:subject>EntwicklungslÃ¤nder</dc:subject>
         <dc:subject>Frau</dc:subject>
         <dc:subject>Gesellschaft</dc:subject>
         <dc:subject>Individuum</dc:subject>
@@ -1954,7 +1954,7 @@
         <dc:subject>Wissenschaft</dc:subject>
     </rdf:Description>
 
-    <rdf:Description id="2259">
+    <rdf:Description rdf:ID="2259">
         <dc:title>
             Responsible Science : The Impact of Technology on Society
         </dc:title>
@@ -1988,7 +1988,7 @@
         <dc:subject>Philosophie</dc:subject>
         <dc:subject>Produktion</dc:subject>
         <dc:subject>Religion</dc:subject>
-        <dc:subject>Sozialverträglichkeit</dc:subject>
+        <dc:subject>SozialvertrÃ¤glichkeit</dc:subject>
         <dc:subject>Soziologie</dc:subject>
         <dc:subject>Technik</dc:subject>
         <dc:subject>Technikphilosophie</dc:subject>
