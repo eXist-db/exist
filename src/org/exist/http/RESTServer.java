@@ -1,4 +1,4 @@
-sr/*
+/*
  * eXist Open Source Native XML Database
  * Copyright (C) 2001-2008 The eXist Project
  * http://exist-db.org
