@@ -789,7 +789,7 @@
             <remark></remark>
         </part>
         <part>
-            <name>XQuery Debuggger</name>
+            <name>XQuery Debugger</name>
             <status>Open</status>
             <priority>High</priority>
             <test_coverage>N/A</test_coverage>
@@ -929,7 +929,7 @@
 	    <event start="20080615T000000Z" end="20080615T000000Z" task="25" isDuration="false" />
             <who/>
             <remark>
-                <p>Based on Java 1.5.</p>
+                <p>Based on Java 5.</p>
             </remark>
         </part>
     </module>
@@ -974,7 +974,7 @@
             </remark>
         </part>
         <part>
-            <name>Move to Java 1.5</name>
+            <name>Move to Java 5</name>
             <status>Open</status>
             <priority>Low</priority>
             <test_coverage>N/A</test_coverage>
@@ -982,7 +982,7 @@
 	    <event start="20071215T000000Z" end="20071215T000000Z" isDuration="false" />
             <who/>
             <remark>
-                <p>Change build taget in switch for development branch 1.3 to Java 1.5 after eXist version 1.2 is released.</p><p>This will make some more stuff easier. Especially since the jmx and tests are targeted for Java 1.5 already.</p>
+                <p>Change build taget in switch for development branch 1.3 to Java 5 after eXist version 1.2 is released.</p><p>This will make some more stuff easier. Especially since the jmx monitors and junit 4 tests are by requirements targeted for Java 5 already.</p>
             </remark>
         </part>
         <part>
