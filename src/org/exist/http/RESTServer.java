@@ -1,4 +1,4 @@
-/*
+sr/*
  * eXist Open Source Native XML Database
  * Copyright (C) 2001-2008 The eXist Project
  * http://exist-db.org
@@ -616,9 +616,17 @@ public class RESTServer {
                 }
                 // execute query
                 if (query != null) {
-                    writeResponse(response, search(broker, query, path, howmany,
-                            start, outputProperties, enclose, request, response), mime,
+                    String result = "";
+                    try {
+                        result = search(broker, query, path, howmany,
+                                        start, outputProperties, enclose, request, response);
+                    } catch (Exception e) {
+                        response.setStatus(HttpServletResponse.SC_ACCEPTED);
+                        result = e.getMessage();
+                    }
+                    writeResponse(response, result, mime,
                             outputProperties.getProperty(OutputKeys.ENCODING));
+
                 } else {
                     transact.abort(transaction);
                     throw new BadRequestException("No query specified");
@@ -901,7 +909,7 @@ public class RESTServer {
             context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
             context.setBaseURI(new AnyURIValue(pathUri.toString()));
             declareVariables(context, request, response);
-            
+
             if (compiled == null)
                 compiled = xquery.compile(context, source);
             context.checkOptions(outputProperties);
