@@ -74,7 +74,7 @@
         </javac>
     </target>
 
-    <target name="jar" depends="compile">    
+    <target name="jar" depends="compile">
     </target>
 
     <target name="test" depends="compile-tests">
@@ -84,4 +84,8 @@
         <delete dir="${classes}" failonerror="false"/>
         <delete dir="${test.classes}" failonerror="false"/>
     </target>
+    
+    <target name="all-clean" depends="clean">
+    </target>
+    
 </project>

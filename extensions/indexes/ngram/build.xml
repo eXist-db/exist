@@ -13,6 +13,12 @@
 		</jar>
     </target>
 
+    <target name="clean">
+        <delete file="${top.dir}/${lib.extensions}/exist-ngram-module.jar"/>
+        <delete dir="${classes}" failonerror="false"/>
+        <delete dir="${test.classes}" failonerror="false"/>
+    </target>
+    
     <target name="test" depends="compile-tests">
         <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
 
