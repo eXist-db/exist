@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2005-2007 The eXist Project
+ * Copyright (C) 2005-2008 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -40,6 +40,9 @@ public interface Namespaces {
     public final static String XQUERY_LOCAL_NS = "http://www.w3.org/2005/xquery-local-functions";
 	public final static String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";	
 	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
+	public final static String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	public final static String DC_NS = "http://purl.org/dc/elements/1.1/";
+
 	public final static String XML_NS = "http://www.w3.org/XML/1998/namespace";	
 	public final static String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
 	
