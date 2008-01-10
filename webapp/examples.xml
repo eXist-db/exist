@@ -36,8 +36,7 @@
                         <td width="30%" valign="top">
                             <link href="xquery/transform.xql">Built-in functions</link>
                         </td>
-                        <td width="70%"> A servlet-based version of the XQuery script above. It uses
-                            the transform function to transform XML output into HTML using an XSL
+                        <td width="70%"> Extracts the function documentation for all available functions. It uses the transform function to transform XML output into HTML using an XSL
                             stylesheet. </td>
                     </tr>
                     <tr>

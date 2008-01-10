@@ -53,6 +53,7 @@
     margin: 5px 0 8px 0;
     padding: 3px 0 3px 5px;
     background-color: #FAC783;
+    font-variant: normal;
 }
 
 .f-signature, .f-description {

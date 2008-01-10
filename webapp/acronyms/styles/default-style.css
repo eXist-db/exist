@@ -5,14 +5,19 @@
 
 @media screen {
     body {
-        font-family: Verdana, Arial, Helvetica, sans-serif;
-        font-size: 76%;
         background-color: white;
     }
 }
 
-p, .synopsis, .note, .example, .important {
-    font-size: 1em;
+/* Font size adjustments. Copied from Yahoo YUI */
+body {font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;}
+table {font-size:inherit;font:100%;}
+/**
+ * Bump up IE to get to 13px equivalent
+ */
+pre,code,kbd,samp,tt {font-family:monospace;*font-size:108%;line-height:100%;}
+
+p, .synopsis, .note, .example, .important, .formaltable {
     margin: 0 15px 1em 15px;
 }
 
@@ -144,17 +149,24 @@ a, a:visited {
 .block h3 {
     font-size: 1em;
     padding: 3px 0 3px 10px;
+    font-variant: normal;
 }
 .block ul {
     margin: 0;
     padding: 3px 0 5px 0;
     background-color: #f6f6f6;
 }
+
 .block .news_content {
     margin: 0;
     padding: 3px 0 5px 0;
     background-color: #fef7d6;
 }
+
+.block .news_content ul {
+    background-color: #fef7d6;
+}
+
 .block li {
     display: inline;
     list-style-type: none;
@@ -268,26 +280,37 @@ h1 {
     padding-bottom: 5px;
 }
 h2 {
-    font-size: 1.33em;
+    font-size: 1.5em;
     font-weight: normal;
+    font-variant: small-caps;
     color: #666;
     line-height: 1.7em;
     margin: 15px 0 15px 0;
     border-bottom: 1px solid;
 }
 h3 {
-    font-size: 1em;
+    font-size: 1.33em;
     font-weight: normal;
+    font-variant: small-caps;
     color: #666666;
-    font-style: italic;
     text-align: left;
     padding-left: 15px;
     margin-right: 20px;
 }
+
 h4 {
+    font-size: 1em;
     font-weight: bold;
     padding-left: 15px;
 }
+
+h5 {
+    font-size: 1em;
+    font-weight: normal;
+    font-style: italic;
+    padding-left: 15px;
+}
+
 input.mark {
     float: left;
     margin-left: -30px;
@@ -322,6 +345,7 @@ select.choose {
 .reference h3 {
     font-size: .75em;
     text-align: left;
+    font-variant: normal;
 }
 #sidebar input.search-sidebar {
     margin-left: 10px;
@@ -386,6 +410,25 @@ select.choose {
     background-color: #fef3c1;
 }
 
+.authors {
+    margin: 30px 0 50px 0;
+    border-top: 1px solid #CCC;
+}
+
+.author {
+    float: left;
+    margin: 8px 0 15px 20px;
+}
+
+.authors .first {
+    margin-left: 0;
+}
+
+.author a {
+    font-size: .85em;
+    font-style: italic;
+}
+
 .note, .example, .important {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -396,6 +439,18 @@ select.choose {
     color: black;
     border: 0;
     margin: 5px 0 0 10px;
+}
+
+.formaltable {
+}
+
+.formaltable h1 {
+    background-color: inherit;
+    color: black;
+    font-size: 1em;
+    font-weight: bold;
+    text-decoration: underline;
+    margin-bottom: 0;
 }
 
 .note {
@@ -413,7 +468,7 @@ select.choose {
     border-bottom: 4px solid #fac783;
     padding: 5px 0;
 }
-
+    
 .example {
     background-color: #c3d9ff;
 }
@@ -427,7 +482,11 @@ select.choose {
     border-left: 4px solid #c3d9ff;
     border-right: 4px solid #c3d9ff;
     border-bottom: 4px solid #c3d9ff;
-    padding: 5px 0;
+    padding: 0;
+}
+
+.example_content .dp-highlighter {
+    margin: 0 !important;
 }
 
 .important {
@@ -447,7 +506,8 @@ select.choose {
 }
 
 @media print {
-    .note_content, .example_content, .important_content {
+    .note .note_content, .example .example_content, .important .important_content {
+        background-color: white;
         border: 0px;
     }
 }

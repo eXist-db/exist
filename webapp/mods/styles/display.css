@@ -281,10 +281,14 @@
     display: table-row;
 }
 
-// Styles for the livesearch box:
+/* Styles for the livesearch box: */
 #livesearch {
     display: block;
     min-width: 80px;
+}
+
+.textfield {
+    width: 125px;
 }
 
 #LSResult {
