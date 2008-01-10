@@ -270,7 +270,8 @@ public class QName implements Comparable {
 	 * 
 	 * @param context
 	 * @param qname
-	 * @return defaultNS the default namespace to use if no namespace prefix is present.
+	 * @param defaultNS the default namespace to use if no namespace prefix is present.
+     * @return QName
 	 * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
 	 */
 	public static QName parse(XQueryContext context, String qname, String defaultNS)
