@@ -162,7 +162,7 @@ public class RESTServiceTest extends TestCase {
 
             connect.connect();
             int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, 200, r);
+            assertEquals("Server returned response code " + r, 201, r);
 
             doGet();
         } catch (Exception e) {
@@ -205,7 +205,7 @@ public class RESTServiceTest extends TestCase {
 
             connect.connect();
             int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, 200, r);
+            assertEquals("Server returned response code " + r, 201, r);
 
             doGet();
         } catch (Exception e) {
@@ -362,7 +362,7 @@ public class RESTServiceTest extends TestCase {
     		
     		connect.connect();
     		int r = connect.getResponseCode();
-    		assertEquals("Server returned response code " + r, 200, r);
+    		assertEquals("Server returned response code " + r, 201, r);
     	} catch (Exception e) {
             fail(e.getMessage());
         }
