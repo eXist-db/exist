@@ -32,25 +32,19 @@
         <section>
             <title>Enabling the JMX agent</title>
 
-            <para>Right now, eXist does not enable JMX by default nor does it require any JMX
-                libraries to be present in the classpath. We don't want to force application
-                developers to use JMX or to ship JMX libraries. In order to enable JMX, you have to
-                go through a small number of simple steps:</para>
+            <para>eXist's JMX agent requires Java 5 or newer. The distribution is built with
+            Java 1.4.2, so the agent is <emphasis>deactivated by default</emphasis>. However, creating the 
+            required jar is straight-forward: if you have Java 5 or newer installed, just call</para>
+            
+            <synopsis>build.sh</synopsis>
+            
+            <para>or</para>
 
-            <section>
-                <title>Compile the Agent Services</title>
-
-                <para>JMX support in eXist is split in two parts: the first part consists of a set
-                    of interfaces compiled into the core. It has no dependencies on JMX libraries.
-                    The second part is in directory <filename>tools/jmx</filename> and has to be
-                    build manually. This part requires Java 5 or newer. To compile it, call</para>
-
-                <synopsis>build.sh -f tools/jmx/build.xml</synopsis>
-
-                <para>after you built the core of eXist (or just installed it). The build creates
-                    the file <filename>exist-jmx.jar</filename> in the directory
-                        <filename>lib/extensions</filename>.</para>
-            </section>
+            <synopsis>build.bat</synopsis>
+            
+            <para>to regenerate the eXist jars. The build should create
+                the file <filename>exist-jmx.jar</filename> in the directory
+                <filename>lib/extensions</filename>.</para>
 
             <section>
                 <title>Set Required Java Properties</title>
