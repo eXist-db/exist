@@ -7,7 +7,7 @@
  '(jde-javadoc-author-tag-template "\"* @author \" user-full-name \" <\" user-mail-address \"> \"")
  '(jde-javadoc-describe-field-template "\"* The templates \" (jde-javadoc-field-type modifiers)
  \" \" (jde-javadoc-code name) ")
- '(jde-sourcepath (quote ("./src" "./extensions/modules/src" "./extensions/indexes/ngram/src" "./test/src" "./extensions/indexes/test/src" "./tools/wrapper/src" "./tools/requestlog/src" "./tools/ircbot/src")))
+ '(jde-sourcepath (quote ("./src" "./extensions/modules/src" "./extensions/indexes/ngram/src" "./extensions/indexes/spatial/src" "./extensions/indexes/concordance/src" "./test/src" "./extensions/indexes/test/src" "./tools/wrapper/src" "./tools/requestlog/src" "./tools/ircbot/src")))
  '(jde-run-application-class "org.exist.start.Main.class")
  '(jde-built-class-path (quote ("./classes" "./extensions/modules/classes" "./extensions/indexes/classes" "./test/classes" "./extensions/indexes/test/classes" "./tools/wrapper/classes" "./tools/requestlog/classes" "./tools/ircbot/classes")))
  '(jde-xref-store-prefixes (quote ("org.exist" "org.apache" "org.xmldb")))
