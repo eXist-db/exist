@@ -93,6 +93,8 @@
         <exclude name="jetty/logs/*"/>
         <exclude name="ircbot/**"/>
         <exclude name="ant/lib/svnkit*.jar"/>
+        <include name="jmx/**"/>
+        <exclude name="jmx/classes/**"/>
       </fileset>
       <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
         <exclude name="**/*.dbx"/>
