@@ -358,8 +358,6 @@
             <include name="org/exist/source/CocoonSource.java"/>
             <include name="org/exist/*.xsl"/>
         </jar>
-
-        <ant antfile="build.xml" dir="extensions/indexes" target="jar"/>
     </target>
 
     <!-- ================================================================== -->
@@ -525,7 +523,6 @@
 
     <target name="extension-modules" depends="jar">
         <ant antfile="build.xml" dir="extensions/modules"/>
-        <ant antfile="build.xml" dir="extensions/indexes" target="jar"/>
     </target>
 
     <target name="extension-indexes" depends="prepare-extensions,jar">
