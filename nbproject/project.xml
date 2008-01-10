@@ -28,11 +28,6 @@
                     <location>tools/requestlog/src</location>
                 </source-folder>
                 <source-folder>
-                    <label>samples</label>
-                    <type>java</type>
-                    <location>samples</location>
-                </source-folder>
-                <source-folder>
                     <label>wrapper</label>
                     <type>java</type>
                     <location>tools/wrapper/src</location>
@@ -41,6 +36,11 @@
                     <label>jUnit sources</label>
                     <type>java</type>
                     <location>test/src</location>
+                </source-folder>
+                <source-folder>
+                    <label>samples</label>
+                    <type>java</type>
+                    <location>samples/src</location>
                 </source-folder>
             </folders>
             <ide-actions>
@@ -227,26 +227,6 @@
             </export>
             <export>
                 <type>folder</type>
-                <location>build/classes</location>
-                <build-target>all</build-target>
-            </export>
-            <export>
-                <type>folder</type>
-                <location>extensions/modules/classes</location>
-                <build-target>all</build-target>
-            </export>
-            <export>
-                <type>folder</type>
-                <location>tools/wrapper/classes</location>
-                <build-target>all</build-target>
-            </export>
-            <export>
-                <type>folder</type>
-                <location>tools/ircbot/classes</location>
-                <build-target>all</build-target>
-            </export>
-            <export>
-                <type>folder</type>
                 <location>test/classes</location>
                 <build-target>all</build-target>
             </export>
@@ -274,16 +254,16 @@
                         <location>tools/requestlog/src</location>
                     </source-folder>
                     <source-folder style="packages">
-                        <label>samples</label>
-                        <location>samples</location>
-                    </source-folder>
-                    <source-folder style="packages">
                         <label>wrapper</label>
                         <location>tools/wrapper/src</location>
                     </source-folder>
                     <source-folder style="packages">
                         <label>jUnit sources</label>
                         <location>test/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>samples</label>
+                        <location>samples/src</location>
                     </source-folder>
                     <source-file>
                         <location>build.xml</location>
@@ -313,7 +293,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">lib/core/antlr-2.7.6.jar;lib/core/commons-collections-3.1.jar;lib/core/commons-logging-1.0.4.jar;lib/core/commons-pool-1.2.jar;lib/core/excalibur-cli-1.0.jar;lib/core/javax.servlet-1.4.jar;lib/core/jEdit-syntax.jar;lib/core/jgroups-all.jar;lib/core/jline-0_9_5.jar;lib/core/jta.jar;lib/core/log4j-1.2.15.jar;lib/core/quartz-1.6.0.jar;lib/endorsed/resolver-1.2.jar;lib/core/stax-api-1.0.1.jar;lib/core/sunxacml.jar;lib/core/xmldb.jar;lib/core/xmlrpc-1.2-patched.jar;lib/endorsed/serializer-2.9.1.jar;lib/endorsed/xalan-2.7.0.jar;lib/endorsed/xercesImpl-2.9.1.jar;lib/endorsed/xml-apis.jar;lib/optional/axis-ant.jar;lib/optional/axis-schema.jar;lib/optional/axis.jar;lib/optional/commons-discovery-0.2.jar;lib/optional/commons-fileupload-1.1.1.jar;lib/optional/commons-httpclient-3.0.1.jar;lib/optional/commons-io-1.3.jar;lib/optional/jaxrpc.jar;lib/optional/saaj.jar;lib/optional/wsdl4j-1.5.1.jar;tools/ant/lib/ant.jar;tools/ant/lib/ant-jdepend.jar;tools/ant/lib/junit-4.4.jar;tools/ant/lib/xmlunit-1.1.jar;tools/ircbot/lib/pircbot.jar;tools/jetty/lib/org.mortbay.jetty.jar;tools/wrapper/lib/wrapper.jar;thirdparty/tomcat5/bin/jmx.jar;thirdparty/tomcat5/server/lib/catalina-5.0.28.jar</classpath>
+                <classpath mode="compile">lib/core/antlr-2.7.6.jar:lib/core/commons-collections-3.1.jar:lib/core/commons-logging-1.0.4.jar:lib/core/commons-pool-1.2.jar:lib/core/excalibur-cli-1.0.jar:lib/core/javax.servlet-1.4.jar:lib/core/jEdit-syntax.jar:lib/core/jgroups-all.jar:lib/core/jline-0_9_5.jar:lib/core/jta.jar:lib/core/log4j-1.2.15.jar:lib/core/quartz-1.6.0.jar:lib/endorsed/resolver-1.2.jar:lib/core/stax-api-1.0.1.jar:lib/core/sunxacml.jar:lib/core/xmldb.jar:lib/core/xmlrpc-1.2-patched.jar:lib/endorsed/serializer-2.9.1.jar:lib/endorsed/xalan-2.7.0.jar:lib/endorsed/xercesImpl-2.9.1.jar:lib/endorsed/xml-apis.jar:lib/optional/axis-ant.jar:lib/optional/axis-schema.jar:lib/optional/axis.jar:lib/optional/commons-discovery-0.2.jar:lib/optional/commons-fileupload-1.1.1.jar:lib/optional/commons-httpclient-3.0.1.jar:lib/optional/commons-io-1.3.jar:lib/optional/jaxrpc.jar:lib/optional/saaj.jar:lib/optional/wsdl4j-1.5.1.jar:tools/ant/lib/ant.jar:tools/ant/lib/ant-jdepend.jar:tools/ant/lib/junit-4.4.jar:tools/ant/lib/xmlunit-1.1.jar:tools/ircbot/lib/pircbot.jar:tools/jetty/lib/org.mortbay.jetty.jar:tools/wrapper/lib/wrapper.jar:thirdparty/tomcat5/bin/jmx.jar:thirdparty/tomcat5/server/lib/catalina-5.0.28.jar</classpath>
                 <built-to>build/classes</built-to>
                 <built-to>extensions/modules/classes</built-to>
                 <built-to>tools/wrapper/classes</built-to>
@@ -324,15 +304,6 @@
             <compilation-unit>
                 <package-root>tools/wrapper/src</package-root>
                 <classpath mode="compile">tools/wrapper/lib/wrapper.jar;start.jar</classpath>
-                <built-to>build/classes</built-to>
-                <built-to>extensions/modules/classes</built-to>
-                <built-to>tools/wrapper/classes</built-to>
-                <built-to>tools/ircbot/classes</built-to>
-                <source-level>1.4</source-level>
-            </compilation-unit>
-            <compilation-unit>
-                <package-root>samples</package-root>
-                <classpath mode="compile">lib/core/antlr-2.7.6.jar;lib/core/commons-collections-3.1.jar;lib/core/commons-logging-1.0.4.jar;lib/core/commons-pool-1.2.jar;lib/core/excalibur-cli-1.0.jar;lib/core/javax.servlet-1.4.jar;lib/core/jEdit-syntax.jar;lib/core/jgroups-all.jar;lib/core/jline-0_9_5.jar;lib/core/jta.jar;lib/core/log4j-1.2.15.jar;lib/core/quartz-1.6.0.jar;lib/endorsed/resolver-1.2.jar;lib/core/stax-api-1.0.1.jar;lib/core/sunxacml.jar;lib/core/xmldb.jar;lib/core/xmlrpc-1.2-patched.jar;lib/endorsed/serializer-2.9.1.jar;lib/endorsed/xalan-2.7.0.jar;lib/endorsed/xercesImpl-2.9.1.jar;lib/endorsed/xml-apis.jar;lib/optional/axis-ant.jar;lib/optional/axis-schema.jar;lib/optional/axis.jar;lib/optional/commons-discovery-0.2.jar;lib/optional/commons-fileupload-1.1.1.jar;lib/optional/commons-httpclient-3.0.1.jar;lib/optional/commons-io-1.3.jar;lib/optional/jaxrpc.jar;lib/optional/saaj.jar;lib/optional/wsdl4j-1.5.1.jar;tools/ant/lib/ant.jar;tools/ant/lib/ant-jdepend.jar;tools/ant/lib/junit-4.4.jar;tools/ant/lib/xmlunit-1.1.jar;tools/ircbot/lib/pircbot.jar;tools/jetty/lib/org.mortbay.jetty.jar;tools/wrapper/lib/wrapper.jar;thirdparty/tomcat5/bin/jmx.jar;thirdparty/tomcat5/server/lib/catalina-5.0.28.jar</classpath>
                 <built-to>build/classes</built-to>
                 <built-to>extensions/modules/classes</built-to>
                 <built-to>tools/wrapper/classes</built-to>
@@ -372,6 +343,11 @@
                 <classpath mode="compile">exist-modules.jar;exist-optional.jar;exist.jar;start.jar;lib/core/antlr-2.7.6.jar;lib/core/commons-collections-3.1.jar;lib/core/commons-logging-1.0.4.jar;lib/core/commons-pool-1.2.jar;lib/core/excalibur-cli-1.0.jar;lib/core/javax.servlet-1.4.jar;lib/core/jEdit-syntax.jar;lib/core/jgroups-all.jar;lib/core/jline-0_9_5.jar;lib/core/jta.jar;lib/core/log4j-1.2.15.jar;lib/core/quartz-1.6.0.jar;lib/endorsed/resolver-1.2.jar;lib/core/sunxacml.jar;lib/core/xmldb.jar;lib/core/xmlrpc-1.2-patched.jar;lib/endorsed/serializer-2.9.1.jar;lib/endorsed/xalan-2.7.0.jar;lib/endorsed/xercesImpl-2.9.1.jar;lib/endorsed/xml-apis.jar;lib/optional/axis-ant.jar;lib/optional/axis-schema.jar;lib/optional/axis.jar;lib/optional/commons-discovery-0.2.jar;lib/optional/commons-fileupload-1.1.1.jar;lib/optional/commons-httpclient-3.0.1.jar;lib/optional/commons-io-1.3.jar;lib/optional/jaxrpc.jar;lib/optional/saaj.jar;lib/optional/wsdl4j-1.5.1.jar;lib/user/xmlunit-1.1.jar;tools/ant/lib/ant.jar;tools/ant/lib/ant-jdepend.jar;tools/ant/lib/junit-4.4.jar;tools/ant/lib/xmlunit-1.1.jar;tools/ircbot/lib/pircbot.jar;tools/jetty/lib/org.mortbay.jetty.jar;tools/wrapper/lib/wrapper.jar;thirdparty/tomcat5/bin/jmx.jar;thirdparty/tomcat5/server/lib/catalina-5.0.28.jar</classpath>
                 <built-to>test/classes</built-to>
                 <built-to>build/classes</built-to>
+                <source-level>1.4</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>samples/src</package-root>
+                <classpath mode="compile">exist-optional.jar:exist.jar</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>
