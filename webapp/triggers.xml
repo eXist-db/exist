@@ -190,7 +190,7 @@
         		<title>XQuery</title>
         		<example>
         			<title>Simple Logging Trigger</title>
-        			<programlisting>
+        			<programlisting language="xquery">
 <![CDATA[
 xquery version "1.0";
 
@@ -228,7 +228,7 @@ update insert <trigger event="{$local:triggerEvent}" eventType="{$local:eventTyp
         		<title>Java</title>
         		<example>
         			<title>Simple Logging Trigger</title>
-        			<programlisting>
+        			<programlisting language="java">
 <![CDATA[
 import java.io.File;
 import java.io.FileOutputStream;
