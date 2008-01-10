@@ -90,4 +90,19 @@
                 todir="${junit.index.reports}" />
         </junit>
     </target>
+    
+    <target name="clean">
+        <delete dir="${classes}" failonerror="false"/>
+        <delete dir="${test.classes}" failonerror="false"/>
+        <delete file="${top.dir}/${lib.extensions}/exist-spatial-module.jar"/> 
+    </target>
+    
+    <target name="all-clean">
+        <delete dir="${resources.dir}"/>
+        <delete>
+            <fileset dir="${lib.dir}">
+                <exclude name="hsqldb-*.jar"/>
+            </fileset>
+        </delete>
+    </target>
 </project>

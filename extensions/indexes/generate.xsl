@@ -7,6 +7,9 @@
             <!-- This is a generated build file. Do not edit. Change the stylesheet -->
             <!-- generate.xsl instead. -->
             
+            <property file="local.properties"/>
+            <property file="build.properties"/>
+            
             <xsl:apply-templates select="indexes"/>
             
             <target name="compile">
@@ -31,9 +34,15 @@
             </target>
             
             <target name="clean">
+                <echo message="-------------------------------------"/>
                 <echo message="Cleaning additional index modules ..."/>
+                <echo message="-------------------------------------"/>
                 <iterate target="clean"/>
                 <delete file="build.xml" failonerror="false"/>
+            </target>
+            
+            <target name="all-clean">
+                <iterate target="all-clean"/>
             </target>
             
             <target name="test">
@@ -47,18 +56,30 @@
     </xsl:template>
     
     <xsl:template match="indexes">
+        <xsl:for-each select="index">
+            <condition property="include.index.{@name}.config">
+                <istrue value="${{include.index.{@name}}}"/>
+            </condition>
+        </xsl:for-each>
+        <xsl:apply-templates select="index"/>
         <macrodef name="iterate">
             <attribute name="target"/>
             <sequential>
-                <xsl:apply-templates select="index"/>
+                <xsl:for-each select="index">
+                    <antcall target="{@name}">
+                        <param name="target" value="@{{target}}"/>
+                    </antcall>
+                </xsl:for-each>
             </sequential>
         </macrodef>
     </xsl:template>
     
     <xsl:template match="index">
-        <ant antfile="{@antfile}" dir="{@dir}" target="@{{target}}">
-            <property name="module" value="{@name}"/>
-        </ant>
+        <target name="{@name}" if="include.index.{@name}.config">
+            <ant antfile="{@antfile}" dir="{@dir}" target="${{target}}">
+                <property name="module" value="{@name}"/>
+            </ant>
+        </target>
     </xsl:template>
     
 </xsl:stylesheet>
