@@ -176,11 +176,6 @@
 
     <section>
         <title>Building eXist as a Cocoon Block</title>
-
-        <important>
-            <para>The build scripts described here are currently only available in SVN, revision
-                4676 or newer.</para>
-        </important>
         
         <para>The standard eXist distribution already ships with Apache Cocoon. However, the
             included version may not be up to date and it offers only a subset of the Cocoon modules
