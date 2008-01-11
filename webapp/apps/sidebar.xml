@@ -22,11 +22,14 @@
         <item>
             <link href="../xquery/functions.xq">Function Library</link>
         </item>
-		<item>
+        <item>
             <link href="../extensions.xml">Extension Modules</link>
         </item>
         <item>
             <link href="../documentation.xml">Main Documentation</link>
+        </item>
+        <item>
+            <link href="../facts.xml">Feature Sheet</link>
         </item>
     </group>
     <group name="Examples">
@@ -48,23 +51,23 @@
             <link href="../index.xml#mailing">Mailing List/IRC</link>
         </item>
         <item>
-            <link href="../apps/applications.xml">Powered By eXist</link>
+            <link href="applications.xml">Powered By eXist</link>
         </item>
         <!--item>
             <link href="http://wiki.exist-db.org/space/ThirdPartyTools">
-            Third Party Tools
+                Third Party Tools
             </link>
-            </item-->
+        </item-->
     </group>
     <group name="Development">
         <item>
-            <link href="roadmap.xml">Roadmap</link>
+            <link href="../roadmap.xml">Roadmap</link>
         </item>
         <item>
-            <link href="api/index.html">Javadocs</link>
+            <link href="../api/index.html">Javadocs</link>
         </item>
         <item>
-            <link href="http://atomic.exist-db.org/wiki/changes/">ChangeLog</link>
+        	<link href="http://atomic.exist-db.org/wiki/changes/">ChangeLog</link>
         </item>
         <item>
             <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
@@ -80,6 +83,20 @@
         <item>
             <link href="../admin/admin.xql">Admin</link>
         </item>
+        <item>
+			<link href="../status">Server Status</link>
+        </item>
+        <item>
+			<link href="../cluster">Cluster Status</link>
+        </item>
+        <item>
+			<link href="../webstart/exist.jnlp">Webstart Client</link>
+        </item>
+        <item>
+            <link href="../webstart/exist.jnlp">
+                <img src="../resources/webstart.small.jpg" border="0"/>
+            </link>
+        </item>
     </group>
     
     <banner>
@@ -93,4 +110,9 @@
     <banner>
         <link href="http://www.java.net"><img src="resources/javanet_button_90.gif" border="0" alt="java.net Member Button"/></link>
     </banner>
+    
+    <reference>
+        <link href="http://www.izforge.com/izpack/"><img src="resources/izpack-88x31.png" border="0" 
+            alt="IzPack Installer Generator"/></link>
+    </reference>            
 </sidebar>

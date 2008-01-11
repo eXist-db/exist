@@ -10,42 +10,54 @@
     version="1.0">
     
     <xsl:template match="a:applications">
-        <document xmlns:xi="http://www.w3.org/2001/XInclude">
-  
-        <header>
-            <logo src="logo.jpg"/>
-            <title>Open Source Native XML Database</title>
-            <author email="wolfgang@exist-db.org">Wolfgang M. Meier</author>
-            <style href="styles/display.css"/>
-        </header>
-               
+        <book xmlns:xi="http://www.w3.org/2001/XInclude">
+            
+            <bookinfo>
+                <graphic fileref="logo.jpg"/>
+                <title>Open Source Native XML Database</title>
+                <author>
+                    <firstname>Wolfgang M.</firstname>
+                    <surname>Meier</surname>
+                    <affiliation>
+                        <address format="linespecific">
+                            <email>wolfgang@exist-db.org</email>
+                        </address>
+                    </affiliation>
+                </author>
+                <style url="styles/display.css"/>
+            </bookinfo>
+
            <!-- include sidebar -->
            <xi:include href="sidebar.xml"/>
        
-            <body>
-                <section title="Powered By eXist">
-                    <p>We frequently get questions about who is using eXist and if there are any life sites running the software.
-                    If you are using eXist in some context that might be of interest to other users or may serve as a reference, 
-                    please send us a description to be added to this page. Descriptions should be in XML, according to the 
-                    <a href="applications.xsd.html">schema</a> that can be downloaded <a href="applications.xsd">here</a>. 
-                    A <a href="template.xml">sample entry</a> is also available.</p>
-                    
-                    <p>Smaller applications are welcome as they are often good examples for other users.
-                    The following applications have been submitted so far:</p>
-
-                    <xsl:for-each select="a:application">
-                        <xsl:sort select="dc:title/text()"/>
-                        <xsl:apply-templates select="."/>
-                    </xsl:for-each>
-               </section>
-           </body>
-       </document>
+            <chapter>
+                <toc></toc>
+                <title>Powered By eXist</title>
+                <para>We frequently get questions about who is using eXist and if there are any life sites running the software.
+                If you are using eXist in some context that might be of interest to other users or may serve as a reference, 
+                please send us a description to be added to this page. Descriptions should be in XML, according to the 
+                <ulink url="applications.xsd.html">schema</ulink> that can be downloaded <ulink url="applications.xsd">here</ulink>. 
+                A <ulink url="template.xml">sample entry</ulink> is also available. Smaller applications are welcome as they 
+                    are often good examples for other users.</para>
+                
+                <note>
+                    <para>We only list applications which were submitted by users.</para>
+                </note>
+    
+                <xsl:for-each select="a:application">
+                    <xsl:sort select="dc:title/text()"/>
+                    <xsl:apply-templates select="."/>
+                </xsl:for-each>
+           </chapter>
+           
+       </book>
    </xsl:template>
    
    <xsl:template match="a:application">
-        <section title="{dc:title}">
-            <p><a href="{dc:identifier/text()}"><xsl:value-of select="dc:identifier"/></a></p>
-            <p><xsl:apply-templates select="dc:description"/></p>
+        <section>
+            <title><xsl:apply-templates select="dc:title"/></title>
+            <para><ulink url="{dc:identifier/text()}"><xsl:value-of select="dc:identifier"/></ulink></para>
+            <para><xsl:apply-templates select="dc:description"/></para>
             <table id="details">
                 <xsl:apply-templates select="dc:creator"/>
                 <xsl:apply-templates select="dc:publisher"/>
@@ -135,28 +147,28 @@
     <xsl:template match="a:creator-site">
         <tr>
             <td class="heading">Creator's website:</td>
-            <td><a href="{text()}"><xsl:value-of select="."/></a></td>
+            <td><ulink url="{text()}"><xsl:value-of select="."/></ulink></td>
         </tr>
     </xsl:template>
     
     <xsl:template match="a:demo-site">
         <tr>
             <td class="heading">Demonstration:</td>
-            <td><a href="{text()}"><xsl:value-of select="."/></a></td>
+            <td><ulink url="{text()}"><xsl:value-of select="."/></ulink></td>
         </tr>
     </xsl:template>
     
     <xsl:template match="a:production-site">
         <tr>
             <td class="heading">Production website:</td>
-            <td><a href="{text()}"><xsl:value-of select="."/></a></td>
+            <td><ulink url="{text()}"><xsl:value-of select="."/></ulink></td>
         </tr>
     </xsl:template>
     
     <xsl:template match="a:dev-site">
         <tr>
             <td class="heading">Development website:</td>
-            <td><a href="{text()}"><xsl:value-of select="."/></a></td>
+            <td><ulink url="{text()}"><xsl:value-of select="."/></ulink></td>
         </tr>
     </xsl:template>
     
