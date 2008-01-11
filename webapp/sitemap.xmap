@@ -508,12 +508,6 @@
         </map:pipeline>
 
         <map:pipeline>
-            <!-- graphics etc. -->
-            <map:match pattern="xmldb/db/shakespeare/plays/**.css">
-                <map:read src="xmldb:exist:///db/shakespeare/plays/{1}.css"
-                    mime-type="text/css"/>
-            </map:match>
-
             <map:match pattern="**.css">
                 <map:read mime-type="text/css" src="{1}.css"/>
             </map:match>
@@ -532,11 +526,59 @@
             <map:match pattern="**.dtd">
                 <map:read mime-type="text/text" src="{1}.dtd"/>
             </map:match>
-            <map:match pattern="**.js">
-                <map:read mime-type="text/javascript" src="{1}.js"/>
-            </map:match>
             <map:match pattern="**.html">
                 <map:read src="{1}.html" mime-type="text/html"/>
+            </map:match>
+            
+            <map:match pattern="library/**">
+                <map:mount check-reload="yes" src="library/sitemap.xmap" uri-prefix="library"/>
+            </map:match>
+            
+            <map:match pattern="simple/**">
+                <map:mount check-reload="yes" src="simple/sitemap.xmap" uri-prefix="simple"/>
+            </map:match>
+            
+            <map:match pattern="examples/**">
+                <map:mount check-reload="yes" src="examples/sitemap.xmap" uri-prefix="examples"/>
+            </map:match>
+            
+            <map:match pattern="acronyms/**">
+                <map:mount check-reload="yes" src="acronyms/sitemap.xmap" uri-prefix="acronyms"/>
+            </map:match>
+            
+            <map:match pattern="xquery/**">
+                <map:mount check-reload="yes" src="xquery/sitemap.xmap"
+                    uri-prefix="xquery"/>
+            </map:match>
+            
+            <map:match pattern="sandbox/">
+                <map:redirect-to uri="sandbox.xql"/>
+            </map:match>
+            
+            <map:match pattern="mods/**">
+                <map:mount check-reload="yes" src="mods/sitemap.xmap"
+                    uri-prefix="mods"/>
+            </map:match>
+            
+            <map:match pattern="apps/**">
+                <map:mount check-reload="yes" src="apps/sitemap.xmap"
+                    uri-prefix="apps"/>
+            </map:match>
+            
+            <map:match pattern="spatial-index/**">
+                <map:mount check-reload="yes" src="spatial-index/sitemap.xmap"
+                    uri-prefix="spatial-index"/>
+            </map:match>
+            
+            <!-- graphics etc. -->
+            <map:match pattern="xmldb/db/shakespeare/plays/**.css">
+                <map:read src="xmldb:exist:///db/shakespeare/plays/{1}.css"
+                    mime-type="text/css"/>
+            </map:match>
+            
+            
+            <map:match pattern="**.js">
+                <map:read mime-type="text/javascript" src="{1}.js"/>
             </map:match>
             
             <!-- pipelines using the xmldb:// pseudo-protocol -->
@@ -695,46 +737,6 @@
                 <map:transform src="stylesheets/doc2html-2.xsl"/>
                 <map:serialize type="html"/>
             </map:match>
-
-            <map:match pattern="library/**">
-                <map:mount check-reload="yes" src="library/sitemap.xmap" uri-prefix="library"/>
-            </map:match>
-
-            <map:match pattern="simple/**">
-                <map:mount check-reload="yes" src="simple/sitemap.xmap" uri-prefix="simple"/>
-            </map:match>
-
-            <map:match pattern="examples/**">
-                <map:mount check-reload="yes" src="examples/sitemap.xmap" uri-prefix="examples"/>
-            </map:match>
-				
-            <map:match pattern="acronyms/**">
-                <map:mount check-reload="yes" src="acronyms/sitemap.xmap" uri-prefix="acronyms"/>
-            </map:match>
-				
-            <map:match pattern="xquery/**">
-                <map:mount check-reload="yes" src="xquery/sitemap.xmap"
-                        uri-prefix="xquery"/>
-            </map:match>
-
-			<map:match pattern="sandbox/">
-                <map:redirect-to uri="sandbox.xql"/>
-            </map:match>
-            
-            <map:match pattern="mods/**">
-                <map:mount check-reload="yes" src="mods/sitemap.xmap"
-                uri-prefix="mods"/>
-            </map:match>
-            
-            <map:match pattern="apps/**">
-                <map:mount check-reload="yes" src="apps/sitemap.xmap"
-                    uri-prefix="apps"/>
-            </map:match>
-            
-            <map:match pattern="spatial-index/**">
-                <map:mount check-reload="yes" src="spatial-index/sitemap.xmap"
-                    uri-prefix="spatial-index"/>
-            </map:match>            
         
             <map:match pattern="examples.xml">
                 <map:generate src="examples.xml"/>
@@ -815,7 +817,7 @@
                 <map:transform src="stylesheets/db2html.xsl"/>
                 <map:serialize type="html"/>
             </map:match>
-
+            
             <map:match pattern="**/">
                 <map:generate src="{1}" type="directory"/>
                 <map:transform src="stylesheets/system/directory2html.xslt"/>

@@ -31,6 +31,7 @@
                 <map:transform type="encodeURL"/>
                 <map:serialize encoding="UTF-8" type="html"/>
             </map:match>
+		    
 			<map:match pattern="test.xq">
 				<map:generate src="test.xq" type="xquery">
 					<map:parameter name="create-session" value="true"/>
@@ -107,6 +108,17 @@
                 <map:read src="{1}.xqm" mime-type="text/text"/>
             </map:match>
 
+            <map:match pattern="json-test.js">
+                <map:read mime-type="text/javascript" src="json-test.js"/>
+            </map:match>
+		    
+		    <map:match pattern="scripts/fundocs.js">
+		        <map:read mime-type="text/javascript" src="scripts/fundocs.js"/>
+		    </map:match>
+		    
+		    <map:match pattern="**.js">
+		        <map:read mime-type="text/javascript" src="../{1}.js"/>
+		    </map:match>
 		</map:pipeline>
 	</map:pipelines>
 
