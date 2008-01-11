@@ -19,6 +19,10 @@
     <map:pipelines>
         <map:pipeline>
 
+            <map:match pattern="**.js">
+                <map:read mime-type="text/javascript" src="../{1}.js"/>
+            </map:match>
+            
             <map:match pattern="template.xml">
                 <map:read mime-type="text/xml" src="template.xml"/>
             </map:match>
@@ -27,7 +31,7 @@
                 <map:generate src="{1}.xml"/>
                 <map:transform src="applications.xsl"/>
                 <map:transform type="xinclude"/>
-                <map:transform src="../stylesheets/doc2html-2.xsl"/>
+                <map:transform src="../stylesheets/db2html.xsl"/>
                 <map:transform type="encodeURL"/>
                 <map:serialize encoding="UTF-8" type="html"/>
             </map:match>
@@ -35,7 +39,6 @@
             <map:match pattern="**.xsd">
                 <map:read mime-type="text/xml" src="{1}.xsd"/>
             </map:match>
-        
         </map:pipeline>
         
     </map:pipelines>
