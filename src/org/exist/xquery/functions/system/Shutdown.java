@@ -49,14 +49,14 @@ public class Shutdown extends BasicFunction
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Shutdown eXist.",
+			"Shutdown eXist (dba role only).",
 			null,
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		),
 		
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Shutdown eXist. $a is the delay in milliseconds.",
+			"Shutdown eXist. $a is the delay in milliseconds. (dba role only)",
 			new SequenceType[] {
 					new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)
 			},
