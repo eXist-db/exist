@@ -139,7 +139,7 @@ return
 for $country in /mondial/country
 let $cities := 
     (for $city in $country//city[population] 
-    order by xs:integer($city/population) descending 
+    order by xs:integer($city/population[1]) descending 
     return $city)
 order by $country/name
 return
