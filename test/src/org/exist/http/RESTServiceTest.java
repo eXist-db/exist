@@ -1,22 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier (wolfgang@exist-db.org) 
- *  and others (see http://exist-db.org)
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2008 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.http;
@@ -77,6 +77,17 @@ public class RESTServiceTest extends TestCase {
             + "(::pragma exist:serialize indent=no ::)"
             + "//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()"
             + "</text>" + "</query>";
+
+    private final static String QUERY_REQUEST_ERROR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            + "<query xmlns=\""+ Namespaces.EXIST_NS + "\">"
+            + "<properties>"
+            + "<property name=\"indent\" value=\"yes\"/>"
+            + "<property name=\"encoding\" value=\"UTF-8\"/>"
+            + "</properties>"
+            + "<text>"
+            + "xquery version \"1.0\";"
+            + "//undeclared:para"
+            + "</text>" + "</query>";
     
     private final static String TEST_MODULE =
     	"module namespace t=\"http://test.foo\";\n" +
@@ -84,13 +95,13 @@ public class RESTServiceTest extends TestCase {
     
     private final static String TEST_XQUERY =
     	"xquery version \"1.0\";\n" +
-    	"declare option exist:serialize \"method=text media-type=text/text\";\n" +
-    	"import module namespace req=\"http://exist-db.org/xquery/request\";\n" +
+        "declare option exist:serialize \"method=text media-type=text/text\";\n" +
+        "import module namespace req=\"http://exist-db.org/xquery/request\";\n" +
     	"import module namespace t=\"http://test.foo\" at \"module.xq\";\n" +
     	"let $param := req:get-parameter('p', ())\n" +
     	"return\n" +
     	"	($param, ' ', $t:VAR)";
-    
+
     private final static String TEST_XQUERY_PARAMETER =
     "xquery version \"1.0\";\n" +
     "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
@@ -233,6 +244,18 @@ public class RESTServiceTest extends TestCase {
             int r = connect.getResponseCode();
             assertEquals("Server returned response code " + r, 200, r);
 
+            System.out.println(readResponse(connect.getInputStream()));
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    public void testQueryPostXQueryError() {
+        try {
+            HttpURLConnection connect = preparePost(QUERY_REQUEST_ERROR);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 202, r);
             System.out.println(readResponse(connect.getInputStream()));
         } catch (Exception e) {
             fail(e.getMessage());
