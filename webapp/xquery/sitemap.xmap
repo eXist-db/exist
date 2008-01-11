@@ -27,7 +27,7 @@
             <map:match pattern="*.xml">
                 <map:generate src="{1}.xml"/>
                 <map:transform type="xinclude"/>
-                <map:transform src="context://stylesheets/doc2html-2.xsl"/>
+                <map:transform src="../stylesheets/doc2html-2.xsl"/>
                 <map:transform type="encodeURL"/>
                 <map:serialize encoding="UTF-8" type="html"/>
             </map:match>
@@ -41,7 +41,7 @@
             <map:match pattern="functions.xq">
                 <map:generate src="functions.xq" type="xquery"/>
                 <map:transform type="xinclude"/>
-                <map:transform src="context://stylesheets/db2html.xsl"/>
+                <map:transform src="../stylesheets/db2html.xsl"/>
 				<map:serialize encoding="UTF-8" type="html"/>
             </map:match>
             
@@ -53,7 +53,7 @@
 				</map:generate>
 				<map:transform type="cinclude"/>
 				<map:transform src="stylesheets/acronyms.xsl"/>
-				<map:transform src="context://stylesheets/db2html.xsl"/>
+				<map:transform src="../stylesheets/db2html.xsl"/>
 				<map:serialize encoding="UTF-8" type="html"/>
 			</map:match>
 

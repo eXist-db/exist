@@ -27,7 +27,7 @@
                 <map:generate src="{1}.xml"/>
                 <map:transform src="applications.xsl"/>
                 <map:transform type="xinclude"/>
-                <map:transform src="context://stylesheets/doc2html-2.xsl"/>
+                <map:transform src="../stylesheets/doc2html-2.xsl"/>
                 <map:transform type="encodeURL"/>
                 <map:serialize encoding="UTF-8" type="html"/>
             </map:match>

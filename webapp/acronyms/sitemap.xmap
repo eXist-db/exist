@@ -22,7 +22,7 @@
 		        <map:generate src="query.xsp" type="serverpages"/>
 		        <map:transform src="stylesheets/acronyms.xsl"/>
 				<map:transform type="xinclude"/>
-		        <map:transform src="context://stylesheets/doc2html-2.xsl"/>
+		        <map:transform src="../stylesheets/doc2html-2.xsl"/>
 				<map:serialize encoding="UTF-8" type="html"/>
 	        </map:match>
 		</map:pipeline>
