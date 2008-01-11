@@ -4,14 +4,14 @@
 		 This file should be stored into /db/system/config/db/mondial.
 	-->
 	<index>
-        <fulltext default="all" attributes="yes"/>
+        <fulltext default="none" attributes="no">
+            <create qname="name"/>
+        </fulltext>
 
-        <create path="/mondial//population" type="xs:integer"/>
-	<create path="/mondial//population_growth" type="xs:double"/>
-	<create path="/mondial//infant_mortality" type="xs:double"/>
-	<create path="/mondial//inflation" type="xs:double"/>
-	<create path="/mondial//city/name" type="xs:string"/>
-	
-	<create qname="population" type="xs:integer"/>
+        <create qname="population" type="xs:integer"/>
+	    <create path="/mondial//population_growth" type="xs:double"/>
+	    <create qname="infant_mortality" type="xs:double"/>
+	    <create qname="inflation" type="xs:double"/>
+		<create qname="name" type="xs:string"/>
     </index>
 </collection>
