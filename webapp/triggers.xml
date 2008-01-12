@@ -10,6 +10,7 @@
     <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
     <chapter id="configuring-db-triggers">
         <title>Configuring Database Triggers</title>
+	<para>This document has been reviewed for eXist 1.2.</para>
         <section>
             <title>Overview</title>
             <para>In this section, we discuss the types of database events that may be Triggered by eXist, as well
@@ -135,7 +136,7 @@
                 <section>
                     <title>Configuring an XQuery Trigger</title>
 					<para>When configuring an XQuery trigger there are a few parameters that may need to be set -</para>
-					<unorderedlist>
+					<itemizedlist>
 						<listitem>
 							<para><emphasis>url</emphasis>: The URL to the XQuery that the XQuery Trigger should execute</para>
 						</listitem>
@@ -148,7 +149,7 @@
 						<listitem>
 							<para>Any other parameters will be passed to the XQuery as external variables of type xs:string</para>
 						</listitem>
-					</unorderedlist>
+					</itemizedlist>
                     <para>The following example shows two XQuery Triggers configured, the first executes an XQuery stored in the database
                     whereas the second executes XQuery placed inline in the collection.xconf:</para>
 					<example>
