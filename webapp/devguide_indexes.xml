@@ -2896,17 +2896,18 @@
       <para></para>
       <para>Now that we have described the spatial index, it is time to play with it. Only a few of its features
       will be demonstrated, but we will explain again what happens under the hood.</para>
-      <para>The first step is to make sure to have a recent enough release version of eXist or a newly checked out copy of the eXist trunk from the subversion repository.</para>
-      <para>Check to see if you have the required libraries: they should be in 
-      <filename>${EXIST_HOME}/extensions/indexes/spatial/lib</filename>. Most of them have a <filename>gt2-*.jar</filename> name.</para>
-      <para>If you don't have them, do not worry. Proceed to the next step.</para>
-      <para>The final check is to make sure you have up-to-date extensions modules. They should be contained in <filename>${EXIST_HOME}/exist-modules.jar</filename>.</para> 
-      <important><para>Beware of any legacy <filename>${EXIST_HOME}/exist-modules.jar</filename> file with a creation date before June 2007. It will <emphasis>not</emphasis> contain the needed modularized indexes since it is missing the <classname>org.exist.indexing.*</classname>
-      package hierarchy. Please, proceed to the next step if this is the case.</para></important>
-      <para>If all of the checks above turn out negative, execute either <command>build.bat extension-modules</command> or <command>build.sh extension-modules</command> from a command line.
-      This should download the required libraries and build the extension modules including the modularized
-      indexes.</para>
+      <para>The first step is to make sure to have a recent enough release version of eXist : 1.2 of later.</para>
+      <para>Then, you have to prepare eXist to build the spatial index library. To do that, go into the <filename>${EXIST_HOME}/extensions/indexes</filename> directory and, if necessary, copy
+      <filename>build.properties</filename> to a new file, <filename>local.properties</filename>.</para>
+      <para>Open this file and check that <command>include.index.spatial</command> is set to <command>true</command>.</para>
+      <para>Invoke <command>build.bat clean</command> or <command>build.sh clean</command>, depending on your platform,
+       from a command line. This will generate <filename>${EXIST_HOME}/extensions/indexes/buid.xml</filename>, which is needed by the modularized indexes infrastructure.</para>
+      <para>Invoke <command>build.bat extension-indexes</command> or <command>build.sh extension-indexes</command>, depending on your platform,
+       from a command line.</para>
+      <para>If necessary, the required external (large) libraries will be downloaded from the WWW into the <filename>${EXIST_HOME}/extensions/indexes/spatial/lib</filename> directory. 
+       Most of them have a <filename>gt2-*.jar</filename> name. Make sure to make them available in your application's classpath !</para>       
       <note><para>If you are behind a proxy, do not forget to set its settings in <filename>${EXIST_HOME}/build.properties</filename>.</para></note>
+      <para>A file named <filename>exist-spatial-module.jar</filename> should be generated into the <filename>${EXIST_HOME}/lib/extensions</filename> directory.</para> 
       <para>Enable the spatial index and the spatial module in <filename>${EXIST_HOME}/conf.xml</filename> if it is not already done.</para>
       <para>the spatial index:</para>
       <programlisting format="linespecific"><![CDATA[				
