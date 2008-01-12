@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
 <book>
     <bookinfo>
         <graphic fileref="logo.jpg"/>
@@ -7,7 +8,7 @@
         <orgname>The eXist Project</orgname>
     </bookinfo>
     <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
-    <chapter>
+    <chapter id="configuring-db-triggers">
         <title>Configuring Database Triggers</title>
         <section>
             <title>Overview</title>
@@ -16,7 +17,7 @@
                 understanding of XML, Java and XQuery.</para>
             <para>Triggers may be configured by the User to respond to document and/or collection events.
             The current version of eXist defines six events, all of which are applicable to the collection configured with the Trigger:</para>
-            <unorderedlist>
+            <itemizedlist>
                 <listitem>
                     <para>
                         <emphasis>store</emphasis>: Fired when a document is stored to the collection or sub-collection</para>
@@ -41,7 +42,7 @@
                     <para>
                         <emphasis>delete</emphasis>: Fired when a sub-collection is deleted</para>
                 </listitem>
-            </unorderedlist>
+            </itemizedlist>
         </section>
         <section>
             <title>Trigger Types</title>
@@ -53,7 +54,7 @@
                 <para>Triggers written in XQuery may be configuring by using the org.exist.collections.triggers.XQueryTrigger to fire the XQuery.
                 The XQuery to be executed when the trigger is fired may either be placed in the collection.xconf itself or indicated by a URL.</para>
                 <para>The XQuery may make use of a number of external variables to determine why and for what the trigger was fired -</para>
-                <unorderedlist>
+                <itemizedlist>
                 	<listitem>
 	                	<para><emphasis>triggeredEvent</emphasis>: The event for which the Trigger was fired</para>
 	                </listitem>
@@ -69,7 +70,7 @@
 	                <listitem>
 	                	<para><emphasis>document</emphasis>: The document that triggered the event. If this is a Binary document then it will be Base64 Encoded</para>
                 	</listitem>
-                </unorderedlist>
+                </itemizedlist>
             </section>
             <section>
                 <title>Java Triggers</title>
@@ -79,7 +80,7 @@
                 <para>The DocumentTrigger interface provides a convenient starting place and provides the methods prepare() (fired pre-event) and finish() (fired post-event())</para>
             </section>
         </section>
-        <section>
+        <section id="trigger-config">
             <title>Configuring Triggers</title>
 
             <para>Users configure Triggers using collection-specific configuration files. These files are stored
