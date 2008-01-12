@@ -137,6 +137,6 @@
 
 	<target name="clean">
 		<delete dir="${classes}"/>
-		<delete file="${top.dir}/exist-modules.jar" failonerror="false"/>
+		<delete file="${top.dir}/${lib.extensions}/exist-modules.jar" failonerror="false"/>
 	</target>
 </project>
