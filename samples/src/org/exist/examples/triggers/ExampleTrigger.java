@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2008 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -42,8 +42,17 @@ import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
 
 /**
- * This trigger maintains a file "contents.xml", containing a list of all documents added to a collection.
- * It uses XUpdate to update "contents.xml" whenever a document is added or removed.
+ * This trigger maintains a file "contents.xml", containing a list of all
+ * documents added to a collection.
+ * It uses XUpdate to update "contents.xml" whenever a document is added or
+ * removed.
+ * Usage
+ * Put the collection.xconf document in the selected collection under 
+ * /db/system/config/db/, eg /db/system/config/db/test and make sure the 
+ * examples.jar is built and available. Put some files into the collection
+ * /db/test and see that the contents.xml document gets updated with the
+ * files you add or remove.
+ * Read the triggers documentation if in need of more information.
  * 
  * @author wolf
  */
