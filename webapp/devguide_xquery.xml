@@ -243,7 +243,7 @@
                     <title>Guess a Number</title>
                     <programlisting><markup><![CDATA[
 xquery version "1.0";
-(: $Id: guess.xql 6434 2007-08-28 18:59:23Z ellefj $ :)
+(: $Id$ :)
 
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace session="http://exist-db.org/xquery/session";
