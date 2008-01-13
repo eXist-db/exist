@@ -19,11 +19,11 @@
         <section id="overview" title="Overview">
 
             <p>eXist-db is an open source database management system entirely built on XML
-                technology. It is a "<a href="http://en.wikipedia.org/wiki/XML_database">Native XML
-                    Database</a>" (NXD) which means the database stores the XML data according to the XML data model, not verbatim.</p>
-            <p>eXist-db supports many (<a
-                    href="http://en.wikipedia.org/wiki/Web_2">web</a>) technology standards making
-                it an excellent application platform: <ul>
+                technology. It stores XML data according to the XML data model and features
+                efficient, <a href="http://www.w3.org/TR/xquery/">index-based XQuery</a> processing.</p>
+
+            <p>eXist-db supports many (<a href="http://en.wikipedia.org/wiki/Web_2">web</a>)
+                technology standards making it an excellent application platform: <ul>
                     <li><a href="http://www.w3.org/TR/xquery/">XQuery 1.0</a> / <a
                             href="http://www.w3.org/TR/xpath20/">XPath 2.0</a></li>
                     <li><a href="http://www.w3.org/TR/xslt">XSLT 1.0</a> (using Apache Xalan) or <a
@@ -38,20 +38,27 @@
                             Protocol</a></li>
                     <li>XML database specific: XMLDB, XQJ/<a
                             href="http://jcp.org/en/jsr/detail?id=225">JSR-225</a> (under
-                        development)</li>
+                        development), <a href="http://xmldb-org.sourceforge.net/xupdate/">XUpdate</a>,
+                        XQuery <a href="update_ext.xml">update extensions</a> (to be aligned with the new
+                        <a href="http://www.w3.org/TR/xquery-update-10/">XQuery Update Facility 1.0</a>
+                    </li>
                 </ul>
             </p>
+            
             <p>eXist-db is highly compliant with the <a href="http://www.w3.org/TR/xquery/"
                 >XQuery</a> standard (current <a href="http://www.w3.org/XML/Query/test-suite/"
                 >XQTS</a> score is <a
-                    href="http://www.w3.org/XML/Query/test-suite/XQTSReportSimple.html">99.4%</a>)
-                for the <a href="http://www.w3.org/TR/xpath-functions/">standard functions</a> for
-                querying data but it has also additional (non w3c) <a href="exist/update_ext.xml"
-                    >XQuery Update Extensions</a> for updating (insert, replace, value delete and
-                rename) data stored in the database. Out of the box eXist-db also provides a large
-                collection of XQuery Function Modules containing many handy functions that are not
-                (yet) defined in the XQuery specification.</p>
-
+                    href="http://www.w3.org/XML/Query/test-suite/XQTSReportSimple.html">99.4%</a>).
+                The query engine is highly extensible and features a large collection of XQuery
+                Function Modules.</p>
+            
+            <p>eXist-db provides a powerful environment for the development of web applications
+                based on XQuery and related standards. Entire web applications can be written in
+                XQuery, using XSLT, XHTML, CSS and Javascript (for AJAX functionality). XQuery
+                server pages can be executed from the filesystem or stored in the database.</p>
+            
+            <a id="download" href="download.xml"><img src="resources/download.png"/></a>
+            
             <!--p>eXist is an Open Source native XML database featuring efficient, index-based <a
                     href="http://www.w3.org/TR/xquery/">XQuery</a> processing, automatic structural
                 indexing, extensions for full-text search, <a
@@ -63,46 +70,41 @@
                 recommendation</a>, with exception of the schema import and schema validation
                 features defined as optional in the XQuery specification.</p-->
 
-            <p>eXist provides a powerful environment for the development of web applications based
-                on XQuery and related standards. Entire web applications can be written in XQuery,
-                using XSLT, XHTML, CSS and Javascript (for AJAX functionality). XQuery server pages
-                can be executed from the filesystem or stored in the database.</p>
-
             <!--p> To avoid memory-intensive document tree traversals during query processing, eXist
                 uses an efficient structural index structure which is based on a numerical indexing
                 scheme for identifying XML nodes in the index.</p-->
 
         </section>
 
-
-        <section id="download" title="Download">
-            <p>eXist-db can be <a href="download.xml">download</a>ed as a izPack installer (as
+        <p id="download"></p>
+        
+        <!--section id="download" title="Download">
+            <p>eXist-db can be <a href="download.xml">downloaded</a> as installer (as
                     <b>jar</b> and <b>exe</b>), a <b>war</b> webarchive for deployment into a
                 servlet container or alternatively as a <b>Cocoon block</b>. </p>
-        </section>
+        </section-->
 
         <section title="Community Support" id="mailing">
             <p>The eXist-db has a large community of users and developers, which is very active. The
                 primary medium for asking questions, getting help or posting bug reports or fixes is
-                the project mailing list. To subscribe/unsubscribe visit the <a href="http://sourceforge.net/mail/?group_id=17691">mailing lists page</a> on
+                the project mailing list. To subscribe/unsubscribe visit the <a
+                    href="http://sourceforge.net/mail/?group_id=17691">mailing lists page</a> on
                 sourceforge.</p>
 
 
             <p>Previous messages posted on the are archived on <a
                     href="http://www.nabble.com/eXist-f4072.html">nabble.com</a> and <a
-                    href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist"
-                >gmane.org</a> provides a <a href="news://news.gmane.org/gmane.text.xml.exist"
-                    > NNTP</a> interface. </p>
+                    href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">gmane.org</a>
+                provides a <a href="news://news.gmane.org/gmane.text.xml.exist"> NNTP</a> interface. </p>
 
             <p>The project has an chat box <b>#existdb</b> which is accessible via IRC on <a
-                    href="irc://irc.freenode.net/existdb">irc.freenode.net</a> and via an AJAX
-                based <a href="http://irc.exist-db.org">web interface</a>. The channel is open
-                for general discussions on eXist and related subjects.</p>
+                    href="irc://irc.freenode.net/existdb">irc.freenode.net</a> and via an AJAX based
+                    <a href="http://irc.exist-db.org">web interface</a>. The channel is open for
+                general discussions on eXist and related subjects.</p>
 
             <p>All eXist-db sources are freely available via a SourceForge <a
-                    href="http://sourceforge.net/svn/?group_id=17691">subversion</a> repository.
-                The <a href="http://www.ohloh.net/projects/252?p=eXist">source code</a> is made
-                    <a
+                    href="http://sourceforge.net/svn/?group_id=17691">subversion</a> repository. The
+                    <a href="http://www.ohloh.net/projects/252?p=eXist">source code</a> is made <a
                     href="http://www.koders.com/info.aspx?c=ProjectInfo&amp;pid=VUM641QG5USW5EHRSLWDSDVM6G"
                     >browsable</a> and is continuously <a
                     href="http://fisheye3.cenqua.com/browse/exist/">monitored</a> and <a
