@@ -28,6 +28,9 @@
         <item>
             <link href="../documentation.xml">Main Documentation</link>
         </item>
+        <item>
+            <link href="../facts.xml">Feature Sheet</link>
+        </item>
     </group>
     <group name="Examples">
         <item>
@@ -81,7 +84,18 @@
             <link href="../admin/admin.xql">Admin</link>
         </item>
         <item>
+					<link href="../status">Server Status</link>
+        </item>
+        <item>
+					<link href="../cluster">Cluster Status</link>
+        </item>
+        <item>
 			<link href="../webstart/exist.jnlp">Webstart Client</link>
+        </item>
+        <item>
+            <link href="../webstart/exist.jnlp">
+                <img src="../resources/webstart.small.jpg" border="0"/>
+            </link>
         </item>
     </group>
     
