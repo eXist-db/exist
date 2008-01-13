@@ -36,8 +36,9 @@ ul li, ol li {
 }
 
 a:hover {
-    border-bottom: solid 1px gray;
+    border-bottom: 1px solid gray;
 }
+
 a, a:visited {
     color: #0000AA;
     font-weight: bold;
@@ -564,4 +565,21 @@ th {
 td.doclink {
     width: 25%;
     background-color: #F6F6F6;
+}
+
+#download {
+    display: block;
+    width: 212px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1.5em;
+}
+
+#download:hover {
+    border: 0;
+}
+
+#download img {
+    border: 0;
+    text-align: center;
 }
