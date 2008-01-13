@@ -19,7 +19,7 @@
         <item>
             <link href="../xquery/functions.xq">Function Library</link>
         </item>
-		<item>
+        <item>
             <link href="../extensions.xml">Extension Modules</link>
         </item>
         <item>
@@ -64,13 +64,16 @@
             <link href="http://atomic.exist-db.org/wiki/changes/">ChangeLog</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
+            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug
+                Tracker</link>
         </item>
         <item>
             <link href="http://sourceforge.net/svn/?group_id=17691">Subversion</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse">Submit Patches</link>
+            <link
+                href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse"
+                >Submit Patches</link>
         </item>
     </group>
     <group name="Administration">
@@ -78,15 +81,20 @@
             <link href="../admin/admin.xql">Admin</link>
         </item>
         <item>
-			<link href="../status">Server Status</link>
+            <link href="../status">Server Status</link>
         </item>
     </group>
-    
+
     <banner>
-        <link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="resources/powered.gif"/></link>
+        <link href="http://exist-db.org">
+            <img alt="powered by eXist" border="0" src="resources/powered.gif"/>
+        </link>
     </banner>
-    
-	<banner name="" empty="true">
-        <link href="http://sourceforge.net/projects/exist"><img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125" height="37" border="0" alt="SourceForge Logo"/></link>
-  </banner>
+
+    <banner name="" empty="true">
+        <link href="http://sourceforge.net/projects/exist">
+            <img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125"
+                height="37" border="0" alt="SourceForge Logo"/>
+        </link>
+    </banner>
 </sidebar>

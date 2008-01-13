@@ -67,16 +67,19 @@
             <link href="../api/index.html">Javadocs</link>
         </item>
         <item>
-        	<link href="http://atomic.exist-db.org/wiki/changes/">ChangeLog</link>
+            <link href="http://atomic.exist-db.org/wiki/changes/">ChangeLog</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
+            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug
+                Tracker</link>
         </item>
         <item>
             <link href="http://sourceforge.net/svn/?group_id=17691">Subversion</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse">Submit Patches</link>
+            <link
+                href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse"
+                >Submit Patches</link>
         </item>
     </group>
     <group name="Administration">
@@ -84,13 +87,13 @@
             <link href="../admin/admin.xql">Admin</link>
         </item>
         <item>
-			<link href="../status">Server Status</link>
+            <link href="../status">Server Status</link>
         </item>
         <item>
-			<link href="../cluster">Cluster Status</link>
+            <link href="../cluster">Cluster Status</link>
         </item>
         <item>
-			<link href="../webstart/exist.jnlp">Webstart Client</link>
+            <link href="../webstart/exist.jnlp">Webstart Client</link>
         </item>
         <item>
             <link href="../webstart/exist.jnlp">
@@ -98,21 +101,29 @@
             </link>
         </item>
     </group>
-    
+
     <banner>
-        <link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="resources/powered.gif"/></link>
+        <link href="http://exist-db.org">
+            <img alt="powered by eXist" border="0" src="resources/powered.gif"/>
+        </link>
     </banner>
-    
-	<banner name="" empty="true">
-        <link href="http://sourceforge.net/projects/exist"><img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125" height="37" border="0" alt="SourceForge Logo"/></link>
+
+    <banner name="" empty="true">
+        <link href="http://sourceforge.net/projects/exist">
+            <img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125"
+                height="37" border="0" alt="SourceForge Logo"/>
+        </link>
     </banner>
-    
+
     <banner>
-        <link href="http://www.java.net"><img src="resources/javanet_button_90.gif" border="0" alt="java.net Member Button"/></link>
+        <link href="http://www.java.net">
+            <img src="resources/javanet_button_90.gif" border="0" alt="java.net Member Button"/>
+        </link>
     </banner>
-    
+
     <reference>
-        <link href="http://www.izforge.com/izpack/"><img src="resources/izpack-88x31.png" border="0" 
-            alt="IzPack Installer Generator"/></link>
-    </reference>            
+        <link href="http://www.izforge.com/izpack/">
+            <img src="resources/izpack-88x31.png" border="0" alt="IzPack Installer Generator"/>
+        </link>
+    </reference>
 </sidebar>
