@@ -199,6 +199,18 @@
                     not supported by indexes.</p>
             </remark>
         </part>
+	<part>
+            <name>Collation-driven indexing</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <event start="2008" end="2008" isDuration="true"/>
+            <who/>
+            <remark>
+                <p>Maybe part of FT index redesign.</p>
+            </remark>
+        </part>
     </module>
     <module>
         <name>Transactions and Recovery</name>
@@ -293,7 +305,19 @@
             </remark>
         </part>
     </module>
-
+    <module>
+        <name>Configuration</name>
+        <part>
+            <name>Dynamic configuration of the database</name>
+            <status>Open</status>
+            <priority>x</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>0</progress>
+            <event start="2008" end="2008" isDuration="true"/>
+            <who/>
+            <remark>Dynamic configuration of the database via Java Management Extensions (JMX). Main problem: access control and scurity.</remark>
+        </part>
+    </module>
     <module>
         <name>Node-level updates</name>
         <part>
@@ -614,7 +638,9 @@
                 isDuration="true"/>
             <who>ljo</who>
             <remark>
-                <p>functionality to be exposed</p>
+	      <p>Remote debugging protocol.</p>
+	      <p>Command line debugger similar to jdb as prototype</p>
+                <p>Decide which functionality to expose.</p>
             </remark>
         </part>
         <part>
