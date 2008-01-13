@@ -24,9 +24,9 @@
   <ci:include src="sidebar.xml"/>
   <chapter id="ch01">
     <title>Developer's Guide to Modularized Indexes</title>
+    <para>This document has been reviewed for eXist 1.2.</para>
     <section>
       <title>The new modularized indexes</title>
-      
       <section>
 	<title>Brief overview</title>
 	<para>Since around SVN revision 6000, spring 2007, i.e. <emphasis>after</emphasis> the 1.1 release, eXist 
@@ -417,18 +417,18 @@
 	<para>The described spatial <classname>Index</classname> heavily relies on the excellent open source 
 	librairies provided by the <ulink url="http://geotools.codehaus.org/">Geotools</ulink> project. We
 	have experienced a few problems that will be mentioned further, but since feedback has been provided,
-	the situation will unquestionably improve in the future, making current workarounds useless.</para>
+	the situation will unquestionably improve in the future, making current workarounds redundant.</para>
 	<para>The <classname>Index</classname> has been tested with only one file which is available from the
 	<ulink url="http://www.ordnancesurvey.co.uk/oswebsite/">Ordnance Survey of Great-Britain</ulink>, a topography layer of Port-Talbot, which
 	is available as <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/products/osmastermap/layers/topography/sample.html">sample data</ulink>.
-	Shall we mention that obtaining <emphasis>valid</emphasis> and sizeable GML data is still extremely difficult ?
+	Shall we mention that obtaining <emphasis>valid</emphasis> and sizeable GML data is still extremely difficult?
 	</para>
       </section>
       
       <section>
 	<title>Writing the concrete implementation of <classname>org.exist.indexing.AbstractIndex</classname></title>
 	<para>Well, in fact we will start by writing an abstract implementation first. As said above, we have
-	planned a modular JDBC spatial <classname>Index</classname>, which will be abstract, and that will be extended by a concrete HSQLB <classname>Index</classname>.</para>
+	planned a modular JDBC spatial <classname>Index</classname>, which will be abstract, and that will be extended by a concrete HSQLDB <classname>Index</classname>.</para>
 	<para>Let's start with this :</para>
 	<programlisting format="linespecific"><![CDATA[
 	package org.exist.indexing.spatial;			
@@ -465,7 +465,7 @@
 	}			
 	]]></programlisting>
 	<para>... that defines the spatial operators that will be used by spatial queries (what would be
-	worth a spatial index that doesn't support spatial queries ?). For more information about the
+	worth a spatial index that doesn't support spatial queries?). For more information about the
 	semantics, see the <ulink url="http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf">JTS documentation</ulink> 
 	(chapter 11). We will use this wonderful library everytime a spatial computation is required. So does
 	the Geotools project by the way.</para>
@@ -518,7 +518,7 @@
 	} 
 	]]></programlisting>
 	<para>First, an empty constructor, not even necessary since the <classname>Index</classname> is created through
-	the <methodname>newInstance()</methodname> method or its interface (see above).</para>
+	the <methodname>newInstance()</methodname> method of its interface (see above).</para>
 	<para>Then, a configuration method that calls its ancestor, whose behaviour fullfills our needs.
 	This method calls a <methodname>checkDatabase()</methodname> method whose semantics will be dependant of the
 	underlying DB. The basic idea is to prevent eXist to continue its initialization if there is a problem with the DB.</para>		 
@@ -571,7 +571,7 @@
 	<filename>spatial_index.script</filename> and <filename>spatial_index.properties</filename>), then a table name in which
 	the spatial index data will be stored, then a variable that will hold the <classname>org.exist.storage.DBBroker</classname>
 	that currently holds a connection to the DB (we could have used an <classname>IndexWorker</classname> here,
-	given their 1:1 relationship). The problem is that we run HSQLB in embedded mode and that only one connection is available at a given time.</para>
+	given their 1:1 relationship). The problem is that we run HSQLDB in embedded mode and that only one connection is available at a given time.</para>
 	<para>A more elaborated	DBMS, or HSQLDB running in server mode would permit the allocation of one connection per 
 	<classname>IndexWorker</classname>, but we have chosen to keep things simple for now. Indeed, if 
 	<classname>IndexWorker</classname>s are thread-safe (because each <classname>org.exist.storage.DBBroker</classname> 
@@ -611,7 +611,7 @@
 	that will be described below) for the given <parameter>broker</parameter> from the "pool".
 	If needed, namely the first time the method is called with with parameter, it creates one. Notice that 
 	this <classname>IndexWorker</classname> is DB-dependant. It will be described below.</para>
-	<para>Then comme a few general-purpose methods :</para>
+	<para>Then come a few general-purpose methods:</para>
 	<programlisting format="linespecific"><![CDATA[				
 	protected void checkDatabase() 
 	  throws ClassNotFoundException, SQLException {	
@@ -684,7 +684,7 @@
 	</para>
 	<para><classname>org.exist.storage.index.BFile</classname> users would call <methodname>getLock()</methodname> to
 	acquire and release locks on the index files. Our solution is thus very similar.</para>
-	<para>However, since most JDBC databases are fortunately able to work in a concurrential context. It 
+	<para>However, since most JDBC databases are able to work in a concurrential context, it 
 	would then be better to never call these <classname>Index</classname>-level
 	methods from the <classname>IndexWorker</classname>s and let each <classname>IndexWorker</classname>
 	handle its connection to the underlying DB.</para>
@@ -735,8 +735,8 @@
 	]]></programlisting>
 	<para><methodname>acquireConnection()</methodname> acquires an <emphasis>exclusive</emphasis> JDBC <classname>Connection</classname> to
 	the storage engine for an <classname>IndexWorker</classname> (or a <classname>org.exist.storage.DBBroker</classname>, which 
-	roughly means the same thing). This is where a <classname>Connection</classname> is created if necessary (see below)
-	and that's why eXist will have to pay the first connection's performance cost only when needed.</para>
+	roughly means the same thing). This is where a <classname>Connection</classname> is created if necessary (see below) and makes
+	 the first connection's performance cost due only when needed.</para>
 	<para><methodname>releaseConnection()</methodname> marks the connection as being unused. It will thus
 	become available when requested again.</para>
 	<para>The last method concentrates the index-level DB-dependant code in just one place (<methodname>removeIndexContent()</methodname>
@@ -2901,7 +2901,7 @@
       <filename>build.properties</filename> to a new file, <filename>local.properties</filename>.</para>
       <para>Open this file and check that <command>include.index.spatial</command> is set to <command>true</command>.</para>
       <para>Invoke <command>build.bat clean</command> or <command>build.sh clean</command>, depending on your platform,
-       from a command line. This will generate <filename>${EXIST_HOME}/extensions/indexes/buid.xml</filename>, which is needed by the modularized indexes infrastructure.</para>
+       from a command line. This will generate <filename>${EXIST_HOME}/extensions/indexes/build.xml</filename>, which is needed by the modularized indexes infrastructure.</para>
       <para>Invoke <command>build.bat extension-indexes</command> or <command>build.sh extension-indexes</command>, depending on your platform,
        from a command line.</para>
       <para>If necessary, the required external (large) libraries will be downloaded from the WWW into the <filename>${EXIST_HOME}/extensions/indexes/spatial/lib</filename> directory. 
