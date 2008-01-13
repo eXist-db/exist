@@ -55,11 +55,7 @@ import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Expression;
-import org.exist.xquery.NodeSelector;
-import org.exist.xquery.TerminatedException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.w3c.dom.Node;
 
 /** The indexing occurs in this class. That is, during the loading of a document
@@ -490,6 +486,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final Lock lock = dbNodes.getLock();
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;
+        boolean descendantAxis = selector instanceof DescendantSelector;
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             //Compute a key for the node
             Collection collection = (Collection) i.next();
@@ -541,7 +538,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         }
                     }
                     nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(NodeId.ROOT_NODE, is);
-                    result.setSorted(storedDocument, ordered == ENTRIES_ORDERED);
+                    result.setSorted(storedDocument, ordered == ENTRIES_ORDERED && !descendantAxis);
                 }
             } catch (EOFException e) {
                 //EOFExceptions are expected here
@@ -779,7 +776,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             }
                         }
                     }
-                    result.setSorted(storedDocument, ordered == ENTRIES_ORDERED);
+//                    result.setSorted(storedDocument, ordered == ENTRIES_ORDERED);
                     if (lastAncestor != null) {
                         ancestor = lastAncestor;
                         citer.setPosition(ancestor);
