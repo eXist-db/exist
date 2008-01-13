@@ -308,14 +308,14 @@
     <module>
         <name>Configuration</name>
         <part>
-            <name>Dynamic configuration of the database</name>
+            <name>Dynamic configuration of the database via Java Management Extensions (JMX)</name>
             <status>Open</status>
             <priority>x</priority>
             <test_coverage>No tests</test_coverage>
             <progress>0</progress>
             <event start="2008" end="2008" isDuration="true"/>
             <who/>
-            <remark>Dynamic configuration of the database via Java Management Extensions (JMX). Main problem: access control and scurity.</remark>
+            <remark><p>Main problem: access control and scurity.</p></remark>
         </part>
     </module>
     <module>
