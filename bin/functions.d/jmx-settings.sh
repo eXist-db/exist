@@ -1,6 +1,6 @@
 # -*-Shell-script-*-
 # Common eXist script functions and settings for JMX
-# $Id$
+# $Id:jmx-settings.sh 7231 2008-01-14 22:33:35Z wolfgang_m $
 
 JMX_ENABLED=0
 JMX_PORT=1099
