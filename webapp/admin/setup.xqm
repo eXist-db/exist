@@ -162,7 +162,7 @@ declare function setup:page2() as element()
         (approx. 384K)<br/>
         
         <input type="checkbox" name="mondial"/>
-        <a href="http://dbis.informatik.uni-goettingen.de/Mondial/">The Mondial Database (Europe)</a>
+        <a href="http://dbis.informatik.uni-goettingen.de/Mondial/" checked="true">The Mondial Database (Europe)</a>
         (approx. 410K)
         
         <p><input type="submit" name="action" value="Import Remote Files"/>
