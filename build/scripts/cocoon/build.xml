@@ -51,6 +51,7 @@
         <mkdir dir="${exist.deploy}/WEB-INF/data"/>
         <mkdir dir="${exist.deploy}/WEB-INF/data/journal"/>
         <mkdir dir="${exist.deploy}/WEB-INF/exist-samples"/>
+        <mkdir dir="${exist.deploy}/WEB-INF/entities"/>
     </target>
 
     <target description="Prepare the src/blocks/exist directory"
@@ -119,6 +120,17 @@
         <copy todir="${exist.deploy}/samples/WEB-INF/exist-samples">
             <fileset dir="${exist.home}/samples">
             </fileset>
+        </copy>
+        <copy todir="${exist.deploy}/samples/WEB-INF">
+        	<fileset dir="${exist.home}/webapp/WEB-INF">
+        		<include name="catalog.xml"/>
+        	</fileset>
+        </copy>
+        <copy todir="${exist.deploy}/samples/WEB-INF/entities">
+        	<fileset dir="${exist.home}/webapp/WEB-INF/entities">
+        		<include name="*.dtd"/>
+        		<include name="*.xsd"/>
+        	</fileset>
         </copy>
     </target>
 
