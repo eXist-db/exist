@@ -77,9 +77,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 	//TODO : check
 	public static int OFFSET_COLLECTION_ID = 0;
 	//TODO : check
-	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
-	public static int OFFSET_SYMBOL = OFFSET_TYPE + ElementValue.LENGTH_TYPE; //3
-	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_LOCAL_NAME; //5
+	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //4
+	public static int OFFSET_SYMBOL = OFFSET_TYPE + ElementValue.LENGTH_TYPE; //5
+	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_LOCAL_NAME; //7
 	
 	private static Logger LOG = Logger.getLogger(NativeElementIndex.class.getName());
 
