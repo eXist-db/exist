@@ -31,12 +31,13 @@ declare function bib:remove() as element()?
         if(empty($resources)) then
             <script>showError(&quot;Please select a resource to remove!&quot;)</script>
         else
-            for $r as xs:integer in $resources
+            for $r in $resources
+            let $log := util:log("DEBUG", ("$r: ", util:get-sequence-type($r), ": ", $r))
             let $cached := session:get-attribute("cache"),
-                $rec := $cached[$r]
+                $rec := $cached[xs:int($r)]
             return (
                 xdb:remove(util:collection-name($rec), util:document-name($rec)),
-                session:set-attribute("cache", remove($cached, $r))
+                session:set-attribute("cache", remove($cached, xs:int($r)))
             )
 };
 
