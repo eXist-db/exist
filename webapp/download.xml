@@ -84,6 +84,30 @@
                         <td>Web application archive, ready to be installed into an existing
                             servlet-engine like Tomcat or Jetty. </td>
                     </tr>
+                    <tr>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon
+                            block</th>
+                    </tr>
+                    <tr>
+                        <td align="left" colspan="2"> The standard distribution already ships with
+                            Cocoon. However, this version is a bit older and offers only a subset of the
+                            available Cocoon modules (called "blocks" in Cocoon). If you work a lot with
+                            Cocoon, you might prefer to have eXist integrated into full Cocoon build.
+                            The installer-based distribution contains build scripts to set up eXist as a
+                            block in Cocoon. Please refer to the <ulink url="building.xml">
+                                documentation</ulink>. As a service to Cocoon users, we also provide a
+                            pre-compiled Cocoon 2.1.11 below: </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ulink
+                                url="http://prdownloads.sourceforge.net/exist/cocoon-2.1.11-with-eXist-1.2.war"
+                                > cocoon-2.1.11-with-eXist-1.2.war </ulink>
+                        </td>
+                        <td>This is Cocoon version 2.1.11 build with standard options and eXist 1.2 as
+                            a block. You should find eXist in
+                            <code>http://my-server:port/cocoon/samples/blocks/exist/</code>.</td>
+                    </tr>
                 </table>
             </section>
             
