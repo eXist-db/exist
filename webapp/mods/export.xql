@@ -14,8 +14,8 @@ return
         response:set-header("Content-Type","text/xml"),
         <mods:modsCollection>
         {
-            for $r as xs:integer in $resources
-            return $cached[$r]
+            for $r in $resources
+            return $cached[xs:int($r)]
         }
         </mods:modsCollection>
     ) else
