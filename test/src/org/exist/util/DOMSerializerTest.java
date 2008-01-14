@@ -57,7 +57,8 @@ public class DOMSerializerTest extends TestCase {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			assertNotNull(factory);
-			DocumentBuilder builder = factory.newDocumentBuilder();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
 			assertNotNull(builder);
 			Document doc = builder.parse(new InputSource(file));
 			assertNotNull(doc);
@@ -66,6 +67,7 @@ public class DOMSerializerTest extends TestCase {
 			serializer.serialize(doc.getDocumentElement());
 			System.out.println(writer.toString());
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
 	}
