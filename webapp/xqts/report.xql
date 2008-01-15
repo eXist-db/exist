@@ -107,7 +107,7 @@ declare function xqts:display-page() as element() {
             <div id="header">
                 <ul id="menu">
                     <li><a href="../index.xml">Home</a></li>
-                    <li><a href="../index.xml#download">Download</a></li>
+                    <li><a href="../download.xml">Download</a></li>
                     <li><a href="http://atomic.exist-db.org">Wiki</a></li>
                     <li><a href="../examples.xml">Demo</a></li>
                     <li><a href="collectresults.xql">Results</a></li>
