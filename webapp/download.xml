@@ -55,13 +55,6 @@
                             release)</th>
                     </tr>
                     <tr>
-                        <td align="left" colspan="2"> We are currently preparing for a new release,
-                            which will be made available soon. Preview builds can be found here: <ulink
-                                url="http://www.exist-db.nl/files/">http://www.exist-db.nl/files/</ulink>
-                            If you are willing to help us testing, you may want to download this
-                            version. </td>
-                    </tr>
-                    <tr>
                         <td>
                             <ulink url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.0-rev7233.jar"
                                 >eXist-setup-1.2.0-rev7233.jar</ulink>
