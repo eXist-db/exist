@@ -116,6 +116,7 @@ public class RESTServiceTest extends TestCase {
     
     
     private String credentials;
+    private String badCredentials;
     
     public RESTServiceTest(String name) {
         super(name);
@@ -123,6 +124,10 @@ public class RESTServiceTest extends TestCase {
         Base64Encoder enc = new Base64Encoder();
         enc.translate("admin:".getBytes());
         credentials = new String(enc.getCharArray());
+
+        enc.reset();
+        enc.translate("johndoe:this pw should fail".getBytes());
+        badCredentials = new String(enc.getCharArray());
     }
 
     protected void setUp() {
@@ -224,6 +229,27 @@ public class RESTServiceTest extends TestCase {
         }
     }
 
+    public void testPutFailAndRechallengeAuthorization() {
+        try {
+            System.out.println("--- Authenticate with bad credentials ---");
+            HttpURLConnection connect = getConnection(RESOURCE_URI);
+            connect.setRequestProperty("Authorization", "Basic " + badCredentials);
+            connect.setDoOutput(true);
+            connect.setRequestMethod("PUT");
+            connect.setAllowUserInteraction(false);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 401, r);
+            System.out.println("--- Get rechallenged for authentication: basic ---");
+            String auth = connect.getHeaderField("WWW-Authenticate");         
+            assertEquals("WWW-Authenticate = " + auth, "Basic realm=\"exist\"", auth);
+
+
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
     public void testXUpdate() {
         try {
             HttpURLConnection connect = preparePost(XUPDATE);
@@ -256,6 +282,7 @@ public class RESTServiceTest extends TestCase {
             connect.connect();
             int r = connect.getResponseCode();
             assertEquals("Server returned response code " + r, 202, r);
+            System.out.println("--- Get XQuery error code for posted query ---");
             System.out.println(readResponse(connect.getInputStream()));
         } catch (Exception e) {
             fail(e.getMessage());
