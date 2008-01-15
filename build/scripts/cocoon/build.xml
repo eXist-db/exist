@@ -110,6 +110,7 @@
             </fileset>
             <fileset dir="${exist.home}/lib/extensions">
                 <exclude name="exist-spatial-module.jar"/>
+                <exclude name="exist-jmx.jar"/>
             </fileset>
         </copy>
         <copy todir="${cocoon.libs}/core" overwrite="yes">
