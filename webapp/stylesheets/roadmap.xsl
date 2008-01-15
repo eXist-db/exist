@@ -29,7 +29,7 @@
 
                             </li>
                             <li>
-                                <a href="index.xml#download">Download</a>
+                                <a href="download.xml">Download</a>
                             </li>
                             <li>
                                 <a href="http://atomic.exist-db.org">Wiki</a>
