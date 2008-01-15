@@ -1,23 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2008 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.http.servlets;
@@ -244,7 +243,14 @@ public class EXistServlet extends HttpServlet {
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 		} catch (PermissionDeniedException e) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			//If the current user is the Default User and they do not have permission
+			//then send a challenge request to prompt the client for a username/password.
+			//Else return a FORBIDDEN Error
+			if (user.equals(defaultUser)) {
+				authenticator.sendChallenge(request, response);
+			} else {
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			}
 		} catch (EXistException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 		} finally {
@@ -319,8 +325,15 @@ public class EXistServlet extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e
 					.getMessage());
 		} catch (PermissionDeniedException e) {
-			response
-					.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			//If the current user is the Default User and they do not have permission
+			//then send a challenge request to prompt the client for a username/password.
+			//Else return a FORBIDDEN Error
+			if (user.equals(defaultUser)) {
+				authenticator.sendChallenge(request, response);
+			} else {
+				response
+						.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			}
 		} catch (NotFoundException e) {
 			response
 					.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
@@ -366,8 +379,15 @@ public class EXistServlet extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e
 					.getMessage());
 		} catch (PermissionDeniedException e) {
-			response
-					.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			//If the current user is the Default User and they do not have permission
+			//then send a challenge request to prompt the client for a username/password.
+			//Else return a FORBIDDEN Error
+			if (user.equals(defaultUser)) {
+				authenticator.sendChallenge(request, response);
+			} else {
+				response
+						.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			}
 		} catch (NotFoundException e) {
 			response
 					.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
@@ -410,8 +430,15 @@ public class EXistServlet extends HttpServlet {
 			broker = pool.get(user);
 			srvREST.doDelete(broker, XmldbURI.create(path), response);
 		} catch (PermissionDeniedException e) {
-			response
-			.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			//If the current user is the Default User and they do not have permission
+			//then send a challenge request to prompt the client for a username/password.
+			//Else return a FORBIDDEN Error
+			if (user.equals(defaultUser)) {
+				authenticator.sendChallenge(request, response);
+			} else {
+				response
+				.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			}
 		} catch (NotFoundException e) {
 			response
 			.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
@@ -496,8 +523,15 @@ public class EXistServlet extends HttpServlet {
 				srvREST.doPost(broker, request, response, path);
 			}
 		} catch (PermissionDeniedException e) {
-			response
-			.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			//If the current user is the Default User and they do not have permission
+			//then send a challenge request to prompt the client for a username/password.
+			//Else return a FORBIDDEN Error
+			if (user.equals(defaultUser)) {
+				authenticator.sendChallenge(request, response);
+			} else {
+				response
+				.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+			}
 		} catch (EXistException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e
 					.getMessage());
