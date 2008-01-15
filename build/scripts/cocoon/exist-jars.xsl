@@ -33,14 +33,6 @@
                     <homepage>http://exist-db.org</homepage>
                 </file>
                 <file>
-                    <title>exist-jmx</title>
-                    <description>Optional libraries for the eXist native XML db:
-                        JMX agent.</description>
-                    <used-by>exist</used-by>
-                    <lib>optional/exist-jmx.jar</lib>
-                    <homepage>http://exist-db.org</homepage>
-                </file>
-                <file>
                     <title>exist-ngram</title>
                     <description>Optional libraries for the eXist native XML db:
                         n-gram index module.</description>
