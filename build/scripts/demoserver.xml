@@ -245,6 +245,7 @@
         <replace dir="${build.docs.src}" summary="true"
             includes="sidebar.xml">
             <replacefilter token="index.xml" value="${host}/index.html"/>
+			<replacefilter token="download.xml" value="${host}/download.html"/>
             <replacefilter token="extensions.xml" value="${host}/extensions.html"/>
             <replacefilter token="roadmap.xml" value="${host}/roadmap.html"/>
             <replacefilter token="acknowledge.xml" value="${host}/acknowledge.html"/>
@@ -269,6 +270,7 @@
             <replacefilter token="../quickstart.xml" value="${host}/quickstart.html"/>
             <replacefilter token="../documentation.xml" value="${host}/documentation.html"/>
             <replacefilter token="../api/index.html" value="${host}/api/index.html"/>
+			<replacefilter token="../download.xml" value="${host}/download.html"/>
         </replace>
 
         <replace dir="${build.docs.src}/admin" summary="true">
@@ -278,7 +280,17 @@
         <replace dir="${build.docs.src}/sandbox" summary="true">
             <include name="sandbox.xql"/>
             <replacefilter token='&lt;a href="../index.xml">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
-            <replacefilter token='&lt;a href="../index.xml#download">Download&lt;/a>' value='&lt;a href="${host}#download">Download&lt;/a>'/>
+            <replacefilter token='&lt;a href="../download.xml">Download&lt;/a>' value='&lt;a href="${host}/download.html">Download&lt;/a>'/>
+        </replace>
+		<replace dir="${build.docs.src}/sandbox2" summary="true">
+            <include name="sandbox.xql"/>
+            <replacefilter token='&lt;a href="../index.xml">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
+            <replacefilter token='&lt;a href="../download.xml">Download&lt;/a>' value='&lt;a href="${host}/download.html">Download&lt;/a>'/>
+        </replace>
+		<replace dir="${build.docs.src}/xqts" summary="true">
+            <include name="report.xql"/>
+            <replacefilter token='&lt;a href="../index.xml">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
+            <replacefilter token='&lt;a href="../download.xml">Download&lt;/a>' value='&lt;a href="${host}/download.html">Download&lt;/a>'/>
         </replace>
         <replace dir="${build.docs.src}/mods" summary="true">
             <include name="config.xqm"/>
