@@ -296,8 +296,10 @@
             <include name="config.xqm"/>
             <include name="login.xhtml"/>
             <include name="mods.xq"/>
+			<include name="biblio.xq"/>
             <replacefilter token='&lt;a href=".."' value='&lt;a href="${host}"'/>
             <replacefilter token="../index.xml" value="${host}"/>
+			<replacefilter token='&lt;a href="../download.xml">Download&lt;/a>' value='&lt;a href="${host}/download.html">Download&lt;/a>'/>
         </replace>
     </target>
     
