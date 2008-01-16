@@ -236,7 +236,7 @@
                 <para>Due to some restrictions of Apache <ulink
                         url="https://sourceforge.net/tracker/?func=detail&amp;atid=117691&amp;aid=1760998&amp;group_id=17691"
                         >Tomcat</ulink> the validation functions do not fully work on stored documents
-                    (using the <emphasis>xmldb:exist:///</emphasis>-type URLs (three slashes). </para>
+                    (using the <emphasis>xmldb:exist:///</emphasis>-type URLs - Note the three slashes). </para>
                 <para>By default Apache Tomcat is started with a limited HeapSize. This heapsize must
                     be increased to have optimal performance and to prevent "Out of Memory"
                 errors.</para>
