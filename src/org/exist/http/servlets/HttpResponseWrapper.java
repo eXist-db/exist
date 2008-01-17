@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class HttpResponseWrapper implements ResponseWrapper {
-
+	
 	private HttpServletResponse response;
 	
 	/**
@@ -44,7 +44,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public HttpResponseWrapper(HttpServletResponse response) {
 		this.response = response;
 	}
-
+	
 	/**
 	 * @param name Name of the Cookie
 	 * @param value Value of the Cookie
@@ -53,20 +53,36 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	{
 		response.addCookie(new Cookie(name, value));
 	}
-
-    /**
+	
+	/**
      * The method <code>addCookie</code>
      *
      * @param name Name of the Cookie
      * @param value Value of the Cookie
      * @param maxAge an <code>int</code> value
      */
-    public void addCookie(final String name, final String value, final int maxAge)
-    {
-	Cookie cookie = new Cookie(name, value);
-	cookie.setMaxAge(maxAge);
-	response.addCookie(cookie);
-    }
+	public void addCookie(final String name, final String value, final int maxAge)
+	{
+		Cookie cookie = new Cookie(name, value);
+		cookie.setMaxAge(maxAge);
+		response.addCookie(cookie);
+	}
+	
+	/**
+     * The method <code>addCookie</code>
+     *
+     * @param name Name of the Cookie
+     * @param value Value of the Cookie
+     * @param maxAge an <code>int</code> value
+	 * @param secure security of the Cookie
+     */
+	public void addCookie(final String name, final String value, final int maxAge, boolean secure)
+	{
+		Cookie cookie = new Cookie(name, value);
+		cookie.setMaxAge(maxAge);
+		cookie.setSecure( secure );
+		response.addCookie(cookie);
+	}
 	
 	/**
 	 * @param arg0
@@ -75,7 +91,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void addDateHeader(String arg0, long arg1) {
 		response.addDateHeader(arg0, arg1);
 	}
-
+	
 	/**
 	 * @param arg0
 	 * @param arg1
@@ -83,7 +99,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void addHeader(String arg0, String arg1) {
 		response.addHeader(arg0, arg1);
 	}
-
+	
 	/**
 	 * @param arg0
 	 * @param arg1
@@ -91,7 +107,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void addIntHeader(String arg0, int arg1) {
 		response.addIntHeader(arg0, arg1);
 	}
-
+	
 	/**
 	 * @param arg0
 	 * @return a boolean indicating whether the header is present
@@ -99,7 +115,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public boolean containsHeader(String arg0) {
 		return response.containsHeader(arg0);
 	}
-
+	
 	/**
 	 * @param arg0
 	 * @return the encoded value
@@ -107,7 +123,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public String encodeURL(String arg0) {
 		return response.encodeURL(arg0);
 	}
-
+	
 	public void flushBuffer() throws IOException
 	{
 		response.flushBuffer();
@@ -119,14 +135,14 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public String getCharacterEncoding() {
 		return response.getCharacterEncoding();
 	}
-
+	
 	/**
 	 * @return returns the locale
 	 */
 	public Locale getLocale() {
 		return response.getLocale();
 	}
-
+	
 	/**
 	 * @param arg0
 	 * @throws java.io.IOException
@@ -134,7 +150,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void sendRedirect(String arg0) throws IOException {
 		response.sendRedirect(arg0);
 	}
-
+	
 	/** used the feature "Guess last modification time for an XQuery result" */
 	private Map dateHeaders = new HashMap();
 	/**
@@ -162,7 +178,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void setHeader(String arg0, String arg1) {
 		response.setHeader(arg0, arg1);
 	}
-
+	
 	/**
 	 * @param arg0
 	 * @param arg1
@@ -170,22 +186,22 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void setIntHeader(String arg0, int arg1) {
 		response.setIntHeader(arg0, arg1);
 	}
-    
-    /**
+	
+	/**
      * @param arg0
      */
-    public void setStatusCode(int arg0) {
-        response.setStatus(arg0);
-    }
-
+	public void setStatusCode(int arg0) {
+		response.setStatus(arg0);
+	}
+	
 	/**
 	 * @param arg0
 	 */
 	public void setLocale(Locale arg0) {
 		response.setLocale(arg0);
 	}
-
-    public OutputStream getOutputStream() throws IOException {
-        return response.getOutputStream();
-    }
+	
+	public OutputStream getOutputStream() throws IOException {
+		return response.getOutputStream();
+	}
 }

@@ -37,6 +37,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DurationValue;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -51,27 +52,28 @@ import org.exist.xquery.value.Type;
  * @see org.exist.xquery.Function
  */
 public class SetCookie extends Function {
-
-    public final static FunctionSignature signatures[] = {
-	new FunctionSignature(
-			      new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			      "Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value.",
-			      new SequenceType[] {
-				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			      },
-			      new SequenceType(Type.ITEM, Cardinality.EMPTY)),
-	new FunctionSignature(
-			      new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			      "Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value, and $c is the maxAge as xs:duration of the cookie.",
-			      new SequenceType[] {
-				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				  new SequenceType(Type.DURATION, Cardinality.EXACTLY_ONE)
-			      },
-			      new SequenceType(Type.ITEM, Cardinality.EMPTY)) 
-    };
-
+	
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
+			"Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value.",
+			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				},
+			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+		new FunctionSignature(
+			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
+			"Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value, and $c is the maxAge as xs:duration of the cookie, and optionally, $d is whether the cookie should be secure (eg. only transferred using HTTPS)",
+			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.DURATION, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE )
+				},
+			new SequenceType(Type.ITEM, Cardinality.EMPTY)) 
+		};
+	
 	public SetCookie(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
@@ -80,23 +82,27 @@ public class SetCookie extends Function {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }
-        
+		if (context.getProfiler().isEnabled()) {
+			context.getProfiler().start(this);       
+			context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+			if (contextSequence != null) {
+				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+			}
+			if (contextItem != null) {
+				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());	
+			}
+		}
+		
 		ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
-
+		
 		// response object is read from global variable $response
 		Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
-		if(var == null || var.getValue() == null)
+		if(var == null || var.getValue() == null) {
 			throw new XPathException("Response not set");
-		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
+		}
+		if(var.getValue().getItemType() != Type.JAVA_OBJECT) {
 			throw new XPathException("Variable $response is not bound to a Java object.");
+		}
 		JavaObjectValue response = (JavaObjectValue)var.getValue().itemAt(0);
 		
 		//get parameters
@@ -105,15 +111,22 @@ public class SetCookie extends Function {
 		Sequence ageSeq = getArgument(2).eval(contextSequence, contextItem);
 		//set response header
 		if(response.getObject() instanceof ResponseWrapper) {
-		    if (ageSeq.isEmpty()) {
-			((ResponseWrapper) response.getObject()).addCookie(name, value);
-		    } else {
-			Duration duration = ((DurationValue) ageSeq.itemAt(0)).getCanonicalDuration();
-			int maxAge = (int) (duration.getTimeInMillis(new Date(System.currentTimeMillis())) / 1000L);
-			((ResponseWrapper) response.getObject()).addCookie(name, value, maxAge);
-		    }
+			if (ageSeq.isEmpty()) {
+				((ResponseWrapper) response.getObject()).addCookie(name, value);
+			} else {
+				Duration duration = ((DurationValue) ageSeq.itemAt(0)).getCanonicalDuration();
+				int maxAge = (int) (duration.getTimeInMillis(new Date(System.currentTimeMillis())) / 1000L);
+				
+				Sequence secureSeq = getArgument(3).eval(contextSequence, contextItem);
+				
+				if (secureSeq.isEmpty()) {
+					((ResponseWrapper) response.getObject()).addCookie(name, value, maxAge);
+				} else {
+					((ResponseWrapper) response.getObject()).addCookie(name, value, maxAge, ((BooleanValue)secureSeq.itemAt(0)).effectiveBooleanValue() );
+				}
+			}
 		} else {
-		    throw new XPathException("Type error: variable $response is not bound to a response object");
+			throw new XPathException("Type error: variable $response is not bound to a response object");
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

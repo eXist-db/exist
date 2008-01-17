@@ -45,6 +45,14 @@ public interface ResponseWrapper {
 	public void addCookie(String name, String value, int maxAge);
 	
 	/**
+	 * @param name	Name of the Cookie
+	 * @param value	Value of the Cookie
+	 * @param maxAge maxAge of the Cookie
+	 * @param secure security of the Cookie
+	 */
+	public void addCookie(String name, String value, int maxAge, boolean secure);
+	
+	/**
 	 * @param arg0
 	 * @param arg1
 	 */

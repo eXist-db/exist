@@ -67,7 +67,20 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 	    HttpCookie cookie = new HttpCookie(name, value);
 	    cookie.setMaxAge(maxAge);
 	    response.addCookie(cookie);
-
+	}
+	
+	/**
+	 * @param name Name of the Cookie
+	 * @param value Value of the Cookie
+	 * @param maxAge MaxAge of the Cookie
+	 * @param secure security of the Cookie
+	 */
+	public void addCookie(String name, String value, int maxAge, boolean secure)
+	{
+	    HttpCookie cookie = new HttpCookie(name, value);
+	    cookie.setMaxAge(maxAge);
+		cookie.setSecure( secure );
+	    response.addCookie(cookie);
 	}
 	
 	/**
