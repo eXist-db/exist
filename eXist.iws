@@ -14,9 +14,9 @@
     <option name="synchOutside" value="false" />
     <option name="isHistoryResticted" value="true" />
     <option name="useIdenticalSwitch" value="true" />
+    <option name="synchActivitiesOnRefresh" value="true" />
     <option name="lastScr" value="" />
     <option name="scrTextFileName" value="" />
-    <option name="lastViewType" />
     <option name="historyRevisionsNumber" value="4" />
   </component>
   <component name="ChangeBrowserSettings">
@@ -35,21 +35,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.properties" afterPath="$PROJECT_DIR$/build.properties" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist/management/impl/Database.java" afterPath="$PROJECT_DIR$/src/org/exist/management/impl/Database.java" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tools/jmx/build.xml" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist/management/impl" afterPath="$PROJECT_DIR$/src/org/exist/management/impl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/scripts/build-impl.xml" afterPath="$PROJECT_DIR$/build/scripts/build-impl.xml" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist/management/impl/LockManager.java" afterPath="$PROJECT_DIR$/src/org/exist/management/impl/LockManager.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist/management/impl/LockManagerMBean.java" afterPath="$PROJECT_DIR$/src/org/exist/management/impl/LockManagerMBean.java" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tools/jmx/src/org" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/management/client/JMXClient.java" afterPath="$PROJECT_DIR$/src/org/exist/management/client/JMXClient.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist/management/impl/DatabaseMBean.java" afterPath="$PROJECT_DIR$/src/org/exist/management/impl/DatabaseMBean.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist/management/client/JMXClient.java" afterPath="$PROJECT_DIR$/src/org/exist/management/client/JMXClient.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/VERSION.txt" afterPath="$PROJECT_DIR$/VERSION.txt" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist/management" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/fulltext/FtQueryTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/fulltext/FtQueryTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/NativeTextEngine.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/NativeTextEngine.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/TextSearchEngine.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/TextSearchEngine.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iml" afterPath="$PROJECT_DIR$/eXist.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/fulltext/FTIndex.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/fulltext/FTMatchListener.java" afterPath="$PROJECT_DIR$/src/org/exist/fulltext/FTMatchListener.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/log4j.xml" afterPath="$PROJECT_DIR$/log4j.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/fulltext/FTMatch.java" afterPath="$PROJECT_DIR$/src/org/exist/fulltext/FTMatch.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/DBBroker.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/DBBroker.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.ipr" afterPath="$PROJECT_DIR$/eXist.ipr" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/fulltext/FTIndexWorker.java" afterPath="$PROJECT_DIR$/src/org/exist/fulltext/FTIndexWorker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf.xml.tmpl" afterPath="$PROJECT_DIR$/conf.xml.tmpl" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/src/org/exist/LocalTestSuite.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iml" afterPath="$PROJECT_DIR$/eXist.iml" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist/management/impl/JMXAgent.java" afterPath="$PROJECT_DIR$/src/org/exist/management/impl/JMXAgent.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/security/UUIDGenerator.java" afterPath="$PROJECT_DIR$/src/org/exist/security/UUIDGenerator.java" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tools/jmx/src" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/jmx.xml" afterPath="$PROJECT_DIR$/webapp/jmx.xml" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist/management/client" afterPath="$PROJECT_DIR$/src/org/exist/management/client" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tools/jmx/src/org/exist" afterPath="" />
     </list>
   </component>
   <component name="ChangesViewManager" flattened_view="false" show_ignored="false" />
@@ -100,22 +107,22 @@
     </breakpoint_any>
     <breakpoint_rules />
     <ui_properties>
-      <property name="line_breakpoints_groupByMethods" value="false" />
-      <property name="line_breakpoints_viewId" value="TABLE" />
       <property name="exception_breakpoints_flattenPackages" value="true" />
-      <property name="method_breakpoints_flattenPackages" value="true" />
-      <property name="field_breakpoints_flattenPackages" value="true" />
-      <property name="exception_breakpoints_groupByMethods" value="false" />
       <property name="line_breakpoints_groupByClasses" value="true" />
-      <property name="field_breakpoints_groupByMethods" value="false" />
+      <property name="exception_breakpoints_groupByMethods" value="false" />
       <property name="method_breakpoints_viewId" value="TABLE" />
-      <property name="line_breakpoints_flattenPackages" value="true" />
-      <property name="field_breakpoints_groupByClasses" value="true" />
-      <property name="method_breakpoints_groupByClasses" value="true" />
-      <property name="exception_breakpoints_viewId" value="TABLE" />
       <property name="exception_breakpoints_groupByClasses" value="true" />
-      <property name="field_breakpoints_viewId" value="TABLE" />
+      <property name="line_breakpoints_viewId" value="TABLE" />
       <property name="method_breakpoints_groupByMethods" value="false" />
+      <property name="field_breakpoints_flattenPackages" value="true" />
+      <property name="line_breakpoints_flattenPackages" value="true" />
+      <property name="exception_breakpoints_viewId" value="TABLE" />
+      <property name="field_breakpoints_groupByClasses" value="true" />
+      <property name="method_breakpoints_flattenPackages" value="true" />
+      <property name="field_breakpoints_viewId" value="TABLE" />
+      <property name="line_breakpoints_groupByMethods" value="false" />
+      <property name="method_breakpoints_groupByClasses" value="true" />
+      <property name="field_breakpoints_groupByMethods" value="false" />
     </ui_properties>
   </component>
   <component name="ErrorOptionsConfigurable.UI">
@@ -142,91 +149,32 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="AllStorageTests.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/src/org/exist/storage/AllStorageTests.java">
+      <file leaf-file-name="UUID.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/util/UUID.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="27" column="13" selection-start="998" selection-end="998" vertical-scroll-proportion="0.19318181">
-              <folding />
+            <state line="59" column="40" selection-start="2200" selection-end="2207" vertical-scroll-proportion="0.7393365">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="NativeTextEngine.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeTextEngine.java">
+      <file leaf-file-name="UUIDGenerator.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/security/UUIDGenerator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="67" column="55" selection-start="2702" selection-end="2702" vertical-scroll-proportion="0.0331384">
-              <folding />
+            <state line="30" column="14" selection-start="1050" selection-end="1050" vertical-scroll-proportion="0.18518518">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="NativeBroker.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java">
+      <file leaf-file-name="security.properties" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/security/security.properties">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="2699" column="50" selection-start="113705" selection-end="113705" vertical-scroll-proportion="0.0331384">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="XMLDBAuthenticate.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBAuthenticate.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="145" column="5" selection-start="6329" selection-end="6329" vertical-scroll-proportion="1.310606">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SetCurrentUser.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/session/SetCurrentUser.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="72" column="34" selection-start="3015" selection-end="3015" vertical-scroll-proportion="0.7405303">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IndexManager.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/indexing/IndexManager.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="181" column="20" selection-start="6643" selection-end="6643" vertical-scroll-proportion="0.76325756">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IndexController.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/indexing/IndexController.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="305" column="25" selection-start="11475" selection-end="11475" vertical-scroll-proportion="0.78409094">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="FTIndex.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/fulltext/FTIndex.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="36" column="20" selection-start="1394" selection-end="1394" vertical-scroll-proportion="0.7405303">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="FTIndexWorker.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/fulltext/FTIndexWorker.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="3" selection-start="0" selection-end="876" vertical-scroll-proportion="0.6439394">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DBBroker.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/storage/DBBroker.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="145" column="24" selection-start="5102" selection-end="5102" vertical-scroll-proportion="0.03219697">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -416,7 +364,139 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist/fulltext" />
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist/xquery" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist/xquery" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist/xquery/functions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist/xquery" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist/xquery/functions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist/xquery/functions/util" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist/util" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="PsiDirectory:$PROJECT_DIR$/src/org/exist/security" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -445,45 +525,45 @@
       <showLibraryContents />
       <hideEmptyPackages ProjectPane="false" />
       <abbreviatePackageNames />
-      <showStructure PackagesPane="false" Scope="false" Favorites="false" ProjectPane="false" />
+      <showStructure ProjectPane="false" Scope="false" PackagesPane="false" Favorites="false" />
       <autoscrollToSource />
       <autoscrollFromSource />
       <sortByType />
     </navigator>
   </component>
   <component name="PropertiesComponent">
-    <property name="cvs_file_history_treeOrder2" value="2" />
-    <property name="cvs_file_history_treeOrder1" value="1" />
-    <property name="RunManagerConfig.showSettingsBeforeRunnig" value="true" />
-    <property name="cvs_file_history_treeOrder3" value="3" />
-    <property name="GenerateAntBuildDialog.generateSingleFile" value="false" />
-    <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web3" value="/private/tmp/webExplodedDir6251tmp" />
-    <property name="MemberChooser.sorted" value="false" />
-    <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web2" value="/private/tmp/webExplodedDir42908tmp" />
     <property name="GoToClass.includeJavaFiles" value="false" />
-    <property name="GenerateAntBuildDialog.enableUiFormCompile" value="true" />
-    <property name="GoToClass.toSaveIncludeLibraries" value="false" />
-    <property name="cvs_file_history_treeWidth0" value="292" />
-    <property name="cvs_file_history_treeWidth1" value="291" />
-    <property name="cvs_file_history_treeWidth2" value="292" />
-    <property name="cvs_file_history_treeWidth3" value="292" />
-    <property name="cvs_file_history_flatWidth2" value="292" />
-    <property name="MemberChooser.showClasses" value="true" />
-    <property name="cvs_file_history_treeOrder0" value="0" />
-    <property name="cvs_file_history_flatWidth3" value="292" />
-    <property name="cvs_file_history_flatWidth0" value="292" />
-    <property name="GoToClass.includeLibraries" value="false" />
-    <property name="cvs_file_history_flatWidth1" value="291" />
-    <property name="GoToFile.includeJavaFiles" value="false" />
-    <property name="RunManagerConfig.compileBeforeRunning" value="true" />
-    <property name="cvs_file_history_flatOrder2" value="2" />
-    <property name="cvs_file_history_flatOrder3" value="3" />
-    <property name="cvs_file_history_flatOrder0" value="0" />
-    <property name="GenerateAntBuildDialog.forceTargetJdk" value="true" />
-    <property name="cvs_file_history_flatOrder1" value="1" />
     <property name="MemberChooser.copyJavadoc" value="false" />
+    <property name="cvs_file_history_treeWidth0" value="292" />
+    <property name="cvs_file_history_flatWidth2" value="292" />
+    <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web2" value="/private/tmp/webExplodedDir42908tmp" />
+    <property name="cvs_file_history_treeOrder1" value="1" />
+    <property name="GoToFile.includeJavaFiles" value="false" />
+    <property name="cvs_file_history_flatOrder1" value="1" />
+    <property name="GenerateAntBuildDialog.forceTargetJdk" value="true" />
+    <property name="cvs_file_history_flatWidth1" value="291" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web" value="/private/tmp/webExplodedDir6263tmp" />
+    <property name="cvs_file_history_treeWidth1" value="291" />
+    <property name="GoToClass.includeLibraries" value="false" />
+    <property name="cvs_file_history_flatOrder2" value="2" />
+    <property name="MemberChooser.showClasses" value="true" />
+    <property name="cvs_file_history_treeWidth2" value="292" />
+    <property name="cvs_file_history_flatOrder3" value="3" />
+    <property name="GoToClass.toSaveIncludeLibraries" value="false" />
+    <property name="RunManagerConfig.showSettingsBeforeRunnig" value="true" />
+    <property name="MemberChooser.sorted" value="false" />
+    <property name="RunManagerConfig.compileBeforeRunning" value="true" />
+    <property name="cvs_file_history_flatOrder0" value="0" />
+    <property name="cvs_file_history_treeOrder3" value="3" />
+    <property name="GenerateAntBuildDialog.enableUiFormCompile" value="true" />
     <property name="GenerateAntBuildDialog.backupFiles" value="true" />
+    <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web3" value="/private/tmp/webExplodedDir6251tmp" />
+    <property name="cvs_file_history_treeOrder2" value="2" />
+    <property name="cvs_file_history_treeWidth3" value="292" />
+    <property name="GenerateAntBuildDialog.generateSingleFile" value="false" />
+    <property name="cvs_file_history_flatWidth0" value="292" />
+    <property name="cvs_file_history_flatWidth3" value="292" />
+    <property name="cvs_file_history_treeOrder0" value="0" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -509,54 +589,14 @@
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="wholeProject" />
       </option>
+      <envs />
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Run ant target" value="true" />
         <option name="Make" value="false" />
+        <option name="Run ant target" value="true" />
       </method>
     </tempConfiguration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-    </configuration>
-    <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
-      <module name="" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="wholeProject" />
-      </option>
-      <method>
-        <option name="Run ant target" value="true" />
-        <option name="Make" value="false" />
-      </method>
-    </configuration>
-    <configuration default="true" type="Remote" factoryName="Remote">
-      <option name="USE_SOCKET_TRANSPORT" value="true" />
-      <option name="SERVER_MODE" value="false" />
-      <option name="SHMEM_ADDRESS" value="javadebug" />
-      <option name="HOST" value="localhost" />
-      <option name="PORT" value="5005" />
-    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG" enabled="false" merge="false">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -579,11 +619,54 @@
         <value defaultName="wholeProject" />
       </option>
       <option name="PROPERTIES_FILE" />
+      <envs />
       <properties />
       <listeners />
       <method>
         <option name="Make" value="true" />
       </method>
+    </configuration>
+    <configuration default="true" type="Remote" factoryName="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" value="javadebug" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
+    </configuration>
+    <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
+      <module name="" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="ADDITIONAL_CLASS_PATH" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="wholeProject" />
+      </option>
+      <envs />
+      <method>
+        <option name="Make" value="false" />
+        <option name="Run ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
       <option name="MAIN_CLASS_NAME" />
@@ -596,6 +679,7 @@
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="" />
+      <envs />
       <method>
         <option name="Make" value="true" />
       </method>
@@ -611,6 +695,7 @@
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="eXist" />
+      <envs />
       <RunnerSettings RunnerId="Debug">
         <option name="DEBUG_PORT" value="1525" />
         <option name="TRANSPORT" value="0" />
@@ -618,8 +703,8 @@
       </RunnerSettings>
       <ConfigurationWrapper RunnerId="Debug" />
       <method>
-        <option name="Run ant target" value="true" />
         <option name="Make" value="false" />
+        <option name="Run ant target" value="true" />
       </method>
     </configuration>
     <configuration default="false" name="XIncludeSerializerTest" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
@@ -639,11 +724,12 @@
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="wholeProject" />
       </option>
+      <envs />
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Run ant target" value="true" />
         <option name="Make" value="false" />
+        <option name="Run ant target" value="true" />
       </method>
     </configuration>
     <list size="3">
@@ -716,7 +802,7 @@
     <option name="UPDATE_RUN_STATUS" value="true" />
     <option name="UPDATE_RECURSIVELY" value="true" />
     <option name="MERGE_DRY_RUN" value="false" />
-    <configuration useDefault="true">$PROJECT_DIR$/../../.subversion</configuration>
+    <configuration useDefault="true">$PROJECT_DIR$/../../../.subversion</configuration>
     <remoteStatus />
   </component>
   <component name="TodoView" selected-index="0">
@@ -740,38 +826,38 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1401" y="27" width="1147" height="1026" extended-state="0" />
-    <editor active="false" />
+    <frame x="0" y="23" width="1440" height="821" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32873562" order="8" />
+      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32927817" order="3" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22566372" order="7" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26024443" order="0" x="72" y="49" width="451" height="485" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21489972" order="1" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24939074" order="1" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32988507" order="8" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="6" />
+      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
+      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24856909" order="1" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21609196" order="1" />
+      <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32808024" order="8" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32873562" order="2" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24979724" order="2" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3990188" order="0" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29977876" order="4" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.32963374" order="8" x="4" y="2" width="968" height="391" />
-      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32927817" order="3" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32765958" order="8" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32988507" order="8" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22566372" order="7" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24939074" order="1" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3990188" order="0" />
-      <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26062846" order="0" x="72" y="49" width="451" height="485" />
-      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24979724" order="2" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="6" />
       <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32873562" order="2" />
-      <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="5" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="0" />
+      <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
+      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="2" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="3" />
-      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="5" />
       <window_info id="EclipseImporter" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
+      <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
     </layout>
   </component>
   <component name="VCS.FileViewConfiguration">
@@ -1001,79 +1087,9 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/SystemTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="55" selection-start="1287" selection-end="1287" vertical-scroll-proportion="0.1863581">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/org/exist/fulltext/FTIndexTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="0" selection-start="1074" selection-end="1074" vertical-scroll-proportion="0.063275434">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/org/exist/fulltext/FtQueryTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="67" selection-start="1580" selection-end="1580" vertical-scroll-proportion="0.021091811">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/storage/BrokerPool.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="810" column="5" selection-start="34050" selection-end="34050" vertical-scroll-proportion="0.021091811">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/org/exist/storage/AllStorageTests.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="13" selection-start="998" selection-end="998" vertical-scroll-proportion="0.19318181">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeTextEngine.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="67" column="55" selection-start="2702" selection-end="2702" vertical-scroll-proportion="0.0331384">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2699" column="50" selection-start="113705" selection-end="113705" vertical-scroll-proportion="0.0331384">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBAuthenticate.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="145" column="5" selection-start="6329" selection-end="6329" vertical-scroll-proportion="1.310606">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/DBBroker.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="145" column="24" selection-start="5102" selection-end="5102" vertical-scroll-proportion="0.03219697">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/session/SetCurrentUser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="72" column="34" selection-start="3015" selection-end="3015" vertical-scroll-proportion="0.7405303">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/indexing/IndexManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="181" column="20" selection-start="6643" selection-end="6643" vertical-scroll-proportion="0.76325756">
           <folding />
         </state>
       </provider>
@@ -1092,23 +1108,97 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/fulltext/FTIndexWorker.java">
+    <entry file="file://$PROJECT_DIR$/test/src/org/exist/storage/AllStorageTests.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="3" selection-start="0" selection-end="876" vertical-scroll-proportion="0.6439394">
+        <state line="27" column="13" selection-start="998" selection-end="998" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/fulltext/FTIndex.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeTextEngine.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="20" selection-start="1394" selection-end="1394" vertical-scroll-proportion="0.7405303">
+        <state line="67" column="55" selection-start="2702" selection-end="2702" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2699" column="50" selection-start="113520" selection-end="113520" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/session/SetCurrentUser.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="72" column="34" selection-start="3015" selection-end="3015" vertical-scroll-proportion="0.029126214">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBAuthenticate.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="145" column="5" selection-start="6329" selection-end="6329" vertical-scroll-proportion="1.368932">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/indexing/IndexManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="181" column="20" selection-start="6509" selection-end="6509" vertical-scroll-proportion="0.23300971">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/indexing/IndexController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="305" column="25" selection-start="11475" selection-end="11475" vertical-scroll-proportion="0.78409094">
+        <state line="305" column="25" selection-start="11579" selection-end="11579" vertical-scroll-proportion="0.0302267">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/fulltext/FTIndex.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="36" column="20" selection-start="1419" selection-end="1419" vertical-scroll-proportion="0.029126214">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/fulltext/FTIndexWorker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="3" selection-start="0" selection-end="876" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/DBBroker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="145" column="24" selection-start="4909" selection-end="4909" vertical-scroll-proportion="0.0302267">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/util/UUID.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="59" column="40" selection-start="2200" selection-end="2207" vertical-scroll-proportion="0.7393365">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/UUIDGenerator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="30" column="14" selection-start="1050" selection-end="1050" vertical-scroll-proportion="0.18518518">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/security.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>

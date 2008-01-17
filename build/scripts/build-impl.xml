@@ -367,7 +367,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-modules,extension-indexes,extension-fluent,tools-jmx,test-compile"
+        depends="jar,wrapper,extension-modules,extension-indexes,extension-fluent,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -485,7 +485,6 @@
         <delete failonerror="no" dir="${dist}"/>
 
         <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
-        <ant antfile="build.xml" dir="tools/jmx" target="clean"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="clean"/>
         <ant antfile="build.xml" dir="extensions/fluent" target="clean"/>
@@ -540,10 +539,6 @@
     
     <target name="samples" depends="jar" description="Build samples">
         <ant antfile="build.xml" dir="samples"/>
-    </target>
-
-    <target name="tools-jmx" depends="jar">
-        <ant antfile="build.xml" dir="tools/jmx"/>
     </target>
 
     <target name="cleandocs">

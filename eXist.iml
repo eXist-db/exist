@@ -9,6 +9,24 @@
         <webroots>
           <root url="file://$MODULE_DIR$/webapp" relative="/" />
         </webroots>
+        <sourceRoots>
+          <root url="file://$MODULE_DIR$/extensions/fluent/src" />
+          <root url="file://$MODULE_DIR$/extensions/fluent/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/ngram/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/ngram/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/spatial/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/spatial/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/modules/src" />
+          <root url="file://$MODULE_DIR$/samples" />
+          <root url="file://$MODULE_DIR$/src" />
+          <root url="file://$MODULE_DIR$/test/src" />
+          <root url="file://$MODULE_DIR$/tools/XFormsFilter/src" />
+          <root url="file://$MODULE_DIR$/tools/ircbot/src" />
+          <root url="file://$MODULE_DIR$/tools/izpack/src" />
+          <root url="file://$MODULE_DIR$/tools/jmx/src" />
+          <root url="file://$MODULE_DIR$/tools/requestlog/src" />
+          <root url="file://$MODULE_DIR$/tools/wrapper/src" />
+        </sourceRoots>
         <building>
           <setting name="EXPLODED_URL" value="file://" />
           <setting name="EXPLODED_ENABLED" value="false" />
@@ -72,6 +90,24 @@
         <webroots>
           <root url="file://$MODULE_DIR$/tools/XFormsFilter" relative="/WEB-INF" />
         </webroots>
+        <sourceRoots>
+          <root url="file://$MODULE_DIR$/extensions/fluent/src" />
+          <root url="file://$MODULE_DIR$/extensions/fluent/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/ngram/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/ngram/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/spatial/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/spatial/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/modules/src" />
+          <root url="file://$MODULE_DIR$/samples" />
+          <root url="file://$MODULE_DIR$/src" />
+          <root url="file://$MODULE_DIR$/test/src" />
+          <root url="file://$MODULE_DIR$/tools/XFormsFilter/src" />
+          <root url="file://$MODULE_DIR$/tools/ircbot/src" />
+          <root url="file://$MODULE_DIR$/tools/izpack/src" />
+          <root url="file://$MODULE_DIR$/tools/jmx/src" />
+          <root url="file://$MODULE_DIR$/tools/requestlog/src" />
+          <root url="file://$MODULE_DIR$/tools/wrapper/src" />
+        </sourceRoots>
         <building>
           <setting name="EXPLODED_URL" value="file://" />
           <setting name="EXPLODED_ENABLED" value="false" />
@@ -135,6 +171,24 @@
         <webroots>
           <root url="file://$MODULE_DIR$/tools/ircbot/webapp" relative="/" />
         </webroots>
+        <sourceRoots>
+          <root url="file://$MODULE_DIR$/extensions/fluent/src" />
+          <root url="file://$MODULE_DIR$/extensions/fluent/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/ngram/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/ngram/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/spatial/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/spatial/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/modules/src" />
+          <root url="file://$MODULE_DIR$/samples" />
+          <root url="file://$MODULE_DIR$/src" />
+          <root url="file://$MODULE_DIR$/test/src" />
+          <root url="file://$MODULE_DIR$/tools/XFormsFilter/src" />
+          <root url="file://$MODULE_DIR$/tools/ircbot/src" />
+          <root url="file://$MODULE_DIR$/tools/izpack/src" />
+          <root url="file://$MODULE_DIR$/tools/jmx/src" />
+          <root url="file://$MODULE_DIR$/tools/requestlog/src" />
+          <root url="file://$MODULE_DIR$/tools/wrapper/src" />
+        </sourceRoots>
         <building>
           <setting name="EXPLODED_URL" value="file://" />
           <setting name="EXPLODED_ENABLED" value="false" />
@@ -190,6 +244,51 @@
         </packaging>
       </configuration>
     </facet>
+    <facet type="web" name="Web4">
+      <configuration>
+        <descriptors>
+          <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/build/docs/source/WEB-INF/web.xml" optional="false" version="2.5" />
+        </descriptors>
+        <webroots>
+          <root url="file://$MODULE_DIR$/build/docs/source" relative="/" />
+        </webroots>
+        <sourceRoots>
+          <root url="file://$MODULE_DIR$/extensions/fluent/src" />
+          <root url="file://$MODULE_DIR$/extensions/fluent/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/ngram/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/ngram/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/spatial/src" />
+          <root url="file://$MODULE_DIR$/extensions/indexes/spatial/test/src" />
+          <root url="file://$MODULE_DIR$/extensions/modules/src" />
+          <root url="file://$MODULE_DIR$/samples" />
+          <root url="file://$MODULE_DIR$/src" />
+          <root url="file://$MODULE_DIR$/test/src" />
+          <root url="file://$MODULE_DIR$/tools/XFormsFilter/src" />
+          <root url="file://$MODULE_DIR$/tools/ircbot/src" />
+          <root url="file://$MODULE_DIR$/tools/izpack/src" />
+          <root url="file://$MODULE_DIR$/tools/jmx/src" />
+          <root url="file://$MODULE_DIR$/tools/requestlog/src" />
+          <root url="file://$MODULE_DIR$/tools/wrapper/src" />
+        </sourceRoots>
+        <building>
+          <setting name="EXPLODED_URL" value="file://" />
+          <setting name="EXPLODED_ENABLED" value="false" />
+          <setting name="JAR_URL" value="file://" />
+          <setting name="JAR_ENABLED" value="false" />
+          <setting name="BUILD_MODULE_ON_FRAME_DEACTIVATION" value="false" />
+          <setting name="BUILD_EXTERNAL_DEPENDENCIES" value="false" />
+          <setting name="EXCLUDE_EXPLODED_DIRECTORY" value="true" />
+          <setting name="RUN_JASPER_VALIDATION" value="true" />
+          <setting name="BUILD_ONLY_WEB_RESOURCES" value="false" />
+        </building>
+        <packaging>
+          <containerElement type="module" name="eXist">
+            <attribute name="method" value="1" />
+            <attribute name="URI" value="/WEB-INF/classes" />
+          </containerElement>
+        </packaging>
+      </configuration>
+    </facet>
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
@@ -225,6 +324,15 @@
     <orderEntry type="library" name="ant" level="project" />
     <orderEntry type="library" name="test" level="project" />
     <orderEntry type="library" name="extensions" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$APPLICATION_HOME_DIR$/lib/javaee.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntryProperties />
   </component>
 </module>
