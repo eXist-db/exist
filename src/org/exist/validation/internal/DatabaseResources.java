@@ -22,11 +22,6 @@
 
 package org.exist.validation.internal;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
@@ -39,6 +34,11 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *  Helper class for accessing grammars.
@@ -71,18 +71,16 @@ public class DatabaseResources {
     
     
     /**
-     *  Convert sequence into list of strings. Java5 would make
-     * this method more safe to use.
+     *  Convert sequence into list of strings.
      *
      * @param   sequence  Result of query.
      * @return  List containing String objects.
      */
-    public List getAllResults(Sequence sequence){
-        List result = new ArrayList();
+    public List<String> getAllResults(Sequence sequence){
+        List<String> result = new ArrayList<String>();
         
         try {
-            SequenceIterator i = sequence.iterate();
-            
+            SequenceIterator i = sequence.iterate();         
             while(i.hasNext()){
                 String path =  i.nextItem().getStringValue();
                 result.add(path);
@@ -97,8 +95,7 @@ public class DatabaseResources {
     }
     
     /**
-     *  Get first entry of sequence as String. Java5 would make
-     * this method more safe to use.
+     *  Get first entry of sequence as String.
      *
      * @param   sequence  Result of query.
      * @return  String containing representation of 1st entry of sequence.
