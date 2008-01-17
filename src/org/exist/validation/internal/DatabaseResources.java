@@ -122,12 +122,12 @@ public class DatabaseResources {
     }
     
     
-    public Sequence executeQuery(String queryPath, Map params, User user){
+    public Sequence executeQuery(String queryPath, Map<String,String> params, User user){
         
-        String namespace = (String) params.get(TARGETNAMESPACE);
-        String publicId = (String) params.get(PUBLICID);
-        String catalogPath = (String) params.get(CATALOG);
-        String collection = (String) params.get(COLLECTION);
+        String namespace = params.get(TARGETNAMESPACE);
+        String publicId = params.get(PUBLICID);
+        String catalogPath = params.get(CATALOG);
+        String collection = params.get(COLLECTION);
         
         logger.debug("collection=" + collection + " namespace=" + namespace
             + " publicId="+publicId + " catalogPath="+catalogPath);
@@ -191,7 +191,7 @@ public class DatabaseResources {
     public String findXSD(String collection, String targetNamespace, User user){
         logger.debug("Find schema with namespace '"+targetNamespace+"' in '"+collection+"'.");
         
-        Map params = new HashMap();
+        Map<String,String> params = new HashMap<String,String>();
         params.put(COLLECTION, collection);
         params.put(TARGETNAMESPACE, targetNamespace);
         
@@ -203,7 +203,7 @@ public class DatabaseResources {
     public String findCatalogWithDTD(String collection, String publicId, User user){
         logger.debug("Find DTD with public '"+publicId+"' in '"+collection+"'.");
         
-        Map params = new HashMap();
+        Map<String,String> params = new HashMap<String,String>();
         params.put(COLLECTION, collection);
         params.put(PUBLICID, publicId);
         
