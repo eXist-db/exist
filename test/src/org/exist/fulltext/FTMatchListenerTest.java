@@ -188,6 +188,16 @@ public class FTMatchListenerTest {
             result = queryResult2String(broker, seq);
             System.out.println("RESULT: " + result);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
+
+            query =
+                    "let $results := for $m in //hi[. &= 'nested'] return $m/ancestor::para " +
+                    "return $results";
+            seq = xquery.execute(query, null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
