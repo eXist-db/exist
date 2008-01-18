@@ -988,7 +988,7 @@
       <title>Writing the concrete implementation of <classname>org.exist.indexing.IndexWorker</classname></title>					
       <para>Just like for <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndex</classname>, we will start
       to design a database-independant abstract class. This class should normally be the basis of every JDBC spatial
-      indexes. It will handle most of the hard work.</para>
+      index. It will handle most of the hard work.</para>
       <para>Let's start by a few members and a few general-purpose public methods :</para>			
       <programlisting format="linespecific"><![CDATA[	
       package org.exist.indexing.spatial;
@@ -1058,12 +1058,11 @@
         </index>
       </collection>		
       ]]></programlisting>
-      <para>Got the <sgmltag>gml</sgmltag> element ? We will shortly see how this information is able
+      <para>Got the <sgmltag>gml</sgmltag> element? We will shortly see how this information is able
       to configure our <classname>IndexWorker</classname>.</para>
       <para><parameter>controller</parameter>, <parameter>index</parameter> and <parameter>broker</parameter>
       should now be quite straightforward.</para>
-      <para><parameter>currentMode</parameter> and <parameter>currentDoc</parameter> should also be straightforward.
-      Notice that they are initialized this "empty" values.</para>
+      <para><parameter>currentMode</parameter> and <parameter>currentDoc</parameter> should also be straightforward.</para>
       <para><parameter>geometries</parameter> is a collection of <classname>com.vividsolutions.jts.geom.Geometry</classname> 
       instances that are currently held in memory, waiting for being "flushed" to the database. Depending of 
       <parameter>currentMode</parameter>, they're pending for insertion or removal.</para>
@@ -1205,7 +1204,7 @@
       at every node whereas a JDBC database will be able to delete all the document's nodes in 
       one single statement.</para>		
       <para>The next method is a place holder that needs more thinking. How to highlight a geometric information
-      smartly ?</para>
+      smartly?</para>
       <programlisting format="linespecific"><![CDATA[				
       public MatchListener getMatchListener(NodeProxy proxy) {
         return null;
@@ -1278,9 +1277,9 @@
       <para>Even though its code looks thick, it proves to be a good way to acquire (then release) a <classname>Connection</classname>
       whatever the way it is provided by the <classname>IndexWorker</classname> (see above for these aspects,
       concurrency in particular). It then	delegates the write operations to dedicated methods, which do not have to care about the <classname>Connection</classname>.
-      Write operations are embedded in a transaction. Shoud an exception occur, it would be logged and...
-      swallowed : eXist doesn't like exceptions when it flushes its data.</para>
-      <para>The next method delegates node storage :</para>
+      Write operations are embedded in a transaction. Should an exception occur, it would be logged and
+      swallowed: eXist doesn't like exceptions when it flushes its data.</para>
+      <para>The next method delegates node storage:</para>
       <programlisting format="linespecific"><![CDATA[				
       private void saveDocumentNodes(Connection conn) throws SQLException {
         if (geometries.size() == 0)
@@ -1335,7 +1334,7 @@
 	  LOG.debug("Dropped " + nodeCount + " nodes from GML index");
       }	
       ]]></programlisting>
-      <para>The next method is a mix of the designs described above. It also previously makes a check :</para> 			
+      <para>The next method is a mix of the designs described above. It also previously makes a check:</para> 			
       <programlisting format="linespecific"><![CDATA[	
       public void removeCollection(Collection collection, DBBroker broker) {
         boolean isCollectionGMLAware = false;
