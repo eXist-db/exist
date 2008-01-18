@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 <project name="minimal" basedir="../.." default="dist-minimal">
+	
+	<import file="../../build.xml"/>
 
 <property name="src.dir" location="."/>
 <property name="dist.minimal.name" value="minimal"/>

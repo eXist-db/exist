@@ -10,6 +10,8 @@
 
     <!-- import common targets -->
     <!-- <import file="../../build.xml"/> -->
+	<import file="./subversion.xml"/>
+	<import file="./junit.xml"/>
 
     <!-- setup properties -->
     <property name="jetty.dir" value="tools/jetty"/>
