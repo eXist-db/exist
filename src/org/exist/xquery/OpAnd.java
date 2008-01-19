@@ -60,10 +60,10 @@ public class OpAnd extends LogicalOp {
     		Expression right = getRight();
     		if(optimize) {
     			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
-    			rl = rl.getContextNodes(contextId);
-    			// TODO: optimize and return false if rl.getLength() == 0 ?
+    			rl = rl.getContextNodes(left.getContextId()); 
+    			// TODO: optimize and return false if rl.isEmpty() ?
     			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
-    			rr = rr.getContextNodes(contextId);
+    			rr = rr.getContextNodes(right.getContextId());
     			result = rr.intersection(rl); 
     			//<test>{() and ()}</test> has to return <test>false</test>    			
     			if (getParent() instanceof EnclosedExpr ||
