@@ -92,9 +92,6 @@ public class FunMin extends CollatingFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		//if (contextItem != null)
-		//	contextSequence = contextItem.toSequence();
-        
 		boolean computableProcessing = false;
         Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);

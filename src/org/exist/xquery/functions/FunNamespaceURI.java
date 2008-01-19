@@ -80,9 +80,6 @@ public class FunNamespaceURI extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-        //if(contextItem != null)
-        //    contextSequence = contextItem.toSequence();
-        
         Item item = null;
         // check if the node is passed as an argument or should be taken from
         // the context sequence

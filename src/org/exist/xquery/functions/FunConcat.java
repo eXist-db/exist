@@ -114,9 +114,6 @@ public class FunConcat extends Function {
 		if(getArgumentCount() < 2)
 			throw new XPathException ("concat requires at least two arguments");
         
-		//if(contextItem != null)
-		//	contextSequence = contextItem.toSequence();
-		
 		StringBuffer concat = new StringBuffer();        
 		for (int i = 0; i < getArgumentCount(); i++) {			
             concat.append(getArgument(i).eval(contextSequence, contextItem).getStringValue());
