@@ -98,8 +98,6 @@ public class OpNumeric extends BinaryOp {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		//if (contextItem != null) contextSequence = contextItem.toSequence();
-        
 		Sequence lseq = getLeft().eval(contextSequence, contextItem);		
 		Sequence rseq = getRight().eval(contextSequence, contextItem);
         

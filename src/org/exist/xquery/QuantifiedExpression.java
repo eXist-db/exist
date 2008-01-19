@@ -87,9 +87,6 @@ public class QuantifiedExpression extends BindingExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);
         }        
         
-        //if (contextItem != null)
-        //    contextSequence = contextItem.toSequence();
-        
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
         
 		Sequence inSeq = inputSequence.eval(contextSequence, contextItem);

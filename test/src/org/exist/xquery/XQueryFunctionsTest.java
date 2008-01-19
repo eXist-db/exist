@@ -922,6 +922,32 @@ public class XQueryFunctionsTest extends TestCase {
         }
       } 
    
+    public void testExists() {
+        String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+        	"return $a/b[exists(.)]";
+        
+        try {
+          ResourceSet result = service.query(query);          
+          assertEquals(2, result.getSize());
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }   
+
+    public void testFloor() {
+        String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
+        	"return $a/b[abs(floor(.))]";
+        
+        try {
+          ResourceSet result = service.query(query);          
+          assertEquals(2, result.getSize());
+        } catch (XMLDBException e) {
+          e.printStackTrace();
+          fail(e.getMessage());
+        }
+      }    
+
     //ensure the test collection is removed and call collection-exists,
     //which should return false, no exception thrown
     public void testCollectionExists1() {
