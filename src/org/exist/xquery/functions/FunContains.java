@@ -88,11 +88,7 @@ public class FunContains extends CollatingFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         } 
         
-		//if (contextItem != null)
-		//	contextSequence = contextItem.toSequence();
-		
 		Sequence result;
-
 		//s2 takes precedence over s1
 		String s2 = getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		if ("".equals(s2))

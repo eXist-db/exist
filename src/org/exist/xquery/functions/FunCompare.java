@@ -72,9 +72,6 @@ public class FunCompare extends CollatingFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		//if(contextItem != null)
-		//	contextSequence = contextItem.toSequence();
-
 		Sequence seq1 = getArgument(0).eval(contextSequence, contextItem);
 		Sequence seq2 =	getArgument(1).eval(contextSequence, contextItem);
 		

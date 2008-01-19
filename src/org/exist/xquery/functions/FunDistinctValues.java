@@ -106,9 +106,6 @@ public class FunDistinctValues extends CollatingFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }       
         
-        //if (contextItem != null)
-			//contextSequence = contextItem.toSequence();
-
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		Collator collator = getCollator(contextSequence, contextItem, 2);		
 		TreeSet set = new TreeSet(new ValueComparator(collator));
