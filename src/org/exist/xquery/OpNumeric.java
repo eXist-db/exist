@@ -98,10 +98,10 @@ public class OpNumeric extends BinaryOp {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		if (contextItem != null) contextSequence = contextItem.toSequence();
+		//if (contextItem != null) contextSequence = contextItem.toSequence();
         
-		Sequence lseq = getLeft().eval(contextSequence);		
-		Sequence rseq = getRight().eval(contextSequence);
+		Sequence lseq = getLeft().eval(contextSequence, contextItem);		
+		Sequence rseq = getRight().eval(contextSequence, contextItem);
         
         if (lseq.hasMany()) 
         	throw new XPathException("XPTY0004: too many operands at the left of " + Constants.OPS[operator]);
