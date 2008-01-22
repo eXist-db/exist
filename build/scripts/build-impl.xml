@@ -597,11 +597,6 @@
         <get src="http://prdownloads.sourceforge.net/icu/icu4j-3_6.jar"
             dest="${lib.user}/icu4j-3_6.jar" verbose="true"/>
 
-        <!-- Java Uuid Generator (JUG) -->
-        <!-- http://jug.safehaus.org   -->
-        <get src="http://jug.safehaus.org/curr/jug-lgpl-2.0.0.jar"
-            dest="${lib.user}/jug-lgpl-2.0.0.jar" verbose="true"/>
-
         <!-- Saxon XSLT2 Processor                 -->
         <!-- http://sourceforge.net/projects/saxon -->
         <get src="http://prdownloads.sourceforge.net/saxon/saxonb8-9-0-3j.zip"
