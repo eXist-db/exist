@@ -27,6 +27,8 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.SimpleTimeZone;
+import java.util.Stack;
+import java.util.Iterator;
 
 import javax.xml.datatype.Duration;
 
@@ -35,6 +37,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.memtree.ReferenceNode;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
@@ -53,6 +56,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.Module;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DateTimeValue;
@@ -278,14 +282,16 @@ public class Eval extends BasicFunction {
 			// eval-with-context: initialize a new context
 			innerContext = xquery.newContext(context.getAccessContext());
 			initContext(contextInit.getNode(), innerContext);
-		} else
+		} else {
 			// use the existing outer context
             // TODO: check if copying the static context would be sufficient???
 			innerContext = context.copyContext();
+            innerContext.setShared(true);
             //innerContext = context;
+        }
         try {
 			if(compiled == null) {
-			    compiled = xquery.compile(innerContext, querySource);
+                compiled = xquery.compile(innerContext, querySource);
 			} else {
 				compiled.setContext(innerContext);
 			}
@@ -462,4 +468,43 @@ public class Eval extends BasicFunction {
 			}
 		}
 	}
+
+//    private class EvalContext extends XQueryContext {
+//
+//        private EvalContext(XQueryContext copyFrom) {
+//            super(copyFrom);
+//            copyFields(copyFrom);
+//        }
+//
+//        public void reset(boolean keepGlobals) {
+//            calendar = null;
+//            implicitTimeZone = null;
+//            builder = new MemTreeBuilder(this);
+//            builder.startDocument();
+//            if (!keepGlobals) {
+//                // do not reset the statically known documents
+//                staticDocumentPaths = null;
+//                staticDocuments = null;
+//            }
+//            lastVar = null;
+//            fragmentStack = new Stack();
+//            callStack.clear();
+//            protectedDocuments = null;
+//            if (!keepGlobals)
+//                globalVariables.clear();
+//
+//            //remove the context-vars, subsequent execution of the query
+//            //may generate different values for the vars based on the
+//            //content of the db
+//            XQueryContextVars.clear();
+//
+//            watchdog.reset();
+//            profiler.reset();
+//            for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
+//                Module module = (Module)i.next();
+//                module.reset(this);
+//            }
+//            clearUpdateListeners();
+//        }
+//    }
 }
