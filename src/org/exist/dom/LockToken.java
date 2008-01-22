@@ -31,8 +31,6 @@ import org.exist.storage.io.VariableByteOutputStream;
 /**
  *  Class representing a locktoken. Introduced for webDAV locking.
  *
- *  UUID generation @see http://jug.safehaus.org/
- *
  * @author Dannes Wessels
  */
 public class LockToken {
