@@ -47,7 +47,7 @@
         <echo message="------------------------------------------------------"/>
 	    <echo message="Downloading libraries required by the xsl-fo module"/>
 	    <echo message="------------------------------------------------------"/>
-		<get src="http://mirror.public-internet.co.uk/apache/xmlgraphics/fop/binaries/fop-0.94-bin-jdk1.4.zip" dest="fop-0.94-bin-jdk1.4.zip" verbose="true" usetimestamp="true" />
+		<get src="${include.module.xslfo.url}" dest="fop-0.94-bin-jdk1.4.zip" verbose="true" usetimestamp="true" />
 		<unzip src="fop-0.94-bin-jdk1.4.zip" dest="${top.dir}/${lib.user}">
 			<patternset>
 				<include name="fop-0.94/build/fop.jar"/>
