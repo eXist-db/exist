@@ -9,7 +9,7 @@ import module namespace request="http://exist-db.org/xquery/request";
 import module namespace session="http://exist-db.org/xquery/session";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
-declare option exist:serialize "method=xhtml indent=no";
+declare option exist:serialize "method=xhtml indent=no highlight-matches=elements";
 
 (:~ Points to the location of the xml-highlight.xsl stylesheet stored in the database :)
 declare variable $sandbox:XML_HIGHLIGHT_STYLE { "/db/sandbox/xml-highlight.xsl" };
