@@ -232,6 +232,7 @@ public class NodeSetHelper {
                             else
                                 ancestor.copyContext(descendant);
                         }
+                        ancestor.addMatches(descendant);
                         result.add(ancestor);
                     } else if (Expression.NO_CONTEXT_ID != contextId) {
                         temp.addContextNode(contextId, descendant);
