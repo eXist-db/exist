@@ -451,7 +451,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @return a <code>NodeSet</code> value
      */
     public NodeSet getDescendantsInSet(NodeSet al, boolean childOnly, boolean includeSelf, int mode, int contextId) {
-    	NodeSet result = new ExtArrayNodeSet();
+        sort();
+        NodeSet result = new ExtArrayNodeSet();
 		NodeProxy node;
 		Part part;
 		for (Iterator i = al.iterator(); i.hasNext(); ) {
@@ -474,6 +475,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @return a <code>NodeProxy</code> value
      */
     public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId, boolean includeSelf, int contextId) {
+        sort();
         final Part part = getPart(doc, false, 0);
         return part == null ? null : part.hasDescendantsInSet(ancestorId, contextId, includeSelf);
     }
