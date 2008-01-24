@@ -325,6 +325,8 @@ public class XQueryContext {
 
     private boolean enableOptimizer = true;
 
+    private boolean isShared = false;
+    
     private XQueryContext() {}
 	
 	protected XQueryContext(AccessContext accessCtx) {
@@ -1024,6 +1026,10 @@ public class XQueryContext {
 //        return remaining;
 //    }
 
+    public void setShared(boolean shared) {
+        isShared = shared;
+    }
+
     public void reset() {
         reset(false);
     }
@@ -1033,16 +1039,18 @@ public class XQueryContext {
      * called when adding an XQuery to the cache.
 	 */
 	public void reset(boolean keepGlobals) {
-		calendar = null;
+        calendar = null;
 		implicitTimeZone = null;			
         builder = new MemTreeBuilder(this);
 		builder.startDocument();
+
         if (!keepGlobals) {
             // do not reset the statically known documents
             staticDocumentPaths = null;
             staticDocuments = null;
         }
-        lastVar = null;
+        if (!isShared)
+            lastVar = null;
 		fragmentStack = new Stack();
 		callStack.clear();
         protectedDocuments = null;
@@ -1053,8 +1061,9 @@ public class XQueryContext {
 		//may generate different values for the vars based on the
 		//content of the db
 		XQueryContextVars.clear();
-		
-		watchdog.reset();
+
+        if (!isShared)
+            watchdog.reset();
         profiler.reset();
 		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
 			Module module = (Module)i.next();
