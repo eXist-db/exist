@@ -22,13 +22,6 @@
  */
 package org.exist.xupdate;
 
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfiguration;
@@ -36,12 +29,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.collections.triggers.TriggerStatePerThread;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeIndexListener;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
@@ -54,14 +42,13 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Constants;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.NodeList;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Base class for all XUpdate modifications.
@@ -89,7 +76,7 @@ public abstract class Modification {
 	protected Map namespaces;
 	protected Map variables;
 	protected DocumentSet lockedDocuments = null;
-	protected DocumentSet modifiedDocuments = new DocumentSet();
+	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected Int2ObjectHashMap triggers;
 
     private AccessContext accessCtx;
@@ -267,7 +254,7 @@ public abstract class Modification {
 			return;
 		
 		//finish Trigger
-		Iterator iterator = modifiedDocuments.iterator();
+		Iterator iterator = modifiedDocuments.getDocumentIterator();
 		DocumentImpl doc;
 		while (iterator.hasNext())
 		{
@@ -294,7 +281,7 @@ public abstract class Modification {
         int fragmentationLimit = -1;
         if (broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR) != null)
         	fragmentationLimit = ((Integer)broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)).intValue();		
-	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
+	    for(Iterator i = docs.getDocumentIterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
 	        if(next.getMetadata().getSplitCount() > fragmentationLimit)
 	            broker.defragXMLResource(transaction, next);

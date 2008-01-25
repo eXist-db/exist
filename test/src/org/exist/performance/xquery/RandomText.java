@@ -21,21 +21,13 @@
  */
 package org.exist.performance.xquery;
 
-import org.exist.dom.DocumentSet;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Occurrences;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.util.UtilModule;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,10 +67,10 @@ public class RandomText extends BasicFunction {
 
     private void generateWordList() throws XPathException {
 		try {
-			DocumentSet docs = new DocumentSet();
+			MutableDocumentSet docs = new DefaultDocumentSet();
             docs = context.getBroker().getAllXMLResources(docs);
             Occurrences[] occurrences =
-                    context.getBroker().getTextEngine().scanIndexTerms(docs, docs.toNodeSet(), null, null);
+                    context.getBroker().getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), null, null);
             List list = new ArrayList();
             for (int i = 0; i < occurrences.length; i++) {
                 list.add(occurrences[i].getTerm().toString());

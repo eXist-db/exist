@@ -22,37 +22,20 @@
  */
 package org.exist.xquery.functions;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author wolf
@@ -121,32 +104,35 @@ public class ExtCollection extends Function {
         }
         
 		// build the document set
-		DocumentSet docs = new DocumentSet(521);
+        DocumentSet docs = null;
+//        DocumentSet docs = new DocumentSet(521);
 	    try {
 	    	if (args.size() == 0) {
 	    		docs = context.getStaticallyKnownDocuments();
 	    	} else {
-				for (int i = 0; i < args.size(); i++) {
+                MutableDocumentSet ndocs = new DefaultDocumentSet();
+                for (int i = 0; i < args.size(); i++) {
 					String next = (String)args.get(i);
 					XmldbURI uri = new AnyURIValue(next).toXmldbURI();
 				    Collection coll = context.getBroker().getCollection(uri);            
 				    if(coll != null) {
 	                    if (context.inProtectedMode())
-	                        context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, docs);
+	                        context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, ndocs);
 	                    else
-	                        coll.allDocs(context.getBroker(), docs, includeSubCollections, true, context.getProtectedDocs());
+	                        coll.allDocs(context.getBroker(), ndocs, includeSubCollections, true, context.getProtectedDocs());
 	                }
 	            }
-	    	}
+                docs = ndocs;
+            }
         } catch (XPathException e) { //From AnyURIValue constructor
         	e.setASTNode(getASTNode());
             throw new XPathException("FODC0002: " + e.getMessage(), e);
         }
         // iterate through all docs and create the node set
-		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);
+		NodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
 		Lock dlock;
 		DocumentImpl doc;
-		for (Iterator i = docs.iterator(); i.hasNext();) {
+		for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
 		    doc = (DocumentImpl)i.next();
 		    dlock = doc.getUpdateLock();
             boolean lockAcquired = false;

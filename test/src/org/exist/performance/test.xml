@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿﻿<?xml version="1.0" encoding="UTF-8"?>
 <test xmlns="http://exist.sourceforge.net/NS/exist">
     <configuration>
         <connection id="con" user="admin" password="" base="xmldb:exist://embedded-eXist-server"/>

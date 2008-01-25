@@ -1,18 +1,6 @@
 //$Id$
 package org.exist.cluster;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Observer;
-
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.Collection;
@@ -21,6 +9,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -36,6 +25,12 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import java.io.*;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Observer;
 
 
 /**
@@ -229,12 +224,12 @@ public final class ClusterCollection extends Collection {
         return collection.getDescendants(broker, user);
     }
 
-    public DocumentSet allDocs(DBBroker broker, DocumentSet docs,
+    public MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs,
                                boolean recursive, boolean checkPermissions) {
         return collection.allDocs(broker, docs, recursive, checkPermissions);
     }
 
-    public DocumentSet getDocuments(DBBroker broker, DocumentSet docs, boolean checkPermissions) {
+    public DocumentSet getDocuments(DBBroker broker, MutableDocumentSet docs, boolean checkPermissions) {
         return collection.getDocuments(broker, docs, checkPermissions);
     }
 

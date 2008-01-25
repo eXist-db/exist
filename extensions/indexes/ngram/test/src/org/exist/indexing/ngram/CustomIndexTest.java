@@ -1,18 +1,12 @@
 package org.exist.indexing.ngram;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.File;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
-
 import junit.framework.TestCase;
-
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -21,8 +15,8 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
-import org.exist.util.Occurrences;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.Occurrences;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
@@ -33,6 +27,12 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
+
+import javax.xml.transform.OutputKeys;
+import java.io.File;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Properties;
 
 /**
  * 
@@ -70,7 +70,7 @@ public class CustomIndexTest extends TestCase {
         "</xu:modifications>";
 
     private BrokerPool pool;
-    private DocumentSet docs;
+    private MutableDocumentSet docs;
 
     /**
      * Remove nodes from different levels of the tree and check if the index is
@@ -671,7 +671,7 @@ public class CustomIndexTest extends TestCase {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG);
 
-            docs = new DocumentSet();
+            docs = new DefaultDocumentSet();
 
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), XML);
             assertNotNull(info);

@@ -87,6 +87,8 @@ public class Optimize extends Pragma {
                 NodeSet selection = optimizables[current].preSelect(contextSequence, current > 0);
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: pre-selection: " + selection.getLength());
+                // determine the set of potential ancestors for which the predicate has to
+                // be re-evaluated to filter out wrong matches
                 if (contextStep == null || current > 0) {
                     ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR, true, -1);
                 } else {
@@ -131,7 +133,8 @@ public class Optimize extends Pragma {
                 contextSequence = originalContext.filterDocuments(result);
                 Sequence seq = innerExpr.eval(contextSequence);
                 if (LOG.isTraceEnabled())
-                    LOG.trace("exist:optimize: inner expr took " + (System.currentTimeMillis() - start));
+                    LOG.trace("exist:optimize: inner expr took " + (System.currentTimeMillis() - start) +
+                        "; found: "+ seq.getItemCount());
                 return seq;
             }
         } else {

@@ -1,6 +1,7 @@
 package org.exist;
 
 import org.exist.collections.Collection;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentSet;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
@@ -52,7 +53,7 @@ public class TestDataGenerator {
 
     public File[] generate(DBBroker broker, Collection collection, String xqueryContent) throws SAXException {
         try {
-            DocumentSet docs = collection.allDocs(broker, new DocumentSet(), true, false);
+            DocumentSet docs = collection.allDocs(broker, new DefaultDocumentSet(), true, false);
             XQuery service = broker.getXQueryService();
             XQueryContext context = service.newContext(AccessContext.TEST);
             context.declareVariable("filename", "");

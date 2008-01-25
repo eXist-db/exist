@@ -1,20 +1,21 @@
 package org.exist.collections.triggers;
 
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.IndexInfo;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.IndexInfo;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xupdate.XUpdateProcessor;
 import org.exist.xupdate.Modification;
-import org.exist.security.xacml.AccessContext;
+import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
 
-import java.util.Map;
 import java.io.StringReader;
+import java.util.Map;
 
 /**
  * Test trigger to check if trigger configuration is working properly.
@@ -82,7 +83,7 @@ public class TestTrigger extends FilteringTrigger {
             default:
                 return;
         }
-        DocumentSet docs = new DocumentSet();
+        MutableDocumentSet docs = new DefaultDocumentSet();
         docs.add(doc);
         try {
             // IMPORTANT: temporarily disable triggers on the collection.

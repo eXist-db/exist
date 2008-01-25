@@ -63,7 +63,7 @@ public abstract class Modification extends AbstractExpression
 	protected final Expression value;
 	
 	protected DocumentSet lockedDocuments = null;
-	protected DocumentSet modifiedDocuments = new DocumentSet();
+	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected Int2ObjectHashMap triggers;
     
     /**
@@ -179,7 +179,7 @@ public abstract class Modification extends AbstractExpression
 	}
 
     protected void finishTriggers(Txn transaction) {
-        Iterator iterator = modifiedDocuments.iterator();
+        Iterator iterator = modifiedDocuments.getDocumentIterator();
 		DocumentImpl doc;
 		while(iterator.hasNext())
 		{
@@ -217,7 +217,7 @@ public abstract class Modification extends AbstractExpression
         int fragmentationLimit = -1;
         if (broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR) != null)
         	fragmentationLimit = ((Integer)broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)).intValue();	
-	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
+	    for(Iterator i = docs.getDocumentIterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
 	        if(next.getMetadata().getSplitCount() > fragmentationLimit)
 	            broker.defragXMLResource(transaction, next);
@@ -236,7 +236,7 @@ public abstract class Modification extends AbstractExpression
 		//if we are doing a batch update then only call prepare for the first update to that document
 		if(context.hasBatchTransaction())
 		{
-			Iterator itTrigDoc = modifiedDocuments.iterator();
+			Iterator itTrigDoc = modifiedDocuments.getDocumentIterator();
 	    	while(itTrigDoc.hasNext())
 	    	{
 	    		DocumentImpl trigDoc = (DocumentImpl)itTrigDoc.next();

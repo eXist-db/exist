@@ -1,22 +1,10 @@
 package org.exist.soap;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URISyntaxException;
-import java.rmi.RemoteException;
-import java.util.Iterator;
-import java.util.Vector;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -37,6 +25,15 @@ import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URISyntaxException;
+import java.rmi.RemoteException;
+import java.util.Iterator;
+import java.util.Vector;
 
 /**
  *  Provides the actual implementations for the methods defined in
@@ -273,7 +270,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                         "collection " + collectionName + " not found");
             }
             DocumentSet docs =
-                    collection.allDocs(broker, new DocumentSet(), true, true);
+                    collection.allDocs(broker, new DefaultDocumentSet(), true, true);
             XUpdateProcessor processor =
                     new XUpdateProcessor(broker, docs, AccessContext.SOAP);
             Modification modifications[] =
@@ -337,7 +334,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 transact.abort(transaction);
                 throw new RemoteException("Not allowed to read resource");
             }
-            DocumentSet docs = new DocumentSet();
+            MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(doc);
             XUpdateProcessor processor =
                     new XUpdateProcessor(broker, docs, AccessContext.SOAP);

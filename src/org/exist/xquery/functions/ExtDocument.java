@@ -22,16 +22,7 @@
  */
 package org.exist.xquery.functions;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -39,19 +30,13 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.xmldb.XMLDBModule;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Implements eXist's xmldb:document() function.
@@ -80,7 +65,7 @@ public class ExtDocument extends Function {
 
 	private List cachedArgs = null;
 	private Sequence cached = null;
-	private DocumentSet cachedDocs = null;
+	private MutableDocumentSet cachedDocs = null;
 	private UpdateListener listener = null;
 	
 	/**
@@ -104,7 +89,7 @@ public class ExtDocument extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-	    DocumentSet docs = null;
+	    MutableDocumentSet docs = null;
 	    Sequence result = null;
 	    // check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
@@ -114,7 +99,7 @@ public class ExtDocument extends Function {
 	            result = cached;
 	            docs = cachedDocs;
 	        } else {
-		        docs = new DocumentSet();
+		        docs = new DefaultDocumentSet();
 		        context.getBroker().getAllXMLResources(docs);
 	        }
 	    } else {
@@ -125,7 +110,7 @@ public class ExtDocument extends Function {
 			    result = cached;
 			    docs = cachedDocs;
 			} else {
-				docs = new DocumentSet();
+				docs = new DefaultDocumentSet();
 				for(int i = 0; i < args.size(); i++) {
 					try {
 						String next = (String)args.get(i);
@@ -158,9 +143,9 @@ public class ExtDocument extends Function {
                 docs.lock(lockOnLoad, true);
 	        // wait for pending updates
 			if(result == null) {
-			    result = new ExtArrayNodeSet(docs.getLength(), 1);
+			    result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
                 DocumentImpl doc;
-				for (Iterator i = docs.iterator(); i.hasNext();) {
+				for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
                     doc = (DocumentImpl) i.next();
 					result.add(new NodeProxy(doc)); //, -1, Node.DOCUMENT_NODE));
                     if(lockOnLoad) {

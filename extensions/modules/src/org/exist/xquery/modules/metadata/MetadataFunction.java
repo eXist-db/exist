@@ -68,8 +68,8 @@ public class MetadataFunction extends BasicFunction {
 		
 		//iterate through the source documents
 		DocumentSet sourceDocuments = contextSequence.getDocumentSet();
-		Iterator itSourceDocuments = sourceDocuments.iterator();
-		NodeSet metadataDocuments = new ExtArrayNodeSet(sourceDocuments.getLength(), 1);
+		Iterator itSourceDocuments = sourceDocuments.getDocumentIterator();
+		NodeSet metadataDocuments = new ExtArrayNodeSet(sourceDocuments.getDocumentCount(), 1);
 		Collection metadataCollection = null;
 		XmldbURI lastMetadataCollectionURI = null;
 		

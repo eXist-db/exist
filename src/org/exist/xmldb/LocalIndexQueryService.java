@@ -21,12 +21,11 @@
  */
 package org.exist.xmldb;
 
-import java.net.URISyntaxException;
-
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -41,6 +40,8 @@ import org.exist.xquery.value.Sequence;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+
+import java.net.URISyntaxException;
 
 public class LocalIndexQueryService implements IndexQueryService {
 
@@ -201,9 +202,9 @@ public class LocalIndexQueryService implements IndexQueryService {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			DocumentSet docs = new DocumentSet();
+			MutableDocumentSet docs = new DefaultDocumentSet();
 			parent.getCollection().allDocs(broker, docs, inclusive, true);
-			return broker.getTextEngine().scanIndexTerms(docs, docs.toNodeSet(),  start, end);
+			return broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(),  start, end);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 				"permission denied", e);

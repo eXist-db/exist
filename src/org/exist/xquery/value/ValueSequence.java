@@ -20,18 +20,9 @@
  */
 package org.exist.xquery.value;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
@@ -39,6 +30,11 @@ import org.exist.util.FastQSort;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * A sequence that may contain a mixture of atomic values and nodes.
@@ -290,13 +286,13 @@ public class ValueSequence extends AbstractSequence {
     * @see org.exist.xquery.value.Sequence#getDocumentSet()
     */
     public DocumentSet getDocumentSet() {
-        DocumentSet docs = new DocumentSet();
+        MutableDocumentSet docs = new DefaultDocumentSet();
         NodeValue node;
         for (int i = 0; i <= size; i++) {
             if (Type.subTypeOf(values[i].getType(), Type.NODE)) {
                 node = (NodeValue) values[i];
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                    docs.add(node.getOwnerDocument());
+                    docs.add((org.exist.dom.DocumentImpl) node.getOwnerDocument());
             }
         }
         return docs;

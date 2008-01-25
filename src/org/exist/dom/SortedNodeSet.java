@@ -60,7 +60,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 	
 	public void addAll(NodeSet other) {
 		long start = System.currentTimeMillis();		
-		DocumentSet docs = new DocumentSet();
+		MutableDocumentSet docs = new DefaultDocumentSet();
 		for (Iterator i = other.iterator(); i.hasNext();) {
             NodeProxy p = (NodeProxy)i.next();
 			docs.add(p.getDocument());

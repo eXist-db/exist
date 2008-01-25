@@ -22,27 +22,12 @@
  */
 package org.exist.xquery.functions;
 
-import java.util.Iterator;
-
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+
+import java.util.Iterator;
 
 /**
  * @author wolf
@@ -81,7 +66,7 @@ public class ExtDoctype extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		DocumentSet docs = new DocumentSet();
+		MutableDocumentSet docs = new DefaultDocumentSet();
 		for (int i = 0; i < getArgumentCount(); i++) {
 			Sequence seq = getArgument(i).eval(contextSequence, contextItem);
 			for (SequenceIterator j = seq.iterate(); j.hasNext();) {
@@ -91,7 +76,7 @@ public class ExtDoctype extends Function {
 		}
         
 		NodeSet result = new ExtArrayNodeSet(1);
-		for (Iterator i = docs.iterator(); i.hasNext();) {
+		for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
 			result.add(new NodeProxy((DocumentImpl) i.next(), NodeId.DOCUMENT_NODE));
 		}
         

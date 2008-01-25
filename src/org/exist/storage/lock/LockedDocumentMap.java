@@ -21,12 +21,12 @@
  */
 package org.exist.storage.lock;
 
+import org.exist.collections.Collection;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.collections.Collection;
-
-import java.util.Iterator;
 
 /**
  * This map is used by the XQuery engine to track how many read locks were
@@ -47,8 +47,8 @@ public class LockedDocumentMap extends Int2ObjectHashMap {
         entry.locksAcquired++;
     }
 
-    public DocumentSet toDocumentSet() {
-        DocumentSet docs = new DocumentSet(size());
+    public MutableDocumentSet toDocumentSet() {
+        MutableDocumentSet docs = new DefaultDocumentSet(size());
         LockedDocument d;
         for(int idx = 0; idx < tabSize; idx++) {
 	        if(values[idx] == null || values[idx] == REMOVED)
@@ -59,9 +59,9 @@ public class LockedDocumentMap extends Int2ObjectHashMap {
         return docs;
     }
 
-    public DocumentSet getDocsByCollection(Collection collection, boolean includeSubColls, DocumentSet targetSet) {
+    public DocumentSet getDocsByCollection(Collection collection, boolean includeSubColls, MutableDocumentSet targetSet) {
         if (targetSet == null)
-            targetSet = new DocumentSet(size());
+            targetSet = new DefaultDocumentSet(size());
         LockedDocument d;
         for(int idx = 0; idx < tabSize; idx++) {
 	        if(values[idx] == null || values[idx] == REMOVED)
@@ -91,7 +91,7 @@ public class LockedDocumentMap extends Int2ObjectHashMap {
 	        if(values[idx] == null || values[idx] == REMOVED)
 	            continue;
 	        d = (LockedDocument) values[idx];
-            if (!keep.containsKey(d.document.getDocId())) {
+            if (!keep.contains(d.document.getDocId())) {
                 values[idx] = REMOVED;
                 unlockDocument(d);
             }

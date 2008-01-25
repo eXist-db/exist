@@ -21,53 +21,23 @@
  */
 package org.exist.collections;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
-import org.exist.security.Group;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.PermissionFactory;
+import org.exist.dom.*;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
-import org.exist.security.XMLSecurityManager;
-import org.exist.storage.DBBroker;
-import org.exist.storage.FulltextIndexSpec;
-import org.exist.storage.GeneralRangeIndexSpec;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
-import org.exist.storage.QNameRangeIndexSpec;
-import org.exist.storage.UpdateListener;
+import org.exist.storage.*;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.lock.LockedDocumentMap;
+import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
@@ -79,6 +49,9 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import java.io.*;
+import java.util.*;
 
 /**
  * This class represents a collection in the database. A collection maintains a list of
@@ -283,7 +256,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         return cl;
     }
 
-    public DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean recursive,
+    public MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive,
                                     boolean checkPermissions) {
         return allDocs(broker, docs, recursive, checkPermissions, null);
     }
@@ -300,7 +273,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
      * @param checkPermissions
      * @return The set of documents.
      */
-    public DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean recursive,
+    public MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive,
                                     boolean checkPermissions, LockedDocumentMap protectedDocs) {
         if (permissions.validate(broker.getUser(), Permission.READ)) {
             List subColls = null;
@@ -332,7 +305,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         return docs;
     }
 
-    public DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean recursive, LockedDocumentMap lockMap, int lockType) throws LockException {
+    public DocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive, LockedDocumentMap lockMap, int lockType) throws LockException {
         if (permissions.validate(broker.getUser(), Permission.READ)) {
             List subColls = null;
             XmldbURI uris[] = null;
@@ -376,10 +349,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
      *
      * @param docs
      */
-    public DocumentSet getDocuments(DBBroker broker, DocumentSet docs, boolean checkPermissions) {
+    public DocumentSet getDocuments(DBBroker broker, MutableDocumentSet docs, boolean checkPermissions) {
         try {
             getLock().acquire(Lock.READ_LOCK);
             docs.addCollection(this);
+            
             docs.addAll(broker, this, getDocumentPaths(), checkPermissions);
         } catch (LockException e) {
             LOG.warn(e.getMessage(), e);
@@ -389,7 +363,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         return docs;
     }
 
-    public DocumentSet getDocuments(DBBroker broker, DocumentSet docs, LockedDocumentMap lockMap, int lockType) throws LockException {
+    public DocumentSet getDocuments(DBBroker broker, MutableDocumentSet docs, LockedDocumentMap lockMap, int lockType) throws LockException {
         try {
             getLock().acquire(Lock.READ_LOCK);
             docs.addCollection(this);
@@ -684,7 +658,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
      *@return A iterator of all the documents in the collection.
      */
     public Iterator iterator(DBBroker broker) {
-        return getDocuments(broker, new DocumentSet(), false).iterator();
+        return getDocuments(broker, new DefaultDocumentSet(), false).getDocumentIterator();
     }
     
     /**

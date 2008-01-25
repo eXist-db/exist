@@ -218,7 +218,7 @@ public class Database {
 			XQueryContext context = broker.getXQueryService().newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
 			context.declareNamespaces(namespaceBindings.getCombinedMap());
 			context.setBackwardsCompatibility(false);
-			context.setStaticallyKnownDocuments(new DocumentSet(0));
+			context.setStaticallyKnownDocuments(DocumentSet.EMPTY_DOCUMENT_SET);
 			return XPathUtil.javaObjectToXPath(o, context, true);
 		} catch (XPathException e) {
 			throw new DatabaseException(e);
@@ -298,18 +298,19 @@ public class Database {
 	public QueryService query(final java.util.Collection<? extends Resource> context) {
 		return new QueryService(getFolder("/")) {
 			@Override void prepareContext(DBBroker broker) {
-				docs = new DocumentSet();
+				MutableDocumentSet mdocs = new DefaultDocumentSet();
 				base = new ValueSequence();
 				for (Resource res : context) {
 					QueryService qs = res.query();
-					if (qs.docs != null) docs.addAll(qs.docs);
+					if (qs.docs != null) mdocs.addAll(qs.docs);
 					if (qs.base != null) try {
 						base.addAll(qs.base);
 					} catch (XPathException e) {
 						throw new DatabaseException("unexpected item type conflict", e);
 					}
 				}
-			}
+                docs = mdocs;
+            }
 		};
 	}
 	

@@ -495,7 +495,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
         if (axis != Constants.CHILD_AXIS)
             return false;
         int contextLen = context.getLength();
-        int docs = context.getDocumentSet().getLength();
+        int docs = context.getDocumentSet().getDocumentCount();
         if (contextLen > docs * MAX_CHILD_COUNT_FOR_OPTIMIZE)
             return false;   // more than 5 nodes per document
         for (Iterator i = context.iterator(); i.hasNext();) {

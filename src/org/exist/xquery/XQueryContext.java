@@ -22,30 +22,9 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.SimpleTimeZone;
-import java.util.Stack;
-import java.util.TimeZone;
-import java.util.TreeMap;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
-
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+import antlr.collections.AST;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
@@ -55,11 +34,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.numbering.NodeId;
@@ -81,26 +56,28 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
-import org.exist.util.LockException;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.TimeUtils;
-import org.exist.xquery.value.Type;
-import org.w3c.dom.NodeList;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.io.IOException;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.Collator;
+import java.util.*;
 
 /**
  * The current XQuery execution context. Contains the static as well
@@ -317,7 +294,7 @@ public class XQueryContext {
 
     //Transaction for  batched xquery updates
     private Txn batchTransaction = null;
-    private DocumentSet batchTransactionTriggers = new DocumentSet();
+    private MutableDocumentSet batchTransactionTriggers = new DefaultDocumentSet();
     
 	private AccessContext accessCtx;
     
@@ -907,10 +884,10 @@ public class XQueryContext {
             staticDocuments = protectedDocuments.toDocumentSet();
             return staticDocuments;
         }
-        staticDocuments = new DocumentSet(1031);
+        MutableDocumentSet ndocs = new DefaultDocumentSet(1031);
 		if(staticDocumentPaths == null)
             // no path defined: return all documents in the db 
-			broker.getAllXMLResources(staticDocuments);
+			broker.getAllXMLResources(ndocs);
 		else {
 			DocumentImpl doc;
 			Collection collection;
@@ -918,12 +895,12 @@ public class XQueryContext {
 				try {
                     collection = broker.getCollection(staticDocumentPaths[i]);
                     if (collection != null) {
-                        collection.allDocs(broker, staticDocuments, true, true);
+                        collection.allDocs(broker, ndocs, true, true);
                     } else {
                         doc = broker.getXMLResource(staticDocumentPaths[i], Lock.READ_LOCK);
                         if(doc != null) {
                             if(doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
-                                staticDocuments.add(doc);
+                                ndocs.add(doc);
                             }
                             doc.getUpdateLock().release(Lock.READ_LOCK);
                         }
@@ -933,7 +910,8 @@ public class XQueryContext {
 				}
 			}
 		}
-		return staticDocuments;
+        staticDocuments = ndocs;
+        return staticDocuments;
 	}
 
     public void setProtectedDocs(LockedDocumentMap map) {
@@ -2224,7 +2202,7 @@ public class XQueryContext {
     public void setBatchTransactionTrigger(DocumentImpl doc)
     {
     	//we want the last updated version of the document, so remove any previous version (matched by xmldburi)
-    	Iterator itTrigDoc = batchTransactionTriggers.iterator();
+    	Iterator itTrigDoc = batchTransactionTriggers.getDocumentIterator();
     	while(itTrigDoc.hasNext())
     	{
     		DocumentImpl trigDoc = (DocumentImpl)itTrigDoc.next();
@@ -2252,7 +2230,7 @@ public class XQueryContext {
     		txnMgr.commit(batchTransaction);
     	
     		//finish any triggers
-    		Iterator itDoc = batchTransactionTriggers.iterator();
+    		Iterator itDoc = batchTransactionTriggers.getDocumentIterator();
     		while(itDoc.hasNext())
     		{
     			DocumentImpl doc = (DocumentImpl)itDoc.next();

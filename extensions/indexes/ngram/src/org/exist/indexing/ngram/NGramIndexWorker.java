@@ -372,7 +372,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         throws TerminatedException {
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes(context.getBroker(), docs);
-        final NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
+        final NodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 250);
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = ((org.exist.collections.Collection) iter.next()).getId();
             for (int i = 0; i < qnames.size(); i++) {

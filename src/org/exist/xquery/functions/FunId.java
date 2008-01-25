@@ -21,32 +21,15 @@
 
 package org.exist.xquery.functions;
 
-import java.util.Iterator;
-import java.util.StringTokenizer;
-
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 public class FunId extends Function {
 
@@ -118,8 +101,9 @@ public class FunId extends Function {
                 NodeValue node = (NodeValue)nodes.itemAt(0);
                 if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                     throw new XPathException(getASTNode(), "FODC0001: supplied node is not from a persistent document");
-                docs = new DocumentSet();
-                docs.add(((NodeProxy)node).getDocument());
+                MutableDocumentSet ndocs = new DefaultDocumentSet();
+                ndocs.add(((NodeProxy)node).getDocument());
+                docs = ndocs;
             } else if (contextSequence == null)
                 throw new XPathException(getASTNode(), "XPDY0002: no context item specified");
             else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE))

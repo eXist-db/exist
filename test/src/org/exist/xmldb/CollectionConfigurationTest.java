@@ -1052,8 +1052,9 @@ public class CollectionConfigurationTest extends TestCase {
            try {
         	   exceptionThrown = false;
 	           result = service.query("/test/c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
-           } catch (Exception e) { 
-        	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
+           } catch (Exception e) {
+               e.printStackTrace();
+               if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
         		   exceptionThrown = true; 
         	   else throw e;
            }
