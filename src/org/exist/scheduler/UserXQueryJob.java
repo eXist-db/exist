@@ -48,6 +48,8 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import org.apache.log4j.Logger;
+
 /**
  * Class to represent a User's XQuery Job
  * Extends UserJob
@@ -56,6 +58,8 @@ import org.quartz.JobExecutionException;
  */
 public class UserXQueryJob extends UserJob
 {
+	protected final static Logger LOG = Logger.getLogger( UserXQueryJob.class );
+	
 	private String JOB_NAME = "XQuery";
 	
 	private String XQueryResource = null;
@@ -114,88 +118,77 @@ public class UserXQueryJob extends UserJob
 		Properties params = (Properties)jobDataMap.get("params"); 
 			
 		//if invalid arguments then abort
-		if(pool == null || xqueryresource == null || user == null)
-		{
+		if(pool == null || xqueryresource == null || user == null) {
 			abort("BrokerPool or XQueryResource or User was null!");
 		}
 		
-		try
-		{
+		try {
 			//get the xquery
 			broker = pool.get(user);
 			XmldbURI pathUri = XmldbURI.create(xqueryresource);
 			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-			Source source = new DBSource(broker, (BinaryDocument)resource, true);
 			
-			//execute the xquery
-			XQuery xquery = broker.getXQueryService();
-	        XQueryPool xqPool = xquery.getXQueryPool();
-	        XQueryContext context;
-	        
-	        //try and get a pre-compiled query from the pool
-	        CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, source);
-	        if(compiled == null)
-	        {
-	            context = xquery.newContext(AccessContext.REST);
-	    	}
-	        else
-	        {
-	            context = compiled.getContext();
-	        }
-	        
-	        //TODO: don't hardcode this?
-	        context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(resource.getCollection().getURI()).toString());
-	        context.setStaticallyKnownDocuments(
-	                 new XmldbURI[] { resource.getCollection().getURI() }
-	        );
-	        
-	        //declare any parameters as external variables
-			if( params != null ) {
-		        String bindingPrefix = params.getProperty("bindingPrefix");
-		        if( bindingPrefix == null ) {
-		        	bindingPrefix = "local";
-				}
-		        Enumeration paramNames = params.keys();
-		        while(paramNames.hasMoreElements())
-		        {
-		        	String name = (String)paramNames.nextElement();
-		        	String value = params.getProperty(name);
-		        	context.declareVariable(bindingPrefix + ":" + name, new StringValue(value));
+			if( resource != null ) {
+				Source source = new DBSource(broker, (BinaryDocument)resource, true);
+				
+				//execute the xquery
+				XQuery xquery = broker.getXQueryService();
+		        XQueryPool xqPool = xquery.getXQueryPool();
+		        XQueryContext context;
+		        
+		        //try and get a pre-compiled query from the pool
+		        CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, source);
+		        if(compiled == null) {
+		            context = xquery.newContext(AccessContext.REST);
+		    	} else {
+		            context = compiled.getContext();
 		        }
+		        
+		        //TODO: don't hardcode this?
+		        context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(resource.getCollection().getURI()).toString());
+		        context.setStaticallyKnownDocuments( new XmldbURI[] { resource.getCollection().getURI() } );
+		        
+		        //declare any parameters as external variables
+				if( params != null ) {
+			        String bindingPrefix = params.getProperty("bindingPrefix");
+			        if( bindingPrefix == null ) {
+			        	bindingPrefix = "local";
+					}
+			        Enumeration paramNames = params.keys();
+			        while(paramNames.hasMoreElements()) {
+			        	String name = (String)paramNames.nextElement();
+			        	String value = params.getProperty(name);
+			        	context.declareVariable(bindingPrefix + ":" + name, new StringValue(value));
+			        }
+				}
+		        
+		        if(compiled == null) {
+		            try {
+		                compiled = xquery.compile(context, source);
+		            }
+		            catch(IOException e) {
+		                abort("Failed to read query from " + resource.getURI());
+		            }
+		        }
+		        
+		        try {
+		            xquery.execute(compiled, null);
+		        }
+		        finally {
+		        	//return the compiled query to the pool
+		            xqPool.returnCompiledXQuery(source, compiled);
+		        }
+			} else {
+				LOG.warn( "XQuery User Job not found: " + xqueryresource + ", job not scheduled" );
 			}
-	        
-	        if(compiled == null)
-	        {
-	            try
-	            {
-	                compiled = xquery.compile(context, source);
-	            }
-	            catch(IOException e)
-	            {
-	                abort("Failed to read query from " + resource.getURI());
-	            }
-	        }
-	        
-	        try
-	        {
-	            xquery.execute(compiled, null);
-	        }
-	        finally
-	        {
-	        	//return the compiled query to the pool
-	            xqPool.returnCompiledXQuery(source, compiled);
-	        }
 		}
-		catch(EXistException ee)
-		{
+		catch(EXistException ee) {
 			abort("Could not get DBBroker!");
 		}
-		catch(PermissionDeniedException pde)
-		{
+		catch(PermissionDeniedException pde) {
 			abort("Permission denied for the scheduling user: " + user.getName() + "!");
 		}
-		catch(XPathException xpe)
-		{
+		catch(XPathException xpe) {
 			abort("XPathException in the Job: " + xpe.getMessage() + "!");
 		}
 		finally {
