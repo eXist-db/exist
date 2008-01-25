@@ -186,7 +186,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public abstract NodeProxy get(NodeProxy p);
 
     public DocumentSet getDocumentSet() {
-        DocumentSet ds = new DocumentSet();
+        MutableDocumentSet ds = new DefaultDocumentSet();
         NodeProxy p;
         for(Iterator i = iterator(); i.hasNext(); ) {
             p = (NodeProxy)i.next();

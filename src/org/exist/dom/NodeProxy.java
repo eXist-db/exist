@@ -1073,7 +1073,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.dom.NodeSet#getDocumentSet()
      */
     public DocumentSet getDocumentSet() {
-        DocumentSet docs = new DocumentSet(1);
+        MutableDocumentSet docs = new DefaultDocumentSet(1);
         docs.add(doc);
         return docs;
     }

@@ -21,15 +21,13 @@
  */
 package org.exist.storage;
 
-import java.io.StringReader;
-
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
-
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.lock.Lock;
@@ -46,6 +44,8 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import java.io.StringReader;
 
 /**
  * Tests recovery of XUpdate operations.
@@ -104,7 +104,7 @@ public class UpdateRecoverTest extends TestCase {
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
-            DocumentSet docs = new DocumentSet();
+            MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);

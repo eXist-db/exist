@@ -49,8 +49,8 @@ public class HTTPUtils {
 		try {
 			DocumentSet documentSet = result.getDocumentSet();
 			long mostRecentDocumentTime = 0;
-			for (int i = 0; i < documentSet.getLength(); i++) {
-				DocumentImpl doc = (DocumentImpl) documentSet.item(i);
+			for (int i = 0; i < documentSet.getDocumentCount(); i++) {
+				DocumentImpl doc = documentSet.getDocumentAt(i);
 				if (doc != null) {
 					mostRecentDocumentTime = Math.max(doc.getMetadata().getLastModified(),
 							mostRecentDocumentTime);

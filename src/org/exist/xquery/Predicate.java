@@ -327,7 +327,7 @@ public class Predicate extends PathExpr {
             return cached.getResult();
         }
        
-		DocumentImpl lastDoc = null;      
+		DocumentImpl lastDoc = null;
 		for (Iterator i = nodes.iterator(); i.hasNext();) {               
             NodeProxy currentNode = (NodeProxy) i.next();
             int sizeHint = Constants.NO_SIZE_HINT;
@@ -405,7 +405,7 @@ public class Predicate extends PathExpr {
 //                Sequence ancestors = outerNodeSet.selectAncestors(contextSet, true, getExpressionId());
                 Sequence ancestors = contextSet.selectAncestorDescendant(outerNodeSet,
 						NodeSet.ANCESTOR, true, getExpressionId());
-				if (contextSet.getDocumentSet().intersection(outerNodeSet.getDocumentSet()).getLength() == 0)
+				if (contextSet.getDocumentSet().intersection(outerNodeSet.getDocumentSet()).getDocumentCount() == 0)
 					LOG.info("contextSet and outerNodeSet don't share any document");
 				ExtArrayNodeSet temp = new ExtArrayNodeSet(100);
 				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {

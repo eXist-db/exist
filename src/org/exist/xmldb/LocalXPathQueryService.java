@@ -22,21 +22,9 @@
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.util.LockException;
-import org.exist.util.DeadlockException;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.*;
 import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
@@ -44,21 +32,21 @@ import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.lock.Lock;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Option;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.storage.lock.LockedDocumentMap;
+import org.exist.util.LockException;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.CompiledExpression;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
 
 public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryService {
 
@@ -321,14 +309,14 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
             do {
                 reservedBroker = brokerPool.get(user);
                 deadlockCaught = false;
-	        	DocumentSet docs = null;
+	        	MutableDocumentSet docs = null;
 	            try {
 	                org.exist.collections.Collection coll = collection.getCollection();
 	                lockedDocuments = new LockedDocumentMap();
-	                docs = new DocumentSet();
+	                docs = new DefaultDocumentSet();
 	                coll.allDocs(reservedBroker, docs, true, lockedDocuments, Lock.WRITE_LOCK);
 	            } catch (LockException e) {
-	                LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getLength() + "; locked: " +
+	                LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getDocumentCount() + "; locked: " +
                     lockedDocuments.size());
 					lockedDocuments.unlock();
                     brokerPool.release(reservedBroker);

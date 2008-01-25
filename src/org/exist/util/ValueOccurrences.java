@@ -22,8 +22,9 @@
  */
 package org.exist.util;
 
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -36,7 +37,7 @@ public class ValueOccurrences {
 
 	private AtomicValue value;
 	private int occurrences = 0;
-	private DocumentSet docs = new DocumentSet();
+	private MutableDocumentSet docs = new DefaultDocumentSet();
 	
 	/**
 	 * 
@@ -76,7 +77,7 @@ public class ValueOccurrences {
      * which the term has been found.
      */
     public int getDocuments() {
-        return docs.getLength();
+        return docs.getDocumentCount();
     }
     
 	/*
@@ -102,7 +103,7 @@ public class ValueOccurrences {
 			buf.append("Value: '" + e.getMessage() +"'");
 		}
 		buf.append(" occurences: '" + occurrences +"'");
-		buf.append(" documents: '" + docs.getLength() +"'");
+		buf.append(" documents: '" + docs.getDocumentCount() +"'");
 		return buf.toString();
 	}
 }

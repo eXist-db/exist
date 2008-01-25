@@ -23,16 +23,16 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author wolf
@@ -66,10 +66,10 @@ public class Dumper extends FilteringTrigger {
 		if(existingDocument != null)
 			System.out.println("replacing document " + ((DocumentImpl)existingDocument).getFileURI());
 		System.out.println("collection contents:");
-		DocumentSet docs = new DocumentSet();
+		DefaultDocumentSet docs = new DefaultDocumentSet();
 		collection.getDocuments(broker, docs, true);
-		for(int i = 0; i < docs.getLength(); i++)
-			System.out.println("\t" + ((DocumentImpl)docs.item(i)).getFileURI());
+		for(int i = 0; i < docs.getDocumentCount(); i++)
+			System.out.println("\t" + docs.getDocumentAt(i).getFileURI());
 	}
 
     /* (non-Javadoc)

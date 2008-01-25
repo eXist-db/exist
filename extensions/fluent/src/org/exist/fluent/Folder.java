@@ -426,7 +426,7 @@ public class Folder extends Resource implements Cloneable {
 				protected void prepareContext(DBBroker broker_) {
 					acquire(Lock.READ_LOCK, broker_);
 					try {
-						docs = handle.allDocs(broker_, new DocumentSet(), false, false);
+						docs = handle.allDocs(broker_, new DefaultDocumentSet(), false, false);
 						baseUri = new AnyURIValue(handle.getURI());
 					} finally {
 						release();
@@ -919,12 +919,12 @@ public class Folder extends Resource implements Cloneable {
 			DocumentSet docs;
 			acquire(Lock.READ_LOCK);
 			try {
-				docs = handle.allDocs(broker, new DocumentSet(), recursive, false);
+				docs = handle.allDocs(broker, new DefaultDocumentSet(), recursive, false);
 			} finally {
 				release();
 			}
-			Sequence result = new ExtArrayNodeSet(docs.getLength(), 1);
-			for (Iterator<?> i = docs.iterator(); i.hasNext();) {
+			Sequence result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
+			for (Iterator<?> i = docs.getDocumentIterator(); i.hasNext();) {
 				result.add(new NodeProxy((DocumentImpl) i.next()));
 			}
 			return result;
@@ -950,7 +950,7 @@ public class Folder extends Resource implements Cloneable {
 			@Override void prepareContext(DBBroker broker_) {
 				acquire(Lock.READ_LOCK, broker_);
 				try {
-					docs = handle.allDocs(broker_, new DocumentSet(), true, false);
+					docs = handle.allDocs(broker_, new DefaultDocumentSet(), true, false);
 					baseUri = new AnyURIValue(handle.getURI());
 				} finally {
 					release();

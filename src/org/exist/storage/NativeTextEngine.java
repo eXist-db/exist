@@ -27,7 +27,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.fulltext.ElementContent;
-import org.exist.fulltext.FTIndexWorker;
 import org.exist.fulltext.FTMatch;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
@@ -44,7 +43,6 @@ import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -403,7 +401,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             token = stemmer.stem(expr);
         else
             token = expr;
-        final NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);         
+        final NodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 250);         
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = ((Collection) iter.next()).getId();
             Value key;

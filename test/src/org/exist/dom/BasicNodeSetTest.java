@@ -105,7 +105,7 @@ public class BasicNodeSetTest extends TestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
             
-            DocumentSet docs = root.allDocs(broker, new DocumentSet(), true, false);
+            DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
             Sequence seq = executeQuery(broker, "//SPEECH", 2628, null);
             
             System.out.println("Testing ChildSelector ...");
@@ -167,7 +167,7 @@ public class BasicNodeSetTest extends TestCase {
             
             Serializer serializer = broker.getSerializer();
             serializer.reset();
-            DocumentSet docs = root.allDocs(broker, new DocumentSet(), true, false);
+            DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
             
             Sequence smallSet = executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']", 1, null);
             Sequence largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']", 160, null);
@@ -273,7 +273,7 @@ public class BasicNodeSetTest extends TestCase {
             
             Serializer serializer = broker.getSerializer();
             serializer.reset();
-            DocumentSet docs = root.allDocs(broker, new DocumentSet(), true, false);
+            DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
 
             System.out.println("------------ Testing NativeElementIndex.findChildNodesByTagName ---------");
             // parent set: 1.1.1; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1

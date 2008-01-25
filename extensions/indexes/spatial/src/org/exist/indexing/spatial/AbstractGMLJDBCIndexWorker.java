@@ -515,7 +515,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	try { 
     		conn = acquireConnection();
     		//Collect the (normalized) geometries for each document
-			for (Iterator iDoc = docs.iterator(); iDoc.hasNext();) {
+			for (Iterator iDoc = docs.getDocumentIterator(); iDoc.hasNext();) {
 				DocumentImpl doc = (DocumentImpl)iDoc.next();
 				//TODO : check if document is GML-aware ?
 		    	//Aggregate the occurences between different documents

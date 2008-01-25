@@ -483,7 +483,7 @@ public class LocationStep extends Step {
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                || !(docs.equals(currentDocs))) {
+                || !(docs.equalDocs(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -560,7 +560,7 @@ public class LocationStep extends Step {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
             if (currentSet == null || currentDocs == null
-                || !(docs == currentDocs || docs.equals(currentDocs))) {
+                || !(docs == currentDocs || docs.equalDocs(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -611,7 +611,7 @@ public class LocationStep extends Step {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
             if (currentSet == null || currentDocs == null
-                || !(docs == currentDocs || docs.equals(currentDocs))) {
+                || !(docs == currentDocs || docs.equalDocs(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -697,7 +697,7 @@ public class LocationStep extends Step {
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                || !(docs.equals(currentDocs))) {
+                || !(docs.equalDocs(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -780,7 +780,7 @@ public class LocationStep extends Step {
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                || !(docs.equals(currentDocs))) {
+                || !(docs.equalDocs(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -818,7 +818,7 @@ public class LocationStep extends Step {
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                || !(docs.equals(currentDocs))) {
+                || !(docs.equalDocs(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -892,7 +892,7 @@ public class LocationStep extends Step {
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                || !(docs.equals(currentDocs))) {
+                || !(docs.equalDocs(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -962,7 +962,7 @@ public class LocationStep extends Step {
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                || !(docs.equals(currentDocs))) {
+                || !(docs.equalDocs(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,

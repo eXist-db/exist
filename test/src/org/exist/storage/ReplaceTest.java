@@ -21,12 +21,10 @@
  */
 package org.exist.storage;
 
-import java.io.StringReader;
-
 import junit.textui.TestRunner;
-
 import org.exist.collections.IndexInfo;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.dom.DOMFile;
@@ -35,6 +33,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
+
+import java.io.StringReader;
 
 public class ReplaceTest extends AbstractUpdateTest {
 
@@ -56,7 +56,7 @@ public class ReplaceTest extends AbstractUpdateTest {
             
             IndexInfo info = init(broker, mgr);
             assertNotNull(info);
-            DocumentSet docs = new DocumentSet();
+            MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);

@@ -21,34 +21,6 @@
  */
 package org.exist.xmlrpc;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.RandomAccessFile;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Vector;
-import java.util.WeakHashMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
@@ -57,25 +29,13 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.DocumentTypeImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.SortedNodeSet;
+import org.exist.dom.*;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
-import org.exist.security.XMLSecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -89,31 +49,15 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Compressor;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.Occurrences;
-import org.exist.util.SyntaxException;
+import org.exist.util.*;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Option;
-import org.exist.xquery.PathExpr;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.HTTPUtils;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.DocumentType;
@@ -121,8 +65,12 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.base.ErrorCodes;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.util.*;
 
 /**
  * This class implements the actual methods defined by
@@ -355,15 +303,15 @@ public class RpcConnection extends Thread {
             return null;
         boolean deadlockCaught;
         do {
-            DocumentSet docs = null;
+            MutableDocumentSet docs = null;
             LockedDocumentMap lockedDocuments = new LockedDocumentMap();
             try {
                 Collection coll = broker.getCollection(XmldbURI.createInternal(protectColl));
-                docs = new DocumentSet();
+                docs = new DefaultDocumentSet();
                 coll.allDocs(broker, docs, true, lockedDocuments, Lock.WRITE_LOCK);
                 return lockedDocuments;
             } catch (LockException e) {
-                LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getLength() + "; locked: " +
+                LOG.debug("Deadlock detected. Starting over again. Docs: " + docs.getDocumentCount() + "; locked: " +
                 lockedDocuments.size());
                 lockedDocuments.unlock();
             }
@@ -1011,7 +959,7 @@ public class RpcConnection extends Thread {
                 throw new EXistException("collection " + collUri + " not found");
             }
             //TODO : register a lock (which one ?) in the transaction ?
-            DocumentSet docs = collection.allDocs(broker, new DocumentSet(), true, true);
+            DocumentSet docs = collection.allDocs(broker, new DefaultDocumentSet(), true, true);
             XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.XMLRPC);
             Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
             long mods = 0;
@@ -1083,7 +1031,7 @@ public class RpcConnection extends Thread {
                 transact.abort(transaction);
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             }
-            DocumentSet docs = new DocumentSet();
+            MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(doc);
             XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.XMLRPC);
             Modification modifications[] = processor.parse(new InputSource(
@@ -1156,7 +1104,7 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            DocumentSet docs = broker.getAllXMLResources(new DocumentSet());
+            DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
             XmldbURI names[] = docs.getNames();
             Vector vec = new Vector();
             for (int i = 0; i < names.length; i++)
@@ -3506,9 +3454,9 @@ public class RpcConnection extends Thread {
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("collection " + collUri + " not found");
-            DocumentSet docs = new DocumentSet();
+            MutableDocumentSet docs = new DefaultDocumentSet();
             collection.allDocs(broker, docs, inclusive, true);
-            NodeSet nodes = docs.toNodeSet();
+            NodeSet nodes = docs.docsToNodeSet();
             Vector result = scanIndexTerms(start, end, broker, docs, nodes);
             return result;
         } finally {

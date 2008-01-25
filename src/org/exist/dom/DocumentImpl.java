@@ -714,7 +714,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * @return a <code>NodeList</code> value
      */
     protected NodeList findElementsByTagName(StoredNode root, QName qname) {
-        DocumentSet docs = new DocumentSet();
+        MutableDocumentSet docs = new DefaultDocumentSet();
         docs.add(this);
         NodeProxy p = new NodeProxy(this, root.getNodeId(), root.getInternalAddress());
         NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
@@ -925,7 +925,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * @return a <code>NodeList</code> value
      */
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-        DocumentSet docs = new DocumentSet();
+        MutableDocumentSet docs = new DefaultDocumentSet();
         docs.add(this);
         QName qname = new QName(localName, namespaceURI, null);
         return broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);

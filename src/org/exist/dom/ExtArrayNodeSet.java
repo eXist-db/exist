@@ -28,12 +28,15 @@ import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
+import org.exist.util.LockException;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.xmldb.XmldbURI;
+import org.exist.storage.lock.Lock;
 import org.w3c.dom.Node;
 
 /**
@@ -58,7 +61,7 @@ import org.w3c.dom.Node;
  * @author Wolfgang <wolfgang@exist-db.org>
  * @since 0.9.3
  */
-public class ExtArrayNodeSet extends AbstractNodeSet {
+public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
     private final static int INITIAL_DOC_SIZE = 64;
     
@@ -80,7 +83,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     
     private int state = 0;
 
-    private DocumentSet cachedDocuments = null;
+    private MutableDocumentSet cachedDocuments = null;
     
     //  used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
@@ -687,15 +690,16 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @return a <code>DocumentSet</code> value
      */
     public DocumentSet getDocumentSet() {
-        if(cachedDocuments != null)
-            return cachedDocuments;
-        cachedDocuments = new DocumentSet(partCount);
-        sort();
-        for (int i = 0; i < partCount; i++) {
-            cachedDocuments.add(parts[i].getDocument(), false);
-        }
-        isSorted = true;
-        return cachedDocuments;
+        return this;
+//        if(cachedDocuments != null)
+//            return cachedDocuments;
+//        cachedDocuments = new DefaultDocumentSet(partCount);
+//        sort();
+//        for (int i = 0; i < partCount; i++) {
+//            cachedDocuments.add(parts[i].getDocument(), false);
+//        }
+//        isSorted = true;
+//        return cachedDocuments;
     }
 
     /**
@@ -704,9 +708,22 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @param docs a <code>DocumentSet</code> value
      */
     public void setDocumentSet(DocumentSet docs) {
-    	cachedDocuments = docs;
+    	cachedDocuments = new DefaultDocumentSet();
+        cachedDocuments.addAll(docs);
     }
 
+    public boolean equalDocs(DocumentSet other) {
+		if (this == other)
+			// we are comparing the same objects
+			return true;
+		if (partCount != other.getDocumentCount())
+			return false;
+        for (int i = 0; i < partCount; i++) {
+			if (!other.contains(parts[i].getDocument().getDocId()))
+				return false;
+        }
+        return true;
+	}
 
     /**
      * The method <code>getCollectionIterator</code>
@@ -717,6 +734,126 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return new CollectionIterator();
     }
 
+    // DocumentSet methods
+
+    public Iterator getDocumentIterator() {
+        return new DocumentIterator();
+    }
+
+    public int getDocumentCount() {
+        return partCount;
+    }
+
+    public DocumentImpl getDocumentAt(int pos) {
+        return parts[pos].getDocument();
+    }
+
+    public DocumentImpl getDoc(int docId) {
+        int idx = ArrayUtils.binarySearch(documentIds, docId, partCount);
+        if (idx > -1)
+            return parts[idx].getDocument();
+        else
+            return null;
+    }
+
+    public XmldbURI[] getNames() {
+        XmldbURI[] uris = new XmldbURI[partCount];
+        for (int i = 0; i < partCount; i++) {
+            uris[i] = parts[i].getDocument().getURI();
+        }
+        return uris;
+    }
+
+    public DocumentSet intersection(DocumentSet other) {
+        DefaultDocumentSet r = new DefaultDocumentSet();
+		DocumentImpl d;
+        for (int i = 0; i < partCount; i++) {
+            d = parts[i].getDocument();
+			if (other.contains(d.getDocId()))
+				r.add(d);
+        }
+		for (Iterator i = other.getDocumentIterator(); i.hasNext();) {
+			d = (DocumentImpl) i.next();
+			if (contains(d.getDocId()) && (!r.contains(d.getDocId())))
+				r.add(d);
+		}
+		return r;
+    }
+
+    public boolean contains(DocumentSet other) {
+        if (other.getDocumentCount() > partCount)
+			return false;
+		DocumentImpl d;
+		for (Iterator i = other.getDocumentIterator(); i.hasNext();) {
+			d = (DocumentImpl) i.next();
+			if (!contains(d.getDocId()))
+				return false;
+		}
+		return true;
+    }
+
+    public boolean contains(int docId) {
+        return ArrayUtils.binarySearch(documentIds, docId, partCount) > -1;
+    }
+
+    public NodeSet docsToNodeSet() {
+        NodeSet result = new ExtArrayNodeSet(partCount);
+		DocumentImpl doc;
+        for (int i = 0; i < partCount; i++) {
+            doc = parts[i].getDocument();
+            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
+            	result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
+            }
+        }
+        return result;
+    }
+
+    public void lock(boolean exclusive, boolean checkExisting) throws LockException {
+        DocumentImpl d;
+	    Lock dlock;
+        for (int idx = 0; idx < partCount; idx++) {
+	        d = parts[idx].getDocument();
+            dlock = d.getUpdateLock();
+            if (exclusive)
+                dlock.acquire(Lock.WRITE_LOCK);
+            else
+                dlock.acquire(Lock.READ_LOCK);
+        }
+    }
+
+    public void unlock(boolean exclusive) {
+        DocumentImpl d;
+	    Lock dlock;
+        final Thread thread = Thread.currentThread();
+        for(int idx = 0; idx < partCount; idx++) {
+	        d = parts[idx].getDocument();
+	        dlock = d.getUpdateLock();
+            if(exclusive)
+                dlock.release(Lock.WRITE_LOCK);
+            else if (dlock.isLockedForRead(thread))
+                dlock.release(Lock.READ_LOCK);
+        }
+    }
+
+    private class DocumentIterator implements Iterator {
+
+        int currentDoc = 0;
+
+        public boolean hasNext() {
+            return currentDoc < partCount;
+        }
+
+        public Object next() {
+            if (currentDoc == partCount)
+                return null;
+            else
+                return parts[currentDoc++].getDocument();
+        }
+
+        public void remove() {
+        }
+    }
+    
     /**
      * The class <code>CollectionIterator</code>
      *

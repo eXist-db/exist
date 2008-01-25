@@ -760,32 +760,32 @@ public class XQueryFunctionsTest extends TestCase {
 
     }
     
-    public void testResolveQName() {
-      try {
-          String query = "declare namespace a=\"aes\"; " +
-          "declare namespace n=\"ns1\"; " +
-          "declare variable $d := <c xmlns:x=\"ns1\"><d>x:test</d></c>; " +
-          "for $e in $d/d " +
-          "return fn:resolve-QName($e/text(), $e)";
-        
-        ResourceSet result = service.query(query);
-        String r = (String) result.getResource(0).getContent();
-        assertEquals("x:test", r);
-        
-        query = "declare namespace a=\"aes\"; " +
-        	"declare namespace n=\"ns1\"; " +
-        	"declare variable $d := <c xmlns:x=\"ns1\"><d xmlns:y=\"ns1\">y:test</d></c>; " +
-        	"for $e in $d/d " +
-        	"return fn:resolve-QName($e/text(), $e)";
-        result = service.query(query);
-        r = (String) result.getResource(0).getContent();
-        assertEquals("y:test", r);        
-        
-      } catch (XMLDBException e) {
-        e.printStackTrace();
-        fail(e.getMessage());
-      }
-    }
+//    public void testResolveQName() {
+//      try {
+//          String query = "declare namespace a=\"aes\"; " +
+//          "declare namespace n=\"ns1\"; " +
+//          "declare variable $d := <c xmlns:x=\"ns1\"><d>x:test</d></c>; " +
+//          "for $e in $d/d " +
+//          "return fn:resolve-QName($e/text(), $e)";
+//
+//        ResourceSet result = service.query(query);
+//        String r = (String) result.getResource(0).getContent();
+//        assertEquals("x:test", r);
+//
+//        query = "declare namespace a=\"aes\"; " +
+//        	"declare namespace n=\"ns1\"; " +
+//        	"declare variable $d := <c xmlns:x=\"ns1\"><d xmlns:y=\"ns1\">y:test</d></c>; " +
+//        	"for $e in $d/d " +
+//        	"return fn:resolve-QName($e/text(), $e)";
+//        result = service.query(query);
+//        r = (String) result.getResource(0).getContent();
+//        assertEquals("y:test", r);
+//
+//      } catch (XMLDBException e) {
+//        e.printStackTrace();
+//        fail(e.getMessage());
+//      }
+//    }
     
     public void testNamespaceURI() {
         try {

@@ -22,27 +22,15 @@
 
 package org.exist.security.xacml;
 
-import java.io.ByteArrayOutputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.sun.xacml.*;
+import com.sun.xacml.cond.Apply;
+import com.sun.xacml.ctx.Status;
+import com.sun.xacml.finder.PolicyFinderResult;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.XMLSecurityManager;
@@ -60,18 +48,12 @@ import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.sun.xacml.AbstractPolicy;
-import com.sun.xacml.Indenter;
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.Policy;
-import com.sun.xacml.PolicyReference;
-import com.sun.xacml.PolicySet;
-import com.sun.xacml.PolicyTreeElement;
-import com.sun.xacml.ProcessingException;
-import com.sun.xacml.Target;
-import com.sun.xacml.cond.Apply;
-import com.sun.xacml.ctx.Status;
-import com.sun.xacml.finder.PolicyFinderResult;
+import java.io.*;
+import java.net.URI;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class contains utility methods for working with XACML
@@ -212,7 +194,7 @@ public class XACMLUtil implements UpdateListener
 		int documentCount = policyCollection.getDocumentCount();
 		if(documentCount == 0)
 			return null;
-		DocumentSet documentSet = new DocumentSet(documentCount);
+		MutableDocumentSet documentSet = new DefaultDocumentSet(documentCount);
 		return policyCollection.allDocs(broker, documentSet, recursive, false);
 	}
 	
@@ -277,7 +259,7 @@ public class XACMLUtil implements UpdateListener
 	public DocumentImpl getPolicyDocument(DBBroker broker, QName attributeQName, URI attributeValue) throws ProcessingException, XPathException
 	{
 		DocumentSet documentSet = getPolicyDocuments(broker, attributeQName, attributeValue);
-		int documentCount = (documentSet == null) ? 0 : documentSet.getLength();
+		int documentCount = (documentSet == null) ? 0 : documentSet.getDocumentCount();
 		if(documentCount == 0)
 		{
 			LOG.warn("Could not find " + attributeQName.getLocalName() + " '" +  attributeValue + "'", null);
@@ -289,7 +271,7 @@ public class XACMLUtil implements UpdateListener
 			throw new ProcessingException("Too many applicable policies for " + attributeQName.getLocalName() + " '" +  attributeValue + "'");
 		}
 
-		return (DocumentImpl)documentSet.iterator().next();
+		return (DocumentImpl)documentSet.getDocumentIterator().next();
 	}
 	/**
 	* Gets all policy (or policy set) documents that have the
@@ -316,7 +298,7 @@ public class XACMLUtil implements UpdateListener
 		AtomicValue comparison = new AnyURIValue(attributeValue);
 
 		DocumentSet documentSet = getPolicyDocuments(broker, true);
-		NodeSet nodeSet = documentSet.toNodeSet();
+		NodeSet nodeSet = documentSet.docsToNodeSet();
 
         NativeValueIndex valueIndex = broker.getValueIndex();
         Sequence results = valueIndex.find(Constants.EQ, documentSet, null, NodeSet.ANCESTOR, attributeQName, comparison);

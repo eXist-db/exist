@@ -67,11 +67,11 @@ public class RootNode extends Step {
         
         // get statically known documents from the context
         DocumentSet ds = context.getStaticallyKnownDocuments();
-        if (ds == null || ds.getLength() == 0) return Sequence.EMPTY_SEQUENCE;
+        if (ds == null || ds.getDocumentCount() == 0) return Sequence.EMPTY_SEQUENCE;
         
         // if the expression occurs in a nested context, we might have cached the
         // document set
-        if (cachedDocs != null && cachedDocs.equals(ds)) return cached;
+        if (cachedDocs != null && cachedDocs.equalDocs(ds)) return cached;
         
         // check if the loaded documents should remain locked
         NodeSet result = new ExtArrayNodeSet(2);
@@ -80,7 +80,7 @@ public class RootNode extends Step {
             if (!context.inProtectedMode())
                 ds.lock(false, true);
 	        DocumentImpl doc;
-	        for (Iterator i = ds.iterator(); i.hasNext();) {
+	        for (Iterator i = ds.getDocumentIterator(); i.hasNext();) {
 	            doc = (DocumentImpl) i.next();
                 if (context.inProtectedMode() && !context.getProtectedDocs().containsKey(doc.getDocId()))
                     continue;

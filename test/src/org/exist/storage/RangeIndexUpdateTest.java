@@ -24,7 +24,9 @@ package org.exist.storage;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.txn.TransactionManager;
@@ -83,7 +85,7 @@ public class RangeIndexUpdateTest {
     private final static QName ITEM_QNAME = new QName("item", "", "");
 
     private static BrokerPool pool;
-    private static DocumentSet docs;
+    private static MutableDocumentSet docs;
 
     @Test
     public void updates() {
@@ -199,7 +201,7 @@ public class RangeIndexUpdateTest {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG);
 
-            docs = new DocumentSet();
+            docs = new DefaultDocumentSet();
 
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), XML);
             assertNotNull(info);

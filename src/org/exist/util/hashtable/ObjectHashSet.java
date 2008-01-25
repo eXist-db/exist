@@ -30,7 +30,8 @@ import java.util.List;
 /**
  * A hash set on objects. Objects are compared for equality by
  * calling Object.equals().
- * 
+ * calling Object.equals().
+ *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class ObjectHashSet extends AbstractHashtable {

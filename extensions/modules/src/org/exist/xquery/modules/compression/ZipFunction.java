@@ -22,30 +22,17 @@
 package org.exist.xquery.modules.compression;
 
 import org.exist.collections.Collection;
-import org.exist.dom.QName;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Type;
-
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
 
-import java.io.ByteArrayOutputStream;  // DIZZZZ: The common-io implementation is far more efficient
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.zip.ZipEntry;
@@ -210,9 +197,9 @@ public class ZipFunction extends BasicFunction
 	private void zipCollection(ZipOutputStream zos, Collection col, boolean useHierarchy) throws IOException, SAXException, LockException
 	{
 		//iterate over child documents
-		DocumentSet childDocs = new DocumentSet(); 
+		MutableDocumentSet childDocs = new DefaultDocumentSet(); 
 		col.getDocuments(context.getBroker(), childDocs, true);
-		for(Iterator itChildDocs = childDocs.iterator(); itChildDocs.hasNext();)
+		for(Iterator itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();)
 		{
 			DocumentImpl childDoc = (DocumentImpl)itChildDocs.next();
 			childDoc.getUpdateLock().acquire(Lock.READ_LOCK);

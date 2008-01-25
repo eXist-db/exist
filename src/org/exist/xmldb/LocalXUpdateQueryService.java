@@ -1,16 +1,11 @@
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URISyntaxException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.cluster.ClusterComunication;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -25,6 +20,11 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URISyntaxException;
 
 /**
  * LocalXUpdateQueryService.java
@@ -59,7 +59,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 	public long updateResource(String resource, String xupdate)
 		throws XMLDBException {
 		long start = System.currentTimeMillis();
-		DocumentSet docs = new DocumentSet();
+		MutableDocumentSet docs = new DefaultDocumentSet();
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
 		DBBroker broker = null;

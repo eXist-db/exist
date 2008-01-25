@@ -1,7 +1,8 @@
 package org.exist.util;
 
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
 
 /**
  * Class to count element and word frequencies.
@@ -10,7 +11,7 @@ public class Occurrences implements Comparable {
 
 	private Comparable term;
 	private int occurrences = 0;
-	private DocumentSet docs = new DocumentSet();
+	private MutableDocumentSet docs = new DefaultDocumentSet();
     
 	public Occurrences(Comparable name) {
 		term = name;
@@ -47,7 +48,7 @@ public class Occurrences implements Comparable {
      * which the term has been found.
      */
     public int getDocuments() {
-        return docs.getLength();
+        return docs.getDocumentCount();
     }
     
 	/*

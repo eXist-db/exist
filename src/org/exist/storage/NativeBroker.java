@@ -1644,9 +1644,9 @@ public class NativeBroker extends DBBroker {
      *  document-type's name.
      * @return The documentsByDoctype value
      */
-    public DocumentSet getXMLResourcesByDoctype(String doctypeName, DocumentSet result) {
-        DocumentSet docs = getAllXMLResources(new DocumentSet());
-        for (Iterator i = docs.iterator(); i.hasNext();) {
+    public MutableDocumentSet getXMLResourcesByDoctype(String doctypeName, MutableDocumentSet result) {
+        MutableDocumentSet docs = getAllXMLResources(new DefaultDocumentSet());
+        for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
 		    DocumentImpl doc = (DocumentImpl) i.next();
 		    DocumentType doctype = doc.getDoctype();
             if (doctype == null)
@@ -1665,7 +1665,7 @@ public class NativeBroker extends DBBroker {
      * @param docs a (possibly empty) document set to which the found
      *  documents are added.
      */
-    public DocumentSet getAllXMLResources(DocumentSet docs) {
+    public MutableDocumentSet getAllXMLResources(MutableDocumentSet docs) {
         long start = System.currentTimeMillis();
         Collection rootCollection = null;
         try {
@@ -1674,10 +1674,8 @@ public class NativeBroker extends DBBroker {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("getAllDocuments(DocumentSet) - end - "
 			  + "loading "
-			  + docs.getLength()
-			  + " documents from "
-			  + docs.getCollectionCount()
-			  + "collections took "
+			  + docs.getDocumentCount()
+			  + " documents took "
 			  + (System.currentTimeMillis() - start)
 			  + "ms.");
             }

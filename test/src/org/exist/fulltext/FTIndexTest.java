@@ -4,7 +4,9 @@ import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
@@ -107,7 +109,7 @@ public class FTIndexTest {
         try {
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
-            Occurrences[] occur = broker.getTextEngine().scanIndexTerms(docs, docs.toNodeSet(), "a", "ax");
+            Occurrences[] occur = broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), "a", "ax");
             printOccurrences("Checking for 'a', 'ax'", occur);
             assertEquals(2, occur.length);
             assertEquals("aircraft", occur[0].getTerm());
@@ -252,7 +254,7 @@ public class FTIndexTest {
 
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
 
-            Occurrences[] occur = broker.getTextEngine().scanIndexTerms(docs, docs.toNodeSet(), "o", "ox");
+            Occurrences[] occur = broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), "o", "ox");
             printOccurrences("o, ox", occur);
             assertEquals(2, occur.length);
             assertEquals("of", occur[0].getTerm());
@@ -803,9 +805,9 @@ public class FTIndexTest {
     private Occurrences[] checkIndex(DocumentSet docs, DBBroker broker, QName[] qn, String term, int expected) throws PermissionDeniedException {
         Occurrences[] occur;
         if (qn == null)
-            occur = broker.getTextEngine().scanIndexTerms(docs, docs.toNodeSet(), term, null);
+            occur = broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), term, null);
         else
-            occur = broker.getTextEngine().scanIndexTerms(docs, docs.toNodeSet(), qn, term, null);
+            occur = broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), qn, term, null);
         printOccurrences(term, occur);
         assertEquals(expected, occur.length);
         return occur;
@@ -828,7 +830,7 @@ public class FTIndexTest {
         DBBroker broker = null;
         TransactionManager transact = null;
         Txn transaction = null;
-        DocumentSet docs = new DocumentSet();
+        MutableDocumentSet docs = new DefaultDocumentSet();
         try {
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
