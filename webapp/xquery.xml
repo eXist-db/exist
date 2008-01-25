@@ -1096,24 +1096,24 @@ return $w</synopsis>
 
             <variablelist>
                 <varlistentry>
-                    <term><option>expand-xincludes=yes|no</option></term>
+                    <term><option>expand-xincludes= yes | no</option></term>
                     <listitem>
                         <para>should the serializer expand XInclude elements?</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>highlight-matches=all|none</option></term>
+                    <term><option>highlight-matches= both | elements | attributes | none</option></term>
                     <listitem>
                         <para>when querying text with the full text or n-gram extensions, the
                         query engine tracks the exact position of all matches inside text content.
                         The serializer can later use this information to mark those matches by
                         wrapping them into an element <sgmltag>exist:match</sgmltag>.</para>
                         
-                        <para>Setting <option>highlight-matches=all</option> will enable this feature.</para>
+                        <para>Setting <option>highlight-matches=both</option> will enable this feature for every kind of indexable node.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>process-xsl-pi=yes|no</option></term>
+                    <term><option>process-xsl-pi= yes | no</option></term>
                     <listitem>
                         <para>if a document is serialized and it has an XSL processing instruction,
                         eXist can try to load the referenced stylesheet and apply it to the
@@ -1121,7 +1121,7 @@ return $w</synopsis>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>add-exist-id=element|all|none</option></term>
+                    <term><option>add-exist-id= element | all | none</option></term>
                     <listitem>
                         <para>shows the internal node
                         ids of an element by adding an attribute <option>exist:id="internal-node-id"</option>.
@@ -1136,7 +1136,7 @@ return $w</synopsis>
             
             <variablelist>
                 <varlistentry>
-                    <term><option>method=xml|xhtml|text</option></term>
+                    <term><option>method= xml | xhtml | text</option></term>
                     <listitem>
                         <para>determines the serialization method. Should be one of
                         "xml", "xhtml" or "text". The "xhtml" method makes sure that
@@ -1177,7 +1177,7 @@ return $w</synopsis>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>indent</option>=yes|no</term>
+                    <term><option>indent= yes | no</option></term>
                     <listitem>
                         <para>indent the document to make it easier to read. Indenting adds
                         whitespace characters to element nodes, restricted by the rules
@@ -1185,7 +1185,7 @@ return $w</synopsis>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>omit-xml-declaration</option>=yes|no</term>
+                    <term><option>omit-xml-declaration= yes | no</option></term>
                     <listitem>
                         <para>output an XML declaration if the parameter is set to "no"</para>
                     </listitem>
