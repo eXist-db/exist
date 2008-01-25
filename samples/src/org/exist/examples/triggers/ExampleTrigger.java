@@ -30,6 +30,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.xacml.AccessContext;
@@ -38,7 +39,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-
 import org.xml.sax.InputSource;
 
 /**
@@ -84,7 +84,7 @@ public class ExampleTrigger extends FilteringTrigger {
 			return;
 		getLogger().debug(xupdate);
 		// create a document set containing "contents.xml"
-		DocumentSet docs = new DocumentSet();
+		DefaultDocumentSet docs = new DefaultDocumentSet();
 		docs.add(doc);
 		try {
 			// IMPORTANT: temporarily disable triggers on the collection.
