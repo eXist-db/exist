@@ -47,7 +47,7 @@
         <step>
           <para>OR enter the following in a Unix shell or DOS/Windows command prompt:</para>
           <synopsis format="linespecific">bin\client.bat (DOS/Windows)</synopsis>
-          <synopsis format="linespecific">bin\client.sh (Unix)</synopsis>
+          <synopsis format="linespecific">bin/client.sh (Unix)</synopsis>
         </step>
         <step>
           <para>OR if both of the above approaches fail to launch the client, you can
