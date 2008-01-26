@@ -269,6 +269,11 @@ public class EXistServlet extends HttpServlet {
      */
     private String adjustPath(HttpServletRequest request) {
         String path = request.getPathInfo();
+        
+        if(path==null){
+            path="";
+        }
+        
         int p = path.lastIndexOf(';');
         if (p != Constants.STRING_NOT_FOUND)
 			path = path.substring(0, p);
