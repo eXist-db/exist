@@ -27,4 +27,6 @@ public interface IncomingMessage {
    Reader getReader()
       throws IOException;
    String getModuleBase();
+   
+   HttpServletRequest getRequest();
 }

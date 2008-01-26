@@ -8,16 +8,6 @@
 
 package org.exist.atom.modules;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.atom.Atom;
@@ -26,6 +16,10 @@ import org.exist.atom.OutgoingMessage;
 import org.exist.collections.Collection;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
+import org.exist.http.servlets.HttpRequestWrapper;
+import org.exist.http.servlets.HttpResponseWrapper;
+import org.exist.http.servlets.RequestWrapper;
+import org.exist.http.servlets.ResponseWrapper;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
@@ -37,12 +31,14 @@ import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Sequence;
-import org.xml.sax.SAXException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  *
@@ -250,6 +246,15 @@ public class Query extends AtomModuleBase implements Atom {
       
    }
    
+   private void declareVariables(XQueryContext context, HttpServletRequest request, HttpServletResponse response) throws XPathException {
+       RequestWrapper reqw = new HttpRequestWrapper(request, request.getCharacterEncoding(), request.getCharacterEncoding());
+       ResponseWrapper respw = new HttpResponseWrapper(response);
+       //context.declareNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
+       context.declareVariable(RequestModule.PREFIX + ":request", reqw);
+       context.declareVariable(ResponseModule.PREFIX + ":response", respw);
+       context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession());
+   }
+   
    public void doQuery(DBBroker broker,IncomingMessage request,OutgoingMessage response,MethodConfiguration config)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
@@ -277,10 +282,13 @@ public class Query extends AtomModuleBase implements Atom {
          context = feedQuery.getContext();
          context.setModuleLoadPath(getContext().getModuleLoadPath());
       }
- 
+      
       context.setStaticallyKnownDocuments(new XmldbURI[] { XmldbURI.create(request.getPath()).append(AtomProtocol.FEED_DOCUMENT_NAME) });
       
       try {
+    	  
+    	 declareVariables(context, request.getRequest(), response.getResponse());
+    	  
          Sequence resultSequence = xquery.execute(feedQuery, null);
          if (resultSequence.isEmpty()) {
             throw new BadRequestException("No topic was found.");

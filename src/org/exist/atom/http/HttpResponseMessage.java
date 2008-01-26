@@ -8,13 +8,12 @@
 
 package org.exist.atom.http;
 
+import org.exist.atom.OutgoingMessage;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.exist.atom.OutgoingMessage;
 
 /**
  *
@@ -48,5 +47,10 @@ public class HttpResponseMessage implements OutgoingMessage {
       throws IOException
    {
       return response.getWriter();
+   }
+   
+   public HttpServletResponse getResponse()
+   {
+	   return response;
    }
 }
