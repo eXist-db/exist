@@ -21,39 +21,12 @@
  */
 package org.exist.storage.dom;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BufferStats;
-import org.exist.storage.CacheManager;
-import org.exist.storage.NativeBroker;
-import org.exist.storage.Signatures;
-import org.exist.storage.StorageAddress;
-import org.exist.storage.btree.BTree;
-import org.exist.storage.btree.BTreeCallback;
-import org.exist.storage.btree.BTreeException;
-import org.exist.storage.btree.DBException;
-import org.exist.storage.btree.IndexQuery;
-import org.exist.storage.btree.Value;
+import org.exist.storage.*;
+import org.exist.storage.btree.*;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
@@ -72,6 +45,12 @@ import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.*;
+import java.text.NumberFormat;
+import java.util.ArrayList;
 
 /**
  * This is the main storage for XML nodes. Nodes are stored in document order.
@@ -1353,7 +1332,8 @@ public class DOMFile extends BTree implements Lockable {
                             return cursor.getCurrentPosition();
                     }
                 }
-                LOG.warn("Node " + node.getNodeId() + " could not be found. Giving up.");
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Node " + node.getNodeId() + " could not be found. Giving up.");
                 return KEY_NOT_FOUND;
             } catch (XMLStreamException e) {
                 SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
@@ -1475,8 +1455,7 @@ public class DOMFile extends BTree implements Lockable {
 	try {
 	    final long p = findValue(owner, node);
 	    if (p == KEY_NOT_FOUND) {
-		LOG.warn("node value not found : " + node.getNodeId());
-		return null;
+		    return null;
 	    }
 	    return get(p);
 	} catch (BTreeException bte) {
