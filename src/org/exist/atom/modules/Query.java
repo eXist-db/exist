@@ -31,6 +31,15 @@ import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.functions.response.ResponseModule;
+import org.exist.xquery.functions.session.SessionModule;
+import org.exist.xquery.value.Sequence;
+import org.xml.sax.SAXException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
