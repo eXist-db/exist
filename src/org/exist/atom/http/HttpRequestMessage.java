@@ -8,13 +8,12 @@
 
 package org.exist.atom.http;
 
+import org.exist.atom.IncomingMessage;
+
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.exist.atom.IncomingMessage;
 
 /**
  *
@@ -64,5 +63,10 @@ public class HttpRequestMessage implements IncomingMessage {
    
    public String getModuleBase() {
       return base;
+   }
+   
+   public HttpServletRequest getRequest()
+   {
+	   return request;
    }
 }

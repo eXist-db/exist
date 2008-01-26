@@ -8,6 +8,7 @@
 
 package org.exist.atom;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -24,4 +25,6 @@ public interface OutgoingMessage {
       throws IOException;
    Writer getWriter()
       throws IOException;
+   
+   HttpServletResponse getResponse();
 }
