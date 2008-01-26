@@ -22,23 +22,16 @@
  */
 package org.exist.xquery.functions.request;
 
-import java.util.Arrays;
-
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.response.RedirectTo;
 import org.exist.xquery.functions.response.StreamBinary;
-import org.exist.xquery.functions.session.Create;
-import org.exist.xquery.functions.session.EncodeURL;
-import org.exist.xquery.functions.session.GetAttribute;
-import org.exist.xquery.functions.session.GetAttributeNames;
-import org.exist.xquery.functions.session.GetID;
-import org.exist.xquery.functions.session.Invalidate;
-import org.exist.xquery.functions.session.SetAttribute;
-import org.exist.xquery.functions.session.SetCurrentUser;
+import org.exist.xquery.functions.session.*;
 import org.exist.xquery.functions.util.FunUnEscapeURI;
+
+import java.util.Arrays;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -83,7 +76,8 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetParameterNames.deprecated, GetParameterNames.class),
 		new FunctionDef(GetServerName.deprecated, GetServerName.class),
 		new FunctionDef(GetServerPort.deprecated, GetServerPort.class),
-        new FunctionDef(GetContextPath.signature, GetContextPath.class),
+        new FunctionDef(GetContextPath.signatures[0], GetContextPath.class),
+        new FunctionDef(GetContextPath.signatures[1], GetContextPath.class),
         new FunctionDef(GetPathInfo.signature, GetPathInfo.class),
         new FunctionDef(GetURI.deprecated, GetURI.class),
 		new FunctionDef(GetAttributeNames.deprecated, GetAttributeNames.class),
