@@ -8,6 +8,7 @@
 
 package org.exist.atom;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -27,4 +28,6 @@ public interface IncomingMessage {
    Reader getReader()
       throws IOException;
    String getModuleBase();
+   
+   HttpServletRequest getRequest();
 }
