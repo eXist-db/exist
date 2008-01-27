@@ -141,6 +141,12 @@
         <servlet-class>org.apache.axis.transport.http.AdminServlet</servlet-class>
         <load-on-startup>100</load-on-startup>
     </servlet>
+
+    <!-- Atom Atom Publishing Protocol -->
+    <servlet>
+        <servlet-name>AtomServlet</servlet-name>
+        <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
+    </servlet>
     
     <!-- 
         ================ Cocoon2 Configuration starts here ================ 
@@ -560,6 +566,12 @@
     <servlet-mapping>
         <servlet-name>jnlp</servlet-name>
         <url-pattern>/webstart/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Atom Publishing Protocol -->
+    <servlet-mapping>
+        <servlet-name>AtomServlet</servlet-name>
+        <url-pattern>/atom/*</url-pattern>
     </servlet-mapping>
     
     
