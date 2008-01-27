@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  dizzzz@exist-db.org
  *  http://exist.sourceforge.net
  *  
  *  This program is free software; you can redistribute it and/or
@@ -37,9 +37,9 @@ import org.exist.xquery.value.Type;
 
 
 /**
- * Register an XMLDB driver with the XMLDB DatabaseManager.
+ *  Reindex a collection in the database.
  * 
- * @author wolf
+ * @author dizzzz
  */
 public class XMLDBReindex extends BasicFunction {
 
