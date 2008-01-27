@@ -393,7 +393,7 @@
         <echo message="XMLDB: ${xmldb.src} ${has.xmldb.src}"/>
         <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved." destdir="webapp/api"
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="512M"
-            source="1.4">
+            source="1.5">
             <packageset dir="${src}">
                 <include name="org/**"/>
             </packageset>
