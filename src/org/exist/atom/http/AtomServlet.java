@@ -418,6 +418,12 @@ public class AtomServlet extends HttpServlet {
          // Get the path
          String path = request.getPathInfo();
          
+         if(path==null){
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                                "URL has no extra path information specified.");
+            return;  
+         }
+         
          int firstSlash = path.indexOf('/',1);
          if (firstSlash<0 && path.length()==1) {
             response.sendError(400,"Module not specified.");
