@@ -22,8 +22,6 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
@@ -37,7 +35,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * Register an XMLDB driver with the XMLDB DatabaseManager.
@@ -94,6 +91,7 @@ public class XMLDBReindex extends BasicFunction {
         } catch (PermissionDeniedException ex) {
             throw new XPathException(getASTNode(), ex.getMessage());
         }
+        
         return Sequence.EMPTY_SEQUENCE;
     }
 }
