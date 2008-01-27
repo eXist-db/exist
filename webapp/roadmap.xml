@@ -939,16 +939,16 @@
         </part>
         <part>
             <name>Move to ANTLR3 parser</name>
-            <status>Open</status>
+            <status>Instable</status>
             <priority>High</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
+            <progress>60</progress>
             <event start="20080110T000000Z" end="20080228T000000Z" task="14" isDuration="true"/>
             <who>ljo</who>
             <remark>
-                <p>Change the parser to ANTLR3 which is better performant, k* lookahead capable and
+                <p>Change the parser to ANTLR3 which is better performant, LL* lookahead capable and
                     processes whitespace in a better manner than ANTLR2 which we currently are
-                    using.</p>
+                    using.</p><p>Maybe use gunit for testing?</p>
             </remark>
         </part>
         <part>
