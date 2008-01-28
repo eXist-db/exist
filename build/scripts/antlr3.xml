@@ -1,0 +1,146 @@
+<project name="Simple Tree Parser" default="XQueryTreeParser" basedir="../..">
+<!-- $Id$ -->
+<!-- all;compile;clean;clean-all;javadocs;test;prepare;jar; -->
+    <description>
+        Build the eXist XQuery parser with ANTLR3.
+    </description>
+
+    <property file="${basedir}/build.properties" />
+
+    <property name="package" value="org/exist/xquery/parser"/>
+    
+    <!-- set global properties for this build -->
+    <property name="build" location="./build"/>
+    <property name="src" location="./src/${package}"/>
+    <property name="classes" location="./${build}/classes"/>
+    <property name="docs" location="./${build}/docs"/>
+    <property name="grammar" location="./${src}/${package}"/>
+    
+    <!-- where to write/find token files -->
+    <property name="token.lib" location="${src}/${package}" />
+
+    <!-- antlr options -->
+    <property name="profile" value="false" />
+    <property name="report" value="true" />
+    <property name="multithreaded" value="true" />
+    <property name="depend" value="true" />
+
+    <!-- till xmlproperties -->
+    <path id="classpath.core">
+        <fileset dir="${lib.core}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${lib.optional}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${lib.endorsed}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${lib.cocoon}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${lib.user}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${lib.extensions}">
+            <include name="*.jar"/>
+        </fileset>
+
+        <fileset dir="extensions">
+            <include name="**/lib/*.jar"/>
+        </fileset>
+        <fileset dir="${tools.ant}/lib">
+            <include name="*.jar"/>
+        </fileset>
+
+        <pathelement path="exist.jar"/>
+        <pathelement path="exist-optional.jar"/>
+
+        <pathelement path="start.jar"/>
+        <pathelement path="${java.class.path}"/>
+    </path>
+
+    <target name="prepare">
+        <!-- Create the time stamp -->
+        <tstamp />
+    </target>
+
+    <macrodef name="antlr3">
+       <attribute name="grammar.name"/>
+       <attribute name="package" default="${package}"/>
+       <sequential>
+              <echo message="antlr ${grammar}/@{grammar.name}" />
+              <antlr:antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr" 
+                  target="${grammar}/@{grammar.name}" 
+                  outputdirectory="${src}/@{package}"
+                  libdirectory="${token.lib}"
+                  multithreaded="${multithreaded}"
+                  report="${report}"
+                  depend="${depend}"
+                  profile="${profile}">
+		<classpath>
+		  <path refid="classpath.core"/>
+		</classpath>
+              </antlr:antlr3>
+        </sequential>
+    </macrodef>
+    
+    <target name="XQuery" depends="prepare">
+       <antlr3 grammar.name="XQuery.g"/>
+    </target>
+    
+    <target name="XQueryTreeParser" depends="XQuery">
+      <antlr3 grammar.name="XQueryTreeParser.g"/>
+    </target>
+
+    <target name="DeclScanner" depends="XQuery">
+      <antlr3 grammar.name="DeclScanner.g"/>
+    </target>
+    
+    <target name="compile" depends="XQuery, XQueryTreeParser" description="compile">
+        <!-- Compile the java code from ${src} into ${classes} -->
+        <javac debug="true" srcdir="${src}" destdir="${classes}"             
+               target="${build.compiler.target}" listfiles="Yes" deprecation="Yes">
+            <compilerarg value="-Xlint:unchecked"/>
+        </javac>
+    </target>
+
+    <target name="javadocs" description="generate documentation">
+       <javadoc destdir="${docs}"
+                author="true"
+                version="true"
+                use="true"
+                windowtitle="${project.name}"
+                sourcefiles="${src}/${package}/*.java"
+                Protected="All" Private="All"
+                Public="All"
+                Locale="en"
+                linksource="yes"
+                breakiterator="Yes">
+       </javadoc>
+    </target>
+
+    <target name="clean" description="clean up">
+       <delete>
+          <fileset dir="${src}" includes="**/*.class,**/*.tokens,**/*.g*" />
+          <fileset dir="${classes}/${package}" />
+          <fileset dir="${grammar}" />
+       </delete>
+    </target>
+    <target name="clean-all" depends="clean" description="clean harder" />
+    
+    <target name="redo" depends="prepare">
+       <touch>
+         <fileset dir="${grammar}" includes="*.g"/>
+       </touch>
+    </target>
+
+    <!-- use top level jar target -->
+
+    <target name="test" depends="compile">
+      <!-- fixme! - no action yet. -->
+    </target>
+    
+    <target name="all" depends="prepare, clean, redo, compile, javadocs" description="do all"/>
+            
+</project>
