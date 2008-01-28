@@ -1,4 +1,5 @@
-<project name="Simple Tree Parser" default="XQueryTreeParser" basedir="../..">
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="eXist XQuery Parser" default="XQueryTreeParser" basedir="../..">
 <!-- $Id$ -->
 <!-- all;compile;clean;clean-all;javadocs;test;prepare;jar; -->
     <description>
