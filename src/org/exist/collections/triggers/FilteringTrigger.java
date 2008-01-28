@@ -64,12 +64,6 @@ public abstract class FilteringTrigger implements DocumentTrigger {
     throws CollectionConfigurationException {
     	this.collection = parent;
     }
-
-	/* (non-Javadoc)
-     * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
-     */
-	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
-    }
     
 	public void setValidating(boolean validating) {
 		this.validating = validating;
