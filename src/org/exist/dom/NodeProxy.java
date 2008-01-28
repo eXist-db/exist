@@ -21,33 +21,29 @@
  */
 package org.exist.dom;
 
-import java.util.Iterator;
-import java.util.Properties;
-
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.StorageAddress;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.UntypedAtomicValue;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * Placeholder class for DOM nodes. 
@@ -67,7 +63,7 @@ import org.xml.sax.SAXException;
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class NodeProxy implements NodeSet, NodeValue, Comparable {
+public class NodeProxy implements NodeSet, NodeValue, DocumentSet, Comparable {
 	
     /* 
      * Special values for nodes gid :
@@ -1073,9 +1069,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.dom.NodeSet#getDocumentSet()
      */
     public DocumentSet getDocumentSet() {
-        MutableDocumentSet docs = new DefaultDocumentSet(1);
-        docs.add(doc);
-        return docs;
+//        MutableDocumentSet docs = new DefaultDocumentSet(1);
+//        docs.add(doc);
+//        return docs;
+        return this;
     }
 
 
@@ -1381,4 +1378,97 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         }
     }
 
+    /************************************************
+     * Methods of MutableDocumentSet
+     ************************************************/
+
+    public Iterator getDocumentIterator() {
+        return new Iterator() {
+
+            private boolean hasMore = true;
+
+            public boolean hasNext() {
+                return hasMore;
+            }
+
+            public Object next() {
+                final Object next = hasMore ? doc : null;
+                hasMore = false;
+                return next;
+            }
+
+            public void remove() {
+            }
+        };
+    }
+
+    public int getDocumentCount() {
+        return 1;
+    }
+
+    public DocumentImpl getDocumentAt(int pos) {
+        if (pos < 0 || pos > 1)
+            return null;
+        return this.doc;
+    }
+
+    public DocumentImpl getDoc(int docId) {
+        if (docId == this.doc.getDocId())
+            return this.doc;
+        return null;
+    }
+
+    public XmldbURI[] getNames() {
+        return new XmldbURI[] { this.doc.getURI() };
+    }
+
+    public DocumentSet intersection(DocumentSet other) {
+        if (other.contains(doc.getDocId())) {
+            DefaultDocumentSet r = new DefaultDocumentSet();
+            r.add(doc);
+            return r;
+        }
+        return DefaultDocumentSet.EMPTY_DOCUMENT_SET;
+    }
+
+    public boolean contains(DocumentSet other) {
+        if (other.getDocumentCount() > 1)
+			return false;
+        if (other.getDocumentCount() == 0)
+            return true;
+        return other.getDocumentAt(0).getDocId() == doc.getDocId();
+    }
+
+    public boolean contains(int docId) {
+        return doc.getDocId() == docId;
+    }
+
+    public NodeSet docsToNodeSet() {
+        return new NodeProxy(doc, NodeId.DOCUMENT_NODE);
+    }
+
+    public void lock(boolean exclusive, boolean checkExisting) throws LockException {
+        Lock dlock = doc.getUpdateLock();
+        if (exclusive)
+            dlock.acquire(Lock.WRITE_LOCK);
+        else
+            dlock.acquire(Lock.READ_LOCK);
+    }
+
+    public void unlock(boolean exclusive) {
+        Lock dlock = doc.getUpdateLock();
+        if(exclusive)
+            dlock.release(Lock.WRITE_LOCK);
+        else if (dlock.isLockedForRead(Thread.currentThread()))
+            dlock.release(Lock.READ_LOCK);
+    }
+
+    public boolean equalDocs(DocumentSet other) {
+        if (this == other)
+			// we are comparing the same objects
+			return true;
+		if (other.getDocumentCount() != 1)
+			return false;
+        return other.getDocumentAt(0).getDocId() == doc.getDocId();
+    }
 }
