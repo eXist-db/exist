@@ -36,7 +36,6 @@ public class BufferedHttpServletResponseWrapper extends HttpServletResponseWrapp
     private BufferedServletOutputStream servletOutputStream;
 
     private int contentLength;
-    private String contentType;
 
     /** GenericResponseWrapper constructor
      * 
@@ -79,15 +78,6 @@ public class BufferedHttpServletResponseWrapper extends HttpServletResponseWrapp
 
     public int getContentLength() {
         return contentLength;
-    }
-
-    public void setContentType(String type) {
-        this.contentType = type;
-        super.setContentType(type);
-    }
-
-    public String getContentType() {
-        return contentType;
     }
 
     /** getWriter get the PrintWriter to write data to
