@@ -144,4 +144,10 @@ public class ExampleTrigger extends FilteringTrigger {
 			}
 	}
 
+	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+		// TODO Auto-generated method stub
+	}
+	
+	
+
 }
