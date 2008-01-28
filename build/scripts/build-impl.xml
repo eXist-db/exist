@@ -9,18 +9,13 @@
 <project basedir="../.." default="all" name="exist">
 
     <!-- setup properties -->
+    <property file="${basedir}/build.properties" />
+
     <property name="jetty.dir" value="tools/jetty"/>
     <property name="src" value="./src"/>
     <property name="src.webapp" value="./webapp"/>
     <property name="samples" value="./samples/src"/>
     <property name="bin" value="./bin"/>
-
-    <property name="lib.core" value="./lib/core"/>
-    <property name="lib.optional" value="./lib/optional"/>
-    <property name="lib.endorsed" value="./lib/endorsed"/>
-    <property name="lib.cocoon" value="./lib/cocoon"/>
-    <property name="lib.user" value="./lib/user"/>
-    <property name="lib.extensions" value="./lib/extensions"/>
 
     <property name="build" value="./build"/>
     <property name="build.src" value="${build}/src"/>
@@ -33,7 +28,6 @@
     <property name="build.examples" value="${build}/examples"/>
     <property name="build.extensions" value="./extensions"/>
     <property name="build.extensions.indexes" value="${build.extensions}/indexes"/>
-    <property name="tools.ant" value="./tools/ant"/>
     <property name="dist" value="./dist"/>
     <property name="webapp.dir" value="${dist}/webapp"/>
     <property name="build.compiler" value="modern"/>
