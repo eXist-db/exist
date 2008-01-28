@@ -6,6 +6,7 @@
     <property name="test" value="./test"/>
     <property name="javadoc" value="./javadoc"/>
     <property name="top.dir" value="../.."/>
+    <property file="${top.dir}/build.properties" />
     <property name="junit.index.reports" value="${top.dir}/test/junit/data"/>
 
     <property name="fluent.jar" value="${top.dir}/exist-fluent.jar"/>
