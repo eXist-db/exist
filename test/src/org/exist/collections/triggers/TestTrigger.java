@@ -104,4 +104,8 @@ public class TestTrigger extends FilteringTrigger {
             getCollection().setTriggersEnabled(true);
         }
     }
+
+	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+		// TODO Auto-generated method stub
+	}
 }
