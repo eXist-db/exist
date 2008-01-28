@@ -8,11 +8,6 @@
 
 <project basedir="../.." default="all" name="exist">
 
-    <!-- import common targets -->
-    <!-- <import file="../../build.xml"/> -->
-	<import file="./subversion.xml"/>
-	<import file="./junit.xml"/>
-
     <!-- setup properties -->
     <property name="jetty.dir" value="tools/jetty"/>
     <property name="src" value="./src"/>
@@ -51,6 +46,11 @@
         value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
+
+    <!-- import common targets -->
+    <!-- <import file="../../build.xml"/> -->
+	<import file="./subversion.xml"/>
+	<import file="./junit.xml"/>
 
     <!-- setup conditional properties -->
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
