@@ -440,6 +440,10 @@ public class XFormsFilter implements Filter
 	 */
 	public void renderXForm(InputStream isXForm, ServletRequest srvRequest, ServletResponse srvResponse)
 	{
+		//if no encoding specified default to UTF-8
+		if(srvRequest.getCharacterEncoding() == null)
+			srvRequest.setCharacterEncoding("UTF-8");
+		
 		HttpServletRequest request = (HttpServletRequest)srvRequest;
 		HttpServletResponse response = (HttpServletResponse)srvResponse;
 		HttpSession session = request.getSession(true);
