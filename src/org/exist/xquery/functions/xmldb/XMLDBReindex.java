@@ -35,7 +35,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-
 /**
  *  Reindex a collection in the database.
  * 
@@ -59,24 +58,26 @@ public class XMLDBReindex extends BasicFunction {
         super(context, signature);
     }
 
-    @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        
-        if(!context.getUser().hasDbaRole())
-		{
-            throw new XPathException("Permission denied, user '" 
-                    + context.getUser().getName() 
-                    + "' must be a DBA to shutdown the database");
+
+        // this is "/db"
+        String ROOTCOLLECTION = XmldbURI.ROOT_COLLECTION_URI.toString();
+
+        // Check for DBA user
+        if (!context.getUser().hasDbaRole()) {
+            throw new XPathException("Permission denied, user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
         }
 
+        // Get collection path
         String collectionArg = args[0].getStringValue();
-        
-        // Have /db as default when argument is empty string
-        if (collectionArg.equals("")) {
-            collectionArg = "/db";
+
+        // Collection should start with /db
+        if (!collectionArg.startsWith(ROOTCOLLECTION)) {
+            throw new XPathException(getASTNode(),
+                    "Collection should start with " + ROOTCOLLECTION + "");
         }
 
-        // Check is collection does exist
+        // Check if collection does exist
         XmldbURI colName = XmldbURI.create(collectionArg);
         Collection coll = context.getBroker().getCollection(colName);
         if (coll == null) {
@@ -91,7 +92,7 @@ public class XMLDBReindex extends BasicFunction {
         } catch (PermissionDeniedException ex) {
             throw new XPathException(getASTNode(), ex.getMessage());
         }
-        
+
         return Sequence.EMPTY_SEQUENCE;
     }
 }
