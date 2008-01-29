@@ -43,8 +43,9 @@
 
     <!-- import common targets -->
     <!-- <import file="../../build.xml"/> -->
-	<import file="./subversion.xml"/>
-	<import file="./junit.xml"/>
+    <import file="./subversion.xml"/>
+    <import file="./junit.xml"/>
+    <import file="./antlr3.xml"/>
 
     <!-- setup conditional properties -->
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
@@ -244,6 +245,7 @@
     </target>
 
     <target depends="antlr,jar" name="xquery"/>
+    <target depends="XQueryTreeParser,jar" name="xquery-ng"/>
 
     <!-- ================================================================== -->
     <!-- Create jar files                    							   	-->
@@ -587,19 +589,19 @@
 
         <!-- International Components for Unicode -->
         <!-- http://www.icu-project.org/          -->
-        <get src="http://prdownloads.sourceforge.net/icu/icu4j-3_6.jar"
-            dest="${lib.user}/icu4j-3_6.jar" verbose="true"/>
+        <get src="http://prdownloads.sourceforge.net/icu/icu4j-3_6_1.jar"
+            dest="${lib.user}/icu4j-3_6_1.jar" verbose="true"/>
 
         <!-- Saxon XSLT2 Processor                 -->
         <!-- http://sourceforge.net/projects/saxon -->
-        <get src="http://prdownloads.sourceforge.net/saxon/saxonb8-9-0-3j.zip"
+        <get src="http://prdownloads.sourceforge.net/saxon/saxonb9-0-0-3j.zip"
             dest="${lib.endorsed}/saxon.zip" verbose="true"/>
 
         <unzip src="${lib.endorsed}/saxon.zip" dest="${lib.endorsed}">
             <patternset>
-                <include name="**/saxon8.jar"/>
-                <include name="**/saxon8-dom.jar"/>
-                <include name="**/saxon8-xpath.jar"/>
+                <include name="**/saxon9.jar"/>
+                <include name="**/saxon9-dom.jar"/>
+                <include name="**/saxon9-xpath.jar"/>
             </patternset>
         </unzip>
 
