@@ -1884,7 +1884,7 @@ public class XQueryContext {
                                 throw new XPathException("source for module " + location + " is not an XQuery or " +
                                 "declares a wrong mime-type");
                             source = new DBSource(broker, (BinaryDocument) sourceDoc, true);
-                            module = compileModule(namespaceURI, location, module, source);
+                            module = compileModule(prefix, namespaceURI, location, module, source);
                         } catch (PermissionDeniedException e) {
                             throw new XPathException("permission denied to read module source from " + location);
                         } finally {
@@ -1910,7 +1910,7 @@ public class XQueryContext {
                                 e.getMessage());
                     }
                     
-                    module = compileModule(namespaceURI, location, module, source);
+                    module = compileModule(prefix, namespaceURI, location, module, source);
                 }
 			}
 		}
@@ -1927,7 +1927,7 @@ public class XQueryContext {
      * @return The compiled module.
      * @throws XPathException
      */
-    private Module compileModule(String namespaceURI, String location, Module module, Source source) throws XPathException {
+    private Module compileModule(String prefix, String namespaceURI, String location, Module module, Source source) throws XPathException {
         LOG.debug("Loading module from " + location);
         
         Reader reader;
@@ -1936,7 +1936,7 @@ public class XQueryContext {
         } catch (IOException e) {
         	throw new XPathException("IO exception while loading module " + namespaceURI, e);
         }
-        XQueryContext modContext = new ModuleContext(this);
+        XQueryContext modContext = new ModuleContext(this, prefix, namespaceURI);
         XQueryLexer lexer = new XQueryLexer(modContext, reader);
         XQueryParser parser = new XQueryParser(lexer);
         XQueryTreeParser astParser = new XQueryTreeParser(modContext);
