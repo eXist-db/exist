@@ -22,44 +22,31 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-
-import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.ProxyHost;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.methods.OptionsMethod;
-
 import org.exist.dom.QName;
-import org.exist.dom.NodeProxy;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.Base64Binary;
-import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.NodeValue;
-
-import org.w3c.dom.Document;
+import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.net.URLEncoder;
 
 
 /**
@@ -136,10 +123,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                 }
             }
         }
-        
         //execute the request
         HttpClient http = new HttpClient();
-        
         try {   
             //set the proxy server (if any)
             String proxyHost = System.getProperty( "http.proxyHost") ; 
