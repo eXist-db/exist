@@ -21,6 +21,7 @@ package org.exist.http.servlets;
  *
  * $Id$
  */
+
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.source.FileSource;
@@ -151,13 +152,18 @@ public class RedirectorServlet extends HttpServlet {
     }
 
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (request.getCharacterEncoding() == null)
+            try {
+                request.setCharacterEncoding("UTF-8");
+            } catch (IllegalStateException e) {
+            }
         // Try to find the XQuery
         String qpath = getServletContext().getRealPath(query);
         File f = new File(qpath);
         if (!(f.canRead() && f.isFile()))
             throw new ServletException("Cannot read XQuery source from " + f.getAbsolutePath());
         FileSource source = new FileSource(f, "UTF-8", true);
-        
+
         try {
             // Prepare and execute the XQuery
             Collection collection = DatabaseManager.getCollection(collectionURI.toString(), user, password);
@@ -262,6 +268,15 @@ public class RedirectorServlet extends HttpServlet {
 
         private RequestWrapper(HttpServletRequest request) {
             super(request);
+            // copy parameters
+            for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); ) {
+                String key = (String) e.nextElement();
+                String[] value = request.getParameterValues(key);
+                if (value.length == 1)
+                    addedParams.put(key, value[0]);
+                else
+                    addedParams.put(key, value);
+            }
         }
 
         public void addParameter(String name, String value) {
@@ -269,14 +284,11 @@ public class RedirectorServlet extends HttpServlet {
         }
 
         public String getParameter(String name) {
-            String value = (String) addedParams.get(name);
-            if (value != null)
-                return value;
-            return super.getParameter(name);
+            return (String) addedParams.get(name);
         }
 
         public Map getParameterMap() {
-            return null;
+            return addedParams;
         }
 
         public Enumeration getParameterNames() {
@@ -285,18 +297,18 @@ public class RedirectorServlet extends HttpServlet {
                 String key = (String) i.next();
                 v.addElement(key);
             }
-            for (Iterator i = super.getParameterMap().keySet().iterator(); i.hasNext(); ) {
-                String key = (String) i.next();
-                v.addElement(key);
-            }
             return v.elements();
         }
 
         public String[] getParameterValues(String s) {
-            String value = (String) addedParams.get(s);
-            if (value != null)
-                return new String[] { value };
-            return super.getParameterValues(s);
+            Object value = addedParams.get(s);
+            if (value != null) {
+                if (value instanceof String[])
+                    return (String[]) value;
+                else
+                    return new String[] { value.toString() };
+            }
+            return null;
         }
     }
 }
