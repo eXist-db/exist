@@ -25,23 +25,18 @@ package org.exist.xquery.modules.httpclient;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
-
 import org.exist.dom.QName;
+import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.XMLWriter;
+import org.exist.xquery.value.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 /**
@@ -94,7 +89,12 @@ public class POSTFunction extends BaseHTTPClientFunction
         
         //serialize the node to SAX
         ByteArrayOutputStream baos  = new ByteArrayOutputStream();
-        OutputStreamWriter osw      = new OutputStreamWriter( baos );
+        OutputStreamWriter osw      = null;
+        try {
+            osw = new OutputStreamWriter( baos, "UTF-8" );
+        } catch (UnsupportedEncodingException e) {
+            throw new XPathException("Internal error");
+        }
         SAXSerializer sax           = new SAXSerializer(osw, new Properties());
         
         try {
@@ -104,11 +104,10 @@ public class POSTFunction extends BaseHTTPClientFunction
         }
         catch( Exception e ) {
             e.printStackTrace();
-        }
-        
+        } 
         //setup POST request
         PostMethod post         = new PostMethod( url );
-        RequestEntity entity    = new ByteArrayRequestEntity( baos.toByteArray(), "text/xml; utf-8" );
+        RequestEntity entity    = new ByteArrayRequestEntity( baos.toByteArray(), "text/xml; charset=utf-8" );
         
         post.setRequestEntity( entity );
         
