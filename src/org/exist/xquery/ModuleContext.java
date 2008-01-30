@@ -21,14 +21,14 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.value.AnyURIValue;
+
+import java.util.Iterator;
 
 
 /**
@@ -40,14 +40,18 @@ import org.exist.xquery.value.AnyURIValue;
 public class ModuleContext extends XQueryContext {
 
 	private final XQueryContext parentContext;
-	private boolean initializing = true;
+    private String modulePrefix;
+    private String moduleNamespace;
+    private boolean initializing = true;
 
     /**
 	 * @param parentContext
 	 */
-	public ModuleContext(XQueryContext parentContext) {
+	public ModuleContext(XQueryContext parentContext, String modulePrefix, String moduleNamespace) {
 		super(parentContext.getAccessContext());
-		this.parentContext = parentContext;
+        this.moduleNamespace = moduleNamespace;
+        this.modulePrefix = modulePrefix;
+        this.parentContext = parentContext;
 		this.broker = parentContext.broker;
 		baseURI = parentContext.baseURI;
 		moduleLoadPath = parentContext.moduleLoadPath;
@@ -56,8 +60,13 @@ public class ModuleContext extends XQueryContext {
     }
 
     public XQueryContext copyContext() {
-        ModuleContext ctx = new ModuleContext(this.parentContext);
+        ModuleContext ctx = new ModuleContext(parentContext, modulePrefix, moduleNamespace);
         copyFields(ctx);
+        try {
+            ctx.declareNamespace(modulePrefix, moduleNamespace);
+        } catch (XPathException e) {
+            e.printStackTrace();
+        }
         return ctx;
     }
 
