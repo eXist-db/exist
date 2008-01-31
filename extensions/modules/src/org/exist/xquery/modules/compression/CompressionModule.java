@@ -38,7 +38,8 @@ public class CompressionModule extends AbstractInternalModule
 	public final static String PREFIX = "compression";
 	
 	private final static FunctionDef[] functions = {
-		new FunctionDef(ZipFunction.signature, ZipFunction.class)
+		new FunctionDef(ZipFunction.signatures[0], ZipFunction.class),
+        new FunctionDef(ZipFunction.signatures[1], ZipFunction.class)
 	};
 	
 	public CompressionModule()
