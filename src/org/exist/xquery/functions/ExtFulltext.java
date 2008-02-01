@@ -20,10 +20,6 @@
  */
 package org.exist.xquery.functions;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentSet;
@@ -35,28 +31,13 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.BasicExpressionVisitor;
-import org.exist.xquery.CachedResult;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.ExpressionVisitor;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocationStep;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.Optimizable;
-import org.exist.xquery.PathExpr;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Implements the fulltext operators: &amp;= and |=.
@@ -380,13 +361,15 @@ public class ExtFulltext extends Function implements Optimizable {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		path.resetState();
-		searchTerm.resetState();
-        preselectResult = null;
-        cached = null;
-	}
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		path.resetState(postOptimization);
+		searchTerm.resetState(postOptimization);
+        if (!postOptimization) {
+            preselectResult = null;
+            cached = null;
+        }
+    }
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitFtExpression(this);

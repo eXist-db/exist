@@ -171,8 +171,9 @@ public interface Expression {
 	 * All cached data in the expression object should be dropped. For example,
 	 * the xmldb:document() function calls this method whenever the input document
 	 * set has changed.
-	 */	
-	public void resetState();
+     * @param postOptimization
+     */
+	public void resetState(boolean postOptimization);
 	
 	/**
 	 * Start traversing the expression tree using the specified {@link ExpressionVisitor}.

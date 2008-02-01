@@ -20,14 +20,7 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
@@ -35,6 +28,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
+import java.util.Iterator;
 
 /**
  * Reads a set of document root nodes from the context. Used for
@@ -168,7 +163,7 @@ public class RootNode extends Step {
      * 
      * @see org.exist.xquery.Step#resetState()
      */
-    public void resetState() {
+    public void resetState(boolean postOptimization) {
         cached = null;
         cachedDocs = null;
     }

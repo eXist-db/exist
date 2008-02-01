@@ -120,8 +120,8 @@ public class NamespaceConstructor extends NodeConstructor {
     	return result.toString();
     }   
     
-    public void resetState() {
-    	super.resetState();
-    	uri.resetState();
+    public void resetState(boolean postOptimization) {
+    	super.resetState(postOptimization);
+    	uri.resetState(postOptimization);
     }
 }

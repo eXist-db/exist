@@ -78,10 +78,10 @@ public abstract class CombiningExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		left.resetState();
-		right.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		left.resetState(postOptimization);
+		right.resetState(postOptimization);
 	}
 
 	/* (non-Javadoc)

@@ -22,29 +22,22 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.io.StringWriter;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
-
 import org.exist.dom.QName;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.ExtendedDOMSerializer;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
+import java.io.StringWriter;
+import java.util.Properties;
 
 /**
  * 
@@ -105,7 +98,7 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 			throw new XPathException(getASTNode(), "Exception while processing xupdate: " + e.getMessage(), e);
 		}
 		
-		context.getRootExpression().resetState();
+		context.getRootExpression().resetState(false);
 		return new IntegerValue(modifications);
 	}
 }

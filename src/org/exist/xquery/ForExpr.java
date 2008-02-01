@@ -22,22 +22,13 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.GroupedValueSequence;
-import org.exist.xquery.value.GroupedValueSequenceTable;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.OrderedValueSequence;
-import org.exist.xquery.value.PreorderedValueSequence;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
+
+import java.util.Iterator;
 
 /**
  * Represents an XQuery "for" expression.
@@ -503,8 +494,8 @@ public class ForExpr extends BindingExpression {
     /* (non-Javadoc)
     * @see org.exist.xquery.AbstractExpression#resetState()
     */
-    public void resetState() {
-        super.resetState();
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
     }
 
 
