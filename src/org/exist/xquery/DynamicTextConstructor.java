@@ -121,8 +121,8 @@ public class DynamicTextConstructor extends NodeConstructor {
     	return result.toString();
     }    
 
-    public void resetState() {
-    	super.resetState();
-    	content.resetState();
+    public void resetState(boolean postOptimization) {
+    	super.resetState(postOptimization);
+    	content.resetState(postOptimization);
     }
 }

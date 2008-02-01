@@ -22,13 +22,13 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * FilteredExpression represents a primary expression with a predicate. Examples:
@@ -130,12 +130,12 @@ public class FilteredExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		expression.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		expression.resetState(postOptimization);
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			Predicate pred = (Predicate) i.next();
-			pred.resetState();
+			pred.resetState(postOptimization);
 		}
 	}
 

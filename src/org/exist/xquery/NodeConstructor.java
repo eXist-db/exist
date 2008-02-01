@@ -68,7 +68,7 @@ public abstract class NodeConstructor extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
 	}
 }

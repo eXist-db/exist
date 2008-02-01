@@ -90,11 +90,11 @@ public abstract class Modification extends AbstractExpression
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		select.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		select.resetState(postOptimization);
 		if (value != null)
-			value.resetState();
+			value.resetState(postOptimization);
 	}
 
 	/* (non-Javadoc)

@@ -22,8 +22,7 @@
  */
 package org.exist.xquery;
 
-import java.util.List;
-
+import com.sun.xacml.ctx.RequestCtx;
 import org.exist.dom.QName;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.security.PermissionDeniedException;
@@ -34,7 +33,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import com.sun.xacml.ctx.RequestCtx;
+import java.util.List;
 
 /**
  * Represents a call to a user-defined function 
@@ -245,9 +244,10 @@ public class FunctionCall extends Function {
 	 /* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
-    public void resetState() {
-    	super.resetState();
-		functionDef.resetState();
+    public void resetState(boolean postOptimization) {
+    	super.resetState(postOptimization);
+		functionDef.resetState(postOptimization);
+         analyzed = false;
         //TODO : reset expression ?        
 	}
 

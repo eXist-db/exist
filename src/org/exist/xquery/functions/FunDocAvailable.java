@@ -24,19 +24,9 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.DocUtils;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Implements the XQuery's fn:doc-available() function.
@@ -104,10 +94,11 @@ public class FunDocAvailable extends Function {
 	}	
 
 	/**
-	 * @see org.exist.xquery.PathExpr#resetState()
+	 * @see org.exist.xquery.Expression#resetState(boolean)
+     * @param postOptimization
 	 */
-	public void resetState() {
-		super.resetState();
-		getArgument(0).resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		getArgument(0).resetState(postOptimization);
 	}
 }
