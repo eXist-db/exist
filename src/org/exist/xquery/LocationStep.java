@@ -21,16 +21,7 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.NodeVisitor;
-import org.exist.dom.StoredNode;
-import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
@@ -39,6 +30,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
@@ -1075,12 +1068,14 @@ public class LocationStep extends Step {
      * 
      * @see org.exist.xquery.Step#resetState()
      */
-    public void resetState() {
-        super.resetState();
-        currentSet = null;
-        currentDocs = null;
-        cached = null;
-        listener = null;
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        if (!postOptimization) {
+            currentSet = null;
+            currentDocs = null;
+            cached = null;
+            listener = null;
+        }
     }
 
 }

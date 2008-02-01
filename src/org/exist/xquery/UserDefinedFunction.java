@@ -22,14 +22,14 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author wolf
@@ -170,15 +170,16 @@ public class UserDefinedFunction extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
-	public void resetState() {
+	public void resetState(boolean postOptimization) {
         // Question: understand this test. Why not reset even is not in recursion ?
 		// Answer: would lead to an infinite loop if the function is recursive.
 		if(!inRecursion) {
 			inRecursion = true;
-			body.resetState();
+			body.resetState(postOptimization);
 			inRecursion = false;
 		}
-		currentArguments = null;
+        if (!postOptimization)
+            currentArguments = null;
 	}
 
     public void accept(ExpressionVisitor visitor) {

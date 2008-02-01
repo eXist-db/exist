@@ -71,9 +71,9 @@ public class TreatAsExpression extends AbstractExpression {
         dumper.display(type.toString());
     }
 
-    public void resetState() {
-        super.resetState();
-        expression.resetState();
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        expression.resetState(postOptimization);
     }
     
     public void setContextDocSet(DocumentSet contextSet) {

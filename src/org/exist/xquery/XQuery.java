@@ -21,10 +21,10 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.text.NumberFormat;
-
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+import antlr.collections.AST;
+import com.sun.xacml.ctx.RequestCtx;
 import org.apache.log4j.Logger;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
@@ -41,12 +41,9 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.NoViableAltException;
-import antlr.collections.AST;
-
-import com.sun.xacml.ctx.RequestCtx;
+import java.io.IOException;
+import java.io.Reader;
+import java.text.NumberFormat;
 
 
 /**
@@ -153,6 +150,7 @@ public class XQuery {
                 expr.accept(optimizer);
                 if (optimizer.hasOptimized()) {
                     context.reset(true);
+                    expr.resetState(true);
                     expr.analyze(new AnalyzeContextInfo());
                 }
             }

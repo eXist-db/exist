@@ -154,9 +154,9 @@ public class DynamicPIConstructor extends NodeConstructor {
     	return result.toString();
     }    
     
-    public void resetState() {
-    	super.resetState();
-    	name.resetState();
-    	content.resetState();
+    public void resetState(boolean postOptimization) {
+    	super.resetState(postOptimization);
+    	name.resetState(postOptimization);
+    	content.resetState(postOptimization);
     }
 }

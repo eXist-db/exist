@@ -21,9 +21,9 @@
  */
 package org.exist.xquery;
 
-import java.text.Collator;
-
 import org.exist.xquery.util.ExpressionDumper;
+
+import java.text.Collator;
 
 /**
  * An XQuery order specifier as specified in an "order by" clause.
@@ -84,7 +84,7 @@ public class OrderSpec {
 		return buf.toString();
 	}
 	
-	public void resetState() {
-	    expression.resetState();
+	public void resetState(boolean postOptimization) {
+	    expression.resetState(postOptimization);
 	}
 }

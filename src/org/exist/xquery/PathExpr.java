@@ -21,23 +21,19 @@
  */
 package org.exist.xquery;
 
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.CompiledExpression;
+
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * PathExpr is just a sequence of XQuery/XPath expressions, which will be called
@@ -427,10 +423,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * 
      * @see org.exist.xquery.AbstractExpression#resetState()
      */
-    public void resetState() {
-    	super.resetState();
+    public void resetState(boolean postOptimization) {
+    	super.resetState(postOptimization);
     	for (int i = 0; i < steps.size(); i++) {
-            ((Expression)steps.get(i)).resetState();
+            ((Expression)steps.get(i)).resetState(postOptimization);
         }
     }
 
@@ -440,7 +436,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @see org.exist.xmldb.CompiledExpression#reset()
      */
     public void reset() {
-        resetState();
+        resetState(false);
     }
     
     /* (non-Javadoc)

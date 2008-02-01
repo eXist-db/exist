@@ -21,24 +21,13 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.*;
+import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.*;
+
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.exist.dom.ContextItem;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.VirtualNodeSet;
-import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 
 /**
  *  Handles predicate expressions.
@@ -536,9 +525,10 @@ public class Predicate extends PathExpr {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
-	public void resetState() {       
-		super.resetState();
-		cached = null;
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+        if (!postOptimization)
+            cached = null;
 	}
 
     public Expression getParent() {

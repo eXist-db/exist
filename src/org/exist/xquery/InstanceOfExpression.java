@@ -24,12 +24,7 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Implements the XQuery "instance of" operator.
@@ -139,9 +134,9 @@ public class InstanceOfExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		expression.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		expression.resetState(postOptimization);
 	}
 
 	public void setContextDocSet(DocumentSet contextSet) {

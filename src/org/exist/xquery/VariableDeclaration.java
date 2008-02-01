@@ -180,9 +180,10 @@ public class VariableDeclaration extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		expression.resetState();
-        analyzeDone = false;
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		expression.resetState(postOptimization);
+        if (!postOptimization)
+            analyzeDone = false;
     }
 }
