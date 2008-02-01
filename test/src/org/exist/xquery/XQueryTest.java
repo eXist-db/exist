@@ -2842,6 +2842,47 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+    // http://sourceforge.net/support/tracker.php?aid=1884403
+    public void bugtestAtomization_1884403() {
+
+        try {
+            String query = "declare namespace tst = \"tt\"; "+
+                    "declare function tst:foo() as xs:string { <string>myTxt</string> }; "+
+                    "tst:foo()";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "myTxt",
+                    result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+    
+    // http://sourceforge.net/support/tracker.php?aid=1884360
+    public void bugtestCardinalityAttributeNamespace_1884360() {
+
+        try {
+            String query = "let $el := <element a=\"1\" b=\"2\"/> "+
+                    "for $attr in $el/attribute()[namespace-uri(.) ne \"h\"] "+
+                    "return <c>{$attr}</c>";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(2, result.getSize());
+            assertEquals(query, "<c a=\"1\"/>",
+                    result.getResource(1).getContent().toString());
+            assertEquals(query, "<c a=\"2\"/>",
+                    result.getResource(1).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
 
     // ======================================
     
