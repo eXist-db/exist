@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
@@ -31,6 +28,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implements the XQuery typeswitch construct.
@@ -207,14 +207,14 @@ public class TypeswitchExpression extends AbstractExpression {
         dumper.endIndent();
     }
 
-    public void resetState() {
-        super.resetState();
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
         
-        operand.resetState();
-        defaultClause.returnClause.resetState();
+        operand.resetState(postOptimization);
+        defaultClause.returnClause.resetState(postOptimization);
         for (int i = 0; i < cases.size(); i++) {
             Case caseClause = (Case) cases.get(i);
-            caseClause.returnClause.resetState();
+            caseClause.returnClause.resetState(postOptimization);
         }
     }
 }

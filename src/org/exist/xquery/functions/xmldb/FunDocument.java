@@ -227,11 +227,13 @@ public class FunDocument extends Function {
     /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#resetState()
      */
-    public void resetState() {
-    	super.resetState();
-        cached = null;
-        cachedArgs = null;
-        cachedDocs = null;
-        listener = null;
+    public void resetState(boolean postOptimization) {
+    	super.resetState(postOptimization);
+        if (!postOptimization) {
+            cached = null;
+            cachedArgs = null;
+            cachedDocs = null;
+            listener = null;
+        }
     }
 }

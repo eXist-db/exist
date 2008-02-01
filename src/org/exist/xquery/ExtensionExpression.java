@@ -21,13 +21,13 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exist.dom.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implements an XQuery extension expression. An extension expression starts with
@@ -151,9 +151,9 @@ public class ExtensionExpression extends AbstractExpression {
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#resetState()
      */
-    public void resetState() {
-        super.resetState();
-        innerExpression.resetState();
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        innerExpression.resetState(postOptimization);
     }
 
     public void accept(ExpressionVisitor visitor) {

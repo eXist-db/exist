@@ -22,23 +22,10 @@
 package org.exist.xquery.functions.util;
 
 import org.exist.dom.QName;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.ExternalModule;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
-import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * @author wolf
@@ -119,10 +106,11 @@ public class FunctionFunction extends BasicFunction {
 	    return funcCall;
 	}
     
-    public void resetState() {
-    	super.resetState();
+    public void resetState(boolean postOptimization) {
+    	super.resetState(postOptimization);
     	if (resolvedFunction != null)
-    		resolvedFunction.resetState();
-    	resolvedFunction = null;
+    		resolvedFunction.resetState(postOptimization);
+        if (!postOptimization)
+            resolvedFunction = null;
     }
 }

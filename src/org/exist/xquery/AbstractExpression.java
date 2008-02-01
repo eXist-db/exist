@@ -75,7 +75,7 @@ public abstract class AbstractExpression implements Expression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#resetState()
 	 */
-	public void resetState() {
+	public void resetState(boolean postOptimization) {
 		contextDocSet = null;
 	}
 

@@ -22,8 +22,6 @@
 
 package org.exist.xquery;
 
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
@@ -35,6 +33,8 @@ import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.xml.sax.helpers.AttributesImpl;
+
+import java.util.Iterator;
 
 /**
  * Constructor for element nodes. This class handles both, direct and dynamic
@@ -316,15 +316,15 @@ public class ElementConstructor extends NodeConstructor {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		qnameExpr.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		qnameExpr.resetState(postOptimization);
 		if(content != null)
-			content.resetState();
+			content.resetState(postOptimization);
 		if(attributes != null)
 		    for(int i = 0; i < attributes.length; i++) {
 				Expression next = attributes[i];
-				next.resetState();
+				next.resetState(postOptimization);
 			}
 	}
 }

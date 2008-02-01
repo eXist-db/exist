@@ -29,13 +29,7 @@ import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -163,14 +157,18 @@ public class FunDoc extends Function {
 	}
 	
 	/**
-	 * @see org.exist.xquery.PathExpr#resetState()
+	 * @see org.exist.xquery.Expression#resetState(boolean)
+     * @param postOptimization
 	 */
-	public void resetState() {
-		super.resetState();
-		cached = null;
-		cachedPath = null;
-		listener = null;
-		
-		getArgument(0).resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+
+        if (!postOptimization) {
+            cached = null;
+            cachedPath = null;
+            listener = null;
+        }
+
+        getArgument(0).resetState(postOptimization);
 	}
 }

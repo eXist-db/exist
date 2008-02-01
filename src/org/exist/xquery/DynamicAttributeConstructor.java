@@ -149,9 +149,9 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     	return result.toString();
     } 
     
-    public void resetState() {
-        super.resetState();
-        qnameExpr.resetState();
-        valueExpr.resetState();
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        qnameExpr.resetState(postOptimization);
+        valueExpr.resetState(postOptimization);
     }    
 }

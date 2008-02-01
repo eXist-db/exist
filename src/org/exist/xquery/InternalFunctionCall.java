@@ -1,8 +1,6 @@
 package org.exist.xquery;
 
-import java.io.Writer;
-import java.util.List;
-
+import com.sun.xacml.ctx.RequestCtx;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
@@ -12,7 +10,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
-import com.sun.xacml.ctx.RequestCtx;
+import java.io.Writer;
+import java.util.List;
 
 /**
 * Wrapper for internal modules in order to
@@ -184,9 +183,9 @@ public class InternalFunctionCall extends Function
 	{
 		function.reset();
 	}
-	public void resetState()
+	public void resetState(boolean postOptimization)
 	{
-		function.resetState();
+		function.resetState(postOptimization);
 	}
 	public void setArguments(List arguments) throws XPathException
 	{

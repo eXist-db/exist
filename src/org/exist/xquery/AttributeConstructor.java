@@ -19,16 +19,12 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
 
 /**
  * Node constructor for attribute nodes.
@@ -170,13 +166,13 @@ public class AttributeConstructor extends NodeConstructor {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeConstructor#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
 		Object object;
 		for(Iterator i = contents.iterator(); i.hasNext(); ) {
 			object = i.next();
 			if(object instanceof Expression)
-				((Expression)object).resetState();
+				((Expression)object).resetState(postOptimization);
 		}
 	}
 }

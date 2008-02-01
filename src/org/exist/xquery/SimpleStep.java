@@ -103,9 +103,9 @@ public class SimpleStep extends Step {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Step#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		expression.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		expression.resetState(postOptimization);
 	}
 	
 	public void setContextDocSet(DocumentSet contextSet) {

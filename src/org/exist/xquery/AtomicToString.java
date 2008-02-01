@@ -24,12 +24,7 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * @author wolf
@@ -112,9 +107,9 @@ public class AtomicToString extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		expression.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		expression.resetState(postOptimization);
 	}
 
 }

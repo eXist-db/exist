@@ -115,6 +115,6 @@ public class LiteralValue extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
-	public void resetState() {
+	public void resetState(boolean postOptimization) {
 	}
 }

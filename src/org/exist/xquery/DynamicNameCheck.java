@@ -25,11 +25,7 @@ package org.exist.xquery;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
 /**
@@ -105,9 +101,9 @@ public class DynamicNameCheck extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
-		expression.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
+		expression.resetState(postOptimization);
 	}
 
 	/* (non-Javadoc)

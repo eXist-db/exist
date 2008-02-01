@@ -21,13 +21,13 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
+import java.util.Iterator;
 
 /**
  * An XQuery sequence constructor ",". For example, ($a, $b) constructs a new
@@ -129,7 +129,7 @@ public class SequenceConstructor extends PathExpr {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
-	public void resetState() {
-		super.resetState();
+	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
 	}
 }

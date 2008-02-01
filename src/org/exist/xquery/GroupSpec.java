@@ -63,7 +63,7 @@ public class GroupSpec {
         return buf.toString(); 
     } 
      
-    public void resetState() { 
-        expression.resetState(); 
+    public void resetState(boolean postOptimization) {
+        expression.resetState(postOptimization);
     } 
 } 
