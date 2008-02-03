@@ -1,9 +1,13 @@
 package org.exist.storage.statistics;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -98,9 +102,12 @@ public class DataGuide {
         return buf.toString();
     }
 
+    public void toSAX(ContentHandler handler) throws SAXException {
+        root.toSAX(handler);
+    }
+
     public void write(FileChannel fc, SymbolTable symbols) throws IOException {
         int nodeCount = root.getSize();
-        System.out.println("childCount = " + nodeCount);
         ByteBuffer buffer = ByteBuffer.allocate(nodeCount * BYTES_PER_NODE + 4);
         root.write(buffer, symbols);
         buffer.flip();
@@ -140,6 +147,16 @@ public class DataGuide {
                     children[i].read(buffer, symbols);
                 }
             }
+        }
+
+        public void toSAX(ContentHandler handler) throws SAXException {
+            handler.startElement(Namespaces.EXIST_NS, "distribution", "distribution", new AttributesImpl());
+            if (children != null) {
+                for (int i = 0; i < children.length; i++) {
+                    children[i].toSAX(handler);
+                }
+            }
+            handler.endElement(Namespaces.EXIST_NS, "distribution", "distribution");
         }
     }
 
