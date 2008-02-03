@@ -21,8 +21,6 @@
  */
 package org.exist.dom;
 
-import java.io.UnsupportedEncodingException;
-
 import org.exist.Namespaces;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -33,12 +31,9 @@ import org.exist.util.UTF8;
 import org.exist.util.XMLString;
 import org.exist.util.pool.NodePool;
 import org.exist.util.serializer.AttrList;
-import org.w3c.dom.Attr;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.TypeInfo;
-import org.w3c.dom.UserDataHandler;
+import org.w3c.dom.*;
+
+import java.io.UnsupportedEncodingException;
 
 public class AttrImpl extends NamedNode implements Attr {
 	
@@ -88,7 +83,7 @@ public class AttrImpl extends NamedNode implements Attr {
     public byte[] serialize() {
         if(nodeName.getLocalName() == null)
             throw new RuntimeException("Local name is null");
-        final short id = getBroker().getSymbols().getSymbol( this );
+        final short id = getBroker().getBrokerPool().getSymbols().getSymbol( this );
         final byte idSizeType = Signatures.getSizeType( id );
         int prefixLen = 0;
         if (nodeName.needsNamespaceDecl()) {
@@ -115,7 +110,7 @@ public class AttrImpl extends NamedNode implements Attr {
         Signatures.write(idSizeType, id, data, pos);
         pos += Signatures.getLength(idSizeType);
         if(nodeName.needsNamespaceDecl()) {
-            final short nsId = getBroker().getSymbols().getNSSymbol(nodeName.getNamespaceURI());
+            final short nsId = getBroker().getBrokerPool().getSymbols().getNSSymbol(nodeName.getNamespaceURI());
             ByteConversion.shortToByte(nsId, data, pos);
             pos += LENGTH_NS_ID;
             ByteConversion.shortToByte((short)prefixLen, data, pos);
@@ -185,7 +180,7 @@ public class AttrImpl extends NamedNode implements Attr {
         pos += dln.size();
         short id = (short) Signatures.read(idSizeType, data, pos);
         pos += Signatures.getLength(idSizeType);
-        String name = broker.getSymbols().getName(id);
+        String name = broker.getBrokerPool().getSymbols().getName(id);
         if (name == null)
             throw new RuntimeException("no symbol for id " + id);
         short nsId = 0;
@@ -199,7 +194,7 @@ public class AttrImpl extends NamedNode implements Attr {
                 prefix = UTF8.decode(data, pos, prefixLen).toString();
             pos += prefixLen;
         }
-        String namespace = nsId == 0 ? "" : broker.getSymbols().getNamespace(nsId);
+        String namespace = nsId == 0 ? "" : broker.getBrokerPool().getSymbols().getNamespace(nsId);
         String value;
         try {
             value = new String( data, pos, len - (pos - start), "UTF-8" );
@@ -207,7 +202,7 @@ public class AttrImpl extends NamedNode implements Attr {
             LOG.warn(uee);
             value = new String( data, pos, len - (pos - start));
         }
-        list.addAttribute(broker.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix), value, attrType);
+        list.addAttribute(broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix), value, attrType);
     }
 
     public String getName() {

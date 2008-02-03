@@ -22,13 +22,13 @@
  */
 package org.exist.dom;
 
-import java.io.IOException;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
+
+import java.io.IOException;
 
 public class DocumentMetadata {
     
@@ -125,7 +125,7 @@ public class DocumentMetadata {
     public void write(DBBroker broker, VariableByteOutputStream ostream) throws IOException {
         ostream.writeLong(created);
         ostream.writeLong(lastModified);
-        ostream.writeInt(broker.getSymbols().getMimeTypeId(mimeType));
+        ostream.writeInt(broker.getBrokerPool().getSymbols().getMimeTypeId(mimeType));
         ostream.writeInt(pageCount);
         ostream.writeInt(userLock);
         
@@ -148,7 +148,7 @@ public class DocumentMetadata {
     public void read(DBBroker broker, VariableByteInput istream) throws IOException {
         created = istream.readLong();
         lastModified = istream.readLong();
-        mimeType = broker.getSymbols().getMimeType(istream.readInt());
+        mimeType = broker.getBrokerPool().getSymbols().getMimeType(istream.readInt());
         pageCount = istream.readInt();
         userLock = istream.readInt();
         

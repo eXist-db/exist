@@ -22,14 +22,6 @@
  */
 package org.exist.dom;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Iterator;
-
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ElementValue;
@@ -43,13 +35,16 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import java.io.*;
+import java.util.Iterator;
+
 /**
  * Maintains a global symbol table shared by a database instance. The symbol
  * table maps namespace URIs and node names to unique, numeric ids. Internally,
  * the db does not store node QNames in clear text. Instead, it uses the numeric ids
  * maintained here.
  * 
- * The global SymbolTable singleton can be retrieved from {@link org.exist.storage.DBBroker#getSymbols()}.
+ * The global SymbolTable singleton can be retrieved from {@link org.exist.storage.BrokerPool#getSymbols()}.
  * It is saved into the database file "symbols.dbx".
  * 
  * @author wolf
@@ -58,7 +53,6 @@ import org.w3c.dom.Node;
 public class SymbolTable {
 	
     public static final String FILE_NAME = "symbols.dbx";
-    public static final String  FILE_KEY_IN_CONFIG = "db-connection.symbol-table";
 
     public final static short FILE_FORMAT_VERSION_ID = 7;
 
@@ -105,23 +99,19 @@ public class SymbolTable {
     /** the underlying symbols.dbx file */
 	protected File file;
 	
-	public SymbolTable(BrokerPool pool, String dataDir, Configuration config) 
+	public SymbolTable(BrokerPool pool, Configuration config) 
 		throws EXistException {
-		file = new File(dataDir + File.separatorChar + getFileName());		
+        String dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        file = new File(dataDir + File.separatorChar + getFileName());
 		if (!file.canRead()) {
 			saveSymbols();
 		} else
 			loadSymbols();
-		config.setProperty(getConfigKeyForFile(), this);
 	}
 	
     public static String getFileName() {
     	return FILE_NAME;      
     }
-    
-    public static String getConfigKeyForFile() {
-    	return FILE_KEY_IN_CONFIG;
-    }	
 
     /**
      * Retrieve a shared QName instance from the temporary pool.

@@ -408,7 +408,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             if (qname == null)
                 key = new WordRef(collectionId, token);
             else {
-                key = new QNameWordRef(collectionId, qname, token, broker.getSymbols());
+                key = new QNameWordRef(collectionId, qname, token, broker.getBrokerPool().getSymbols());
 //                LOG.debug("Using qname: " + qname.toString() + " " + key.dump() + " '" + key.toString() + "'");
             }
 			final Lock lock = dbTokens.getLock();
@@ -561,13 +561,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 if (qname == null) {
                     value = new WordRef(collectionId, startTerm.toString().toLowerCase());
                 } else {
-                    value = new QNameWordRef(collectionId, qname, startTerm.toString().toLowerCase(), broker.getSymbols());
+                    value = new QNameWordRef(collectionId, qname, startTerm.toString().toLowerCase(),
+                            broker.getBrokerPool().getSymbols());
                 }
             } else {
                 if (qname == null) {
                     value = new WordRef(collectionId);
                 } else {
-                    value = new QNameWordRef(collectionId, qname, broker.getSymbols());
+                    value = new QNameWordRef(collectionId, qname, broker.getBrokerPool().getSymbols());
                 }
             }
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
@@ -663,17 +664,18 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 final int collectionId = ((Collection) i.next()).getId();
                 final IndexQuery query;
                 if (start == null) {
-                    Value startRef = new QNameWordRef(collectionId, qnames[q], broker.getSymbols());
+                    Value startRef = new QNameWordRef(collectionId, qnames[q],
+                            broker.getBrokerPool().getSymbols());
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else if (end == null) {
                     Value startRef = new QNameWordRef(collectionId, qnames[q],
-                        start.toLowerCase(), broker.getSymbols());
+                        start.toLowerCase(), broker.getBrokerPool().getSymbols());
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else {
                     Value startRef = new QNameWordRef(collectionId, qnames[q], start.toLowerCase(),
-                        broker.getSymbols());
+                        broker.getBrokerPool().getSymbols());
                     Value endRef = new QNameWordRef(collectionId, qnames[q], end.toLowerCase(),
-                        broker.getSymbols());
+                        broker.getBrokerPool().getSymbols());
                     query = new IndexQuery(IndexQuery.BW, startRef, endRef);
                 }
                 try {
@@ -1013,7 +1015,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 Value key;
                 if (currentSection == QNAME_SECTION) {
                     QNameTerm term = (QNameTerm) token;
-                    key = new QNameWordRef(collectionId, term.qname, term.term, broker.getSymbols());
+                    key = new QNameWordRef(collectionId, term.qname, term.term, broker.getBrokerPool().getSymbols());
                 } else {
                     key = new WordRef(collectionId, token.toString());
                 }
@@ -1055,7 +1057,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     Value key;
                     if (currentSection == QNAME_SECTION) {
                         QNameTerm term = (QNameTerm) token;
-                        key = new QNameWordRef(collectionId, term.qname, term.term, broker.getSymbols());
+                        key = new QNameWordRef(collectionId, term.qname, term.term, broker.getBrokerPool().getSymbols());
                     } else {
                         key = new WordRef(collectionId, token.toString());
                     }
@@ -1149,7 +1151,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     Value key;
                     if (currentSection == QNAME_SECTION) {
                         QNameTerm term = (QNameTerm) token;
-                        key = new QNameWordRef(collectionId, term.qname, term.term, broker.getSymbols());
+                        key = new QNameWordRef(collectionId, term.qname, term.term,
+                                broker.getBrokerPool().getSymbols());
                     } else {
                         key = new WordRef(collectionId, token.toString());
                     }

@@ -21,23 +21,33 @@
  */
 package org.exist.dom;
 
-import java.io.*;
-import java.util.*;
-
-import javax.xml.stream.*;
-
 import org.exist.Namespaces;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.*;
+import org.exist.storage.ElementValue;
+import org.exist.storage.NodePath;
+import org.exist.storage.RangeIndexSpec;
+import org.exist.storage.Signatures;
 import org.exist.storage.btree.Value;
-import org.exist.storage.txn.*;
-import org.exist.util.*;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.util.ByteArrayPool;
+import org.exist.util.ByteConversion;
+import org.exist.util.UTF8;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.*;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeSet;
 
 /**
  * ElementImpl.java
@@ -133,6 +143,7 @@ public class ElementImpl extends NamedNode implements Element {
              throw new RuntimeException("nodeId = null for element: " +
                  getQName().getStringValue());
         try {
+            final SymbolTable symbols = getBroker().getBrokerPool().getSymbols();
             byte[] prefixData = null;
             // serialize namespace prefixes declared in this element
             if (declaresNamespacePrefixes()) {
@@ -142,16 +153,16 @@ public class ElementImpl extends NamedNode implements Element {
                 for (Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
                     Map.Entry entry = (Map.Entry) i.next();
                     out.writeUTF((String) entry.getKey());
-                    short nsId = getBroker().getSymbols().getNSSymbol((String) entry.getValue());
+                    short nsId = symbols.getNSSymbol((String) entry.getValue());
                     out.writeShort(nsId);
                 }
                 prefixData = bout.toByteArray();
             }
-            final short id = getBroker().getSymbols().getSymbol(this);
+            final short id = symbols.getSymbol(this);
             final boolean hasNamespace = nodeName.needsNamespaceDecl();
             short nsId = 0;
             if (hasNamespace)
-                nsId =  getBroker().getSymbols().getNSSymbol(nodeName.getNamespaceURI());
+                nsId =  symbols.getNSSymbol(nodeName.getNamespaceURI());
             final byte idSizeType = Signatures.getSizeType(id);
             byte signature = (byte) ((Signatures.Elem << 0x5) | idSizeType);
             int prefixLen = 0;
@@ -866,7 +877,7 @@ public class ElementImpl extends NamedNode implements Element {
         String ns;
         for (Iterator i = namespaceMappings.values().iterator(); i.hasNext();) {
             ns = (String) i.next();
-            getBroker().getSymbols().getNSSymbol(ns);
+            getBroker().getBrokerPool().getSymbols().getNSSymbol(ns);
         }
     }
 

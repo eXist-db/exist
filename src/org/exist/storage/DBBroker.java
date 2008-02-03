@@ -158,9 +158,6 @@ public abstract class DBBroker extends Observable {
         return indexController;
     }
 
-    //TODO : give more abstraction in the future (Symbolprovider or something like this)
-    public abstract SymbolTable getSymbols();
-
     /**
 	 * @return A reference to the global {@link XQuery} service.
 	 */
