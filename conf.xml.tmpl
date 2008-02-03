@@ -319,6 +319,15 @@
                  this index in the database core. These will be removed
                  once the redesign has been completed. -->
 			<module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
+			
+			<!-- The following module is not really an index (though it sits in the
+				 index pipeline). It gathers relevant statistics on the distribution
+				 of elements in the database, which can be used by the query optimizer
+				 for additional optimizations. -->
+			<!--
+			<module id="index-stats" class="org.exist.storage.statistics.IndexStatistics"
+				file="stats.dbx"/>
+			-->
         </modules>
 
         <!--
