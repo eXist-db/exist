@@ -22,6 +22,7 @@
 package org.exist;
 
 import org.apache.log4j.Logger;
+import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.*;
 import org.exist.indexing.StreamListener;
 import org.exist.storage.DBBroker;
@@ -36,7 +37,6 @@ import org.exist.util.XMLString;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
-import org.exist.collections.CollectionConfiguration;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.*;
@@ -501,7 +501,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	ElementImpl node;
 	int p = qname.indexOf(':');
 	String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
-	QName qn = broker.getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
+	QName qn = broker.getBrokerPool().getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
 	if (!stack.empty()) {
 	    last = (ElementImpl) stack.peek();
 	    if (charBuf != null) {

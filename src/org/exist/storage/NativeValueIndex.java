@@ -22,48 +22,24 @@
 package org.exist.storage;
 
 //import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.indexing.AbstractStreamListener;
-import org.exist.indexing.IndexWorker;
-import org.exist.indexing.IndexUtils;
-import org.exist.indexing.StreamListener;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
+import org.exist.indexing.AbstractStreamListener;
+import org.exist.indexing.IndexUtils;
+import org.exist.indexing.IndexWorker;
+import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
-import org.exist.storage.btree.BTreeCallback;
-import org.exist.storage.btree.BTreeException;
-import org.exist.storage.btree.DBException;
-import org.exist.storage.btree.IndexQuery;
-import org.exist.storage.btree.Value;
+import org.exist.storage.btree.*;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteConversion;
-import org.exist.util.Configuration;
-import org.exist.util.FastQSort;
-import org.exist.util.LockException;
-import org.exist.util.ReadOnlyException;
-import org.exist.util.UTF8;
-import org.exist.util.ValueOccurrences;
-import org.exist.util.XMLString;
+import org.exist.util.*;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
@@ -71,6 +47,10 @@ import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Maintains an index on typed node values.
@@ -371,7 +351,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         v = new SimpleValue(collectionId, (Indexable) key);
                     else {
                         QNameKey qnk = (QNameKey) key;
-                        v = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getSymbols());
+                        v = new QNameValue(collectionId, qnk.qname, qnk.value,
+                                broker.getBrokerPool().getSymbols());
                     }
                     if (dbValues.append(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not append index data for key '" +  key + "'");
@@ -423,7 +404,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         searchKey = new SimpleValue(collectionId, (Indexable) key);
                     else {
                         QNameKey qnk = (QNameKey) key;
-                        searchKey = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getSymbols());
+                        searchKey = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols());
                     }
                     Value value = dbValues.get(searchKey);
                     //Does the value already has data in the index ?
@@ -562,7 +543,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         v = new SimpleValue(collectionId, (Indexable) key);
                     else {
                         QNameKey qnk = (QNameKey) key;
-                        v = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getSymbols());
+                        v = new QNameValue(collectionId, qnk.qname, qnk.value,
+                                broker.getBrokerPool().getSymbols());
                     }
                     Value value = dbValues.get(v);
                     if (value == null)
@@ -636,8 +618,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     searchKey = new SimpleValue(collectionId, value);
                     prefixKey = new SimplePrefixValue(collectionId, value.getType());
                 } else {
-                    searchKey = new QNameValue(collectionId, qname, value, broker.getSymbols());
-                    prefixKey = new QNamePrefixValue(collectionId, qname, value.getType(), broker.getSymbols());
+                    searchKey = new QNameValue(collectionId, qname, value,
+                            broker.getBrokerPool().getSymbols());
+                    prefixKey = new QNamePrefixValue(collectionId, qname, value.getType(),
+                            broker.getBrokerPool().getSymbols());
                 }
                 final int idxOp =  checkRelationOp(relation);
                 final IndexQuery query = new IndexQuery(idxOp, searchKey);
@@ -705,10 +689,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     }
                 } else {
                     if (startTerm != null) {
-                        searchKey = new QNameValue(collectionId, qname, startTerm, broker.getSymbols());
+                        searchKey = new QNameValue(collectionId, qname, startTerm,
+                                broker.getBrokerPool().getSymbols());
                     } else {
                         LOG.debug("Searching with QName prefix");
-                        searchKey = new QNamePrefixValue(collectionId, qname, Type.STRING, broker.getSymbols());
+                        searchKey = new QNamePrefixValue(collectionId, qname, Type.STRING,
+                                broker.getBrokerPool().getSymbols());
                     }
                 }
                 final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
@@ -792,12 +778,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     final  int collectionId = ((Collection) i.next()).getId();
                     //Compute a key for the start value in the collection
                     if (stringType) {
-                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getSymbols());
+                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getBrokerPool().getSymbols());
                         IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
                         dbValues.query(query, cb);
                     } else {
-                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getSymbols());
-                        final Value prefixKey = new QNamePrefixValue(collectionId, qnames[j], start.getType(), broker.getSymbols());
+                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getBrokerPool().getSymbols());
+                        final Value prefixKey = new QNamePrefixValue(collectionId, qnames[j], start.getType(), broker.getBrokerPool().getSymbols());
                         final IndexQuery query = new IndexQuery(IndexQuery.GEQ, startKey);
                         dbValues.query(query, prefixKey, cb);
                     }

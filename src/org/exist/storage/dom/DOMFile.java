@@ -1125,7 +1125,7 @@ public class DOMFile extends BTree implements Lockable {
 							    } catch (UnsupportedEncodingException e) {
 								LOG.error("can't decode prefix string");
 							    }		
-							    final String NsURI = ((NativeBroker)owner).getSymbols().getNamespace(NSId);					                	
+							    final String NsURI = ((NativeBroker)owner).getBrokerPool().getSymbols().getNamespace(NSId);					                	
 							    buf.append(prefix + "{" + NsURI + "}");
 							}		                
 							final ByteArrayOutputStream os = new ByteArrayOutputStream();

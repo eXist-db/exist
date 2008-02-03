@@ -132,8 +132,6 @@ public class NativeBroker extends DBBroker {
     protected CollectionStore collectionsDb;
     protected DOMFile domDb;
     protected File symbolsFile;
-
-    protected SymbolTable symbols = null;
     
     /** the index processors */	
     protected NativeElementIndex elementIndex;
@@ -212,13 +210,6 @@ public class NativeBroker extends DBBroker {
 		    if (collectionsDb == null)
 		    	collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);	
 		    readOnly = readOnly || collectionsDb.isReadOnly();
-            
-            // Initialize symbols storage
-		    //Notice that there is no ID :-(
-		    symbols = (SymbolTable) config.getProperty("db-connection.symbol-table");
-		    if (symbols == null) 
-		    	symbols = new SymbolTable(pool, dataDir, config);    			
-		    readOnly = readOnly || !symbols.getFile().canWrite();
 	            
 		    elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
 		    valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
@@ -444,14 +435,10 @@ public class NativeBroker extends DBBroker {
             paged.backupToStream(os);
             backup.closeEntry();
         }
-        OutputStream os = backup.newEntry(getSymbols().getFile().getName());
-        getSymbols().backupSymbolsTo(os);
+        OutputStream os = backup.newEntry(pool.getSymbols().getFile().getName());
+        pool.getSymbols().backupSymbolsTo(os);
         backup.closeEntry();
         pool.getIndexManager().backupToArchive(backup);
-    }
-
-    public SymbolTable getSymbols() {
-	return symbols;
     }
 
     public IndexSpec getIndexConfiguration() {
@@ -2725,13 +2712,13 @@ public class NativeBroker extends DBBroker {
     public void flush() {
         notifyFlush();
         try {
-	    symbols.flush();
+	        pool.getSymbols().flush();
         } catch (EXistException e) {
             LOG.warn(e);
         }
         indexController.flush();
         nodesCount = 0;
-    } 
+    }
     
     public void sync(int syncEvent) {
         if (isReadOnly())

@@ -20,30 +20,17 @@
  */
 package org.exist.storage;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.management.Agent;
-import org.exist.management.AgentFactory;
 import org.exist.collections.CollectionCache;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.CollectionConfigurationManager;
+import org.exist.dom.SymbolTable;
 import org.exist.indexing.IndexManager;
+import org.exist.management.AgentFactory;
 import org.exist.numbering.DLNFactory;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.scheduler.Scheduler;
-import org.exist.scheduler.SystemTaskJob;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -55,14 +42,14 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.ReadOnlyException;
-import org.exist.util.SingleInstanceConfiguration;
-import org.exist.util.XMLReaderObjectFactory;
-import org.exist.util.XMLReaderPool;
+import org.exist.util.*;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.*;
 /**
  * This class controls all available instances of the database.
  * Use it to configure, start and stop database instances. 
@@ -415,6 +402,8 @@ public class BrokerPool {
      */
     private IndexManager indexManager;
 
+    private SymbolTable symbols;
+    
     /**
 	 * Cache synchronization on the database instance.
 	 */
@@ -713,8 +702,11 @@ public class BrokerPool {
             isReadOnly = true;
         }
 
-        indexManager = new IndexManager(this, conf);
+        symbols = new SymbolTable(this, conf);
+        isReadOnly = isReadOnly || !symbols.getFile().canWrite();
         
+        indexManager = new IndexManager(this, conf);
+
         
         //TODO : replace the following code by get()/release() statements ?
         // WM: I would rather tend to keep this broker reserved as a system broker.
@@ -920,8 +912,12 @@ public class BrokerPool {
 	public Configuration getConfiguration() {
 		return conf;
 	}	
-	
-	//TODO : rename as setShutdwonListener ?
+
+    public SymbolTable getSymbols() {
+        return symbols;
+    }
+    
+    //TODO : rename as setShutdwonListener ?
 	public void registerShutdownListener(ShutdownListener listener) {
 		//TODO : check that we are not shutting down
 		shutdownListener = listener;

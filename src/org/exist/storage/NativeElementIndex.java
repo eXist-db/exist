@@ -20,15 +20,6 @@
  */
 package org.exist.storage;
 
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -48,15 +39,14 @@ import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
-import org.exist.util.ByteConversion;
-import org.exist.util.Configuration;
-import org.exist.util.FastQSort;
-import org.exist.util.LockException;
-import org.exist.util.Occurrences;
-import org.exist.util.ProgressIndicator;
-import org.exist.util.ReadOnlyException;
+import org.exist.util.*;
 import org.exist.xquery.*;
 import org.w3c.dom.Node;
+
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /** The indexing occurs in this class. That is, during the loading of a document
  * into the database, the process of associating a long gid with each element,
@@ -826,7 +816,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         else
             collections = new ArrayList();
         collections.add(collection);
-        final SymbolTable symbols = broker.getSymbols();
+        final SymbolTable symbols = broker.getBrokerPool().getSymbols();
         final TreeMap map = new TreeMap();        
         final Lock lock = dbNodes.getLock();
         for (Iterator i = collections.iterator(); i.hasNext();) {
@@ -895,7 +885,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 
     //TODO : note that this is *not* this.doc -pb
     public void consistencyCheck(DocumentImpl document) throws EXistException {
-        final SymbolTable symbols = broker.getSymbols();
+        final SymbolTable symbols = broker.getBrokerPool().getSymbols();
         final int collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
@@ -985,7 +975,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         } if (type == ElementValue.ATTRIBUTE_IDREFS) {
             return new ElementValue(type, collectionId, qname.getLocalName());
         } else {
-            final SymbolTable symbols = broker.getSymbols();
+            final SymbolTable symbols = broker.getBrokerPool().getSymbols();
             short sym = symbols.getSymbol(qname.getLocalName());
             //TODO : should we truncate the key ?
             //TODO : beware of the polysemy for getPrefix == null
