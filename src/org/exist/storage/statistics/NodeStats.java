@@ -1,9 +1,13 @@
 package org.exist.storage.statistics;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.storage.NodePath;
 import org.w3c.dom.Node;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -146,5 +150,20 @@ class NodeStats {
                 child.dump(newPath, paths);
             }
         }
+    }
+
+    public void toSAX(ContentHandler handler) throws SAXException {
+        AttributesImpl attribs = new AttributesImpl();
+        attribs.addAttribute("", "name", "name", "CDATA", qname.getLocalName());
+        attribs.addAttribute("", "namespace", "namespace", "CDATA", qname.getNamespaceURI());
+        attribs.addAttribute("", "node-count", "node-count", "CDATA", Integer.toString(nodeCount));
+        attribs.addAttribute("", "max-depth", "max-depth", "CDATA", Integer.toString(maxDepth));
+        handler.startElement(Namespaces.EXIST_NS, "node", "node", attribs);
+        if (children != null) {
+            for (int i = 0; i < children.length; i++) {
+                children[i].toSAX(handler);
+            }
+        }
+        handler.endElement(Namespaces.EXIST_NS, "node", "node");
     }
 }

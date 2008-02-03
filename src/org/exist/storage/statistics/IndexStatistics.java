@@ -8,6 +8,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +36,10 @@ public class IndexStatistics extends AbstractIndex {
     private DataGuide dataGuide = new DataGuide();
     
     public IndexStatistics() {
+    }
+
+    public String getIndexId() {
+        return ID;
     }
 
     protected void mergeStats(DataGuide other) {
@@ -95,6 +101,10 @@ public class IndexStatistics extends AbstractIndex {
 
     public boolean checkIndex(DBBroker broker) {
         return true;
+    }
+
+    public void toSAX(ContentHandler handler) throws SAXException {
+        dataGuide.toSAX(handler);
     }
 
     public String toString() {
