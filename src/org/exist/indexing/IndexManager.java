@@ -21,18 +21,18 @@
  */
 package org.exist.indexing;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.io.IOException;
-
 import org.apache.log4j.Logger;
+import org.exist.backup.RawDataBackup;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.backup.RawDataBackup;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Manages all custom indexes registered with the database instance.
@@ -125,7 +125,7 @@ public class IndexManager {
     public synchronized Index getIndexById(String indexId) {
     	for (Iterator i = iterator(); i.hasNext(); ) {
     		Index indexer = (Index) i.next();
-    		if (indexId.equals(indexer.getIndexId()));
+            if (indexId.equals(indexer.getIndexId()))
     			return indexer;
     	}
     	return null;
