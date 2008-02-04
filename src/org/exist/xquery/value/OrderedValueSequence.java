@@ -24,7 +24,9 @@ package org.exist.xquery.value;
 import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.memtree.NodeImpl;
 import org.exist.util.FastQSort;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.Constants;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
@@ -168,31 +170,31 @@ public class OrderedValueSequence extends AbstractSequence {
 				
 					NodeValue v = (NodeValue)items[i].item;
 					if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-						
-						/*
+
 	                    // found an in-memory document
-	                    DocumentImpl doc = ((NodeImpl)v).getDocument();
+	                    org.exist.memtree.DocumentImpl doc = ((NodeImpl)v).getDocument();
 	                    // make this document persistent: doc.makePersistent()
-	                    // returns a map of all root node ids mapped to the corresponding
-	                    // persistent node. We scan the current sequence and replace all
-	                    // in-memory nodes with their new persistent node objects.
-	                    Int2ObjectHashMap newRoots = doc.makePersistent();
-	                    for (int j = i; j < items.length; j++) {
-	                        v = (NodeValue) items[j];
-	                        if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-	                            NodeImpl node = (NodeImpl) v;
-	                            if (node.getDocument() == doc) {
-	                                NodeProxy p = (NodeProxy) newRoots.get(node.getNodeNumber());
-	                                if (p != null) {
-	                                    // replace the node by the NodeProxy
-	                                    items[j] = p;
-	                                }
-	                            }
-	                        }
-	                    }
-	                    */
+                        // returns a map of all root node ids mapped to the corresponding
+                        // persistent node. We scan the current sequence and replace all
+                        // in-memory nodes with their new persistent node objects.
+                        Int2ObjectHashMap newRoots = doc.makePersistent();
+                        if (newRoots == null)
+                            return NodeSet.EMPTY_SET;
+                        for (int j = i; j < items.length; j++) {
+                            v = (NodeValue) items[j].item;
+                            if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                                NodeImpl node = (NodeImpl) v;
+                                if (node.getDocument() == doc) {
+                                    NodeProxy p = (NodeProxy) newRoots.get(node.getNodeNumber());
+                                    if (p != null) {
+                                        // replace the node by the NodeProxy
+                                        items[j].item = p;
+                                    }
+                                }
+                            }
+                        }
 						
-	                    set.add((NodeProxy)v);
+	                    set.add((NodeProxy)items[i].item);
 					} else {
 						set.add((NodeProxy)v);
 					}
