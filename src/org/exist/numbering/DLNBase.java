@@ -200,8 +200,9 @@ public class DLNBase {
         // after decrementing, the DLN may need less bytes
         // than before. Remove the unused bytes, otherwise binary
         // comparisons may get wrong.
-        int blen = bitIndex / 8;
-        if (bitIndex % 8 > 0)
+        int len = bitIndex + 1;
+        int blen = len / 8;
+        if (len % 8 > 0)
         	++blen;
         if (blen < bits.length) {
             byte[] nbits = new byte[blen];
