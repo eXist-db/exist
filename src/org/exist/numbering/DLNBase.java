@@ -21,10 +21,10 @@
  */
 package org.exist.numbering;
 
+import org.exist.storage.io.VariableByteInput;
+
 import java.io.IOException;
 import java.util.Arrays;
-
-import org.exist.storage.io.VariableByteInput;
 
 /**
  * Base class representing a node id in the form of a dynamic level number (DLN).
@@ -196,6 +196,18 @@ public class DLNBase {
         if (levelId < 1)
             levelId = 0;
         setCurrentLevelId(levelId);
+
+        // after decrementing, the DLN may need less bytes
+        // than before. Remove the unused bytes, otherwise binary
+        // comparisons may get wrong.
+        int blen = bitIndex / 8;
+        if (bitIndex % 8 > 0)
+        	++blen;
+        if (blen < bits.length) {
+            byte[] nbits = new byte[blen];
+            System.arraycopy(bits, 0, nbits, 0, blen);
+            bits = nbits;
+        }
     }
 
     /**
