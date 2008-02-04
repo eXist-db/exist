@@ -1,39 +1,23 @@
 package org.exist.xquery;
 
 import java.io.StringReader;
-import java.math.BigDecimal;
 import java.net.BindException;
 import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.*;
 import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XPathQueryServiceImpl;
-import org.exist.xquery.value.DecimalValue;
-import org.exist.xquery.value.IntegerValue;
+import org.exist.xmldb.*;
 import org.mortbay.util.MultiException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.CompiledExpression;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.base.*;
+import org.xmldb.api.modules.*;
 import org.xmldb.api.modules.XQueryService;
 
 public class XPathQueryTest extends XMLTestCase {
@@ -1613,6 +1597,15 @@ public class XPathQueryTest extends XMLTestCase {
             e.printStackTrace();
             fail(e.getMessage());
         }
+    }
+    
+    public void testIdsOnEmptyCollection() throws XMLDBException {
+      Collection root = DatabaseManager.getCollection(uri, "admin", null);
+		CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+		Collection emptyCollection = service.createCollection("empty");
+      XQueryService queryService = (XQueryService) emptyCollection.getService("XPathQueryService", "1.0");
+ 	  	queryAndAssert(queryService, "/*", 0, null);
+ 	  	queryAndAssert(queryService, "/id('foo')", 0, null);
     }
     
     public void testExternalVars() {
