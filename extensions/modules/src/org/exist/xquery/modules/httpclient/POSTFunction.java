@@ -50,12 +50,12 @@ public class POSTFunction extends BaseHTTPClientFunction
     public final static FunctionSignature signature =
         new FunctionSignature(
         new QName( "post", NAMESPACE_URI, PREFIX ),
-        "Performs a HTTP POST request. $a is the URL, $b is the XML POST payload/content, $c determines if cookies persist for the query lifetime. $d defines any HTTP Request Headers to set in the form <headers><header name=\"\" value=\"\"/></headers>."
+        "Performs a HTTP POST request. $a is the URL, $b is the POST payload/content. If $b is an XML Node it will be serialized, any other type will be atomized into a string. $c determines if cookies persist for the query lifetime. $d defines any HTTP Request Headers to set in the form <headers><header name=\"\" value=\"\"/></headers>."
         + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>"
         + " where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.",
         new SequenceType[] {
             new SequenceType( Type.ANY_URI, Cardinality.EXACTLY_ONE ),
-            new SequenceType( Type.NODE, Cardinality.EXACTLY_ONE ),
+            new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
             new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ),
             new SequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE )
             },
@@ -71,7 +71,9 @@ public class POSTFunction extends BaseHTTPClientFunction
     
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
-        Sequence    response = null;
+        Sequence    response   = null;
+		byte[]      reqPayload = null;
+		String		mime	   = "text/xml; charset=utf-8";
         
         // must be a URL
         if( args[0].isEmpty() ) {
@@ -86,28 +88,37 @@ public class POSTFunction extends BaseHTTPClientFunction
         
         //get the persist cookies
         boolean persistCookies      = args[2].effectiveBooleanValue();
+		
+		if( Type.subTypeOf( payload.getType(), Type.NODE ) ) {
         
-        //serialize the node to SAX
-        ByteArrayOutputStream baos  = new ByteArrayOutputStream();
-        OutputStreamWriter osw      = null;
-        try {
-            osw = new OutputStreamWriter( baos, "UTF-8" );
-        } catch (UnsupportedEncodingException e) {
-            throw new XPathException("Internal error");
-        }
-        SAXSerializer sax           = new SAXSerializer(osw, new Properties());
-        
-        try {
-            payload.toSAX( context.getBroker(), sax, new Properties() );
-            osw.flush();
-            osw.close();
-        }
-        catch( Exception e ) {
-            e.printStackTrace();
-        } 
+	        //serialize the node to SAX
+	        ByteArrayOutputStream baos  = new ByteArrayOutputStream();
+	        OutputStreamWriter osw      = null;
+	        try {
+	            osw = new OutputStreamWriter( baos, "UTF-8" );
+	        } catch (UnsupportedEncodingException e) {
+	            throw new XPathException("Internal error");
+	        }
+	        SAXSerializer sax           = new SAXSerializer(osw, new Properties());
+	        
+	        try {
+	            payload.toSAX( context.getBroker(), sax, new Properties() );
+	            osw.flush();
+	            osw.close();
+	        }
+	        catch( Exception e ) {
+	            e.printStackTrace();
+	        } 
+			
+			reqPayload = baos.toByteArray();
+		} else {
+			reqPayload = payload.getStringValue().getBytes();
+			mime = "text/text; charset=utf-8";
+		}
+		
         //setup POST request
         PostMethod post         = new PostMethod( url );
-        RequestEntity entity    = new ByteArrayRequestEntity( baos.toByteArray(), "text/xml; charset=utf-8" );
+        RequestEntity entity    = new ByteArrayRequestEntity( reqPayload, mime );
         
         post.setRequestEntity( entity );
         
