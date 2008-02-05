@@ -28,9 +28,9 @@ import org.exist.util.DatabaseConfigurationException;
 
 import javax.management.*;
 import java.util.ArrayList;
-import java.util.Stack;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * Real implementation of interface {@link org.exist.management.Agent}
@@ -97,7 +97,8 @@ public class JMXAgent implements Agent {
             while (!stack.isEmpty()) {
                 ObjectName on = (ObjectName) stack.pop();
                 LOG.debug("deregistering JMX MBean: " + on);
-                server.unregisterMBean(on);
+                if (server.isRegistered(on))
+                    server.unregisterMBean(on);
             }
         } catch (InstanceNotFoundException e) {
             LOG.warn("Problem found while unregistering JMX", e);
