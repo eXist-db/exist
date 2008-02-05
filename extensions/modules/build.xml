@@ -6,6 +6,8 @@
 	
     <property name="build.compiler" value="modern"/>
 
+	<property file="${top.dir}/build.properties"/>
+	
     <property file="local.build.properties"/>
     <property file="build.properties"/>
 

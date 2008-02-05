@@ -48,6 +48,7 @@
 
     <target name="prepare">
         <echo message="Building index module: ${module}"/>
+        <echo message="Building into ${classes}"/>
         <echo message="------------------------------------"/>
         <mkdir dir="${classes}"/>
         <mkdir dir="${test.classes}"/>
