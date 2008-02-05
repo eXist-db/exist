@@ -21,22 +21,7 @@
  */
 package org.exist.stax;
 
-import java.io.IOException;
-import java.util.NoSuchElementException;
-import java.util.Stack;
-
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.exist.dom.AttrImpl;
-import org.exist.dom.CharacterDataImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.storage.btree.Value;
@@ -46,6 +31,15 @@ import org.exist.util.XMLString;
 import org.exist.util.serializer.AttrList;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
+
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.util.NoSuchElementException;
+import java.util.Stack;
 
 /**
  * Lazy implementation of a StAX {@link javax.xml.stream.XMLStreamReader}, which directly reads
@@ -131,7 +125,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
 
     private void initNode() {
-        final short type = Signatures.getType(current.data()[current.start()]);
+        final short type = Signatures.getType(current.data()[current.start()]);    // TODO: remove potential NPE
         switch (type) {
             case Node.ELEMENT_NODE :
                 state = START_ELEMENT;
