@@ -63,7 +63,8 @@ public class ElementConstructor extends NodeConstructor {
 	
 	public void setContent(PathExpr path) {
 		this.content = path;
-	}
+        this.content.setUseStaticContext(true);
+    }
 	
 	public void setNameExpr(Expression expr) {
 		//Deferred atomization (we could have a QNameValue)

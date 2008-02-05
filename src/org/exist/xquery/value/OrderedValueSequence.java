@@ -161,7 +161,7 @@ public class OrderedValueSequence extends AbstractSequence {
 		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
 			//Was ExtArrayNodeset() which orders the nodes in document order
 			//The order seems to change between different invocations !!!
-			NodeSet set = new AVLTreeNodeSet();	
+			NodeSet set = new AVLTreeNodeSet();
 			//We can't make it from an ExtArrayNodeSet (probably because it is sorted ?)
 			//NodeSet set = new ArraySet(100);
 			for (int i = 0; i < items.length; i++) {
