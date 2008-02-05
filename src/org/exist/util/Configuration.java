@@ -470,7 +470,9 @@ public class Configuration implements ErrorHandler
 				String type  = attr.getAttribute( "type" );
 				
 			    if( name == null || name.length() == 0 ) {
-                	LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className + "', null name" );
+                	LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className + "', name not specified" );
+				} else if( type == null || type.length() == 0 || type.equalsIgnoreCase( "string" ) ) {
+					attributes.put( name, value );
 				} else if( type.equalsIgnoreCase( "boolean" ) ) {
 					attributes.put( name, Boolean.valueOf( value ) );
 				} else if( type.equalsIgnoreCase( "integer" ) ) {
