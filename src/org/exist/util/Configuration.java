@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -453,10 +454,39 @@ public class Configuration implements ErrorHandler
     
     private void configureTransformer(Element transformer) {
         String className = transformer.getAttribute(TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRIBUTE);
-        if (className != null) {
-            config.put(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, className);
-            LOG.debug(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS + ": " + 
-            		config.get(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS));
+        if( className != null ) {
+            config.put( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, className );
+            LOG.debug( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS + ": " + config.get( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS ) );
+			
+			// Process any specified attributes that should be passed to the transformer factory
+			
+			NodeList attrs = transformer.getElementsByTagName( TransformerFactoryAllocator.CONFIGURATION_TRANSFORMER_ATTRIBUTE_ELEMENT_NAME );
+			Hashtable attributes = new Properties();
+			
+            for( int a = 0; a < attrs.getLength(); a++ ) {
+                Element attr = (Element)attrs.item( a );
+                String name  = attr.getAttribute( "name" );
+                String value = attr.getAttribute( "value" );
+				String type  = attr.getAttribute( "type" );
+				
+			    if( name == null || name.length() == 0 ) {
+                	LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className + "', null name" );
+				} else if( type.equalsIgnoreCase( "boolean" ) ) {
+					attributes.put( name, Boolean.valueOf( value ) );
+				} else if( type.equalsIgnoreCase( "integer" ) ) {
+					try {
+						attributes.put( name, Integer.valueOf( value ) );
+					}
+					catch( NumberFormatException nfe ) {
+						LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className + "', name: " + name + ", value not integer: " + value );
+					}
+				} else {
+					// Assume string type
+					attributes.put( name, value );
+				}
+            }
+			
+			config.put( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_ATTRIBUTES, attributes );
         }
     }
     
