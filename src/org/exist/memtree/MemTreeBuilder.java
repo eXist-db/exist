@@ -22,14 +22,14 @@
  */
 package org.exist.memtree;
 
-import java.util.Arrays;
-
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
+
+import java.util.Arrays;
 
 /**
  * Use this class to build a new in-memory DOM document.
@@ -130,7 +130,7 @@ public class MemTreeBuilder {
 			System.arraycopy(prevNodeInLevel, 0, t, 0, prevNodeInLevel.length);
 			prevNodeInLevel = t;
 		}
-		int prevNr = prevNodeInLevel[level];
+		int prevNr = prevNodeInLevel[level];    // TODO: remove potential ArrayIndexOutOfBoundsException
 		if (prevNr > -1)
 			doc.next[prevNr] = nodeNr;
 		doc.next[nodeNr] = prevNodeInLevel[level - 1];
