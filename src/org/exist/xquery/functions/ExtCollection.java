@@ -107,9 +107,12 @@ public class ExtCollection extends Function {
         DocumentSet docs = null;
 //        DocumentSet docs = new DocumentSet(521);
 	    try {
-	    	if (args.size() == 0) {
-	    		docs = context.getStaticallyKnownDocuments();
-	    	} else {
+   			if (args.size() == 0) {
+	    		//TODO : add default collection to the context
+    			//If the value of the default collection is undefined an error is raised [err:FODC0002].
+    			//throw new XPathException("FODC0002: unknown collection '" + uri + "'");	
+    			docs = context.getStaticallyKnownDocuments();
+		    } else {
                 MutableDocumentSet ndocs = new DefaultDocumentSet();
                 for (int i = 0; i < args.size(); i++) {
 					String next = (String)args.get(i);
