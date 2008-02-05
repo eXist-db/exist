@@ -50,6 +50,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     protected List steps = new ArrayList();
 
+    protected boolean staticContext = false;
+
     protected boolean inPredicate = false;
     
     protected XACMLSource source;
@@ -177,6 +179,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         } else {
             //we will filter out nodes from the contextSequence
             result = contextSequence;
+            Sequence currentContext = contextSequence;
             
             DocumentSet contextDocs = null;
             Expression expr = (Expression) steps.get(0);
@@ -215,27 +218,26 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 		//A positionnal predicate will be evaluated one time
                 		//TODO : reconsider since that may be expensive (type evaluation)
                 		!(this.inPredicate && Type.subTypeOf(this.returnsType(), Type.NUMBER)) &&
-                		result != null && !result.isEmpty()) {
+                		currentContext != null && !currentContext.isEmpty()) {
                       
                     Sequence exprResult = new ValueSequence();
                     
                     //Restore a position which may have been modified by inner expressions 
                     int p = context.getContextPosition();
                     
-                    for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); p++) {
+                    for (SequenceIterator iterInner = currentContext.iterate(); iterInner.hasNext(); p++) {
                         context.setContextPosition(p);
                         Item current = iterInner.nextItem();   
                         //0 or 1 item
-                        if (!result.hasMany())
-                        	exprResult = expr.eval(result, current);
+                        if (!currentContext.hasMany())
+                        	exprResult = expr.eval(currentContext, current);
                         else {
-                        	exprResult.addAll(expr.eval(result, current));
+                        	exprResult.addAll(expr.eval(currentContext, current));
                         }
                     }
-                    result = exprResult;  
-                                   
+                    result = exprResult;
                 } else {
-                	result = expr.eval(result);
+                	result = expr.eval(currentContext);
                 }
             
                 //TOUNDERSTAND : why did I have to write this test :-) ? -pb
@@ -248,7 +250,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if(steps.size() > 1)
                     // remove duplicate nodes if this is a path 
                     // expression with more than one step
-                    result.removeDuplicates();                
+                    result.removeDuplicates();
+                
+                if (!staticContext)
+                    currentContext = result;
             }
             // instanceof VariableDeclaration might be unneeded /ljo
             if (gotAtomicResult &&
@@ -288,6 +293,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     public int getLength() {
         return steps.size();
+    }
+
+    public void setUseStaticContext(boolean staticContext) {
+        this.staticContext = staticContext;
     }
 
     public void accept(ExpressionVisitor visitor) {
