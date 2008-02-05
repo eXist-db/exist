@@ -736,12 +736,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
         
         private void processCurrentElement(ElementImpl element) {
+        	currentNodeId = element.getNodeId();
         	String currentSrsName = (String)srsNamesStack.pop();        		
     		try {
     			geometryDocument.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
         		//Some invalid/(yet) incomplete geometries don't have a SRS
-        		if (streamedGeometry != null && currentSrsName != null) {   
-        			currentNodeId = element.getNodeId();
+        		if (streamedGeometry != null && currentSrsName != null) {
 	    			geometries.put(currentNodeId, new SRSGeometry(currentSrsName, streamedGeometry));		        		
 		        	if (flushAfter != -1 && geometries.size() >= flushAfter) {
 		        		//Mmmh... doesn't flush since it is currently dependant from the
