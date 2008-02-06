@@ -23,9 +23,13 @@
 package org.exist.security.xacml;
 
 import java.net.URI;
+import java.util.HashMap;
 
+import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.Element;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AnyURIAttribute;
@@ -50,6 +54,7 @@ public final class XACMLConstants
 	public static final String CONFIGURATION_ELEMENT_NAME = "xacml";
 	public static final String ENABLE_XACML_ATTRIBUTE = "enable";
 	public static final String ENABLE_XACML_PROPERTY = "xacml.enable";
+	public static final boolean ENABLE_XACML_BY_DEFAULT = false;
 	public static final String LOAD_DEFAULT_POLICIES_ATTRIBUTE = "load-defaults";
 	public static final String LOAD_DEFAULT_POLICIES_PROPERTY = "xacml.load.defaults";
 	
@@ -253,5 +258,6 @@ public final class XACMLConstants
 	 */
 	public static final String COCOON_SOURCE_TYPE = "Cocoon";
 	
-	private XACMLConstants() {}
+	private XACMLConstants() {}	
+
 }

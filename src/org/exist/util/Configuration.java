@@ -317,6 +317,7 @@ public class Configuration implements ErrorHandler
             
             //XACML settings
             NodeList xacml = doc.getElementsByTagName(XACMLConstants.CONFIGURATION_ELEMENT_NAME);
+            //TODO : check that we have only one element
             if (xacml.getLength() > 0) {
                 configureXACML((Element)xacml.item(0));
             }
@@ -421,15 +422,15 @@ public class Configuration implements ErrorHandler
         config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, moduleMap);
     }
     
-    private void configureXACML(Element xacml) {
+    public void configureXACML(Element xacml) {
         String enable = xacml.getAttribute(XACMLConstants.ENABLE_XACML_ATTRIBUTE);
-        config.put(XACMLConstants.ENABLE_XACML_PROPERTY, parseBoolean(enable, false));
+        config.put(XACMLConstants.ENABLE_XACML_PROPERTY, Configuration.parseBoolean(enable, XACMLConstants.ENABLE_XACML_BY_DEFAULT));
         LOG.debug(XACMLConstants.ENABLE_XACML_PROPERTY + ": " + config.get(XACMLConstants.ENABLE_XACML_PROPERTY));
         
         String loadDefaults = xacml.getAttribute(XACMLConstants.LOAD_DEFAULT_POLICIES_ATTRIBUTE);
-        config.put(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY, parseBoolean(loadDefaults, true));
+        config.put(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY, Configuration.parseBoolean(loadDefaults, true));
         LOG.debug(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY + ": " + config.get(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY));
-    }
+    }	    
     
     /**
      * @param xupdate
@@ -446,7 +447,7 @@ public class Configuration implements ErrorHandler
         
         String consistencyCheck = xupdate.getAttribute(DBBroker.XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE);
         if (consistencyCheck != null) {
-            config.put(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS, Boolean.valueOf(consistencyCheck.equals("yes")));
+            config.put(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS, parseBoolean(consistencyCheck, false));
             LOG.debug(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS + ": "
                 + config.get(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS));
         }
@@ -456,7 +457,8 @@ public class Configuration implements ErrorHandler
         String className = transformer.getAttribute(TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRIBUTE);
         if( className != null ) {
             config.put( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, className );
-            LOG.debug( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS + ": " + config.get( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS ) );
+            LOG.debug( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS + ": " + 
+            		config.get( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS ) );
 			
 			// Process any specified attributes that should be passed to the transformer factory
 			
@@ -808,27 +810,15 @@ public class Configuration implements ErrorHandler
     
     private void configureRecovery(Element recovery) throws DatabaseConfigurationException {
         String option = recovery.getAttribute(BrokerPool.RECOVERY_ENABLED_ATTRIBUTE);
-        boolean value = true;
-        if (option != null) {
-            value = option.equals("yes");
-        }
-        setProperty(BrokerPool.PROPERTY_RECOVERY_ENABLED, new Boolean(value));
+        setProperty(BrokerPool.PROPERTY_RECOVERY_ENABLED, parseBoolean(option, true));
         LOG.debug(BrokerPool.PROPERTY_RECOVERY_ENABLED + ": " + config.get(BrokerPool.PROPERTY_RECOVERY_ENABLED));
         
         option = recovery.getAttribute(Journal.RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE);
-        value = true;
-        if (option != null) {
-            value = option.equals("yes");
-        }
-        setProperty(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, new Boolean(value));
+        setProperty(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean(option, true));
         LOG.debug(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": " + config.get(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT));
         
         option = recovery.getAttribute(TransactionManager.RECOVERY_GROUP_COMMIT_ATTRIBUTE);
-        value = false;
-        if (option != null) {
-            value = option.equals("yes");
-        }
-        setProperty(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT, new Boolean(value));
+        setProperty(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean(option, false));
         LOG.debug(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT));
         
         option = recovery.getAttribute(Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE);
@@ -1002,19 +992,19 @@ public class Configuration implements ErrorHandler
     private void configureIndexer(String dbHome, Document doc, Element indexer) throws DatabaseConfigurationException, MalformedURLException {
         String parseNum = indexer.getAttribute(TextSearchEngine.INDEX_NUMBERS_ATTRIBUTE);
         if (parseNum != null) {
-            config.put(TextSearchEngine.PROPERTY_INDEX_NUMBERS, Boolean.valueOf(parseNum.equals("yes")));
+            config.put(TextSearchEngine.PROPERTY_INDEX_NUMBERS, parseBoolean(parseNum, false));
             LOG.debug(TextSearchEngine.PROPERTY_INDEX_NUMBERS + ": " + config.get(TextSearchEngine.PROPERTY_INDEX_NUMBERS));
         }
         
         String stemming = indexer.getAttribute(TextSearchEngine.STEM_ATTRIBUTE);
         if (stemming != null) {
-            config.put(TextSearchEngine.PROPERTY_STEM, Boolean.valueOf(stemming.equals("yes")));
+            config.put(TextSearchEngine.PROPERTY_STEM, parseBoolean(stemming, false));
             LOG.debug(TextSearchEngine.PROPERTY_STEM + ": " + config.get(TextSearchEngine.PROPERTY_STEM));
         }
         
         String termFreq = indexer.getAttribute(TextSearchEngine.STORE_TERM_FREQUENCY_ATTRIBUTE);
         if (termFreq != null) {
-            config.put(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY, Boolean.valueOf(termFreq.equals("yes")));
+            config.put(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY, parseBoolean(termFreq, false));
             LOG.debug(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY + ": " + config.get(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY));
         }
         
@@ -1026,7 +1016,7 @@ public class Configuration implements ErrorHandler
 
         String caseSensitive = indexer.getAttribute(NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE);
         if (caseSensitive != null) {
-            config.put(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, Boolean.valueOf(caseSensitive.equals("yes")));
+            config.put(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, parseBoolean(caseSensitive, false));
             LOG.debug(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE + ": " + config.get(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE));
         }
         
@@ -1066,7 +1056,7 @@ public class Configuration implements ErrorHandler
         
         String suppressWSmixed = indexer.getAttribute(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE);
         if (suppressWSmixed != null) {
-            config.put(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.valueOf(suppressWSmixed.equals("yes")));
+            config.put(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, parseBoolean(suppressWSmixed, false));
             LOG.debug(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT + ": " + config.get(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT));
         }
         
@@ -1205,11 +1195,10 @@ public class Configuration implements ErrorHandler
      * @param defaultValue The default if the string is null
      * @return The parsed <code>Boolean</code>
      */
-    private Boolean parseBoolean(String value, boolean defaultValue) {
+    public static Boolean parseBoolean(String value, boolean defaultValue) {
         if(value == null)
-            return Boolean.valueOf(defaultValue);
-        value = value.toLowerCase();
-        return Boolean.valueOf(value.equals("yes") || value.equals("true"));
+            return Boolean.valueOf(defaultValue);     
+        return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
     }
     
     public int getInteger(String name) {
