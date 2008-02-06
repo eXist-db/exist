@@ -531,7 +531,7 @@
     </target>
 
     <target name="extension-fluent" depends="jar">
-        <ant antfile="build.xml" dir="extensions/fluent"/>
+        <ant antfile="build.xml" dir="extensions/fluent" inheritall="false"/>
     </target>
     
     <target name="samples" depends="jar" description="Build samples">
