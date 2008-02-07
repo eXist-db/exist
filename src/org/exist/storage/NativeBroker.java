@@ -2357,13 +2357,13 @@ public class NativeBroker extends DBBroker {
         if (defrag && oldNodeId != null)
             pool.getNotificationService().notifyMove(oldNodeId, node);
         if (node.getNodeType() == Node.ELEMENT_NODE) {
-	    //save old value, whatever it is
-	    long address = node.getOldInternalAddress();
-	    node.setOldInternalAddress(oldAddress);
+            //save old value, whatever it is
+            long address = node.getInternalAddress();
+            node.setInternalAddress(oldAddress);
             endElement(node, currentPath, null);
             //restore old value, whatever it was
-            node.setOldInternalAddress(address);
-            ((ElementImpl)node).setDirty(false);
+            node.setInternalAddress(address);
+            node.setDirty(false);
         }
         if (node.getNodeId().getTreeLevel() == 1)
             newDoc.appendChild(node);
