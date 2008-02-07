@@ -2028,46 +2028,46 @@ public class DOMFile extends BTree implements Lockable {
      * @return string value of the specified node
      */
     public String getNodeValue(StoredNode node, boolean addWhitespace) {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");
-	try {
-	    long address = node.getInternalAddress();
+        if (!lock.hasLock())
+            LOG.warn("the file doesn't own a lock");
+        try {
+            long address = node.getInternalAddress();
             RecordPos rec = null;
             // try to directly locate the root node through its storage address
             if (address != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                 rec = findRecord(address);
             if (rec == null) {
-		// fallback to a btree lookup if the node could not be found
-		// by its storage address
-		address = findValue(this, new NodeProxy(node));
-		if (address == BTree.KEY_NOT_FOUND) {
-		    LOG.warn("node value not found : " + node);
-		    return null;
-		}
+                // fallback to a btree lookup if the node could not be found
+                // by its storage address
+                address = findValue(this, new NodeProxy(node));
+                if (address == BTree.KEY_NOT_FOUND) {
+                    LOG.warn("node value not found : " + node);
+                    return null;
+                }
                 rec = findRecord(address);
-		SanityCheck.THROW_ASSERT(rec != null, "Node data could not be found!");
+                SanityCheck.THROW_ASSERT(rec != null, "Node data could not be found!");
             }
-	    // we collect the string values in binary format and append to a ByteArrayOutputStream
-	    final ByteArrayOutputStream os = new ByteArrayOutputStream();
-	    // now traverse the tree
-	    getNodeValue((DocumentImpl)node.getOwnerDocument(), os, rec, true, addWhitespace);
-	    final byte[] data = os.toByteArray();
-	    String value;
-	    try {
-		value = new String(data, "UTF-8");
-	    } catch (UnsupportedEncodingException e) {
-		LOG.warn("UTF-8 error while reading node value", e);
-		//TODO : why not store another string like "OOOPS !" ?
-		//then return null
-		value = new String(data);
-	    }
-	    return value;
-	} catch (BTreeException e) {
-	    LOG.warn("btree error while reading node value", e);
-	} catch (IOException e) {
-	    LOG.warn("io error while reading node value", e);
-	}
-	return null;
+            // we collect the string values in binary format and append to a ByteArrayOutputStream
+            final ByteArrayOutputStream os = new ByteArrayOutputStream();
+            // now traverse the tree
+            getNodeValue((DocumentImpl)node.getOwnerDocument(), os, rec, true, addWhitespace);
+            final byte[] data = os.toByteArray();
+            String value;
+            try {
+                value = new String(data, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                LOG.warn("UTF-8 error while reading node value", e);
+                //TODO : why not store another string like "OOOPS !" ?
+                //then return null
+                value = new String(data);
+            }
+            return value;
+        } catch (BTreeException e) {
+            LOG.warn("btree error while reading node value", e);
+        } catch (IOException e) {
+            LOG.warn("io error while reading node value", e);
+        }
+        return null;
     }
 
     /**
@@ -2076,55 +2076,55 @@ public class DOMFile extends BTree implements Lockable {
      */
     private void getNodeValue(DocumentImpl doc, ByteArrayOutputStream os, RecordPos rec,
 			      boolean acceptAttributeValue, boolean addWhitespace) {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");
-	// locate the next real node, skipping relocated nodes
-	boolean foundNext = false;
-	do {
-	    final DOMFilePageHeader ph = rec.getPage().getPageHeader();
-	    if (rec.offset > ph.getDataLength()) {
-		// end of page reached, proceed to the next page
-		final long nextPage = ph.getNextDataPage();
-		if (nextPage == Page.NO_PAGE) {
-		    SanityCheck.TRACE("bad link to next page! offset: " + rec.offset + "; len: " + 
-				      ph.getDataLength() + ": " + rec.getPage().page.getPageInfo());
-		    return;
-		}
-		rec.setPage(getCurrentPage(nextPage));
-		dataCache.add(rec.getPage());
-		rec.offset = LENGTH_TID;
-	    }			
-	    //Position the stream at the very beginning of the record
-	    short tid = ByteConversion.byteToShort(rec.getPage().data, rec.offset - LENGTH_TID); 
-	    rec.setTID(tid);
-	    if (ItemId.isLink(rec.getTID())) {
-		// this is a link: skip it 
-		//We position the offset *after* the next TID
-		rec.offset += (LENGTH_FORWARD_LOCATION + LENGTH_TID);
-	    } else
-		// ok: node found
-		foundNext = true;
-	} while (!foundNext);
-	// read the page len
-	final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
-	int realLen = vlen;
+        if (!lock.hasLock())
+            LOG.warn("the file doesn't own a lock");
+        // locate the next real node, skipping relocated nodes
+        boolean foundNext = false;
+        do {
+            final DOMFilePageHeader ph = rec.getPage().getPageHeader();
+            if (rec.offset > ph.getDataLength()) {
+                // end of page reached, proceed to the next page
+                final long nextPage = ph.getNextDataPage();
+                if (nextPage == Page.NO_PAGE) {
+                    SanityCheck.TRACE("bad link to next page! offset: " + rec.offset + "; len: " +
+                            ph.getDataLength() + ": " + rec.getPage().page.getPageInfo());
+                    return;
+                }
+                rec.setPage(getCurrentPage(nextPage));
+                dataCache.add(rec.getPage());
+                rec.offset = LENGTH_TID;
+            }
+            //Position the stream at the very beginning of the record
+            short tid = ByteConversion.byteToShort(rec.getPage().data, rec.offset - LENGTH_TID);
+            rec.setTID(tid);
+            if (ItemId.isLink(rec.getTID())) {
+                // this is a link: skip it
+                //We position the offset *after* the next TID
+                rec.offset += (LENGTH_FORWARD_LOCATION + LENGTH_TID);
+            } else
+                // ok: node found
+                foundNext = true;
+        } while (!foundNext);
+        // read the page len
+        final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+        int realLen = vlen;
         rec.offset += LENGTH_DATA_LENGTH;
-	// check if the node was relocated
-	if (ItemId.isRelocated(rec.getTID()))
-	    rec.offset += LENGTH_ORIGINAL_LOCATION;
-	byte[] data = rec.getPage().data;
-	int readOffset = rec.offset;
-	boolean inOverflow = false;
-	if (vlen == OVERFLOW) {
-	    // if we have an overflow value, load it from the overflow page
-	    final long op = ByteConversion.byteToLong(data, rec.offset);
-	    data = getOverflowValue(op);
-	    //We position the offset *after* the next TID
-	    rec.offset += LENGTH_OVERFLOW_LOCATION + LENGTH_TID;
-	    realLen = data.length;
-	    readOffset = 0;
-	    inOverflow = true;
-	}
+        // check if the node was relocated
+        if (ItemId.isRelocated(rec.getTID()))
+            rec.offset += LENGTH_ORIGINAL_LOCATION;
+        byte[] data = rec.getPage().data;
+        int readOffset = rec.offset;
+        boolean inOverflow = false;
+        if (vlen == OVERFLOW) {
+            // if we have an overflow value, load it from the overflow page
+            final long op = ByteConversion.byteToLong(data, rec.offset);
+            data = getOverflowValue(op);
+            //We position the offset *after* the next TID
+            rec.offset += LENGTH_OVERFLOW_LOCATION + LENGTH_TID;
+            realLen = data.length;
+            readOffset = 0;
+            inOverflow = true;
+        }
 
 	// check the type of the node
 	final short type = Signatures.getType(data[readOffset]);
