@@ -47,10 +47,10 @@
             <catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml" />
         </entity-resolver>
     </validation>]]></programlisting>
-                </example> Catalog documentss can also be stored inside the database, which is much
+                </example> Catalog documents can also be stored inside the database, which is much
                 more flexible compared the previous example. Please note the three forward slashes
                 /// here... <example>
-                    <title>Default configuration</title>
+                    <title>Catalog stored in database</title>
                     <programlisting format="linespecific"><![CDATA[
     <validation mode="auto">
         <entity-resolver>
@@ -126,7 +126,7 @@
                 </para>
                 <para>It is possible to configure any number of catalog entries in the
                     entity-resolver section of conf.xml . The relative "uri="s are resolved
-                    relative to the location of the catalog document</para>
+                    relative to the location of the catalog document.</para>
             </section>
 
             <section>
