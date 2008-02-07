@@ -21,12 +21,6 @@
  */
 package org.exist.dom;
 
-import java.io.IOException;
-import java.util.Iterator;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -36,6 +30,11 @@ import org.exist.util.pool.NodePool;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.util.Iterator;
 
 /**
  *  The base class for all persistent DOM nodes in the database.
@@ -52,7 +51,6 @@ public class StoredNode extends NodeImpl implements Visitable {
     protected DocumentImpl ownerDocument = null;
     
     private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-    private long oldInternalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     
     private short nodeType = NodeProxy.UNKNOWN_NODE_TYPE;
     
@@ -85,7 +83,6 @@ public class StoredNode extends NodeImpl implements Visitable {
         this.nodeType = other.nodeType;
         this.nodeId = other.nodeId;
         this.internalAddress = other.internalAddress;
-        this.oldInternalAddress = other.oldInternalAddress;
         this.ownerDocument = other.ownerDocument;        
     }
     
@@ -99,8 +96,6 @@ public class StoredNode extends NodeImpl implements Visitable {
     	this.nodeType = other.getNodeType();
     	this.nodeId = other.getNodeId();    	
     	this.internalAddress = other.getInternalAddress();
-    	//Take the same address
-    	this.oldInternalAddress = other.getInternalAddress();
     }
     
     /**
@@ -110,7 +105,6 @@ public class StoredNode extends NodeImpl implements Visitable {
     public void clear() {
         this.nodeId = null;
         this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-        this.oldInternalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     } 
     
     public byte[] serialize() {
@@ -233,24 +227,6 @@ public class StoredNode extends NodeImpl implements Visitable {
      */
     public void setInternalAddress(long internalAddress) {
         this.internalAddress = internalAddress;
-    } 
-    
-	/**
-	 *  Get the internal storage address of this node
-	 *
-	 *@return    The oldInternalAddress value
-	 */
-	public long getOldInternalAddress() {
-		return oldInternalAddress;
-	}
-    
-    /**
-     *  Set the old internal storage address of this node.
-     *
-     *@param  oldInternalAddress  The new internalAddress value
-     */
-    public void setOldInternalAddress(long oldInternalAddress) {
-        this.oldInternalAddress = oldInternalAddress;
     }
 
     /**
