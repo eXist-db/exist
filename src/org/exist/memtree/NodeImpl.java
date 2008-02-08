@@ -22,15 +22,7 @@
  */
 package org.exist.memtree;
 
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.exist.dom.DocumentSet;
-import org.exist.dom.EmptyNodeSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.QNameable;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
@@ -39,24 +31,15 @@ import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.UntypedAtomicValue;
-import org.exist.xquery.value.ValueSequence;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.UserDataHandler;
+import org.exist.xquery.value.*;
+import org.w3c.dom.*;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.util.Iterator;
+import java.util.Properties;
 
 public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
@@ -149,7 +132,11 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 				return null;
 		}
 	}
-	
+
+    public NodeId getNodeId() {
+        return document.nodeId[nodeNumber];
+    }
+    
     public void expand() throws DOMException {
         document.expand();
     }
@@ -719,7 +706,15 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         return null;
 	}
 
-	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
+    public void selectAttributes(NodeTest test, Sequence result) throws XPathException {
+        // do nothing
+    }
+
+    public void selectChildren(NodeTest test, Sequence result) throws XPathException {
+        // do nothing
+    }
+
+    /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
 	 */
 	public short compareDocumentPosition(Node other) throws DOMException {
 		throw new RuntimeException("Can not call compareDocumentPosition() on node type " + this.getNodeType());
