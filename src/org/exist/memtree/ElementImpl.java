@@ -21,24 +21,21 @@
  */
 package org.exist.memtree;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Attr;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.TypeInfo;
+import org.w3c.dom.*;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ElementImpl extends NodeImpl implements Element, QNameable {
 
@@ -230,7 +227,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		return null;
 	}
 
-	/* (non-Javadoc)
+    /* (non-Javadoc)
 	 * @see org.w3c.dom.Element#setAttributeNode(org.w3c.dom.Attr)
 	 */
 	public Attr setAttributeNode(Attr arg0) throws DOMException {
@@ -238,7 +235,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		return null;
 	}
 
-	/* (non-Javadoc)
+    /* (non-Javadoc)
 	 * @see org.w3c.dom.Element#removeAttributeNode(org.w3c.dom.Attr)
 	 */
 	public Attr removeAttributeNode(Attr arg0) throws DOMException {
@@ -246,7 +243,30 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		return null;
 	}
 
-	/* (non-Javadoc)
+    public void selectAttributes(NodeTest test, Sequence result) throws XPathException {
+        int attr = document.alpha[nodeNumber];
+        if (-1 < attr) {
+            while (attr < document.nextAttr
+                    && document.attrParent[attr] == nodeNumber) {
+                AttributeImpl attrib = new AttributeImpl(document, attr);
+                if (test.matches(attrib))
+                    result.add(attrib);
+                ++attr;
+            }
+        }
+    }
+
+    public void selectChildren(NodeTest test, Sequence result) throws XPathException {
+		int nextNode = document.getFirstChildFor(nodeNumber);
+		while (nextNode > nodeNumber) {
+			NodeImpl n = document.getNode(nextNode);
+            if (test.matches(n))
+                result.add(n);
+            nextNode = document.next[nextNode];
+        }
+	}
+
+    /* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
 	 */
 	public NodeList getElementsByTagName(String name) {
