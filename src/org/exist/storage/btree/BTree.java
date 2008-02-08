@@ -71,16 +71,11 @@ package org.exist.storage.btree;
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.text.NumberFormat;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.CacheManager;
+import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
@@ -92,6 +87,12 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.xquery.TerminatedException;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.text.NumberFormat;
 
 /**
  *  A general purpose B+-tree which stores binary keys as instances of
@@ -115,6 +116,8 @@ public class BTree extends Paged {
     
     /** Type of BTreeNode/Page */
 	protected final static byte BRANCH = 2;
+
+    protected final static int MIN_SPACE_PER_KEY = 32;
 
     /** Log entry type for an insert value operation */
     public final static byte LOG_INSERT_VALUE = 0x20;
@@ -2428,7 +2431,11 @@ public class BTree extends Paged {
 		public void setFixedKeyLen(short keyLen) {
 			this.fixedLen = keyLen;
 		}
-	}
+
+        public int getMaxKeySize() {
+            return getWorkSize() - MIN_SPACE_PER_KEY;
+        }
+    }
 
 	protected static class BTreePageHeader extends PageHeader {
 
