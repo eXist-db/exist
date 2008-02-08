@@ -21,9 +21,9 @@
  */
 package org.exist.numbering;
 
-import java.io.IOException;
-
 import org.exist.storage.io.VariableByteOutputStream;
+
+import java.io.IOException;
 
 /**
  * Represents the internal id of a node within eXist. Basically, all
@@ -98,6 +98,8 @@ public interface NodeId extends Comparable {
 
     NodeId insertBefore();
 
+    NodeId append(NodeId other);
+    
     /**
      * Returns a new NodeId representing the parent
      * of the current node. If the parent is the document,

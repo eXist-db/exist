@@ -24,13 +24,15 @@ package org.exist.xquery.value;
 import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
+import org.exist.numbering.NodeId;
 import org.exist.util.FastQSort;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.Constants;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
+import org.w3c.dom.Node;
 
 /**
  * A sequence that sorts its entries in the order specified by the order specs of
@@ -173,28 +175,40 @@ public class OrderedValueSequence extends AbstractSequence {
 
 	                    // found an in-memory document
 	                    org.exist.memtree.DocumentImpl doc = ((NodeImpl)v).getDocument();
-	                    // make this document persistent: doc.makePersistent()
+                        if (doc==null) {
+                            continue;
+                        }
+                        // make this document persistent: doc.makePersistent()
                         // returns a map of all root node ids mapped to the corresponding
                         // persistent node. We scan the current sequence and replace all
                         // in-memory nodes with their new persistent node objects.
-                        Int2ObjectHashMap newRoots = doc.makePersistent();
-                        if (newRoots == null)
-                            return NodeSet.EMPTY_SET;
-                        for (int j = i; j < items.length; j++) {
-                            v = (NodeValue) items[j].item;
-                            if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-                                NodeImpl node = (NodeImpl) v;
-                                if (node.getDocument() == doc) {
-                                    NodeProxy p = (NodeProxy) newRoots.get(node.getNodeNumber());
-                                    if (p != null) {
-                                        // replace the node by the NodeProxy
-                                        items[j].item = p;
+                        DocumentImpl expandedDoc = doc.expandRefs(null);
+                        org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
+                        if (newDoc != null) {
+                            NodeId rootId = newDoc.getBroker().getBrokerPool().getNodeFactory().createInstance();
+                            for (int j = i; j < count; j++) {
+                                v = (NodeValue) items[j].item;
+                                if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                                    NodeImpl node = (NodeImpl) v;
+                                    if (node.getDocument() == doc) {
+                                        node = expandedDoc.getNode(node.getNodeNumber());
+                                        NodeId nodeId = node.getNodeId();
+                                        if (nodeId == null)
+                                            throw new XPathException("Internal error: nodeId == null");
+                                        if (node.getNodeType() == Node.DOCUMENT_NODE)
+                                            nodeId = rootId;
+                                        else
+                                            nodeId = rootId.append(nodeId);
+                                        NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
+                                        if (p != null) {
+                                            // replace the node by the NodeProxy
+                                            items[j].item = p;
+                                        }
                                     }
                                 }
                             }
                         }
-						
-	                    set.add((NodeProxy)items[i].item);
+                        set.add((NodeProxy) items[i].item);
 					} else {
 						set.add((NodeProxy)v);
 					}
