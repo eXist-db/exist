@@ -21,11 +21,10 @@
  */
 package org.exist.numbering;
 
-import java.io.IOException;
-
-import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+
+import java.io.IOException;
 
 /**
  * Represents a node id in the form of a dynamic level number (DLN). DLN's are
@@ -205,7 +204,23 @@ public class DLN extends DLNBase implements NodeId {
         }
         return newNode;
     }
-    
+
+    public NodeId append(NodeId otherId) {
+        DLN other = (DLN) otherId;
+        DLN newId = new DLN(this);
+        int offset = 0;
+        while (offset <= other.bitIndex) {
+            boolean subLevel = false;
+            if (offset > 0)
+                subLevel = ((other.bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) != 0);
+            int id = other.getLevelId(offset);
+            System.out.println("id: " + id);
+            newId.addLevelId(id, subLevel);
+            offset += DLN.getUnitsRequired(id) * BITS_PER_UNIT;
+        }
+        return newId;
+    }
+
     /**
      * Returns a new DLN representing the parent of the
      * current node. If the current node is the root element
@@ -355,48 +370,9 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public static void main(String[] args) throws IOException {
-        NodeId ids[] = {
-                new DLN("1.1.7.2.1"),
-                new DLN("1.1.7.2.2"),
-                new DLN("1.1.8"),
-                new DLN("1.1.8.1.1"),
-                new DLN("1.1.8.1.1/1"),
-                new DLN("1.1.8.1.1/2"),
-                new DLN("1.1.8.1.2.1.5"),
-                new DLN("1.1.8.1.2.1.7"),
-                new DLN("1.2"),
-                DLN.END_OF_DOCUMENT,
-                DLN.END_OF_DOCUMENT
-    };
-
-        VariableByteOutputStream os = new VariableByteOutputStream();
-        NodeId previous = null;
-        for (int i = 0; i < ids.length; i++) {
-            NodeId id = ids[i];
-            System.out.println(id.toString());
-            id.write(previous, os);
-            previous = id;
-        }
-
-        byte[] data = os.toByteArray();
-        System.out.println("Data length: " + data.length);
-
-        VariableByteArrayInput is = new VariableByteArrayInput(data);
-        DLNFactory fact = new DLNFactory();
-        previous = null;
-        for (int i = 0; i < ids.length; i++) {
-            previous = fact.createFromStream(previous, is);
-            System.out.println(previous.toString());
-        }
-
-        os = new VariableByteOutputStream();
-        for (int i = 0; i < ids.length; i++) {
-            NodeId id = ids[i];
-            System.out.println(id.toString());
-            id.write(os);
-        }
-
-        data = os.toByteArray();
-        System.out.println("Data length: " + data.length);
+        DLN left = new DLN("1");
+        DLN right = new DLN("2.3.12");
+        NodeId r = left.append(right);
+        System.out.println("r = " + r.toString());
     }
 }

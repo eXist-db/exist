@@ -24,12 +24,13 @@ import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.memtree.DocumentImpl;
+import org.exist.memtree.InMemoryNodeSet;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.util.FastQSort;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Node;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -48,13 +49,13 @@ public class ValueSequence extends AbstractSequence {
     private final static int UNSET_SIZE = -1;
     private final static int INITIAL_SIZE = 64;
 	
-	private Item[] values;
-	private int size = UNSET_SIZE;
+	protected Item[] values;
+	protected int size = UNSET_SIZE;
 	
 	// used to keep track of the type of added items.
-	// will be Type.ANY_TYPE if the type is unknown
+	// will be Type.ANY_TYPE if the typlexe is unknown
 	// and Type.ITEM if there are items of mixed type.
-	private int itemType = Type.ANY_TYPE;
+	protected int itemType = Type.ANY_TYPE;
 	
 	private boolean noDuplicates = false;
 
@@ -181,24 +182,34 @@ public class ValueSequence extends AbstractSequence {
                     // returns a map of all root node ids mapped to the corresponding
                     // persistent node. We scan the current sequence and replace all
                     // in-memory nodes with their new persistent node objects.
-                    Int2ObjectHashMap newRoots = doc.makePersistent();
-                    if (newRoots == null)
-                    	return NodeSet.EMPTY_SET; 
-                    for (int j = i; j <= size; j++) {
-                        v = (NodeValue) values[j];
-                        if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-                            NodeImpl node = (NodeImpl) v;
-                            if (node.getDocument() == doc) {
-                                NodeProxy p = (NodeProxy) newRoots.get(node.getNodeNumber());
-                                if (p != null) {
-                                    // replace the node by the NodeProxy
-                                    values[j] = p;
+                    DocumentImpl expandedDoc = doc.expandRefs(null);
+                    org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
+                    if (newDoc != null) {
+                        NodeId rootId = newDoc.getBroker().getBrokerPool().getNodeFactory().createInstance();
+                        for (int j = i; j <= size; j++) {
+                            v = (NodeValue) values[j];
+                            if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                                NodeImpl node = (NodeImpl) v;
+                                if (node.getDocument() == doc) {
+                                    node = expandedDoc.getNode(node.getNodeNumber());
+                                    NodeId nodeId = node.getNodeId();
+                                    if (nodeId == null)
+                                        throw new XPathException("Internal error: nodeId == null");
+                                    if (node.getNodeType() == Node.DOCUMENT_NODE)
+                                        nodeId = rootId;
+                                    else
+                                        nodeId = rootId.append(nodeId);
+                                    NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
+                                    if (p != null) {
+                                        // replace the node by the NodeProxy
+                                        values[j] = p;
+                                    }
                                 }
                             }
                         }
+                        set.add((NodeProxy) values[i]);
                     }
-                    set.add((NodeProxy) values[i]);
-				} else {
+                } else {
 					set.add((NodeProxy)v);
 				}
 			}
@@ -209,7 +220,23 @@ public class ValueSequence extends AbstractSequence {
 			throw new XPathException("Type error: the sequence cannot be converted into" +
 				" a node set. Item type is " + Type.getTypeName(itemType));
 	}
-	
+
+    public InMemoryNodeSet toMemNodeSet() throws XPathException {
+        if(size == UNSET_SIZE)
+            return new InMemoryNodeSet();
+        if(itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
+            throw new XPathException("Type error: the sequence cannot be converted into" +
+				" a node set. Item type is " + Type.getTypeName(itemType));
+        }
+        NodeValue v;
+        for (int i = 0; i <= size; i++) {
+            v = (NodeValue)values[i];
+            if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
+                return null;
+        }
+        return new InMemoryNodeSet(this);
+    }
+
     public boolean isPersistentSet() {
         if(size == UNSET_SIZE)
             return true;

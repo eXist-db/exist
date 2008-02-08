@@ -2,6 +2,8 @@ package org.exist.xquery;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.memtree.NodeImpl;
+import org.exist.memtree.ReferenceNode;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
@@ -37,12 +39,16 @@ public class NameTest extends TypeTest {
 	}
 
 	public boolean matches(Node other) {
-		if(!isOfType(other.getNodeType()))
+        if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
+            return matches(((ReferenceNode)other).getReference());
+        if(!isOfType(other.getNodeType()))
 			return false;
 		return matchesName(other);
 	}
 	
 	public boolean matchesName(Node other) {
+        if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
+            return matchesName(((ReferenceNode)other).getReference().getNode());
         if (nodeName.getNamespaceURI() != null) {
             if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI()))
 				return false;
