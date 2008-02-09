@@ -2,9 +2,16 @@ package org.exist.fluent;
 
 import static org.junit.Assert.*;
 
-import org.junit.Test;
+import java.util.EnumSet;
 
+import org.jmock.*;
+import org.jmock.integration.junit4.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(JMock.class)
 public class NodeTest extends DatabaseTestCase {
+	private Mockery context = new JUnit4Mockery();
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void appendMemtree() {
@@ -106,4 +113,69 @@ public class NodeTest extends DatabaseTestCase {
 				.elem("ack").end("ack").commit();
 		node.update().attr("foo", "bar").commit();
 	}
+	
+	@Test
+	public void appendTriggersListeners() {
+		final XMLDocument doc = db.getFolder("/").documents().load(Name.create("foo"), Source.xml("<foo/>"));
+		final Document.Listener listener = context.mock(Document.Listener.class);
+		context.checking(new Expectations() {{
+			one(listener).handle(new Document.Event(Trigger.BEFORE_UPDATE, doc.path(), doc));
+			one(listener).handle(new Document.Event(Trigger.AFTER_UPDATE, doc.path(), doc));
+		}});
+		db.getFolder("/").listeners().add(EnumSet.of(Trigger.BEFORE_UPDATE, Trigger.AFTER_UPDATE), listener);
+		try {
+			doc.root().append().elem("bar").end("bar").commit();
+		} finally {
+			db.getFolder("/").listeners().remove(listener);
+		}
+	}
+	
+	@Test
+	public void deleteTriggersListeners() {
+		final XMLDocument doc = db.getFolder("/").documents().load(Name.create("foo"), Source.xml("<foo><bar/></foo>"));
+		final Document.Listener listener = context.mock(Document.Listener.class);
+		context.checking(new Expectations() {{
+			one(listener).handle(new Document.Event(Trigger.BEFORE_UPDATE, doc.path(), doc));
+			one(listener).handle(new Document.Event(Trigger.AFTER_UPDATE, doc.path(), doc));
+		}});
+		db.getFolder("/").listeners().add(EnumSet.of(Trigger.BEFORE_UPDATE, Trigger.AFTER_UPDATE), listener);
+		try {
+			doc.root().query().single("bar").node().delete();
+		} finally {
+			db.getFolder("/").listeners().remove(listener);
+		}
+	}
+
+	@Test
+	public void replaceTriggersListeners() {
+		final XMLDocument doc = db.getFolder("/").documents().load(Name.create("foo"), Source.xml("<foo><bar/></foo>"));
+		final Document.Listener listener = context.mock(Document.Listener.class);
+		context.checking(new Expectations() {{
+			one(listener).handle(new Document.Event(Trigger.BEFORE_UPDATE, doc.path(), doc));
+			one(listener).handle(new Document.Event(Trigger.AFTER_UPDATE, doc.path(), doc));
+		}});
+		db.getFolder("/").listeners().add(EnumSet.of(Trigger.BEFORE_UPDATE, Trigger.AFTER_UPDATE), listener);
+		try {
+			doc.root().query().single("bar").node().replace().elem("baz").end("baz").commit();
+		} finally {
+			db.getFolder("/").listeners().remove(listener);
+		}
+	}
+
+	@Test
+	public void updateTriggersListeners() {
+		final XMLDocument doc = db.getFolder("/").documents().load(Name.create("foo"), Source.xml("<foo><bar/></foo>"));
+		final Document.Listener listener = context.mock(Document.Listener.class);
+		context.checking(new Expectations() {{
+			one(listener).handle(new Document.Event(Trigger.BEFORE_UPDATE, doc.path(), doc));
+			one(listener).handle(new Document.Event(Trigger.AFTER_UPDATE, doc.path(), doc));
+		}});
+		db.getFolder("/").listeners().add(EnumSet.of(Trigger.BEFORE_UPDATE, Trigger.AFTER_UPDATE), listener);
+		try {
+			doc.root().query().single("bar").node().update().attr("x", "y").commit();
+		} finally {
+			db.getFolder("/").listeners().remove(listener);
+		}
+	}
+
 }

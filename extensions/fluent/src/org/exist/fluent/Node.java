@@ -1,18 +1,18 @@
 package org.exist.fluent;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.*;
 
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.*;
 
+import org.exist.collections.*;
+import org.exist.collections.triggers.*;
+import org.exist.collections.triggers.Trigger;
 import org.exist.dom.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.value.*;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 
 /**
  * A node in the database.  Nodes are most often contained in XML documents, but can also
@@ -124,6 +124,7 @@ public class Node extends Item {
 				public Node completed(org.w3c.dom.Node[] nodes) {
 					Transaction tx = Database.requireTransaction();
 					try {
+						DocumentTrigger trigger = fireTriggerBefore(tx);
 						StoredNode result = null;
 						if (nodes.length == 1) {
 							result = (StoredNode) node.appendChild(nodes[0]);
@@ -131,6 +132,7 @@ public class Node extends Item {
 							node.appendChildren(tx.tx, toNodeList(nodes), 0);
 						}
 						defrag(tx);
+						fireTriggerAfter(tx, trigger);
 						tx.commit();
 						if (result == null) return null;
 						NodeProxy proxy = new NodeProxy((DocumentImpl) result.getOwnerDocument(), result.getNodeId(), result.getNodeType(), result.getInternalAddress());
@@ -138,6 +140,8 @@ public class Node extends Item {
 						return new Node(proxy, namespaceBindings.extend(), db);
 					} catch (DOMException e) {
 						throw new DatabaseException(e);
+					} catch (TriggerException e) {
+						throw new DatabaseException("append aborted by listener", e);
 					} finally {
 						tx.abortIfIncomplete();
 					}
@@ -173,10 +177,14 @@ public class Node extends Item {
 		} else {
 			Transaction tx = Database.requireTransaction();
 			try {
+				DocumentTrigger trigger = fireTriggerBefore(tx);
 				parent.removeChild(tx.tx, child);
+				fireTriggerAfter(tx, trigger);
 				tx.commit();
 			} catch (DOMException e) {
 				throw new DatabaseException(e);
+			} catch (TriggerException e) {
+				throw new DatabaseException("delete aborted by listener", e);
 			} finally {
 				tx.abortIfIncomplete();
 			}
@@ -221,14 +229,18 @@ public class Node extends Item {
 					assert nodes.length == 1;
 					Transaction tx = Database.requireTransaction();
 					try {
+						DocumentTrigger trigger = fireTriggerBefore(tx);
 						((NodeImpl) oldNode.getParentNode()).replaceChild(tx.tx, nodes[0], oldNode);
 						defrag(tx);
+						fireTriggerAfter(tx, trigger);
 						tx.commit();
 						// no point in returning the old node; we'd rather return the newly inserted one,
 						// but it's not easily available
 						return null;
 					} catch (DOMException e) {
 						throw new DatabaseException(e);
+					} catch (TriggerException e) {
+						throw new DatabaseException("append aborted by listener", e);
 					} finally {
 						tx.abortIfIncomplete();
 					}
@@ -256,9 +268,13 @@ public class Node extends Item {
 				public void completed(NodeList removeList, NodeList addList) {
 					Transaction tx = Database.requireTransaction();
 					try {
+						DocumentTrigger trigger = fireTriggerBefore(tx);
 						elem.removeAppendAttributes(tx.tx, removeList, addList);
 						defrag(tx);
+						fireTriggerAfter(tx, trigger);
 						tx.commit();
+					} catch (TriggerException e) {
+						throw new DatabaseException("append aborted by listener", e);
 					} finally {
 						tx.abortIfIncomplete();
 					}
@@ -271,6 +287,27 @@ public class Node extends Item {
 				throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
 			}
 		}
+	}
+	
+	private DocumentTrigger fireTriggerBefore(Transaction tx) throws TriggerException {
+		if (!(item instanceof NodeProxy)) return null;
+		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
+		CollectionConfiguration config = docimpl.getCollection().getConfiguration(docimpl.getBroker());
+		if (config == null) return null;
+		try {
+			DocumentTrigger trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, docimpl.getBroker(), docimpl.getCollection());
+			if (trigger == null) return null;
+			trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, docimpl.getBroker(), tx.tx, docimpl.getURI(), docimpl);
+			return trigger;
+		} catch (CollectionConfigurationException e) {
+			throw new DatabaseException(e);
+		}
+	}
+	
+	private void fireTriggerAfter(Transaction tx, DocumentTrigger trigger) {
+		if (trigger == null) return;
+		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
+		trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, docimpl.getBroker(), tx.tx, docimpl.getURI(), docimpl);		
 	}
 
 	private void defrag(Transaction tx) {

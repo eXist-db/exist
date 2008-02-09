@@ -1,7 +1,6 @@
 package org.exist.fluent;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.lang.ref.*;
 import java.util.*;
 
 import org.apache.log4j.Logger;
@@ -113,7 +112,7 @@ public class ListenerManager {
 			return
 				this.trigger == that.trigger &&
 				that.path.startsWith(this.path) &&
-				(this.path.length() == that.path.length() || that.path.charAt(this.path.length()) == '/');
+				(this.path.equals("/") || this.path.length() == that.path.length() || that.path.charAt(this.path.length()) == '/');
 		}
 	}
 	
