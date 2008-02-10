@@ -5,6 +5,7 @@ import java.util.*;
 
 import org.exist.collections.*;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -310,20 +311,20 @@ public class Folder extends Resource implements Cloneable {
 		}
 
 		/**
-		 * Return whether this facet's folder immediately holds a document with the given name.
+		 * Return whether this facet's folder contains a document with the given relative path.
 		 *
-		 * @param name the name of the document to check for
-		 * @return <code>true</code> if the folder directly contains a document with the given name, <code>false</code> otherwise
+		 * @param documentPath the relative path of the document to check for
+		 * @return <code>true</code> if the folder contains a document with the given path, <code>false</code> otherwise
 		 */
-		public boolean contains(String name) {
-			return getQuickHandle().getDocument(broker, XmldbURI.create(name)) != null;
+		public boolean contains(String documentPath) {
+			return getQuickHandle().getDocument(broker, XmldbURI.create(documentPath)) != null;
 		}
 
 		/**
 		 * Create an XML document with the given name, takings its contents from the given source.
 		 *
 		 * @param name the desired name of the document
-		 * @param source the source of XML data to read in the document contents from
+		 * @param source the source of XML data to read in the document contents from; the folder's namespace bindings are <em>not</em> applied
 		 * @return the newly created document
 		 * @throws DatabaseException if anything else goes wrong
 		 */
@@ -372,15 +373,15 @@ public class Folder extends Resource implements Cloneable {
 		}
 		
 		/**
-		 * Get the immediately contained document with the given name. 
+		 * Get the contained document with the given relative path. 
 		 *
-		 * @param name the name of the document to find
-		 * @return the document with the given name
+		 * @param documentPath the relative path of the document to find
+		 * @return the document with the given path
 		 * @throws DatabaseException if unable to find or access the desired document
 		 */
-		public Document get(String name) {
-			DocumentImpl dimpl = getQuickHandle().getDocument(broker, XmldbURI.create(name));
-			if (dimpl == null) throw new DatabaseException("no such document: " + name);
+		public Document get(String documentPath) {
+			DocumentImpl dimpl = getQuickHandle().getDocument(broker, XmldbURI.create(documentPath));
+			if (dimpl == null) throw new DatabaseException("no such document: " + documentPath);
 			return Document.newInstance(dimpl, Folder.this);
 		}
 
@@ -751,16 +752,34 @@ public class Folder extends Resource implements Cloneable {
 	}
 	
 	/**
-	 * Delete this folder, including all documents and descendants.
+	 * Delete this folder, including all documents and descendants.  If invoked on the root folder,
+	 * deletes all documents and descendants but does not delete the root folder itself.
 	 */
+	@SuppressWarnings("unchecked")
 	public void delete() {
 		transact(Lock.NO_LOCK);
 		try {
+			// TODO: temporary hack, remove once removing root collection works in eXist
+			if (path.equals("/")) {
+				for (Iterator<DocumentImpl> it = handle.iterator(broker); it.hasNext();) {
+					DocumentImpl dimpl = it.next();
+					if (dimpl instanceof BinaryDocument) {
+						handle.removeBinaryResource(tx.tx, broker, dimpl);
+					} else {
+						handle.removeXMLResource(tx.tx, broker, dimpl.getFileURI());
+					}
+				}
+			}
+			// end hack
 			broker.removeCollection(tx.tx, handle);
 			commit();
 		} catch (PermissionDeniedException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
+			throw new DatabaseException(e);
+		} catch (LockException e) {
+			throw new DatabaseException(e);
+		} catch (TriggerException e) {
 			throw new DatabaseException(e);
 		} finally {
 			release();
@@ -851,6 +870,7 @@ public class Folder extends Resource implements Cloneable {
 	 */
 	public String relativePath(String subPath) {
 		if (subPath.equals(path())) return "";
+		if (path().equals("/") && subPath.charAt(0) == '/') return subPath.substring(1);
 		if (!subPath.startsWith(path()+"/")) throw new IllegalArgumentException("path '" + subPath + "' does not fall under this collection's path '" + path() + "'");
 		return subPath.substring(path().length() + 1);
 	}

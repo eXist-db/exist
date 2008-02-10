@@ -7,16 +7,15 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.*;
 import org.exist.xquery.*;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * <p>The global entry point to an embedded instance of the <a href='http://exist-db.org'>eXist </a>database.
@@ -82,8 +81,10 @@ public class Database {
 	 * 
 	 * @param configFile the config file that specifies the database to use
 	 * @throws IllegalStateException if the database was already started with a different config file
+	 * 
+	 * @deprecated Please use a combination of {@link #isStarted()} and {@link #startup(File)}.
 	 */
-	public static void ensureStarted(File configFile) {
+	@Deprecated public static void ensureStarted(File configFile) {
 		if (isStarted()) {
 			String currentPath = pool.getConfiguration().getConfigFilePath();
 			if (!configFile.getAbsoluteFile().equals(new File(currentPath).getAbsoluteFile()))
@@ -94,7 +95,9 @@ public class Database {
 	}
 	
 	/**
-	 * Return whether the database has been started and is currently running.
+	 * Return whether the database has been started and is currently running in this JVM.  This will
+	 * be the case if {@link #startup(File)} or {@link #ensureStarted(File)} was previously called
+	 * successfully and {@link #shutdown()} was not yet called.
 	 *
 	 * @return <code>true</code> if the database has been started with any configuration file
 	 */
@@ -309,8 +312,8 @@ public class Database {
 						throw new DatabaseException("unexpected item type conflict", e);
 					}
 				}
-                docs = mdocs;
-            }
+				docs = mdocs;
+			}
 		};
 	}
 	

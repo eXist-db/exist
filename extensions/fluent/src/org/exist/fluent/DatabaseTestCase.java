@@ -1,15 +1,13 @@
 package org.exist.fluent;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.annotation.*;
 
-import org.exist.security.PermissionDeniedException;
+import org.exist.collections.Collection;
 import org.exist.security.SecurityManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.*;
 
 /**
  * A superclass for database unit tests.  It takes care of starting up and clearing the database in
@@ -33,35 +31,40 @@ public abstract class DatabaseTestCase {
 		String value();
 	}
 	
-	protected Database db;
+	protected static Database db;
     
-	@Before public void startupDatabase() {
-		ConfigFile configFileAnnotation = getClass().getAnnotation(ConfigFile.class);
-		assert configFileAnnotation != null;
-		Database.ensureStarted(new File(configFileAnnotation.value()));
-		db = new Database(SecurityManager.SYSTEM_USER);
+	@Before public void startupDatabase() throws Exception {
+		if (!Database.isStarted()) {
+			ConfigFile configFileAnnotation = getClass().getAnnotation(ConfigFile.class);
+			if (configFileAnnotation == null)
+				throw new DatabaseException("Missing ConfigFile annotation on DatabaseTestCase subclass");
+			Database.startup(new File(configFileAnnotation.value()));
+			db = null;
+		}
+		if (db == null) db = new Database(SecurityManager.SYSTEM_USER);
 		wipeDatabase();
-		ListenerManager.configureTriggerDispatcher(db);	// config file gets erased by command above
+		ListenerManager.configureTriggerDispatcher(db);	// config file gets erased by wipeDatabase()
 	}
-
+	
 	@After public void shutdownDatabase() throws Exception {
 		if (Database.isStarted()) {
+			// TODO: a bug in eXist's removeCollection(root) means that we need to shut down immediately
+			// after wiping every time, otherwise the database gets corrupted.  When this is fixed, this
+			// method can become a static @AfterClass method for increased performance.
 			wipeDatabase();
 			Database.shutdown();
+			db = null;
 		}
 	}
     
-	private void wipeDatabase() {
+	private static void wipeDatabase() throws Exception {
 		DBBroker broker = null;
 		Transaction tx = Database.requireTransaction();
 		try {
 			broker = db.acquireBroker();
-			broker.removeCollection(tx.tx, broker.getCollection(XmldbURI.ROOT_COLLECTION_URI));
+			Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
+			broker.removeCollection(tx.tx, root);
 			tx.commit();
-		} catch (PermissionDeniedException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		} finally {
 			tx.abortIfIncomplete();
 			db.releaseBroker(broker);
