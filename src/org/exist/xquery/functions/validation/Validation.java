@@ -19,9 +19,9 @@
  *
  *  $Id$
  */
-
 package org.exist.xquery.functions.validation;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -123,164 +123,164 @@ public class Validation extends BasicFunction  {
     public Validation(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
         brokerPool = context.getBroker().getBrokerPool();
-        validator = new Validator( brokerPool );
+        validator = new Validator(brokerPool);
     }
-    
+
     /**
      * @see BasicFunction#eval(Sequence[], Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence)
-    throws XPathException {
-        
+            throws XPathException {
+
         // Check input parameters
-        if(args.length != 1 && args.length != 2){
+        if (args.length != 1 && args.length != 2) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        
-        
-        // Get inputstream
-        InputStream is=null;
+
+        InputStream is = null;
+        ValidationReport vr = null;
+
         try {
-            if(args[0].getItemType()==Type.ANY_URI || args[0].getItemType()==Type.STRING){
+            // Get inputstream of XML instance document
+            if (args[0].getItemType() == Type.ANY_URI || args[0].getItemType() == Type.STRING) {
                 // anyURI provided
-                
-                String url=args[0].getStringValue();
-                
-                if(url.startsWith("/")){
-                    url="xmldb:exist://"+url;
+                String url = args[0].getStringValue();
+
+                // Fix URL
+                if (url.startsWith("/")) {
+                    url = "xmldb:exist://" + url;
                 }
+
                 is = new URL(url).openStream();
-                
-            } else if (args[0].getItemType()==Type.ELEMENT || args[0].getItemType()==Type.DOCUMENT){
+
+            } else if (args[0].getItemType() == Type.ELEMENT || args[0].getItemType() == Type.DOCUMENT) {
                 // Node provided
-                LOG.info("Node");
-                is= new NodeInputStream(context, args[0].iterate()); // new NodeInputStream()
-                
+                is = new NodeInputStream(context, args[0].iterate()); // new NodeInputStream()
+
             } else {
-                LOG.error("Wrong item type "+ Type.getTypeName(args[0].getItemType()));
-                throw new XPathException(getASTNode(),"wrong item type "+ Type.getTypeName(args[0].getItemType()));
+                LOG.error("Wrong item type " + Type.getTypeName(args[0].getItemType()));
+                throw new XPathException(getASTNode(), "wrong item type " + Type.getTypeName(args[0].getItemType()));
             }
-            
+
+            // Perform validation
+            if (args.length == 1) {
+                // Validate using system catalog
+                vr = validator.validate(is);
+
+            } else {
+                // Validate using resource speciefied in second parameter
+                String url = args[1].getStringValue();
+
+                if (url.startsWith("/")) {
+                    url = "xmldb:exist://" + url;
+                }
+
+                vr = validator.validate(is, url);
+            }
+
         } catch (MalformedURLException ex) {
-            //ex.printStackTrace();
             LOG.error(ex);
-            throw new XPathException(getASTNode(),"Invalid resource URI",ex);
-            
+            throw new XPathException(getASTNode(), "Invalid resource URI", ex);
+
         } catch (ExistIOException ex) {
             LOG.error(ex.getCause());
-            //ex.getCause().printStackTrace();
-            throw new XPathException(getASTNode(),"eXistIOexception",ex.getCause());
-            
+            throw new XPathException(getASTNode(), "eXistIOexception", ex.getCause());
+
         } catch (Exception ex) {
             LOG.error(ex);
-            //ex.printStackTrace();
-            throw new XPathException(getASTNode(),"exception",ex);
-        }
-        
-        ValidationReport vr = null;
-        if(args.length==1){
-            vr = validator.validate(is);
-            
-        } else {
-            String url=args[1].getStringValue();
-//            if(url.endsWith(".dtd")){
-//                String txt =  "Unable to validate with a specified DTD ("+url+"). "+
-//                    "Please register the DTD in an xml catalog document.";
-//                LOG.error(txt);
-//                throw new XPathException(getASTNode(), txt);
-//            }
-            
-            if(url.startsWith("/")){
-                url="xmldb:exist://"+url;
+            throw new XPathException(getASTNode(), "exception", ex);
+
+        } finally {
+            // Force release stream
+            try {
+                is.close();
+            } catch (IOException ex) {
+                LOG.debug("Attemted to close stream. ignore.", ex);
             }
-            
-            vr = validator.validate(is,url);
         }
-        
+
         // Create response
-        
-        
-        if(isCalledAs("validate")){
+        if (isCalledAs("validate")) {
             Sequence result = new ValueSequence();
-            result.add( new BooleanValue( vr.isValid() ) );
+            result.add(new BooleanValue(vr.isValid()));
             return result;
-            
+
         } else if (isCalledAs("validate-report")) {
             MemTreeBuilder builder = context.getDocumentBuilder();
             NodeImpl result = writeReport(vr, builder);
             return result;
-            
+
         }
-        
+
+        // Oops
         LOG.error("invoked with wrong function name");
         throw new XPathException("unknown function");
     }
 
-    
     private NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
 
         // start root element
-        int nodeNr = builder.startElement("", "report", "report",null);
-        
+        int nodeNr = builder.startElement("", "report", "report", null);
+
         // validation status: valid or invalid
         builder.startElement("", "status", "status", null);
-        if(report.isValid()){
+        if (report.isValid()) {
             builder.characters("valid");
         } else {
             builder.characters("invalid");
         }
         builder.endElement();
-        
+
         // namespace when available
-        if(report.getNamespaceUri()!=null){
+        if (report.getNamespaceUri() != null) {
             builder.startElement("", "namespace", "namespace", null);
             builder.characters(report.getNamespaceUri());
-            builder.endElement(); 
+            builder.endElement();
         }
 
         // validation duration
         builder.startElement("", "time", "time", null);
-        builder.characters(""+report.getValidationDuration());
+        builder.characters("" + report.getValidationDuration());
         builder.endElement();
-        
+
         // print exceptions if any
-        if(report.getThrowable()!=null){
+        if (report.getThrowable() != null) {
             builder.startElement("", "exception", "exception", null);
-            builder.characters(""+report.getThrowable().getMessage());
+            builder.characters("" + report.getThrowable().getMessage());
             builder.endElement();
         }
-        
+
         // reusable attributes
-    	AttributesImpl attribs = new AttributesImpl();
+        AttributesImpl attribs = new AttributesImpl();
 
         // iterate validation report items, write message
         List cr = report.getValidationReportItemList();
-        for (Iterator iter = cr.iterator(); iter.hasNext(); ) {
+        for (Iterator iter = cr.iterator(); iter.hasNext();) {
             ValidationReportItem vri = (ValidationReportItem) iter.next();
-            
+
             // construct attributes
             attribs.addAttribute("", "level", "level", "CDATA", vri.getTypeText());
             attribs.addAttribute("", "line", "line", "CDATA", Integer.toString(vri.getLineNumber()));
             attribs.addAttribute("", "column", "column", "CDATA", Integer.toString(vri.getColumnNumber()));
-            
-            if(vri.getRepeat()>1){
+
+            if (vri.getRepeat() > 1) {
                 attribs.addAttribute("", "repeat", "repeat", "CDATA", Integer.toString(vri.getRepeat()));
             }
-            
+
             // write message
             builder.startElement("", "message", "message", attribs);
             builder.characters(vri.getMessage());
             builder.endElement();
-            
+
             // Reuse attributes
             attribs.clear();
         }
-        
+
         // finish root element
         builder.endElement();
-        
+
         // return result
-        return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
-        
+        return ((DocumentImpl) builder.getDocument()).getNode(nodeNr);
+
     }
 }
