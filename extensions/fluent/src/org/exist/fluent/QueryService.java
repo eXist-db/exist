@@ -1,8 +1,7 @@
 package org.exist.fluent;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
@@ -10,8 +9,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.*;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.*;
 
 /**
  * Provides facilities for performing queries on a database.  It cannot
@@ -143,19 +141,26 @@ public class QueryService implements Cloneable {
 	/**
 	 * Clone this query service, optionally overriding the clone's namespace and variable bindings.
 	 * If the namespace bindings override or variable bindings override is specified, then that object
-	 * is used for its respective purpose (by reference).  If an override is not specified, the bindings
-	 * are copied from the original query service (by value).  No concurrency control is applied to
-	 * the overrides, so be careful in multi-threaded environments.
+	 * is cloned and used for its respective purpose.  If an override is not specified, the bindings
+	 * are cloned from the original query service.
 	 *
-	 * @param nsBindingsOverride the namespace bindings to refer to from the clone, or <code>null</code> to copy from the original
-	 * @param varBindingsOverride the variable bindings to refer to from the clone, or <code>null</code> to copy from the original
-	 * @return a clone of this query service with optional bindings overridden
+	 * @param nsBindingsOverride the namespace bindings to clone, or <code>null</code> to clone from the original
+	 * @param varBindingsOverride the variable bindings to clone, or <code>null</code> to clone from the original
+	 * @return a clone of this query service with bindings optionally overridden
 	 */
 	public QueryService clone(NamespaceMap nsBindingsOverride, Map<String,Object> varBindingsOverride) {
 		try {
 			QueryService that = (QueryService) super.clone();
-			that.namespaceBindings = nsBindingsOverride != null ? nsBindingsOverride : that.namespaceBindings.clone();
-			that.bindings = varBindingsOverride != null ? varBindingsOverride : new HashMap<String, Object>(that.bindings);
+			that.namespaceBindings = nsBindingsOverride != null
+					? nsBindingsOverride.clone() : that.namespaceBindings.clone();
+			if (varBindingsOverride == null) {
+				that.bindings = new HashMap<String, Object>(that.bindings);
+			} else {
+				that.bindings = new HashMap<String, Object>();
+				for (Map.Entry<String, Object> entry : varBindingsOverride.entrySet()) {
+					that.let(entry.getKey(), entry.getValue());
+				}
+			}
 			return that;
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException("unexpected exception", e);

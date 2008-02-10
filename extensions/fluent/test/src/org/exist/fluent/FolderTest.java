@@ -80,6 +80,37 @@ public class FolderTest extends DatabaseTestCase {
 	@Test public void getPath3() {
 		assertEquals("/", db.createFolder("/").path());
 	}
+	
+	@Test public void relativePath1() {
+		assertEquals("foo", db.getFolder("/").relativePath("/foo"));
+	}
+
+	@Test public void relativePath2() {
+		assertEquals("foo/bar", db.getFolder("/").relativePath("/foo/bar"));
+	}
+
+	@Test public void relativePath3() {
+		assertEquals("bar", db.createFolder("/foo").relativePath("/foo/bar"));
+	}
+
+	@Test public void relativePath4() {
+		assertEquals("", db.createFolder("/foo").relativePath("/foo"));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void relativePath5() {
+		db.createFolder("/foo").relativePath("/foobar");
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void relativePath6() {
+		db.createFolder("/foo").relativePath("foo");
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void relativePath7() {
+		db.getFolder("/").relativePath("foo");
+	}
 
 	@Test public void getParent1() {
 		assertEquals("/top", db.createFolder("/top/nested").parent().path());
@@ -284,6 +315,27 @@ public class FolderTest extends DatabaseTestCase {
 		db.getFolder("/top/nested/more");
 		c1.delete();
 		db.getFolder("/top/nested/more");
+	}
+	
+	@Test public void deleteRoot1() {
+		db.getFolder("/").delete();
+		assertEquals(0, db.getFolder("/").documents().size());
+		assertEquals(0, db.getFolder("/").children().size());
+	}
+	
+	@Test public void deleteRoot2() {
+		db.getFolder("/").documents().load(Name.create("foo"), Source.xml("<foo/>"));
+		db.getFolder("/").delete();
+		assertEquals(0, db.getFolder("/").documents().size());
+		assertEquals(0, db.getFolder("/").children().size());
+	}
+
+	@Test public void deleteRoot3() {
+		db.getFolder("/").documents().load(Name.create("foo"), Source.xml("<foo/>"));
+		db.getFolder("/").documents().load(Name.create("bar"), Source.xml("<bar/>"));
+		db.getFolder("/").delete();
+		assertEquals(0, db.getFolder("/").documents().size());
+		assertEquals(0, db.getFolder("/").children().size());
 	}
 
 	@Test public void getDocument() {
