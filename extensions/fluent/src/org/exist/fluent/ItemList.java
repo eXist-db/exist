@@ -384,10 +384,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 		buf.append("(");
 		boolean first = true;
 		for (Item item : this) {
-			if (!first) {
-				buf.append(", ");
-				first = false;
-			}
+			if (first) first = false; else buf.append(", ");
 			buf.append(item);
 		}
 		buf.append(")");
