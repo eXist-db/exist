@@ -131,7 +131,7 @@ public class XQuery {
             AST ast = parser.getAST();
             if (ast == null)
                 throw new XPathException("Unknown XQuery parser error: the parser returned an empty syntax tree.");
-            LOG.debug("Generated AST: " + ast.toStringTree());
+//            LOG.debug("Generated AST: " + ast.toStringTree());
             PathExpr expr = new PathExpr(context);
             if (xpointer)
                 treeParser.xpointer(ast, expr);
