@@ -44,10 +44,18 @@
                         prompt using the <command>-jar</command> option:</para>
                 </step>
             </procedure>
-            <synopsis format="linespecific">java -jar eXist-[Version].jar</synopsis>
+            <synopsis format="linespecific">java -jar eXist-[version]-build-XXXX.jar</synopsis>
 
             <para>This will launch the installer. Simply follow the steps to complete the
                 installation process.</para>
+	    <note>
+	      <para>If you are on the mac platform the admin password asked for during the install procedure is not the mac-osx-admin pasword but for the eXist admin user alone.
+	      </para>
+	    </note>
+	    <note>
+	      <para>NB! You are strongly encouraged to set the admin password on all installations, even those without internet access, otherwise the eXist security manager will be disabled.
+	      </para>
+	    </note>
             <note>
                 <para>To run the eXist installer package, ensure that <ulink
                         url="http://java.sun.com/downloads/">JDK (Java Platform)</ulink> 1.4.2 or
