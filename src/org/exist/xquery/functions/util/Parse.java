@@ -1,14 +1,13 @@
 package org.exist.xquery.functions.util;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.NodeImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.xquery.*;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -81,20 +80,10 @@ public class Parse extends BasicFunction {
 
             SAXAdapter adapter = new SAXAdapter(context);
             xr.setContentHandler(adapter);
+            xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
 
-            DocumentImpl doc = (DocumentImpl) adapter.getDocument();
-            if (doc.getChildCount() == 1)
-                return (NodeImpl) doc.getFirstChild();
-            else {
-                ValueSequence result = new ValueSequence();
-                NodeImpl node = (NodeImpl) doc.getFirstChild();
-                while (node != null) {
-                    result.add(node);
-                    node = (NodeImpl) node.getNextSibling();
-                }
-                return result;
-            }
+            return (DocumentImpl) adapter.getDocument();
         } catch (ParserConfigurationException e) {
             throw new XPathException(getASTNode(), "Error while constructing XML parser: " + e.getMessage(), e);
         } catch (SAXException e) {

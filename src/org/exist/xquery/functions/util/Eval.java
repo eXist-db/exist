@@ -22,22 +22,14 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.SimpleTimeZone;
-import java.util.Stack;
-import java.util.Iterator;
-
-import javax.xml.datatype.Duration;
-
+import org.exist.Namespaces;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.memtree.NodeImpl;
 import org.exist.memtree.ReferenceNode;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
@@ -46,32 +38,26 @@ import org.exist.source.StringSource;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocalVariable;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.Module;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.EmptySequence;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.TimeUtils;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+
+import javax.xml.datatype.Duration;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Date;
+import java.util.SimpleTimeZone;
 
 /**
  * @author wolf
@@ -424,11 +410,18 @@ public class Eval extends BasicFunction {
 			//TODO : more check on attributes existence and on their values
 			if (child.getNodeType() == Node.ELEMENT_NODE &&	"variable".equals(child.getLocalName())) {
 				Element elem = (Element) child;
-				String qname = elem.getAttribute("name");
-				NodeValue value = (NodeValue) elem.getFirstChild();
-				if (value instanceof ReferenceNode)
-					value = ((ReferenceNode) value).getReference();
-				String type = elem.getAttribute("type");
+                String qname = elem.getAttribute("name");
+                String source = elem.getAttribute("source");
+                NodeValue value;
+                if (source != null && source.length() > 0) {
+                    // load variable contents from URI
+                    value = loadVarFromURI(source);
+                } else {
+                    value = (NodeValue) elem.getFirstChild();
+                    if (value instanceof ReferenceNode)
+                        value = ((ReferenceNode) value).getReference();
+                }
+                String type = elem.getAttribute("type");
 				if (type != null && Type.subTypeOf(Type.getType(type), Type.ATOMIC)) {
 					innerContext.declareVariable(qname, value.atomize().convertTo(Type.getType(type)));
 				} else {
@@ -469,42 +462,29 @@ public class Eval extends BasicFunction {
 		}
 	}
 
-//    private class EvalContext extends XQueryContext {
-//
-//        private EvalContext(XQueryContext copyFrom) {
-//            super(copyFrom);
-//            copyFields(copyFrom);
-//        }
-//
-//        public void reset(boolean keepGlobals) {
-//            calendar = null;
-//            implicitTimeZone = null;
-//            builder = new MemTreeBuilder(this);
-//            builder.startDocument();
-//            if (!keepGlobals) {
-//                // do not reset the statically known documents
-//                staticDocumentPaths = null;
-//                staticDocuments = null;
-//            }
-//            lastVar = null;
-//            fragmentStack = new Stack();
-//            callStack.clear();
-//            protectedDocuments = null;
-//            if (!keepGlobals)
-//                globalVariables.clear();
-//
-//            //remove the context-vars, subsequent execution of the query
-//            //may generate different values for the vars based on the
-//            //content of the db
-//            XQueryContextVars.clear();
-//
-//            watchdog.reset();
-//            profiler.reset();
-//            for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
-//                Module module = (Module)i.next();
-//                module.reset(this);
-//            }
-//            clearUpdateListeners();
-//        }
-//    }
+    private NodeImpl loadVarFromURI(String uri) throws XPathException {
+		try {
+			URL url = new URL(uri);
+			InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            InputSource src = new InputSource(isr);
+            SAXParser parser = factory.newSAXParser();
+            XMLReader xr = parser.getXMLReader();
+            SAXAdapter adapter = new SAXAdapter(context);
+            xr.setContentHandler(adapter);
+            xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+            xr.parse(src);
+            isr.close();
+            return (NodeImpl) adapter.getDocument();
+		} catch (MalformedURLException e) {
+			throw new XPathException(getASTNode(), e.getMessage());
+		} catch (IOException e) {
+			throw new XPathException(getASTNode(), e.getMessage());
+		} catch (SAXException e) {
+            throw new XPathException(getASTNode(), e.getMessage());
+        } catch (ParserConfigurationException e) {
+            throw new XPathException(getASTNode(), e.getMessage());
+        }
+    }
 }
