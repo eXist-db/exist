@@ -214,7 +214,6 @@ public class DLN extends DLNBase implements NodeId {
             if (offset > 0)
                 subLevel = ((other.bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) != 0);
             int id = other.getLevelId(offset);
-            System.out.println("id: " + id);
             newId.addLevelId(id, subLevel);
             offset += DLN.getUnitsRequired(id) * BITS_PER_UNIT;
         }
