@@ -186,7 +186,7 @@ Logging already initialized. Skipping...
                                         url="http://localhost:8080/exist/"
                                         >http://localhost:8080/exist/</ulink>)</para>
                                 <para>You should now see the login screen as shown on the right.</para>
-                                <para>Enter the username "admin" and leave the password field empty.
+                                <para>Enter the username "admin" and leave the password field empty unless you supplied an admin password on installation or changed the admin password by other means, in which case your chosen password is needed.
                                 </para>
                             </td>
                             <td>
