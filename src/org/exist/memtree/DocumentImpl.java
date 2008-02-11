@@ -531,11 +531,22 @@ public class DocumentImpl extends NodeImpl implements Document {
         }
     }
 
+    public void selectDescendants(boolean includeSelf, NodeTest test, Sequence result) throws XPathException {
+        if (size == 1) return;
+        NodeImpl next = (NodeImpl) getFirstChild();
+        while (next != null) {
+            if (test.matches(next))
+                result.add(next);
+            next.selectDescendants(includeSelf, test, result);
+            next = (NodeImpl) next.getNextSibling();
+        }
+    }
+
     /*
-     * (non-Javadoc)
-     * 
-     * @see org.w3c.dom.Document#createElement(java.lang.String)
-     */
+    * (non-Javadoc)
+    *
+    * @see org.w3c.dom.Document#createElement(java.lang.String)
+    */
     public Element createElement(String arg0) throws DOMException {
         // TODO Auto-generated method stub
         return null;
@@ -845,6 +856,8 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
 
     private void computeNodeIds() {
+        if (nodeId[0] != null)
+            return;
         nodeId[0] = context.getBroker().getBrokerPool().getNodeFactory().documentNodeId();
         if (size == 1) return;
         NodeId nextId = context.getBroker().getBrokerPool().getNodeFactory().createInstance();
@@ -873,7 +886,8 @@ public class DocumentImpl extends NodeImpl implements Document {
             while (nextNode > nodeNr) {
                 computeNodeIds(nextId, nextNode);
                 nextNode = document.next[nextNode];
-                nextId = nextId.nextSibling();
+                if (nextNode > nodeNr)
+                    nextId = nextId.nextSibling();
             }
         }
     }
@@ -1027,7 +1041,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
     
     public org.exist.dom.DocumentImpl makePersistent() throws XPathException {
-        if (size <= 1)
+         if (size <= 1)
             return null;
         return context.storeTemporaryDoc(this);
     }
