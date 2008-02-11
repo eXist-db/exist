@@ -183,7 +183,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 			next = document.next[next];
 		}
 		if (next < 0)
-			return document;
+			return null;
 		return document.getNode(next);
 	}
 
@@ -429,18 +429,22 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		StringBuffer buf = null;
 		int next = nodeNumber + 1;
 		while (next < document.size && document.treeLevel[next] > level) {
-			if (document.nodeKind[next] == Node.TEXT_NODE) {
-				if (buf == null)
-					buf = new StringBuffer();
-				buf.append(
-					document.characters,
-					document.alpha[next],
-					document.alphaLen[next]);
-			} else if (document.nodeKind[next] == REFERENCE_NODE) {
-				if (buf == null)
-					buf = new StringBuffer();
-				buf.append(document.references[document.alpha[next]].getStringValue());
-			}
+            switch (document.nodeKind[next]) {
+                case Node.TEXT_NODE :
+                case Node.CDATA_SECTION_NODE :
+                    if (buf == null)
+                        buf = new StringBuffer();
+                    buf.append(
+                        document.characters,
+                        document.alpha[next],
+                        document.alphaLen[next]);
+                    break;
+                case REFERENCE_NODE :
+                    if (buf == null)
+                        buf = new StringBuffer();
+                    buf.append(document.references[document.alpha[next]].getStringValue());
+                    break;
+            }
 			++next;
 		}
 		return buf == null ? "" : buf.toString();
@@ -562,7 +566,11 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         return seq.toNodeSet();
 	}
 
-	private final static class SingleNodeIterator implements SequenceIterator {
+    public InMemoryNodeSet toMemNodeSet() throws XPathException {
+        return new InMemoryNodeSet(this);
+    }
+
+    private final static class SingleNodeIterator implements SequenceIterator {
 
 		NodeImpl node;
 
@@ -712,6 +720,63 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
     public void selectChildren(NodeTest test, Sequence result) throws XPathException {
         // do nothing
+    }
+
+    public void selectDescendants(boolean includeSelf, NodeTest test, Sequence result) throws XPathException {
+        // do nothing
+    }
+
+    public void selectAncestors(boolean includeSelf, NodeTest test, Sequence result) throws XPathException {
+        if (nodeNumber < 2)
+            return;
+        if (includeSelf) {
+            NodeImpl n = document.getNode(nodeNumber);
+            if (test.matches(n))
+                result.add(n);
+        }
+        int nextNode = document.getParentNodeFor(nodeNumber);
+        while (nextNode > 0) {
+            NodeImpl n = document.getNode(nextNode);
+            if (test.matches(n))
+                result.add(n);
+            nextNode = document.getParentNodeFor(nextNode);
+        }
+    }
+
+    public void selectPrecedingSiblings(NodeTest test, Sequence result) throws XPathException {
+        int parent = document.getParentNodeFor(nodeNumber);
+        int nextNode = document.getFirstChildFor(parent);
+        while (nextNode >= parent && nextNode < nodeNumber) {
+            NodeImpl n = document.getNode(nextNode);
+            if (test.matches(n))
+                result.add(n);
+            nextNode = document.next[nextNode];
+        }
+    }
+
+    public void selectFollowingSiblings(NodeTest test, Sequence result) throws XPathException {
+        int parent = document.getParentNodeFor(nodeNumber);
+        if (parent == 0) {
+            // parent is the document node
+            if (getNodeType() == Node.ELEMENT_NODE)
+                return;
+            NodeImpl next = (NodeImpl) getNextSibling();
+            while (next != null) {
+                if (test.matches(next))
+                    result.add(next);
+                if (next.getNodeType() == Node.ELEMENT_NODE)
+                    break;
+                next = (NodeImpl) next.getNextSibling();
+            }
+        } else {
+            int nextNode = document.getFirstChildFor(parent);
+            while (nextNode > parent) {
+                NodeImpl n = document.getNode(nextNode);
+                if (nextNode > nodeNumber && test.matches(n))
+                    result.add(n);
+                nextNode = document.next[nextNode];
+            }
+        }
     }
 
     /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
