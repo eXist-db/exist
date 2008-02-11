@@ -21,36 +21,28 @@
  */
 package org.exist.xquery.modules.xmldiff;
 
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.custommonkey.xmlunit.Diff;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.OutputKeys;
+import java.util.Properties;
 
 /**
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class Compare extends Function {
 
-	public final static FunctionSignature signature = new FunctionSignature(
+    private final static Properties OUTPUT_PROPERTIES = new Properties();
+    static {
+        OUTPUT_PROPERTIES.setProperty(OutputKeys.INDENT, "no");
+        OUTPUT_PROPERTIES.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+    }
+    
+    public final static FunctionSignature signature = new FunctionSignature(
 			new QName("compare", XmlDiffModule.NAMESPACE_URI,
 					XmlDiffModule.PREFIX),
 			"Returns the differences between XML documents",
@@ -115,10 +107,13 @@ public class Compare extends Function {
             } else {
                 v2.append(serialize((NodeValue) s2.itemAt(0)));
             }
-
 			Diff d = new Diff(v1.toString(), v2.toString());
-			result = new BooleanValue(d.identical());
-		} catch (Exception e) {
+            boolean identical = d.identical();
+            if (!identical) {
+                LOG.warn("Diff result: " + d.toString());
+            }
+            result = new BooleanValue(identical);
+        } catch (Exception e) {
 			throw new XPathException(getASTNode(), "An exception occurred while serializing node " +
 					"for comparison: " + e.getMessage(), e);
 		}
@@ -131,7 +126,8 @@ public class Compare extends Function {
 	
 	private String serialize(NodeValue node) throws SAXException {
 		Serializer serializer = context.getBroker().getSerializer();
-		serializer.reset();
-		return serializer.serialize(node);
+        serializer.reset();
+        serializer.setProperties(OUTPUT_PROPERTIES);
+        return serializer.serialize(node);
 	}
 }
