@@ -97,28 +97,28 @@ public class Validator {
         try {
             report.start();
 
+            // Setup validation properties. see Jing interface
             PropertyMapBuilder properties = new PropertyMapBuilder();
             ValidateProperty.ERROR_HANDLER.put(properties, report);
 
+            // Copied from Jing code ; the Compact syntax seem to have a different
+            // Schema reader. To be investigated. http://www.thaiopensource.com/relaxng/api/jing/index.html
             SchemaReader schemaReader = grammarUrl.endsWith(".rnc") ? CompactSchemaReader.getInstance() : null;
 
+            // Setup driver
             ValidationDriver driver = new ValidationDriver(properties.toPropertyMap(), schemaReader);
 
-
+            // Load schema
             driver.loadSchema(new InputSource(grammarUrl));
 
-            InputSource source = new InputSource(is);
-            driver.validate(source);
+            // Validate XML instance
+            driver.validate(new InputSource(is));
 
         } catch(ExistIOException ex) {
             logger.error(ex.getCause());
             report.setThrowable(ex.getCause());
 
-        } catch(SAXException ex) {
-            logger.debug(ex);
-            report.setThrowable(ex);
-
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             logger.debug(ex);
             report.setThrowable(ex);
 
