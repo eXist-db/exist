@@ -58,14 +58,14 @@ public class TreeLevelOrderTest extends TestCase {
       static Method getTextContentMethod = null;
       static {
          try {
-            getTextContentMethod = Node.class.getMethod("getTextContent",null);
+            getTextContentMethod = Node.class.getMethod( "getTextContent", (Class[])null );
          } catch (Exception ex) {
          }
       }
       public static String textContent(Node n) {
          if (getTextContentMethod!=null) {
             try {
-               return (String)getTextContentMethod.invoke(n,null);
+               return (String)getTextContentMethod.invoke( n, (Object[])null );
             } catch (IllegalArgumentException ex) {
                ex.printStackTrace();
                return null;

@@ -223,8 +223,8 @@ public URI getNodeUri() throws XQException
                             */
                            String documentURI = null;
                            try {
-                              Method method = Document.class.getMethod("getDocumentURI",null);
-                              documentURI = (String)method.invoke(n.getOwnerDocument(),null);
+                              Method method = Document.class.getMethod( "getDocumentURI", (Class[])null );
+                              documentURI = (String)method.invoke( n.getOwnerDocument(), (Object[])null );
                            } catch (NoSuchMethodException ex) {
                            } catch (IllegalAccessException ex) {
                            } catch (InvocationTargetException ex) {

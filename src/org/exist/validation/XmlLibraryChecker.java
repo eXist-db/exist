@@ -228,10 +228,10 @@ public class XmlLibraryChecker
     			Class versionClass = Class.forName(versionClassName);
     			
     			//get the method
-    			Method getVersionMethod = versionClass.getMethod(versionFunctionName, null);
+    			Method getVersionMethod = versionClass.getMethod( versionFunctionName, (Class[])null );
     		
     			//invoke the method on the class
-    			actualVersion = (String)getVersionMethod.invoke(versionClass, null);
+    			actualVersion = (String)getVersionMethod.invoke( versionClass, (Object[])null );
     		}
     		catch(ClassNotFoundException cfe)
     		{

@@ -120,12 +120,12 @@ public class FunNormalizeUnicode extends Function {
 	    	        		);
 		        	Object[] args = new Object[] { s1.getStringValue(), modeObject, DUMMY_INTEGER };
 		        	if (method == null)
-		        		method = clazz.getMethod("getText", null);
+		        		method = clazz.getMethod( "getText", (Class[])null );
 	
 		        	//Normalizer n = new Normalizer(s1.getStringValue(), Normalizer.NFC, 0);
 		        	Object instance = constructor.newInstance(args);
 		        	//result = new StringValue(n.getText());
-		        	returnedObject = method.invoke(instance, null);
+		        	returnedObject = method.invoke( instance, (Object[])null );
         		} catch (Exception e) {
         			throw new XPathException("Can not find the ICU4J library in the classpath " + e.getMessage());
         		}
