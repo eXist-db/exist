@@ -21,23 +21,23 @@
  */
 package org.exist.dom;
 
-import java.util.Arrays;
-import java.util.Iterator;
-
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
+import org.exist.storage.lock.Lock;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
-import org.exist.xmldb.XmldbURI;
-import org.exist.storage.lock.Lock;
 import org.w3c.dom.Node;
+
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * A fast node set implementation, based on arrays to store nodes and documents.
@@ -1239,6 +1239,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                 --mid;
             }
             NodeProxy ancestor = new NodeProxy(getDocument(), ancestorId, Node.ELEMENT_NODE);
+            // we need to check if self should be included
+            boolean foundOne = false;
             for (int i = mid; i < length; i++) {
                 cmp = array[i].getNodeId().computeRelation(ancestorId);
                 if (cmp > -1) {
@@ -1254,12 +1256,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                             ancestor.copyContext(array[i]);
                         }
                         ancestor.addMatches(array[i]);
+                        foundOne = true;
                     }
                 } else {
                     break;
                 }
             }
-            return ancestor;
+            return foundOne ? ancestor : null;
         }
 
         /**
