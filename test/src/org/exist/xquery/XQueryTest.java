@@ -2876,7 +2876,7 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
-    public void bugtestCurrentDateTimeInModules_1894009(){
+    public void testCurrentDateTimeInModules_1894009(){
         String module="module namespace dt = \"dt\";\n" +
                 "\n" +
                 "declare function dt:fib($n) {\n" +
