@@ -28,6 +28,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.value.AnyURIValue;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Iterator;
 
 
@@ -120,8 +121,16 @@ public class ModuleContext extends XQueryContext {
 	public XQueryWatchDog getWatchDog() {
 		return parentContext.getWatchDog();
 	}
-	
-	/* (non-Javadoc)
+
+
+    /* (non-Javadoc)
+	 * @see org.exist.xquery.XQueryContext#getCalendar()
+	 */
+    public XMLGregorianCalendar getCalendar(){
+        return parentContext.getCalendar();
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getBaseURI()
 	 */
 	public AnyURIValue getBaseURI() throws XPathException {
