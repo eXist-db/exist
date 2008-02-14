@@ -21,7 +21,14 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.*;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.NodeVisitor;
+import org.exist.dom.StoredNode;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
@@ -60,6 +67,8 @@ public class LocationStep extends Step {
     protected int parentDeps = Dependency.UNKNOWN_DEPENDENCY;
 
     protected boolean preload = false;
+
+    protected boolean optimized = false;
 
     protected boolean inUpdate = false;
 
@@ -160,6 +169,7 @@ public class LocationStep extends Step {
     public void setPreloadedData(DocumentSet docs, NodeSet nodes) {
         this.currentDocs = docs;
         this.currentSet = nodes;
+        this.optimized = true;
     }
 
     /**
@@ -475,8 +485,8 @@ public class LocationStep extends Step {
         }
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null
-                || !(docs.equals(currentDocs))) {
+            if (!optimized && (currentSet == null || currentDocs == null
+                || !(docs.equals(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -552,8 +562,8 @@ public class LocationStep extends Step {
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
-            if (currentSet == null || currentDocs == null
-                || !(docs == currentDocs || docs.equals(currentDocs))) {
+            if (!optimized && (currentSet == null || currentDocs == null
+                || !(docs == currentDocs || docs.equals(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -603,8 +613,8 @@ public class LocationStep extends Step {
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
-            if (currentSet == null || currentDocs == null
-                || !(docs == currentDocs || docs.equals(currentDocs))) {
+            if (!optimized && (currentSet == null || currentDocs == null
+                || !(docs == currentDocs || docs.equals(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -884,8 +894,8 @@ public class LocationStep extends Step {
             return result;
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null
-                || !(docs.equals(currentDocs))) {
+            if (!optimized && (currentSet == null || currentDocs == null
+                || !(docs.equals(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -954,8 +964,8 @@ public class LocationStep extends Step {
             return result;
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null
-                || !(docs.equals(currentDocs))) {
+            if (!optimized && (currentSet == null || currentDocs == null
+                || !(docs.equals(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -1073,6 +1083,7 @@ public class LocationStep extends Step {
         if (!postOptimization) {
             currentSet = null;
             currentDocs = null;
+            optimized = false;
             cached = null;
             listener = null;
         }
