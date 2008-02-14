@@ -54,7 +54,7 @@ public class AnyNodeTest implements NodeTest {
 	 */
 	public boolean matches(Node node) {
 	    return (node.getNodeType() != Node.ATTRIBUTE_NODE);
-	}
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
