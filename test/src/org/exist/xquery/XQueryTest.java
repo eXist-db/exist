@@ -21,18 +21,7 @@
  */
 package org.exist.xquery;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-
-import javax.xml.transform.OutputKeys;
-
 import org.custommonkey.xmlunit.DetailedDiff;
-import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -40,16 +29,19 @@ import org.exist.xmldb.EXistResource;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
+
+import javax.xml.transform.OutputKeys;
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
 /** I propose that we put here in XQueryTest the tests involving all the 
  * others constructs of the XQuery language, besides XPath expressions.
@@ -2842,6 +2834,53 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+
+    public void testCurrentDateTimeInModules_1894009(){
+        String module="module namespace dt = \"dt\";\n" +
+                "\n" +
+                "declare function dt:fib($n) {\n" +
+                "  if ($n < 2) then $n else dt:fib($n - 1) + dt:fib($n - 2) \n" +
+                "};\n" +
+                "\n" +
+                "declare function dt:dateTime() {\n" +
+                "  (: Do something time consuming first. :)  \n" +
+                "  let $a := dt:fib(25)" +
+                "  return current-dateTime()\n" +
+                "};";
+
+        String module_name="dt.xqm";
+        Resource doc;
+
+        // Store module
+        try {
+            Collection testCollection = getTestCollection();
+            doc = testCollection.createResource(module_name, "BinaryResource");
+            doc.setContent(module);
+            ((EXistResource) doc).setMimeType("application/xquery");
+            testCollection.storeResource(doc);
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+
+        try {
+            String query="import module namespace dt = \"dt\" at" +
+                    "  \"xmldb:exist:///db/test/dt.xqm\"; " +
+                    "(<this>{current-dateTime()}</this>, <this>{dt:dateTime()}</this>)";
+
+            XPathQueryService service
+                = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(2,result.getSize());
+            assertEquals("First", result.getResource(0).getContent().toString(), 
+                                  result.getResource(1).getContent().toString());
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
 
     // ======================================
     
