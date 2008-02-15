@@ -2,11 +2,8 @@ package org.exist.fluent;
 
 import java.io.*;
 import java.net.*;
-import java.nio.CharBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
+import java.nio.*;
+import java.nio.charset.*;
 import java.util.*;
 
 import org.xml.sax.InputSource;
@@ -68,18 +65,26 @@ public abstract class Source {
 	 * using the static methods in the {@link Source} class.
 	 */
 	public static abstract class Blob extends Source {
-		private byte[] byteArray;
+		protected byte[] contents;
+		protected int offset, length;
 		private Blob() {super(null);}
 		private Blob(String oldName) {super(oldName);}
-		final byte[] toByteArray() throws IOException {
-			if (byteArray == null) byteArray = createByteArray();
-			return byteArray;
+		protected InputStream toInputStream() throws IOException {
+			if (contents == null) createBytes();
+			assert contents != null;
+			return new ByteArrayInputStream(contents, offset, length);
 		}
-		abstract byte[] createByteArray() throws IOException; 
+		protected int getLength() {
+			return length;
+		}
+		protected void createBytes() throws IOException {}
 		@Override public String toString() {return "blob ";}
-		protected byte[] encode(CharBuffer buf) throws CharacterCodingException {
+		protected void encode(CharBuffer buf) throws CharacterCodingException {
 			Charset charset = Charset.forName(encoding == null ? "UTF-8" : encoding);
-			return charset.newEncoder().encode(buf).array();
+			ByteBuffer bb = charset.newEncoder().encode(buf);
+			contents = bb.array();
+			offset = bb.arrayOffset();
+			length = bb.limit();
 		}
 	}
 	
@@ -112,24 +117,11 @@ public abstract class Source {
 	 */
 	public static Source.Blob blob(final File file) {
 		return new Blob(file.getName()) {
-			@Override byte[] createByteArray() throws IOException {
-				FileInputStream stream = new FileInputStream(file);
-				try {
-					FileChannel channel = stream.getChannel();
-					FileLock lock = channel.lock(0L, Long.MAX_VALUE, true);
-					try {
-						long sizeL = channel.size();
-						if (sizeL > Integer.MAX_VALUE) throw new IOException("file too large");
-						int size = (int) sizeL;
-						byte[] bytes = new byte[size];
-						if (stream.read(bytes) != size) throw new IOException("read wrong number of bytes");
-						return bytes;
-					} finally {
-						lock.release();
-					}
-				} finally {
-					stream.close();
-				}
+			@Override protected InputStream toInputStream() throws IOException {
+				long fileLength = file.length();
+				if (fileLength > Integer.MAX_VALUE) throw new IOException("file too large");
+				length = (int) fileLength;
+				return new BufferedInputStream(new FileInputStream(file));
 			}
 			@Override public String toString() {
 				return super.toString() + "file '" + file.getPath() + "'";
@@ -179,8 +171,9 @@ public abstract class Source {
 	 */
 	public static Source.Blob blob(final InputStream stream) {
 		return new Source.Blob() {
-			@Override byte[] createByteArray() throws IOException {
-				return readInputStream(stream, null);
+			@Override protected void createBytes() throws IOException {
+				contents = readInputStream(stream, null);
+				length = contents.length;
 			}
 			@Override public String toString() {
 				return super.toString() + "input stream";
@@ -231,8 +224,8 @@ public abstract class Source {
 	 */
 	public static Source.Blob blob(final Reader reader) {
 		return new Source.Blob() {
-			@Override byte[] createByteArray() throws IOException {
-				return encode(CharBuffer.wrap(readReader(reader, null)));
+			@Override protected void createBytes() throws IOException {
+				encode(CharBuffer.wrap(readReader(reader, null)));
 			}
 			@Override public String toString() {
 				return super.toString() + "reader";
@@ -268,9 +261,7 @@ public abstract class Source {
 	 */
 	public static Source.Blob blob(final byte[] bytes) {
 		return new Source.Blob() {
-			@Override byte[] createByteArray() throws IOException {
-				return bytes;
-			}
+			{ contents = bytes; length = bytes.length; }
 			@Override public String toString() {
 				return super.toString() + "byte array [" + bytes.length + "]";
 			}
@@ -305,8 +296,8 @@ public abstract class Source {
 	 */
 	public static Source.Blob blob(final String literal) {
 		return new Source.Blob() {
-			@Override byte[] createByteArray() throws IOException {
-				return encode(CharBuffer.wrap(literal));
+			@Override protected void createBytes() throws IOException {
+				encode(CharBuffer.wrap(literal));
 			}
 			@Override public String toString() {
 				return super.toString() + "literal string";
@@ -343,17 +334,22 @@ public abstract class Source {
 	 */
 	public static Source.Blob blob(final URL url) {
 		return new Source.Blob(urlToFilename(url)) {
-			@Override byte[] createByteArray() throws IOException {
+			@Override protected InputStream toInputStream() throws IOException {
 				URLConnection connection = url.openConnection();
 				connection.setAllowUserInteraction(false);
 				connection.connect();
-				try {
-					byte[] bytes = null;
-					if (connection.getContentLength() != -1) bytes = new byte[connection.getContentLength()];
-					bytes = readInputStream(connection.getInputStream(), bytes);
-					return bytes;
-				} finally {
-					connection.getInputStream().close();
+				if (connection.getContentLength() == -1) {
+					try {
+						byte[] bytes = null;
+						bytes = readInputStream(connection.getInputStream(), bytes);
+						length = bytes.length;
+						return new ByteArrayInputStream(bytes);
+					} finally {
+						connection.getInputStream().close();
+					}
+				} else {
+					length = connection.getContentLength();
+					return connection.getInputStream();
 				}
 			}
 			@Override public String toString() {

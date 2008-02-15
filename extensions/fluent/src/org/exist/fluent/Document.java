@@ -1,8 +1,7 @@
 package org.exist.fluent;
 
 import java.io.*;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
 import org.exist.dom.*;
 import org.exist.storage.DBBroker;
@@ -187,9 +186,10 @@ public class Document extends Resource {
 	 @Override public String toString() {
 		return "document '" + path() + "'";
 	}
-	
+
 	/**
-	 * Return the local filename of this document.  This name will never contain slashes ('/').
+	 * Return the local filename of this document. This name will never contain
+	 * slashes ('/').
 	 * 
 	 * @return the local filename of this document
 	 */
@@ -220,6 +220,17 @@ public class Document extends Resource {
 		int i = path.lastIndexOf('/');
 		assert i != -1;
 		return new Folder(path.substring(0, i), false, this);
+	}
+	
+	/**
+	 * Return the length of this document, in bytes.  For binary documents, this is the actual
+	 * size of the file; for XML documents, this is the approximate amount of space that the
+	 * document occupies in the database, and is unrelated to its serialized length.
+	 *
+	 * @return the length of this document, in bytes
+	 */
+	public long length() {
+		return doc.getContentLength();
 	}
 
 	/**
@@ -265,6 +276,25 @@ public class Document extends Resource {
 	}
 
 	/**
+	 * Return the contents of this document interpreted as a string.  Binary documents are
+	 * decoded using the default character encoding specified for the database.
+	 * 
+	 * @see Database#setDefaultCharacterEncoding(String)
+	 * @return the contents of this document
+	 * @throws DatabaseException if the encoding is not supported or some other unexpected IOException occurs
+	 */
+	public String contentsAsString() {
+		DBBroker broker = db.acquireBroker();
+		try {
+			return new String(broker.getBinaryResource((BinaryDocument) doc), db.defaultCharacterEncoding);
+		} catch (UnsupportedEncodingException e) {
+			throw new DatabaseException(e);
+		} finally {
+			db.releaseBroker(broker);
+		}
+	}
+		
+	/**
 	 * Export this document to the given file, overwriting it if it already exists.
 	 *
 	 * @param destination the file to export to
@@ -282,15 +312,16 @@ public class Document extends Resource {
 	/**
 	 * Copy the contents of the document to the given stream.  XML documents will use
 	 * the default character encoding set for the database.
-	 * @see Database#setDefaultExportEncoding(String)
+	 * @see Database#setDefaultCharacterEncoding(String)
 	 *
 	 * @param stream the output stream to copy the document to
-	 * @throws IOException in case of I/O problems
+	 * @throws IOException in case of I/O problems;
+	 * 		WARNING: I/O exceptions are currently logged and eaten by eXist, so they won't propagate to this layer!
 	 */
 	public void write(OutputStream stream) throws IOException {
 		DBBroker broker = db.acquireBroker();
 		try {
-			stream.write(broker.getBinaryResource((BinaryDocument) doc));
+			broker.readBinaryResource((BinaryDocument) doc, stream);
 		} finally {
 			db.releaseBroker(broker);
 		}

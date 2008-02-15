@@ -360,7 +360,12 @@ public class Folder extends Resource implements Cloneable {
 			try {
 				source.applyOldName(name);
 				name.setContext(handle);
-				handle.addBinaryResource(tx.tx, broker, XmldbURI.create(name.get()), source.toByteArray(), null);
+				InputStream inputStream = source.toInputStream();
+				try {
+					handle.addBinaryResource(tx.tx, broker, XmldbURI.create(name.get()), inputStream, null, source.getLength());
+				} finally {
+					inputStream.close();
+				}
 				commit();
 			} catch (RuntimeException e) {
 				throw e;

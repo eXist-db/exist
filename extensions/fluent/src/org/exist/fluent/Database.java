@@ -166,7 +166,7 @@ public class Database {
 	
 	private final User user;
 	private final NamespaceMap namespaceBindings;
-	String defaultExportEncoding = "UTF-8";
+	String defaultCharacterEncoding = "UTF-8";
 	
 	Database(User user) {
 		this.user = user;
@@ -179,13 +179,20 @@ public class Database {
 	}
 	
 	/**
+	 * @deprecated Renamed to {@link #setDefaultCharacterEncoding(String)}.
+	 */
+	@Deprecated public void setDefaultExportEncoding(String encoding) {
+		setDefaultCharacterEncoding(encoding);
+	}
+	
+	/**
 	 * Set the default character encoding to be used when exporting XML files from the database.
 	 * If not explicitly set, it defaults to UTF-8.
 	 *
 	 * @param encoding
 	 */
-	public void setDefaultExportEncoding(String encoding) {
-		defaultExportEncoding = encoding;
+	public void setDefaultCharacterEncoding(String encoding) {
+		defaultCharacterEncoding = encoding;
 	}
 	
 	DBBroker acquireBroker() {
