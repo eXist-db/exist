@@ -100,13 +100,13 @@ public class XMLDocument extends Document {
 	 * for the database.  If you wish to control the encoding at a finer granularity, use
 	 * {@link #write(Writer)}.
 	 * 
-	 * @see Database#setDefaultExportEncoding(String)
+	 * @see Database#setDefaultCharacterEncoding(String)
 	 * @param stream the output stream to write to
 	 * @throws IOException in case of problems with the encoding
 	 * @throws DatabaseException in case of I/O problems
 	 */
 	@Override public void write(OutputStream stream) throws IOException {
-		write(new OutputStreamWriter(stream, db.defaultExportEncoding));
+		write(new OutputStreamWriter(stream, db.defaultCharacterEncoding));
 	}
 
 	/**

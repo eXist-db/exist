@@ -1,7 +1,8 @@
 package org.exist.fluent;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class XMLDocumentTest extends DatabaseTestCase {
@@ -36,8 +37,23 @@ public class XMLDocumentTest extends DatabaseTestCase {
 		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
 		XMLDocument original = c1.documents().build(Name.create("original")).elem("test").end("test").commit();
 		XMLDocument copy = original.copy(c2, Name.keepCreate());
+		assertEquals(1, c1.documents().size());
+		c1.query().single("/test");
 		assertEquals(1, c2.documents().size());
+		c2.query().single("/test");
 		copy.query().single("/test");
+	}
+
+	@Test public void move1() {
+		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
+		XMLDocument doc = c1.documents().build(Name.create("original")).elem("test").end("test").commit();
+		doc.move(c2, Name.keepCreate());
+		assertEquals(0, c1.documents().size());
+		assertFalse(c1.query().exists("/test"));
+		assertEquals(1, c2.documents().size());
+		c2.query().single("/test");
+		doc.query().single("/test");
+		assertEquals("/c2/original", doc.path());
 	}
 
 	@Test public void convertToSequence() {
@@ -58,6 +74,26 @@ public class XMLDocumentTest extends DatabaseTestCase {
 		XMLDocument doc = db.createFolder("/top").documents().load(Name.create("foo"), Source.xml("<root/>"));
 		assertEquals("foo", doc.name());
 		assertEquals("/top/foo", doc.path());
+	}
+
+	@Test public void contentsAsStringFromCreate() {
+		XMLDocument doc = db.createFolder("/top").documents().build(Name.create("foo")).elem("root").end("root").commit();
+		assertEquals("<root/>", doc.contentsAsString());
+	}
+
+	@Test public void contentsAsStringFromLoad() {
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.create("foo"), Source.xml("<root/>"));
+		assertEquals("<root/>", doc.contentsAsString());
+	}
+
+	@Test public void lengthFromCreate() {
+		XMLDocument doc = db.createFolder("/top").documents().build(Name.create("foo")).elem("root").end("root").commit();
+		assertThat(doc.length(), Matchers.greaterThan(0L));
+	}
+
+	@Test public void lengthFromLoad() {
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.create("foo"), Source.xml("<root/>"));
+		assertThat(doc.length(), Matchers.greaterThan(0L));
 	}
 
 }
