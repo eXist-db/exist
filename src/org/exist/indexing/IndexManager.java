@@ -88,7 +88,7 @@ public class IndexManager {
                     if (LOG.isInfoEnabled())
                         LOG.info("Registered index " + className + " as " + modConf[i].getId());
                 } catch (ClassNotFoundException e) {
-                    LOG.warn("Class " + className + " not found. Cannot configure index.", e);
+                    LOG.warn("Class " + className + " not found. Cannot configure index.");
                 } catch (IllegalAccessException e) {
                     LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
                 } catch (InstantiationException e) {
