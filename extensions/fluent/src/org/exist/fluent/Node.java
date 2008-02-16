@@ -131,6 +131,7 @@ public class Node extends Item {
 						} else {
 							node.appendChildren(tx.tx, toNodeList(nodes), 0);
 						}
+						((DocumentImpl) node.getOwnerDocument()).getMetadata().setLastModified(System.currentTimeMillis());
 						defrag(tx);
 						fireTriggerAfter(tx, trigger);
 						tx.commit();
@@ -230,7 +231,9 @@ public class Node extends Item {
 					Transaction tx = Database.requireTransaction();
 					try {
 						DocumentTrigger trigger = fireTriggerBefore(tx);
+						DocumentImpl doc = (DocumentImpl) oldNode.getOwnerDocument();
 						((NodeImpl) oldNode.getParentNode()).replaceChild(tx.tx, nodes[0], oldNode);
+						doc.getMetadata().setLastModified(System.currentTimeMillis());
 						defrag(tx);
 						fireTriggerAfter(tx, trigger);
 						tx.commit();
@@ -270,6 +273,7 @@ public class Node extends Item {
 					try {
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						elem.removeAppendAttributes(tx.tx, removeList, addList);
+						((DocumentImpl) elem.getOwnerDocument()).getMetadata().setLastModified(System.currentTimeMillis());
 						defrag(tx);
 						fireTriggerAfter(tx, trigger);
 						tx.commit();
