@@ -117,15 +117,15 @@
         </init-param>
     </servlet>
 	
-    <servlet>
-        <servlet-name>RedirectorTest</servlet-name>
-        <servlet-class>org.exist.http.servlets.RedirectorServlet</servlet-class>
+    <filter>
+        <filter-name>XQueryURLRewrite</filter-name>
+        <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
         
         <init-param>
             <param-name>xquery</param-name>
             <param-value>redirector/dispatch.xql</param-value>
         </init-param>
-    </servlet>
+    </filter>
     
     <!--
         Configure the Axis servlets. 
@@ -507,10 +507,10 @@
         <url-pattern>*.xqy</url-pattern>
     </servlet-mapping>
       
-    <servlet-mapping>
-        <servlet-name>RedirectorTest</servlet-name>
-        <url-pattern>/redirect/*</url-pattern>
-    </servlet-mapping>
+    <filter-mapping>
+        <filter-name>XQueryURLRewrite</filter-name>
+        <url-pattern>/q/*</url-pattern>
+    </filter-mapping>
     
     <!-- SOAP (Apache Axis) -->
     <servlet-mapping>
