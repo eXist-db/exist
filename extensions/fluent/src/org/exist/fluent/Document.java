@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import org.exist.dom.*;
+import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;
 
@@ -13,7 +14,7 @@ import org.exist.xquery.value.Sequence;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-public class Document extends Resource {
+public class Document extends NamedResource {
 
 	/**
 	 * Listener for events affecting documents.  The three possible actions are document
@@ -115,10 +116,40 @@ public class Document extends Resource {
 			ListenerManager.INSTANCE.remove(path(), ListenerManager.Depth.ZERO, listener);
 		}
 	}
+	
+	/**
+	 * The metadata facet for this document.  Allows access to and manipulation of various aspects
+	 * of the document's metadata, including its permissions and various timestamps.
+	 * NOTE:  The interface is fairly bare-bones right now, until I figure out the use cases and flesh
+	 * it out a bit.
+	 */
+	public static class MetadataFacet extends NamedResource.MetadataFacet {
+		private final DocumentMetadata docMetadata;
+		private MetadataFacet(Permission permissions, DocumentMetadata docMetadata) {
+			super(permissions);
+			this.docMetadata = docMetadata;
+		}
+		@Override public Date creationDate() {return new Date(docMetadata.getCreated());}
+		
+		/**
+		 * Return the time at which this document was last modified.
+		 *
+		 * @return the date of the last modification
+		 */
+		public Date lastModificationDate() {return new Date(docMetadata.getLastModified());}
+		
+		/**
+		 * Return the recorded MIME type of this document.
+		 * 
+		 * @return this document's MIME type
+		 */
+		public String mimeType() {return docMetadata.getMimeType();}
+	}
 
 	protected DocumentImpl doc;
 	protected StaleMarker staleMarker;
 	private ListenersFacet listeners;
+	private MetadataFacet metadata;
 	
 	Document(DocumentImpl dimpl, NamespaceMap namespaceBindings, Database db) {
 		super(namespaceBindings, db);
@@ -158,6 +189,11 @@ public class Document extends Resource {
 		return listeners;
 	}
 	
+	@Override public MetadataFacet metadata() {
+		if (metadata == null) metadata = new MetadataFacet(doc.getPermissions(), doc.getMetadata());
+		return metadata;
+	}
+	
 	/**
 	 * Cast this document to an {@link XMLDocument}, if possible.
 	 *
@@ -193,7 +229,7 @@ public class Document extends Resource {
 	 * 
 	 * @return the local filename of this document
 	 */
-	public String name() {
+	@Override public String name() {
 		return doc.getFileURI().getCollectionPath();
 	}
 
@@ -203,7 +239,7 @@ public class Document extends Resource {
 	 *
 	 * @return the full path of this document
 	 */
-	public String path() {
+	@Override public String path() {
 		// TODO:  is this check necessary?
 		// if (doc.getURI() == null) throw new DatabaseException("handle invalid, document may have been deleted");
 		return Database.normalizePath(doc.getURI().getCollectionPath());
@@ -236,20 +272,20 @@ public class Document extends Resource {
 	/**
 	 * Delete this document from the database.
 	 */
-	public void delete() {
+	@Override public void delete() {
 		staleMarker.check();
 		folder().removeDocument(doc);
 	}
 
 	/**
-	 * Copy this document to another collection, potentially changing its name in the process.
+	 * Copy this document to another collection, potentially changing the copy's name in the process.
 	 * @see Name
 	 *
-	 * @param destination the destination collection for the copy
+	 * @param destination the destination folder for the copy
 	 * @param name the desired name for the copy
 	 * @return the new copy of the document
 	 */
-	public Document copy(Folder destination, Name name) {
+	@Override public Document copy(Folder destination, Name name) {
 		return newInstance(moveOrCopy(destination, name, true), this);
 	}
 
@@ -261,10 +297,10 @@ public class Document extends Resource {
 	 * without changing its location (<code>doc.move(doc.folder(), Name.create(newName))</code>).
 	 * @see Name
 	 *
-	 * @param destination the destination collection for the move
+	 * @param destination the destination folder for the move
 	 * @param name the desired name for the moved document
 	 */
-	public void move(Folder destination, Name name) {
+	@Override public void move(Folder destination, Name name) {
 		changeDoc(moveOrCopy(destination, name, false));
 	}
 

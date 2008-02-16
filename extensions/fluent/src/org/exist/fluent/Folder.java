@@ -32,7 +32,7 @@ import org.w3c.dom.Node;
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  * @version $Revision: 1.31 $ ($Date: 2006/09/04 06:09:05 $)
  */
-public class Folder extends Resource implements Cloneable {
+public class Folder extends NamedResource implements Cloneable {
 	
 	/**
 	 * Listener for events affecting folders.  The three possible actions are folder
@@ -440,7 +440,7 @@ public class Folder extends Resource implements Cloneable {
 				}
 			};
 		}
-
+		
 		/**
 		 * Return an iterator over the folder's immediate documents.  This iterator can be used
 		 * to selectively delete documents as well.
@@ -535,6 +535,7 @@ public class Folder extends Resource implements Cloneable {
 	private ChildrenFacet children;
 	private DocumentsFacet documents;
 	private ListenersFacet listeners;
+	private MetadataFacet metadata;
 	
 	// the following are only valid while we're holding a broker
 	private DBBroker broker;
@@ -598,6 +599,15 @@ public class Folder extends Resource implements Cloneable {
 	public ListenersFacet listeners() {
 		if (listeners == null) listeners = new ListenersFacet();
 		return listeners;
+	}
+
+	@Override public MetadataFacet metadata() {
+		if (metadata == null) metadata = new MetadataFacet(getQuickHandle().getPermissionsNoLock()) {
+			@Override public Date creationDate() {
+				return new Date(getQuickHandle().getCreationTime());
+			}
+		};
+		return metadata;
 	}
 
 	/**
@@ -761,7 +771,7 @@ public class Folder extends Resource implements Cloneable {
 	 * deletes all documents and descendants but does not delete the root folder itself.
 	 */
 	@SuppressWarnings("unchecked")
-	public void delete() {
+	@Override public void delete() {
 		transact(Lock.NO_LOCK);
 		try {
 			// TODO: temporary hack, remove once removing root collection works in eXist
@@ -800,7 +810,7 @@ public class Folder extends Resource implements Cloneable {
 	 * @param destination the new parent folder of this folder
 	 * @param name the new name for this folder
 	 */
-	public void move(Folder destination, Name name) {
+	@Override public void move(Folder destination, Name name) {
 		changePath(moveOrCopyThisFolder(destination, name, false));
 	}
 	
@@ -812,7 +822,7 @@ public class Folder extends Resource implements Cloneable {
 	 * @param name the desired name of the copy
 	 * @return a reference to the copied folder
 	 */
-	public Folder copy(Folder destination, Name name) {
+	@Override public Folder copy(Folder destination, Name name) {
 		return new Folder(moveOrCopyThisFolder(destination, name, true), false, this);
 	}
 	
@@ -885,7 +895,7 @@ public class Folder extends Resource implements Cloneable {
 	 * 
 	 * @return the full path to the folder
 	 */
-	public String path() {
+	@Override public String path() {
 		return path;
 	}
 	
@@ -894,7 +904,7 @@ public class Folder extends Resource implements Cloneable {
 	 * 
 	 * @return the local name of the folder
 	 */
-	public String name() {
+	@Override public String name() {
 		return path().substring(path().lastIndexOf('/')+1);
 	}
 	

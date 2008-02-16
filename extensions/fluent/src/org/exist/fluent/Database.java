@@ -127,7 +127,7 @@ public class Database {
 	
 	/**
 	 * Login to obtain access to the database.  The password should be passed in the clear.
-	 * If a user does not have a password set, you can pass in any value including <code>null</code>.
+	 * If a user does not have a password set, pass in <code>null</code>.
 	 * Note that all newly created databases have a user <code>admin</code> with no password set.
 	 *
 	 * @param username the username of the user being logged in
