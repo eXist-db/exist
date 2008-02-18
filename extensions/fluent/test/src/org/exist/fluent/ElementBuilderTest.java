@@ -1,10 +1,10 @@
 package org.exist.fluent;
 
-import org.junit.Test;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import static org.junit.Assert.*;
+
+import org.junit.Test;
+import org.w3c.dom.*;
+import org.w3c.dom.Node;
 
 public class ElementBuilderTest extends DatabaseTestCase {
 	@Test public void empty() {
@@ -193,6 +193,58 @@ public class ElementBuilderTest extends DatabaseTestCase {
 					}
 				});
 		builder.elem("test").end("test").elem("test2").end("test2").commit();
+	}
+	
+	@Test public void xmlNamespace() {
+		ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false,
+				new ElementBuilder.CompletedCallback<Object>() {
+					public Object completed(Node[] nodes) {
+						assertEquals(1, nodes.length);
+						assertEquals(1, nodes[0].getAttributes().getLength());
+						Node attr = nodes[0].getAttributes().item(0);
+						assertEquals("xml", attr.getPrefix());
+						assertEquals("id", attr.getLocalName());
+						assertEquals("http://www.w3.org/XML/1998/namespace", attr.getNamespaceURI());
+						return null;
+					}
+				});
+		builder.elem("test").attr("xml:id", "foo").end("test").commit();
+	}
+	
+	@Test public void adoptStoredNode() {
+		org.exist.fluent.Node node = db.getFolder("/").documents().load(Name.generate(), Source.xml("<test xml:id='foo'/>")).root();
+		ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false,
+				new ElementBuilder.CompletedCallback<Object>() {
+					public Object completed(Node[] nodes) {
+						assertEquals(1, nodes.length);
+						assertEquals(1, nodes[0].getChildNodes().getLength());
+						assertEquals(1, nodes[0].getFirstChild().getAttributes().getLength());
+						Node attr = nodes[0].getFirstChild().getAttributes().item(0);
+						assertEquals("xml", attr.getPrefix());
+						assertEquals("id", attr.getLocalName());
+						assertEquals("http://www.w3.org/XML/1998/namespace", attr.getNamespaceURI());
+						return null;
+					}
+				});
+		builder.elem("outer").node(node).end("outer").commit();
+	}
+
+	@Test public void adoptMemoryNode() {
+		org.exist.fluent.Node node = db.query().single("<test xml:id='foo'/>").node();
+		ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false,
+				new ElementBuilder.CompletedCallback<Object>() {
+					public Object completed(Node[] nodes) {
+						assertEquals(1, nodes.length);
+						assertEquals(1, nodes[0].getChildNodes().getLength());
+						assertEquals(1, nodes[0].getFirstChild().getAttributes().getLength());
+						Node attr = nodes[0].getFirstChild().getAttributes().item(0);
+						assertEquals("xml", attr.getPrefix());
+						assertEquals("id", attr.getLocalName());
+						assertEquals("http://www.w3.org/XML/1998/namespace", attr.getNamespaceURI());
+						return null;
+					}
+				});
+		builder.elem("outer").node(node).end("outer").commit();
 	}
 
 	@Test public void structure1() {

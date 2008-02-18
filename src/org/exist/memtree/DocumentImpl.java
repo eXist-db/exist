@@ -426,7 +426,20 @@ public class DocumentImpl extends NodeImpl implements Document {
      * @see org.w3c.dom.Document#getImplementation()
      */
     public DOMImplementation getImplementation() {
-        return null;
+       return new DOMImplementation() {
+ 			public Document createDocument(String namespaceURI, String qualifiedName, DocumentType doctype) throws DOMException {
+ 				return null;
+ 			}
+ 			public DocumentType createDocumentType(String qualifiedName, String publicId, String systemId) throws DOMException {
+ 				return null;
+ 			}
+ 			public Object getFeature(String feature, String version) {
+ 				return null;
+ 			}
+ 		    public boolean hasFeature(String feature, String version) {
+ 		        return "XML".equals(feature) && ("1.0".equals(version) || "2.0".equals(version));
+ 		    } 
+         };
     }
 
     /*

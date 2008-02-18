@@ -2,8 +2,7 @@ package org.exist.fluent;
 
 import java.util.*;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.*;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.*;
@@ -13,6 +12,13 @@ import org.w3c.dom.Node;
  * A builder of DOM trees, meant to be either stand alone or be inserted into
  * pre-existing ones.  Cannot remove nodes from the base tree.  You must {@link #commit()}
  * the builder to persist the recorded changes in the database.
+ * 
+ * All the nodes in the tree being built must be from the same implementation.  If you attempt
+ * to add foreign nodes -- for example, persistent nodes from the database -- using the
+ * {@link #node} or {@link #nodes} methods to a builder that already has temporary nodes
+ * built using its other methods, they'll be imported.  Importing nodes will usually make a deep
+ * copy of the tree in memory, which could cause problems if you're trying to add a big stored
+ * node tree.
  * 
  * @param <K> the type of object returned upon completion of the builder,
  * 	depends on the context in which the builder is used
