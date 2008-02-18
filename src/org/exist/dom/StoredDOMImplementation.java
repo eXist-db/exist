@@ -21,10 +21,7 @@
  */
 package org.exist.dom;
 
-import org.w3c.dom.DOMException;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
+import org.w3c.dom.*;
 
 public class StoredDOMImplementation implements DOMImplementation {
     
@@ -43,7 +40,7 @@ public class StoredDOMImplementation implements DOMImplementation {
     }
 
     public boolean hasFeature(String feature, String version) {
-        return false;
+        return "XML".equals(feature) && ("1.0".equals(version) || "2.0".equals(version));
     }
 
 }
