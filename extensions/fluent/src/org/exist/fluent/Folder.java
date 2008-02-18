@@ -864,15 +864,15 @@ public class Folder extends NamedResource implements Cloneable {
 	}
 	
 	/**
-	 * Return whether this folder or one of its descendants contains the given document.
+	 * Return whether this folder or one of its descendants contains the given named resource.
 	 * 
-	 * @param doc the document to check for
-	 * @return <code>true</code> if the document is contained (directly or indirectly) in this folder, <code>false</code> otherwise
+	 * @param res the resource to check for
+	 * @return <code>true</code> if the resource is contained (directly or indirectly) in this folder, <code>false</code> otherwise
 	 */
-	public boolean contains(Document doc) {
+	public boolean contains(NamedResource res) {
 		staleMarker.check();
-		db.checkSame(doc);
-		return doc.path().startsWith(path() + "/");
+		db.checkSame(res);
+		return res.path().startsWith(path() + (path().equals("/") ? "" : "/"));
 	}
 	
 	/**
