@@ -497,7 +497,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     	topMost = currentNode;
                     if (currentNode.getDocument().getCollection().isTempCollection() && currentNode.getNodeId().getTreeLevel() == 2)
                         break;
-                    currentNode = (StoredNode) currentNode.getParentNode();
+                    //currentNode = (StoredNode) currentNode.getParentNode();
+                    currentNode = currentNode.getParentStoredNode();
                 }
                 return topMost;
             }
