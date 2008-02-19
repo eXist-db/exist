@@ -73,7 +73,7 @@ public class Replace extends Modification {
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
                         "permission to update document denied");
-                parent = (ElementImpl) node.getParentNode();
+                parent = (ElementImpl) node.getParentStoredNode();
                 if (parent == null)
                     throw new EXistException("The root element of a document can not be replaced with 'xu:replace'. " +
                         "Please consider removing the document or use 'xu:update' to just replace the children of the root.");

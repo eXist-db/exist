@@ -279,20 +279,24 @@ public class StoredNode extends NodeImpl implements Visitable {
 	public Node getParentNode() {
 		NodeId parentId = nodeId.getParentId();
 		if (parentId == NodeId.DOCUMENT_NODE)
-            return null;
+            return ownerDocument;
 		// Filter out the temporary nodes wrapper element
 		if (parentId.getTreeLevel() == 1 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
 			return ownerDocument;
         return ownerDocument.getNode(parentId);
+	}
+	
+	public StoredNode getParentStoredNode() {
+		Node parent = getParentNode();
+		return parent instanceof StoredNode ? (StoredNode) parent : null;
 	}
 
 	/**
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
-        StoredNode parent = (StoredNode) getParentNode();
-        if (parent == null || parent.getNodeType() == Node.DOCUMENT_NODE)
-            return null;
+        StoredNode parent = getParentStoredNode();
+        if (parent == null) return null;
         if (parent.isDirty()) {
             try {
                 EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(parent, true);
@@ -331,9 +335,8 @@ public class StoredNode extends NodeImpl implements Visitable {
 	public Node getNextSibling() {
         if (nodeId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
             return null;
-        final StoredNode parent = (StoredNode) getParentNode();
-        if (parent == null || parent.getNodeType() == Node.DOCUMENT_NODE)
-            return null;
+        final StoredNode parent = getParentStoredNode();
+        if (parent == null) return null;
         if (parent.isDirty()) {
             try {
                 final EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(parent, true);

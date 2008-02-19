@@ -134,7 +134,7 @@ public class Delete extends Modification {
                     doc.getMetadata().setIndexListener(listener);
                     
                     //update the document
-                    parent = (StoredNode) node.getParentNode();
+                    parent = (NodeImpl) node.getParentNode();
                     if (parent==null) {
                         LOG.debug("Cannot remove the document element (no parent node)");
                         throw new XPathException(getASTNode(),

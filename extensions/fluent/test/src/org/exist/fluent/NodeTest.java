@@ -115,6 +115,19 @@ public class NodeTest extends DatabaseTestCase {
 	}
 	
 	@Test
+	public void deleteRoot() {
+		Node root = db.createFolder("/test").documents().load(Name.create("test"), Source.xml("<foo/>")).root();
+		root.delete();
+		assertFalse(db.getFolder("/test").documents().contains("test"));
+	}
+	
+	@Test public void replaceRoot() {
+		Node root = db.createFolder("/test").documents().load(Name.create("test"), Source.xml("<foo/>")).root();
+		root.replace().elem("bar").end("bar").commit();
+		assertEquals("bar", db.getFolder("/test").documents().get("test").xml().root().name());
+	}
+	
+	@Test
 	public void appendTriggersListeners() {
 		final XMLDocument doc = db.getFolder("/").documents().load(Name.create("foo"), Source.xml("<foo/>"));
 		final Document.Listener listener = context.mock(Document.Listener.class);
