@@ -1440,23 +1440,15 @@ public class ElementImpl extends NamedNode implements Element {
         if ( baseURI == null) {
             baseURI = "";
         }
-        StoredNode parent = null;
-        Node test = getParentNode();
-        if (!(test instanceof DocumentImpl)) {
-                parent = (StoredNode) test;
-        } 
+        StoredNode parent = getParentStoredNode();
         while (parent != null && parent.getBaseURI() != null) {
             if ("".equals(baseURI)) {
                 baseURI = parent.getBaseURI();
             } else {
                 baseURI = parent.getBaseURI() + "/" + baseURI;
             }
-            test = parent.getParentNode();
-            if (test instanceof DocumentImpl) {
-                return baseURI;
-            } else {
-                parent = (StoredNode) test;
-            }
+            parent = parent.getParentStoredNode();
+            if (parent == null) return baseURI;
         }
         if ("".equals(baseURI)) {
             baseURI = getDocument().getBaseURI();

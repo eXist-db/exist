@@ -130,7 +130,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 while (currentNode != null) {
                     if (config.hasQNameIndex(currentNode.getQName()))
                         topMost = currentNode;
-                    currentNode = (StoredNode) currentNode.getParentNode();
+                    currentNode = currentNode.getParentStoredNode();
                 }
                 return topMost;
             }

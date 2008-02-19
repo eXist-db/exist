@@ -139,7 +139,7 @@ public class Replace extends Modification {
                 doc.getMetadata().setIndexListener(listener);
                 
                 //update the document
-                parent = (ElementImpl) node.getParentNode();
+                parent = (ElementImpl) node.getParentStoredNode();
                 if (parent == null)
                     throw new XPathException(getASTNode(), "The root element of a document can not be replaced with 'update replace'. " +
                             "Please consider removing the document or use 'update value' to just replace the children of the root.");

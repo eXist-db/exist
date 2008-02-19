@@ -150,9 +150,9 @@ public class Node extends Item {
 			});
 		} catch (ClassCastException e) {
 			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
-				throw new UnsupportedOperationException("updates on in-memory nodes are not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
+				throw new UnsupportedOperationException("appends to in-memory nodes are not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
 			} else {
-				throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
+				throw new UnsupportedOperationException("cannot append to a " + Type.getTypeName(item.getType()));
 			}
 		}
 	}
@@ -225,6 +225,8 @@ public class Node extends Item {
 		try {
 			final NodeImpl oldNode = (NodeImpl) getDOMNode();
 			if (oldNode.getParentNode() == null) throw new UnsupportedOperationException("cannot replace a " + Type.getTypeName(item.getType()) + " with no parent");
+			if (oldNode.getParentNode().getNodeType() == org.w3c.dom.Node.DOCUMENT_NODE)
+				return document().folder().documents().build(Name.overwrite(document().name()));
 			return new ElementBuilder<Object>(namespaceBindings, false, new ElementBuilder.CompletedCallback<Object>() {
 				public Object completed(org.w3c.dom.Node[] nodes) {
 					assert nodes.length == 1;
@@ -249,11 +251,11 @@ public class Node extends Item {
 					}
 				}
 			});
-		} catch (RuntimeException e) {
+		} catch (ClassCastException e) {
 			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
-				throw new UnsupportedOperationException("updates on in-memory nodes are not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
+				throw new UnsupportedOperationException("replacement of in-memory nodes is not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
 			} else {
-				throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
+				throw new UnsupportedOperationException("cannot replace a " + Type.getTypeName(item.getType()));
 			}
 		}
 	}

@@ -40,8 +40,7 @@ public class ItemListTest extends DatabaseTestCase {
 		assertEquals(list1.hashCode(), list2.hashCode());
 	}
 
-	@Test
-	public void convertToSequence() {
+	@Test	public void convertToSequence() {
 		XMLDocument doc = db.createFolder("/top").documents().build(Name.create("test"))
 			.elem("a")
 				.elem("b")
@@ -55,5 +54,11 @@ public class ItemListTest extends DatabaseTestCase {
 		assertEquals(3, doc.query().all("//c").size());
 		ItemList res = doc.query().all("//(b|d)");
 		assertEquals(2, doc.query().all("$_1//c", new Object[] { res }).size());
+	}
+	
+	@Test public void deleteAllNodes() {
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
+				"<foo><bar><bar/></bar></foo>"));
+		doc.query().all("//bar").deleteAllNodes();
 	}
 }

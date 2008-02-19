@@ -151,13 +151,13 @@ public class Insert extends Modification {
     				if (mode == INSERT_APPEND) {
     					node.appendChildren(transaction, contentList, -1);
     				} else {
-    					NodeImpl parent = (StoredNode) node.getParentNode();
+    					NodeImpl parent = (NodeImpl) node.getParentNode();
     	                switch (mode) {
     	                    case INSERT_BEFORE:
     	                        parent.insertBefore(transaction, contentList, node);
     	                        break;
     	                    case INSERT_AFTER:
-    	                        ((NodeImpl) parent).insertAfter(transaction, contentList, node);
+    	                        parent.insertAfter(transaction, contentList, node);
     	                        break;
     	                }
     				}

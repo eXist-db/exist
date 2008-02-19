@@ -255,8 +255,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
         doc = node.getDocument();
         NodePath path = new NodePath(nodePath);
         StoredNode root = null;
-        StoredNode currentNode = (StoredNode) ((node.getNodeType() == Node.ELEMENT_NODE || node.getNodeType() == Node.ATTRIBUTE_NODE)
-                        ? node : node.getParentNode());
+        StoredNode currentNode = ((node.getNodeType() == Node.ELEMENT_NODE || node.getNodeType() == Node.ATTRIBUTE_NODE)
+                        ? node : node.getParentStoredNode());
         while (currentNode != null) {
             GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
             QNameRangeIndexSpec qSpec = doc.getCollection().getIndexByQNameConfiguration(broker, currentNode.getQName());
@@ -264,7 +264,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 root = currentNode;
             if (doc.getCollection().isTempCollection() && currentNode.getNodeId().getTreeLevel() == 2)
                 break;
-            currentNode = (StoredNode) currentNode.getParentNode();
+            currentNode = currentNode.getParentStoredNode();
             path.removeLastComponent();
         }
         return root;

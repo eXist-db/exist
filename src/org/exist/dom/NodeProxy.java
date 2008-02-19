@@ -336,7 +336,7 @@ public class NodeProxy implements NodeSet, NodeValue, DocumentSet, Comparable {
             return doc;
         else {
             NodeImpl realNode = (NodeImpl) doc.getNode(this);
-            this.nodeType = realNode.getNodeType();
+            if (realNode != null) this.nodeType = realNode.getNodeType();
             return realNode;
         }
     }
