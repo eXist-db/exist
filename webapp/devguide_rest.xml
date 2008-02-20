@@ -194,7 +194,7 @@
                         <term>_howmany=<emphasis>Number of Items</emphasis></term>
                         <listitem>
                             <para>Specifies the number of items to return from the resultant
-                                sequence.</para>
+                                sequence (10 by default).</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
