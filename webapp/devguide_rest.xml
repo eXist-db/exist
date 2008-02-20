@@ -181,27 +181,29 @@
                     <varlistentry>
                         <term>_indent=<emphasis>yes | no</emphasis></term>
                         <listitem>
-                            <para>Returns indented pretty-print XML.</para>
+                            <para>Returns indented pretty-print XML. The
+                                default value is <option>yes</option>.</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
                         <term>_encoding=<emphasis>Character Encoding Type</emphasis></term>
                         <listitem>
-                            <para>Sets the character encoding for the resultant XML.</para>
+                            <para>Sets the character encoding for the resultant XML. The
+                                default value is <option>UTF-8</option>.</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
                         <term>_howmany=<emphasis>Number of Items</emphasis></term>
                         <listitem>
                             <para>Specifies the number of items to return from the resultant
-                                sequence (10 by default).</para>
+                                sequence. The default value is <option>10</option>.</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
                         <term>_start=<emphasis>Starting Position in Sequence</emphasis></term>
                         <listitem>
                             <para>Specifies the index position of the first item in the result
-                                sequence to be returned</para>
+                                sequence to be returned. The default value is <option>1</option>.</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
@@ -212,12 +214,20 @@
                                 default value is <option>yes</option>.</para>
                         </listitem>
                     </varlistentry>
+                    <varlistentry>
+                        <term>_source=<emphasis>yes | no</emphasis></term>
+                        <listitem>
+                            <para>Specifies whether the query should display its source code instead of being executed. The
+                                default value is <option>no</option>, but see the <sgmltag>allow-source</sgmltag> section in <filename>descriptor.xml</filename>
+                                to explicitely allow such a behaviour.</para>
+                        </listitem>
+                    </varlistentry>
                 </variablelist>
                 <para>EXAMPLE: The following URI will find all <sgmltag>SPEECH</sgmltag> elements in
                     the collection <filename>/db/shakespeare</filename> with "Juliet" as the
-                        <sgmltag>SPEAKER</sgmltag>. As specified, it will return ten items from the
-                    result sequence, starting at position 1:</para>
-                <synopsis>http://localhost:8080/exist/rest/db/shakespeare?_query=//SPEECH[SPEAKER=%22JULIET%22]&amp;_start=1&amp;_howmany=10</synopsis>
+                        <sgmltag>SPEAKER</sgmltag>. As specified, it will return 5 items from the
+                    result sequence, starting at position 3:</para>
+                <synopsis>http://localhost:8080/exist/rest/db/shakespeare?_query=//SPEECH[SPEAKER=%22JULIET%22]&amp;_start=3&amp;_howmany=5</synopsis>
             </section>
             <section>
                 <title>PUT Requests</title>
