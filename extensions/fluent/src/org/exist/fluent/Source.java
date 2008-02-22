@@ -281,7 +281,7 @@ public abstract class Source {
 				return new InputSource(new StringReader(literal));
 			}
 			@Override public String toString() {
-				return super.toString() + "literal string";
+				return super.toString() + "literal string:\n" + literal;
 			}
 		};		
 	}
