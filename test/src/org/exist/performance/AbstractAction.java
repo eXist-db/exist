@@ -21,13 +21,13 @@
  */
 package org.exist.performance;
 
-import org.exist.performance.actions.Action;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.performance.actions.Action;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
-import org.apache.log4j.Logger;
+import org.w3c.dom.NodeList;
 
 import javax.xml.transform.TransformerException;
 import java.io.StringWriter;
@@ -97,5 +97,15 @@ public abstract class AbstractAction implements Action {
             throw new EXistException("exception while serializing content: " + e.getMessage(), e);
         }
         return writer.toString();
+    }
+
+    public static String getContentValue(Element config) throws EXistException {
+        StringBuffer buf = new StringBuffer();
+        Node next = config.getFirstChild();
+        while (next != null) {
+            buf.append(next.getNodeValue());
+            next = next.getNextSibling();
+        }
+        return buf.toString();
     }
 }

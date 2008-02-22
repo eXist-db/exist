@@ -21,28 +21,24 @@
  */
 package org.exist.performance.actions;
 
+import org.exist.EXistException;
 import org.exist.performance.AbstractAction;
 import org.exist.performance.Connection;
 import org.exist.performance.Runner;
-import org.exist.EXistException;
-import org.exist.util.serializer.DOMSerializer;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.modules.XMLResource;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
+import org.exist.xmldb.EXistResource;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-
-import javax.xml.transform.TransformerException;
-import java.io.FileNotFoundException;
-import java.io.StringWriter;
-import java.util.Properties;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
 
 public class StoreInline extends AbstractAction {
 
     private String collectionPath;
     private String name;
     private String content;
+    private MimeType type = MimeType.XML_TYPE;
 
     public void configure(Runner runner, Action parent, Element config) throws EXistException {
         super.configure(runner, parent, config);
@@ -55,14 +51,20 @@ public class StoreInline extends AbstractAction {
             throw new EXistException(StoreInline.class.getName() + " requires an attribute 'name'");
         name = config.getAttribute("name");
 
-        content = getContent(config);
+        if (config.hasAttribute("type")) {
+            type = MimeTable.getInstance().getContentType(config.getAttribute("type"));
+            if (type == null)
+                type = MimeType.XML_TYPE;
+        }
+        content = type.isXMLType() ? getContent(config) : getContentValue(config);
     }
 
     public void execute(Connection connection) throws XMLDBException, EXistException {
         Collection collection = connection.getCollection(collectionPath);
         if (collection == null)
             throw new EXistException("Collection not found: " + collectionPath);
-        XMLResource resource = (XMLResource) collection.createResource(name, "XMLResource");
+        Resource resource = collection.createResource(name, type.getXMLDBType());
+        ((EXistResource)resource).setMimeType(type.getName());
         resource.setContent(content);
         collection.storeResource(resource);
     }
