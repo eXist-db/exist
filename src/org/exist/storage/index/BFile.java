@@ -20,16 +20,11 @@
  */
 package org.exist.storage.index;
 
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import org.exist.storage.*;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.BufferStats;
+import org.exist.storage.CacheManager;
+import org.exist.storage.DefaultCacheManager;
+import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
@@ -58,6 +53,15 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
+
+import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 
 /**
@@ -202,7 +206,7 @@ public class BFile extends BTree {
     		LOG.debug("key is null");
     		return UNKNOWN_ADDRESS;
     	}
-    	if (key.getLength() > fileHeader.getWorkSize()) {
+    	if (key.getLength() > fileHeader.getMaxKeySize()) {
     		//TODO : throw an exception ? -pb
     		LOG.warn("Key length exceeds page size! Skipping key ...");
     		return UNKNOWN_ADDRESS;

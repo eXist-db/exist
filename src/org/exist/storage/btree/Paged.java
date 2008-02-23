@@ -71,6 +71,12 @@ package org.exist.storage.btree;
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import org.apache.log4j.Logger;
+import org.exist.storage.journal.Lsn;
+import org.exist.util.ByteConversion;
+import org.exist.xquery.Constants;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -79,11 +85,6 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.NonWritableChannelException;
 import java.util.Arrays;
-
-import org.apache.log4j.Logger;
-import org.exist.storage.journal.Lsn;
-import org.exist.util.ByteConversion;
-import org.exist.xquery.Constants;
 
 /**
  *  Paged is a paged file foundation that is used by the BTree class and
@@ -653,7 +654,7 @@ public abstract class Paged {
 		 *
 		 *@return    The maxKeySize value
 		 */
-		public final short getMaxKeySize() {
+		public int getMaxKeySize() {
 			return maxKeySize;
 		}
 
