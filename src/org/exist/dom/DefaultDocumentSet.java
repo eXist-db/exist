@@ -33,7 +33,10 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 /**
  * Manages a set of documents.
@@ -105,7 +108,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
                 continue;
             if(broker == null || !checkPermissions ||
                     doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
-                doc.setBroker(broker);
+                // WM: we don't have a lock on the document, so we should not change its broker:
+                // doc.setBroker(broker);
                 put(doc.getDocId(), doc);
             }
         }
@@ -131,11 +135,12 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
             if (doc == null)
                    continue;
             if (doc.getPermissions().validate(broker.getUser(), Permission.WRITE)) {
-                doc.setBroker(broker);
                 lock = doc.getUpdateLock();
 
                 lock.acquire(Lock.WRITE_LOCK);
                 put(doc.getDocId(), doc);
+                // we now have a lock on the doc, change its broker
+                doc.setBroker(broker);
                 lockMap.add(doc);
             }
         }

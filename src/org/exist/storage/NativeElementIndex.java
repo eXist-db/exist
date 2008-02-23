@@ -23,7 +23,17 @@ package org.exist.storage;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.ByDocumentIterator;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
@@ -39,14 +49,29 @@ import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
-import org.exist.util.*;
-import org.exist.xquery.*;
+import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
+import org.exist.util.FastQSort;
+import org.exist.util.LockException;
+import org.exist.util.Occurrences;
+import org.exist.util.ProgressIndicator;
+import org.exist.util.ReadOnlyException;
+import org.exist.xquery.Constants;
+import org.exist.xquery.DescendantSelector;
+import org.exist.xquery.Expression;
+import org.exist.xquery.NodeSelector;
+import org.exist.xquery.TerminatedException;
+import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /** The indexing occurs in this class. That is, during the loading of a document
  * into the database, the process of associating a long gid with each element,
@@ -170,7 +195,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         //TODO : return if doc == null? -pb
         if (pending.size() == 0) 
             return;
-        final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5); 
+        final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5);
         final int collectionId = this.doc.getCollection().getId(); 
         final Lock lock = dbNodes.getLock();   
         int count = 0;
@@ -194,7 +219,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             for (int j = 0; j < gidsCount; j++) {
                 NodeProxy storedNode = (NodeProxy) gids.get(j);
                 if (doc.getDocId() != storedNode.getDocument().getDocId()) {
-                    throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+                    throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" +
                             storedNode.getDocument().getDocId() + "') differ !");
                 }
                 try {
