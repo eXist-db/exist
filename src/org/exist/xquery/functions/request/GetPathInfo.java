@@ -71,9 +71,10 @@ public class GetPathInfo extends BasicFunction {
 			throw new XPathException("Variable $request is not bound to an Java object.");
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper)
-			return new StringValue(((RequestWrapper) value.getObject()).getPathInfo());
-		else
+		if (value.getObject() instanceof RequestWrapper) {
+            String path = ((RequestWrapper) value.getObject()).getPathInfo();
+            return new StringValue(path == null ? "" : path);
+        } else
 			throw new XPathException("Variable $request is not bound to a Request object.");
 	}
 	
