@@ -1,17 +1,5 @@
 package org.exist.irc;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Properties;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.xmldb.UserManagementService;
@@ -31,6 +19,17 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Properties;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Implements a simple IRC drone, which logs IRC events to a collection in an eXist database.
@@ -65,8 +64,10 @@ public class XBot extends PircBot {
 	
 	private final static String URL_REGEX =
 		"((http|ftp)s{0,1}://[\\-\\.\\,/\\%\\~\\=\\@\\_\\&\\:\\?\\#a-zA-Z0-9]*[/\\=\\#a-zA-Z0-9])";
-	
-	// these commands may be passed in a private message to the bot 
+
+    private final static int MAX_CONNECT_ATTEMPTS = 50;
+    
+    // these commands may be passed in a private message to the bot
 	private final Command[] commands = {
 		new HelpCommand(),
 		new QuitCommand(),
@@ -82,8 +83,10 @@ public class XBot extends PircBot {
 	
 	private Pattern urlPattern;
 	private Matcher matcher = null;
-	
-	public XBot() throws IrcException {
+
+    private boolean disconnect = false;
+
+    public XBot() throws IrcException {
 		super();
 
         File f = new File("xbot.properties");
@@ -110,21 +113,44 @@ public class XBot extends PircBot {
 	 */
 	public void connect() throws IrcException, IOException {
 		log("Connecting to " + properties.getProperty("irc.server"));
-		boolean connected = false;
+		attemptConnect();
+	}
+
+    protected void onDisconnect() {
+        if (disconnect)
+            return;
+        log("We were disconnected from the server. Trying to reconnect ...");
+        try {
+            attemptConnect();
+        } catch (IrcException e) {
+            log("Reconnect failed. Giving up.");
+        }
+    }
+
+    protected void attemptConnect() throws IrcException {
+        int attempts = 0;
+        boolean connected = false;
 		while (!connected) {
-			try {
+            ++attempts;
+            try {
 				connect(properties.getProperty("irc.server"));
 				connected = true;
 			} catch (NickAlreadyInUseException e) {
 				this.setName(this.getName() + '_');
-			}
-		}
+			} catch (IOException e) {
+                log("Failed to connect. Reason: " + e.getMessage());
+            }
+            if (attempts == MAX_CONNECT_ATTEMPTS) {
+                log("Reached max connection attempts. Giving up.");
+                return;
+            }
+        }
 		log("Join channel: " + properties.getProperty("irc.channel"));
 		joinChannel(properties.getProperty("irc.channel"));
 		sendMessage("NickServ", "IDENTIFY " + properties.getProperty("irc.password"));
-	}
-	
-	/**
+    }
+
+    /**
 	 * Callback method called after a user has joined the channel.
 	 */
 	protected void onJoin(String channel, String sender, String login, String hostname) {
@@ -138,8 +164,9 @@ public class XBot extends PircBot {
 			log("An error occurred: " + e.getMessage());
 		}
 	}
-	
-	/**
+
+    
+    /**
 	 * Callback method: a user has parted.
 	 */
 	protected void onPart(String channel, String sender, String login, String hostname) {
@@ -361,7 +388,8 @@ public class XBot extends PircBot {
 				sendMessage(target, "Wrong password specified!");
 				return;
 			}
-			quitServer("Even a bot needs to rest sometimes...");
+            disconnect = true;
+            quitServer("Even a bot needs to rest sometimes...");
 			System.exit(0);
 		}
 	}
