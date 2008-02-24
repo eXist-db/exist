@@ -216,6 +216,18 @@ public class ResourceTest extends TestCase {
 		}
 	}
 
+	public void testAddRemoveAddWithIds() {
+		try {
+			final String resourceID = "removeWithIds;1.xml";
+
+			addResource(resourceID, "<foo1 xml:id='f'/>");
+			removeDocument(resourceID);
+			addResource(resourceID, "<foo xml:id='f'/>");
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+
 	private void removeDocument(String id) {		
 		try {
 			XMLResource resource = resourceForId(id);
