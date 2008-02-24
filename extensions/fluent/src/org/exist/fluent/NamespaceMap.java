@@ -198,6 +198,17 @@ public class NamespaceMap implements Cloneable {
 		return all;
 	}
 	
+	/**
+	 * Return whether this namespace map contains no bindings other than inherited
+	 * ones.
+	 * 
+	 * @return <code>true</code> if this namespace map is empty except for possible
+	 * 		inherited bindings, <code>false</code> otherwise
+	 */
+	public boolean isFresh() {
+		return map == null || map.isEmpty();
+	}
+	
 	@Override public boolean equals(Object o) {
 		if (!(o instanceof NamespaceMap)) return false;
 		return getCombinedMap().equals(((NamespaceMap) o).getCombinedMap());
