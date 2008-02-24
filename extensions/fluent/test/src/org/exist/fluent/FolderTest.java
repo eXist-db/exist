@@ -357,6 +357,13 @@ public class FolderTest extends DatabaseTestCase {
 		c1.documents().build(Name.create("original")).elem("test").end("test").commit();
 		c1.query().single("/test");
 	}
+	
+	@Test public void queryGetFreshService() {
+		Folder c1 = db.createFolder("/c1");
+		c1.documents().build(Name.create("original")).namespace("", "foo").elem("test").end("test").commit();
+		c1.query().namespace("", "foo").single("/test");
+		assertFalse(c1.query().exists("/test"));	// namespace bindings not propagated from previous query
+	}
 
 	@Test public void queryBaseUri() {
 		Folder c1 = db.createFolder("/c1");

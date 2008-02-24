@@ -25,7 +25,7 @@ public abstract class Resource {
 	 * @return a query service with this object as context
 	 */
 	public QueryService query() {
-		if (query == null) {
+		if (query == null || !query.isFresh()) {
 			query = createQueryService();
 			if (query == null) {
 				Sequence seq = convertToSequence();

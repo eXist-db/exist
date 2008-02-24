@@ -54,6 +54,10 @@ public class QueryService implements Cloneable {
 		this.db = null;
 	}
 	
+	boolean isFresh() {
+		return !presub && bindings.isEmpty() && (namespaceBindings == null || namespaceBindings.isFresh());
+	}
+	
 	static final QueryService NULL = new QueryService() {
 		@Override protected ItemList executeQuery(String query, WrapperFactory wrappeFactory, Object[] params) {
 			return ItemList.NULL;
