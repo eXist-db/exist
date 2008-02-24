@@ -55,6 +55,22 @@ public class XMLDocumentTest extends DatabaseTestCase {
 		doc.query().single("/test");
 		assertEquals("/c2/original", doc.path());
 	}
+	
+	@Test public void delete1() {
+		Folder c1 = db.createFolder("/c1");
+		XMLDocument doc = c1.documents().build(Name.create("original")).elem("test").end("test").commit();
+		doc.delete();
+		assertEquals(0, c1.documents().size());
+	}
+
+	@Test public void delete2() {
+		Folder c1 = db.createFolder("/c1");
+		XMLDocument doc1 = c1.documents().build(Name.create("doc1")).elem("test").attr("xml:id", "a").end("test").commit();
+		XMLDocument doc2 = c1.documents().build(Name.create("doc2")).elem("test2").attr("xml:id", "b").end("test2").commit();
+		doc1.delete();
+		doc2.delete();
+		assertEquals(0, c1.documents().size());
+	}
 
 	@Test public void convertToSequence() {
 		Folder c = db.createFolder("/top");
