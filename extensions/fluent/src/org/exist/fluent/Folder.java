@@ -3,6 +3,7 @@ package org.exist.fluent;
 import java.io.*;
 import java.util.*;
 
+import org.exist.EXistException;
 import org.exist.collections.*;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -15,6 +16,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -300,7 +302,17 @@ public class Folder extends NamedResource implements Cloneable {
 						changeLock(Lock.NO_LOCK);
 						handle.store(tx.tx, broker, info, node, false);
 						commit();
-					} catch (Exception e) {
+					} catch (EXistException e) {
+						throw new DatabaseException(e);
+					} catch (PermissionDeniedException e) {
+						throw new DatabaseException(e);
+					} catch (TriggerException e) {
+						throw new DatabaseException(e);
+					} catch (SAXException e) {
+						throw new DatabaseException(e);
+					} catch (LockException e) {
+						throw new DatabaseException(e);
+					} catch (IOException e) {
 						throw new DatabaseException(e);
 					} finally {
 						release();
@@ -337,9 +349,17 @@ public class Folder extends NamedResource implements Cloneable {
 				changeLock(Lock.NO_LOCK);
 				handle.store(tx.tx, broker, info, source.toInputSource(), false);
 				commit();
-			} catch (RuntimeException e) {
-				throw e;
-			} catch (Exception e) {
+			} catch (EXistException e) {
+				throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
+			} catch (PermissionDeniedException e) {
+				throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
+			} catch (TriggerException e) {
+				throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
+			} catch (SAXException e) {
+				throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
+			} catch (LockException e) {
+				throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
+			} catch (IOException e) {
 				throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
 			} finally {
 				release();
@@ -363,13 +383,19 @@ public class Folder extends NamedResource implements Cloneable {
 				InputStream inputStream = source.toInputStream();
 				try {
 					handle.addBinaryResource(tx.tx, broker, XmldbURI.create(name.get()), inputStream, null, source.getLength());
+				} catch (EXistException e) {
+					throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
+				} catch (PermissionDeniedException e) {
+					throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
+				} catch (LockException e) {
+					throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
+				} catch (TriggerException e) {
+					throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
 				} finally {
 					inputStream.close();
 				}
 				commit();
-			} catch (RuntimeException e) {
-				throw e;
-			} catch (Exception e) {
+			} catch (IOException e) {
 				throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
 			} finally {
 				release();
@@ -840,7 +866,11 @@ public class Folder extends NamedResource implements Cloneable {
 					broker.moveCollection(tx.tx, handle, destination.handle, XmldbURI.create(name.get()));
 				}
 				commit();
-			} catch (Exception e) {
+			} catch (PermissionDeniedException e) {
+				throw new DatabaseException(e);
+			} catch (LockException e) {
+				throw new DatabaseException(e);
+			} catch (IOException e) {
 				throw new DatabaseException(e);
 			} finally {
 				destination.release();
@@ -998,12 +1028,16 @@ public class Folder extends NamedResource implements Cloneable {
 		transact(Lock.WRITE_LOCK);
 		try {
 			if (dimpl instanceof BinaryDocument) {
-				handle.removeBinaryResource(tx.tx, broker, dimpl);
+				handle.removeBinaryResource(tx.tx, broker, dimpl.getFileURI());
 			} else {
 				handle.removeXMLResource(tx.tx, broker, dimpl.getFileURI());
 			}
 			commit();
-		} catch (Exception e) {
+		} catch (PermissionDeniedException e) {
+			throw new DatabaseException(e);
+		} catch (LockException e) {
+			throw new DatabaseException(e);
+		} catch (TriggerException e) {
 			throw new DatabaseException(e);
 		} finally {
 			release();
