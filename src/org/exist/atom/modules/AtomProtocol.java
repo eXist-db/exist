@@ -478,13 +478,14 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             if (DOM.findChild(root,Atom.NAMESPACE_STRING,"title")==null) {
                throw new BadRequestException("The feed metadata sent does not contain a title.");
             }
-            
-            TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-            Txn transaction = transact.beginTransaction();
 
+             if (!feedDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE)) {
+                 throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
+             }
+             TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+             Txn transaction = transact.beginTransaction();
             try {
                feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
-               
                ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
                
                // Modify the feed by merging the new feed-level elements
