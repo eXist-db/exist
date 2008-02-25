@@ -108,7 +108,8 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
                 continue;
             if(broker == null || !checkPermissions ||
                     doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
-                doc.setBroker(broker);
+                // WM: we don't have a lock on the document, so we should not change its broker:
+                // doc.setBroker(broker);
                 put(doc.getDocId(), doc);
             }
         }
@@ -134,11 +135,12 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
             if (doc == null)
                    continue;
             if (doc.getPermissions().validate(broker.getUser(), Permission.WRITE)) {
-                doc.setBroker(broker);
                 lock = doc.getUpdateLock();
 
                 lock.acquire(Lock.WRITE_LOCK);
                 put(doc.getDocId(), doc);
+                // we now have a lock on the doc, change its broker
+                doc.setBroker(broker);
                 lockMap.add(doc);
             }
         }
