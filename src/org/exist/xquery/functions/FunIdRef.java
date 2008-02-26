@@ -120,14 +120,12 @@ public class FunIdRef extends Function {
     				while(tok.hasMoreTokens()) {
     					nextId = tok.nextToken();
     					if(XMLChar.isValidNCName(nextId)) {
-        					QName id = new QName(nextId, "", null);
-        					getIdRef((NodeSet)result, docs, id);
+        					getIdRef((NodeSet)result, docs, nextId);
                         }
     				}
     			} else {
     				if(XMLChar.isValidNCName(nextId)) {
-        				QName id = new QName(nextId, "", null);
-        				getIdRef((NodeSet)result, docs, id);
+        				getIdRef((NodeSet)result, docs, nextId);
                     }
     			}
     		}
@@ -140,11 +138,9 @@ public class FunIdRef extends Function {
         
 	}
 
-	private void getIdRef(NodeSet result, DocumentSet docs, QName id) {
-		//TODO : work with IDREFS as well ; tokenize them then test against the id
-		NodeSet attribs = (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-                ElementValue.ATTRIBUTE_IDREF, docs, id, null);
-		NodeProxy n, p;
+	private void getIdRef(NodeSet result, DocumentSet docs, String id) throws XPathException {
+		NodeSet attribs = context.getBroker().getValueIndex().find(Constants.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
+		NodeProxy n;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();			
 			result.add(n);

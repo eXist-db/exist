@@ -654,7 +654,8 @@ public class StringValue extends AtomicValue {
      */
     public int compareTo(Object o) {
         AtomicValue other = (AtomicValue)o;
-        if(Type.subTypeOf(other.getType(), Type.STRING))
+//        if(Type.subTypeOf(other.getType(), Type.STRING))
+        if (getType() == other.getType())
             return value.compareTo(((StringValue)other).value);
         else
             return getType() > other.getType() ? 1 : -1;

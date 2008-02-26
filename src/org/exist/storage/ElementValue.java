@@ -36,9 +36,6 @@ public class ElementValue extends Value {
 	public static final byte UNKNOWN = -1;
 	public static final byte ELEMENT = 0;
 	public static final byte ATTRIBUTE = 1;
-	public static final byte ATTRIBUTE_ID = 2;
-	public static final byte ATTRIBUTE_IDREF = 3;
-	public static final byte ATTRIBUTE_IDREFS = 4;
 	
 	public static int LENGTH_TYPE = 1; //sizeof byte
 
@@ -103,26 +100,15 @@ public class ElementValue extends Value {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Collection id : " + ByteConversion.byteToInt(data, OFFSET_COLLECTION_ID));
 		if (len > OFFSET_COLLECTION_ID) {
-			buf.append(" Type : " + type[data[OFFSET_TYPE]]);
-			if (data[OFFSET_TYPE] == ElementValue.ATTRIBUTE_ID) {
-				 //untested 4 is strange (would have expected 3, i.e. OFFSET_ID_STRING_VALUE)
-				buf.append(" id : " + UTF8.decode(data, 4, data.length - (Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE)));
-			} else if (data[OFFSET_TYPE] == ElementValue.ATTRIBUTE_IDREF) {
-					 //untested 4 is strange (would have expected 3, i.e. OFFSET_ID_STRING_VALUE)
-					buf.append(" idref : " + UTF8.decode(data, 4, data.length - (Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE)));
-			} if (data[OFFSET_TYPE] == ElementValue.ATTRIBUTE_IDREFS) {
-				 //untested 4 is strange (would have expected 3, i.e. OFFSET_ID_STRING_VALUE)
-				buf.append(" idrefs : " + UTF8.decode(data, 4, data.length - (Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE)));
-			} else {
-				if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_LOCAL_NAME)
-					buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
-				else if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + 
-						SymbolTable.LENGTH_LOCAL_NAME + SymbolTable.LENGTH_NS_URI) {
-					buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
-					buf.append(" NSSymbol id : " + ByteConversion.byteToShort(data, OFFSET_NSSYMBOL));
-				} else 
-					buf.append("Invalid data length !!!");
-			}
+		buf.append(" Type : " + type[data[OFFSET_TYPE]]);
+			if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_LOCAL_NAME)
+				buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
+			else if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + 
+					SymbolTable.LENGTH_LOCAL_NAME + SymbolTable.LENGTH_NS_URI) {
+				buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
+				buf.append(" NSSymbol id : " + ByteConversion.byteToShort(data, OFFSET_NSSYMBOL));
+			} else 
+				buf.append("Invalid data length !!!");
 		}
 		return buf.toString();
 	}
