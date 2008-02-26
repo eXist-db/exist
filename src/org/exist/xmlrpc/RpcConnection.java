@@ -3880,7 +3880,7 @@ public class RpcConnection extends Thread {
      */
     public boolean isValid(User user, XmldbURI docUri)
                                    throws PermissionDeniedException, Exception{
-        boolean retVal=false;
+        boolean isValid=false;
         DBBroker broker = null;
         
         try {
@@ -3896,10 +3896,10 @@ public class RpcConnection extends Thread {
             InputStream is = new EmbeddedInputStream( new XmldbURL(docUri) );
             
             // Perform validation
-            ValidationReport veh = validator.validate(is);
+            ValidationReport report = validator.validateParse(is); // TODO DIZ check method
             
             // Return validation result
-            retVal = veh.isValid();
+            isValid = report.isValid();
             
         } catch (Exception e) {
             LOG.debug(e);
@@ -3907,7 +3907,8 @@ public class RpcConnection extends Thread {
         } finally {
             brokerPool.release(broker);
         }
-        return retVal;
+        
+        return isValid;
     }
     
     /**
