@@ -30,6 +30,7 @@ import org.exist.source.FileSource;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
+import org.exist.xquery.Constants;
 import org.exist.Namespaces;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
@@ -295,11 +296,19 @@ public class XQueryURLRewrite implements Filter {
         if (!(f.canRead() && f.isFile()))
             throw new ServletException("Cannot read XQuery source from " + f.getAbsolutePath());
         FileSource source = new FileSource(f, "UTF-8", true);
+
+        // Find correct module load path
+        String requestPath = request.getRequestURI();
+        int p = requestPath.lastIndexOf("/");
+        if(p != Constants.STRING_NOT_FOUND)
+            requestPath = requestPath.substring(0, p);
+        String moduleLoadPath = config.getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
         try {
             // Prepare and execute the XQuery
             Collection collection = DatabaseManager.getCollection(collectionURI.toString(), user, password);
             XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
             if(!((CollectionImpl)collection).isRemoteCollection()) {
+                service.setModuleLoadPath(moduleLoadPath);
                 service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, "UTF-8", "UTF-8"));
                 service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
                 service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(request.getSession()));
