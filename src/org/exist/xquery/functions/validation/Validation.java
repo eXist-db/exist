@@ -67,7 +67,14 @@ public class Validation extends BasicFunction  {
         "Validate document specified by $a using $b. "+
         "$a is of type xs:anyURI, or a node (element or returned by fn:doc()). "+
         "$b can point to an OASIS catalog file, a grammar (xml schema only) "+
-        "or a collection (path ends with '/')";
+        "or a collection (path ends with '/').";
+    
+    private static final String jingFunctionTxt=
+        "Validate document specified by $a using $b with jing. "+
+        "$a is of type xs:anyURI, or a node (element or returned by fn:doc()). "+
+        "$b points to a grammar document with document name extension "+
+        ".dtd, xsd, .ndvl (Namespace-based Validation Dispatching Language), "+
+        ".rng/.rnc (RelaxNG/Compact notation) or .sch (Schematron).";
     
     private final Validator validator;
     private final BrokerPool brokerPool;
@@ -110,6 +117,28 @@ public class Validation extends BasicFunction  {
             new QName("validate-report", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
             extendedFunctionTxt+" A simple report is returned.",
+            new SequenceType[]{
+            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+            new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+        },
+            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+            ),
+            
+        new FunctionSignature(
+            new QName("jing", ValidationModule.NAMESPACE_URI,
+            ValidationModule.PREFIX),
+            jingFunctionTxt,
+            new SequenceType[]{
+            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+            new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+        },
+            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+            ),
+            
+        new FunctionSignature(
+            new QName("jing-report", ValidationModule.NAMESPACE_URI,
+            ValidationModule.PREFIX),
+            jingFunctionTxt+" A simple report is returned.",
             new SequenceType[]{
             new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
             new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
@@ -162,20 +191,36 @@ public class Validation extends BasicFunction  {
                 throw new XPathException(getASTNode(), "wrong item type " + Type.getTypeName(args[0].getItemType()));
             }
 
-            // Perform validation
-            if (args.length == 1) {
-                // Validate using system catalog
-                vr = validator.validate(is);
+           
+            if(isCalledAs("validate") || isCalledAs("validate-report")){
+                 // Perform validation using xerces SAX parsing
+                if(args.length == 1){
+                    // Validate using system catalog
+                    vr = validator.validateParse(is);
 
-            } else {
-                // Validate using resource speciefied in second parameter
+                } else {
+                    // Validate using resource speciefied in second parameter
+                    String url = args[1].getStringValue();
+
+                    if(url.startsWith("/")){
+                        url = "xmldb:exist://" + url;
+                    }
+
+                    vr = validator.validateParse(is, url);
+                }
+                
+            } else if(isCalledAs("jing") || isCalledAs("jing-report")){
+                // Perform validation using JING
                 String url = args[1].getStringValue();
 
-                if (url.startsWith("/")) {
+                if(url.startsWith("/")){
                     url = "xmldb:exist://" + url;
                 }
-
-                vr = validator.validate(is, url);
+                vr = validator.validateJing(is, url);
+                
+            } else {
+                // This should not happen
+                throw new XPathException("Validaton function not found");
             }
 
         } catch (MalformedURLException ex) {
@@ -200,17 +245,18 @@ public class Validation extends BasicFunction  {
         }
 
         // Create response
-        if (isCalledAs("validate")) {
+        if (isCalledAs("validate") || isCalledAs("jing")) {
             Sequence result = new ValueSequence();
             result.add(new BooleanValue(vr.isValid()));
             return result;
 
-        } else if (isCalledAs("validate-report")) {
+        } else if (isCalledAs("validate-report") || isCalledAs("jing-report")) {
             MemTreeBuilder builder = context.getDocumentBuilder();
             NodeImpl result = writeReport(vr, builder);
             return result;
 
         }
+        
 
         // Oops
         LOG.error("invoked with wrong function name");

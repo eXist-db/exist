@@ -90,8 +90,49 @@ public class Validator {
         systemCatalogResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
 
     }
+    
+////    /**
+////     *  Validate XML data using system catalog. XSD and DTD only. 
+////     *
+////     * @param stream XML input.
+////     * @return Validation report containing all validation info.
+////     */
+////    public ValidationReport validate(InputStream stream) {
+////        return validate(stream, null);
+////    }
+////    
+////    /**
+////     *  Validate XML data from reader using specified grammar.
+////     *
+////     * @param grammarPath   User supplied path to grammar.
+////     * @param stream XML input.
+////     * @return Validation report containing all validation info.
+////     */
+////    public ValidationReport validate(InputStream stream, String grammarPath) {
+////
+////        // repair path to local resource
+////        if(grammarPath != null && grammarPath.startsWith("/")){
+////            grammarPath = "xmldb:exist://" + grammarPath;
+////        }
+////
+////        if(grammarPath != null &&
+////                (grammarPath.endsWith(".rng") || grammarPath.endsWith(".rnc") ||
+////                grammarPath.endsWith(".onvl") || grammarPath.endsWith(".sch"))){
+////            return validateJing(stream, grammarPath);
+////        } else {
+////            return validateParse(stream, grammarPath);
+////        }
+////
+////    }
 
-    private ValidationReport validateRelaxNG(InputStream is, String grammarUrl) {
+    /**
+     *  Validate XML data from reader using specified grammar with Jing.
+     *
+     * @param grammarPath   User supplied path to grammar.
+     * @param stream XML input.
+     * @return Validation report containing all validation info.
+     */
+    public ValidationReport validateJing(InputStream is, String grammarUrl) {
 
         ValidationReport report = new ValidationReport();
         try {
@@ -134,8 +175,8 @@ public class Validator {
      * @param stream XML input.
      * @return Validation report containing all validation info.
      */
-    public ValidationReport validate(InputStream stream) {
-        return validate(stream, null);
+    public ValidationReport validateParse(InputStream stream) {
+        return validateParse(stream, null);
     }
 
     /**
@@ -145,24 +186,7 @@ public class Validator {
      * @param stream XML input.
      * @return Validation report containing all validation info.
      */
-    public ValidationReport validate(InputStream stream, String grammarPath) {
-
-        // repair path to local resource
-        if(grammarPath != null && grammarPath.startsWith("/")){
-            grammarPath = "xmldb:exist://" + grammarPath;
-        }
-
-        if(grammarPath != null &&
-                (grammarPath.endsWith(".rng") || grammarPath.endsWith(".rnc") ||
-                grammarPath.endsWith(".onvl") || grammarPath.endsWith(".sch"))){
-            return validateRelaxNG(stream, grammarPath);
-        } else {
-            return validateDefault(stream, grammarPath);
-        }
-
-    }
-
-    private ValidationReport validateDefault(InputStream stream, String grammarPath) {
+    public ValidationReport validateParse(InputStream stream, String grammarPath) {
 
         logger.debug("Start validation.");
 

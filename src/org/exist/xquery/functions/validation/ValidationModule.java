@@ -40,6 +40,8 @@ public class ValidationModule extends AbstractInternalModule {
        new FunctionDef(Validation.signatures[1], Validation.class),
        new FunctionDef(Validation.signatures[2], Validation.class),
        new FunctionDef(Validation.signatures[3], Validation.class),
+       new FunctionDef(Validation.signatures[4], Validation.class),
+       new FunctionDef(Validation.signatures[5], Validation.class),
        new FunctionDef(GrammarTooling.signatures[0], GrammarTooling.class),
        new FunctionDef(GrammarTooling.signatures[1], GrammarTooling.class)
     };
