@@ -213,6 +213,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param node The attribute
      */
     public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec, boolean remove) {
+   	 storeAttribute(node, node.getValue(), currentPath, indexingHint, spec.getType(), spec.getQName() == null ? IDX_GENERIC : IDX_QNAME, remove);
+    }
+    
+    public void storeAttribute(AttrImpl node, String value, NodePath currentPath, int indexingHint, int xpathType, byte indexType, boolean remove) {
         //Return early
     	if (indexingHint != WITHOUT_PATH)
     		return;
@@ -221,12 +225,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
     				node.getDocId() + "') differ !");
     	}
     	
-        AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
+        AtomicValue atomic = convertToAtomic(xpathType, value);
         //Ignore if the value can't be successfully atomized
         //(this is logged elsewhere)
         if(atomic == null)
             return;
-        int indexType = spec.getQName() == null ? IDX_GENERIC : IDX_QNAME;
         Object key;
         if (indexType == IDX_QNAME) {
             key = new QNameKey(node.getQName(), atomic);
@@ -850,11 +853,16 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param value
      * @return <code>null</null> if atomization fails or if the atomic value is not indexable.
      * Should we throw an exception instead ? -pb
+    * @throws XPathException 
      */
     private AtomicValue convertToAtomic(int xpathType, String value) {
         AtomicValue atomic;
         if (Type.subTypeOf(xpathType, Type.STRING)) {
-            atomic = new StringValue(value);
+            try {
+					atomic = new StringValue(value, xpathType);
+				} catch (XPathException e) {
+					return null;
+				}
         } else {
             try {
                 atomic = new StringValue(value).convertTo(xpathType);
@@ -1232,6 +1240,23 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 storeAttribute(attrib, path, NativeValueIndex.WITHOUT_PATH, rSpec, false);
             if (qSpec != null)
                 storeAttribute(attrib, path, NativeValueIndex.WITHOUT_PATH, qSpec, false);
+
+				 switch(attrib.getType()) {
+					 case AttrImpl.ID:
+						 storeAttribute(attrib, attrib.getValue(), path, NativeValueIndex.WITHOUT_PATH, Type.ID, NativeValueIndex.IDX_GENERIC, false);
+						 break;
+					 case AttrImpl.IDREF:
+						 storeAttribute(attrib, attrib.getValue(), path, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+						 break;
+					 case AttrImpl.IDREFS:
+						 StringTokenizer tokenizer = new StringTokenizer(attrib.getValue(), " ");
+						 while (tokenizer.hasMoreTokens()) {
+							 storeAttribute(attrib, tokenizer.nextToken(), path, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+						 }
+						 break;
+					 default:
+						 // do nothing special
+				 }
             super.attribute(transaction, attrib, path);
         }
 

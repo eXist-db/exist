@@ -817,9 +817,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     
     private short getIndexType(byte type) {
         switch (type) {   
-        case ElementValue.ATTRIBUTE_ID : //is this correct ? -pb
-        case ElementValue.ATTRIBUTE_IDREF : //is this correct ? -pb
-        case ElementValue.ATTRIBUTE_IDREFS : //is this correct ? -pb
         case ElementValue.ATTRIBUTE :
             return Node.ATTRIBUTE_NODE;            
         case ElementValue.ELEMENT :
@@ -993,22 +990,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     }
    
     private Value computeTypedKey(byte type, int collectionId, QName qname) {
-        if (type == ElementValue.ATTRIBUTE_ID) {
-            return new ElementValue(type, collectionId, qname.getLocalName());
-        } else if (type == ElementValue.ATTRIBUTE_IDREF) {
-            return new ElementValue(type, collectionId, qname.getLocalName());
-        } if (type == ElementValue.ATTRIBUTE_IDREFS) {
-            return new ElementValue(type, collectionId, qname.getLocalName());
-        } else {
-            final SymbolTable symbols = broker.getBrokerPool().getSymbols();
-            short sym = symbols.getSymbol(qname.getLocalName());
-            //TODO : should we truncate the key ?
-            //TODO : beware of the polysemy for getPrefix == null
-            //if (qname.getPrefix() == null)
-            //    return new ElementValue(type, collectionId, sym); 
-            short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());            
-            return new ElementValue(type, collectionId, sym, nsSym);
-        }
+      final SymbolTable symbols = broker.getBrokerPool().getSymbols();
+      short sym = symbols.getSymbol(qname.getLocalName());
+      //TODO : should we truncate the key ?
+      //TODO : beware of the polysemy for getPrefix == null
+      //if (qname.getPrefix() == null)
+      //    return new ElementValue(type, collectionId, sym); 
+      short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());            
+      return new ElementValue(type, collectionId, sym, nsSym);
     }
     
     private static boolean containsNode(List list, NodeId nodeId) {

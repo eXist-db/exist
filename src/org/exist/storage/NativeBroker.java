@@ -57,6 +57,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
@@ -65,9 +66,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.Observer;
-import java.util.Stack;
+import java.util.*;
 
 /**
  *  Main class for the native XML storage backend.
@@ -2448,33 +2447,37 @@ public class NativeBroker extends DBBroker {
                 
 	    //Strange : does it mean that the node is added 2 times under 2 different identities ?
 
-	    // if the attribute has type ID, store the ID-value
-	    // to the element index as well
-	    if (((AttrImpl) node).getType() == AttrImpl.ID) {
-	    	qname = new QName(((AttrImpl) node).getValue(), "", null);
-	    	qname.setNameType(ElementValue.ATTRIBUTE_ID);
-	    	elementIndex.addNode(qname, p);
-	    }                
-	    if (((AttrImpl) node).getType() == AttrImpl.IDREF) {
-	    	qname = new QName(((AttrImpl) node).getValue(), "", null);
-	    	qname.setNameType(ElementValue.ATTRIBUTE_IDREF);
-	    	elementIndex.addNode(qname, p);
-	    }                
-	    if (((AttrImpl) node).getType() == AttrImpl.IDREFS) {
-	    	qname = new QName(((AttrImpl) node).getValue(), "", null);
-	    	qname.setNameType(ElementValue.ATTRIBUTE_IDREFS);
-	    	elementIndex.addNode(qname, p);
-	    }                
+	    AttrImpl attr;
+		attr = (AttrImpl) node;
+		 switch(attr.getType()) {
+			 case AttrImpl.ID:
+				 valueIndex.setDocument(doc);
+				 valueIndex.storeAttribute(attr, attr.getValue(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.ID, NativeValueIndex.IDX_GENERIC, false);
+				 break;
+			 case AttrImpl.IDREF:
+				 valueIndex.setDocument(doc);
+				 valueIndex.storeAttribute(attr, attr.getValue(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+				 break;
+			 case AttrImpl.IDREFS:
+				 valueIndex.setDocument(doc);
+				 StringTokenizer tokenizer = new StringTokenizer(attr.getValue(), " ");
+				 while (tokenizer.hasMoreTokens()) {
+					 valueIndex.storeAttribute(attr, tokenizer.nextToken(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, false);
+				 }
+				 break;
+			 default:
+				 // do nothing special
+		 }
 
-	    GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
+		RangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
 	    if(spec2 != null) {
 		valueIndex.setDocument(doc);
-		valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, spec2, false);
+		valueIndex.storeAttribute(attr, null, NativeValueIndex.WITHOUT_PATH, spec2, false);
 	    }                   
 	    qnSpec = doc.getCollection().getIndexByQNameConfiguration(this, qname);
 	    if (qnSpec != null) {
 		valueIndex.setDocument(doc);
-		valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, qnSpec, false);
+		valueIndex.storeAttribute(attr, null, NativeValueIndex.WITHOUT_PATH, qnSpec, false);
 	    }
                 
 	    currentPath.removeLastComponent();
@@ -2974,28 +2977,26 @@ public class NativeBroker extends DBBroker {
                     if (mode != MODE_REMOVE)
                         elementIndex.addNode(qname, tempProxy);
 
-                    // --move to-- NativeElementIndex
-                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
-                    // if the attribute has type ID, store the ID-value
-                    // to the element index as well
-                    if (((AttrImpl) node).getType() == AttrImpl.ID) {
-                        qname = new QName(((AttrImpl) node).getValue(), "", null);
-                        //LOG.debug("found ID: " + qname.getLocalName());
-                        qname.setNameType(ElementValue.ATTRIBUTE_ID);
-                        elementIndex.addNode(qname, tempProxy);
-                    }
-                    if (((AttrImpl) node).getType() == AttrImpl.IDREF) {
-                        qname = new QName(((AttrImpl) node).getValue(), "", null);
-                        //LOG.debug("found ID: " + qname.getLocalName());
-                        qname.setNameType(ElementValue.ATTRIBUTE_IDREF);
-                        elementIndex.addNode(qname, tempProxy);
-                    }
-                    if (((AttrImpl) node).getType() == AttrImpl.IDREFS) {
-                        qname = new QName(((AttrImpl) node).getValue(), "", null);
-                        //LOG.debug("found ID: " + qname.getLocalName());
-                        qname.setNameType(ElementValue.ATTRIBUTE_IDREFS);
-                        elementIndex.addNode(qname, tempProxy);
-                    }
+                    AttrImpl attr = (AttrImpl) node;
+						 switch(attr.getType()) {
+							 case AttrImpl.ID:
+								 valueIndex.setDocument(doc);
+								 valueIndex.storeAttribute(attr, attr.getValue(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.ID, NativeValueIndex.IDX_GENERIC, mode == MODE_REMOVE);
+								 break;
+							 case AttrImpl.IDREF:
+								 valueIndex.setDocument(doc);
+								 valueIndex.storeAttribute(attr, attr.getValue(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, mode == MODE_REMOVE);
+								 break;
+							 case AttrImpl.IDREFS:
+								 valueIndex.setDocument(doc);
+								 StringTokenizer tokenizer = new StringTokenizer(attr.getValue(), " ");
+								 while (tokenizer.hasMoreTokens()) {
+									 valueIndex.storeAttribute(attr, tokenizer.nextToken(), currentPath, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, mode == MODE_REMOVE);
+								 }
+								 break;
+							 default:
+								 // do nothing special
+						 }
 
                     if (currentPath != null)
                         currentPath.removeLastComponent();

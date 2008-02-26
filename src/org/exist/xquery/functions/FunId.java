@@ -121,14 +121,12 @@ public class FunId extends Function {
     				while(tok.hasMoreTokens()) {
     					nextId = tok.nextToken();
     					if(XMLChar.isValidNCName(nextId)) {
-        					QName id = new QName(nextId, "", null);
-        					getId((NodeSet)result, docs, id);
+        					getId((NodeSet)result, docs, nextId);
                         }
     				}
     			} else {
     				if(XMLChar.isValidNCName(nextId)) {
-        				QName id = new QName(nextId, "", null);
-        				getId((NodeSet)result, docs, id);
+        				getId((NodeSet)result, docs, nextId);
                     }
     			}
     		}
@@ -141,9 +139,8 @@ public class FunId extends Function {
         
 	}
 
-	private void getId(NodeSet result, DocumentSet docs, QName id) {
-		NodeSet attribs = (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-                ElementValue.ATTRIBUTE_ID, docs, id, null);
+	private void getId(NodeSet result, DocumentSet docs, String id) throws XPathException {
+		NodeSet attribs = context.getBroker().getValueIndex().find(Constants.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
 		NodeProxy n, p;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
