@@ -98,9 +98,9 @@ public class LocalValidationService implements ValidationService {
         // Perform validation
         ValidationReport report = null;
         if(grammarPath==null){
-            report = validator.validateParse(is); // TODO Dizzz check which method
+            report = validator.validate(is); 
         } else {
-            report = validator.validateParse(is, grammarPath);
+            report = validator.validate(is, grammarPath);
         }
         
         

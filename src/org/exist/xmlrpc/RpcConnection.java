@@ -3896,7 +3896,7 @@ public class RpcConnection extends Thread {
             InputStream is = new EmbeddedInputStream( new XmldbURL(docUri) );
             
             // Perform validation
-            ValidationReport report = validator.validateParse(is); // TODO DIZ check method
+            ValidationReport report = validator.validate(is); 
             
             // Return validation result
             isValid = report.isValid();

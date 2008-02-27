@@ -3,12 +3,12 @@
  *  Copyright (C) 2001-07 The eXist Project
  *  http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
+ *  This program stream free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
+ *  This program stream distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
@@ -26,10 +26,9 @@ import com.thaiopensource.validate.SchemaReader;
 import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
-import java.io.IOException;
+
 import java.io.InputStream;
 
-import java.util.logging.Level;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -65,7 +64,9 @@ public class Validator {
     private eXistXMLCatalogResolver systemCatalogResolver = null;
 
     /**
-     *  Setup Validator object with brokerpool as centre.
+     *  Setup Validator object with brokerpool as db connection.
+     * 
+     * @param pool Brokerpool
      */
     public Validator(BrokerPool pool) {
         logger.info("Initializing Validator.");
@@ -84,55 +85,60 @@ public class Validator {
         }
 
         // setup grammar brokerPool
-        grammarPool = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+        grammarPool = (GrammarPool) 
+                config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
 
         // setup system wide catalog resolver
-        systemCatalogResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+        systemCatalogResolver = (eXistXMLCatalogResolver) 
+                config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
 
     }
     
-////    /**
-////     *  Validate XML data using system catalog. XSD and DTD only. 
-////     *
-////     * @param stream XML input.
-////     * @return Validation report containing all validation info.
-////     */
-////    public ValidationReport validate(InputStream stream) {
-////        return validate(stream, null);
-////    }
-////    
-////    /**
-////     *  Validate XML data from reader using specified grammar.
-////     *
-////     * @param grammarPath   User supplied path to grammar.
-////     * @param stream XML input.
-////     * @return Validation report containing all validation info.
-////     */
-////    public ValidationReport validate(InputStream stream, String grammarPath) {
-////
-////        // repair path to local resource
-////        if(grammarPath != null && grammarPath.startsWith("/")){
-////            grammarPath = "xmldb:exist://" + grammarPath;
-////        }
-////
-////        if(grammarPath != null &&
-////                (grammarPath.endsWith(".rng") || grammarPath.endsWith(".rnc") ||
-////                grammarPath.endsWith(".onvl") || grammarPath.endsWith(".sch"))){
-////            return validateJing(stream, grammarPath);
-////        } else {
-////            return validateParse(stream, grammarPath);
-////        }
-////
-////    }
+    /**
+     *  Validate XML data using system catalog. XSD and DTD only. 
+     *
+     * @param stream XML input.
+     * @return Validation report containing all validation info.
+     */
+    public ValidationReport validate(InputStream stream) {
+        return validate(stream, null);
+    }
+    
+    /**
+     *  Validate XML data from reader using specified grammar.
+     *
+     * @param grammarUrl   User supplied path to grammar.
+     * @param stream       XML input.
+     * @return Validation report containing all validation info.
+     */
+    public ValidationReport validate(InputStream stream, String grammarUrl) {
+
+        // repair path to local resource
+        if(grammarUrl != null && grammarUrl.startsWith("/")){
+            grammarUrl = "xmldb:exist://" + grammarUrl;
+        }
+
+        if(grammarUrl != null &&
+                (grammarUrl.endsWith(".rng") || grammarUrl.endsWith(".rnc") ||
+                grammarUrl.endsWith(".nvdl") || grammarUrl.endsWith(".sch"))){
+            // Validate with Jing
+            return validateJing(stream, grammarUrl);
+            
+        } else {
+            // Validate with Xerces
+            return validateParse(stream, grammarUrl);
+        }
+
+    }
 
     /**
      *  Validate XML data from reader using specified grammar with Jing.
      *
-     * @param grammarPath   User supplied path to grammar.
-     * @param stream XML input.
+     * @param stream       XML input document.
+     * @param grammarUrl   User supplied path to grammar.
      * @return Validation report containing all validation info.
      */
-    public ValidationReport validateJing(InputStream is, String grammarUrl) {
+    public ValidationReport validateJing(InputStream stream, String grammarUrl) {
 
         ValidationReport report = new ValidationReport();
         try {
@@ -153,7 +159,7 @@ public class Validator {
             driver.loadSchema(new InputSource(grammarUrl));
 
             // Validate XML instance
-            driver.validate(new InputSource(is));
+            driver.validate(new InputSource(stream));
 
         } catch(ExistIOException ex) {
             logger.error(ex.getCause());
@@ -182,11 +188,11 @@ public class Validator {
     /**
      *  Validate XML data from reader using specified grammar.
      *
-     * @param grammarPath   User supplied path to grammar.
+     * @param grammarUrl   User supplied path to grammar.
      * @param stream XML input.
      * @return Validation report containing all validation info.
      */
-    public ValidationReport validateParse(InputStream stream, String grammarPath) {
+    public ValidationReport validateParse(InputStream stream, String grammarUrl) {
 
         logger.debug("Start validation.");
 
@@ -198,32 +204,32 @@ public class Validator {
 
             XMLReader xmlReader = getXMLReader(contenthandler, report);
 
-            if(grammarPath == null){
+            if(grammarUrl == null){
 
                 // Scenario 1 : no params - use system catalog
                 logger.debug("Validation using system catalog.");
                 xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, systemCatalogResolver);
 
-            } else if(grammarPath.endsWith(".xml")){
+            } else if(grammarUrl.endsWith(".xml")){
 
                 // Scenario 2 : path to catalog (xml)
-                logger.debug("Validation using user specified catalog '" + grammarPath + "'.");
+                logger.debug("Validation using user specified catalog '" + grammarUrl + "'.");
                 eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
-                resolver.setCatalogList(new String[]{grammarPath});
+                resolver.setCatalogList(new String[]{grammarUrl});
                 xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
 
-            } else if(grammarPath.endsWith("/")){
+            } else if(grammarUrl.endsWith("/")){
 
                 // Scenario 3 : path to collection ("/"): search.
-                logger.debug("Validation using searched grammar, start from '" + grammarPath + "'.");
-                SearchResourceResolver resolver = new SearchResourceResolver(grammarPath, brokerPool);
+                logger.debug("Validation using searched grammar, start from '" + grammarUrl + "'.");
+                SearchResourceResolver resolver = new SearchResourceResolver(grammarUrl, brokerPool);
                 xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
 
             } else {
 
                 // Scenario 4 : path to grammar (xsd, dtd) specified.
-                logger.debug("Validation using specified grammar '" + grammarPath + "'.");
-                AnyUriResolver resolver = new AnyUriResolver(grammarPath);
+                logger.debug("Validation using specified grammar '" + grammarUrl + "'.");
+                AnyUriResolver resolver = new AnyUriResolver(grammarUrl);
                 xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
             }
 
