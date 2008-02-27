@@ -201,7 +201,7 @@
                                     <para>an OASIS catalog xml-file (uri ends with ".xml")</para>
                                 </listitem>
                                 <listitem>
-                                    <para> a grammar file (uri ends with ".xsd" or ".dtd")</para>
+                                    <para> a grammar file (see below for supported list of grammar types.)</para>
                                 </listitem>
                                 <listitem>
                                     <para>a collection (uri ends with "/") inside the database; XSDs
@@ -216,6 +216,8 @@
                     </listitem>
                 </varlistentry>
             </variablelist>
+            <para>Supported grammar documents are DTD (".dtd"), XML Schema (".xsd") RelaxNG/compact (".rng"/".rnc"), 
+            Schematron (.sch) and Namespace-based Validation Dispatching Language (".nvdl").</para>
 
             <example>
                 <title>Validation report</title>
@@ -366,6 +368,11 @@
                         <para>To prevent potential deadlocks it is considered to be a good idea to
                             store XML instance documents and grammar documents in seperate
                             collections.</para>
+                    </listitem>
+                    <listitem>
+                        <para>The explicit validation is performed by 
+                            <a href="http://xerces.apache.org/xerces2-j/javadocs/api/javax/xml/validation/package-summary.html">Xerces</a>
+                            (XML schema, DTD) and by <a href="http://www.oxygenxml.com/onvdl.html">oNVDL</a> - oXygen XML NVDL implementation based on Jing (RelaxNG, Schematron and Namespace-based Validation Dispatching Language)</para>
                     </listitem>
                 </itemizedlist>
             </para>
