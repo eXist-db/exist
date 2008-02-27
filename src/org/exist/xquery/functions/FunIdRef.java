@@ -110,26 +110,14 @@ public class FunIdRef extends Function {
     		else
     			docs = contextSequence.toNodeSet().getDocumentSet();
             
-    		for(SequenceIterator i = idrefval.iterate(); i.hasNext(); ) {
-    			nextId = i.nextItem().getStringValue();
-                if (nextId.length() == 0)
-                    continue;
-    			if(nextId.indexOf(" ") != Constants.STRING_NOT_FOUND) {
-    				// parse idrefs
-    				StringTokenizer tok = new StringTokenizer(nextId, " ");
-    				while(tok.hasMoreTokens()) {
-    					nextId = tok.nextToken();
-    					if(XMLChar.isValidNCName(nextId)) {
-        					getIdRef((NodeSet)result, docs, nextId);
-                        }
-    				}
-    			} else {
-    				if(XMLChar.isValidNCName(nextId)) {
-        				getIdRef((NodeSet)result, docs, nextId);
-                    }
-    			}
-    		}
-        }
+    		for (SequenceIterator i = idrefval.iterate(); i.hasNext();) {
+				nextId = i.nextItem().getStringValue();
+				if (nextId.length() == 0) continue;
+				if (XMLChar.isValidNCName(nextId)) {
+					getIdRef((NodeSet) result, docs, nextId);
+				}
+			}
+		}
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
