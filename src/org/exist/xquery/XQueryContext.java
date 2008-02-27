@@ -2477,7 +2477,7 @@ public class XQueryContext {
             // Note: can't throw an exception here since this would create
             // problems with test cases and jar dependencies
             LOG.warn("Configuration problem: failed to load class for module " +
-                    uri + "; class: " + clazz, e);
+                    uri + "; class: " + clazz + "; message: " + e.getMessage());
         }
         return null;
     }
