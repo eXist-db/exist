@@ -432,7 +432,13 @@ declare function xqts:run-single-test-case($case as element(catalog:test-case),
     $resultRoot as element()?) as empty() {
     let $result := xqts:execute-test-case($case)
     return 
-        update insert $result into $resultRoot,
+        util:catch(
+            "java.lang.Exception",            
+            update insert $result into $resultRoot,
+            update insert <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="unhandled-error">
+                    <exception>Caught late exception while inserting result: {$util:exception-message}</exception>
+               </test-case> into $resultRoot
+        ),
         let $added := $resultRoot/test-case[@name = $case/@name]
         let $log := 
             if (fn:empty($added)) then 

@@ -1608,6 +1608,16 @@ public class XPathQueryTest extends XMLTestCase {
  	  	queryAndAssert(queryService, "/id('foo')", 0, null);
     }
     
+    public void testIdRefs() throws XMLDBException {
+       XQueryService service =
+          storeXMLStringAndGetQueryService("ids.xml", ids);
+  
+       queryResource(service, "ids.xml", "/idref('id2')", 1);
+       queryResource(service, "ids.xml", "/idref('id1')", 2);
+       queryResource(service, "ids.xml", "/idref(('id2', 'id1'))", 3);
+       queryResource(service, "ids.xml", "<results>{/idref('id2')}</results>", 1);
+    }
+    
     public void testExternalVars() {
         try {
             XQueryService service =
