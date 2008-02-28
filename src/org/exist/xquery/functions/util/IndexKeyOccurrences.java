@@ -102,7 +102,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 	        	if (indexWorker instanceof OrderedValuesIndex)
 	        		hints.put(OrderedValuesIndex.START_VALUE, args[1]);
 	        	else
-	        		LOG.info(indexWorker + " isn't an instance of org.exist.indexing.OrderedIndexWorker. " + args[1] + " ignored." );
+	        		LOG.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );
 	        	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
 		        if (occur.length == 0)
 		        	result= Sequence.EMPTY_SEQUENCE;

@@ -125,7 +125,7 @@ public class IndexKeys extends BasicFunction {
         	if (indexWorker instanceof OrderedValuesIndex)
         		hints.put(OrderedValuesIndex.START_VALUE, args[1]);
         	else
-        		LOG.info(indexWorker + " isn't an instance of org.exist.indexing.OrderedIndexWorker. " + args[1] + " ignored." );
+        		LOG.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );
         	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
         	//TODO : add an extra argument to pass the END_VALUE ?
 	        int len = (occur.length > max ? max : occur.length);
