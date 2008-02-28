@@ -43,7 +43,8 @@ public class DateTimeModule extends AbstractInternalModule
 		new FunctionDef(DaysInMonthFunction.signature, DaysInMonthFunction.class),
 		new FunctionDef(FormatDateTimeFunction.signature, FormatDateTimeFunction.class),
 		new FunctionDef(FormatDateFunction.signature, FormatDateFunction.class),
-		new FunctionDef(FormatTimeFunction.signature, FormatTimeFunction.class)
+		new FunctionDef(FormatTimeFunction.signature, FormatTimeFunction.class),
+		new FunctionDef(DateForFunction.signature, DateForFunction.class)
 	};
 	
 	public DateTimeModule() {
