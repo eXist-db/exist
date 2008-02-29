@@ -46,7 +46,7 @@ public class DateForFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("date-for", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns the date for a given set of parameters. $a the year of interest. $b the month of interest (1 = January, 12 = December). $c The week in the month of interest (1 = first week, 4 = last week). $d The day in the week of interest (1 = Sunday, 7 = Saturday).",
+			"Returns the date for a given set of parameters. $a the year of interest. $b the month of interest (1 = January, 12 = December). $c The week in the month of interest (1 = first week, 4 or 5 = last week). $d The day in the week of interest (1 = Sunday, 7 = Saturday).",
 			new SequenceType[] {
 				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
@@ -67,16 +67,17 @@ public class DateForFunction extends BasicFunction {
 		int weekInMonth = ((IntegerValue)args[2].itemAt(0)).getInt();
 		int dayInWeek = ((IntegerValue)args[3].itemAt(0)).getInt();
 		
-		//TODO: check bounds of supplied parameters
+		//check bounds of supplied parameters
 		if(monthOfInterest < 1 || monthOfInterest > 12)
 			throw new XPathException("The month of interest must be between 1 and 12");
 		
-		if(weekInMonth < 1 || weekInMonth > 4)
-			throw new XPathException("The week in the month of interest must be between 1 and 4");
+		if(weekInMonth < 1 || weekInMonth > 5)
+			throw new XPathException("The week in the month of interest must be between 1 and 5");
 		
 		if(dayInWeek < 1 || dayInWeek > 7)
 			throw new XPathException("The day in the week of interest must be between 1 and 7");
-				
+		
+		//create date
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.set(Calendar.YEAR, yearOfInterest);
 		cal.set(Calendar.MONTH, monthOfInterest - 1);
