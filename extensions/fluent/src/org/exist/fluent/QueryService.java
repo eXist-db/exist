@@ -181,6 +181,17 @@ public class QueryService implements Cloneable {
 		return executeQuery(query, null, params);
 	}
 	
+	/**
+	 * Run the given query, ignoring the results.  Useful for running update "queries" --
+	 * see eXist's XQuery Update Extensions.
+	 * @see http://exist-db.org/update_ext.html
+	 * @param query the query to run
+	 * @param params parameters to the query, will be substituted for $_1, $_2, etc.
+	 */
+	public void run(String query, Object... params) {
+		executeQuery(query, null, params);
+	}
+	
 	private interface WrapperFactory {
 		Function createWrapper(XQueryContext context);
 	}
