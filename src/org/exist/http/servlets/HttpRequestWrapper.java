@@ -58,19 +58,24 @@ public class HttpRequestWrapper implements RequestWrapper {
     private Hashtable params = null;
     
     private static Logger LOG = Logger.getLogger(HttpRequestWrapper.class.getName());
+
+    public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
+            String containerEncoding) {
+        this(servletRequest, formEncoding, containerEncoding, true);
+    }
     
-	/**
+    /**
 	 * Constructs a wrapper for the given servlet request.
      * @param servletRequest The request as viewed by the servlet
      * @param formEncoding The encoding of the request's forms
      * @param containerEncoding The encoding of the servlet
      */
     public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
-            String containerEncoding) {
+            String containerEncoding, boolean parseMultipart) {
         this.servletRequest = servletRequest;
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
-        if(FileUpload.isMultipartContent(servletRequest)) {
+        if(parseMultipart && FileUpload.isMultipartContent(servletRequest)) {
             parseMultipartContent();
         }
     }
