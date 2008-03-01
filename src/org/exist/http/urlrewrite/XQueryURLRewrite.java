@@ -206,6 +206,8 @@ public class XQueryURLRewrite implements Filter {
                 // process the query result
                 if (result.getSize() == 1) {
                     XMLResource resource = (XMLResource) result.getResource(0);
+                    if (LOG.isTraceEnabled())
+                        LOG.trace(resource.getContent());
                     Node node = resource.getContentAsDOM();
                     if (node.getNodeType() == Node.DOCUMENT_NODE)
                         node = ((Document) node).getDocumentElement();
@@ -298,18 +300,14 @@ public class XQueryURLRewrite implements Filter {
         FileSource source = new FileSource(f, "UTF-8", true);
 
         // Find correct module load path
-        String requestPath = request.getRequestURI();
-        int p = requestPath.lastIndexOf("/");
-        if(p != Constants.STRING_NOT_FOUND)
-            requestPath = requestPath.substring(0, p);
-        String moduleLoadPath = config.getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
+        String moduleLoadPath = f.getParentFile().getAbsolutePath();
         try {
             // Prepare and execute the XQuery
             Collection collection = DatabaseManager.getCollection(collectionURI.toString(), user, password);
             XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
             if(!((CollectionImpl)collection).isRemoteCollection()) {
                 service.setModuleLoadPath(moduleLoadPath);
-                service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, "UTF-8", "UTF-8"));
+                service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, "UTF-8", "UTF-8", false));
                 service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
                 service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(request.getSession()));
             }
