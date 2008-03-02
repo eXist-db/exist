@@ -8,26 +8,6 @@
 
 package org.exist.atom.modules;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.atom.Atom;
@@ -47,9 +27,9 @@ import org.exist.dom.NodeListImpl;
 import org.exist.dom.StoredNode;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.UUIDGenerator;
-import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
@@ -66,6 +46,25 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -649,13 +648,17 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       }
       String id = request.getParameter("id");
       if (id==null) {
-         // delete collection
-         TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-         Txn transaction = transact.beginTransaction();
-         broker.removeCollection(transaction, collection);
-         transact.commit(transaction);
-         response.setStatusCode(204);
-         return;
+          // delete collection
+          TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+          Txn transaction = transact.beginTransaction();
+          try {
+              broker.removeCollection(transaction, collection);
+              transact.commit(transaction);
+              response.setStatusCode(204);
+          } finally {
+              transact.abort(transaction);
+          }
+          return;
       }
       
       LOG.info("Deleting entry "+id+" in collection "+request.getPath());
