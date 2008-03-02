@@ -47,6 +47,13 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
+/**
+ * Creates 3 collections, /db/test/test2, /db/test/test2/test3 and /db/test/test2/test4
+ * and stores one document into each. Collection /db/test/test2/test3 is only writable for
+ * the admin user. The test {@link #failingRemoveCollection()} tries to remove this collection
+ * using the "guest" user account. eXist should detect the missing permissions and properly
+ * abort the transaction.
+ */
 public class CollectionRemovalTest {
 
     private final static String DATA =
@@ -63,19 +70,19 @@ public class CollectionRemovalTest {
 
     @Test
     public void failingRemoveCollection() {
-        doQuery(2);
+        doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
         
         removeCollection(org.exist.security.SecurityManager.GUEST_USER, TestConstants.TEST_COLLECTION_URI2);
         
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI2);
-        doQuery(2);
+        doQuery(3);
     }
 
     @Test
     public void removeCollection() {
-        doQuery(2);
+        doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
 
         removeCollection(org.exist.security.SecurityManager.DBA_USER, TestConstants.TEST_COLLECTION_URI2);
@@ -197,6 +204,19 @@ public class CollectionRemovalTest {
 					XmldbURI.create("document.xml"), DATA);
 			assertNotNull(info);
 			test.store(transaction, broker, info, DATA, false);
+
+            Collection childCol1 = broker.getOrCreateCollection(transaction,
+                    TestConstants.TEST_COLLECTION_URI2.append("test4"));
+            assertNotNull(childCol1);
+            perms = childCol1.getPermissions();
+            // collection only accessible to user
+            perms.setPermissions(0777);
+            broker.saveCollection(transaction, childCol1);
+
+            info = childCol1.validateXMLResource(transaction, broker,
+					XmldbURI.create("document.xml"), DATA);
+			assertNotNull(info);
+			childCol1.store(transaction, broker, info, DATA, false);
 
             Collection childCol = broker.getOrCreateCollection(transaction,
                     TestConstants.TEST_COLLECTION_URI3);
