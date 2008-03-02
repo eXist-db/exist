@@ -28,17 +28,36 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
 import org.exist.fulltext.FTIndex;
 import org.exist.fulltext.FTIndexWorker;
 import org.exist.indexing.StreamListener;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
-import org.exist.security.*;
+import org.exist.security.MD5;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.btree.*;
+import org.exist.storage.btree.BTree;
+import org.exist.storage.btree.BTreeCallback;
+import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.DBException;
+import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Paged;
 import org.exist.storage.btree.Paged.Page;
+import org.exist.storage.btree.Value;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMTransaction;
 import org.exist.storage.dom.NodeIterator;
@@ -54,7 +73,12 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
+import org.exist.util.ByteArrayPool;
+import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
+import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.Type;
@@ -64,9 +88,17 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Observer;
+import java.util.Stack;
+import java.util.StringTokenizer;
 
 /**
  *  Main class for the native XML storage backend.
@@ -883,9 +915,29 @@ public class NativeBroker extends DBBroker {
             // Notify the collection configuration manager
             pool.getConfigurationManager().invalidateAll(uri);
             
+            // remove child collections
+            if(LOG.isDebugEnabled())
+                LOG.debug("Removing children collections from their parent '" + collName + "'...");
+            
+            for(Iterator i = collection.collectionIterator(); i.hasNext();)
+            {
+                final XmldbURI childName = (XmldbURI) i.next();
+                //TODO : resolve from collection's base URI
+                //TODO : resulve URIs !!! (uri.resolve(childName))
+                Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);            
+                try {                    
+                    removeCollection(transaction, childCollection);                    
+                } finally {
+                	if (childCollection != null)
+                		childCollection.getLock().release(Lock.WRITE_LOCK);
+                	else
+                		LOG.warn("childCollection is null !");
+                }
+            }
+
             //Drop all index entries
             notifyDropIndex(collection);
-            
+
             // Drop custom indexes
             indexController.removeCollection(collection, this);
             
@@ -898,7 +950,7 @@ public class NativeBroker extends DBBroker {
                 // keep the lock for the transaction
                 if(transaction != null)
                     transaction.registerLock(parentCollection.getLock(), Lock.WRITE_LOCK);
-                
+
                 if(parentCollection != null)
                 {
                     try
@@ -920,26 +972,6 @@ public class NativeBroker extends DBBroker {
                 }
             }
             
-            // remove child collections
-            if(LOG.isDebugEnabled())
-                LOG.debug("Removing children collections from their parent '" + collName + "'...");
-            
-            for(Iterator i = collection.collectionIterator(); i.hasNext();)
-            {
-                final XmldbURI childName = (XmldbURI) i.next();
-                //TODO : resolve from collection's base URI
-                //TODO : resulve URIs !!! (uri.resolve(childName))
-                Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);            
-                try {                    
-                    removeCollection(transaction, childCollection);                    
-                } finally {
-                	if (childCollection != null)
-                		childCollection.getLock().release(Lock.WRITE_LOCK);
-                	else
-                		LOG.warn("childCollection is null !");
-                }
-            }
-
             //Update current state
             Lock lock = collectionsDb.getLock();
             try
