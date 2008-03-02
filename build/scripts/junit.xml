@@ -101,6 +101,7 @@
             <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
 			<test fork="yes" name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
+			<test fork="yes" name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.fulltext.AllFulltextTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
 
