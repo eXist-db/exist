@@ -899,7 +899,27 @@ public class NativeBroker extends DBBroker {
         }
     }    
     
-    
+    private void canRemoveCollection(Collection collection) throws PermissionDeniedException {
+        if(!collection.getPermissions().validate(user, Permission.WRITE))
+            throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
+        final XmldbURI uri = collection.getURI();
+        for(Iterator i = collection.collectionIterator(); i.hasNext();)
+        {
+            final XmldbURI childName = (XmldbURI) i.next();
+            //TODO : resolve from collection's base URI
+            //TODO : resulve URIs !!! (uri.resolve(childName))
+            Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
+            try {
+                canRemoveCollection(childCollection);
+            } finally {
+                if (childCollection != null)
+                    childCollection.getLock().release(Lock.WRITE_LOCK);
+                else
+                    LOG.warn("childCollection is null !");
+            }
+        }
+    }
+
     /**
      * Removes a collection and all child collections and resources
      * 
@@ -920,6 +940,8 @@ public class NativeBroker extends DBBroker {
         
         synchronized(collectionsCache)
         {
+            canRemoveCollection(collection);
+            
             final XmldbURI uri = collection.getURI();
             final String collName = uri.getRawCollectionPath();
             final boolean isRoot = collection.getParentURI() == null;
