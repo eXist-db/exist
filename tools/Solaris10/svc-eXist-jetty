@@ -1,10 +1,10 @@
 #!/usr/bin/sh
 #
-#        2006-11-01
+#        2008-03-03
 #        Adam Retter <adam.retter@devon.gov.uk>
 #        SMF Method file for eXist Jetty
 #
-# NOTE: Make sure EXIST_HOME is owned BY the exist user and daemon group 
+# NOTE: Make sure EXIST_HOME is owned BY the exist user and exist group 
 #
 
 .. /lib/svc/share/smf_include.sh

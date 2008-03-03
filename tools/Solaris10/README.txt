@@ -9,7 +9,7 @@ Two sets of SMF configuration and script files have been provided for Solaris 10
 eXist to be installed as a service and managed by SMF in either Jetty or Standalone startup
 configurations.
 
-The Solaris SMF provides a powerfull mechanism for managing eXist as a Service and provides
+The Solaris SMF provides a powerful mechanism for managing eXist as a Service and provides
 advanced features such as Self-Healing. eXist will be automatically started in this way at
 boot time and shutdown with the system.
 
@@ -18,17 +18,19 @@ Notes for eXist SMF
 ===================
 By default it expects eXist to be installed to /eXist. If you wish
 to change this then change the EXIST_HOME variable in the appropriate svc-eXist-* file.
+It also expects the admin password of eXist to be "admin" you need to change this to your
+password by setting the EXIST_ADMIN variable in the appropriate svc-eXist-* file.
 
-By default it expects to run eXist under the user account "exist" and the group "daemon".
+By default it expects to run eXist under the user account "exist" and the group "exist".
 If you wish to change this then change the values of the user and group attributes in the
 appropriate eXist-*.xmf.xml file.
 
 
 Installing eXist into SMF
 =========================
-1) Create the user "exist" in the group "daemon"
+1) Create the user "exist" in the group "exist"
 
-2) chown -R exist:daemon /eXist
+2) chown -R exist:exist /eXist
 
 3) Choose either the eXist Jetty or eXist Standalone configuration, only one may be used.
 
