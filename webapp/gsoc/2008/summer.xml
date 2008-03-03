@@ -34,7 +34,7 @@
     <section>
     	<title>Timeline</title>
     	<itemizedlist>
-   	    	<listitem><del>5th - 12th March - eXist applies to Google Summer of Code</del></listitem>
+   	    	<listitem><del>3rd - 12th March - eXist applies to Google Summer of Code</del></listitem>
    	    	<listitem><del>13th - 14th March - eXists application considered by Google</del></listitem>
 	    	<listitem><del>14th - 26th March - Student Applications</del></listitem>
 	    	<listitem><del>26th March - 10th April - Appraisal and evaluation of student applications</del></listitem>
@@ -78,30 +78,6 @@
 	  </listitem>
 	  <listitem>
 	    <para>XQuery debugger in <ulink url="http://www.oxygenxml.com/xquery_debugger.html">Oxygen</ulink> (commercial product)</para>
-	  </listitem>
-	</itemizedlist>
-      </section>
-
-   <section>
-	<title>Implement Full ACID Transaction Support</title>
-
-	<para>Transaction support in eXist is currently limited to the functionality needed for crash recovery. Though eXist
-	maintains transactions internally, they are currently not exposed to applications. Also, read operations are
-	not transactional right now. In order to allow full user-controlled ACID transactions, some missing functionality
-	needs to be implemented:</para>
-
-	<itemizedlist>
-	  <listitem>
-	    <para>Concurrency control: eXist currently implements locking on the level of documents and collections. For
-	    better transaction support, we need a more fine-grained concurrency control within the core B+-tree and an improved
-	    lock management to detect or avoid deadlock situations.</para>
-	  </listitem>
-
-	  <listitem>
-	    <para>While eXist does already support full redo/undo operations during crash recovery, it does not provide a
-	    rollback facility at runtime. Users can not explicitely abort and roll back a transaction (that's why we don't
-	    expose transactions to the user at all). Performing a rollback on the core db files would be easily possible, but
-	    we also need to take care of any indexes defined on the data.</para>
 	  </listitem>
 	</itemizedlist>
       </section>
