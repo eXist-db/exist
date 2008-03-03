@@ -34,12 +34,12 @@
     <section>
     	<title>Timeline</title>
     	<itemizedlist>
-   	    	<listitem><del>3rd - 12th March - eXist applies to Google Summer of Code</del></listitem>
-   	    	<listitem><del>13th - 14th March - eXists application considered by Google</del></listitem>
-	    	<listitem><del>14th - 26th March - Student Applications</del></listitem>
-	    	<listitem><del>26th March - 10th April - Appraisal and evaluation of student applications</del></listitem>
-	    	<listitem><del>11th April - Successful student applications announced</del></listitem>
-	    	<listitem><del>11th April - 27th May - Students learn about eXist community and project</del></listitem>
+   	    	<listitem>3rd - 12th March - eXist applies to Google Summer of Code</listitem>
+   	    	<listitem>13th - 14th March - eXists application considered by Google</listitem>
+	    	<listitem>14th - 26th March - Student Applications</listitem>
+	    	<listitem>26th March - 10th April - Appraisal and evaluation of student applications</listitem>
+	    	<listitem>11th April - Successful student applications announced</listitem>
+	    	<listitem>11th April - 27th May - Students learn about eXist community and project</listitem>
 	    	<listitem>28th May - Students begin coding</listitem>
 	    	<listitem>9th July - Students upload work in progress / Mentors start mid-term evaluation</listitem>
 	    	<listitem>16th July - Mentors finish mid-term evaluation</listitem>
@@ -180,26 +180,18 @@
             <listitem>
                 <para>Adam Retter (GSoC Administrator)</para>
             </listitem>
-            <!--
             <listitem>
                 <para>Pierrick Brihaye</para>
             </listitem>
-            
             <listitem>
                 <para>Leif-Jöran Olsson</para>
             </listitem>
-             -->
             <listitem>
                 <para>Dannes Wessels</para>
             </listitem>
             <listitem>
                 <para>Wolfgang Meier</para>
             </listitem>
-            <!--
-            <listitem>
-	            <para>Kurt Cagle</para>
-            </listitem>
-             -->
         </itemizedlist>
         
      </section>
