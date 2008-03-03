@@ -2,6 +2,8 @@ package org.exist.fluent;
 
 import static org.junit.Assert.*;
 
+import java.io.*;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -110,6 +112,14 @@ public class XMLDocumentTest extends DatabaseTestCase {
 	@Test public void lengthFromLoad() {
 		XMLDocument doc = db.createFolder("/top").documents().load(Name.create("foo"), Source.xml("<root/>"));
 		assertThat(doc.length(), Matchers.greaterThan(0L));
+	}
+	
+	@Test public void writeToOutputStream() throws IOException {
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.create("foo"), Source.xml("<root/>"));
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		doc.write(out);
+		out.close();
+		assertEquals("<root/>", out.toString());
 	}
 
 }

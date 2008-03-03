@@ -279,7 +279,7 @@ public class QueryService implements Cloneable {
 			}
 			return list;
 		}
-		return o;
+		return DataUtils.toXMLObject(o);
 	}
 	
 	private String presub(String query, Object[] params) {

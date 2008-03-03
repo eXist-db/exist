@@ -87,6 +87,21 @@ public class DataUtils {
 	 * @return a string representation of the object, according to XML Schema Datatype rules if possible
 	 */
 	public static String toXMLString(Object o) {
+		Object r = toXMLObject(o);
+		if (r.getClass() != String.class) r = r.toString();
+		return (String) r;
+	}
+	
+	/**
+	 * Convert a Java object to its equivalent XML datatype representation.
+	 * At the moment, there is special treatment for <code>java.util.Date</code>,
+	 * <code>java.util.Calendar</code> and <code>byte[]</code> (Base64 encoding);
+	 * all other objects are simply passed through as-is.
+	 * 
+	 * @param o the object to convert
+	 * @return an XML representation of the object, according to XML Schema Datatype rules if possible
+	 */
+	public static Object toXMLObject(Object o) {
 		if (o instanceof Date) {
 			return toDateTime((Date) o).toString();
 		} else if (o instanceof Calendar) {
@@ -96,9 +111,9 @@ public class DataUtils {
 			encoder.translate((byte[]) o);
 			return String.valueOf(encoder.getCharArray());
 		} else {
-			return o.toString();
+			return o;
 		}
 	}
 	
-	
+
 }
