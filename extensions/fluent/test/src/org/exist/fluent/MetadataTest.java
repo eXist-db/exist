@@ -41,7 +41,7 @@ public class MetadataTest extends DatabaseTestCase {
 
 	@Test public void xmlDocumentAppendLastModificationDate() throws InterruptedException {
 		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo/>"));
-		Thread.sleep(10);
+		Thread.sleep(50);
 		Date before = new Date();
 		doc.root().append().elem("bar").end("bar").commit();
 		Date after = new Date();
@@ -52,7 +52,7 @@ public class MetadataTest extends DatabaseTestCase {
 
 	@Test public void xmlDocumentReplaceLastModificationDate() throws InterruptedException {
 		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo><bar/></foo>"));
-		Thread.sleep(10);
+		Thread.sleep(50);
 		Date before = new Date();
 		doc.query().single("//bar").node().replace().elem("baz").end("baz").commit();
 		Date after = new Date();
@@ -63,7 +63,7 @@ public class MetadataTest extends DatabaseTestCase {
 
 	@Test public void xmlDocumentUpdateLastModificationDate() throws InterruptedException {
 		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo/>"));
-		Thread.sleep(10);
+		Thread.sleep(50);
 		Date before = new Date();
 		doc.root().update().attr("bar", "baz").commit();
 		Date after = new Date();

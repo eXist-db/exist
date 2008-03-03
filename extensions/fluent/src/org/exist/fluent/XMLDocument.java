@@ -106,7 +106,9 @@ public class XMLDocument extends Document {
 	 * @throws DatabaseException in case of I/O problems
 	 */
 	@Override public void write(OutputStream stream) throws IOException {
-		write(new OutputStreamWriter(stream, db.defaultCharacterEncoding));
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(stream, db.defaultCharacterEncoding);
+		write(outputStreamWriter);
+		outputStreamWriter.flush();
 	}
 
 	/**
