@@ -23,14 +23,14 @@
         <!-- start -->
         <exec_method type="method" name="start" exec="/lib/svc/method/svc-eXist-standalone start" timeout_seconds="300">
             <method_context>
-                <method_credential user="exist" group="daemon" />
+                <method_credential user="exist" group="exist" />
             </method_context>
         </exec_method>
         
         <!-- stop -->
         <exec_method type="method" name="stop" exec="/lib/svc/method/svc-eXist-standalone stop" timeout_seconds="300">
             <method_context>
-                <method_credential user="exist" group="daemon" />
+                <method_credential user="exist" group="exist" />
             </method_context>
         </exec_method>
         
