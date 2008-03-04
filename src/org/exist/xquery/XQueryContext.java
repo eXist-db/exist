@@ -22,30 +22,9 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.SimpleTimeZone;
-import java.util.Stack;
-import java.util.TimeZone;
-import java.util.TreeMap;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
-
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+import antlr.collections.AST;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
@@ -81,8 +60,8 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
-import org.exist.util.LockException;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
@@ -95,12 +74,31 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.TimeUtils;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.io.IOException;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.SimpleTimeZone;
+import java.util.Stack;
+import java.util.TimeZone;
+import java.util.TreeMap;
 
 /**
  * The current XQuery execution context. Contains the static as well
@@ -361,10 +359,42 @@ public class XQueryContext {
         }
     }
 
+    /**
+     * Returns true if this context has a parent context
+     * (means it is a module context).
+     * 
+     * @return
+     */
+    public boolean hasParent() {
+        return false;
+    }
+    
     public XQueryContext copyContext() {
         XQueryContext ctx = new XQueryContext(this);
         copyFields(ctx);
         return ctx;
+    }
+
+    /**
+     * Update the current dynamic context using the properties
+     * of another context. This is needed by
+     * {@link org.exist.xquery.functions.util.Eval}.
+     *  
+     * @param from
+     */
+    public void updateContext(XQueryContext from) {
+        this.watchdog = from.watchdog;
+        this.lastVar = from.lastVar;
+        this.variableStackSize = from.getCurrentStackSize();
+        this.contextStack = from.contextStack;
+        this.inScopeNamespaces = from.inScopeNamespaces;
+        this.inScopePrefixes = from.inScopePrefixes;
+        this.inheritedInScopeNamespaces = from.inheritedInScopeNamespaces;
+        this.inheritedInScopePrefixes = from.inheritedInScopePrefixes;
+        this.variableStackSize = from.variableStackSize;
+        this.attributes = from.attributes;
+        this.updateListener = from.updateListener;
+        this.modules = from.modules;
     }
 
     protected void copyFields(XQueryContext ctx) {
