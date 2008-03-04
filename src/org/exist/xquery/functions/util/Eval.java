@@ -22,22 +22,11 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.SimpleTimeZone;
-import java.util.Stack;
-import java.util.Iterator;
-
-import javax.xml.datatype.Duration;
-
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.memtree.ReferenceNode;
-import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
@@ -56,8 +45,6 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.Module;
-import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.EmptySequence;
@@ -72,6 +59,13 @@ import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.xml.datatype.Duration;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.SimpleTimeZone;
 
 /**
  * @author wolf
@@ -293,7 +287,8 @@ public class Eval extends BasicFunction {
 			if(compiled == null) {
                 compiled = xquery.compile(innerContext, querySource);
 			} else {
-				compiled.setContext(innerContext);
+                compiled.getContext().updateContext(innerContext);
+                compiled.setContext(innerContext);
 			}
 			
 			if (this.getArgumentCount() == 4) {
