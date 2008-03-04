@@ -78,9 +78,9 @@ public class ExecuteFunction extends BasicFunction
 	 * 
 	 * @param context	The Context of the calling XQuery
 	 */
-	public ExecuteFunction(XQueryContext context, FunctionSignature signature)
+	public ExecuteFunction( XQueryContext context, FunctionSignature signature )
 	{
-		super(context, signature);
+		super( context, signature );
     }
 
 	/**
@@ -93,28 +93,30 @@ public class ExecuteFunction extends BasicFunction
 	 * 
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
+	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		//was a connection and SQL statement specified?
-		if (args[0].isEmpty() || args[1].isEmpty())
-            return Sequence.EMPTY_SEQUENCE;
+		if( args[0].isEmpty() || args[1].isEmpty() ) {
+            return( Sequence.EMPTY_SEQUENCE );
+		}
 		
 		//get the existing connections map from the context
 		HashMap connections = (HashMap)context.getXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR);
-		if(connections == null)
-			return Sequence.EMPTY_SEQUENCE;
+		if( connections == null) {
+			return( Sequence.EMPTY_SEQUENCE );
+		}
 		
 		//get the connection
 		long conID = ((IntegerValue)args[0].itemAt(0)).getLong();
 		Connection con = (Connection)connections.get(new Long(conID));
-		if(con == null)
-			return Sequence.EMPTY_SEQUENCE;
+		if( con == null ) {
+			return( Sequence.EMPTY_SEQUENCE );
+		}
 		
 		Statement stmt = null;
 		ResultSet rs = null;
 		
-		try
-		{
+		try {
 			StringBuffer xmlBuf = new StringBuffer();
 			
 			//get the SQL statement
@@ -124,8 +126,7 @@ public class ExecuteFunction extends BasicFunction
 			stmt = con.createStatement();
 			
 			//execute the query statement
-			if(stmt.execute(sql))
-			{
+			if( stmt.execute( sql ) ) {
 				/* SQL Query returned results */
 				
 				//iterate through the result set building an XML document
@@ -134,32 +135,39 @@ public class ExecuteFunction extends BasicFunction
 				int iColumns = rsmd.getColumnCount();
 				int iRows = 0;
 				
-				while(rs.next())
-				{
+				while( rs.next() ) {
 					xmlBuf.append("<" + SQLModule.PREFIX + ":row index=\"" + rs.getRow() + "\">");
 					
 					//get each tuple in the row
-					for(int i = 0; i < iColumns; i++)
-					{
+					for( int i = 0; i < iColumns; i++ ) {
 						String columnName = rsmd.getColumnName(i+1);
 						
-						if(columnName != null)
-						{
-							if(((BooleanValue)args[2].itemAt(0)).effectiveBooleanValue())
-							{
+						if( columnName != null ) {
+							
+							String colValue = rs.getString( i + 1 );
+							String sqlNull  = "";
+							
+							if( rs.wasNull() ) {
+								// Add a null indicator attributed if the value was SQL Null
+								sqlNull = " " + SQLModule.PREFIX + ":null=\"true\"";
+							}
+							
+							if( ((BooleanValue)args[2].itemAt(0)).effectiveBooleanValue() ) {
 								//use column names as the XML node
 								
 								/** Spaces in column names are replaced with underscore's */
-								xmlBuf.append("<" + escapeXmlAttr(columnName.replace(' ', '_')) + " " + SQLModule.PREFIX + ":type=\"" + rsmd.getColumnTypeName(i+1) + "\" xs:type=\"" + Type.getTypeName(sqlTypeToXMLType(rsmd.getColumnType(i+1))) + "\">");
-								xmlBuf.append(escapeXmlText(rs.getString(i+1)));
-								xmlBuf.append("</" + escapeXmlAttr(columnName.replace(' ', '_')) + ">");
-							}
-							else
-							{
+								xmlBuf.append( "<" + escapeXmlAttr(columnName.replace(' ', '_')) + " " + SQLModule.PREFIX + ":type=\"" + rsmd.getColumnTypeName(i+1) + "\" xs:type=\"" + Type.getTypeName(sqlTypeToXMLType(rsmd.getColumnType(i+1))) + "\"" + sqlNull + " >" );
+								if( colValue != null ) {
+									xmlBuf.append( escapeXmlText( colValue ) );
+								}
+								xmlBuf.append( "</" + escapeXmlAttr(columnName.replace(' ', '_')) + ">");
+							} else {
 								//DONT use column names as the XML node
-								xmlBuf.append("<" + SQLModule.PREFIX + ":field name=\"" + escapeXmlAttr(columnName) + "\" sql:type=\"" + rsmd.getColumnTypeName(i+1) + "\" xs:type=\"" + Type.getTypeName(sqlTypeToXMLType(rsmd.getColumnType(i+1))) + "\">");
-								xmlBuf.append(escapeXmlText(rs.getString(i+1)));
-								xmlBuf.append("</" + SQLModule.PREFIX + ":field>");
+								xmlBuf.append( "<" + SQLModule.PREFIX + ":field name=\"" + escapeXmlAttr(columnName) + "\" sql:type=\"" + rsmd.getColumnTypeName(i+1) + "\" xs:type=\"" + Type.getTypeName(sqlTypeToXMLType(rsmd.getColumnType(i+1))) + "\"" + sqlNull + " >" );
+								if( colValue != null ) {
+									xmlBuf.append( escapeXmlText( colValue ) );
+								}
+								xmlBuf.append( "</" + SQLModule.PREFIX + ":field>" );
 							}
 						}
 					}
@@ -170,9 +178,7 @@ public class ExecuteFunction extends BasicFunction
 				}
 				xmlBuf.insert(0, "<" + SQLModule.PREFIX + ":result xmlns:" + SQLModule.PREFIX + "=\"" + SQLModule.NAMESPACE_URI + "\" xmlns:xs=\"" + Namespaces.SCHEMA_NS + "\" count=\"" + iRows + "\">");
 				xmlBuf.append("</" + SQLModule.PREFIX + ":result>");
-			}
-			else
-			{
+			} else {
 				/* SQL Query performed updates */
 				xmlBuf.append("<" + SQLModule.PREFIX + ":result xmlns:" + SQLModule.PREFIX + "=\"" + SQLModule.NAMESPACE_URI + "\" updateCount=\"" + stmt.getUpdateCount() + "\"/>");
 			}
@@ -180,27 +186,24 @@ public class ExecuteFunction extends BasicFunction
 			//return the XML result set
 			return ModuleUtils.stringToXML(context, xmlBuf.toString());
 		}
-		catch(SAXException se)
-		{
+		catch( SAXException se ) {
 			throw new XPathException(se);
 		}
-		catch(SQLException e)
-		{
+		catch( SQLException e ) {
 			throw new XPathException(e);
 		}
-		finally
-		{
+		finally {
 			//close any record set or statement
-			try
-			{
-				if(rs != null)
+			try {
+				if( rs != null ) {
 					rs.close();
+				}
 				
-				if(stmt != null)
+				if( stmt != null ) {
 					stmt.close();
+				}
 			}
-			catch(SQLException se)
-			{
+			catch( SQLException se ) {
 				LOG.debug("Unable to cleanup JDBC results", se);
 			}
 			
@@ -277,23 +280,29 @@ public class ExecuteFunction extends BasicFunction
 		}
 	}
 	
-	private static String escapeXmlText(String text)
+	private static String escapeXmlText( String text )
 	{
-		String work = text.replaceAll("\\&", "\\&amp;");
-		work = work.replaceAll("<", "\\&lt;");
-		work = work.replaceAll(">", "\\&gt;");
-		return work;
+		String work = null;
+		
+		if( text != null ) {
+			work = text.replaceAll( "\\&", "\\&amp;" );
+			work = work.replaceAll( "<", "\\&lt;" );
+			work = work.replaceAll( ">", "\\&gt;" );
+		}
+		
+		return( work );
 	}
 	
-	private static String escapeXmlAttr(String attr)
+	private static String escapeXmlAttr( String attr )
 	{
-		if(attr != null)
-		{
-			String work = escapeXmlText(attr);
-			work = work.replaceAll("'", "\\&apos;");
-			work = work.replaceAll("\"", "\\&quot;");
-			return work;
+		String work = null;
+		
+		if( attr != null ) {
+			work = escapeXmlText( attr );
+			work = work.replaceAll( "'", "\\&apos;" );
+			work = work.replaceAll( "\"", "\\&quot;" );
 		}
-		return null;
+		
+		return( work );
 	}
 }
