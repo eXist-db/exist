@@ -34,7 +34,13 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
-import org.exist.dom.*;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.numbering.NodeId;
@@ -63,7 +69,13 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.TimeUtils;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -77,7 +89,18 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.SimpleTimeZone;
+import java.util.Stack;
+import java.util.TimeZone;
+import java.util.TreeMap;
 
 /**
  * The current XQuery execution context. Contains the static as well
@@ -338,10 +361,42 @@ public class XQueryContext {
         }
     }
 
+    /**
+     * Returns true if this context has a parent context
+     * (means it is a module context).
+     * 
+     * @return
+     */
+    public boolean hasParent() {
+        return false;
+    }
+    
     public XQueryContext copyContext() {
         XQueryContext ctx = new XQueryContext(this);
         copyFields(ctx);
         return ctx;
+    }
+
+    /**
+     * Update the current dynamic context using the properties
+     * of another context. This is needed by
+     * {@link org.exist.xquery.functions.util.Eval}.
+     *  
+     * @param from
+     */
+    public void updateContext(XQueryContext from) {
+        this.watchdog = from.watchdog;
+        this.lastVar = from.lastVar;
+        this.variableStackSize = from.getCurrentStackSize();
+        this.contextStack = from.contextStack;
+        this.inScopeNamespaces = from.inScopeNamespaces;
+        this.inScopePrefixes = from.inScopePrefixes;
+        this.inheritedInScopeNamespaces = from.inheritedInScopeNamespaces;
+        this.inheritedInScopePrefixes = from.inheritedInScopePrefixes;
+        this.variableStackSize = from.variableStackSize;
+        this.attributes = from.attributes;
+        this.updateListener = from.updateListener;
+        this.modules = from.modules;
     }
 
     protected void copyFields(XQueryContext ctx) {
