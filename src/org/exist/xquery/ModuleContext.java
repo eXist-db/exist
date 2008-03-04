@@ -40,7 +40,7 @@ import java.util.Iterator;
  */
 public class ModuleContext extends XQueryContext {
 
-	private final XQueryContext parentContext;
+	private XQueryContext parentContext;
     private String modulePrefix;
     private String moduleNamespace;
     private boolean initializing = true;
@@ -58,6 +58,15 @@ public class ModuleContext extends XQueryContext {
 		moduleLoadPath = parentContext.moduleLoadPath;
 		loadDefaults(broker.getConfiguration());
         initializing = false;
+    }
+
+    public boolean hasParent() {
+        return true;
+    }
+
+    public void updateContext(XQueryContext from) {
+        if (from.hasParent())
+            this.parentContext = ((ModuleContext)from).parentContext;
     }
 
     public XQueryContext copyContext() {

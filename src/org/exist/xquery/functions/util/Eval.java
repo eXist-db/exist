@@ -38,8 +38,27 @@ import org.exist.source.StringSource;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.LocalVariable;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.EmptySequence;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.TimeUtils;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -279,7 +298,8 @@ public class Eval extends BasicFunction {
 			if(compiled == null) {
                 compiled = xquery.compile(innerContext, querySource);
 			} else {
-				compiled.setContext(innerContext);
+                compiled.getContext().updateContext(innerContext);
+                compiled.setContext(innerContext);
 			}
 			
 			if (this.getArgumentCount() == 4) {
