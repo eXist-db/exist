@@ -18,12 +18,12 @@
         <para>Last year eXist participated in the Google Summer of Code for the first time and after
         what we feel was a successful summer, we have decided to apply to participate again this year.</para>
         
-        <para>In 2007 we had two students working on an XQJ implementation and Text Searc Extensions for XQuery respectively.
-        The first version of the XQJ implementation is almost complete and waiting to be merged with the main code base and the
-        Text Search Extensions whilst needing a little more work should also be merged in soon.</para>
+        <para>In 2007 we had two students working on an XQJ implementation and Fulltext extensions for XQuery respectively.
+        The first version of the XQJ implementation is almost complete and waiting to be merged with the main code base. The
+        Fulltext extensions for XQuery are waiting our XQuery parser refactorings to be merged.</para>
         
-        <para>Suggested projects are listed below, however students may also propose their own projects. If proposing a project we
-        suggest discussing it with us before submitting you student application to ensure that it is suitable and viable.</para>
+        <para>Suggested projects for 2008 are listed below, however students may also propose their own projects. We
+        suggest discussing it with us before submitting your application to ensure that it is suitable and viable in the Google Summer of Code 2008 frame.</para>
         
         <para>For all questions concerning the Summmer of Code,
         contact our GSoC administrators <ulink url="mailto:existadmin@gmail.com">eXistAdmin@gmail.com</ulink>, send an email to the
