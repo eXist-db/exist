@@ -283,13 +283,16 @@ public class Folder extends NamedResource implements Cloneable {
 		}
 		
 		/**
-		 * Build a new XML document in this collection, with the given name.  Remember to {@link ElementBuilder#commit commit}
+		 * Build a new XML document in this collection, with the given relative path.  Remember to {@link ElementBuilder#commit commit}
 		 * commit the builder when done.  If the builder doesn't commit, no document is created.
 		 * 
-		 * @param name the name to give the new document
+		 * @param name the relative path to the new document
 		 * @return a builder to use to create the document
 		 */
 		public ElementBuilder<XMLDocument> build(final Name name) {
+			Folder target = name.stripPathPrefix(Folder.this);
+			if (target != Folder.this) return target.documents().build(name);
+			
 			staleMarker.check();
 			return new ElementBuilder<XMLDocument>(Folder.this.namespaceBindings(), false, new ElementBuilder.CompletedCallback<XMLDocument>() {
 				public XMLDocument completed(Node[] nodes) {
@@ -333,14 +336,17 @@ public class Folder extends NamedResource implements Cloneable {
 		}
 
 		/**
-		 * Create an XML document with the given name, takings its contents from the given source.
+		 * Create an XML document with the given relative path, takings its contents from the given source.
 		 *
-		 * @param name the desired name of the document
+		 * @param name the desired relative path of the document
 		 * @param source the source of XML data to read in the document contents from; the folder's namespace bindings are <em>not</em> applied
 		 * @return the newly created document
 		 * @throws DatabaseException if anything else goes wrong
 		 */
 		public XMLDocument load(Name name, Source.XML source) {
+			Folder target = name.stripPathPrefix(Folder.this);
+			if (target != Folder.this) return target.documents().load(name, source);
+			
 			transact(Lock.WRITE_LOCK);
 			try {
 				source.applyOldName(name);
@@ -368,14 +374,17 @@ public class Folder extends NamedResource implements Cloneable {
 		}
 		
 		/**
-		 * Create a binary document with the given name, takings its contents from the given source.
+		 * Create a binary document with the given relative path, takings its contents from the given source.
 		 *
-		 * @param name the desired name of the document
+		 * @param name the desired relative path of the document
 		 * @param source the source to read the document contents from
 		 * @return the newly created document
 		 * @throws DatabaseException if anything else goes wrong
 		 */
 		public Document load(Name name, Source.Blob source) {
+			Folder target = name.stripPathPrefix(Folder.this);
+			if (target != Folder.this) return target.documents().load(name, source);
+			
 			transact(Lock.WRITE_LOCK);
 			try {
 				source.applyOldName(name);

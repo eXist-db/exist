@@ -220,6 +220,13 @@ public class FolderTest extends DatabaseTestCase {
 		assertEquals(2, c1.documents().size());
 	}
 
+	@Test public void buildDocument6() {
+		Folder c1 = db.createFolder("/top");
+		c1.documents().build(Name.create("child/doc1")).elem("test").end("test").commit();
+		assertEquals(0, c1.documents().size());
+		assertEquals(1, db.getFolder("/top/child").documents().size());
+	}
+
 	@Test public void size1() {
 		assertEquals(0, db.getFolder("/").documents().size());
 	}
