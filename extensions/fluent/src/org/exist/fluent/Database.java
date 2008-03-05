@@ -11,9 +11,11 @@ import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.*;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
@@ -243,6 +245,33 @@ public class Database {
 	}
 	
 	/**
+	 * Check whether the database contains a document or a folder with the given absolute path.
+	 *
+	 * @param path the absolute path of the document or folder to check
+	 * @return <code>true</code> if there is a document or folder at the given path, <code>false</code> otherwise
+	 */
+	public boolean contains(String path) {
+		if (path.length() == 0) throw new IllegalArgumentException("empty path: " + path);
+		if (path.equals("/")) return true;
+		if (!path.startsWith("/")) throw new IllegalArgumentException("path not absolute: " + path);
+		if (path.endsWith("/")) throw new IllegalArgumentException("path ends with '/': " + path);
+		int i = path.lastIndexOf('/');
+		assert i != -1;
+		
+		DBBroker broker = acquireBroker();
+		try {
+			if (broker.getCollection(XmldbURI.create(path)) != null) return true;
+			String folderPath = path.substring(0, i);
+			String name = path.substring(i+1);			
+			Collection collection = broker.openCollection(XmldbURI.create(folderPath), Lock.NO_LOCK);
+			if (collection == null) return false;
+			return collection.getDocument(broker, XmldbURI.create(name)) != null;
+		} finally {
+			releaseBroker(broker);
+		}
+	}
+	
+	/**
 	 * Get the document for the given absolute path.  Namespace bindings will be inherited
 	 * from this database.
 	 *
@@ -251,12 +280,12 @@ public class Database {
 	 * @throws DatabaseException if the document is not found or something else goes wrong
 	 */
 	public Document getDocument(String path) {
-		if (path.length() == 0) throw new IllegalArgumentException("empty document path");
-		if (!path.startsWith("/")) throw new IllegalArgumentException("document path not absolute");
-		if (path.endsWith("/")) throw new IllegalArgumentException("document path ends with '/'");
+		if (path.length() == 0) throw new IllegalArgumentException("empty document path: " + path);
+		if (!path.startsWith("/")) throw new IllegalArgumentException("document path not absolute: " + path);
+		if (path.endsWith("/")) throw new IllegalArgumentException("document path ends with '/': " + path);
 		int i = path.lastIndexOf('/');
 		assert i != -1;
-		return getFolder(path.substring(0, i)).documents().get(path.substring(i+1));
+		return getFolder(i == 0 ? "/" : path.substring(0, i)).documents().get(path.substring(i+1));
 	}
 
 	/**

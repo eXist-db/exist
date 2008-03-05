@@ -332,6 +332,8 @@ public class Folder extends NamedResource implements Cloneable {
 		 * @return <code>true</code> if the folder contains a document with the given path, <code>false</code> otherwise
 		 */
 		public boolean contains(String documentPath) {
+			checkIsRelativeDocPath(documentPath);
+			if (documentPath.contains("/")) return database().contains(Folder.this.path() + "/" + documentPath);
 			return getQuickHandle().getDocument(broker, XmldbURI.create(documentPath)) != null;
 		}
 
@@ -420,9 +422,16 @@ public class Folder extends NamedResource implements Cloneable {
 		 * @throws DatabaseException if unable to find or access the desired document
 		 */
 		public Document get(String documentPath) {
+			checkIsRelativeDocPath(documentPath);
+			if (documentPath.contains("/")) return database().getDocument(Folder.this.path() + "/" + documentPath);
 			DocumentImpl dimpl = getQuickHandle().getDocument(broker, XmldbURI.create(documentPath));
 			if (dimpl == null) throw new DatabaseException("no such document: " + documentPath);
 			return Document.newInstance(dimpl, Folder.this);
+		}
+		
+		private void checkIsRelativeDocPath(String docPath) {
+			if (docPath.startsWith("/")) throw new IllegalArgumentException("relative path cannot start with '/': " + docPath);
+			if (docPath.endsWith("/")) throw new IllegalArgumentException("relative path cannot end with '/': " + docPath);
 		}
 
 		/**
