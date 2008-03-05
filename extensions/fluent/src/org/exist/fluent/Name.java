@@ -22,6 +22,29 @@ public abstract class Name {
 	
 	private Name() {}
 	
+	Folder stripPathPrefix(Folder base) {
+		return base;
+	}
+	
+	private static abstract class SpecifiedName extends Name {
+		protected String specifiedName;
+		SpecifiedName(String specifiedName) {
+			if (specifiedName.startsWith("/")) throw new IllegalArgumentException("name cannot start with '/': " + specifiedName);
+			if (specifiedName.endsWith("/")) throw new IllegalArgumentException("name cannot end with '/': " + specifiedName);
+			this.specifiedName = specifiedName;
+		}
+		Folder stripPathPrefix(Folder base) {
+			int k = specifiedName.lastIndexOf('/');
+			if (k == -1) {
+				return base;
+			} else {
+				Folder target = base.children().create(specifiedName.substring(0, k));
+				specifiedName = specifiedName.substring(k+1);
+				return target;
+			}
+		}		
+	}
+	
 	void setOldName(String oldName) {assert this.oldName == null; this.oldName = oldName;}
 	void setContext(Collection context) {assert this.context == null; this.context = context;}
 	
@@ -38,8 +61,7 @@ public abstract class Name {
 	protected abstract void eval();
 	protected abstract String def();
 	
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		StringBuilder buf = new StringBuilder();
 		if (givenName != null) buf.append(givenName).append(" ");
 		buf.append("{");
@@ -132,10 +154,10 @@ public abstract class Name {
 	 * @param name the desired name
 	 * @return if the given name is unique, the name; otherwise, a unique variation on the given name
 	 */
-	public static Name adjust(final String name) {
-		return new Name() {
-			@Override protected void eval() {evalDeconflict(name);}
-			@Override protected String def() {return "adjust " + name;}
+	public static Name adjust(String name) {
+		return new SpecifiedName(name) {
+			@Override protected void eval() {evalDeconflict(specifiedName);}
+			@Override protected String def() {return "adjust " + specifiedName;}
 		};
 	}
 
@@ -161,10 +183,10 @@ public abstract class Name {
 	 * @param name the desired name
 	 * @return the desired name that will be used whether it's unique or not
 	 */
-	public static Name overwrite(final String name) {
-		return new Name() {
-			@Override protected void eval() {givenName = name;}
-			@Override protected String def() {return "overwrite " + name;}
+	public static Name overwrite(String name) {
+		return new SpecifiedName(name) {
+			@Override protected void eval() {givenName = specifiedName;}
+			@Override protected String def() {return "overwrite " + specifiedName;}
 		};
 	}
 	
@@ -189,10 +211,10 @@ public abstract class Name {
 	 * @param name the desired name believed to be unique
 	 * @return the desired name, with a stipulation that any operation using it will fail if it's a duplicate
 	 */
-	public static Name create(final String name) {
-		return new Name() {
-			@Override protected void eval() {evalInsert(name);}
-			@Override protected String def() {return "create " + name;}
+	public static Name create(String name) {
+		return new SpecifiedName(name) {
+			@Override protected void eval() {evalInsert(specifiedName);}
+			@Override protected String def() {return "create " + specifiedName;}
 		};
 	}
 	
