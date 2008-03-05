@@ -29,8 +29,6 @@ public abstract class Name {
 	private static abstract class SpecifiedName extends Name {
 		protected String specifiedName;
 		SpecifiedName(String specifiedName) {
-			if (specifiedName.startsWith("/")) throw new IllegalArgumentException("name cannot start with '/': " + specifiedName);
-			if (specifiedName.endsWith("/")) throw new IllegalArgumentException("name cannot end with '/': " + specifiedName);
 			this.specifiedName = specifiedName;
 		}
 		Folder stripPathPrefix(Folder base) {

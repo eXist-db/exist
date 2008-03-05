@@ -345,11 +345,32 @@ public class FolderTest extends DatabaseTestCase {
 		assertEquals(0, db.getFolder("/").children().size());
 	}
 
-	@Test public void getDocument() {
+	@Test public void getDocument1() {
 		Folder c1 = db.createFolder("/c1");
 		c1.documents().build(Name.create("original")).elem("test").end("test").commit();
 		Document d = c1.documents().get("original");
 		assertNotNull(d);
+	}
+
+	@Test public void getDocument2() {
+		Folder c1 = db.createFolder("/c1");
+		Folder c2 = db.createFolder("/c1/c2");
+		c2.documents().build(Name.create("original")).elem("test").end("test").commit();
+		Document d = c1.documents().get("c2/original");
+		assertNotNull(d);
+	}
+
+	@Test public void containsDocument1() {
+		Folder c1 = db.createFolder("/c1");
+		c1.documents().build(Name.create("original")).elem("test").end("test").commit();
+		assertTrue(c1.documents().contains("original"));
+	}
+
+	@Test public void containsDocument2() {
+		Folder c1 = db.createFolder("/c1");
+		Folder c2 = db.createFolder("/c1/c2");
+		c2.documents().build(Name.create("original")).elem("test").end("test").commit();
+		assertTrue(c1.documents().contains("c2/original"));
 	}
 
 	@Test public void query1() {
