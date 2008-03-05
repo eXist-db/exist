@@ -122,8 +122,8 @@
 	data store. Another important area of application would be in the context of grid computing.</para>
 
 	<para>Unfortunately, there's no simple way to combine results from distributed data stores in a single XQuery. eXist's
-	query engine can only operate on local resources. It can retrieve data from external locations, but only to store them into a
-	local, temporary resource, which is then used for querying. A distributed search facility would allow eXist to directly forward parts of an expression to a remote database
+	query engine can only operate on local resources. It can retrieve data from external locations, but only to parse them into a
+	local DOM tree, which is then used for querying. A distributed search facility would allow eXist to directly forward parts of an expression to a remote database
 	instance. The XQuery specification already provides the necessary framework: the collection() and doc() functions
 	both accept arbitrary URIs, so collections as well as resources can be at external locations.</para>
 
@@ -131,22 +131,30 @@
 	to remote node sequences throughout the query.</para>
       </section>
 
-      <section>
-	<title>Process control and management service</title>
-
-	<para>Implement a process control and management service à la the top and ps tools. There are various uses for a process control and management service, keeping track of running processes in the current DB instance, showing cache and memory statistics, be able to cancel or set different processing permissions on the fly for each query process, etc.</para>
-
-	<para>The fundamentals for this could be JMX with the current cache and memory statistics and the QueryWatchDog which at the moment only restricts queries in number of created temmporary nodes and in the total time allowed for processing it, while not allowing any interactive management.</para>
-	<para><emphasis>Resources:</emphasis></para>
-	<itemizedlist>
-	  <listitem>
-	  <para><ulink url="http://jcp.org/aboutJava/communityprocess/final/jsr003/index3.html">JSR 003</ulink></para>
-	  </listitem>
-	  <listitem>
-	    <para><ulink url="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/">JMX resources</ulink></para>
-	  </listitem>
-	</itemizedlist>
-      </section>
+    <section>
+        <title>Improved dynamic configuration/process control</title>
+        
+        <para>Until now most database parameters are configured in a central XML configuration file. This file is only
+        read once during database startup. While many parameters should indeed not be changed at runtime, there are a few
+        settings which could be modified without requiring a db restart. Examples include the current cache size settings, job scheduling,
+        or index plugins. However, eXist does currently not provide an interface to modify settings at runtime. Some read-only settings are
+        already exposed via Java Management Extensions (JMX) though.</para>
+        
+        <para>The goal of the project would be to provide a common interface to dynamically configure certain aspects of the database
+        instance at runtime. Ideally access to this interface should be provided via JMX. Additionally, the existing JMX mbeans should be extended
+        to provide more control over jobs running on the db instance. For an administrator, it should be possible to view all running queries or 
+        jobs, and modify their access permissions or even kill a process.
+        </para>
+        
+        <itemizedlist>
+            <listitem>
+                <para><ulink url="http://jcp.org/aboutJava/communityprocess/final/jsr003/index3.html">JSR 003</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink url="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/">JMX resources</ulink></para>
+            </listitem>
+        </itemizedlist>
+    </section>
 
         <section>
           <title>Add index-support for order-by, distinct-values and aggregate functions</title>
