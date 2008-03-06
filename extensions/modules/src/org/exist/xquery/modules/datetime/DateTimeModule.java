@@ -40,6 +40,7 @@ public class DateTimeModule extends AbstractInternalModule
 		new FunctionDef(TimeFromDateTimeFunction.signature, TimeFromDateTimeFunction.class),
 		new FunctionDef(DayInWeekFunction.signature, DayInWeekFunction.class),
 		new FunctionDef(WeekInMonthFunction.signature, WeekInMonthFunction.class),
+		new FunctionDef(CountDayInMonthFunction.signature, CountDayInMonthFunction.class),
 		new FunctionDef(DaysInMonthFunction.signature, DaysInMonthFunction.class),
 		new FunctionDef(FormatDateTimeFunction.signature, FormatDateTimeFunction.class),
 		new FunctionDef(FormatDateFunction.signature, FormatDateFunction.class),
