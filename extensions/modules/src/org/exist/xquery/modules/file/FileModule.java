@@ -47,11 +47,17 @@ public class FileModule extends AbstractInternalModule
 	public final static String PREFIX = "file";
 	
 	private final static FunctionDef[] functions = {
-		new FunctionDef( DirectoryListFunction.signatures[0], DirectoryListFunction.class ),
-		new FunctionDef( FileRead.signatures[0], FileRead.class ),
-		new FunctionDef( FileRead.signatures[1], FileRead.class ),
-		new FunctionDef( FileReadUnicode.signatures[0], FileReadUnicode.class ),
-		new FunctionDef( FileReadUnicode.signatures[1], FileReadUnicode.class )
+		new FunctionDef( DirectoryListFunction.signatures[0], 	DirectoryListFunction.class ),
+		new FunctionDef( FileRead.signatures[0], 				FileRead.class ),
+		new FunctionDef( FileRead.signatures[1], 				FileRead.class ),
+		new FunctionDef( FileReadUnicode.signatures[0], 		FileReadUnicode.class ),
+		new FunctionDef( FileReadUnicode.signatures[1], 		FileReadUnicode.class ),
+		new FunctionDef( SerializeToFile.signatures[0], 		SerializeToFile.class ),
+		new FunctionDef( FileExists.signatures[0], 				FileExists.class ),
+		new FunctionDef( FileIsReadable.signatures[0], 			FileIsReadable.class ),
+		new FunctionDef( FileIsWriteable.signatures[0], 		FileIsWriteable.class ),
+		new FunctionDef( FileIsDirectory.signatures[0], 		FileIsDirectory.class ),
+		new FunctionDef( FileDelete.signatures[0], 				FileDelete.class )
 	};
 	
 	

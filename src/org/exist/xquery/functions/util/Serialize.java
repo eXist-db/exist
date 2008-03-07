@@ -57,6 +57,7 @@ public class Serialize extends BasicFunction {
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "DEPRECATED.  Use the file:serialize() function in the file extension module instead! " +
             "Writes the node set passed in parameter $a into a file on the file system. The " +
             "full path to the file is specified in parameter $b. $c contains a " +
             "sequence of zero or more serialization parameters specified as key=value pairs. The " +
