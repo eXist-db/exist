@@ -28,6 +28,16 @@ public class NodeTest extends DatabaseTestCase {
 		db.query().single("<foo/>").node().update();
 	}
 	
+	@Test(expected = DatabaseException.class)
+	public void comparableValueMemtree() {
+		db.query().single("<foo/>").comparableValue();
+	}
+
+	@Test(expected = DatabaseException.class)
+	public void comparableValue() {
+		db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo/>")).root().comparableValue();
+	}
+
 	@Test
 	public void equals1() {
 		XMLDocument doc = db.createFolder("/test").documents().build(Name.create("foo"))

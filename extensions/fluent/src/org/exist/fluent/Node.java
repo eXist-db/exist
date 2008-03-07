@@ -55,6 +55,10 @@ public class Node extends Item {
 		return this;
 	}
 	
+	@Override public Comparable<Object> comparableValue() {
+		throw new DatabaseException("nodes are not comparable");
+	}
+	
 	/**
 	 * Return whether this node represents the same node in the database as the given object.
 	 */
