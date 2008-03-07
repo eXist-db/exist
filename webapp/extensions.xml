@@ -79,20 +79,34 @@
 	<command>Class:</command>&#160;org.exist.xquery.modules.datetime.DateTimeModule
 	<command>Namespace:</command>&#160;http://exist-db.org/xquery/datetime
       </para>
-    </section>        
+    </section>      
+        
+    <section id="module_file">
+      <title>File Module</title>
+      <para>Provides additional operations on files.  WARNING: Enabling this extension module could result in possible security issues, since it allows writing to the filesystem by xqueries!</para>                    
+      <para>
+    <command>Creator:</command>&#160;<dc:creator>Andrzej Taramina</dc:creator>
+    <command>Licence:</command>&#160;LGPL
+    <command>Status:</command>&#160;production
+      </para>
+      <para>
+    <command>Class:</command>&#160;org.exist.xquery.modules.file.FileModule
+    <command>Namespace:</command>&#160;http://exist-db.org/xquery/file
+      </para>
+    </section>      
     
-    <section id="module_http">
-      <title>HTTP Module</title>
+    <section id="module_httpclient">
+      <title>HTTP Client Module</title>
       <para>Functions for performing HTTP requests</para> 		    		
       <para>
-	<command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator>
+	<command>Creator:</command>&#160;<dc:creator>Adam Retter and Andrzej Taramina</dc:creator>
 	<command>Licence:</command>&#160;LGPL
 	<command>Features Used:</command>&#160;NekoHTML
 	<command>Status:</command>&#160;production
       </para>
       <para>
-	<command>Class:</command>&#160;org.exist.xquery.modules.http.HTTPModule
-	<command>Namespace:</command>&#160;http://exist-db.org/xquery/http
+	<command>Class:</command>&#160;org.exist.xquery.modules.http.HTTPClientModule
+	<command>Namespace:</command>&#160;http://exist-db.org/xquery/httpclient
       </para>
     </section>
     
