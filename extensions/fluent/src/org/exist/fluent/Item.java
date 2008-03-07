@@ -93,6 +93,15 @@ public class Item extends Resource {
 	@Override	Sequence convertToSequence() {
 		return item.toSequence();
 	}
+	
+	/**
+	 * Return a singleton item list consisting of this item.
+	 *
+	 * @return an item list that contains only this item
+	 */
+	public ItemList toItemList() {
+		return new ItemList(convertToSequence(), namespaceBindings.extend(), db);
+	}
 
 	/**
 	 * @return the string value of this item if atomic, or the concatenation of its text content if a node
@@ -210,6 +219,20 @@ public class Item extends Resource {
 	 */
 	public Date instantValue() {
 		return DataUtils.toDate(dateTimeValue());
+	}
+	
+	/**
+	 * Return the comparable value of this item, if available.  The resulting object will
+	 * directly compare the XQuery value without converting to a string first.  Items
+	 * of different types will compare in an arbitrary but stable order.  Nodes are never
+	 * comparable.
+	 *
+	 * @return the comparable value of this item
+	 * @throws DatabaseException if this item is not comparable
+	 */
+	@SuppressWarnings("unchecked")
+	public Comparable<Object> comparableValue() {
+		return (Comparable<Object>) item;
 	}
 	
 	/**

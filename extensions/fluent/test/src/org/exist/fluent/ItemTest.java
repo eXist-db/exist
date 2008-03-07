@@ -51,4 +51,17 @@ public class ItemTest extends DatabaseTestCase {
 		Item res = doc.query().single("//b");
 		assertEquals(1, doc.query().all("$_1//c", res).size());
 	}
+	
+	@Test public void toItemList() {
+		Item item = db.query().single("3");
+		ItemList list = item.toItemList();
+		assertEquals(1, list.size());
+		assertEquals(item, list.get(0));
+	}
+	
+	@Test public void comparableValue() {
+		Item item1 = db.query().single("3"), item2 = db.query().single("4");
+		assertTrue(item1.comparableValue().compareTo(item2.comparableValue()) < 0);
+	}
+	
 }
