@@ -48,20 +48,20 @@ public class FileReadUnicode extends BasicFunction {
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("file-read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX),
-			"Read content of file $a. Unicode BOM (Byte Order Marker) will be stripped off if found",
+			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
+			"Read content of file. $a is a string representing a URL, eg file://etc. Unicode BOM (Byte Order Marker) will be stripped off if found",
 			new SequenceType[] {				
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
 				},				
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
+			new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE ) ),
 		new FunctionSignature(
-			new QName("file-read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX),
-			"Read content of file $a with the encoding specified in $b. Unicode BOM (Byte Order Marker) will be stripped off if found",
+			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
+			"Read content of file. $a is a string representing a URL, eg file://etc. with the encoding specified in $b. Unicode BOM (Byte Order Marker) will be stripped off if found",
 			new SequenceType[] {
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
+				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE )
 				},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE))
+			new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE ) )
 		};
 	
 	/**

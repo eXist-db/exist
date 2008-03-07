@@ -29,8 +29,6 @@ import java.net.URL;
 
 import org.exist.dom.QName;
 
-import org.exist.util.UnicodeReader;
-
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -51,20 +49,20 @@ public class FileRead extends BasicFunction {
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("file-read", FileModule.NAMESPACE_URI, FileModule.PREFIX),
-			"Read content of file $a",
+			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
+			"Read content of file. $a is a string representing a URL, eg file://etc. ",
 			new SequenceType[] {				
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
 				},				
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
+			new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE ) ),
 		new FunctionSignature(
-			new QName("file-read", FileModule.NAMESPACE_URI, FileModule.PREFIX),
-			"Read content of file $a with the encoding specified in $b.",
+			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
+			"Read content of file. $a is a string representing a URL, eg file://etc with the encoding specified in $b.",
 			new SequenceType[] {
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
+				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE )
 				},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE))
+			new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE ) )
 		};
 	
 	/**
