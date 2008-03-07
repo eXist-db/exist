@@ -23,12 +23,11 @@ package org.exist.xquery.functions.util;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.exist.dom.QName;
-
-import org.exist.util.UnicodeReader;
 
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -45,25 +44,28 @@ import org.exist.xquery.value.Type;
  * @author Dizzzz
  * @author Andrzej Taramina
  *
+ * DEPRECATED.  Moved to the file extension module.  See file:file-read.  This class will eventually be deleted
  */
 public class FileRead extends BasicFunction {
 	
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature deprecated[] = {
 		new FunctionSignature(
 			new QName("file-read", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Read content of file $a",
+			"Read content of file $a. DEPRECATED: Moved to the file extension module.  See file:file-read",
 			new SequenceType[] {				
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 				},				
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			),
 		new FunctionSignature(
 			new QName("file-read", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Read content of file $a with the encoding specified in $b.",
+			"Read content of file $a with the encoding specified in $b. DEPRECATED: Moved to the file extension module.  See file:file-read",
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 				},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE))
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			)
 		};
 	
 	/**
@@ -85,12 +87,12 @@ public class FileRead extends BasicFunction {
 		
 		try {
 			URL url = new URL( arg );
-			UnicodeReader reader;
+			InputStreamReader reader;
 			
 			if( args.length > 1 ) {			
-				reader = new UnicodeReader( url.openStream(), arg = args[1].itemAt(0).getStringValue() );
+				reader = new InputStreamReader( url.openStream(), arg = args[1].itemAt(0).getStringValue() );
 			} else {
-				reader = new UnicodeReader( url.openStream() );
+				reader = new InputStreamReader( url.openStream() );
 			}
 			
 			sw = new StringWriter();
