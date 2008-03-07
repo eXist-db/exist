@@ -22,12 +22,14 @@
 package org.exist.xquery.functions.util;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.exist.dom.QName;
+
+import org.exist.util.UnicodeReader;
+
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -41,17 +43,18 @@ import org.exist.xquery.value.Type;
 /**
  * @author Pierrick Brihaye
  * @author Dizzzz
+ * @author Andrzej Taramina
  *
  */
 public class FileRead extends BasicFunction {
-
+	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("file-read", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Read content of file $a",
 			new SequenceType[] {				
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
-			},				
+				},				
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
 		new FunctionSignature(
 			new QName("file-read", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -59,46 +62,57 @@ public class FileRead extends BasicFunction {
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
+				},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE))
-	};
+		};
 	
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public FileRead(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
+	public FileRead( XQueryContext context, FunctionSignature signature ) 
+	{
+		super( context, signature );
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
+	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
+	{
 		String arg = args[0].itemAt(0).getStringValue();
 		StringWriter sw;
+		
 		try {
-			URL url = new URL(arg);
-			InputStreamReader isr;
-			if (args.length > 1)			
-				isr = new InputStreamReader(url.openStream(), arg = args[1].itemAt(0).getStringValue());
-			else
-				isr = new InputStreamReader(url.openStream());
+			URL url = new URL( arg );
+			UnicodeReader reader;
+			
+			if( args.length > 1 ) {			
+				reader = new UnicodeReader( url.openStream(), arg = args[1].itemAt(0).getStringValue() );
+			} else {
+				reader = new UnicodeReader( url.openStream() );
+			}
+			
 			sw = new StringWriter();
 			char[] buf = new char[1024];
-	        int len;
-	        while ((len = isr.read(buf)) > 0) {
-	            sw.write(buf, 0, len);
-	        }
-			isr.close();
+			int len;
+			while( ( len = reader.read( buf ) ) > 0 ) {
+				sw.write( buf, 0, len) ;
+			}
+			reader.close();
 			sw.close();
-		} catch (MalformedURLException e) {
-			throw new XPathException(getASTNode(), e.getMessage());	
-		} catch (IOException e) {
-			throw new XPathException(getASTNode(), e.getMessage());	
+		} 
+		
+		catch( MalformedURLException e ) {
+			throw( new XPathException( getASTNode(), e.getMessage() ) );	
+		} 
+		
+		catch( IOException e ) {
+			throw( new XPathException( getASTNode(), e.getMessage() ) );	
 		}
+		
 		//TODO : return an *Item* built with sw.toString()
-		return new StringValue(sw.toString());
+		
+		return( new StringValue( sw.toString() ) );
 	}
 }
