@@ -20,7 +20,7 @@
  *  $Id$
  */
 
-package org.exist.util;
+package org.exist.xquery.modules.file;
 
 import java.io.*;
 
