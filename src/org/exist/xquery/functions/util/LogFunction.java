@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.BasicFunction;
@@ -40,59 +42,80 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author Andrzej Taramina (andrzej@chaeron.com)
  */
-public class LogFunction extends BasicFunction {
-
+public class LogFunction extends BasicFunction 
+{
+	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("log", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			new QName( "log", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
 			"Logs the message specified in $b to the current logger. $a indicates " +
 			"the log priority, e.g. 'debug' or 'warn'.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY)
-		),
+				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE) ,
+				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )
+				},
+			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			),
 		new FunctionSignature(
-			new QName("log-system-out", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			new QName( "log-system-out", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
 			"Logs the message specified in $b to System.out.",
 			new SequenceType[] {
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY)
-		),
+				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )
+				},
+			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			),
 		new FunctionSignature(
-			new QName("log-system-err", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			new QName( "log-system-err", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
 			"Logs the message specified in $b to System.err.",
 			new SequenceType[] {
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY)
-		)
-	};
+				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )
+				},
+			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			),
+		new FunctionSignature(
+			new QName( "log-app", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
+			"Logs the message specified in $c to the logger named in $b. $a indicates " +
+			"the log priority, e.g. 'debug' or 'warn'. $b specifies the name of the logger, eg: my.app.log",
+			new SequenceType[] {
+				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
+				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
+				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )			
+				},
+			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			)
+		};
 	
-	public LogFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
+	public LogFunction(XQueryContext context, FunctionSignature signature) 
+	{
+		super( context, signature );
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		
+	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
+	{
 		SequenceIterator i;
-		if (isCalledAs("log")) {
+		
+		if( isCalledAs( "log" ) ) {
 			i = args[1].unorderedIterator();
-			if(args[1].isEmpty())
-				return Sequence.EMPTY_SEQUENCE;
+			if( args[1].isEmpty() ) {
+				return( Sequence.EMPTY_SEQUENCE );
+			}
+		} else if( isCalledAs( "log-app" ) ) {
+			i = args[2].unorderedIterator();
+			if( args[2].isEmpty() ) {
+				return( Sequence.EMPTY_SEQUENCE );
+			}
 		} else {
 			i = args[0].unorderedIterator();
-			if(args[0].isEmpty())
-				return Sequence.EMPTY_SEQUENCE;
+			if( args[0].isEmpty() ) {
+				return( Sequence.EMPTY_SEQUENCE );
+			}
 		}
-			
+		
 		// add line of the log statement
 		StringBuffer buf = new StringBuffer();
 		buf.append("(Line: ");
@@ -101,37 +124,60 @@ public class LogFunction extends BasicFunction {
 		
 		while(i.hasNext()) {
 			Item next = i.nextItem();
-			if (Type.subTypeOf(next.getType(), Type.NODE)) {
+			if( Type.subTypeOf( next.getType(), Type.NODE ) ) {
 				Serializer serializer = context.getBroker().getSerializer();
 				serializer.reset();
 				try {
-					buf.append(serializer.serialize((NodeValue) next));
-				} catch (SAXException e) {
-					throw new XPathException(getASTNode(), "An exception occurred while serializing node to log: " +
-							e.getMessage(), e);
+					buf.append( serializer.serialize( (NodeValue)next ) );
+				} 
+				catch( SAXException e ) {
+					throw( new XPathException(getASTNode(), "An exception occurred while serializing node to log: " + e.getMessage(), e ) );
 				}
-			} else
+			} else {
 				buf.append(next.getStringValue());
+			}
 		}
-                
-		if (isCalledAs("log")) {
+		
+		if( isCalledAs( "log" ) ) {
 			String priority = args[0].getStringValue();			
-			if(priority.equalsIgnoreCase("error"))
-				LOG.error(buf);
-			else if(priority.equalsIgnoreCase("warn"))
-				LOG.warn(buf);
-			else if(priority.equalsIgnoreCase("info"))
-				LOG.info(buf);
-			else if(priority.equalsIgnoreCase("trace"))
-				LOG.trace(buf);
-			else
-				LOG.debug(buf);
-		} else if (isCalledAs("log-system-out")) {
+			if( priority.equalsIgnoreCase( "error" ) ) {
+				LOG.error( buf );
+			} else if( priority.equalsIgnoreCase( "warn" ) ) {
+				LOG.warn( buf );
+			} else if( priority.equalsIgnoreCase( "info" ) ) {
+				LOG.info( buf );
+			} else if( priority.equalsIgnoreCase( "trace" ) ) {
+				LOG.trace( buf );
+			} else {
+				LOG.debug( buf );
+			}
+		} else if( isCalledAs( "log-system-out" ) ) {
 			System.out.println(buf);
-		} else if (isCalledAs("log-system-err")) {
-			System.err.println(buf);				
+		} else if( isCalledAs( "log-system-err" ) ) {
+			System.err.println( buf );				
+		} else if (isCalledAs("log-app")) {
+			String priority = args[0].getStringValue();		
+			String logname  = args[1].getStringValue();	
+			Logger logger   = LOG;
+			
+			if( logname != null && logname.length() > 0 ) {
+				logger = Logger.getLogger( logname );
+			} 
+			
+			if( priority.equalsIgnoreCase( "error" ) ) {
+				logger.error( buf );
+			} else if( priority.equalsIgnoreCase( "warn" ) ) {
+				logger.warn( buf );
+			} else if( priority.equalsIgnoreCase( "info" ) ) {
+				logger.info( buf );
+			} else if( priority.equalsIgnoreCase( "trace" ) ) {
+				logger.trace( buf );
+			} else {
+				logger.debug( buf );
+			}
+			
 		}
-                
-		return Sequence.EMPTY_SEQUENCE;
+		
+		return( Sequence.EMPTY_SEQUENCE );
 	}
 }
