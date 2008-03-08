@@ -48,7 +48,7 @@ public class CatchFunction extends Function {
 			"This function corresponds to a try-catch statement in Java. The code block " +
 			"in $b will be put inside a try-catch statement. If an exception is thrown while executing " +
 			"$b, the function checks the name of the exception and calls $c if it matches one of " +
-			"the fully qualified Java class names specified in $a",
+			"the fully qualified Java class names specified in $a.  A value of \"*\" in $a will catch all java exceptions",
 			new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
@@ -79,15 +79,22 @@ public class CatchFunction extends Function {
             }
         } catch(Exception e) {
         	LOG.debug("Caught exception in util:catch: " + e.getMessage());
-            if (!(e instanceof XPathException))
+            if (!(e instanceof XPathException)) {
                 LOG.warn("Exception: " + e.getMessage(), e);
+			}
 //            context.popDocumentContext();
             context.getWatchDog().reset();
             for(SequenceIterator i = exceptionClasses.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
                 try {
-                    Class exClass = Class.forName(next.getStringValue());
-                    if(exClass.getName().equals(e.getClass().getName()) || exClass.isInstance(e)) {
+					String exClassName = next.getStringValue();
+					Class exClass = null;
+					
+					if( !exClassName.equals( "*" ) ) {
+                     	exClass = Class.forName(next.getStringValue());
+					}
+					
+                    if( exClassName.equals( "*" ) || exClass.getName().equals( e.getClass().getName() ) || exClass.isInstance(e) ) {
                         LOG.debug("Calling exception handler to process " + e.getClass().getName());
                         UtilModule myModule =
                 			(UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
@@ -96,10 +103,11 @@ public class CatchFunction extends Function {
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
                 } catch (Exception e2) {
-                    if (e2 instanceof XPathException)
+                    if (e2 instanceof XPathException) {
                         throw (XPathException) e2;
-                    else
-                        throw new XPathException(getASTNode(), "Error in exception handler: " + e2.getMessage(), e);
+					} else {
+	                    throw new XPathException(getASTNode(), "Error in exception handler: " + e2.getMessage(), e);
+					}
                 }
             }
             // this type of exception is not caught: throw again
