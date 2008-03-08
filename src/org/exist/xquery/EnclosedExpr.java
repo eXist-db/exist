@@ -65,8 +65,12 @@ public class EnclosedExpr extends PathExpr {
         }
         // evaluate the expression
 		context.pushDocumentContext();
-		Sequence result = super.eval(contextSequence, null);
-        context.popDocumentContext();
+        Sequence result;
+        try {
+            result = super.eval(contextSequence, null);
+        } finally {
+            context.popDocumentContext();
+        }
         
 		// create the output
 		MemTreeBuilder builder = context.getDocumentBuilder();

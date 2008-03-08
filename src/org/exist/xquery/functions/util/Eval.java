@@ -299,7 +299,6 @@ public class Eval extends BasicFunction {
                 compiled = xquery.compile(innerContext, querySource);
 			} else {
                 compiled.getContext().updateContext(innerContext);
-                compiled.setContext(innerContext);
 			}
 			
 			if (this.getArgumentCount() == 4) {
