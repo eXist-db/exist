@@ -69,12 +69,12 @@ public class CatchFunction extends Function {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
         try {
-//            context.pushDocumentContext();
+            context.pushDocumentContext();
             LocalVariable mark = context.markLocalVariables(false);
             try {
                 return getArgument(1).eval(contextSequence, contextItem);
             } finally {
-//                context.popDocumentContext();
+                context.popDocumentContext();
                 context.popLocalVariables(mark);
             }
         } catch(Exception e) {
