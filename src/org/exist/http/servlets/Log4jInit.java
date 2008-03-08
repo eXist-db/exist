@@ -114,13 +114,19 @@ public class Log4jInit extends HttpServlet {
         System.out.println("============= eXist Initialization =============" );
         
         // Get data from web.xml
-        String file = getInitParameter("log4j-init-file");
+        String file   = getInitParameter("log4j-init-file");
+		String logdir = getInitParameter("log4j-log-dir");
+		
+		if( logdir == null ) {
+			// Use default location for exist logs if not specified in web.xml
+			logdir = "WEB-INF/logs";
+		}
         
         // Get path where eXist is running
         String existDir =  getServletContext().getRealPath("/");
         
         // Define location of logfiles
-        File logsdir = new File(existDir, "WEB-INF/logs" );
+        File logsdir = new File(existDir, logdir );
         logsdir.mkdirs();
         
         System.out.println(getTimestamp() + " - eXist logs dir="
