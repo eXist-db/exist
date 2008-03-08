@@ -122,8 +122,9 @@
         </init-param>
     </servlet>
 	
-    <!-- XQueryURLRewrite is disabled by default 
+    <!-- XQueryURLRewrite is disabled by default, uncomment the following and the mapping down below to enable it -->
     
+    <!--
     <filter>
         <filter-name>XQueryURLRewrite</filter-name>
         <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
@@ -133,7 +134,6 @@
             <param-value>redirector/dispatch.xql</param-value>
         </init-param>
     </filter>
-    
     -->
     
     <!--
@@ -516,10 +516,15 @@
         <url-pattern>*.xqy</url-pattern>
     </servlet-mapping>
       
+    
+    <!-- XQueryURLRewrite is disabled by default, uncomment the following and the filter definition above to enable it -->
+    
+    <!--
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
         <url-pattern>/q/*</url-pattern>
     </filter-mapping>
+    -->
     
     <!-- SOAP (Apache Axis) -->
     <servlet-mapping>
