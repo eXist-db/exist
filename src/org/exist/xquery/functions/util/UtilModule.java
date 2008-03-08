@@ -59,6 +59,7 @@ public class UtilModule extends AbstractInternalModule {
 		new FunctionDef(LogFunction.signatures[0], LogFunction.class),
 		new FunctionDef(LogFunction.signatures[1], LogFunction.class),
 		new FunctionDef(LogFunction.signatures[2], LogFunction.class),
+		new FunctionDef(LogFunction.signatures[3], LogFunction.class),
 		new FunctionDef(CatchFunction.signature, CatchFunction.class),
 		new FunctionDef(ExclusiveLockFunction.signature, ExclusiveLockFunction.class),
 		new FunctionDef(SharedLockFunction.signature, SharedLockFunction.class),
