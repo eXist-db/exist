@@ -2419,6 +2419,15 @@ public class XQueryContext {
                 Module module = getModule(namespaceURI);
                 if (module == null) {
                     instantiateModule(namespaceURI, mClass);
+                } else if (getPrefixForURI(module.getNamespaceURI()) == null
+                        && module.getDefaultPrefix().length() > 0) {
+                    // make sure the namespaces of default modules are known,
+                    // even if they were imported in a parent context
+                    try {
+                        declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
+                    } catch (XPathException e) {
+                        LOG.warn("Internal error while loading default modules: " + e.getMessage(), e);
+                    }
                 }
             }
         }
