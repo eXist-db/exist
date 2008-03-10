@@ -21,5 +21,6 @@
   <typedef name="adduser" classname="org.exist.ant.AddUserTask"/>
   <typedef name="rmuser" classname="org.exist.ant.RemoveUserTask"/>
   <typedef name="lock" classname="org.exist.ant.LockResourceTask"/>
+  <typedef name="password" classname="org.exist.ant.UserPasswordTask"/>
 </antlib>
 
