@@ -162,8 +162,14 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                     LOG.debug(files[j].getAbsolutePath());
                     String relPath = files[j].toString().substring( baseDir.toString().length() );
                     int p = relPath.lastIndexOf( File.separatorChar );
-                    relDir = relPath.substring( 0, p );
-                    relDir = relDir.replace(File.separatorChar, '/');
+					
+					if( p >= 0 ) {
+	                    relDir = relPath.substring( 0, p );
+	                    relDir = relDir.replace(File.separatorChar, '/');
+					} else {
+						relDir = relPath;
+					}
+					
                     if ( keepDirStructure && ( prevDir == null || ( !relDir.equals(prevDir) ) ) ) {
                         col = makeColl(collection, relDir);
                         prevDir = relDir;
