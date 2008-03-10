@@ -141,8 +141,11 @@ public class DirectoryListFunction extends BasicFunction
 				String relPath = files[j].toString().substring( baseDir.toString().length() + 1 );
 				
 				int p = relPath.lastIndexOf( File.separatorChar );
-				relDir = relPath.substring( 0, p );
-				relDir = relDir.replace( File.separatorChar, '/' );
+				
+				if( p >= 0 ) {
+					relDir = relPath.substring( 0, p );
+					relDir = relDir.replace( File.separatorChar, '/' );
+				}
 				
 				builder.startElement( new QName( "file", NAMESPACE_URI, PREFIX ), null );
 				
