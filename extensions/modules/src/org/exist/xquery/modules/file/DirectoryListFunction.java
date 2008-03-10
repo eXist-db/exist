@@ -138,7 +138,7 @@ public class DirectoryListFunction extends BasicFunction
 			for( int j = 0; j < files.length; j++ ) {
 				LOG.debug( "Found: " + files[j].getAbsolutePath() );
 				
-				String relPath = files[j].toString().substring( baseDir.toString().length() );
+				String relPath = files[j].toString().substring( baseDir.toString().length() + 1 );
 				
 				int p = relPath.lastIndexOf( File.separatorChar );
 				relDir = relPath.substring( 0, p );
