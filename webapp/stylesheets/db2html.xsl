@@ -2,27 +2,36 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:exist="http://exist.sourceforge.net/NS/exist"
     xmlns:sidebar="http://exist-db.org/NS/sidebar" version="1.0">
-
+    
+    <xsl:param name="path" select="''"/>
+    
+    <xsl:variable name="pathToWebapp">
+        <xsl:call-template name="invertPath">
+            <xsl:with-param name="str" select="$path"/>
+        </xsl:call-template>
+    </xsl:variable>
+    
     <xsl:template match="book|article">
         <html>
             <head>
                 <title>
                     <xsl:value-of select="(bookinfo|articleinfo)/title/text()"/>
                 </title>
-                <link type="text/css" href="styles/SyntaxHighlighter.css" rel="stylesheet" />
+    
+                <link type="text/css" href="{$pathToWebapp}styles/SyntaxHighlighter.css" rel="stylesheet" />
                 <xsl:variable name="styleref" select="(bookinfo|articleinfo)/style/@href"/>
                 <xsl:choose>
                     <xsl:when test="$styleref">
                         <link rel="stylesheet" type="text/css" href="{$styleref}"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <link rel="stylesheet" type="text/css" href="styles/default-style.css"/>
+                        <link rel="stylesheet" type="text/css" href="{$pathToWebapp}styles/default-style.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
                 <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
-                <script type="text/javascript" src="styles/niftycube.js"/>
-                <script type="text/javascript" src="scripts/syntax/sh-min.js"/>
+                <script type="text/javascript" src="{$pathToWebapp}styles/niftycube.js"/>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/sh-min.js"/>
                 <script type="text/javascript">
                     window.onload = function() {
                         Nifty("h1.chaptertitle", "transparent");
@@ -35,6 +44,7 @@
                         dp.SyntaxHighlighter.HighlightAll('code');
                     }
                 </script>
+                
             </head>
 
             <body bgcolor="#FFFFFF">
@@ -318,10 +328,10 @@
         <div id="page-head">
             <xsl:choose>
                 <xsl:when test="graphic/@fileref">
-                    <img src="{graphic/@fileref}"/>
+                    <img src="{$pathToWebapp}{graphic/@fileref}"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <img src="logo.jpg" title="eXist"/>
+                    <img src="{$pathToWebapp}logo.jpg" title="eXist"/>
                 </xsl:otherwise>
             </xsl:choose>
             <div id="navbar">
@@ -343,7 +353,7 @@
     </xsl:template>
 
     <xsl:template match="graphic">
-        <img src="{@fileref}" border="0">
+        <img src="{$pathToWebapp}{@fileref}" border="0">
             <xsl:copy-of select="@width|@height"/>
         </img>
     </xsl:template>
@@ -440,7 +450,22 @@
         </span>
     </xsl:template>
 
-    <xsl:template match="ulink|sidebar:link">
+    <xsl:template match="sidebar:link">
+        <xsl:choose>
+                <xsl:when test="starts-with(@href, 'http://') or starts-with(@url, 'http://')">
+                    <a href="{@href|@url}">
+                        <xsl:apply-templates/>
+                    </a>
+                </xsl:when>
+                <xsl:otherwise>
+                    <a href="{$pathToWebapp}{@href|@url}">
+                        <xsl:apply-templates/>
+                    </a>
+                </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template match="ulink">
         <a href="{@href|@url}">
             <xsl:apply-templates/>
         </a>
@@ -657,4 +682,18 @@
             <xsl:apply-templates/>
         </td>
     </xsl:template>
+    
+    <xsl:template name="invertPath">
+        <xsl:param name="str" select="."/>
+        <xsl:variable name="splitString" select="'/'"/>
+        <xsl:choose>
+            <xsl:when test="contains($str,$splitString)">
+                <path>../</path>
+                <xsl:call-template name="invertPath">
+                    <xsl:with-param name="str" select="substring-after($str,$splitString)"/>
+                </xsl:call-template>
+            </xsl:when>
+        </xsl:choose>
+    </xsl:template>
+    
 </xsl:stylesheet>
