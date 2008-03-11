@@ -27,6 +27,7 @@
                 <include name="sitemap.xmap"/>
                 <include name="styles/**"/>
                 <include name="stylesheets/**"/>
+            	<include name="gsoc/**"/>
                 <exclude name="WEB-INF/data/*"/>
             </fileset>
         </copy>
@@ -79,9 +80,13 @@
             <replacefilter token="backup.xml" value="backup.html"/>
             <replacefilter token="building.xml" value="building.html"/>
             <replacefilter token="xmlprague06.xml" value="xmlprague06.html"/>
-			<replacefilter token="soc-ft.xml" value="soc-ft.html"/>
+			
+            <!--
+            <replacefilter token="soc-ft.xml" value="soc-ft.html"/>
 			<replacefilter token="soc-xqj.xml" value="soc-xqj.html"/>
-			<replacefilter token="tutorials.xml" value="tutorials.html"/>
+			-->
+			
+            <replacefilter token="tutorials.xml" value="tutorials.html"/>
 			<replacefilter token="validation.xml" value="validation.html"/>
 			<replacefilter token="jmx.xml" value="jmx.html"/>
 			<replacefilter token="download.xml" value="download.html"/>
@@ -101,6 +106,10 @@
             <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
             <replacefilter token="apps/applications.xml" value="${demo.host}/apps/applications.xml"/>
             <replacefilter token="webstart/exist.jnlp" value="${demo.host}:8080/webstart/exist.jnlp"/>
+            	
+            <replacefilter token="gsoc/2007/summer.xml" value="${demo.host}/gsoc/2007/summer.xml"/>
+           	<replacefilter token="gsoc/2007/soc-xqj.xml" value="${demo.host}/gsoc/2007/soc-xqj.xml"/>
+            <replacefilter token="gsoc/2008/soc-ft.xml" value="${demo.host}/gsoc/2007/soc-ft.xml"/>
         </replace>
     </target>
 
@@ -140,9 +149,10 @@
             	<uri type="append" src="triggers.xml"/>
                 <uri type="append" src="facts.xml"/>
                 <uri type="append" src="extensions.xml"/>
-                <uri type="append" src="summer.xml"/>
-				<uri type="append" src="soc-ft.xml"/>
-				<uri type="append" src="soc-xqj.xml"/>
+                <uri type="append" src="gsoc/2007/summer.xml"/>
+                <uri type="append" src="gsoc/2007/soc-ft.xml"/>
+	 <uri type="append" src="gsoc/2007/soc-xqj.xml"/>
+                <uri type="append" src="gsoc/2008/summer.xml"/>
             </uris>
         </cocoon>
 
@@ -215,6 +225,7 @@
                 <include name="styles/**"/>
                 <include name="resources/**"/>
                 <include name="scripts/**"/>
+                <include name="gsoc/**"/>
                 <include name="*.jpg"/>
                 <include name="*.png"/>
                 <include name="*.gif"/>
@@ -255,6 +266,8 @@
             <replacefilter token="documentation.xml" value="${host}/documentation.html"/>
             <!--replacefilter token="#mailing" value="${host}/index.html#mailing"/-->
             <replacefilter token="api/index.html" value="${host}/api/index.html"/>
+            <replacefilter token="gsoc/2007/summer.xml" value="${host}/gsoc/2007/summer.html"/>
+            <replacefilter token="gsoc/2008/summer.xml" value="${host}/gsoc/2008/summer.html"/>
         </replace>
 
         <replace dir="${build.docs.src}" summary="true">
