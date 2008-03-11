@@ -2922,6 +2922,31 @@ public class XQueryTest extends XMLTestCase {
             fail(ex.toString());
         }
     }
+    
+    
+    
+            
+    // http://sourceforge.net/support/tracker.php?aid=1909505
+    public void testXmldbStoreComment_1909505() {
+
+        try {
+            String query = "declare option exist:serialize 'indent=no';" +
+                    "let $docIn := <a><!-- b --></a>" +
+                    "let $uri := xmldb:store(\"/db\", \"commenttest.xml\", $docIn)" +
+                    "let $docOut := doc($uri) return $docOut";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "<a><!-- b --></a>",
+                    result.getResource(0).getContent().toString());
+
+        } catch(XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
 
     // ======================================
     
