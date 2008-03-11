@@ -57,6 +57,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.UserDataHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 
 public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
@@ -615,6 +616,12 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
             serializer.setSAXHandlers(handler, null);
             streamer = SerializerPool.getInstance().borrowDOMStreamer(serializer);
 			streamer.setContentHandler(handler);
+            
+            // Preserve e.g. comments
+            if(handler instanceof LexicalHandler){
+                streamer.setLexicalHandler( (LexicalHandler) handler );
+            }
+            
 			streamer.serialize(this, false);
 		} catch (Exception e) {
 		    SerializerPool.getInstance().returnObject(streamer);
