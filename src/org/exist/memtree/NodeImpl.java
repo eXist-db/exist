@@ -40,6 +40,7 @@ import org.xml.sax.SAXException;
 
 import java.util.Iterator;
 import java.util.Properties;
+import org.xml.sax.ext.LexicalHandler;
 
 public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
@@ -610,6 +611,12 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
             serializer.setSAXHandlers(handler, null);
             streamer = SerializerPool.getInstance().borrowDOMStreamer(serializer);
 			streamer.setContentHandler(handler);
+            
+            // Preserve e.g. comments
+            if(handler instanceof LexicalHandler){
+                streamer.setLexicalHandler( (LexicalHandler) handler );
+            }
+            
 			streamer.serialize(this, false);
 		} catch (Exception e) {
 		    SerializerPool.getInstance().returnObject(streamer);
