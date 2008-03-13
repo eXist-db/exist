@@ -39,6 +39,10 @@ public class Node extends Item {
 		}
 	}
 	
+	public boolean extant() {
+		return !staleMarker.stale();
+	}
+	
 	org.w3c.dom.Node getDOMNode() {
 		staleMarker.check();
 		org.w3c.dom.Node domNode = ((NodeValue) item).getNode();

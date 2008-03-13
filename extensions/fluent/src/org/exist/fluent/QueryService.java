@@ -183,8 +183,7 @@ public class QueryService implements Cloneable {
 	
 	/**
 	 * Run the given query, ignoring the results.  Useful for running update "queries" --
-	 * see eXist's XQuery Update Extensions.
-	 * @see http://exist-db.org/update_ext.html
+	 * see eXist's <a href="http://exist-db.org/update_ext.html">XQuery Update Extensions</a>.
 	 * @param query the query to run
 	 * @param params parameters to the query, will be substituted for $_1, $_2, etc.
 	 */
