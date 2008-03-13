@@ -82,9 +82,11 @@ public class Item extends Resource {
 	}
 	
 	/**
-	 * Return whether this item really exists, or if it's a virtual placeholder equivalent to a <code>null</code>.
+	 * Return whether this item really exists.  Examples of items that don't exist even though they have an object
+	 * representing them include virtual placeholders returned for an optional query that didn't select an item, and
+	 * items that were deleted from the database after being selected.
 	 * 
-	 * @return <code>true</code> if the item exists, <code>false</code> if it's a null placeholder returned as part of an optional query
+	 * @return <code>true</code> if the item exists, <code>false</code> otherwise
 	 */
 	public boolean extant() {
 		return true;

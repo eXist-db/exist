@@ -3,6 +3,10 @@ package org.exist.fluent;
 class StaleMarker {
 	
 	private boolean stale;
+	
+	synchronized boolean stale() {
+		return stale;
+	}
 
 	synchronized void mark() {
 		stale = true;
