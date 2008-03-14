@@ -1,6 +1,7 @@
 package org.exist.fluent;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.*;
 
 import java.util.EnumSet;
 
@@ -66,7 +67,59 @@ public class NodeTest extends DatabaseTestCase {
 		Object o1 = doc1.query().single("//top"), o2 = doc2.query().single("//top");
 		assertFalse(o1.equals(o2));
 	}
+	
+	@Test
+	public void compareDocumentOrderTo1() {
+		Node root = db.getFolder("/").documents().load(Name.generate(), Source.xml(
+				"<root><a><aa/></a><b><bb/></b><c><cc/></c></root>")).root();
+		Node a = root.query().single("//a").node(), aa = root.query().single("//aa").node();
+		Node b = root.query().single("//b").node(), bb = root.query().single("//bb").node();
+		Node c = root.query().single("//c").node(), cc = root.query().single("//cc").node();
+		assertEquals(0, a.compareDocumentOrderTo(a));
+		assertEquals(0, a.compareDocumentOrderTo(root.query().single("//a").node()));
+		assertThat(a.compareDocumentOrderTo(b), lessThan(0));
+		assertThat(c.compareDocumentOrderTo(b), greaterThan(0));
+		assertThat(aa.compareDocumentOrderTo(a), greaterThan(0));
+		assertThat(bb.compareDocumentOrderTo(cc), lessThan(0));
+		assertThat(root.compareDocumentOrderTo(c), lessThan(0));
+	}
+	
+	@Test
+	public void compareDocumentOrderTo2() {
+		ItemList nodes = db.query().all("let $x := <root><a><aa/></a><b><bb/></b><c><cc/></c></root> return ($x//a, $x//aa, $x//b, $x//bb, $x//c, $x//cc, $x)");
+		Node root = nodes.get(6).node();
+		Node a = nodes.get(0).node(), aa = nodes.get(1).node();
+		Node b = nodes.get(2).node(), bb = nodes.get(3).node();
+		Node c = nodes.get(4).node(), cc = nodes.get(5).node();
+		assertEquals(0, a.compareDocumentOrderTo(a));
+		assertThat(a.compareDocumentOrderTo(b), lessThan(0));
+		assertThat(c.compareDocumentOrderTo(b), greaterThan(0));
+		assertThat(aa.compareDocumentOrderTo(a), greaterThan(0));
+		assertThat(bb.compareDocumentOrderTo(cc), lessThan(0));
+		assertThat(root.compareDocumentOrderTo(c), lessThan(0));
+	}
 
+	@Test(expected = DatabaseException.class)
+	public void compareDocumentOrderTo3() {
+		Node root1 = db.getFolder("/").documents().load(Name.generate(), Source.xml("<root1/>")).root();
+		Node root2 = db.getFolder("/").documents().load(Name.generate(), Source.xml("<root2/>")).root();
+		root1.compareDocumentOrderTo(root2);
+	}
+
+	@Test(expected = DatabaseException.class)
+	public void compareDocumentOrderTo4() {
+		Node root1 = db.getFolder("/").documents().load(Name.generate(), Source.xml("<root1/>")).root();
+		Node root2 = db.query().single("<root2/>").node();
+		root1.compareDocumentOrderTo(root2);
+	}
+
+	@Test(expected = DatabaseException.class)
+	public void compareDocumentOrderTo5() {
+		Node root1 = db.query().single("<root1/>").node();
+		Node root2 = db.query().single("<root2/>").node();
+		root1.compareDocumentOrderTo(root2);
+	}
+	
 	@Test
 	public void append1() {
 		XMLDocument doc = db.createFolder("/test").documents().build(Name.create("foo"))
