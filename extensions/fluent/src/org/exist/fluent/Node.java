@@ -11,6 +11,7 @@ import org.exist.collections.triggers.Trigger;
 import org.exist.dom.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.*;
 
@@ -71,10 +72,11 @@ public class Node extends Item {
 		Node that = (Node) o;
 		if (item == that.item) return true;
 		if (this.item instanceof NodeProxy && that.item instanceof NodeProxy) {
-			NodeProxy thisProxy = (NodeProxy) this.item, thatProxy = (NodeProxy) that.item;
-			return
-				thisProxy.getDocument().getURI().equals(thatProxy.getDocument().getURI()) &&
-				thisProxy.getNodeId().equals(thatProxy.getNodeId());
+			try {
+				return ((NodeProxy) this.item).equals((NodeProxy) that.item);
+			} catch (XPathException e) {
+				// fall through to return false below
+			}
 		}
 		return false;
 	}
@@ -99,6 +101,43 @@ public class Node extends Item {
 			return proxy.getDocument().getURI().hashCode() ^ Arrays.hashCode(buf.toByteArray());
 		} else {
 			return item.hashCode();
+		}
+	}
+	
+	/**
+	 * Compare the order of two nodes in a document. 
+	 *
+	 * @param the node to compare this one to
+	 * @return node 0 if this node is the same as the given node, a value less than 0 if it precedes the
+	 * 	given node in the document, and a value great than 0 if it follows the given node in the document
+	 * @throws DatabaseException if this node and the given one are not in the same document
+	 */
+	public int compareDocumentOrderTo(Node node) {
+		if (this.item == node.item) return 0;
+		NodeValue nv1 = (NodeValue) this.item, nv2 = (NodeValue) node.item;
+		if (nv1.getImplementationType() != nv2.getImplementationType())
+			throw new DatabaseException("can't compare different node types, since they can never be in the same document");
+		if (nv1.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+			NodeProxy n1 = (NodeProxy) item, n2 = (NodeProxy) node.item;
+			if (n1.getDocument().getDocId() != n2.getDocument().getDocId()) 
+				throw new DatabaseException("can't compare document order of nodes in disparate documents:  this node is in " + document() + " and the argument node in " + node.document());
+			if (n1.getNodeId().equals(n2.getNodeId())) return 0;
+			try {
+				return n1.before(n2, false) ? -1 : +1;
+			} catch (XPathException e) {
+				throw new DatabaseException("unable to compare nodes", e);
+			}
+		} else if (nv1.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+			org.exist.memtree.NodeImpl n1 = (org.exist.memtree.NodeImpl) nv1, n2 = (org.exist.memtree.NodeImpl) nv2;
+			if (n1.getDocument() != n2.getDocument())
+				throw new DatabaseException("can't compare document order of in-memory nodes created separately");
+			try {
+				return n1.before(n2, false) ? -1 : +1;
+			} catch (XPathException e) {
+				throw new DatabaseException("unable to compare nodes", e);
+			}
+		} else {
+			throw new DatabaseException("unknown node implementation type: " + nv1.getImplementationType());
 		}
 	}
 
