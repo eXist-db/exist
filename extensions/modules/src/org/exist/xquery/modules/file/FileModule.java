@@ -50,6 +50,7 @@ public class FileModule extends AbstractInternalModule
 		new FunctionDef( DirectoryListFunction.signatures[0], 	DirectoryListFunction.class ),
 		new FunctionDef( FileRead.signatures[0], 				FileRead.class ),
 		new FunctionDef( FileRead.signatures[1], 				FileRead.class ),
+		new FunctionDef( FileReadBinary.signatures[0], 			FileReadBinary.class ), 
 		new FunctionDef( FileReadUnicode.signatures[0], 		FileReadUnicode.class ),
 		new FunctionDef( FileReadUnicode.signatures[1], 		FileReadUnicode.class ),
 		new FunctionDef( SerializeToFile.signatures[0], 		SerializeToFile.class ),
