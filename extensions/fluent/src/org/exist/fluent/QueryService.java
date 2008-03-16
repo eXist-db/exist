@@ -54,8 +54,8 @@ public class QueryService implements Cloneable {
 		this.db = null;
 	}
 	
-	boolean isFresh() {
-		return !presub && bindings.isEmpty() && (namespaceBindings == null || namespaceBindings.isFresh());
+	boolean isFreshFrom(Resource origin) {
+		return !presub && bindings.isEmpty() && (namespaceBindings == null || namespaceBindings.isFreshFrom(origin.namespaceBindings()));
 	}
 	
 	static final QueryService NULL = new QueryService() {

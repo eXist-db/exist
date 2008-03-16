@@ -200,13 +200,14 @@ public class NamespaceMap implements Cloneable {
 	
 	/**
 	 * Return whether this namespace map contains no bindings other than inherited
-	 * ones.
+	 * ones, and inherits from the given parent.
 	 * 
+	 * @param freshParent the fresh parent to compare against
 	 * @return <code>true</code> if this namespace map is empty except for possible
 	 * 		inherited bindings, <code>false</code> otherwise
 	 */
-	public boolean isFresh() {
-		return map == null || map.isEmpty();
+	public boolean isFreshFrom(NamespaceMap freshParent) {
+		return (map == null || map.isEmpty()) && parent == freshParent;
 	}
 	
 	@Override public boolean equals(Object o) {
