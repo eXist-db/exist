@@ -24,13 +24,7 @@ package org.exist.security.xacml;
 
 import java.net.URL;
 
-import org.exist.source.ClassLoaderSource;
-import org.exist.source.CocoonSource;
-import org.exist.source.DBSource;
-import org.exist.source.FileSource;
-import org.exist.source.Source;
-import org.exist.source.StringSource;
-import org.exist.source.URLSource;
+import org.exist.source.*;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -83,7 +77,7 @@ public class XACMLSource
 			String type = (source instanceof ClassLoaderSource) ? XACMLConstants.CLASSLOADER_SOURCE_TYPE : XACMLConstants.URL_SOURCE_TYPE; 
 			return new XACMLSource(type, key);
 		}
-		if(source instanceof StringSource)
+		if(source instanceof StringSource || source instanceof NamespacedStringSource)
 			return new XACMLSource(XACMLConstants.STRING_SOURCE_TYPE, XACMLConstants.STRING_SOURCE_TYPE);
 		if(source instanceof CocoonSource)
 		{

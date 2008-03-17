@@ -1,12 +1,14 @@
 package org.exist.fluent;
 
+import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.security.xacml.AccessContext;
-import org.exist.storage.DBBroker;
+import org.exist.source.*;
+import org.exist.storage.*;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.*;
 import org.exist.xquery.value.*;
@@ -22,7 +24,6 @@ public class QueryService implements Cloneable {
 	private static final Pattern PRE_SUB_PATTERN = Pattern.compile("\\$(\\d+)");
 	private static final Logger LOG = Logger.getLogger(QueryService.class);
 	
-	private XQuery xquery;
 	private NamespaceMap namespaceBindings;
 	private final Database db;
 	protected DocumentSet docs;
@@ -77,9 +78,10 @@ public class QueryService implements Cloneable {
 	}
 	
 	/**
-	 * Return the database to which the resource that provides the context for this query service belongs.
-	 * The returned database will inherit its namespace bindings from this query service.
-	 *
+	 * Return the database to which the resource that provides the context for
+	 * this query service belongs. The returned database will inherit its
+	 * namespace bindings from this query service.
+	 * 
 	 * @return the database that contains this object
 	 */
 	public Database database() {
@@ -194,31 +196,35 @@ public class QueryService implements Cloneable {
 	private interface WrapperFactory {
 		Function createWrapper(XQueryContext context);
 	}
-	
-	private CompiledXQuery compile(String query, WrapperFactory wrapperFactory, Object[] params) {
+		
+	ItemList executeQuery(String query, WrapperFactory wrapperFactory, Object[] params) {
 		if (presub) query = presub(query, params);
 		DBBroker broker = null;
 		try {
 			broker = db.acquireBroker();
 			prepareContext(broker);
-			xquery = broker.getXQueryService();
-			XQueryContext context = buildXQueryContext(params);
-			return wrap(xquery.compile(context, query), wrapperFactory, context);
-		} catch (XPathException e) {
-			LOG.warn("query compilation failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));
-			throw new DatabaseException("failed to compile query", e);
-		} finally {
-			db.releaseBroker(broker);
-		}
-	}
-		
-	ItemList executeQuery(String query, WrapperFactory wrapperFactory, Object[] params) {
-		try {
-			CompiledXQuery compiledQuery = compile(query, wrapperFactory, params);
-			return new ItemList(xquery.execute(compiledQuery, base), namespaceBindings.extend(), db);
+			Map<String, String> combinedMap = namespaceBindings.getCombinedMap();
+			org.exist.source.Source source = new NamespacedStringSource(query, combinedMap);
+			XQuery xquery = broker.getXQueryService();
+			XQueryPool pool = xquery.getXQueryPool();
+			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
+			try {
+				XQueryContext context = compiledQuery == null
+						? xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP)
+						: compiledQuery.getContext();
+				buildXQueryContext(context, params, combinedMap);
+				if (compiledQuery == null) compiledQuery = xquery.compile(context, source);
+				return new ItemList(xquery.execute(wrap(compiledQuery, wrapperFactory, context), base), namespaceBindings.extend(), db);
+			} finally {
+				if (compiledQuery != null) pool.returnCompiledXQuery(source, compiledQuery);
+			}
 		} catch (XPathException e) {
 			LOG.debug("query execution failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));
 			throw new DatabaseException("failed to execute query", e);
+		} catch (IOException e) {
+			throw new DatabaseException("unexpected exception", e);
+		} finally {
+			db.releaseBroker(broker);
 		}
 	}
 	
@@ -231,9 +237,8 @@ public class QueryService implements Cloneable {
 		return wrapper;
 	}
 
-	private XQueryContext buildXQueryContext(Object[] params) throws XPathException {
-		XQueryContext context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
-		context.declareNamespaces(namespaceBindings.getCombinedMap());
+	private void buildXQueryContext(XQueryContext context, Object[] params, Map<String, String> combinedNamespaceMap) throws XPathException {
+		context.declareNamespaces(combinedNamespaceMap);
 		context.setBackwardsCompatibility(false);
 		context.setStaticallyKnownDocuments(docs);
 		context.setBaseURI(baseUri == null ? new AnyURIValue("/db") : baseUri);
@@ -243,7 +248,6 @@ public class QueryService implements Cloneable {
 		if (params != null) for (int i = 0; i < params.length; i++) {
 			context.declareVariable("_"+(i+1), convertValue(params[i]));
 		}
-		return context;
 	}
 	
 	/**
@@ -378,23 +382,36 @@ public class QueryService implements Cloneable {
 	 * @return a query analysis facet
 	 */
 	public QueryAnalysis analyze(String query, Object... params) {
-		Map<String,Object> oldBindings = bindings;
-		bindings = new HashMap<String,Object>(bindings);
+		if (presub) query = presub(query, params);
+		
 		Collection<String> requiredVariables = new ArrayList<String>();
+		DBBroker broker = null;
 		try {
+			broker = db.acquireBroker();
+			prepareContext(broker);
+			Map<String, String> combinedMap = namespaceBindings.getCombinedMap();
+			org.exist.source.Source source = new NamespacedStringSource(query, combinedMap);
+			XQuery xquery = broker.getXQueryService();
+			XQueryContext context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
+			buildXQueryContext(context, params, combinedMap);
 			while(true) {
 				try {
-					return new QueryAnalysis(compile(query, null, params), Collections.unmodifiableCollection(requiredVariables));
-				} catch (DatabaseException e) {
-					Matcher matcher = VAR_NOT_BOUND_PATTERN.matcher(e.getCause().getMessage());
+					return new QueryAnalysis(xquery.compile(context, source), Collections.unmodifiableCollection(requiredVariables));
+				} catch (XPathException e) {
+					Matcher matcher = VAR_NOT_BOUND_PATTERN.matcher(e.getMessage());
 					if (!matcher.matches()) throw e;
 					String varName = matcher.group(1);
-					bindings.put(varName.substring(1), null);
+					context.declareVariable(varName.substring(1), null);
 					requiredVariables.add(varName);
 				}
 			}
+		} catch (XPathException e) {
+			LOG.warn("query compilation failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));
+			throw new DatabaseException("failed to compile query", e);
+		} catch (IOException e) {
+			throw new DatabaseException("unexpected exception", e);
 		} finally {
-			bindings = oldBindings;
+			db.releaseBroker(broker);
 		}
 	}
 	
