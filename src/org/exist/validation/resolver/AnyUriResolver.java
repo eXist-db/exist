@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-08 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -68,9 +68,7 @@ public class AnyUriResolver implements XMLEntityResolver {
         }
     }
     
-    /**
-     *
-     */
+
     public XMLInputSource resolveEntity(XMLResourceIdentifier xri) throws XNIException, IOException {
         
         if(xri.getExpandedSystemId()==null && xri.getLiteralSystemId()==null && 
@@ -88,13 +86,13 @@ public class AnyUriResolver implements XMLEntityResolver {
             // First time use constructor supplied path
             resourcePath = docPath;
             baseSystemId = parentURI;
+            xri.setExpandedSystemId(docPath);      
             firstTime=false;
             
         } else {
             resourcePath=xri.getExpandedSystemId();
-            baseSystemId=xri.getBaseSystemId();
-//            baseSystemId=parentURI;
         }
+        xri.setBaseSystemId(docPath);
         
         LOG.debug("resourcePath='"+resourcePath+"'");
         
