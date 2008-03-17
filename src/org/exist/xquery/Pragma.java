@@ -55,6 +55,8 @@ public abstract class Pragma {
         return qname;
     }
 
+    public void resetState(boolean postOptimization) {    
+    }
 
     public String toString() {
         return "(# " + qname + ' ' + contents + "#)";
