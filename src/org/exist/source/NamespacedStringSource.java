@@ -13,7 +13,7 @@ import org.exist.storage.DBBroker;
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class NamespacedStringSource extends AbstractSource {
-	private final Map map;
+	private final Map<String, String> map;
 
 	/**
 	 * Create a new source for the given content and namespace map (string to string).
@@ -23,7 +23,7 @@ public class NamespacedStringSource extends AbstractSource {
 	 * @param content the content of the query
 	 * @param namespaceMap the map of prefixes to namespace URIs
 	 */
-	public NamespacedStringSource(String content, Map namespaceMap) {
+	public NamespacedStringSource(String content, Map<String, String> namespaceMap) {
 		map = namespaceMap;
 		map.put("<query>", content);
 	}
@@ -31,6 +31,6 @@ public class NamespacedStringSource extends AbstractSource {
 	public Object getKey() {return map;}
 	public int isValid(DBBroker broker) {return Source.VALID;}
 	public int isValid(Source other) {return Source.VALID;}
-	public Reader getReader() throws IOException {return new StringReader((String) map.get("<query>"));}
-	public String getContent() throws IOException {return (String) map.get("<query>");}
+	public Reader getReader() throws IOException {return new StringReader(map.get("<query>"));}
+	public String getContent() throws IOException {return map.get("<query>");}
 }
