@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
@@ -37,6 +34,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import java.util.Iterator;
+import java.util.List;
+
 public class Optimize extends Pragma {
 
     public  final static QName OPTIMIZE_PRAGMA = new QName("optimize", Namespaces.EXIST_NS, "exist");
@@ -49,6 +49,10 @@ public class Optimize extends Pragma {
     private Expression innerExpr;
     private LocationStep contextStep = null;
 
+    private NodeSet cachedContext = null;
+    private int cachedTimestamp;
+    private boolean cachedOptimize;
+    
     public Optimize(XQueryContext context, QName pragmaName, String contents, boolean explicit) throws XPathException {
         super(pragmaName, contents);
         this.context = context;
@@ -66,21 +70,30 @@ public class Optimize extends Pragma {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (contextItem != null)
                 contextSequence = contextItem.toSequence();
+        NodeSet originalContext = contextSequence.toNodeSet(); // contextSequence will be overwritten
+        boolean useCached = false;
+        if (cachedContext != null && cachedContext == originalContext)
+            useCached = !originalContext.hasChanged(cachedTimestamp);
         // check if all Optimizable expressions signal that they can indeed optimize
         // in the current context
         boolean optimize = false;
-        if (optimizables != null && optimizables.length > 0) {
-            for (int i = 0; i < optimizables.length; i++) {
-                if (optimizables[i].canOptimize(contextSequence))
-                    optimize = true;
-                else {
-                    optimize = false;
-                    break;
+        if (useCached)
+            optimize = cachedOptimize;
+        else {
+            if (optimizables != null && optimizables.length > 0) {
+                for (int i = 0; i < optimizables.length; i++) {
+                    if (optimizables[i].canOptimize(contextSequence))
+                        optimize = true;
+                    else {
+                        optimize = false;
+                        break;
+                    }
                 }
             }
         }
         if (optimize) {
-            NodeSet originalContext = contextSequence.toNodeSet(); // contextSequence will be overwritten
+            cachedContext = originalContext;
+            cachedTimestamp = originalContext.getState();
             NodeSet ancestors = null;
             NodeSet result = null;
             for (int current = 0; current < optimizables.length; current++) {
@@ -211,6 +224,11 @@ public class Optimize extends Pragma {
             o[optimizables.length] = optimizable;
             optimizables = o;
         }
+    }
+
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        cachedContext = null;
     }
 
     /**
