@@ -39,6 +39,7 @@ public abstract class AbstractXMLDBTask extends Task
   protected String password = "guest";
   protected String uri = null;
   protected boolean createDatabase = false;
+  protected String configuration = null;
   protected boolean failonerror = true;
 
   /**
@@ -81,6 +82,10 @@ public abstract class AbstractXMLDBTask extends Task
     this.createDatabase = create;
   }
 
+  public void setConfiguration(String config) {
+      this.configuration = config;
+  }
+
   public void setFailonerror(boolean failonerror)
   {
     this.failonerror = failonerror;
@@ -103,6 +108,8 @@ public abstract class AbstractXMLDBTask extends Task
       Class clazz = Class.forName(driver);
       Database database = (Database) clazz.newInstance();
       database.setProperty("create-database", createDatabase ? "true" : "false");
+      if (configuration != null)
+        database.setProperty("configuration", configuration);
       DatabaseManager.registerDatabase(database);
     } catch (Exception e)
     {
