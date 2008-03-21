@@ -21,9 +21,20 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.*;
+import org.exist.dom.ContextItem;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NumericValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -309,7 +320,6 @@ public class Predicate extends PathExpr {
 		 * we can also return the cached result. 
 		 */
 		if(cached != null && cached.isValid(contextSequence, null) && nodes.isCached()) {
-			LOG.debug("Using cached results");
             if (context.getProfiler().isEnabled())                     
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, 
                         "Using cached results", result);
@@ -352,7 +362,6 @@ public class Predicate extends PathExpr {
 	 * @param outerSequence
 	 * @param contextSequence
 	 * @param mode
-	 * @param inner
 	 * @return The result of the positional evaluation of the predicate.
 	 * @throws XPathException
 	 */

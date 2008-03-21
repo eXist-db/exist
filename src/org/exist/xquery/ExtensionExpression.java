@@ -154,6 +154,10 @@ public class ExtensionExpression extends AbstractExpression {
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         innerExpression.resetState(postOptimization);
+        for (int i = 0; i < pragmas.size(); i++) {
+            Pragma pragma = (Pragma) pragmas.get(i);
+            pragma.resetState(postOptimization);
+        }
     }
 
     public void accept(ExpressionVisitor visitor) {
