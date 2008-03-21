@@ -108,7 +108,12 @@ public class SetCookie extends Function {
 		//get parameters
 		String name = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		String value = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-		Sequence ageSeq = getArgument(2).eval(contextSequence, contextItem);
+        
+        Sequence ageSeq = Sequence.EMPTY_SEQUENCE;
+        if(getArgumentCount()>2){
+            ageSeq = getArgument(2).eval(contextSequence, contextItem);
+        }
+
 		//set response header
 		if(response.getObject() instanceof ResponseWrapper) {
 			if (ageSeq.isEmpty()) {
