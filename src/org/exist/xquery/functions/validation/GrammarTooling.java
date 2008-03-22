@@ -22,14 +22,23 @@
 
 package org.exist.xquery.functions.validation;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.parser.XMLInputSource;
+
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.GrammarPool;
@@ -40,9 +49,12 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -76,7 +88,19 @@ public class GrammarTooling extends BasicFunction  {
             "Show all cached grammars.",
             null,
             new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
-            )
+            ),
+            
+        new FunctionSignature(
+            new QName("pre-parse-grammar", ValidationModule.NAMESPACE_URI,
+            ValidationModule.PREFIX),
+            "Pre parse grammars specified by $a and add to grammar cache. Only for XML schemas (.xsd).",
+            new SequenceType[]{
+                new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE)
+            },
+            new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+            ),
+            
+            
     };
     
     
@@ -121,7 +145,71 @@ public class GrammarTooling extends BasicFunction  {
             NodeImpl result = writeReport(grammarpool, builder);
             return result;
             
+        } else if (isCalledAs("pre-parse-grammar")){
             
+            if (args[0].isEmpty())
+                return Sequence.EMPTY_SEQUENCE;
+            
+            // Setup for XML schema support only
+            XMLGrammarPreparser parser = new XMLGrammarPreparser();
+            parser.registerPreparser(TYPE_XSD , null);
+            
+           
+            List<Grammar> allGrammars = new ArrayList<Grammar>();
+            
+             // iterate through the argument sequence and parse url
+            for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
+                String url = i.nextItem().getStringValue();
+                
+                // Fix database urls
+                if(url.startsWith("/")){
+                    url="xmldb:exist://"+url;
+                }
+               
+                LOG.debug("Parsing "+url);
+                
+                // parse XSD grammar
+                try {
+                    if(url.endsWith(".xsd")){
+                        
+                        InputStream is = new URL(url).openStream();
+                        XMLInputSource xis = new XMLInputSource(null, url, url, is, null);
+                        Grammar schema = parser.preparseGrammar(TYPE_XSD, xis);
+                        is.close();
+
+                        allGrammars.add(schema);
+
+                    } else {
+                        throw new XPathException("Only XMLSchemas can be preparsed.");
+                    }
+
+                } catch(ExistIOException ex) {
+                    LOG.debug(ex.getCause());
+                    throw new XPathException(ex.getCause());
+                    
+                } catch(Exception ex) {
+                    LOG.debug(ex);
+                    throw new XPathException(ex);
+                }
+                
+                
+            }
+
+            LOG.debug("Successfully parsed "+allGrammars.size()+" grammars.");
+            
+            // Send all XSD grammars to grammarpool
+            Grammar grammars[] = new Grammar[allGrammars.size()];
+            grammars = allGrammars.toArray(grammars);
+            grammarpool.cacheGrammars(TYPE_XSD, grammars);
+ 
+            // Construct result to end user
+            ValueSequence result = new ValueSequence();
+            for(Grammar one : grammars){
+                result.add( new StringValue(one.getGrammarDescription().getNamespace()) );
+            }
+            
+
+            return result;
             
         } else {
             // oh oh

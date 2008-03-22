@@ -41,7 +41,8 @@ public class ValidationModule extends AbstractInternalModule {
        new FunctionDef(Validation.signatures[2], Validation.class),
        new FunctionDef(Validation.signatures[3], Validation.class),
        new FunctionDef(GrammarTooling.signatures[0], GrammarTooling.class),
-       new FunctionDef(GrammarTooling.signatures[1], GrammarTooling.class)
+       new FunctionDef(GrammarTooling.signatures[1], GrammarTooling.class),
+       new FunctionDef(GrammarTooling.signatures[2], GrammarTooling.class)
     };
     
     public final static QName EXCEPTION_QNAME =
