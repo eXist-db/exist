@@ -26,6 +26,7 @@ import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Node;
 
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -130,8 +131,9 @@ public class FunIdRef extends Function {
 		NodeSet attribs = context.getBroker().getValueIndex().find(Constants.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
 		NodeProxy n;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
-			n = (NodeProxy) i.next();			
-			result.add(n);
+			n = (NodeProxy) i.next();
+            n.setNodeType(Node.ATTRIBUTE_NODE);
+            result.add(n);
 		}
 	}
 }
