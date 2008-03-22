@@ -84,7 +84,7 @@ LITERAL_inherit="inherit"=84
 "no-inherit"=85
 DOLLAR("dollar sign '$'")=86
 LCURLY("opening curly brace '{'")=87
-RCURLY("closing curly brace '{'")=88
+RCURLY("closing curly brace '}'")=88
 COLON=89
 LITERAL_external="external"=90
 LITERAL_schema="schema"=91
