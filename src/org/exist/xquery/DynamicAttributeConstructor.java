@@ -31,6 +31,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import org.w3c.dom.DOMException;
 
 /**
  * Represents a dynamic attribute constructor. The implementation differs from
@@ -109,9 +110,14 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             }
             value = buf.toString();
         }
-        int nodeNr = builder.addAttribute(qn, value);
-        NodeImpl node = ((DocumentImpl)builder.getDocument()).getAttribute(nodeNr);
-        
+        NodeImpl node = null;
+        try {
+            int nodeNr = builder.addAttribute(qn, value);
+            node = ((DocumentImpl)builder.getDocument()).getAttribute(nodeNr);
+        } catch (DOMException e) {
+            throw new XPathException(getASTNode(), "Error XQDY0025: element has more than one attribute '" + qn + "'");
+        }
+
         if (context.getProfiler().isEnabled())           
             context.getProfiler().end(this, "", node);          
         
