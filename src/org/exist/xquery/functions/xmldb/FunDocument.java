@@ -22,7 +22,14 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.dom.*;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -30,8 +37,18 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -138,7 +155,7 @@ public class FunDocument extends Function {
 	    try {
             if(!cacheIsValid)
                 // wait for pending updates
-                docs.lock(lockOnLoad, true);
+                docs.lock(context.getBroker(), lockOnLoad, true);
 	        // wait for pending updates
 			if(result == null) {
 			    result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);

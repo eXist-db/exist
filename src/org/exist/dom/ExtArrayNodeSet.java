@@ -23,6 +23,7 @@ package org.exist.dom;
 
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
@@ -808,7 +809,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         return result;
     }
 
-    public void lock(boolean exclusive, boolean checkExisting) throws LockException {
+    public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException {
         DocumentImpl d;
 	    Lock dlock;
         for (int idx = 0; idx < partCount; idx++) {
@@ -818,6 +819,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                 dlock.acquire(Lock.WRITE_LOCK);
             else
                 dlock.acquire(Lock.READ_LOCK);
+            d.setBroker(broker);
         }
     }
 

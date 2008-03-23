@@ -23,15 +23,34 @@
 package org.exist.xquery.functions;
 
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -142,6 +161,7 @@ public class ExtCollection extends Function {
             try {
                 if (!context.inProtectedMode() && !dlock.hasLock()) {
                     dlock.acquire(Lock.READ_LOCK);
+                    doc.setBroker(context.getBroker());
                     lockAcquired = true;
                 }
                 result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));

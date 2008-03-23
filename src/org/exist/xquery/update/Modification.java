@@ -29,7 +29,14 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeIndexListener;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
@@ -42,8 +49,18 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.AbstractExpression;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Expression;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -128,13 +145,12 @@ public abstract class Modification extends AbstractExpression
 		    // acquire a lock on all documents
 	        // we have to avoid that node positions change
 	        // during the modification
-	        lockedDocuments.lock(true, false);
+	        lockedDocuments.lock(context.getBroker(), true, false);
 	        
 		    StoredNode ql[] = new StoredNode[nodes.getLength()];
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nodes.item(i);
 				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
-				doc.setBroker(context.getBroker());
 				//prepare Trigger
 				prepareTrigger(transaction, doc);
 			}
