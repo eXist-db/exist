@@ -1362,7 +1362,8 @@ throws PermissionDeniedException, EXistException, XPathException
 			{
 				if (step instanceof LocationStep) {
 					LocationStep s= (LocationStep) step;
-					if (s.getAxis() == Constants.ATTRIBUTE_AXIS)
+					if (s.getAxis() == Constants.ATTRIBUTE_AXIS ||
+						s.getTest().getType() == Type.ATTRIBUTE)
 						// combines descendant-or-self::node()/attribute:*
 						s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 					else
@@ -1697,7 +1698,8 @@ throws PermissionDeniedException, EXistException, XPathException
 			{
 				if (rightStep instanceof LocationStep) {
 					LocationStep rs= (LocationStep) rightStep;
-					if (rs.getAxis() == Constants.ATTRIBUTE_AXIS) {
+					if (rs.getAxis() == Constants.ATTRIBUTE_AXIS || 
+						rs.getTest().getType() == Type.ATTRIBUTE) {
 						rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 					} else if (rs.getAxis() == Constants.CHILD_AXIS && rs.getTest().isWildcardTest()) {
                                                 rs.setAxis(Constants.DESCENDANT_AXIS);
