@@ -104,6 +104,22 @@ public class Item extends Resource {
 	public ItemList toItemList() {
 		return new ItemList(convertToSequence(), namespaceBindings.extend(), db);
 	}
+	
+	/**
+	 * Atomize this item and return the result.  This is useful if you don't know if you're
+	 * holding a node or an atomic item, and want to ensure it's an atomic value without
+	 * potentially losing its type by converting it to a string.
+	 * 
+	 * @return the atomized value of this item; may be this item itself if it's already atomic
+	 */
+	public Item toAtomicItem() {
+		try {
+			org.exist.xquery.value.Item atomizedItem = item.atomize();
+			return atomizedItem == item ? this : new Item(atomizedItem, namespaceBindings.extend(), db);
+		} catch (XPathException e) {
+			throw new DatabaseException("unable to atomize item", e);
+		}
+	}
 
 	/**
 	 * @return the string value of this item if atomic, or the concatenation of its text content if a node
@@ -225,8 +241,9 @@ public class Item extends Resource {
 	
 	/**
 	 * Return the comparable value of this item, if available.  The resulting object will
-	 * directly compare the XQuery value without converting to a string first.  Items
-	 * of different types will compare in an arbitrary but stable order.  Nodes are never
+	 * directly compare the XQuery value without converting to a string first, unless the
+	 * item is untyped and atomic, in which case it will be cast to a string.  Items of
+	 * different types will compare in an arbitrary but stable order.  Nodes are never
 	 * comparable.
 	 *
 	 * @return the comparable value of this item
@@ -234,7 +251,11 @@ public class Item extends Resource {
 	 */
 	@SuppressWarnings("unchecked")
 	public Comparable<Object> comparableValue() {
-		return (Comparable<Object>) item;
+		try {
+			return item.getType() == Type.UNTYPED_ATOMIC ? (Comparable) item.convertTo(Type.STRING) : (Comparable) item;
+		} catch (XPathException e) {
+			throw new DatabaseException("unable to convert to comparable value", e);
+		}
 	}
 	
 	/**
