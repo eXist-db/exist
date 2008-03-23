@@ -156,7 +156,13 @@ public class ItemList extends Resource implements Iterable<Item> {
 		 */
 		public Set<XMLDocument> documents() {
 			Set<XMLDocument> docs = new HashSet<XMLDocument>();
-			for (Node node : this) docs.add(node.document());
+			for (Node node : this) {
+				try {
+					docs.add(node.document());
+				} catch (UnsupportedOperationException e) {
+					// ignore, must be a non-persistent node
+				}
+			}
 			return docs;
 		}
 		
