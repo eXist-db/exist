@@ -154,7 +154,7 @@ public class QueryService implements Cloneable {
 	 * @param varBindingsOverride the variable bindings to clone, or <code>null</code> to clone from the original
 	 * @return a clone of this query service with bindings optionally overridden
 	 */
-	public QueryService clone(NamespaceMap nsBindingsOverride, Map<String,Object> varBindingsOverride) {
+	public QueryService clone(NamespaceMap nsBindingsOverride, Map<String, ?> varBindingsOverride) {
 		try {
 			QueryService that = (QueryService) super.clone();
 			that.namespaceBindings = nsBindingsOverride != null
@@ -163,7 +163,7 @@ public class QueryService implements Cloneable {
 				that.bindings = new HashMap<String, Object>(that.bindings);
 			} else {
 				that.bindings = new HashMap<String, Object>();
-				for (Map.Entry<String, Object> entry : varBindingsOverride.entrySet()) {
+				for (Map.Entry<String, ?> entry : varBindingsOverride.entrySet()) {
 					that.let(entry.getKey(), entry.getValue());
 				}
 			}
