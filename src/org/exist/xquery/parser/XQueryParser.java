@@ -11328,7 +11328,7 @@ inputState.guessing--;
 		"\"no-inherit\"",
 		"dollar sign '$'",
 		"opening curly brace '{'",
-		"closing curly brace '{'",
+		"closing curly brace '}'",
 		"COLON",
 		"\"external\"",
 		"\"schema\"",
