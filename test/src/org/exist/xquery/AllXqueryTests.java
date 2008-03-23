@@ -21,45 +21,33 @@
  */
 package org.exist.xquery;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-import org.exist.storage.DBBroker;
 import org.exist.xquery.value.AnyURITest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        XQueryFunctionsTest.class,
+        JavaFunctionsTest.class,
+        XPathQueryTest.class,
+        XQueryTest.class,
+        EntitiesTest.class,
+        SpecialNamesTest.class,
+        ValueIndexTest.class,
+        LexerTest.class,
+        DeepEqualTest.class,
+        SeqOpTest.class,
+        XMLNodeAsXQueryParameterTest.class,
+        OpNumericTest.class,
+        DocumentUpdateTest.class,
+        AnyURITest.class,
+        XQueryGroupByTest.class,
+        ConstructedNodesTest.class,
+        ConstructedNodesRecoveryTest.class,
+        DuplicateAttributesTest.class
+})
 public class AllXqueryTests {
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite("Test for org.exist.xquery");
-        //$JUnit-BEGIN$
-        XPathQueryTest.setURI("xmldb:exist://" + DBBroker.ROOT_COLLECTION);
-//        suite.addTestSuite(XQueryUpdateTest.class);
-        suite.addTestSuite(XQueryFunctionsTest.class);
-        suite.addTestSuite(JavaFunctionsTest.class);
-        suite.addTestSuite(XPathQueryTest.class);
-        suite.addTestSuite(XQueryTest.class);
-        suite.addTestSuite(EntitiesTest.class);
-        suite.addTestSuite(SpecialNamesTest.class);
-        suite.addTestSuite(ValueIndexTest.class);
-        suite.addTestSuite(LexerTest.class); // jmv: Note: LexerTest needs /db/test created by XPathQueryTest
-        suite.addTestSuite(DeepEqualTest.class);
-        suite.addTestSuite(SeqOpTest.class);
-        suite.addTestSuite(XMLNodeAsXQueryParameterTest.class);
-        suite.addTestSuite(OpNumericTest.class);
-        suite.addTestSuite(DocumentUpdateTest.class);
-        suite.addTestSuite(AnyURITest.class);
-        suite.addTestSuite(XQueryGroupByTest.class);
-        suite.addTestSuite(ConstructedNodesTest.class);
-        suite.addTestSuite(ConstructedNodesRecoveryTest.class);
-        //		suite.addTestSuite(XQueryUseCasesTest.class);
-        //$JUnit-END$
-        return suite;
-    }
 }
