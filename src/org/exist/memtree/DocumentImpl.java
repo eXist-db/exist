@@ -257,6 +257,13 @@ public class DocumentImpl extends NodeImpl implements Document {
     public int addAttribute(int nodeNr, QName qname, String value)
             throws DOMException {
         if (nodeKind == null) init();
+        int prevAttr = nextAttr - 1;
+        while (prevAttr > -1 && attrParent[prevAttr] == nodeNr) {
+            QName prevQn = (QName) namePool.get(attrName[prevAttr--]);
+            if (prevQn.equalsSimple(qname))
+                throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
+                        "Error XQDY0025: element has more than one attribute '" + qname + "'");
+        }
         if (nextAttr == attrName.length) growAttributes();
         qname.setNameType(ElementValue.ATTRIBUTE);
         attrParent[nextAttr] = nodeNr;
