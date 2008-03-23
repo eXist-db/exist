@@ -258,7 +258,8 @@ public class DocumentImpl extends NodeImpl implements Document {
             throws DOMException {
         if (nodeKind == null) init();
         int prevAttr = nextAttr - 1;
-        while (prevAttr > -1 && attrParent[prevAttr] == nodeNr) {
+        // check if an attribute with the same qname exists in the parent element
+        while (nodeNr > 0 && prevAttr > -1 && attrParent[prevAttr] == nodeNr) {
             QName prevQn = (QName) namePool.get(attrName[prevAttr--]);
             if (prevQn.equalsSimple(qname))
                 throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,

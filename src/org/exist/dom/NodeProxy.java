@@ -722,13 +722,15 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.xquery.value.Item#copyTo(org.exist.storage.DBBroker, org.exist.memtree.DocumentBuilderReceiver)
      */
     public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
-	if(nodeType == Node.ATTRIBUTE_NODE) {
-	    AttrImpl attr = (AttrImpl)getNode();
-	    receiver.attribute(attr.getQName(), attr.getValue());
-	} else
-	    receiver.addReferenceNode(this);
-	//	    Serializer serializer = broker.getSerializer();
-	//	    serializer.toReceiver(this, receiver);
+        NodeImpl node = null;
+        if (nodeType < 0) {
+            node = (NodeImpl) getNode();
+        }
+        if(nodeType == Node.ATTRIBUTE_NODE) {
+            AttrImpl attr = (node == null ? (AttrImpl)getNode() : (AttrImpl)node);
+            receiver.attribute(attr.getQName(), attr.getValue());
+        } else
+            receiver.addReferenceNode(this);
     }
 
     /* (non-Javadoc)

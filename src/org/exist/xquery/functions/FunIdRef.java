@@ -31,22 +31,12 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 public class FunIdRef extends Function {
 
@@ -163,8 +153,9 @@ public class FunIdRef extends Function {
                 ElementValue.ATTRIBUTE_IDREF, docs, id, null);
 		NodeProxy n, p;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
-			n = (NodeProxy) i.next();			
-			result.add(n);
+			n = (NodeProxy) i.next();
+            n.setNodeType(Node.ATTRIBUTE_NODE);
+            result.add(n);
 		}
 	}
 }
