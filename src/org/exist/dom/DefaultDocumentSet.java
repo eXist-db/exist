@@ -286,7 +286,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         return true;
 	}
 	
-	public void lock(boolean exclusive, boolean checkExisting) throws LockException {
+	public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException {
 	    DocumentImpl d;
 	    Lock dlock;
 //        final Thread thread = Thread.currentThread();
@@ -301,6 +301,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
                 dlock.acquire(Lock.WRITE_LOCK);
             else
                 dlock.acquire(Lock.READ_LOCK);
+            d.setBroker(broker);
         }
 	}
 	

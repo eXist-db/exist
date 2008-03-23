@@ -20,7 +20,12 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.*;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
@@ -73,7 +78,7 @@ public class RootNode extends Step {
         try {
             // wait for pending updates
             if (!context.inProtectedMode())
-                ds.lock(false, true);
+                ds.lock(context.getBroker(), false, true);
 	        DocumentImpl doc;
 	        for (Iterator i = ds.getDocumentIterator(); i.hasNext();) {
 	            doc = (DocumentImpl) i.next();

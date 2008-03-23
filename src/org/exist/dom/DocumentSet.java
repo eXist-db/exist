@@ -1,9 +1,8 @@
 package org.exist.dom;
 
+import org.exist.storage.DBBroker;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.util.Iterator;
 
@@ -33,7 +32,7 @@ public interface DocumentSet {
 
 	public NodeSet docsToNodeSet();
 
-	public void lock(boolean exclusive, boolean checkExisting) throws LockException;
+	public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException;
 
 	public void unlock(boolean exclusive);
 

@@ -29,7 +29,13 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeIndexListener;
+import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
@@ -42,13 +48,21 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.xquery.*;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Constants;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Base class for all XUpdate modifications.
@@ -222,13 +236,12 @@ public abstract class Modification {
 		    // acquire a lock on all documents
 	        // we have to avoid that node positions change
 	        // during the modification
-	        lockedDocuments.lock(true, false);
+	        lockedDocuments.lock(broker, true, false);
 	        
 		    StoredNode ql[] = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nl.item(i);
 				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
-				doc.setBroker(broker);
 				
 				// call the eventual triggers
 				// TODO -jmv separate loop on docs and not on nodes

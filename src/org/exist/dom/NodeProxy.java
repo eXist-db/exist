@@ -34,7 +34,14 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.UntypedAtomicValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -1449,12 +1456,13 @@ public class NodeProxy implements NodeSet, NodeValue, DocumentSet, Comparable {
         return new NodeProxy(doc, NodeId.DOCUMENT_NODE);
     }
 
-    public void lock(boolean exclusive, boolean checkExisting) throws LockException {
+    public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException {
         Lock dlock = doc.getUpdateLock();
         if (exclusive)
             dlock.acquire(Lock.WRITE_LOCK);
         else
             dlock.acquire(Lock.READ_LOCK);
+        doc.setBroker(broker);
     }
 
     public void unlock(boolean exclusive) {
