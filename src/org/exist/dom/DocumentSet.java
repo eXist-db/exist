@@ -31,8 +31,8 @@ import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 
 import java.util.*;
 
@@ -281,7 +281,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		return hasEqualKeys(o);
 	}
 	
-	public void lock(boolean exclusive, boolean checkExisting) throws LockException {
+	public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException {
 	    DocumentImpl d;
 	    Lock dlock;
 //        final Thread thread = Thread.currentThread();
@@ -296,6 +296,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
                 dlock.acquire(Lock.WRITE_LOCK);
             else
                 dlock.acquire(Lock.READ_LOCK);
+            d.setBroker(broker);
         }
 	}
 	
