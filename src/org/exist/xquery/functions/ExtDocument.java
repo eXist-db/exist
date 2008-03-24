@@ -155,7 +155,7 @@ public class ExtDocument extends Function {
 	    try {
             if(!cacheIsValid)
                 // wait for pending updates
-                docs.lock(lockOnLoad, true);
+                docs.lock(context.getBroker(), lockOnLoad, true);
 	        // wait for pending updates
 			if(result == null) {
 			    result = new ExtArrayNodeSet(docs.getLength(), 1);
