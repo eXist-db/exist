@@ -87,6 +87,12 @@ public interface ResponseWrapper {
 	 * @return Returns the default locale
 	 */
 	public Locale getLocale();
+	
+	/**
+	 * @param contentType Content Type of the response
+	 */
+	public void setContentType(String contentType);
+	
 	/**
 	 * @param arg0
 	 * @param arg1

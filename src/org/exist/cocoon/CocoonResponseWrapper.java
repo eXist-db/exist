@@ -91,6 +91,14 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 	}
 
 	/**
+	 * @param contentType Content Type of the response
+	 */
+	public void setContentType(String contentType)
+	{
+		response.setHeader("Content-Type", contentType);
+	}
+	
+	/**
 	 * @param arg0
 	 * @param arg1
 	 */

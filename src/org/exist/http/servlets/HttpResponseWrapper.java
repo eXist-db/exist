@@ -85,6 +85,14 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	}
 	
 	/**
+	 * @param contentType Content Type of the response
+	 */
+	public void setContentType(String contentType)
+	{
+		response.setContentType(contentType);
+	}
+	
+	/**
 	 * @param arg0
 	 * @param arg1
 	 */
