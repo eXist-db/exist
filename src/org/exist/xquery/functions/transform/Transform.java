@@ -228,6 +228,23 @@ public class Transform extends BasicFunction {
                 throw new XPathException(getASTNode(), signatures[1].toString() + 
                         " can only be used within the EXistServlet or XQueryServlet");
             ResponseWrapper response = (ResponseWrapper) respValue.getObject();
+            
+            //setup the response correctly
+            String mediaType = handler.getTransformer().getOutputProperty("media-type");
+            String encoding = handler.getTransformer().getOutputProperty("encoding");
+            if(mediaType != null)
+            {
+            	if(encoding == null)
+            	{
+            		response.setContentType(mediaType);
+            	}
+            	else
+            	{
+            		response.setContentType(mediaType + "; charset=" + encoding);
+            	}
+            }
+            
+            //do the transformation
             try {
                 OutputStream os = new BufferedOutputStream(response.getOutputStream());
                 StreamResult result = new StreamResult(os);
@@ -236,6 +253,7 @@ public class Transform extends BasicFunction {
                 inputNode.toSAX(context.getBroker(), handler, serializeOptions);
                 handler.endDocument();
                 os.close();
+                
                 //commit the response
                 response.flushBuffer();
             } catch (SAXException e) {
