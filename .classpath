@@ -98,5 +98,6 @@
 	<classpathentry kind="lib" path="lib/endorsed/resolver-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/stax-api-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/onvdl-20070517.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
