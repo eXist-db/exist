@@ -39,11 +39,26 @@ import org.exist.util.UTF8;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
+import org.w3c.dom.TypeInfo;
+import org.w3c.dom.UserDataHandler;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -407,7 +422,7 @@ public class ElementImpl extends NamedNode implements Element {
 
         if (children == 0) {
             // no children: append a new child
-            appendChildren(transaction, nodeId.newChild(), new NodeImplRef(this), path, nodes, listener);
+            appendChildren(transaction, nodeId.newChild(), null, new NodeImplRef(this), path, nodes, listener);
         } else {
             if (child == 1) {
                 Node firstChild = getFirstChild();
@@ -420,7 +435,7 @@ public class ElementImpl extends NamedNode implements Element {
                     insertAfter(transaction, nodes, getLastNode(last));
                 } else {
                     StoredNode last = (StoredNode) getLastChild();
-                    appendChildren(transaction, last.getNodeId().nextSibling(), 
+                    appendChildren(transaction, last.getNodeId().nextSibling(), null,
                             new NodeImplRef(getLastNode(last)), path, nodes, listener);
                 }
             }
@@ -435,14 +450,20 @@ public class ElementImpl extends NamedNode implements Element {
      *    
      * @throws DOMException
      */
-    protected void appendChildren(Txn transaction, NodeId newNodeId, NodeImplRef last, NodePath lastPath, NodeList nodes, StreamListener listener) throws DOMException {
+    protected void appendChildren(Txn transaction, NodeId newNodeId, NodeId followingId, NodeImplRef last, NodePath lastPath, NodeList nodes, StreamListener listener) throws DOMException {
         if (last == null || last.getNode() == null || last.getNode().getOwnerDocument() == null)
             throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node");
         children += nodes.getLength();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node child = nodes.item(i);
             appendChild(transaction, newNodeId, last, lastPath, child, listener);
-            newNodeId = newNodeId.nextSibling();
+            NodeId next = newNodeId.nextSibling();
+            if (followingId != null && next.equals(followingId)) {
+                next = newNodeId.insertNode(followingId);
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Node ID collision on " + followingId + ". Using " + next + " instead.");
+            }
+            newNodeId = next;
         }
     }
 
@@ -454,7 +475,7 @@ public class ElementImpl extends NamedNode implements Element {
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
         switch (child.getNodeType()) {
     		case Node.DOCUMENT_FRAGMENT_NODE :
-    		    appendChildren(transaction, newNodeId, last, lastPath, child.getChildNodes(), listener);
+    		    appendChildren(transaction, newNodeId, null, last, lastPath, child.getChildNodes(), listener);
     		    return null;    // TODO: implement document fragments so we can return all newly appended children
             case Node.ELEMENT_NODE :
                 // create new element
@@ -497,7 +518,7 @@ public class ElementImpl extends NamedNode implements Element {
                 elem.setChildCount(0);                
                 last.setNode(elem);
                 //process child nodes
-                elem.appendChildren(transaction, newNodeId.newChild(), last, lastPath, ch, listener);
+                elem.appendChildren(transaction, newNodeId.newChild(), null, last, lastPath, ch, listener);
 
                 getBroker().endElement(elem, lastPath, null);
                 getBroker().getIndexController().endElement(transaction, elem, lastPath, listener);
@@ -1039,12 +1060,14 @@ public class ElementImpl extends NamedNode implements Element {
         }
         StoredNode following = (StoredNode) refChild;
         StoredNode previous = (StoredNode) following.getPreviousSibling();
-        if (previous == null)
-            appendChildren(transaction, following.getNodeId().insertBefore(), 
-                    new NodeImplRef(this), path, nodes, listener);
-        else {
+        if (previous == null) {
+            // there's no sibling node before the new node
+            NodeId newId = following.getNodeId().insertBefore();
+            appendChildren(transaction, newId, following.getNodeId(), new NodeImplRef(this), path, nodes, listener);
+        } else {
+            // insert the new node between the preceding and following sibling
             NodeId newId = previous.getNodeId().insertNode(following.getNodeId());
-            appendChildren(transaction, newId, new NodeImplRef(getLastNode(previous)), 
+            appendChildren(transaction, newId, following.getNodeId(), new NodeImplRef(getLastNode(previous)), 
                     path, nodes, listener);
         }
         setDirty(true);
@@ -1078,9 +1101,9 @@ public class ElementImpl extends NamedNode implements Element {
         }
         StoredNode previous = (StoredNode) refChild;
         StoredNode following = (StoredNode) previous.getNextSibling();
-        NodeId newNodeId = previous.getNodeId().insertNode(following == null ? null : following.getNodeId());
-        appendChildren(transaction, newNodeId, 
-                new NodeImplRef(getLastNode(previous)), path, nodes, listener);
+        NodeId followingId = following == null ? null : following.getNodeId();
+        NodeId newNodeId = previous.getNodeId().insertNode(followingId);
+        appendChildren(transaction, newNodeId, followingId, new NodeImplRef(getLastNode(previous)), path, nodes, listener);
         setDirty(true);
         getBroker().updateNode(transaction, this, true);
         getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
@@ -1135,7 +1158,7 @@ public class ElementImpl extends NamedNode implements Element {
         children = i;
         NodeId newNodeId = last == this ? nodeId.newChild() : last.nodeId.nextSibling();
         // append new content
-        appendChildren(transaction, newNodeId, new NodeImplRef(last), path, newContent, listener);
+        appendChildren(transaction, newNodeId, null, new NodeImplRef(last), path, newContent, listener);
         getBroker().updateNode(transaction, this, false);
         getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         getBroker().getValueIndex().reindex(valueReindexRoot);
@@ -1267,19 +1290,19 @@ public class ElementImpl extends NamedNode implements Element {
             getBroker().getIndexController().setDocument(ownerDocument, StreamListener.STORE);
             StreamListener listener = getBroker().getIndexController().getStreamListener();
             if (children == 0) {
-			   appendChildren(transaction, nodeId.newChild(), 
+			   appendChildren(transaction, nodeId.newChild(), null,
 					   new NodeImplRef(this), path, appendList, listener);
 			} else {
 		        if (attributes == 0) {
 		        	StoredNode firstChild = (StoredNode) getFirstChild();
 		        	NodeId newNodeId = firstChild.nodeId.insertBefore();
-                    appendChildren(transaction, newNodeId, new NodeImplRef(this), path, appendList, listener);
+                    appendChildren(transaction, newNodeId, firstChild.getNodeId(), new NodeImplRef(this), path, appendList, listener);
 		        } else {
 		        	AttribVisitor visitor = new AttribVisitor();
 			        accept(visitor);
 			        NodeId firstChildId = visitor.firstChild == null ? null : visitor.firstChild.nodeId;
 			        NodeId newNodeId = visitor.lastAttrib.nodeId.insertNode(firstChildId);
-                    appendChildren(transaction, newNodeId, new NodeImplRef(visitor.lastAttrib), 
+                    appendChildren(transaction, newNodeId, firstChildId, new NodeImplRef(visitor.lastAttrib), 
                     		path, appendList, listener);
 		        }
                 setDirty(true);

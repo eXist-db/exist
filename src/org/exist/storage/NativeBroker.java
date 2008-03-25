@@ -2274,7 +2274,10 @@ public class NativeBroker extends DBBroker {
             	StoredNode node = (StoredNode) nodes.item(i);
                 Iterator iterator = getNodeIterator(node);
                 iterator.next();
-                checkNodeTree(iterator, node);
+//                StringBuffer buf = new StringBuffer();
+//                Pass buf to the following method to get a dump of all node ids in the document
+                checkNodeTree(iterator, node, null);
+//                LOG.debug(buf.toString());
             }
             NodeRef ref = new NodeRef(doc.getDocId());
             final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
@@ -2623,17 +2626,44 @@ public class NativeBroker extends DBBroker {
         nodeProcessor.index();
     }
     
-    private void checkNodeTree(Iterator iterator, StoredNode node) {
+    private void checkNodeTree(Iterator iterator, StoredNode node, StringBuffer buf) {
+        if (buf != null) {
+            if (buf.length() > 0)
+                buf.append(", ");
+            buf.append(node.getNodeId());
+        }
         if (node.hasChildNodes()) {
             int count = node.getChildCount();
+            if (buf != null)
+                buf.append('[').append(count).append(']');
+            StoredNode previous = null;
             for (int i = 0; i < count; i++) {
-            	StoredNode child = (StoredNode) iterator.next();
-                if(child == null) {
-                    LOG.fatal("child " + i + " not found for node: " + node.getNodeName() +
-			      "; children = " + node.getChildCount());
+                StoredNode child = (StoredNode) iterator.next();
+                if (i > 0 && !(child.getNodeId().isSiblingOf(previous.getNodeId()) &&
+                        child.getNodeId().compareTo(previous.getNodeId()) > 0)) {
+                    LOG.fatal("node " + child.getNodeId() + " cannot be a sibling of " + previous.getNodeId() +
+                        "; node read from " + StorageAddress.toString(child.getInternalAddress()));
+                    if (buf != null)
+                        LOG.fatal(buf.toString());
                     throw new IllegalStateException("Wrong node id");
                 }
-                checkNodeTree(iterator, child);
+                previous = child;
+                
+                if(child == null) {
+                    LOG.fatal("child " + i + " not found for node: " + node.getNodeName() +
+                    ": " + node.getNodeId() + "; children = " + node.getChildCount());
+                    if (buf != null)
+                        LOG.fatal(buf.toString());
+                    throw new IllegalStateException("Wrong node id");
+                }
+                NodeId parentId = child.getNodeId().getParentId();
+                if (!parentId.equals(node.getNodeId())) {
+                    LOG.fatal(child.getNodeId() + " is not a child of " + node.getNodeId());
+                    if (buf != null)
+                        LOG.fatal(buf.toString());
+                    throw new IllegalStateException("Wrong node id");
+                }
+                checkNodeTree(iterator, child, buf);
             }
         }
     } 
