@@ -23,6 +23,7 @@ package org.exist.dom;
 
 import org.exist.Namespaces;
 import org.exist.indexing.StreamListener;
+import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.ElementValue;
@@ -432,7 +433,7 @@ public class ElementImpl extends NamedNode implements Element {
                 if (child > 1 && child <= children) {
                     NodeList cl = getChildNodes();
                     StoredNode last = (StoredNode) cl.item(child - 2);
-                    insertAfter(transaction, nodes, getLastNode(last));
+                    insertAfter(transaction, nodes, last);
                 } else {
                     StoredNode last = (StoredNode) getLastChild();
                     appendChildren(transaction, last.getNodeId().nextSibling(), null,
@@ -456,6 +457,8 @@ public class ElementImpl extends NamedNode implements Element {
         children += nodes.getLength();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node child = nodes.item(i);
+            if (newNodeId.equals(new DLN("1.1.2.2")))
+                LOG.debug(newNodeId + " -> " + followingId, new Throwable());
             appendChild(transaction, newNodeId, last, lastPath, child, listener);
             NodeId next = newNodeId.nextSibling();
             if (followingId != null && next.equals(followingId)) {
@@ -1302,7 +1305,7 @@ public class ElementImpl extends NamedNode implements Element {
 			        accept(visitor);
 			        NodeId firstChildId = visitor.firstChild == null ? null : visitor.firstChild.nodeId;
 			        NodeId newNodeId = visitor.lastAttrib.nodeId.insertNode(firstChildId);
-                    appendChildren(transaction, newNodeId, firstChildId, new NodeImplRef(visitor.lastAttrib), 
+                    appendChildren(transaction, newNodeId, firstChildId, new NodeImplRef(visitor.lastAttrib),
                     		path, appendList, listener);
 		        }
                 setDirty(true);
