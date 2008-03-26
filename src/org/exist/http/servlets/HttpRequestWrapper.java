@@ -56,6 +56,8 @@ public class HttpRequestWrapper implements RequestWrapper {
     private String containerEncoding = null;
     
     private Hashtable params = null;
+    private String pathInfo = null;
+    private String servletPath = null;
     
     private static Logger LOG = Logger.getLogger(HttpRequestWrapper.class.getName());
     
@@ -67,10 +69,18 @@ public class HttpRequestWrapper implements RequestWrapper {
      */
     public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
             String containerEncoding) {
+        this(servletRequest, formEncoding, containerEncoding, true);
+    }
+
+    public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
+            String containerEncoding, boolean parseMultipart) {
         this.servletRequest = servletRequest;
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
-        if(FileUpload.isMultipartContent(servletRequest)) {
+        this.pathInfo = servletRequest.getPathInfo();
+        this.servletPath = servletRequest.getServletPath();
+
+        if(parseMultipart && FileUpload.isMultipartContent(servletRequest)) {
             parseMultipartContent();
         }
     }
@@ -336,7 +346,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**@see javax.servlet.http.HttpServletRequest#getPathInfo()
      */
     public String getPathInfo() {
-        return servletRequest.getPathInfo();
+        return pathInfo;
     }
     
     /**@see javax.servlet.http.HttpServletRequest#getPathTranslated()
@@ -414,7 +424,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**@see javax.servlet.http.HttpServletRequest#getServletPath()
      */
     public String getServletPath() {
-        return servletRequest.getServletPath();
+        return servletPath;
     }
     
     /**@see javax.servlet.http.HttpServletRequest#getSession()
@@ -491,4 +501,12 @@ public class HttpRequestWrapper implements RequestWrapper {
         servletRequest.setCharacterEncoding(arg0);
     }
     
+    public void setPathInfo(String arg0) {
+    	pathInfo = arg0;
+}
+
+    public void setServletPath(String arg0) {
+    	servletPath = arg0;
+    }
+
 }

@@ -114,6 +114,12 @@ public class RESTServiceTest extends TestCase {
     "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
     "declare variable $requestparametermod:request { request:get-parameter(\"doc\",())};\n";
     
+    private final static String TEST_XQUERY_WITH_PATH_PARAMETER =
+        "xquery version \"1.0\";\n" +
+        "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
+        "declare option exist:serialize \"method=text media-type=text/text\";\n" +
+        "(\"pathInfo=\", request:get-path-info(), \"\n\"," +
+        "\"servletPath=\", request:get-servlet-path(), \"\n\")";
     
     private String credentials;
     private String badCredentials;
@@ -163,6 +169,176 @@ public class RESTServiceTest extends TestCase {
             fail(e.getMessage());
         }
     }
+
+    public void testGetFailNoSuchDocument() {
+        try {
+            System.out.println("--- try to retrieve missing document, should fail ---");
+            String uri = COLLECTION_URI + "/nosuchdocument.xml";
+            HttpURLConnection connect = getConnection(uri);
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 404, r);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    public void testXqueryGetWithEmptyPath()
+    {
+    	try
+    	{
+    		/* store the documents that we need for this test */
+    		System.out.println("--- Storing requestwithpath xquery ---");
+    		doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq");
+    		
+    		String path = COLLECTION_URI + "/requestwithpath.xq";
+    		System.out.println("--- retrieving "+path+" --- ");
+    		HttpURLConnection connect = getConnection(path);
+            connect.setRequestMethod("GET");
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 200, r);
+            String response = readResponse(connect.getInputStream());
+	        System.out.println("--- got response:"+response+"\n -- end response");
+	        String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
+	        String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
+	            
+	            //check the responses
+	        
+            assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
+            assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"\"", "", pathInfo);
+	    }
+        catch(Exception e)
+        {
+        	fail(e.getMessage());
+        }
+    }
+
+    public void testXqueryPOSTWithEmptyPath()
+    {
+    	try
+    	{
+    		/* store the documents that we need for this test */
+    		System.out.println("--- Storing requestwithpath xquery ---");
+    		doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq");
+    		
+    		String path = COLLECTION_URI + "/requestwithpath.xq";
+    		System.out.println("--- posting to "+path+" --- ");
+    	    HttpURLConnection connect = preparePost("boo", path);
+    	    connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 200, r);
+            String response = readResponse(connect.getInputStream());
+	        System.out.println("--- got response:"+response+"\n -- end response");
+	        String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
+	        String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
+	            
+	            //check the responses
+	        
+            assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
+            assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"\"", "", pathInfo);
+	    }
+        catch(Exception e)
+        {
+        	fail(e.getMessage());
+        }
+    }
+
+
+
+    public void testXqueryGetWithNonEmptyPath()
+    {
+    	try
+    	{
+    		/* store the documents that we need for this test */
+    		System.out.println("--- Storing requestwithpath xquery ---");
+    		doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq");
+    		
+    		String path = COLLECTION_URI + "/requestwithpath.xq/some/path";
+    		System.out.println("--- retrieving "+path+" --- ");
+    		HttpURLConnection connect = getConnection(path);
+            connect.setRequestMethod("GET");
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 200, r);
+            String response = readResponse(connect.getInputStream());
+	        System.out.println("--- got response:"+response+"\n -- end response");
+	        String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
+	        String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
+	            
+	            //check the responses
+	        
+            assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
+            assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"/some/path\"", "/some/path", pathInfo);
+	    }
+        catch(Exception e)
+        {
+        	fail(e.getMessage());
+        }
+    }
+
+    public void testXqueryPOSTWithNonEmptyPath()
+    {
+    	try
+    	{
+    		/* store the documents that we need for this test */
+    		System.out.println("--- Storing requestwithpath xquery ---");
+    		doPut(TEST_XQUERY_WITH_PATH_PARAMETER, "requestwithpath.xq");
+    		
+    		String path = COLLECTION_URI + "/requestwithpath.xq/some/path";
+    		System.out.println("--- post to "+path+" --- ");
+    	    HttpURLConnection connect = preparePost("boo", path);
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 200, r);
+            String response = readResponse(connect.getInputStream());
+	        System.out.println("--- got response:"+response+"\n -- end response");
+	        String pathInfo = response.substring("pathInfo=".length(), response.indexOf("servletPath=")-2);
+	        String servletPath = response.substring(response.indexOf("servletPath=") + "servletPath=".length(), response.lastIndexOf("\r\n"));
+	            
+	            //check the responses
+	        
+            assertEquals("XQuery servletPath is: \"" + servletPath + "\" expected: \"/db/test/requestwithpath.xq\"", "/db/test/requestwithpath.xq", servletPath);
+            assertEquals("XQuery pathInfo is: \"" + pathInfo + "\" expected: \"/some/path\"", "/some/path", pathInfo);
+	    }
+        catch(Exception e)
+        {
+        	fail(e.getMessage());
+        }
+    }
+
+
+    public void testXqueryGetFailWithNonEmptyPath()
+    {
+    	try
+    	{
+    		/* store the documents that we need for this test */
+    	    HttpURLConnection sconnect = getConnection(RESOURCE_URI);
+    	    sconnect.setRequestProperty("Authorization", "Basic " + credentials);
+    	    sconnect.setRequestMethod("PUT");
+    	    sconnect.setDoOutput(true);
+    	    sconnect.setRequestProperty("ContentType", "text/xml");
+    	    Writer writer = new OutputStreamWriter(sconnect.getOutputStream(), "UTF-8");
+    	    writer.write(XML_DATA);
+    	    writer.close();
+
+    		String path = RESOURCE_URI + "/some/path";	// should not be able to get this path
+    		System.out.println("--- retrieving "+path+"  should fail --- ");
+    		HttpURLConnection connect = getConnection(path);
+            connect.setRequestMethod("GET");
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 404, r);
+            
+	    }
+        catch(Exception e)
+        {
+        	fail(e.getMessage());
+        }
+    }
+
 
     public void testPut() {
         try {
@@ -252,7 +428,7 @@ public class RESTServiceTest extends TestCase {
 
     public void testXUpdate() {
         try {
-            HttpURLConnection connect = preparePost(XUPDATE);
+            HttpURLConnection connect = preparePost(XUPDATE, RESOURCE_URI);
             connect.connect();
             int r = connect.getResponseCode();
             assertEquals("Server returned response code " + r, 200, r);
@@ -265,7 +441,7 @@ public class RESTServiceTest extends TestCase {
 
     public void testQueryPost() {
         try {
-            HttpURLConnection connect = preparePost(QUERY_REQUEST);
+            HttpURLConnection connect = preparePost(QUERY_REQUEST, RESOURCE_URI);
             connect.connect();
             int r = connect.getResponseCode();
             assertEquals("Server returned response code " + r, 200, r);
@@ -278,7 +454,7 @@ public class RESTServiceTest extends TestCase {
 
     public void testQueryPostXQueryError() {
         try {
-            HttpURLConnection connect = preparePost(QUERY_REQUEST_ERROR);
+            HttpURLConnection connect = preparePost(QUERY_REQUEST_ERROR, RESOURCE_URI);
             connect.connect();
             int r = connect.getResponseCode();
             assertEquals("Server returned response code " + r, 202, r);
@@ -412,7 +588,7 @@ public class RESTServiceTest extends TestCase {
     		
     		connect.connect();
     		int r = connect.getResponseCode();
-    		assertEquals("Server returned response code " + r, 201, r);
+    		assertEquals("doPut: Server returned response code " + r, 201, r);
     	} catch (Exception e) {
             fail(e.getMessage());
         }
@@ -470,9 +646,9 @@ public class RESTServiceTest extends TestCase {
         }
     }
 
-    protected HttpURLConnection preparePost(String content) {
+    protected HttpURLConnection preparePost(String content, String path) {
         try {
-            HttpURLConnection connect = getConnection(RESOURCE_URI);
+            HttpURLConnection connect = getConnection(path);
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("POST");
             connect.setDoOutput(true);
