@@ -23,7 +23,6 @@ package org.exist.dom;
 
 import org.exist.Namespaces;
 import org.exist.indexing.StreamListener;
-import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.ElementValue;
@@ -457,8 +456,6 @@ public class ElementImpl extends NamedNode implements Element {
         children += nodes.getLength();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node child = nodes.item(i);
-            if (newNodeId.equals(new DLN("1.1.2.2")))
-                LOG.debug(newNodeId + " -> " + followingId, new Throwable());
             appendChild(transaction, newNodeId, last, lastPath, child, listener);
             NodeId next = newNodeId.nextSibling();
             if (followingId != null && next.equals(followingId)) {
