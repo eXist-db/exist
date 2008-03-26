@@ -28,13 +28,14 @@
 
 package org.exist.requestlog;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -43,16 +44,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.Socket;
-
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
 
 
 /** Webapplication Descriptor
@@ -520,17 +511,45 @@ public class RequestReplayer extends JFrame {
 										Socket socReq = new Socket(server, port);
 										
 										OutputStream socReqOut = socReq.getOutputStream();
-										DataOutputStream os = new DataOutputStream(socReqOut);
-										
-										//Write Request to the socket
+										DataOutputStream os = new DataOutputStream(socReqOut); 
+                                        DataInputStream is = new DataInputStream(socReq.getInputStream());
+
+                                        //Write Request to the socket
 										os.writeBytes(bufRequest.toString());
-										os.flush();
-										os.close();
-										socReqOut.close();
-										
-										//Close the socket
-										socReq.close();
-									}
+                                        os.flush();
+                                        
+                                        try {
+                                            String nextLine;
+                                            int len = -1;
+                                            while ((nextLine = is.readLine()) != null && nextLine.length() > 0) {
+                                                if (nextLine.startsWith("Content-Length:"))
+                                                    len = Integer.parseInt(nextLine.substring(16));
+                                                System.out.println(nextLine);
+                                            }
+                                            System.out.println();
+                                            byte[] buf = new byte[512];
+                                            int byteCount = len;
+                                            while (byteCount > 0) {
+                                                int b;
+                                                if (byteCount < 512)
+                                                    b = is.read(buf, 0, byteCount);
+                                                else
+                                                    b = is.read(buf, 0, 512);
+                                                if (b == -1)
+                                                    break;
+                                                System.out.write(buf, 0, b);
+                                                byteCount -= b;
+                                            }
+                                        } catch (IOException e) {
+                                        }
+                                        System.out.println();
+
+                                        is.close();
+                                        os.close();
+                                        socReqOut.close();
+                                        //Close the socket
+                                        socReq.close();
+                                    }
 									catch(IOException ioe)
 									{
 										System.err.println("An I/O Exception occured whilst writting a Request to the server");
