@@ -50,29 +50,27 @@ import org.w3c.dom.Node;
 public class FunBaseURI extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
-			new FunctionSignature(
-				new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-                "This version of the function returns the value of the base-uri property " +
-                "from the static context. If the base-uri property is undefined, the " +
-                "empty sequence is returned.",
-				null,
-				new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
-			),
-            new FunctionSignature(
-                new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-                "Returns the value of the base-uri property for $a. If $a is the empty " +
-                "sequence, the empty sequence is returned.",
-                new SequenceType[] {
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-                    new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
-            ),
-            new FunctionSignature(
-                new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
-                "Returns the value of the Base URI property from the static context. " +
-                "If the Base URI property is undefined, the empty sequence is returned.",
-                null,
+		new FunctionSignature(
+			new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
+            "Returns the value of the base-uri property for the context item.",
+			null,
+			new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+		),
+        new FunctionSignature(
+            new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
+            "Returns the value of the base-uri property for $a. If $a is the empty " +
+            "sequence, the empty sequence is returned.",
+            new SequenceType[] {
+                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
                 new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
-            )
+        ),
+        new FunctionSignature(
+            new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
+            "Returns the value of the base-uri property from the static context. " +
+            "If the base-uri property is undefined, the empty sequence is returned.",
+            null,
+            new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+        )
     };
 			
     /**
