@@ -20,8 +20,6 @@
  */
 package org.exist.xupdate;
 
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -36,6 +34,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
+
+import java.util.Map;
 
 /**
  * Implements an XUpdate remove operation.
@@ -72,16 +72,14 @@ public class Remove extends Modification {
 			NodeImpl parent;
 			for (int i = 0; i < ql.length; i++) {
 				StoredNode node = ql[i];
-				DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 				if (!doc.getPermissions().validate(broker.getUser(),
 						Permission.UPDATE))
 					throw new PermissionDeniedException(
 							"permission to update document denied");
 				doc.getMetadata().setIndexListener(listener);
-				parent = (NodeImpl) node.getParentNode();				
-				if (parent.getNodeType() != Node.ELEMENT_NODE) {
-					LOG.debug("parent = " + parent.getNodeType() + "; "
-							+ parent.getNodeName());
+				parent = (NodeImpl) node.getParentNode();
+                if (parent == null || parent.getNodeType() != Node.ELEMENT_NODE) {
 					throw new EXistException(
 							"you cannot remove the document element. Use update "
 									+ "instead");
@@ -92,7 +90,7 @@ public class Remove extends Modification {
 				modifiedDocuments.add(doc);
 				broker.storeXMLResource(transaction, doc);
 				notifier.notifyUpdate(doc, UpdateListener.UPDATE);
-			}
+            }
 			checkFragmentation(transaction, modifiedDocuments);
 			return ql.length;
 		} finally {
