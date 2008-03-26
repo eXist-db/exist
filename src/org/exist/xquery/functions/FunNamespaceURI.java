@@ -45,20 +45,20 @@ public class FunNamespaceURI extends Function {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
-				"Returns the namespace URI of the xs:QName of the context item. " +
-				"If the context item is in no namespace or is neither an element nor attribute node, " +
-				"returns the xs:anyURI eqvivalent to the zero-length string." +
-				" Raises an error if the context item is undefined or not a node.",
-				new SequenceType[0],
-				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
-				false),
+			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
+			"Returns the namespace URI of the xs:QName of the context item. " +
+			"If the context item is in no namespace or is neither an element nor attribute node, " +
+			"returns the xs:anyURI equivalent to the zero-length string." +
+			" Raises an error if the context item is undefined or not a node.",
+			new SequenceType[0],
+			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+			false),
 		new FunctionSignature(
 			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
-			"Returns the namespace URI of the xs:QName value of $a" +
+			"Returns the namespace URI of the xs:QName value of $a. " +
 			"If $a is in no namespace or is neither an element nor attribute node, " +
-				"returns the xs:anyURI eqvivalent to the zero-length string." +
-				" Raises an error if the context item is undefined or not a node.",
+			"returns the xs:anyURI eqvivalent to the zero-length string." +
+			" Raises an error if the context item is undefined or not a node.",
 			new SequenceType[] { 
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) 
 			},
@@ -81,22 +81,15 @@ public class FunNamespaceURI extends Function {
         }
         
         Item item = null;
-        // check if the node is passed as an argument or should be taken from
-        // the context sequence
+        // check if the node is passed as an argument or should be taken from the context sequence
         if(getArgumentCount() > 0) {
-            Sequence seq = getArgument(0).eval(contextSequence);
+            Sequence seq = getArgument(0).eval(contextSequence, contextItem);
             if(!seq.isEmpty())
                 item = seq.itemAt(0);
         } else { 
         	if (contextItem == null)
             	throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
         	item = contextItem;
-        	//if (contextSequence == null)
-        	//	throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
-        	//Doh !
-            //if(!contextSequence.isEmpty())
-            //	throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
-            //item = contextSequence.itemAt(0);
         }
         
         Sequence result;
