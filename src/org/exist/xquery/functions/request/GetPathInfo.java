@@ -44,8 +44,8 @@ public class GetPathInfo extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-path-info", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns the context path of the current request, i.e. the portion of the request URI that " +
-            "indicates the context of the request.",
+			"Returns any extra path information associated with the URL the client sent when it made this request.\n" +
+			"For example an xquery GET or POST to /some/path/myfile.xq/extra/path will return /extra/path when myfile.xq is executed.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 

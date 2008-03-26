@@ -42,7 +42,8 @@ public class GetContextPath extends BasicFunction {
         new FunctionSignature(
 			new QName("get-servlet-path", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the servlet path of the current request, i.e. the portion of the request URI that " +
-            "points to the servlet which is handling the request.",
+            "points to the servlet which is handling the request.\n"+
+			"For example an xquery GET or POST to /some/path/myfile.xq/extra/path will return /some/path/myfile.xq when myfile.xq is executed.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE))
     };
