@@ -22,7 +22,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -91,8 +90,12 @@ public class DynamicTextConstructor extends NodeConstructor {
                     buf.append(' ');
                 buf.append(next.toString());
             }
-            int nodeNr = builder.characters(buf);
-            result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+            if (buf.length() == 0)
+                result = Sequence.EMPTY_SEQUENCE;
+            else {
+                int nodeNr = builder.characters(buf);
+                result = builder.getDocument().getNode(nodeNr);
+            }
         }
         
         if (context.getProfiler().isEnabled())           
