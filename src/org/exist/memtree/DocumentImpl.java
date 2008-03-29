@@ -257,6 +257,9 @@ public class DocumentImpl extends NodeImpl implements Document {
     public int addAttribute(int nodeNr, QName qname, String value)
             throws DOMException {
         if (nodeKind == null) init();
+        if (nodeNr > 0 && nodeKind[nodeNr] != Node.ELEMENT_NODE)
+            throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
+                    "XQTY0024: An attribute node cannot follow a node that is not an attribute node.");
         int prevAttr = nextAttr - 1;
         // check if an attribute with the same qname exists in the parent element
         while (nodeNr > 0 && prevAttr > -1 && attrParent[prevAttr] == nodeNr) {
