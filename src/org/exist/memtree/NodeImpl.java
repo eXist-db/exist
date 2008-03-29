@@ -59,6 +59,9 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
+import java.util.Iterator;
+import java.util.Properties;
+
 public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
     public final static short REFERENCE_NODE = 100;
@@ -282,9 +285,18 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
-		//TODO : we have a getNextSibling() method !
-		throw new RuntimeException("Can not call getPreviousSibling() on node type " + this.getNodeType());
-	}
+		if (nodeNumber == 0)
+            return null;
+        int parent = document.getParentNodeFor(nodeNumber);
+        int nextNode = document.getFirstChildFor(parent);
+        while (nextNode >= parent && nextNode < nodeNumber) {
+            int following = document.next[nextNode];
+            if (following == nodeNumber)
+                return document.getNode(nextNode);
+            nextNode = following;
+        }
+        return null;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNextSibling()
