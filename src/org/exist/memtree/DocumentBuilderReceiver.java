@@ -149,7 +149,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         try {
             builder.addAttribute(qname, value);
         } catch (DOMException e) {
-            throw new SAXException("Error XQDY0025: element has more than one attribute '" + qname + "'");
+            throw new SAXException(e.getMessage());
         }
     }
 	
