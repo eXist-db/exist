@@ -90,8 +90,9 @@ public class EnclosedExpr extends PathExpr {
 					else if (buf.length() > 0)
 						buf.append(' ');
 					buf.append(next.getStringValue());
-					next = i.nextItem();
-				// if item is a node, flush any collected character data and
+                    allowAttribs = false;
+                    next = i.nextItem();
+                // if item is a node, flush any collected character data and
 				//	copy the node to the target doc. 
 				} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
                     if (buf != null && buf.length() > 0) {
