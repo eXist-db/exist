@@ -75,7 +75,8 @@ public class EnclosedExpr extends PathExpr {
 			SequenceIterator i = result.iterate();
 			Item next = i.nextItem();			
 			StringBuffer buf = null;
-			while (next != null) {
+            boolean allowAttribs = true;
+            while (next != null) {
 			    context.proceed(this, builder);
 				// if item is an atomic value, collect the string values of all
 				// following atomic values and seperate them by a space. 
@@ -89,12 +90,16 @@ public class EnclosedExpr extends PathExpr {
 				// if item is a node, flush any collected character data and
 				//	copy the node to the target doc. 
 				} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
-					if (buf != null && buf.length() > 0) {
+                    if (buf != null && buf.length() > 0) {
 						receiver.characters(buf);
 						buf.setLength(0);
 					}
-					next.copyTo(context.getBroker(), receiver);
-					next = i.nextItem();
+                    if (next.getType() == Type.ATTRIBUTE && !allowAttribs)
+                        throw new XPathException(getASTNode(), "XQTY0024: An attribute may not appear after " +
+                            "another child node.");
+                    next.copyTo(context.getBroker(), receiver);
+                    allowAttribs = next.getType() == Type.ATTRIBUTE;
+                    next = i.nextItem();
 				}
 			}
 			// flush remaining character data
