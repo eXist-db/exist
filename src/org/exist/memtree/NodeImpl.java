@@ -249,8 +249,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 */
 	public boolean after(NodeValue other, boolean isFollowing) throws XPathException {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
-			throw new XPathException("annot compare persistent node with in-memory node"); 
-		return nodeNumber < ((NodeImpl) other).nodeNumber;
+			throw new XPathException("cannot compare persistent node with in-memory node"); 
+		return nodeNumber > ((NodeImpl) other).nodeNumber;
 	}
 
 	/* (non-Javadoc)
@@ -258,8 +258,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 */
 	public boolean before(NodeValue other, boolean isPreceding) throws XPathException {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
-			throw new XPathException("annot compare persistent node with in-memory node");
-		return nodeNumber > ((NodeImpl) other).nodeNumber;
+			throw new XPathException("cannot compare persistent node with in-memory node");
+		return nodeNumber < ((NodeImpl) other).nodeNumber;
 	}
 
 	public int compareTo(Object other) {

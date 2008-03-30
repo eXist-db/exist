@@ -197,7 +197,7 @@ public class Node extends Item {
 			});
 		} catch (ClassCastException e) {
 			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
-				throw new UnsupportedOperationException("appends to in-memory nodes are not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
+				throw new UnsupportedOperationException("appends to in-memory nodes are not supported");
 			} else {
 				throw new UnsupportedOperationException("cannot append to a " + Type.getTypeName(item.getType()));
 			}
@@ -300,7 +300,7 @@ public class Node extends Item {
 			});
 		} catch (ClassCastException e) {
 			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
-				throw new UnsupportedOperationException("replacement of in-memory nodes is not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
+				throw new UnsupportedOperationException("replacement of in-memory nodes is not supported");
 			} else {
 				throw new UnsupportedOperationException("cannot replace a " + Type.getTypeName(item.getType()));
 			}
@@ -335,7 +335,7 @@ public class Node extends Item {
 			});
 		} catch (ClassCastException e) {
 			if (getDOMNode() instanceof org.exist.memtree.ElementImpl) {
-				throw new UnsupportedOperationException("updates on in-memory nodes are not yet supported, but calling query().single(\"self::*\").node() on the node will implicitly materialize the result in a temporary area of the database");
+				throw new UnsupportedOperationException("updates on in-memory nodes are not supported");
 			} else {
 				throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
 			}
