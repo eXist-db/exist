@@ -55,8 +55,9 @@ public class OpAnd extends LogicalOp {
     
     		if (contextItem != null)
     			contextSequence = contextItem.toSequence();
-            
-    		Expression left = getLeft();
+            if (contextSequence != null && !contextSequence.isPersistentSet())
+                optimize = false;
+            Expression left = getLeft();
     		Expression right = getRight();
     		if(optimize) {
     			NodeSet rl = left.eval(contextSequence, null).toNodeSet();

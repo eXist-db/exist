@@ -67,7 +67,7 @@ public class Union extends CombiningExpression {
             if (lval.isPersistentSet() && rval.isPersistentSet()) {        
                 result = lval.toNodeSet().union(rval.toNodeSet());
             } else {
-                ValueSequence values = new ValueSequence();
+                ValueSequence values = new ValueSequence(true);
                 values.addAll(lval);
                 values.addAll(rval);
                 values.sortInDocumentOrder();

@@ -87,8 +87,12 @@ public class EmptySequence extends AbstractSequence {
 	public NodeSet toNodeSet() throws XPathException {
 		return NodeSet.EMPTY_SET;
 	}
-	
-	/* (non-Javadoc)
+
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
+        return MemoryNodeSet.EMPTY;
+    }
+
+    /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#removeDuplicates()
      */
     public void removeDuplicates() {

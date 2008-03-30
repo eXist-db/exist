@@ -30,7 +30,13 @@ import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.TypeInfo;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -256,6 +262,18 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
         }
     }
 
+    public void selectDescendantAttributes(NodeTest test, Sequence result) throws XPathException {
+        int treeLevel = document.treeLevel[nodeNumber];
+        int nextNode = nodeNumber;
+        NodeImpl n = document.getNode(nextNode);
+        n.selectAttributes(test, result);
+        while (++nextNode < document.size && document.treeLevel[nextNode] > treeLevel) {
+            n = document.getNode(nextNode);
+            if (n.getNodeType() == Node.ELEMENT_NODE)
+                n.selectAttributes(test, result);
+        }
+    }
+
     public void selectChildren(NodeTest test, Sequence result) throws XPathException {
 		int nextNode = document.getFirstChildFor(nodeNumber);
 		while (nextNode > nodeNumber) {
@@ -265,6 +283,21 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
             nextNode = document.next[nextNode];
         }
 	}
+
+    public void selectDescendants(boolean includeSelf, NodeTest test, Sequence result) throws XPathException {
+        int treeLevel = document.treeLevel[nodeNumber];
+        int nextNode = nodeNumber;
+        if (includeSelf) {
+            NodeImpl n = document.getNode(nextNode);
+            if (test.matches(n))
+                result.add(n);
+        }
+        while (++nextNode < document.size && document.treeLevel[nextNode] > treeLevel) {
+            NodeImpl n = document.getNode(nextNode);
+            if (test.matches(n))
+                result.add(n);
+        }
+    }
 
     /* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)

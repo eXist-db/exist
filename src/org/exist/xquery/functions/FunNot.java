@@ -97,7 +97,8 @@ public class FunNot extends Function {
 		// subtract the set from the context node set and return
 		// the remaining set
 		if (Type.subTypeOf(arg.returnsType(), Type.NODE) &&
-			!Dependency.dependsOn(arg, Dependency.CONTEXT_ITEM)) {
+            (contextSequence == null || contextSequence.isPersistentSet()) &&
+            !Dependency.dependsOn(arg, Dependency.CONTEXT_ITEM)) {
 			if (contextSequence == null || contextSequence.isEmpty()) {
 				// TODO: special treatment if the context sequence is empty:
 				// within a predicate, we just return the empty sequence

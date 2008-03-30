@@ -26,29 +26,25 @@ import com.thaiopensource.validate.SchemaReader;
 import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
-
-import java.io.InputStream;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.log4j.Logger;
-
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
-import org.exist.validation.resolver.SearchResourceResolver;
 import org.exist.validation.resolver.AnyUriResolver;
+import org.exist.validation.resolver.SearchResourceResolver;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
-
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.InputStream;
 
 /**
  *  Validate XML documents with their grammars (DTD's and Schemas).

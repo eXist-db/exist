@@ -22,17 +22,26 @@ package org.exist.xquery.value;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.InMemoryNodeSet;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.util.FastQSort;
+import org.exist.xquery.Constants;
+import org.exist.xquery.NodeTest;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -41,7 +50,7 @@ import java.util.TreeSet;
  * A sequence that may contain a mixture of atomic values and nodes.
  * @author wolf
  */
-public class ValueSequence extends AbstractSequence {
+public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
 	private final Logger LOG = Logger.getLogger(ValueSequence.class);
 	
@@ -59,20 +68,36 @@ public class ValueSequence extends AbstractSequence {
 	
 	private boolean noDuplicates = false;
 
+    private boolean inMemNodeSet = false;
+
+    private boolean isOrdered = false;
+
+    private boolean enforceOrder = false;
+    
     private Variable holderVar = null;
 
     public ValueSequence() {
-		values = new Item[INITIAL_SIZE];
+		this(false);
 	}
+
+    public ValueSequence(boolean ordered) {
+        values = new Item[INITIAL_SIZE];
+        enforceOrder = ordered;
+    }
 	
 	public ValueSequence(int initialSize) {
 		values = new Item[initialSize];
 	}
-	
-	public ValueSequence(Sequence otherSequence) throws XPathException {
+
+    public ValueSequence(Sequence otherSequence) throws XPathException {
+        this(otherSequence, false);
+    }
+
+    public ValueSequence(Sequence otherSequence, boolean ordered) throws XPathException {
 		values = new Item[otherSequence.getItemCount()];
 		addAll(otherSequence);
-	}
+        this.enforceOrder = ordered;
+    }
 	
 	public void clear() {
 		Arrays.fill(values, null);
@@ -90,33 +115,43 @@ public class ValueSequence extends AbstractSequence {
     }
 	
 	public void add(Item item) {
-		if (hasOne)
-			hasOne = false;
-		if (isEmpty)
-			hasOne = true;
+        if (hasOne)
+            hasOne = false;
+        if (isEmpty)
+            hasOne = true;
         isEmpty = false;
-		++size;
-		ensureCapacity();
-		values[size] = item;
-		if(itemType == item.getType())
-			return;
-		else if(itemType == Type.ANY_TYPE)
-			itemType = item.getType();
-		else
-			itemType = Type.getCommonSuperType(item.getType(), itemType);
-		noDuplicates = false;
-	}
-	
-	public void addAll(Sequence otherSequence) throws XPathException {
+        ++size;
+        ensureCapacity();
+        values[size] = item;
+        if (itemType == item.getType())
+            return;
+        else if (itemType == Type.ANY_TYPE)
+            itemType = item.getType();
+        else
+            itemType = Type.getCommonSuperType(item.getType(), itemType);
+        noDuplicates = false;
+        isOrdered = false;
+    }
+
+//    public void addAll(ValueSequence otherSequence) throws XPathException {
+//        if (otherSequence == null)
+//			return;
+//        enforceOrder = otherSequence.enforceOrder;
+//        for (SequenceIterator i = otherSequence.iterate(); i.hasNext(); ) {
+//          add(i.nextItem());
+//        }
+//    }
+
+    public void addAll(Sequence otherSequence) throws XPathException {
 		if (otherSequence == null)
 			return;
-		SequenceIterator iterator = otherSequence.iterate();
+        SequenceIterator iterator = otherSequence.iterate();
 		if (iterator == null) {
 			LOG.warn("Iterator == null: " + otherSequence.getClass().getName());
 		}
 		for(; iterator.hasNext(); )
 			add(iterator.nextItem());
-	}
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getItemType()
@@ -129,7 +164,7 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() throws XPathException {
-//		removeDuplicates();
+        sortInDocumentOrder();
 		return new ValueSequenceIterator();
 	}
 
@@ -137,20 +172,29 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
 	public SequenceIterator unorderedIterator() {
-//		removeDuplicates();
-		return new ValueSequenceIterator();
+        sortInDocumentOrder();
+        return new ValueSequenceIterator();
 	}
-	
-	/* (non-Javadoc)
+
+    public boolean isOrdered() {
+        return enforceOrder;
+    }
+
+    public void setIsOrdered(boolean ordered) {
+        this.enforceOrder = ordered;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getItemCount() {
-//		removeDuplicates();
+        sortInDocumentOrder();
 		return size + 1;
 	}
 
 	public Item itemAt(int pos) {
-		return values[pos];
+        sortInDocumentOrder();
+        return values[pos];
 	}
 
     public void setHolderVariable(Variable var) {
@@ -191,7 +235,10 @@ public class ValueSequence extends AbstractSequence {
                             if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                                 NodeImpl node = (NodeImpl) v;
                                 if (node.getDocument() == doc) {
-                                    node = expandedDoc.getNode(node.getNodeNumber());
+                                    if (node.getNodeType() == Node.ATTRIBUTE_NODE)
+                                        node = expandedDoc.getAttribute(node.getNodeNumber());
+                                    else
+                                        node = expandedDoc.getNode(node.getNodeNumber());
                                     NodeId nodeId = node.getNodeId();
                                     if (nodeId == null)
                                         throw new XPathException("Internal error: nodeId == null");
@@ -221,9 +268,9 @@ public class ValueSequence extends AbstractSequence {
 				" a node set. Item type is " + Type.getTypeName(itemType));
 	}
 
-    public InMemoryNodeSet toMemNodeSet() throws XPathException {
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
         if(size == UNSET_SIZE)
-            return new InMemoryNodeSet();
+            return MemoryNodeSet.EMPTY;
         if(itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
             throw new XPathException("Type error: the sequence cannot be converted into" +
 				" a node set. Item type is " + Type.getTypeName(itemType));
@@ -232,9 +279,26 @@ public class ValueSequence extends AbstractSequence {
         for (int i = 0; i <= size; i++) {
             v = (NodeValue)values[i];
             if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                return null;
+                throw new XPathException("Type error: the sequence cannot be converted into" +
+				    " a MemoryNodeSet. It contains nodes from stored resources.");
         }
-        return new InMemoryNodeSet(this);
+        expand();
+        inMemNodeSet = true;
+        return this;
+    }
+
+    public boolean isInMemorySet() {
+        if(size == UNSET_SIZE)
+            return true;
+        if(itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE))
+            return false;
+        NodeValue v;
+        for (int i = 0; i <= size; i++) {
+            v = (NodeValue)values[i];
+            if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
+                return false;
+        }
+        return true;
     }
 
     public boolean isPersistentSet() {
@@ -251,13 +315,45 @@ public class ValueSequence extends AbstractSequence {
         }
         return false;
     }
-    
-    public void sortInDocumentOrder() {
-        removeDuplicates();
-        FastQSort.sort(values, new MixedNodeValueComparator(), 0, size);
+
+    /**
+     * Scan the sequence and check all in-memory documents.
+     * They may contains references to nodes stored in the database.
+     * Expand those references to get a pure in-memory DOM tree.
+     */
+    private void expand() {
+        Set docs = new HashSet();
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            if (node.getDocument().hasReferenceNodes())
+                docs.add(node.getDocument());
+        }
+        for (Iterator i = docs.iterator(); i.hasNext(); ) {
+            DocumentImpl doc = (DocumentImpl) i.next();
+            doc.expand();
+        }
     }
-    
-	private void ensureCapacity() {
+
+    public void sortInDocumentOrder() {
+        if (size == UNSET_SIZE)
+            return;
+        if (!enforceOrder || isOrdered)
+            return;
+        inMemNodeSet = inMemNodeSet || isInMemorySet();
+        if (inMemNodeSet) {
+            FastQSort.sort(values, new InMemoryNodeComparator(), 0, size);
+        }
+        removeDuplicateNodes();
+        isOrdered = true;
+    }
+
+    public void removeDuplicates() {
+        enforceOrder = true;
+        isOrdered = false;
+        sortInDocumentOrder();
+    }
+
+    private void ensureCapacity() {
 		if(size == values.length) {
 			int newSize = (size * 3) / 2;
 			Item newValues[] = new Item[newSize];
@@ -266,33 +362,45 @@ public class ValueSequence extends AbstractSequence {
 		}
 	}
 	
-	public void removeDuplicates() {
-		if(noDuplicates)
+	private void removeDuplicateNodes() {
+        if(noDuplicates || size < 1)
 			return;
-		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.ATOMIC))
-			return;
-		// check if the sequence contains nodes
-		boolean hasNodes = false;
-		for(int i = 0; i <= size; i++) {
-			if(Type.subTypeOf(values[i].getType(), Type.NODE))
-				hasNodes = true;
-		}
-		if(!hasNodes)
-			return;
-		Set nodes = new TreeSet();
-		int j = 0;
-		for (int i = 0; i <= size; i++) {
-			if(Type.subTypeOf(values[i].getType(), Type.NODE)) {
-				if(!nodes.contains(values[i])) {
-					Item item = values[i];
-					values[j++] = item;
-					nodes.add(item);
-				}
-			} else
-				values[j++] = values[i];
-		}
-		size = j - 1;
-		noDuplicates = true;
+        if (inMemNodeSet) {
+            int j = 0;
+            for (int i = 1; i <= size; i++) {
+                if (!values[i].equals(values[j])) {
+                    if (i != ++j) {
+                        values[j] = values[i];
+                    }
+                }
+            }
+            size = j;
+        } else {
+            if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.ATOMIC))
+                return;
+            // check if the sequence contains nodes
+            boolean hasNodes = false;
+            for(int i = 0; i <= size; i++) {
+                if(Type.subTypeOf(values[i].getType(), Type.NODE))
+                    hasNodes = true;
+            }
+            if(!hasNodes)
+            return;
+            Set nodes = new TreeSet();
+            int j = 0;
+            for (int i = 0; i <= size; i++) {
+                if(Type.subTypeOf(values[i].getType(), Type.NODE)) {
+                    if(!nodes.contains(values[i])) {
+                        Item item = values[i];
+                        values[j++] = item;
+                        nodes.add(item);
+                    }
+                } else
+                    values[j++] = values[i];
+            }
+            size = j - 1;
+        }
+        noDuplicates = true;
 	}
 	
     public void clearContext(int contextId) {
@@ -325,7 +433,123 @@ public class ValueSequence extends AbstractSequence {
         return docs;
     }
 
+    /* Methods of MemoryNodeSet */
 
+    public Sequence getAttributes(NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            node.selectAttributes(test, nodes);
+        }
+        return nodes;
+    }
+
+    public Sequence getDescendantAttributes(NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            node.selectDescendantAttributes(test, nodes);
+        }
+        return nodes;
+    }
+
+    public Sequence getChildren(NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            node.selectChildren(test, nodes);
+        }
+        return nodes;
+    }
+
+    public Sequence getDescendants(boolean includeSelf, NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            node.selectDescendants(includeSelf, test, nodes);
+        }
+        return nodes;
+    }
+
+    public Sequence getAncestors(boolean includeSelf, NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            node.selectAncestors(includeSelf, test, nodes);
+        }
+        return nodes;
+    }
+
+    public Sequence getParents(NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            NodeImpl parent = (NodeImpl) node.selectParentNode();
+            if (parent != null && test.matches(parent))
+                nodes.add(parent);
+        }
+        return nodes;
+    }
+
+    public Sequence getSelf(NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            if (test.matches(node))
+                nodes.add(node);
+        }
+        return nodes;
+    }
+
+    public Sequence getPrecedingSiblings(NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            node.selectPrecedingSiblings(test, nodes);
+        }
+        return nodes;
+    }
+
+    public Sequence getPreceding(NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            node.selectPreceding(test, nodes);
+        }
+        return nodes;
+    }
+
+    public Sequence getFollowingSiblings(NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            node.selectFollowingSiblings(test, nodes);
+        }
+        return nodes;
+    }
+
+    public Sequence getFollowing(NodeTest test) throws XPathException {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            node.selectFollowing(test, nodes);
+        }
+        return nodes;
+    }
+
+    /* END methods of MemoryNodeSet */
+    
     public Iterator getCollectionIterator() {
         return new CollectionIterator();
     }
@@ -435,4 +659,17 @@ public class ValueSequence extends AbstractSequence {
 			return null;
 		}
 	}
+
+    private static class InMemoryNodeComparator implements Comparator {
+
+        public int compare(Object o1, Object o2) {
+            NodeImpl n1 = (NodeImpl) o1;
+            NodeImpl n2 = (NodeImpl) o2;
+            if (n1.getDocument().compareTo(n2.getDocument()) == 0) {
+                return n1.getNodeNumber() == n2.getNodeNumber() ? Constants.EQUAL :
+                    (n1.getNodeNumber() > n2.getNodeNumber() ? Constants.SUPERIOR : Constants.INFERIOR);
+            } else
+                return Constants.INFERIOR;
+        }
+    }
 }

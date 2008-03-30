@@ -3,18 +3,6 @@
  */
 package org.exist.xqj;
 
-import java.io.OutputStream;
-import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Properties;
-
-import javax.xml.xquery.XQCommonHandler;
-import javax.xml.xquery.XQException;
-import javax.xml.xquery.XQItemType;
-
 import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BooleanValue;
@@ -27,6 +15,17 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
+
+import javax.xml.xquery.XQCommonHandler;
+import javax.xml.xquery.XQException;
+import javax.xml.xquery.XQItemType;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Properties;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>

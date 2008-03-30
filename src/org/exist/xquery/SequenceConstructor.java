@@ -71,10 +71,15 @@ public class SequenceConstructor extends PathExpr {
         
         ValueSequence result = new ValueSequence();
         for(Iterator i = steps.iterator(); i.hasNext(); ) {
-            Sequence temp = ((Expression)i.next()).eval(contextSequence, contextItem);
-            if(temp != null && !temp.isEmpty()) {               
-                  result.addAll(temp);                   
-            }           
+            context.pushDocumentContext();
+            try {
+                Sequence temp = ((Expression)i.next()).eval(contextSequence, contextItem);
+                if(temp != null && !temp.isEmpty()) {
+                      result.addAll(temp);
+                }
+            } finally {
+                context.popDocumentContext();
+            }
         } 
 		
         if (context.getProfiler().isEnabled()) 

@@ -29,8 +29,8 @@ import org.exist.xquery.GroupSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
- 
- 
+
+
 /** 
  * A sequence that containts items of one group specified by the group specs of 
  * an "group by" clause. Used by  
@@ -178,7 +178,23 @@ public class GroupedValueSequence extends AbstractSequence {
                 " a node set. Item type is " + Type.getTypeName(itemType)); 
  
     } 
- 
+
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
+        if(count == 0)
+            return MemoryNodeSet.EMPTY;
+        if(itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
+            throw new XPathException("Type error: the sequence cannot be converted into" +
+				" a node set. Item type is " + Type.getTypeName(itemType));
+        }
+        NodeValue v;
+        for (int i = 0; i <= count; i++) {
+            v = (NodeValue)items[i];
+            if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
+                return null;
+        }
+        return new ValueSequence(this);
+    }
+
     /* (non-Javadoc) 
      * @see org.exist.xquery.value.Sequence#removeDuplicates() 
      */ 

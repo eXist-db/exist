@@ -22,10 +22,6 @@
  */
 package org.exist.memtree;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
@@ -33,6 +29,10 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Adapter class to build an internal, in-memory DOM from a SAX stream.
@@ -81,7 +81,8 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
 	 */
 	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-	}
+        builder.characters(ch, start, length);
+    }
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
@@ -140,7 +141,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 			if(atts.getQName(i).startsWith("xmlns")) {
 				String prefix = atts.getLocalName(i);
 				String uri = atts.getValue(i);
-				if(!namespaces.containsKey(prefix))
+                if(!namespaces.containsKey(prefix))
 					builder.namespaceNode(prefix, uri);
 			}
 		}

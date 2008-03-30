@@ -24,6 +24,10 @@ package org.exist.memtree;
 
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
+import org.exist.numbering.NodeId;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -33,7 +37,12 @@ import org.w3c.dom.TypeInfo;
 
 public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 
-	/**
+    public static final int ATTR_CDATA_TYPE = 0;
+    public static final int ATTR_ID_TYPE = 1;
+    public static final int ATTR_IDREF_TYPE = 2;
+    public static final int ATTR_IDREFS_TYPE = 3;
+    
+    /**
 	 * @param doc
 	 * @param nodeNumber
 	 */
@@ -41,7 +50,11 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 		super(doc, nodeNumber);
 	}
 
-	public QName getQName() {
+    public NodeId getNodeId() {
+        return document.attrNodeId[nodeNumber];
+    }
+
+    public QName getQName() {
 		return (QName)document.namePool.get(document.attrName[nodeNumber]);
 	}
 	
@@ -138,14 +151,28 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 		return (Element)document.getNode(document.attrParent[nodeNumber]);
 	}
 
-	/* (non-Javadoc)
+    public void selectAttributes(NodeTest test, Sequence result) throws XPathException {
+        if (test.matches(this))
+            result.add(this);
+    }
+
+    public void selectDescendantAttributes(NodeTest test, Sequence result) throws XPathException {
+        if (test.matches(this))
+            result.add(this);
+    }
+
+    /* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getParentNode()
 	 */
 	public Node getParentNode() {
-		return null;
+		return document.getNode(document.attrParent[nodeNumber]);
 	}
 
-	/** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
+    public Node selectParentNode() {
+        return getParentNode();
+    }
+
+    /** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
 	 */
 	public TypeInfo getSchemaTypeInfo() {
 		// maybe TODO - new DOM interfaces - Java 5.0
@@ -155,8 +182,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	/** ? @see org.w3c.dom.Attr#isId()
 	 */
 	public boolean isId() {
-		// maybe TODO - new DOM interfaces - Java 5.0
-		return false;
+		return document.attrType[nodeNumber] == ATTR_ID_TYPE;
 	}
 	
 	public int getItemType() {

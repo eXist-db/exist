@@ -21,10 +21,6 @@
 */
 package org.exist.xquery.value;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Iterator;
-
 import org.exist.dom.ContextItem;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -32,6 +28,10 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
 
 /**
  * A sequence that sorts its items in the order specified by the order specs
@@ -141,8 +141,12 @@ public class PreorderedValueSequence extends AbstractSequence {
 	public NodeSet toNodeSet() throws XPathException {
 		return null;
 	}
-	
-	/* (non-Javadoc)
+
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
+        return null;
+    }
+
+    /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#removeDuplicates()
      */
     public void removeDuplicates() {

@@ -26,7 +26,16 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.GroupedValueSequence;
+import org.exist.xquery.value.GroupedValueSequenceTable;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.OrderedValueSequence;
+import org.exist.xquery.value.PreorderedValueSequence;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 import java.util.Iterator;
 
@@ -211,7 +220,8 @@ public class ForExpr extends BindingExpression {
 		boolean fastExec = 
 			whereExpr != null && at == null &&
 			!Dependency.dependsOn(whereExpr, Dependency.CONTEXT_ITEM) &&
-			Type.subTypeOf(in.getItemType(), Type.NODE);
+            in.isPersistentSet() &&
+            Type.subTypeOf(in.getItemType(), Type.NODE);
 		
 		// If possible, apply the where expression ahead of the iteration
 		if(fastExec) {

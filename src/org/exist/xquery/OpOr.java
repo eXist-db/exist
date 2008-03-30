@@ -52,7 +52,9 @@ public class OpOr extends LogicalOp {
         
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-        
+
+        if (contextSequence != null && !contextSequence.isPersistentSet())
+            optimize = false;
         Sequence result;
 		Expression left = getLeft();
 		Expression right = getRight();
