@@ -40,8 +40,10 @@ declare option exist:output-size-limit "-1";
      
      * Run this script with the client.
      -------------------------------------------------------------------------- :)
+
 declare variable $xqts:CONFIG := xqts:initialize();
 declare variable $xqts:XQTS_HOME := xqts:path-to-uri($xqts:CONFIG/basedir/text());
+declare variable $xqts:IN_MEMORY := ($xqts:CONFIG/mode/text() = "memory");
 
 declare function xqts:initialize() as element() {
     let $home := system:get-exist-home()
@@ -96,7 +98,7 @@ declare function xqts:create-progress-file($testCount as xs:int) as empty() {
 
 declare function xqts:create-collections($group as element(catalog:test-group)) as node() {
     let $rootColl := xdb:create-collection("/db/XQTS", "test-results")
-    let $temp := xdb:create-collection("/db/XQTS", "temp")
+    let $temp := xdb:create-collection("/db/XQTS", "temp") 
     let $ancestors := reverse(($group/ancestor::catalog:test-group, $group))
     let $collection := xqts:create-collections($rootColl, $ancestors, "/db/XQTS/test-results")
     let $results := xdb:store($collection, "results.xml", <test-result failed="0" passed="0" error="0"/>)
@@ -131,9 +133,17 @@ declare function xqts:get-input-value($input as element(catalog:input-file)) as 
        let $source := root($input)//catalog:source[@ID = $input/text()]
        return
            if (empty($source)) then
-               concat("no input found: ", $input/text()) 
+               concat("no input found: ", $input/text())
            else
                doc(concat("/db/XQTS/", $source/@FileName))   
+};
+
+declare function xqts:get-input-value-uri($input as element(catalog:input-file)) as item()* {
+    if ($input eq "emptydoc") then
+       ()
+    else 
+        let $source := root($input)//catalog:source[@ID = $input/text()]
+        return concat( $xqts:XQTS_HOME, "/", $source/@FileName )
 };
 
 declare function xqts:get-variable($case as element(catalog:test-case), $varName as xs:string) as item()* {
@@ -196,7 +206,7 @@ declare function xqts:get-context-item($input as element(catalog:contextItem)?) 
         let $source := root($input)//catalog:source[@ID = $input/text()]
         return
             if (empty($source)) then
-                concat("no input found: ", $input/text()) 
+                concat("no input found: ", $input/text())
             else
                 doc(concat("/db/XQTS/", $source/@FileName))
     )
@@ -249,22 +259,28 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                         xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
                     else if ($compare eq "TextAsXML") then
                         xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
-                    else if ($compare eq "XML") then                    
-                        util:catch(
-                            "java.lang.Exception",
-                            doc(xdb:store("/db/XQTS/temp", substring-before($output/text(), "."), xs:anyURI($outputFilePath), "text/xml")),
-                            (: Handle unexpected exceptions :)
-                            util:log("ERROR", concat("Exception while loading expected result: ", $util:exception-message))
-                        )
-                    else if ($compare eq "Fragment") then
-                        let $xmlFrag := concat("<f>", util:file-read($outputFilePath, "UTF-8"), "</f>")
-                        return 
+                    else if ($compare eq "XML") then
+                        if ($xqts:IN_MEMORY) then
+                            util:parse(util:file-read($outputFilePath, "UTF-8"))
+                        else
                             util:catch(
                                 "java.lang.Exception",
-                                doc(xdb:store("/db/XQTS/temp", substring-before($output/text(), "."), $xmlFrag, "text/xml")),                            
+                                doc(xdb:store("/db/XQTS/temp", substring-before($output/text(), "."), xs:anyURI($outputFilePath), "text/xml")),
                                 (: Handle unexpected exceptions :)
-                                util:log("ERROR", concat("Exception while loading expected result fragment: ", $util:exception-message))
+                                util:log("ERROR", concat("Exception while loading expected result: ", $util:exception-message))
                             )
+                    else if ($compare eq "Fragment") then
+                        let $xmlFrag := concat("<f>", util:file-read($outputFilePath, "UTF-8"), "</f>")
+                        return
+                            if ($xqts:IN_MEMORY) then
+                                util:parse($xmlFrag)
+                            else
+                                util:catch(
+                                    "java.lang.Exception",
+                                    doc(xdb:store("/db/XQTS/temp", substring-before($output/text(), "."), $xmlFrag, "text/xml")),                            
+                                    (: Handle unexpected exceptions :)
+                                    util:log("ERROR", concat("Exception while loading expected result fragment: ", $util:exception-message))
+                                )
                     else
                         util:log("ERROR", concat("Unknown comparison method: ", $compare))
                 }
@@ -287,7 +303,10 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case))
             {                           
                 for $input in $testCase/catalog:input-file
                 return
-                    <variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
+                    if ($xqts:IN_MEMORY) then
+                        <variable name="{$input/@variable}" source="{xqts:get-input-value-uri($input)}"/>
+                    else
+                        <variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
                 for $var in $testCase/catalog:input-query
                 return
                     let $variable := xqts:get-variable($testCase, $var/@name)
@@ -455,7 +474,6 @@ declare function xqts:run-single-test-case($case as element(catalog:test-case),
 declare function xqts:run-test-group($group as element(catalog:test-group)) as empty() {
     (: Create the collection hierarchy for this group and get the results.xml doc to append to. :)
     let $resultsDoc := xqts:create-collections($group)
-    let $log-resdoc := util:log("DEBUG", ("Creating resdoc collection: ", $resultsDoc))
     let $tests := $group/catalog:test-case
     return 
         (
