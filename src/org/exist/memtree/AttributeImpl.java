@@ -165,8 +165,11 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	 * @see org.w3c.dom.Node#getParentNode()
 	 */
 	public Node getParentNode() {
-		return document.getNode(document.attrParent[nodeNumber]);
-	}
+        int parent = document.attrParent[nodeNumber];
+        if (parent > 0)
+            return document.getNode(parent);
+        return null;
+    }
 
     public Node selectParentNode() {
         return getParentNode();
