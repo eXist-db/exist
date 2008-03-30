@@ -21,8 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
@@ -30,9 +28,12 @@ import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.MemoryNodeSet;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+
+import java.util.Iterator;
 
 public abstract class DeferredFunctionCall implements Sequence {
     
@@ -242,6 +243,11 @@ public abstract class DeferredFunctionCall implements Sequence {
     public NodeSet toNodeSet() throws XPathException {
         realize();
         return sequence.toNodeSet();
+    }
+
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
+        realize();
+        return sequence.toMemNodeSet();
     }
 
     public SequenceIterator unorderedIterator() {

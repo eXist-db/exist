@@ -23,13 +23,24 @@ package org.exist.xquery;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.ContextItem;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.Indexable;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 
 import java.text.Collator;
 import java.util.Iterator;
@@ -346,7 +357,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		             */
 		            if (inPredicate && !invalidNodeEvaluation &&
 		                    !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM) &&
-		                    Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
+		                    Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
+                            (contextSequence == null || contextSequence.isPersistentSet())) {
 		
 		                if(contextItem != null)
 		                    contextSequence = contextItem.toSequence();
@@ -402,7 +414,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS,
                     "OPTIMIZATION CHOICE", "genericCompare");
 		final Sequence ls = getLeft().eval(contextSequence, contextItem);
-		final Sequence rs = getRight().eval(contextSequence, contextItem);
+		return genericCompare(ls, contextSequence, contextItem);
+	}
+
+    protected Sequence genericCompare(Sequence ls, Sequence contextSequence,	Item contextItem) throws XPathException {
+        final Sequence rs = getRight().eval(contextSequence, contextItem);
 		final Collator collator = getCollator(contextSequence);
 		if (ls.isEmpty() && rs.isEmpty()) {
 			return BooleanValue.valueOf(compareAtomic(collator, AtomicValue.EMPTY_VALUE, AtomicValue.EMPTY_VALUE));
@@ -416,7 +432,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 				AtomicValue lv = i1.nextItem().atomize();
 				if (compareAtomic(collator, lv, AtomicValue.EMPTY_VALUE))
 					return BooleanValue.TRUE;
-			}			
+			}
 		} else if (ls.hasOne() && rs.hasOne()) {
 			return BooleanValue.valueOf(compareAtomic(collator, ls.itemAt(0).atomize(), rs.itemAt(0).atomize()));
 		} else {
@@ -438,7 +454,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 			}
 		}
 		return BooleanValue.FALSE;
-	}
+    }
 
     /**
 	 * Optimized implementation, which can be applied if the left operand
@@ -505,7 +521,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
 		//get the NodeSet on the left
 		Sequence leftSeq = getLeft().eval(contextSequence);
-		NodeSet nodes = leftSeq.isEmpty() ? NodeSet.EMPTY_SET : (NodeSet)leftSeq;
+        if (!leftSeq.isPersistentSet())
+            return genericCompare(leftSeq, contextSequence, null);
+
+        NodeSet nodes = leftSeq.isEmpty() ? NodeSet.EMPTY_SET : (NodeSet)leftSeq;
 		//nothing on the left, so nothing to do
 		if(!(nodes instanceof VirtualNodeSet) && nodes.isEmpty()) {
 			//Well, we might discuss this one ;-)

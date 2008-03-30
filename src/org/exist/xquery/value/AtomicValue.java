@@ -20,10 +20,6 @@
  */
 package org.exist.xquery.value;
 
-import java.text.Collator;
-import java.util.Iterator;
-import java.util.Properties;
-
 import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.EmptyNodeSet;
@@ -40,6 +36,10 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.text.Collator;
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * Represents an atomic value. All simple values that are not nodes extend AtomicValue.
@@ -235,7 +235,12 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 				+ Type.getTypeName(getType())
 				+ " to a node set");
 	}
-    
+
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
+        throw new XPathException("cannot convert value of type " + Type.getTypeName(getType())
+				+ " to a node set");
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getDocumentSet()
      */

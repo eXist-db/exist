@@ -20,13 +20,13 @@
  */
 package org.exist.xquery.value;
 
-import java.util.Iterator;
-
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
+
+import java.util.Iterator;
 
 /**
  * This interface represents a sequence as defined in the XPath 2.0 specification.
@@ -175,8 +175,19 @@ public interface Sequence {
 	 * @throws XPathException if the sequence contains items which are not nodes.
 	 */
 	public NodeSet toNodeSet() throws XPathException;
-	
-	/**
+
+    /**
+     * Convert the sequence into an in-memory node set. If the sequence contains
+     * items which are not nodes, an XPathException is thrown. For persistent
+     * node sets, this method will return null. Call {@link #isPersistentSet()} to check
+     * if the sequence is a persistent node set. 
+     *
+     * @throws XPathException if the sequence contains items which are not nodes or is
+     * a persistent node set
+     */
+    public MemoryNodeSet toMemNodeSet() throws XPathException;
+
+    /**
 	 * Returns the set of documents from which the node items in this sequence
 	 * have been selected. This is for internal use only.
 	 * 

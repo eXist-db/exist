@@ -21,10 +21,10 @@
  */
 package org.exist.xquery.value;
 
-import java.util.Comparator;
-
 import org.exist.dom.NodeProxy;
 import org.exist.memtree.NodeImpl;
+
+import java.util.Comparator;
 
 /**
  * @author wolf

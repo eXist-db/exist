@@ -22,6 +22,8 @@
  */
 package org.exist.memtree;
 
+import org.exist.Indexer;
+import org.exist.Namespaces;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.Constants;
@@ -114,14 +116,15 @@ public class MemTreeBuilder {
                 String attrNS = attributes.getURI(i);
                 String attrLocalName = attributes.getLocalName(i);
                 String attrQName = attributes.getQName(i);
-				// skip xmlns-attributes and attributes in eXist's namespace
+                // skip xmlns-attributes and attributes in eXist's namespace
 				if (!(attrQName.startsWith("xmlns"))) {
 //					|| attrNS.equals(Namespaces.EXIST_NS))) {
                     int p = attrQName.indexOf(':');
                     String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
                     QName attrQn = new QName(attrLocalName, attrNS, attrPrefix);
-					doc.addAttribute(nodeNr, attrQn, attributes.getValue(i));
-				}
+                    int type = getAttribType(attrQn, attributes.getType(i));
+                    doc.addAttribute(nodeNr, attrQn, attributes.getValue(i), type);
+                }
 			}
 		}
 		// update links
@@ -139,7 +142,22 @@ public class MemTreeBuilder {
 		return nodeNr;
 	}
 
-	/**
+    private int getAttribType(QName qname, String type) {
+        if (qname.equalsSimple(Namespaces.XML_ID_QNAME)) {
+            // an xml:id attribute.
+		    return AttributeImpl.ATTR_CDATA_TYPE;
+        }
+        if (type.equals(Indexer.ATTR_ID_TYPE))
+            return AttributeImpl.ATTR_ID_TYPE;
+        else if (type.equals(Indexer.ATTR_IDREF_TYPE))
+            return AttributeImpl.ATTR_IDREF_TYPE;
+        else if (type.equals(Indexer.ATTR_IDREFS_TYPE))
+            return AttributeImpl.ATTR_IDREFS_TYPE;
+        else
+            return AttributeImpl.ATTR_CDATA_TYPE;
+    }
+
+    /**
 	 * Close the last element created.
 	 */
 	public void endElement() {
@@ -183,7 +201,7 @@ public class MemTreeBuilder {
 		//} else {
 			//lastNode = doc.addAttribute(lastNode, qname, value);
 		//}
-		int nodeNr = doc.addAttribute(lastNode, qname, value);
+		int nodeNr = doc.addAttribute(lastNode, qname, value, AttributeImpl.ATTR_CDATA_TYPE);
 		//TODO :
 		//1) call linkNode(nodeNr); ?
 		//2) is there a relationship between lastNode and nodeNr ?

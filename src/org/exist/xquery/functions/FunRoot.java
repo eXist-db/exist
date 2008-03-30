@@ -25,7 +25,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.memtree.NodeImpl;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -38,6 +38,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -101,27 +102,23 @@ public class FunRoot extends Function {
 		
 		if (seq == null)
 			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
-		
-				
-        result = new ExtArrayNodeSet(seq.getItemCount());
-		int j = 0;
+
+        if (seq.isPersistentSet())
+            result = new ExtArrayNodeSet(seq.getItemCount());
+        else
+            result = new ValueSequence(seq.getItemCount());
+        int j = 0;
 		for (SequenceIterator i = seq.iterate(); i.hasNext(); j++) {
 			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))
                 throw new XPathException("FOTY0011: item is not a node; got '" + item + "'");
-            NodeProxy p;
-            if (item instanceof NodeProxy)
-            	p = (NodeProxy) item;
-            else
-            	p = (NodeProxy) item.toSequence().toNodeSet().get(0);
-			org.exist.dom.DocumentImpl doc = p.getDocument();
-            //Filter out the temporary nodes wrapper element
-            //WARNING : currently, we assume that *all* the nodes are wrapped in the same document
-            if (doc.getCollection().isTempCollection()) {                        
-                StoredNode trueRoot = (StoredNode)doc.getDocumentElement().getChildNodes().item(j);
-                result.add(new NodeProxy(trueRoot));
-            } else
-            	result.add(new NodeProxy(((NodeProxy) item).getDocument()));
+            Sequence s = item.toSequence();
+            if (s.isPersistentSet()) {
+                NodeProxy p = s.toNodeSet().get(0);
+                result.add(new NodeProxy(p.getDocument()));
+            } else {
+                result.add(((NodeImpl)item).getDocument());
+            }
 		}
     
 	    if (context.getProfiler().isEnabled())

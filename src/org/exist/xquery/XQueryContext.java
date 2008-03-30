@@ -1167,8 +1167,8 @@ public class XQueryContext {
     public void setOrderEmptyGreatest(final boolean order) {
 		this.orderEmptyGreatest = order;
 	}
-
-	/**
+    
+    /**
 	 * @return iterator over all built-in modules currently
 	 * registered.
 	 */

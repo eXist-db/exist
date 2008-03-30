@@ -23,7 +23,16 @@ package org.exist;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.CDATASectionImpl;
+import org.exist.dom.CommentImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentTypeImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
 import org.exist.indexing.StreamListener;
 import org.exist.storage.DBBroker;
 import org.exist.storage.GeneralRangeIndexSpec;
@@ -39,7 +48,14 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -60,9 +76,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
     private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
 
-    private static final String ATTR_ID_TYPE = "ID";
-    private static final String ATTR_IDREF_TYPE = "IDREF";
-    private static final String ATTR_IDREFS_TYPE = "IDREFS";
+    public static final String ATTR_ID_TYPE = "ID";
+    public static final String ATTR_IDREF_TYPE = "IDREF";
+    public static final String ATTR_IDREFS_TYPE = "IDREFS";
 
     private final static Logger LOG = Logger.getLogger(Indexer.class);
     

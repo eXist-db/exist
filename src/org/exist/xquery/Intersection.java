@@ -22,15 +22,15 @@
  */
 package org.exist.xquery;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -71,7 +71,7 @@ public class Intersection extends CombiningExpression {
             if (lval.isPersistentSet() && rval.isPersistentSet()) 
                 result = lval.toNodeSet().intersection(rval.toNodeSet());
             else {
-                result = new ValueSequence();
+                result = new ValueSequence(true);
                 Set set = new TreeSet();
                 for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); )
                     set.add(i.nextItem());

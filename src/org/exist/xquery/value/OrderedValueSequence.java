@@ -218,10 +218,25 @@ public class OrderedValueSequence extends AbstractSequence {
 		} else
 			throw new XPathException("Type error: the sequence cannot be converted into" +
 				" a node set. Item type is " + Type.getTypeName(itemType));
-
 	}
 
-	/* (non-Javadoc)
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
+        if(count == 0)
+            return MemoryNodeSet.EMPTY;
+        if(itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
+            throw new XPathException("Type error: the sequence cannot be converted into" +
+				" a node set. Item type is " + Type.getTypeName(itemType));
+        }
+        NodeValue v;
+        for (int i = 0; i <= count; i++) {
+            v = (NodeValue)items[i].item;
+            if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
+                return null;
+        }
+        return new ValueSequence(this);
+    }
+
+    /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#removeDuplicates()
      */
     public void removeDuplicates() {

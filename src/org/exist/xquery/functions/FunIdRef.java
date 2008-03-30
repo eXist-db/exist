@@ -21,15 +21,36 @@
 
 package org.exist.xquery.functions;
 
-import org.exist.dom.*;
-import org.exist.storage.ElementValue;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.util.XMLChar;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Expression;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
 
 import java.util.Iterator;
-import java.util.StringTokenizer;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class FunIdRef extends Function {
 
@@ -80,14 +101,14 @@ public class FunIdRef extends Function {
 			contextSequence = contextItem.toSequence();
 		
         Sequence result;
+        boolean processInMem = false;
         Expression arg = getArgument(0);        
 		Sequence idrefval = arg.eval(contextSequence);
 		if(idrefval.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
-    		result = new ExtArrayNodeSet();
     		String nextId;
-    		DocumentSet docs;
+    		DocumentSet docs = null;
             if (getArgumentCount() == 2) {
                 // second argument should be a node, whose owner document will be
                 // searched for the id
@@ -100,26 +121,41 @@ public class FunIdRef extends Function {
                     "XPTY0004: fn:idref() argument is not a node");               	
                 NodeValue node = (NodeValue)nodes.itemAt(0);
                 if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-                    throw new XPathException(getASTNode(), "FODC0001: supplied node is not from a persistent document");
-                MutableDocumentSet mdocs = new DefaultDocumentSet();
-                mdocs.add(((NodeProxy)node).getDocument());
-                docs = mdocs;
+                    processInMem = true;
+                else {
+                    MutableDocumentSet ndocs = new DefaultDocumentSet();
+                    ndocs.add(((NodeProxy)node).getDocument());
+                    docs = ndocs;
+                }
+                contextSequence = node;
             } else if (contextSequence == null)
                 throw new XPathException(getASTNode(), "XPDY0002: no context item specified");
             else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
     			throw new XPathException(getASTNode(), "XPTY0004: context item is not a node");
-    		else
-    			docs = contextSequence.toNodeSet().getDocumentSet();
-            
-    		for (SequenceIterator i = idrefval.iterate(); i.hasNext();) {
-				nextId = i.nextItem().getStringValue();
-				if (nextId.length() == 0) continue;
-				if (XMLChar.isValidNCName(nextId)) {
-					getIdRef((NodeSet) result, docs, nextId);
-				}
-			}
-		}
-        
+    		else {
+    			if (contextSequence.isPersistentSet())
+                    docs = contextSequence.toNodeSet().getDocumentSet();
+                else
+                    processInMem = true;
+            }
+
+            if (processInMem)
+                result = new ValueSequence();
+            else
+                result = new ExtArrayNodeSet();
+
+            for(SequenceIterator i = idrefval.iterate(); i.hasNext(); ) {
+    			nextId = i.nextItem().getStringValue();
+                if (nextId.length() == 0) continue;
+                if(XMLChar.isValidNCName(nextId)) {
+                    if (processInMem)
+                        getIdRef(result, contextSequence, nextId);
+                    else
+                        getIdRef((NodeSet)result, docs, nextId);
+                }
+    		}
+        }
+
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
         
@@ -136,4 +172,18 @@ public class FunIdRef extends Function {
             result.add(n);
 		}
 	}
+
+    private void getIdRef(Sequence result, Sequence seq, String id) throws XPathException {
+        Set visitedDocs = new TreeSet();
+        for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+            org.exist.memtree.NodeImpl v = (org.exist.memtree.NodeImpl) i.nextItem();
+            org.exist.memtree.DocumentImpl doc = v.getDocument();
+            if (!visitedDocs.contains(doc)) {
+                org.exist.memtree.NodeImpl node = doc.selectByIdref(id);
+                if (node != null)
+                    result.add(node);
+                visitedDocs.add(doc);
+            }
+        }
+    }
 }

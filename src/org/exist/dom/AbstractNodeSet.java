@@ -21,8 +21,6 @@
  */
 package org.exist.dom;
 
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
@@ -31,10 +29,13 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AbstractSequence;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.MemoryNodeSet;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
 
 /**
  * Abstract base class for all node set implementations. A node set is a special type of sequence,
@@ -570,6 +571,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      */
     public NodeSet toNodeSet() throws XPathException {
         return this;
+    }
+
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
+        return null;
     }
 
     /* (non-Javadoc)

@@ -22,7 +22,12 @@
  */
 package org.exist.memtree;
 
-import org.exist.dom.*;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.EmptyNodeSet;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.QNameable;
+import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
@@ -33,8 +38,22 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.*;
-import org.w3c.dom.*;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.MemoryNodeSet;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.UntypedAtomicValue;
+import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.UserDataHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
@@ -188,6 +207,19 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		return document.getNode(next);
 	}
 
+    public Node selectParentNode() {
+        // as getParentNode() but doesn't return the document itself
+        if (nodeNumber == 0)
+            return null;
+        int next = document.next[nodeNumber];
+		while (next > nodeNumber) {
+			next = document.next[next];
+		}
+		if (next <= 0)
+			return null;
+		return document.getNode(next);
+	}
+
     public void addContextNode(int contextId, NodeValue node) {
     	throw new RuntimeException("Can not call addContextNode() on node type " + this.getNodeType());
     }
@@ -198,7 +230,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	public boolean equals(Object obj) {
 		if(!(obj instanceof NodeImpl))
 			return false;
-		return nodeNumber == ((NodeImpl) obj).nodeNumber;
+		NodeImpl o = (NodeImpl) obj;
+        return document == o.document && nodeNumber == o.nodeNumber;
 	}
 
 	/* (non-Javadoc)
@@ -207,7 +240,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	public boolean equals(NodeValue other) throws XPathException {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
 			return false;
-		return nodeNumber == ((NodeImpl) other).nodeNumber;
+        NodeImpl o = (NodeImpl) other;
+        return document == o.document && nodeNumber == o.nodeNumber;
 	}
 
 	/* (non-Javadoc)
@@ -576,8 +610,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         return seq.toNodeSet();
 	}
 
-    public InMemoryNodeSet toMemNodeSet() throws XPathException {
-        return new InMemoryNodeSet(this);
+    public MemoryNodeSet toMemNodeSet() throws XPathException {
+        return new ValueSequence(this).toMemNodeSet();
     }
 
     private final static class SingleNodeIterator implements SequenceIterator {
@@ -734,12 +768,17 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         // do nothing
     }
 
+    public void selectDescendantAttributes(NodeTest test, Sequence result) throws XPathException {
+        // do nothing
+    }
+    
     public void selectChildren(NodeTest test, Sequence result) throws XPathException {
         // do nothing
     }
 
     public void selectDescendants(boolean includeSelf, NodeTest test, Sequence result) throws XPathException {
-        // do nothing
+        if (includeSelf && test.matches(this))
+            result.add(this);
     }
 
     public void selectAncestors(boolean includeSelf, NodeTest test, Sequence result) throws XPathException {
@@ -770,6 +809,14 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         }
     }
 
+    public void selectPreceding(NodeTest test, Sequence result) throws XPathException {
+        for (int i = nodeNumber - 1; i > 0; i--) {
+            NodeImpl n = document.getNode(i);
+            if (test.matches(n))
+                result.add(n);
+        }
+    }
+
     public void selectFollowingSiblings(NodeTest test, Sequence result) throws XPathException {
         int parent = document.getParentNodeFor(nodeNumber);
         if (parent == 0) {
@@ -791,6 +838,31 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
                 if (nextNode > nodeNumber && test.matches(n))
                     result.add(n);
                 nextNode = document.next[nextNode];
+            }
+        }
+    }
+
+    public void selectFollowing(NodeTest test, Sequence result) throws XPathException {
+        int parent = document.getParentNodeFor(nodeNumber);
+        if (parent == 0) {
+            // parent is the document node
+            if (getNodeType() == Node.ELEMENT_NODE)
+                return;
+            NodeImpl next = (NodeImpl) getNextSibling();
+            while (next != null) {
+                if (test.matches(next))
+                    next.selectDescendants(true, test, result);
+                if (next.getNodeType() == Node.ELEMENT_NODE)
+                    break;
+                next = (NodeImpl) next.getNextSibling();
+            }
+        } else {
+            int nextNode = document.getFirstChildFor(parent);
+            while (nextNode < document.size) {
+                NodeImpl n = document.getNode(nextNode);
+                if (nextNode > nodeNumber && test.matches(n))
+                    result.add(n);
+                nextNode++;
             }
         }
     }

@@ -36,7 +36,21 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import java.util.Arrays;
@@ -54,7 +68,7 @@ import java.util.Arrays;
  */
 public class DocumentImpl extends NodeImpl implements Document {
 
-	protected XQueryContext context;
+    protected XQueryContext context;
 	
     protected NamePool namePool = new NamePool();
 
@@ -83,6 +97,8 @@ public class DocumentImpl extends NodeImpl implements Document {
     // attributes
     protected int[] attrName;
 
+    protected int[] attrType;
+
     protected NodeId[] attrNodeId;
     
     protected int[] attrParent;
@@ -102,14 +118,14 @@ public class DocumentImpl extends NodeImpl implements Document {
     protected int size = 1;
 
     protected int documentRootNode = -1;
-    
+
     protected String documentURI = null;
 
     // reference nodes (link to an external, persistent document fragment)
     protected NodeProxy references[];
 
     protected int nextRef = 0;
-    
+
     private final static int NODE_SIZE = 128;
     private final static int ATTR_SIZE = 64;
     private final static int CHAR_BUF_SIZE = 1024;
@@ -136,6 +152,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         attrName = new int[ATTR_SIZE];
         attrParent = new int[ATTR_SIZE];
         attrValue = new String[ATTR_SIZE];
+        attrType = new int[ATTR_SIZE];
         attrNodeId = new NodeId[NODE_SIZE];
 
         namespaceCode = new int[5];
@@ -243,7 +260,11 @@ public class DocumentImpl extends NodeImpl implements Document {
         addChars(nodeNr, ch);
     }
 
-    public int addAttribute(int nodeNr, QName qname, String value)
+    public boolean hasReferenceNodes() {
+        return references != null && references[0] != null;
+    }
+
+    public int addAttribute(int nodeNr, QName qname, String value, int type)
             throws DOMException {
         if (nodeKind == null) init();
         if (nodeNr > 0 && nodeKind[nodeNr] != Node.ELEMENT_NODE)
@@ -262,6 +283,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         attrParent[nextAttr] = nodeNr;
         attrName[nextAttr] = namePool.add(qname);
         attrValue[nextAttr] = value;
+        attrType[nextAttr] = type;
         if (alpha[nodeNr] < 0) alpha[nodeNr] = nextAttr;
         return nextAttr++;
     }
@@ -284,7 +306,11 @@ public class DocumentImpl extends NodeImpl implements Document {
     public int getLastNode() {
         return size - 1;
     }
-    
+
+    public DocumentImpl getDocument() {
+        return this;
+    }
+
     public short getNodeType(int nodeNr) {
     	if (nodeKind == null || nodeNr < 0)
             return -1;
@@ -340,6 +366,10 @@ public class DocumentImpl extends NodeImpl implements Document {
         String[] newAttrValue = new String[newSize];
         System.arraycopy(attrValue, 0, newAttrValue, 0, size);
         attrValue = newAttrValue;
+
+        int[] newAttrType = new int[newSize];
+        System.arraycopy(attrType, 0, newAttrType, 0, size);
+        attrType = newAttrType;
 
         NodeId[] newNodeId = new NodeId[newSize];
         System.arraycopy(attrNodeId, 0, newNodeId, 0, size);
@@ -413,6 +443,7 @@ public class DocumentImpl extends NodeImpl implements Document {
             return null;
         return new AttributeImpl(this, nextAttr - 1);
     }
+
     /*
      * (non-Javadoc)
      * 
@@ -556,6 +587,8 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
 
     public void selectDescendants(boolean includeSelf, NodeTest test, Sequence result) throws XPathException {
+        if (includeSelf && test.matches(this))
+            result.add(this);
         if (size == 1) return;
         NodeImpl next = (NodeImpl) getFirstChild();
         while (next != null) {
@@ -564,6 +597,78 @@ public class DocumentImpl extends NodeImpl implements Document {
             next.selectDescendants(includeSelf, test, result);
             next = (NodeImpl) next.getNextSibling();
         }
+    }
+
+    public void selectDescendantAttributes(NodeTest test, Sequence result) throws XPathException {
+        if (size == 1) return;
+        NodeImpl next = (NodeImpl) getFirstChild();
+        while (next != null) {
+            if (test.matches(next))
+                result.add(next);
+            next.selectDescendantAttributes(test, result);
+            next = (NodeImpl) next.getNextSibling();
+        }
+    }
+
+    public NodeImpl selectById(String id) throws XPathException {
+        if (size == 1) return null;
+        ElementImpl root = (ElementImpl) getDocumentElement();
+        if (hasIdAttribute(root.getNodeNumber(), id))
+            return root;
+        int treeLevel = this.treeLevel[root.getNodeNumber()];
+        int nextNode = root.getNodeNumber();
+        while (++nextNode < document.size && document.treeLevel[nextNode] > treeLevel) {
+            if (document.nodeKind[nextNode] == Node.ELEMENT_NODE &&
+                    hasIdAttribute(nextNode, id))
+                return getNode(nextNode);
+        }
+        return null;
+    }
+
+    public NodeImpl selectByIdref(String id) throws XPathException {
+        if (size == 1) return null;
+        ElementImpl root = (ElementImpl) getDocumentElement();
+        AttributeImpl attr = getIdrefAttribute(root.getNodeNumber(), id);
+        if (attr != null)
+            return attr;
+        int treeLevel = this.treeLevel[root.getNodeNumber()];
+        int nextNode = root.getNodeNumber();
+        while (++nextNode < document.size && document.treeLevel[nextNode] > treeLevel) {
+            if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
+                attr = getIdrefAttribute(nextNode, id);
+                if (attr != null)
+                    return attr;
+            }
+        }
+        return null;
+    }
+
+    private boolean hasIdAttribute(int nodeNumber, String id) {
+        int attr = document.alpha[nodeNumber];
+        if (-1 < attr) {
+            while (attr < document.nextAttr
+                    && document.attrParent[attr] == nodeNumber) {
+                if (document.attrType[attr] == AttributeImpl.ATTR_ID_TYPE &&
+                        id.equals(document.attrValue[attr]))
+                    return true;
+                ++attr;
+            }
+        }
+        return false;
+    }
+
+    private AttributeImpl getIdrefAttribute(int nodeNumber, String id) {
+        int attr = document.alpha[nodeNumber];
+        if (-1 < attr) {
+            while (attr < document.nextAttr
+                    && document.attrParent[attr] == nodeNumber) {
+                if (document.attrType[attr] == AttributeImpl.ATTR_IDREF_TYPE &&
+                        id.equals(document.attrValue[attr]))
+                    return new AttributeImpl(this, attr);
+                ++attr;
+            }
+        }
+        return null;
     }
 
     /*
@@ -852,6 +957,8 @@ public class DocumentImpl extends NodeImpl implements Document {
      * reference nodes.
      */
     public void expand() throws DOMException {
+        if (size == 0)
+            return;
         DocumentImpl newDoc = expandRefs(null);
         copyDocContents(newDoc);
     }

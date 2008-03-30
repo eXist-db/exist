@@ -34,6 +34,7 @@ import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.MemoryNodeSet;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
@@ -283,25 +284,24 @@ public class LocationStep extends Step {
             switch (axis) {
                 case Constants.DESCENDANT_AXIS:
                 case Constants.DESCENDANT_SELF_AXIS:
-                    result = getDescendants(context, contextSequence
-                                            .toNodeSet());
+                    result = getDescendants(context, contextSequence);
                     break;
                 case Constants.CHILD_AXIS:
                     //VirtualNodeSets may have modified the axis ; checking the type
                     //TODO : futher checks ?
                     if (this.test.getType() == Type.ATTRIBUTE) {
                         this.axis = Constants.ATTRIBUTE_AXIS;
-                        result = getAttributes(context, contextSequence.toNodeSet());
+                        result = getAttributes(context, contextSequence);
                     } else {
-                        result = getChildren(context, contextSequence.toNodeSet());
+                        result = getChildren(context, contextSequence);
                     }
                     break;
                 case Constants.ANCESTOR_SELF_AXIS:
                 case Constants.ANCESTOR_AXIS:
-                    result = getAncestors(context, contextSequence.toNodeSet());
+                    result = getAncestors(context, contextSequence);
                     break;
                 case Constants.PARENT_AXIS:
-                    result = getParents(context, contextSequence.toNodeSet());
+                    result = getParents(context, contextSequence);
                     break;
                 case Constants.SELF_AXIS:
                     if (!(contextSequence instanceof VirtualNodeSet)
@@ -309,26 +309,25 @@ public class LocationStep extends Step {
                                           Type.ATOMIC)) {
                         result = getSelfAtomic(contextSequence);
                     } else {
-                        result = getSelf(context, contextSequence.toNodeSet());
+                        result = getSelf(context, contextSequence);
                     }
                     break;
                 case Constants.ATTRIBUTE_AXIS:
                 case Constants.DESCENDANT_ATTRIBUTE_AXIS:
-                    result = getAttributes(context, contextSequence.toNodeSet());
+                    result = getAttributes(context, contextSequence);
                     break;
                 case Constants.PRECEDING_AXIS:
-                    result = getPreceding(context, contextSequence.toNodeSet());
+                    result = getPreceding(context, contextSequence);
                     break;
                 case Constants.FOLLOWING_AXIS:
-                    result = getFollowing(context, contextSequence.toNodeSet());
+                    result = getFollowing(context, contextSequence);
                     break;
                 case Constants.PRECEDING_SIBLING_AXIS:
                 case Constants.FOLLOWING_SIBLING_AXIS:
-                    result = getSiblings(context, contextSequence.toNodeSet());
+                    result = getSiblings(context, contextSequence);
                     break;
                 default:
-                    throw new IllegalArgumentException(
-                                                       "Unsupported axis specified");
+                    throw new IllegalArgumentException("Unsupported axis specified");
             }
         } else {
             result = NodeSet.EMPTY_SET;
@@ -379,10 +378,15 @@ public class LocationStep extends Step {
      * The method <code>getSelf</code>
      *
      * @param context a <code>XQueryContext</code> value
-     * @param contextSet a <code>NodeSet</code> value
+     * @param contextSequence a <code>NodeSet</code> value
      * @return a <code>Sequence</code> value
      */
-    protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
+    protected Sequence getSelf(XQueryContext context, Sequence contextSequence) throws XPathException {
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            return nodes.getSelf(test);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
@@ -450,15 +454,21 @@ public class LocationStep extends Step {
      * The method <code>getAttributes</code>
      *
      * @param context a <code>XQueryContext</code> value
-     * @param contextSet a <code>NodeSet</code> value
+     * @param contextSequence a <code>NodeSet</code> value
      * @return a <code>NodeSet</code> value
      */
-    protected NodeSet getAttributes(XQueryContext context, NodeSet contextSet) {
+    protected Sequence getAttributes(XQueryContext context, Sequence contextSequence) throws XPathException {
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                return nodes.getDescendantAttributes(test);
+            else
+                return nodes.getAttributes(test);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         if (test.isWildcardTest()) {
-            NodeSet result = new VirtualNodeSet(axis, test, contextId,
-                                                contextSet);
-            ((VirtualNodeSet) result)
-                .setInPredicate(Expression.NO_CONTEXT_ID != contextId);
+            NodeSet result = new VirtualNodeSet(axis, test, contextId, contextSet);
+            ((VirtualNodeSet) result).setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return result;
             // if there's just a single known node in the context, it is faster
             // do directly search for the attribute in the parent node.
@@ -476,7 +486,7 @@ public class LocationStep extends Step {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                               "OPTIMIZATION", "direct attribute selection");
             if (contextSet.isEmpty())
-            	return NodeSet.EMPTY_SET;
+                return NodeSet.EMPTY_SET;
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null
                 && proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
@@ -542,10 +552,15 @@ public class LocationStep extends Step {
      * The method <code>getChildren</code>
      *
      * @param context a <code>XQueryContext</code> value
-     * @param contextSet a <code>NodeSet</code> value
+     * @param contextSequence the context sequence
      * @return a <code>NodeSet</code> value
      */
-    protected NodeSet getChildren(XQueryContext context, NodeSet contextSet) {
+    protected Sequence getChildren(XQueryContext context, Sequence contextSequence) throws XPathException {
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            return nodes.getChildren(test);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
             // test is one out of *, text(), node() including processing-instruction(targetname)
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
@@ -584,13 +599,13 @@ public class LocationStep extends Step {
                                               "Using structural index '" + index.toString() + "'");
             DocumentSet docs = getDocumentSet(contextSet);
             if (contextSet instanceof ExtArrayNodeSet) {
-            	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
+                return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
                                                       docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
                 //            	if (contextSet instanceof VirtualNodeSet)
                 //            		((VirtualNodeSet)contextSet).realize();
-            	NodeSelector selector = new ChildSelector(contextSet, contextId);
-            	return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
+                NodeSelector selector = new ChildSelector(contextSet, contextId);
+                return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
                                                    .getName(), selector);
             }
         }
@@ -600,10 +615,15 @@ public class LocationStep extends Step {
      * The method <code>getDescendants</code>
      *
      * @param context a <code>XQueryContext</code> value
-     * @param contextSet a <code>NodeSet</code> value
+     * @param contextSequence the context sequence
      * @return a <code>NodeSet</code> value
      */
-    protected NodeSet getDescendants(XQueryContext context, NodeSet contextSet) {
+    protected Sequence getDescendants(XQueryContext context, Sequence contextSequence) throws XPathException {
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            return nodes.getDescendants(axis == Constants.DESCENDANT_SELF_AXIS, test);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
             // test is one out of *, text(), node() including processing-instruction(targetname)
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
@@ -673,10 +693,18 @@ public class LocationStep extends Step {
      * The method <code>getSiblings</code>
      *
      * @param context a <code>XQueryContext</code> value
-     * @param contextSet a <code>NodeSet</code> value
+     * @param contextSequence a <code>NodeSet</code> value
      * @return a <code>NodeSet</code> value
      */
-    protected NodeSet getSiblings(XQueryContext context, NodeSet contextSet) {
+    protected Sequence getSiblings(XQueryContext context, Sequence contextSequence) throws XPathException {
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            if (axis == Constants.PRECEDING_SIBLING_AXIS)
+                return nodes.getPrecedingSiblings(test);
+            else
+                return nodes.getFollowingSiblings(test);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
@@ -764,12 +792,17 @@ public class LocationStep extends Step {
      * The method <code>getPreceding</code>
      *
      * @param context a <code>XQueryContext</code> value
-     * @param contextSet a <code>NodeSet</code> value
+     * @param contextSequence a <code>Sequence</code> value
      * @return a <code>NodeSet</code> value
      * @exception XPathException if an error occurs
      */
-    protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet)
+    protected Sequence getPreceding(XQueryContext context, Sequence contextSequence)
         throws XPathException {
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            return nodes.getPreceding(test);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
@@ -802,12 +835,17 @@ public class LocationStep extends Step {
      * The method <code>getFollowing</code>
      *
      * @param context a <code>XQueryContext</code> value
-     * @param contextSet a <code>NodeSet</code> value
+     * @param contextSequence a <code>Sequence</code> value
      * @return a <code>NodeSet</code> value
      * @exception XPathException if an error occurs
      */
-    protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet)
+    protected Sequence getFollowing(XQueryContext context, Sequence contextSequence)
         throws XPathException {
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            return nodes.getFollowing(test);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
@@ -840,10 +878,15 @@ public class LocationStep extends Step {
      * The method <code>getAncestors</code>
      *
      * @param context a <code>XQueryContext</code> value
-     * @param contextSet a <code>NodeSet</code> value
+     * @param contextSequence a <code>Sequence</code> value
      * @return a <code>NodeSet</code> value
      */
-    protected NodeSet getAncestors(XQueryContext context, NodeSet contextSet) {
+    protected Sequence getAncestors(XQueryContext context, Sequence contextSequence) throws XPathException {
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            return nodes.getAncestors(axis == Constants.ANCESTOR_SELF_AXIS, test);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         if (test.isWildcardTest()) {
             NodeSet result = new ExtArrayNodeSet();
             result.setProcessInReverseOrder(true);
@@ -946,10 +989,15 @@ public class LocationStep extends Step {
      * The method <code>getParents</code>
      *
      * @param context a <code>XQueryContext</code> value
-     * @param contextSet a <code>NodeSet</code> value
+     * @param contextSequence a <code>Sequence</code> value
      * @return a <code>NodeSet</code> value
      */
-    protected NodeSet getParents(XQueryContext context, NodeSet contextSet) {
+    protected Sequence getParents(XQueryContext context, Sequence contextSequence) throws XPathException {
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            return nodes.getParents(test);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         if (test.isWildcardTest()) {
             NodeSet temp = contextSet.getParents(contextId);
             NodeSet result = new ExtArrayNodeSet();

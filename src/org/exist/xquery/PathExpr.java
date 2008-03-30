@@ -27,7 +27,11 @@ import org.exist.dom.VirtualNodeSet;
 import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.xmldb.api.base.CompiledExpression;
 
 import java.io.Writer;
@@ -210,17 +214,21 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
                 //contextDocs == null *is* significant
                 expr.setContextDocSet(contextDocs);
-          
+                // switch into single step mode if we are processing in-memory nodes only
+                boolean inMemProcessing = currentContext != null &&
+                        Type.subTypeOf(currentContext.getItemType(), Type.NODE) &&
+                        !currentContext.isPersistentSet();
                 //DESIGN : first test the dependency then the result
                 final int exprDeps = expr.getDependencies();
-                if ((Dependency.dependsOn(exprDeps, Dependency.CONTEXT_ITEM) ||
+                if (inMemProcessing ||
+                        ((Dependency.dependsOn(exprDeps, Dependency.CONTEXT_ITEM) ||
                 		Dependency.dependsOn(exprDeps, Dependency.CONTEXT_POSITION)) &&
                 		//A positionnal predicate will be evaluated one time
                 		//TODO : reconsider since that may be expensive (type evaluation)
                 		!(this.inPredicate && Type.subTypeOf(this.returnsType(), Type.NUMBER)) &&
-                		currentContext != null && !currentContext.isEmpty()) {
+                		currentContext != null && !currentContext.isEmpty())) {
                       
-                    Sequence exprResult = new ValueSequence();
+                    Sequence exprResult = new ValueSequence(Type.subTypeOf(expr.returnsType(), Type.NODE));
                     
                     //Restore a position which may have been modified by inner expressions 
                     int p = context.getContextPosition();

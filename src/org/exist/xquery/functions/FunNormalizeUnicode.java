@@ -21,10 +21,6 @@
 
 package org.exist.xquery.functions;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -38,6 +34,10 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class FunNormalizeUnicode extends Function {
 	

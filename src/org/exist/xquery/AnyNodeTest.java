@@ -53,7 +53,7 @@ public class AnyNodeTest implements NodeTest {
 	 * @see org.exist.xquery.NodeTest#matches(org.w3c.dom.Node)
 	 */
 	public boolean matches(Node node) {
-	    return (node.getNodeType() != Node.ATTRIBUTE_NODE);
+        return (node.getNodeType() != Node.ATTRIBUTE_NODE);
     }
 
 	/* (non-Javadoc)
