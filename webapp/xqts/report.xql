@@ -249,8 +249,8 @@ declare function xqts:details($testName as xs:string) {
                 }
                 <tr>
                     <td class="label">Result:</td>
-                    <td class="{$result/@result}">
-                        {string($result/@result)}
+                    <td class="{$result/@result[1]}">
+                        {string($result[1]/@result)}
                     </td>
                 </tr>
             </table>
