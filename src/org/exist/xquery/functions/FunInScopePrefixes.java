@@ -1,16 +1,13 @@
 
 package org.exist.xquery.functions;
 
-import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.exist.Namespaces;
 import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -52,30 +49,63 @@ public class FunInScopePrefixes extends BasicFunction {
         }
         
 		Map prefixes = new LinkedHashMap();
-		NodeValue node = (NodeValue) args[0].itemAt(0);		
-		if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy proxy = (NodeProxy) node;
-			//Horrible hacks to work-around bad in-scope NS
-			if (proxy.getNodeType() == Node.ELEMENT_NODE && !context.inheritNamespaces()) {
-				collectNamespacePrefixes((ElementImpl)proxy.getNode(), prefixes);
-			} else {
-				NodeSet ancestors = proxy.getAncestors(contextId, true);
-				for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
-					proxy = (NodeProxy) i.next();
-					collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);
+		NodeValue nodeValue = (NodeValue) args[0].itemAt(0);		
+		if (nodeValue.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+			//NodeProxy proxy = (NodeProxy) node;
+			Node node = nodeValue.getNode();
+			if (context.preserveNamespaces()) {
+				//Horrible hacks to work-around bad in-scope NS
+				if (node.getNodeType() == Node.ELEMENT_NODE && !context.inheritNamespaces()) {
+					collectNamespacePrefixes((ElementImpl)node, prefixes);
+				} else {
+					do {
+						collectNamespacePrefixes((ElementImpl)node, prefixes);
+						node = node.getParentNode();
+					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);				
+					/*
+					NodeSet ancestors = nodeValue.getAncestors(contextId, true);
+					for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
+						proxy = (NodeProxy) i.next();
+						collectNamespacePrefixes((ElementImpl)node, prefixes);
+					}
+					*/
 				}
-			}			
-		} else { // In-memory node
-			NodeImpl nodeImpl = (NodeImpl) node;
-			//Horrible hacks to work-around bad in-scope NS
-			if (nodeImpl.getNodeType() == Node.ELEMENT_NODE && !context.inheritNamespaces()) {
-				collectNamespacePrefixes((org.exist.memtree.ElementImpl) nodeImpl, prefixes);
 			} else {
-				do {
-					collectNamespacePrefixes((org.exist.memtree.ElementImpl) nodeImpl, prefixes);
-					nodeImpl = (NodeImpl) nodeImpl.getParentNode();
-				} while (nodeImpl != null && nodeImpl.getNodeType() == Node.ELEMENT_NODE);
+				if (context.inheritNamespaces()) {
+					node = node.getParentNode();
+					do {
+						collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+						node = node.getParentNode();
+					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
+				}
 			}
+			// Add xmlNS to all in-memory constructs. /ljo
+	        prefixes.put("xml", Namespaces.XML_NS);				
+		} else { // In-memory node
+			//NodeImpl nodeImpl = (NodeImpl) node;
+			Node node = nodeValue.getNode();			
+			if (context.preserveNamespaces()) {				
+				//Horrible hacks to work-around bad in-scope NS
+				if (node.getNodeType() == Node.ELEMENT_NODE && !context.inheritNamespaces()) {
+					collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+				} else {				
+					do {
+						collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+						node = node.getParentNode();
+					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
+				}
+			} else {
+				if (context.inheritNamespaces()) {
+					node = node.getParentNode();
+					do {
+						collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+						node = node.getParentNode();
+					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
+				}
+			}
+	        // Add xmlNS to all in-memory constructs. /ljo
+	        prefixes.put("xml", Namespaces.XML_NS);	
+	
 		}
 
 		ValueSequence result = new ValueSequence();
@@ -96,27 +126,16 @@ public class FunInScopePrefixes extends BasicFunction {
 	}
 	
 	public static void collectNamespacePrefixes(Element element, Map prefixes) {
-        // Add xmlNS to all constructs. -pb
-        prefixes.put("xml", Namespaces.XML_NS);		
 		String namespaceURI = element.getNamespaceURI();
 		String prefix;
 		if (namespaceURI != null && namespaceURI.length() > 0) {
 			prefix = element.getPrefix();
 			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
 		}		
+		//TODO : more complicated (see XQTS copynamespace-16)
+		if (element instanceof org.exist.memtree.ElementImpl) {
+			prefixes.putAll(((org.exist.memtree.ElementImpl)element).getNamespaceMap());
+		}		
     }
 
-	public static void collectNamespacePrefixes(org.exist.memtree.ElementImpl element, Map prefixes) {
-        // Add xmlNS to all in-memory constructs. /ljo
-        prefixes.put("xml", Namespaces.XML_NS);		
-		String namespaceURI = element.getNamespaceURI();
-		String prefix;
-		if (namespaceURI != null && namespaceURI.length() > 0) {
-			prefix = element.getPrefix();
-			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
-		}
-		if (element.declaresNamespacePrefixes()) {
-            prefixes.putAll(element.getNamespaceMap());
-        } 
-    }
 }
