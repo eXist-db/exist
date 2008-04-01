@@ -80,6 +80,11 @@ public class DynamicTextConstructor extends NodeConstructor {
             result = Sequence.EMPTY_SEQUENCE;
         else {        
             MemTreeBuilder builder = context.getDocumentBuilder();
+            //The line below if necessayr to make fn-root-17 pass (but no other test AFAICT)
+            //let $var := text {"a text Node"} return  fn:root(text {"A text Node"})
+            //<expected-result compare="Text">A text Node</expected-result> 
+            //The result of the constructed text node is reused
+            //TODO : how to avoid this ?
             builder.startDocument();
     		context.proceed(this, builder);
     		StringBuffer buf = new StringBuffer();
