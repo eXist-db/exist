@@ -52,7 +52,7 @@ public class FunInScopePrefixes extends BasicFunction {
         }
         
 		Map prefixes = new LinkedHashMap();
-		NodeValue node = (NodeValue) args[0].itemAt(0);
+		NodeValue node = (NodeValue) args[0].itemAt(0);		
 		if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy) node;
 			//Horrible hacks to work-around bad in-scope NS
@@ -66,11 +66,16 @@ public class FunInScopePrefixes extends BasicFunction {
 				}
 			}			
 		} else { // In-memory node
-			NodeImpl next = (NodeImpl) node;
-			do {
-				collectNamespacePrefixes((org.exist.memtree.ElementImpl) next, prefixes);
-				next = (NodeImpl) next.getParentNode();
-			} while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
+			NodeImpl nodeImpl = (NodeImpl) node;
+			//Horrible hacks to work-around bad in-scope NS
+			if (nodeImpl.getNodeType() == Node.ELEMENT_NODE && !context.inheritNamespaces()) {
+				collectNamespacePrefixes((org.exist.memtree.ElementImpl) nodeImpl, prefixes);
+			} else {
+				do {
+					collectNamespacePrefixes((org.exist.memtree.ElementImpl) nodeImpl, prefixes);
+					nodeImpl = (NodeImpl) nodeImpl.getParentNode();
+				} while (nodeImpl != null && nodeImpl.getNodeType() == Node.ELEMENT_NODE);
+			}
 		}
 
 		ValueSequence result = new ValueSequence();
@@ -89,37 +94,16 @@ public class FunInScopePrefixes extends BasicFunction {
         
         return result;          
 	}
-
-	public static void collectNamespacePrefixes(ElementImpl element, Map prefixes) {		
-        // Add xmlNS to all constructs. -pb
-        prefixes.put("xml", Namespaces.XML_NS);	 
-        String namespaceURI = element.getNamespaceURI();
-		String prefix;
-        if (namespaceURI != null && namespaceURI.length() > 0) {
-        	//Remember that a temporary node is wrapped by an <exist:temp> element
-			//The prefix could have been removed from the global context			     	
-			prefix = element.getPrefix();
-			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
-		}
-		if (element.declaresNamespacePrefixes()) {
-			for (Iterator i = element.getPrefixes(); i.hasNext(); ) {
-				prefix = (String) i.next();
-				prefixes.put(prefix, element.getNamespaceForPrefix(prefix));
-			}
-		}
-	}
 	
 	public static void collectNamespacePrefixes(Element element, Map prefixes) {
         // Add xmlNS to all constructs. -pb
         prefixes.put("xml", Namespaces.XML_NS);		
 		String namespaceURI = element.getNamespaceURI();
 		String prefix;
-        System.out.println("FunInScopePrefixes::collectNamespacePrefixes Element 1:" + element+ "/" + namespaceURI);
 		if (namespaceURI != null && namespaceURI.length() > 0) {
 			prefix = element.getPrefix();
-            System.out.println("FunInScopePrefixes::collectNamespacePrefixes Element 2:" + element+ "/" + prefix);
 			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
-		}
+		}		
     }
 
 	public static void collectNamespacePrefixes(org.exist.memtree.ElementImpl element, Map prefixes) {

@@ -148,6 +148,10 @@ public class XQueryContext {
 
 	// Inherited prefix/namespace mappings in the current context
 	protected HashMap inheritedInScopePrefixes = new HashMap();	
+	
+	private boolean preserveNamespaces = true;
+	
+    private boolean inheritNamespaces = true;	
 
 	// Local namespace stack
 	protected final Stack namespaceStack = new Stack();
@@ -252,10 +256,7 @@ public class XQueryContext {
 	 * Should whitespace inside node constructors be stripped?
 	 */
 	private boolean stripWhitespace = true;
-
-	private boolean preserveNamespaces = true;	
-    private boolean inheritNamespaces = true;
-
+	
     /**
 	 * Should empty order greatest or least?
 	 */
@@ -671,6 +672,7 @@ public class XQueryContext {
 	public void declareInScopeNamespace(String prefix, String uri) {
 		if (prefix == null || uri == null)
 			throw new IllegalArgumentException("null argument passed to declareNamespace");
+		//Activate the namespace by removing it from the inherited namespaces
 		if (inheritedInScopePrefixes.get(getURIForPrefix(prefix)) != null)
 			inheritedInScopePrefixes.remove(uri);	
 		if (inheritedInScopeNamespaces.get(prefix) != null)
@@ -707,11 +709,11 @@ public class XQueryContext {
        String uri = inScopeNamespaces == null ? null : (String) inScopeNamespaces.get(prefix);
        if (uri != null)
     	   return uri;
-       //TODO : test NS inheritance
-       uri = inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
-       if (uri != null)
-    	   return uri;       
-      // Check global declarations
+       if (inheritNamespaces) {
+    	   uri = inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
+    	   if (uri != null)
+    		   return uri;
+       }      
       return (String)staticNamespaces.get(prefix);
       /* old code checked namespaces first
 		String ns = (String) namespaces.get(prefix);
@@ -734,10 +736,11 @@ public class XQueryContext {
 		String prefix = inScopePrefixes == null ? null : (String) inScopePrefixes.get(uri);
 		if (prefix != null)
 			return prefix;
-		//TODO : test the NS inheritance
-		prefix = inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);		
-		if (prefix != null)
-			return prefix;		
+		if (inheritNamespaces) {
+			prefix = inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);		
+			if (prefix != null)
+				return prefix;
+		}
 		return (String) staticPrefixes.get(uri);
 	}
 
