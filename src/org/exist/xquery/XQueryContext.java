@@ -134,18 +134,18 @@ public class XQueryContext {
 	// Static namespace/prefix mappings
 	protected HashMap staticNamespaces = new HashMap();
 	
-	// Local in-scope namespace/prefix mappings in the current context
-	protected HashMap inScopeNamespaces = new HashMap();
-	
-	// Inherited in-scope namespace/prefix mappings in the current context
-	protected HashMap inheritedInScopeNamespaces = new HashMap();	
-
 	// Static prefix/namespace mappings
 	protected HashMap staticPrefixes = new HashMap();
+	
+	// Local in-scope namespace/prefix mappings in the current context
+	protected HashMap inScopeNamespaces = new HashMap();
 	
 	// Local prefix/namespace mappings in the current context
 	protected HashMap inScopePrefixes = new HashMap();
 	
+	// Inherited in-scope namespace/prefix mappings in the current context
+	protected HashMap inheritedInScopeNamespaces = new HashMap();	
+
 	// Inherited prefix/namespace mappings in the current context
 	protected HashMap inheritedInScopePrefixes = new HashMap();	
 
@@ -538,7 +538,7 @@ public class XQueryContext {
     }
     
 	/**
-	 * Declare a user-defined prefix/namespace mapping.
+	 * Declare a user-defined static prefix/namespace mapping.
 	 * 
 	 * eXist internally keeps a table containing all prefix/namespace
 	 * mappings it found in documents, which have been previously
@@ -627,6 +627,41 @@ public class XQueryContext {
 		}
 	}
 	
+    /**
+	 * Removes the namespace URI from the prefix/namespace 
+	 * mappings table.
+	 * 
+	 * @param uri
+	 */
+	public void removeNamespace(String uri) {
+		staticPrefixes.remove(uri);
+		for (Iterator i = staticNamespaces.values().iterator(); i.hasNext();) {
+			if (((String) i.next()).equals(uri)) {
+				i.remove();
+				return;
+			}
+		}
+		inScopePrefixes.remove(uri);
+		if (inScopeNamespaces != null) {
+			for (Iterator i = inScopeNamespaces.values().iterator(); i.hasNext();) {
+				if (((String) i.next()).equals(uri)) {
+					i.remove();
+					return;
+				}
+			}
+		}
+		//TODO : is this relevant ?
+		inheritedInScopePrefixes.remove(uri);
+		if (inheritedInScopeNamespaces != null) {
+			for (Iterator i = inheritedInScopeNamespaces.values().iterator(); i.hasNext();) {
+				if (((String) i.next()).equals(uri)) {
+					i.remove();
+					return;
+				}
+			}
+		}		
+	}
+	
 	/**
 	 * Declare an in-scope namespace. This is called during query execution.
 	 * 
@@ -639,12 +674,91 @@ public class XQueryContext {
 		if (inheritedInScopePrefixes.get(getURIForPrefix(prefix)) != null)
 			inheritedInScopePrefixes.remove(uri);	
 		if (inheritedInScopeNamespaces.get(prefix) != null)
-			inheritedInScopeNamespaces.remove(prefix);	
-		if (inScopeNamespaces == null)
-			inScopeNamespaces = new HashMap();
+			inheritedInScopeNamespaces.remove(prefix);
 		inScopePrefixes.put(uri, prefix);
 		inScopeNamespaces.put(prefix, uri);
+	}	
+	
+    public String getInScopeNamespace(String prefix) {
+        return inScopeNamespaces == null ? null : (String) inScopeNamespaces.get(prefix);
+    }
+
+    public String getInScopePrefix(String uri) {
+        return inScopePrefixes == null ? null : (String) inScopePrefixes.get(uri);
+    }
+
+    public String getInheritedNamespace(String prefix) {
+        return inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
+    }
+
+    public String getInheritedPrefix(String uri) {
+        return inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);
+    }	
+	
+	/**
+	 * Return the namespace URI mapped to the registered prefix
+	 * or null if the prefix is not registered.
+	 * 
+	 * @param prefix
+	 * @return namespace
+	 */
+	public String getURIForPrefix(String prefix) {
+        // try in-scope namespace declarations
+       String uri = inScopeNamespaces == null ? null : (String) inScopeNamespaces.get(prefix);
+       if (uri != null)
+    	   return uri;
+       //TODO : test NS inheritance
+       uri = inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
+       if (uri != null)
+    	   return uri;       
+      // Check global declarations
+      return (String)staticNamespaces.get(prefix);
+      /* old code checked namespaces first
+		String ns = (String) namespaces.get(prefix);
+		if (ns == null)
+			// try in-scope namespace declarations
+			return inScopeNamespaces == null
+				? null
+				: (String) inScopeNamespaces.get(prefix);
+		else
+			return ns;
+        */
 	}
+
+	/**
+	 * @param uri
+         * @return the prefix mapped to the registered URI or null if the URI 
+         * is not registered.
+	 */
+	public String getPrefixForURI(String uri) {
+		String prefix = inScopePrefixes == null ? null : (String) inScopePrefixes.get(uri);
+		if (prefix != null)
+			return prefix;
+		//TODO : test the NS inheritance
+		prefix = inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);		
+		if (prefix != null)
+			return prefix;		
+		return (String) staticPrefixes.get(uri);
+	}
+
+	/**
+	 * Clear all user-defined prefix/namespace mappings.
+	 */
+    // TODO: remove since never used?
+//	public void clearNamespaces() {
+//		staticNamespaces.clear();
+//		staticPrefixes.clear();
+//		if (inScopeNamespaces != null) {
+//			inScopeNamespaces.clear();
+//			inScopePrefixes.clear();
+//		}
+//		//TODO : it this relevant ?
+//		if (inheritedInScopeNamespaces != null) {
+//			inheritedInScopeNamespaces.clear();
+//			inheritedInScopePrefixes.clear();
+//		}
+//		loadDefaults(broker.getConfiguration());
+//	}
 
 	/**
 	 * Returns the current default function namespace.
@@ -762,122 +876,6 @@ public class XQueryContext {
 	public Collator getDefaultCollator() {
 		return defaultCollator;
 	}
-	
-	/**
-	 * Return the namespace URI mapped to the registered prefix
-	 * or null if the prefix is not registered.
-	 * 
-	 * @param prefix
-	 * @return namespace
-	 */
-	public String getURIForPrefix(String prefix) {
-        // try in-scope namespace declarations
-       String uri = inScopeNamespaces == null ? null : (String) inScopeNamespaces.get(prefix);
-       if (uri != null)
-    	   return uri;
-       //TODO : test NS inheritance
-       uri = inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
-       if (uri != null)
-    	   return uri;       
-      // Check global declarations
-      return (String)staticNamespaces.get(prefix);
-      /* old code checked namespaces first
-		String ns = (String) namespaces.get(prefix);
-		if (ns == null)
-			// try in-scope namespace declarations
-			return inScopeNamespaces == null
-				? null
-				: (String) inScopeNamespaces.get(prefix);
-		else
-			return ns;
-        */
-	}
-
-	/**
-	 * @param uri
-         * @return the prefix mapped to the registered URI or null if the URI 
-         * is not registered.
-	 */
-	public String getPrefixForURI(String uri) {
-		String prefix = inScopePrefixes == null ? null : (String) inScopePrefixes.get(uri);
-		if (prefix != null)
-			return prefix;
-		//TODO : test the NS inheritance
-		prefix = inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);		
-		if (prefix != null)
-			return prefix;		
-		return (String) staticPrefixes.get(uri);
-	}
-
-    public String getInScopeNamespace(String prefix) {
-        return inScopeNamespaces == null ? null : (String) inScopeNamespaces.get(prefix);
-    }
-
-    public String getInScopePrefix(String uri) {
-        return inScopePrefixes == null ? null : (String) inScopePrefixes.get(uri);
-    }
-
-    public String getInheritedNamespace(String prefix) {
-        return inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
-    }
-
-    public String getInheritedPrefix(String uri) {
-        return inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);
-    }
-
-    /**
-	 * Removes the namespace URI from the prefix/namespace 
-	 * mappings table.
-	 * 
-	 * @param uri
-	 */
-	public void removeNamespace(String uri) {
-		staticPrefixes.remove(uri);
-		for (Iterator i = staticNamespaces.values().iterator(); i.hasNext();) {
-			if (((String) i.next()).equals(uri)) {
-				i.remove();
-				return;
-			}
-		}
-		inScopePrefixes.remove(uri);
-		if (inScopeNamespaces != null) {
-			for (Iterator i = inScopeNamespaces.values().iterator(); i.hasNext();) {
-				if (((String) i.next()).equals(uri)) {
-					i.remove();
-					return;
-				}
-			}
-		}
-		//TODO : is this relevant ?
-		inheritedInScopePrefixes.remove(uri);
-		if (inheritedInScopeNamespaces != null) {
-			for (Iterator i = inheritedInScopeNamespaces.values().iterator(); i.hasNext();) {
-				if (((String) i.next()).equals(uri)) {
-					i.remove();
-					return;
-				}
-			}
-		}		
-	}
-
-	/**
-	 * Clear all user-defined prefix/namespace mappings.
-	 */
-    // TODO: remove since never used?
-//	public void clearNamespaces() {
-//		staticNamespaces.clear();
-//		staticPrefixes.clear();
-//		if (inScopeNamespaces != null) {
-//			inScopeNamespaces.clear();
-//			inScopePrefixes.clear();
-//		}
-//		//TODO : it this relevant ?
-//		if (inheritedInScopeNamespaces != null) {
-//			inheritedInScopeNamespaces.clear();
-//			inheritedInScopePrefixes.clear();
-//		}
-//		loadDefaults(broker.getConfiguration());
-//	}
 
 	/**
 	 * Set the set of statically known documents for the current
