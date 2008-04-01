@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.exist.Namespaces;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -54,10 +55,9 @@ public class FunInScopePrefixes extends BasicFunction {
 			//NodeProxy proxy = (NodeProxy) node;
 			Node node = nodeValue.getNode();
 			if (context.preserveNamespaces()) {
-				//Horrible hacks to work-around bad in-scope NS
-				if (node.getNodeType() == Node.ELEMENT_NODE && !context.inheritNamespaces()) {
-					collectNamespacePrefixes((ElementImpl)node, prefixes);
-				} else {
+				//Horrible hacks to work-around bad in-scope NS : we reconstruct a NS context !
+				if (context.inheritNamespaces()) {
+					//Grab ancestors' NS
 					do {
 						collectNamespacePrefixes((ElementImpl)node, prefixes);
 						node = node.getParentNode();
@@ -69,12 +69,18 @@ public class FunInScopePrefixes extends BasicFunction {
 						collectNamespacePrefixes((ElementImpl)node, prefixes);
 					}
 					*/
+				} else {
+					//Grab self's NS
+					if (node.getNodeType() == Node.ELEMENT_NODE)
+						collectNamespacePrefixes((ElementImpl)node, prefixes);
 				}
 			} else {
+				//untested : copied from below
 				if (context.inheritNamespaces()) {
-					node = node.getParentNode();
+					//get the top-most ancestor
 					do {
-						collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+ 						if (node.getParentNode() == null || node.getParentNode() instanceof DocumentImpl)
+							collectNamespacePrefixes((ElementImpl)node, prefixes);
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
 				}
@@ -85,20 +91,25 @@ public class FunInScopePrefixes extends BasicFunction {
 			//NodeImpl nodeImpl = (NodeImpl) node;
 			Node node = nodeValue.getNode();			
 			if (context.preserveNamespaces()) {				
-				//Horrible hacks to work-around bad in-scope NS
-				if (node.getNodeType() == Node.ELEMENT_NODE && !context.inheritNamespaces()) {
-					collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
-				} else {				
+				//Horrible hacks to work-around bad in-scope NS : we reconstruct a NS context !
+				if (context.inheritNamespaces()) {
+					//Grab ancestors' NS
 					do {
-						collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+						if (node.getNodeType() == Node.ELEMENT_NODE)
+							collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
+				} else {
+					//Grab self's NS
+					if (node.getNodeType() == Node.ELEMENT_NODE)
+						collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
 				}
 			} else {
 				if (context.inheritNamespaces()) {
-					node = node.getParentNode();
+					//get the top-most ancestor
 					do {
-						collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+ 						if (node.getParentNode() == null || node.getParentNode() instanceof org.exist.memtree.DocumentImpl)
+							collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
 				}
@@ -127,12 +138,10 @@ public class FunInScopePrefixes extends BasicFunction {
 	
 	public static void collectNamespacePrefixes(Element element, Map prefixes) {
 		String namespaceURI = element.getNamespaceURI();
-		String prefix;
 		if (namespaceURI != null && namespaceURI.length() > 0) {
-			prefix = element.getPrefix();
+			String prefix = element.getPrefix();
 			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
 		}		
-		//TODO : more complicated (see XQTS copynamespace-16)
 		if (element instanceof org.exist.memtree.ElementImpl) {
 			prefixes.putAll(((org.exist.memtree.ElementImpl)element).getNamespaceMap());
 		}		
