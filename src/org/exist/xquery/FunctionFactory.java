@@ -36,6 +36,9 @@ public class FunctionFactory {
 
 	public static final String ENABLE_JAVA_BINDING_ATTRIBUTE = "enable-java-binding";
 	public static final String PROPERTY_ENABLE_JAVA_BINDING = "xquery.enable-java-binding";
+	public static final String DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE = "disable-deprecated-functions";
+	public static final String PROPERTY_DISABLE_DEPRECATED_FUNCTIONS = "xquery.disable-deprecated-functions";	
+	public static final boolean DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT = false;
 	
 	/**
 	 * Create a function call. 
@@ -45,11 +48,7 @@ public class FunctionFactory {
 	 * optimizes some function calls like starts-with, ends-with or
 	 * contains. 
 	 */
-	public static Expression createFunction(
-		XQueryContext context,
-		XQueryAST ast,
-		PathExpr parent,
-		List params)
+	public static Expression createFunction(XQueryContext context, XQueryAST ast, PathExpr parent, List params)
 		throws XPathException {
 		QName qname = null;
 		try {
@@ -235,6 +234,10 @@ public class FunctionFactory {
 							}
 							throw new XPathException(ast, buf.toString());
 						}
+					}
+					if (((Boolean)context.broker.getConfiguration().getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS)).booleanValue()
+							&& def.getSignature().isDeprecated()) {
+						throw new XPathException(ast, "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied.");
 					}
 					Function func = Function.createFunction(context, ast, def );
 					func.setArguments(params);

@@ -22,7 +22,9 @@
 package org.exist.xquery;
 
 import org.exist.TestUtils;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
@@ -306,6 +308,11 @@ public class OptimizerTest {
     @BeforeClass
     public static void initDatabase() {
 		try {
+			//Since we use the deprecated fn:match-all() function, we have to be sure is is enabled
+            Configuration config = new Configuration();
+            config.setProperty(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, new Boolean(false));
+            BrokerPool.configure(1, 5, config); 
+            
 			// initialize driver
 			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database) cl.newInstance();
