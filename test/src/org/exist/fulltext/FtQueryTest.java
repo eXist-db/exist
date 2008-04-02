@@ -21,19 +21,30 @@
  */
 package org.exist.fulltext;
 
+import java.io.File;
+
 import junit.textui.TestRunner;
+
 import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XQueryService;
+import org.exist.xquery.FunctionFactory;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
-
-import java.io.File;
 
 public class FtQueryTest extends XMLTestCase {
 
@@ -592,15 +603,22 @@ public class FtQueryTest extends XMLTestCase {
     }
 
     protected void setUp() {
-        try {
+        try {        	
+        	
+        	//Since we use the deprecated fn:match-all() function, we have to be sure is is enabled
+            Configuration config = new Configuration();
+            config.setProperty(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, new Boolean(false));
+            BrokerPool.configure(1, 5, config);       
+        	
             // initialize driver
             Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+            DatabaseManager.registerDatabase(database);         
             
             Collection root =
                 DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            
             CollectionManagementService service =
                 (CollectionManagementService) root.getService(
                     "CollectionManagementService",
@@ -631,6 +649,8 @@ public class FtQueryTest extends XMLTestCase {
         } catch (ClassNotFoundException e) {
         } catch (InstantiationException e) {
         } catch (IllegalAccessException e) {
+        } catch (DatabaseConfigurationException e) {
+        } catch (EXistException e) {
         } catch (XMLDBException e) {
             e.printStackTrace();
         }

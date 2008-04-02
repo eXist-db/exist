@@ -547,6 +547,8 @@
             - enable-java-binding:
                 eXist supports calls to arbitrary Java methods from within 
                 XQuery. Setting to "yes" might introduce a security risk.
+            -  disable-deprecated-functions:
+                Set to "yes" to disable deprecated functions
             - enable-query-rewriting:
                 Set to "yes" to enable the new query-rewriting optimizer. This is
                 work in progress and may lead to incorrect queries. Use at your own
@@ -554,7 +556,7 @@
             -  backwardCompatible:
                 Set to "yes" to enable backward compatibility (untyped argument checks for instance) 
     -->
-    <xquery enable-java-binding="no" enable-query-rewriting="yes"  backwardCompatible="no">
+    <xquery enable-java-binding="no" disable-deprecated-functions="no" enable-query-rewriting="yes"  backwardCompatible="no">
         <builtin-modules>
             <!-- Default Modules -->
             <module class="org.exist.xquery.functions.util.UtilModule"

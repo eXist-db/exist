@@ -405,6 +405,10 @@ public class Configuration implements ErrorHandler
             LOG.debug(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING + ": " + config.get(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING));
         }
         
+        String disableDeprecated = xquery.getAttribute(FunctionFactory.DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE);      
+        config.put(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Configuration.parseBoolean(disableDeprecated, FunctionFactory.DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT));
+        LOG.debug(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS + ": " + config.get(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS));
+        
         String optimize = xquery.getAttribute(XQueryContext.ENABLE_QUERY_REWRITING_ATTRIBUTE);
         if (optimize != null && optimize.length() > 0) {
             config.put(XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING, optimize);
@@ -416,7 +420,7 @@ public class Configuration implements ErrorHandler
             config.put(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible);
             LOG.debug(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": " + config.get(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE));
         }
-        
+
         //built-in-modules
         Map moduleMap = XQueryContext.loadModuleClasses(xquery);
         config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, moduleMap);
