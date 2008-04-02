@@ -124,8 +124,10 @@ public class FunId extends Function {
                     "XPTY0004: fn:id() argument is not a node");
                 NodeValue node = (NodeValue)nodes.itemAt(0);
                 if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-                	throw new XPathException(getASTNode(), "FODC0001: node '" + node + "' is an in-memory node");
-                    //processInMem = true;
+                	//TODO : how to enforce this ?
+                	//If $node, or the context item if the second argument is omitted, 
+                	//is a node in a tree whose root is not a document node [err:FODC0001] is raised                    processInMem = true;
+                    processInMem = true;
                 else {
                     MutableDocumentSet ndocs = new DefaultDocumentSet();
                     ndocs.add(((NodeProxy)node).getDocument());
