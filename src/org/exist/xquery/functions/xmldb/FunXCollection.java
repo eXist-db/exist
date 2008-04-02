@@ -42,9 +42,7 @@ public class FunXCollection extends ExtCollection {
             "found in sub-collections of the specified collections.",
             new SequenceType[] {
                  new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-            true,
-            "Moved to the '" + XMLDBModule.NAMESPACE_URI + "' namespace.");
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
 				
 	/**
 	 * @param context
