@@ -45,12 +45,13 @@ public class FunItemAt extends Function {
 		new FunctionSignature(
 			new QName("item-at", Function.BUILTIN_FUNCTION_NS),
 			"Returns the item in the first argument sequence that is located at the position " +
-			"specified by the second argument. Deprecated. Use $x[1] instead.",
+			"specified by the second argument.",
 			new SequenceType[] {
 				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
 				 new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE),
+			"Use $x[1] instead");
 	
 	public FunItemAt(XQueryContext context) {
 		super(context, signature);
