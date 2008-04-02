@@ -21,13 +21,13 @@
  */
 package org.exist.dom;
 
-import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
+import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
@@ -862,13 +862,18 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      */
     private class CollectionIterator implements Iterator {
 
-        Collection nextCollection = null;
-        int currentPart = 0;
+        Iterator iterator = null;
 
         CollectionIterator() {
             if (partCount > 0) {
-                Part part = parts[currentPart++];
-                nextCollection = part.getDocument().getCollection();
+                ObjectHashSet collections = new ObjectHashSet();
+                
+                Part part;
+                for (int i = 0; i < partCount; i++) {
+                    part = parts[i];
+                    collections.add(part.getDocument().getCollection());
+                }
+                iterator = collections.iterator();
             }
         }
 
@@ -878,7 +883,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @return a <code>boolean</code> value
          */
         public boolean hasNext() {
-            return nextCollection != null;
+            return iterator != null && iterator.hasNext();
         }
 
         /**
@@ -887,17 +892,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @return an <code>Object</code> value
          */
         public Object next() {
-            Collection oldCollection = nextCollection;
-            nextCollection = null;
-            Collection col;
-            while (currentPart < partCount) {
-                col = parts[currentPart++].getDocument().getCollection();
-                if (!col.equals(oldCollection)) {
-                    nextCollection = col;
-                    break;
-                }
-            }
-            return oldCollection;
+            return iterator.next();
         }
 
         /**
