@@ -21,13 +21,10 @@
  */
 package org.exist.dom;
 
-import java.util.Arrays;
-import java.util.Iterator;
-
-import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
+import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -36,55 +33,58 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
+import java.util.Arrays;
+import java.util.Iterator;
+
 /**
  * A fast node set implementation, based on arrays to store nodes and documents.
- * 
+ *
  * The class uses an array to store all nodes belonging to one document. Another sorted
  * array is used to keep track of the document ids. For each document, we maintain an inner
  * class, Part, which stores the array of nodes.
- * 
+ *
  * Nodes are just appended to the nodes array. No order is guaranteed and calls to
  * get/contains may fail although a node is present in the array (get/contains
  * do a binary search and thus assume that the set is sorted). Also, duplicates
  * are allowed. If you have to ensure that calls to get/contains return valid
  * results at any time and no duplicates occur, use class
  * {@link org.exist.dom.AVLTreeNodeSet}.
- * 
+ *
  * Use this class, if you can either ensure that items are added in order, or
  * no calls to contains/get are required during the creation phase. Only after
  * a call to one of the iterator methods, the set will get sorted and
  * duplicates removed.
- * 
+ *
  * @author Wolfgang <wolfgang@exist-db.org>
  * @since 0.9.3
  */
 public class ExtArrayNodeSet extends AbstractNodeSet {
 
     private final static int INITIAL_DOC_SIZE = 64;
-    
+
     private int documentIds[];
     private Part parts[];
-    
+
     protected int initalSize = 128;
     protected int size = 0;
-    
+
     private int partCount = 0;
-    
+
     private boolean isSorted = false;
-    
+
     private boolean hasOne = false;
-    
+
     protected int lastDoc = -1;
     protected Part lastPart = null;
     protected NodeProxy lastAdded = null;
-    
+
     private int state = 0;
 
     private DocumentSet cachedDocuments = null;
-    
+
     //  used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
-    
+
     /**
      * Creates a new <code>ExtArrayNodeSet</code> instance.
      *
@@ -723,13 +723,18 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      */
     private class CollectionIterator implements Iterator {
 
-        Collection nextCollection = null;
-        int currentPart = 0;
+        Iterator iterator = null;
 
         CollectionIterator() {
             if (partCount > 0) {
-                Part part = parts[currentPart++];
-                nextCollection = part.getDocument().getCollection();
+                ObjectHashSet collections = new ObjectHashSet();
+
+                Part part;
+                for (int i = 0; i < partCount; i++) {
+                    part = parts[i];
+                    collections.add(part.getDocument().getCollection());
+                }
+                iterator = collections.iterator();
             }
         }
 
@@ -739,7 +744,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          * @return a <code>boolean</code> value
          */
         public boolean hasNext() {
-            return nextCollection != null;
+            return iterator != null && iterator.hasNext();
         }
 
         /**
@@ -748,17 +753,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          * @return an <code>Object</code> value
          */
         public Object next() {
-            Collection oldCollection = nextCollection;
-            nextCollection = null;
-            Collection col;
-            while (currentPart < partCount) {
-                col = parts[currentPart++].getDocument().getCollection();
-                if (!col.equals(oldCollection)) {
-                    nextCollection = col;
-                    break;
-                }
-            }
-            return oldCollection;
+            return iterator.next();
         }
 
         /**
@@ -928,7 +923,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                NodeId nodeId = p.getNodeId();
                if (!NodeId.ROOT_NODE.equals(nodeId)) {
                if (length > 0 &&
-               array[length - 1].getNodeId().equals(nodeId)) {		 
+               array[length - 1].getNodeId().equals(nodeId)) {
             */
             if (length > 0 && array[length - 1].getNodeId().equals(p.getNodeId())) {
                 array[length - 1].addMatches(p);
@@ -1102,6 +1097,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                 --mid;
             }
             NodeProxy ancestor = new NodeProxy(getDocument(), ancestorId, Node.ELEMENT_NODE);
+            // we need to check if self should be included
+            boolean foundOne = false;
             for (int i = mid; i < length; i++) {
                 cmp = array[i].getNodeId().computeRelation(ancestorId);
                 if (cmp > -1) {
@@ -1117,12 +1114,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                             ancestor.copyContext(array[i]);
                         }
                         ancestor.addMatches(array[i]);
+                        foundOne = true;
                     }
                 } else {
                     break;
                 }
             }
-            return ancestor;
+            return foundOne ? ancestor : null;
         }
 
         /**
