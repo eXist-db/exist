@@ -46,7 +46,7 @@ public class Optimize extends Pragma {
     private boolean enabled = true;
     private XQueryContext context;
     private Optimizable optimizables[];
-    private Expression innerExpr;
+    private Expression innerExpr = null;
     private LocationStep contextStep = null;
 
     private NodeSet cachedContext = null;
@@ -94,6 +94,7 @@ public class Optimize extends Pragma {
         if (optimize) {
             cachedContext = originalContext;
             cachedTimestamp = originalContext.getState();
+            cachedOptimize = true;
             NodeSet ancestors = null;
             NodeSet result = null;
             for (int current = 0; current < optimizables.length; current++) {
@@ -155,6 +156,8 @@ public class Optimize extends Pragma {
     }
 
     public void before(XQueryContext context, Expression expression) throws XPathException {
+        if (innerExpr != null)
+            return;
         innerExpr = expression;
         if (!enabled)
             return;
