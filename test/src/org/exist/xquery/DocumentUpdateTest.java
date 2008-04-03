@@ -34,7 +34,7 @@ public class DocumentUpdateTest extends TestCase {
 			System.out.println("-- TEST 1: doc() function --");
 			String query = imports +
 	    		"declare function local:get-doc($path as xs:string) {\n" + 
-	    		"    doc($path)\n" + 
+	    		"    if (doc-available($path)) then doc($path) else ()\n" + 
 	    		"};\n" +
 	    		"let $col := xdb:create-collection('/db', 'testup')\n" + 
 	    		"let $path := '/db/testup/test1.xml'\n" +
@@ -48,7 +48,7 @@ public class DocumentUpdateTest extends TestCase {
 			System.out.println("-- TEST 2: xmldb:document() function --");
 			query = imports +
 	    		"declare function local:get-doc($path as xs:string) {\n" + 
-	    		"    xmldb:document($path)\n" + 
+	    		"    if (doc-available($path)) then xmldb:document($path) else ()\n" + 
 	    		"};\n" +
 	    		"let $col := xdb:create-collection('/db', 'testup')\n" + 
 	    		"let $path := '/db/testup/test1.xml'\n" +

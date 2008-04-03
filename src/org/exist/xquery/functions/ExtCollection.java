@@ -137,7 +137,13 @@ public class ExtCollection extends Function {
 					String next = (String)args.get(i);
 					XmldbURI uri = new AnyURIValue(next).toXmldbURI();
 				    Collection coll = context.getBroker().getCollection(uri);            
-				    if(coll != null) {
+				    if(coll == null) {
+				    	//TODO : enable if we have a collection-available function
+				    	//TODO : rename xmldb:collection-exists() ?
+				    	//if (context.isFODC0002Enabled()) {
+		    			//	throw new XPathException("FODC0002: can not access collection '" + uri + "'");
+		    			//}					    	
+				    } else {
 	                    if (context.inProtectedMode())
 	                        context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, ndocs);
 	                    else

@@ -24,21 +24,8 @@ declare option exist:output-size-limit "-1";
      run the whole test suite, a specific test group or a single test case.
      
      Setup:
-     
-     * Make sure the XmlDiff module is registered in conf.xml
-     
-     * Edit config.xml and change basedir to point to the directory into
-     which you unzipped the XQTS sources. Note: it needs to be an URI. 
-     
-     * Create a collection /db/XQTS in the database.
-     
-     * From the XQTS directory, upload XQTSCatalog.xml into the created
-     collection.
-     
-     * Upload the "TestSources" directory so the source docs can be found
-     in /db/XQTS/TestSources.
-     
-     * Run this script with the client.
+
+     * Run EXIST_HOME/webapp/xqts/build.xml and follow the instructions.
      -------------------------------------------------------------------------- :)
 
 declare variable $xqts:CONFIG := xqts:initialize();
@@ -49,7 +36,7 @@ declare function xqts:initialize() as element() {
     let $home := system:get-exist-home()
     let $path := concat($home, "/webapp/xqts")
     let $collection := xdb:create-collection("/db", "XQTS")
-    let $config0 := doc("/db/XQTS")/config
+    let $config0 := if (doc-available("/db/XQTS/config.xml")) then doc("/db/XQTS/config.xml")/config else ()
     let $config :=
         if ($config0) then
             $config0
@@ -522,7 +509,7 @@ declare function xqts:test-all() as empty() {
 
 declare function xqts:report-progress($test-case as element()) as empty() {
     let $result := string($test-case/@result)
-    let $progress := doc("/db/XQTS/progress.xml")/progress
+    let $progress := if (doc-available("/db/XQTS/progress.xml")) then doc("/db/XQTS/progress.xml")/progress else ()
     let $counter := $progress/@done
     return (
         update value $counter with xs:int($counter + 1),

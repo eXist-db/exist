@@ -101,6 +101,9 @@ public class FunDoc extends Function {
     		
     		try {
     			result = DocUtils.getDocument(this.context, path);
+    			if (result.isEmpty() && context.isFODC0002Enabled()) {
+    				throw new XPathException("FODC0002: can not access '" + path + "'");
+    			}
     //			TODO: we still need a final decision about this. Also check base-uri.
     //			if (result == Sequence.EMPTY_SEQUENCE)
     //				throw new XPathException(getASTNode(), path + " is not an XML document");
