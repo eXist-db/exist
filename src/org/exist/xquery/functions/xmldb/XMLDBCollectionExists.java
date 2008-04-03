@@ -40,16 +40,28 @@ import org.xmldb.api.base.Collection;
 
 public class XMLDBCollectionExists extends XMLDBAbstractCollectionManipulator {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("collection-exists", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns true as xs:boolean if there is a collection "+
 			"with the same name as the first argument as xs:string.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+			true,
+			"Use " + XMLDBModule.PREFIX + ":collection-available() instead."),
+		//Just to mimic doc-available()
+		new FunctionSignature(
+			new QName("collection-available", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			"Returns true as xs:boolean if there is a collection "+
+			"with the same name as the first argument as xs:string.",
+			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE))
+	};
+		
 
-	public XMLDBCollectionExists(XQueryContext context) {
+	public XMLDBCollectionExists(XQueryContext context, FunctionSignature signature) {
 		super(context, signature, false);
 	}
 
