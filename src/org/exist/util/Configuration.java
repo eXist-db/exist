@@ -420,7 +420,11 @@ public class Configuration implements ErrorHandler
             config.put(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible);
             LOG.debug(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": " + config.get(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE));
         }
-
+        
+        String enableFODC0002 = xquery.getAttribute(XQueryContext.XQUERY_ENABLE_FODC0002_ATTRIBUTE);      
+        config.put(XQueryContext.PROPERTY_ENABLE_FODC0002, Configuration.parseBoolean(enableFODC0002, XQueryContext.ENABLE_FODC0002_BY_DEFAULT));
+        LOG.debug(XQueryContext.PROPERTY_ENABLE_FODC0002 + ": " + config.get(XQueryContext.PROPERTY_ENABLE_FODC0002));
+        
         //built-in-modules
         Map moduleMap = XQueryContext.loadModuleClasses(xquery);
         config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, moduleMap);

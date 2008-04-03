@@ -130,13 +130,17 @@ public class FunDocument extends Function {
 						String next = (String)args.get(i);
 						XmldbURI nextUri = new AnyURIValue(next).toXmldbURI();
 						if(nextUri.getCollectionPath().length() == 0) {
-							throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
+							throw new XPathException("Invalid argument to " + XMLDBModule.PREFIX + ":document() function: empty string is not allowed here.");
 						}
 	                    if(nextUri.numSegments()==1) {                     
 	                    	nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
 	                    }
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(nextUri);
-						if(doc != null) {
+						if(doc == null) { 
+							if (context.isFODC0002Enabled()) {
+			    				throw new XPathException("FODC0002: can not access '" + nextUri + "'");
+			    			}						
+						}else {
 						    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
 							    throw new XPathException("Insufficient privileges to read resource " + next);
 							mdocs.add(doc);

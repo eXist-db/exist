@@ -948,7 +948,7 @@ public class XQueryFunctionsTest extends TestCase {
         }
       }    
 
-    //ensure the test collection is removed and call collection-exists,
+    //ensure the test collection is removed and call collection-available,
     //which should return false, no exception thrown
     public void testCollectionExists1() {
     	//remove the test collection if it already exists
@@ -972,7 +972,7 @@ public class XQueryFunctionsTest extends TestCase {
 
 		runCollectionExistsTest(collectionPath, false);
     }
-    //create a collection and call collection-exists, which should return true,
+    //create a collection and call collection-available, which should return true,
     //no exception thrown
     public void testCollectionExists2() {
     	//add the test collection
@@ -993,10 +993,11 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 		runCollectionExistsTest(collectionPath, true);
     }
+        
     private void runCollectionExistsTest(String collectionPath, boolean expectedResult) {
-    	//collection-exists should not throw an exception and should return expectedResult
+    	//collection-available should not throw an exception and should return expectedResult
     	String importXMLDB = "import module namespace xmldb=\"http://exist-db.org/xquery/xmldb\";";
-    	String collectionExists = "xmldb:collection-exists('" + collectionPath + "')";
+    	String collectionExists = "xmldb:collection-available('" + collectionPath + "')";
     	String query = importXMLDB + collectionExists;
     	try {
     		ResourceSet result = service.query(query);
@@ -1007,11 +1008,11 @@ public class XQueryFunctionsTest extends TestCase {
     		assertNotNull(content);
     		assertEquals(expectedResult, Boolean.valueOf(content).booleanValue());
     	} catch(XMLDBException xe) {
-    		System.err.println("Error calling xmldb:collection-exists:");
+    		System.err.println("Error calling xmldb:collection-available:");
     		xe.printStackTrace();
     		fail(xe.getMessage());
     	}
-    }
+    }    
     
     public void testBase64BinaryCast()
 	{

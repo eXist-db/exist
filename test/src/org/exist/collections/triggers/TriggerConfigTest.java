@@ -120,7 +120,7 @@ public class TriggerConfigTest {
             root.storeResource(resource);
 
             XQueryService qs = (XQueryService) root.getService("XQueryService", "1.0");
-            ResourceSet result = qs.query("doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE']");
+            ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE'] else ()");
             assertEquals("No trigger should have fired. Configuration was removed", 0, result.getSize());
         } catch (XMLDBException e) {
             e.printStackTrace();
@@ -145,7 +145,7 @@ public class TriggerConfigTest {
             root.storeResource(resource);
 
             XQueryService qs = (XQueryService) root.getService("XQueryService", "1.0");
-            ResourceSet result = qs.query("doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE']/string(@collection)");
+            ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE']/string(@collection) else ()");
             assertEquals(1, result.getSize());
             assertEquals(testCollection, result.getResource(0).getContent());
         } catch (XMLDBException e) {

@@ -554,9 +554,12 @@
                 work in progress and may lead to incorrect queries. Use at your own
                 risk.
             -  backwardCompatible:
-                Set to "yes" to enable backward compatibility (untyped argument checks for instance) 
+                Set to "yes" to enable backward compatibility (untyped argument checks for instance)
+            - enableFODC0002
+                Set to "yes" if a call to doc(), xmldb:document(), collection() or xmldb:xcollection() should raise a FODC0002 error when an XML resource can not be retrieved.
+                Set to "no" if a call to doc(), xmldb:document(), collection() or xmldb:xcollection() should return an empty sequence when an XML resource can not be retrieved. 
     -->
-    <xquery enable-java-binding="no" disable-deprecated-functions="no" enable-query-rewriting="yes"  backwardCompatible="no">
+    <xquery enable-java-binding="no" disable-deprecated-functions="no" enable-query-rewriting="yes"  backwardCompatible="no" enableFODC0002="no">
         <builtin-modules>
             <!-- Default Modules -->
             <module class="org.exist.xquery.functions.util.UtilModule"

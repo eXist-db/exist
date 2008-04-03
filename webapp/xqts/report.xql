@@ -158,11 +158,11 @@ declare function xqts:display-page() as element() {
                             with later versions. eXist 1.1 can run all versions!</li>
                         <li>Extract the file to a location remembered as "XQTS_HOME" on your local drive (it is not needed to create an 
                             environment variable).</li>
-                        <li>Modify <span class="filename">EXIST_HOME/webapp/xqts/config.xml</span> to match your 
-                            local setup (XQTS_HOME)</li>                        
-                        <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, change <b>suppress-whitespace="none"</b> if required</li>
+                        <li>Modify <span class="filename">EXIST_HOME/webapp/xqts/config.xml</span>, set <b>&lt;basedir&gt;XQTS_HOME&lt;/basedir&gt;</b></li>                        
+                        <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, set <b>suppress-whitespace="none"</b> if required</li>
+                        <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, set <b>disable-deprecated-functions="yes"</b> if required</li>
                         <li>Start eXist as full server in EXIST_HOME : <span class="filename">bin/startup.sh</span></li>
-                        <li>Start data upload : <span class="filename">build.[sh|bat] -f webapp/xqts/build.xml</span></li>
+                        <li>Start data upload : <span class="filename">build.[sh|bat] -f EXIST_HOME/webapp/xqts/build.xml</span></li>
                         <li>Reload this page!</li>
                     </ul>
                 </div>
