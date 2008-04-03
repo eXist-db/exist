@@ -185,19 +185,21 @@ declare function xqts:print-tests($collection as xs:string, $name as xs:string) 
             </div>
 			<div id="tests">
 				<table>
-				{
-					for $case at $pos in xmldb:xcollection($collection)//test-case
-					let $result := $case/@result
-					let $name := string($case/@name)
-					return
-						<tr class="{if ($pos mod 2 = 0) then 'even' else ''}">
-							<td><a href="#" onclick="details('{$name}')">{$name}</a></td>
-							<td class="{$result}">{string($result)}</td>
-						</tr>
+				{				    
+		            if (xmldb:collection-available($collection)) then				    
+    					for $case at $pos in xmldb:xcollection($collection)//test-case
+    					let $result := $case/@result
+    					let $name := string($case/@name)
+    					return
+    						<tr class="{if ($pos mod 2 = 0) then 'even' else ''}">
+    							<td><a href="#" onclick="details('{$name}')">{$name}</a></td>
+    							<td class="{$result}">{string($result)}</td>
+    						</tr>
+    				else ()
 				}
 				</table>
 			</div>
-        </div>
+        </div>        
 };
 
 declare function xqts:failure-details($result as element()) {
@@ -273,7 +275,7 @@ declare function xqts:details($testName as xs:string) {
 declare function xqts:print-group($group as element(), $path as xs:string) {
     let $path := concat($path, "/", $group/@name)
     let $collection := concat("/db/XQTS/test-results", $path)
-    let $result := collection($collection)//test-result
+    let $result := if (xmldb:collection-available($collection)) then collection($collection)//test-result else ()
     let $failed := count($result/test-case[@result = 'fail'])
     let $passed := count($result/test-case[@result = 'pass'])
     let $errors := count($result/error)
