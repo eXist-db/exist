@@ -489,10 +489,12 @@ public class ElementImpl extends NamedNode implements Element {
                 elem.setOwnerDocument(owner);
                 final NodeListImpl ch = new NodeListImpl();
                 final NamedNodeMap attribs = child.getAttributes();
+                int numActualAttribs = 0;
                 for (int i = 0; i < attribs.getLength(); i++) {
                     Attr attr = (Attr) attribs.item(i);
                     if (!attr.getNodeName().startsWith("xmlns")) {
                         ch.add(attr);
+                        numActualAttribs++;
                     } else {
                         String xmlnsDecl = attr.getNodeName();
                         String prefix = xmlnsDecl.length()==5 ? "" : xmlnsDecl.substring(6);
@@ -506,7 +508,9 @@ public class ElementImpl extends NamedNode implements Element {
 						ch.add(n);
 				}
                 elem.setChildCount(ch.getLength());
-                elem.setAttributes((short) (elem.getAttributesCount() + attribs.getLength()));
+                if (numActualAttribs != (short) numActualAttribs)
+               	 throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "too many attributes");
+                elem.setAttributes((short) numActualAttribs);
                 lastPath.addComponent(elem.getQName());
                 // insert the node
                 getBroker().insertNodeAfter(transaction, last.getNode(), elem);
