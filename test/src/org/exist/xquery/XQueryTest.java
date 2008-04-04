@@ -1651,12 +1651,12 @@ public class XQueryTest extends XMLTestCase {
 				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 			
 			System.out.println("testFunctionDocExternal 1: ========" );				
-			query ="doc(\"http://www.w3.org/RDF/\")";	
+			query ="if (doc-available(\"http://www.w3.org/RDF/\")) then doc(\"http://www.w3.org/RDF/\") else ()";	
 			result = service.query(query);
 			assertEquals( "XQuery: " + query, 1, result.getSize() );			
 			
 			System.out.println("testFunctionDocExternal 2: ========" );		
-			query ="doc(\"http://www.w3.org/RDF/dummy\")";	
+			query ="if (doc-available(\"http://www.w3.org/RDF/dummy\")) then doc(\"http://www.w3.org/RDF/dummy\") else ()";	
 			result = service.query(query);		
                         assertEquals( "XQuery: " + query, 0, result.getSize() );
 			
@@ -1679,7 +1679,7 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());	
                         
 			System.out.println("testFunctionDocExternal 6: ========" );		
-			query ="doc(\"file:////doesnotexist.xml\")";	
+			query ="if (doc-available(\"file:////doesnotexist.xml\")) then doc(\"file:////doesnotexist.xml\") else ()";	
 			result = service.query(query);		
                         assertEquals( "XQuery: " + query, 0, result.getSize() );
                         
