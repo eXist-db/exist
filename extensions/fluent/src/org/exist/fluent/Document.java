@@ -255,7 +255,7 @@ public class Document extends NamedResource {
 		String path = path();
 		int i = path.lastIndexOf('/');
 		assert i != -1;
-		return new Folder(path.substring(0, i), false, this);
+		return new Folder(i == 0 ? "/" : path.substring(0, i), false, this);
 	}
 	
 	/**
