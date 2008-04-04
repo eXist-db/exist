@@ -138,7 +138,7 @@ public class ExtCollection extends Function {
 					XmldbURI uri = new AnyURIValue(next).toXmldbURI();
 				    Collection coll = context.getBroker().getCollection(uri);            
 				    if(coll == null) {
-				    	if (context.isFODC0002Enabled()) {
+				    	if (context.isRaiseErrorOnFailedRetrieval()) {
 		    				throw new XPathException("FODC0002: can not access collection '" + uri + "'");
 		    			}					    	
 				    } else {

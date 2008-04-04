@@ -137,7 +137,7 @@ public class FunDocument extends Function {
 	                    }
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(nextUri);
 						if(doc == null) { 
-							if (context.isFODC0002Enabled()) {
+							if (context.isRaiseErrorOnFailedRetrieval()) {
 			    				throw new XPathException("FODC0002: can not access '" + nextUri + "'");
 			    			}						
 						}else {

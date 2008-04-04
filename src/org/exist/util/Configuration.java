@@ -421,9 +421,9 @@ public class Configuration implements ErrorHandler
             LOG.debug(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": " + config.get(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE));
         }
         
-        String enableFODC0002 = xquery.getAttribute(XQueryContext.XQUERY_ENABLE_FODC0002_ATTRIBUTE);      
-        config.put(XQueryContext.PROPERTY_ENABLE_FODC0002, Configuration.parseBoolean(enableFODC0002, XQueryContext.ENABLE_FODC0002_BY_DEFAULT));
-        LOG.debug(XQueryContext.PROPERTY_ENABLE_FODC0002 + ": " + config.get(XQueryContext.PROPERTY_ENABLE_FODC0002));
+        String raiseErrorOnFailedRetrieval = xquery.getAttribute(XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE);      
+        config.put(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Configuration.parseBoolean(raiseErrorOnFailedRetrieval, XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT));
+        LOG.debug(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL + ": " + config.get(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL));
         
         //built-in-modules
         Map moduleMap = XQueryContext.loadModuleClasses(xquery);
