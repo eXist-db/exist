@@ -144,7 +144,13 @@ public class FunInScopePrefixes extends BasicFunction {
 		}		
 		if (element instanceof org.exist.memtree.ElementImpl) {
 			prefixes.putAll(((org.exist.memtree.ElementImpl)element).getNamespaceMap());
-		}		
+		} else {
+			Iterator i = ((org.exist.dom.ElementImpl)element).getPrefixes();
+			while (i.hasNext()) {
+				String prefix = (String)i.next();
+				prefixes.put(prefix, ((org.exist.dom.ElementImpl)element).getNamespaceForPrefix(prefix));
+			}
+		}
     }
 
 }
