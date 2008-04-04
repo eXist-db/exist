@@ -114,7 +114,7 @@ public class XQueryContext {
 	public static final String CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
 	public static final String ENABLE_QUERY_REWRITING_ATTRIBUTE = "enable-query-rewriting";
 	public static final String XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE = "backwardCompatible";
-	public static final String XQUERY_ENABLE_FODC0002_ATTRIBUTE = "enableFODC0002";
+	public static final String XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE = "raise-error-on-failed-retrieval";
 		
 	//TODO : move elsewhere ?
 	public static final String CONFIGURATION_MODULE_ELEMENT_NAME = "module";
@@ -123,8 +123,8 @@ public class XQueryContext {
 
 	public static final String PROPERTY_XQUERY_BACKWARD_COMPATIBLE = "xquery.backwardCompatible";
 	public static final String PROPERTY_ENABLE_QUERY_REWRITING = "xquery.enable-query-rewriting";
-	public static final String PROPERTY_ENABLE_FODC0002 = "xquery.enable-FODC0002";
-	public static final boolean ENABLE_FODC0002_BY_DEFAULT = false;
+	public static final String PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL = "xquery.raise-error-on-failed-retrieval";
+	public static final boolean XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT = false;
 
 	//TODO : move elsewhere ?
 	public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
@@ -331,7 +331,7 @@ public class XQueryContext {
 
     private boolean enableOptimizer = true;
     
-    private boolean enableFODC0002 = ENABLE_FODC0002_BY_DEFAULT;
+    private boolean raiseErrorOnFailedRetrieval = XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT;
 
     private boolean isShared = false;
     
@@ -1522,8 +1522,8 @@ public class XQueryContext {
 		return this.backwardsCompatible;
 	}
 	
-	public boolean isFODC0002Enabled() {
-		return enableFODC0002;
+	public boolean isRaiseErrorOnFailedRetrieval() {
+		return raiseErrorOnFailedRetrieval;
 	}
 
 	/**
@@ -2419,7 +2419,7 @@ public class XQueryContext {
         param = (String) getBroker().getConfiguration().getProperty(PROPERTY_XQUERY_BACKWARD_COMPATIBLE);
         backwardsCompatible = param == null ? true : param.equals("yes");
         
-        enableFODC0002 = ((Boolean) getBroker().getConfiguration().getProperty(PROPERTY_ENABLE_FODC0002)).booleanValue();
+        raiseErrorOnFailedRetrieval = ((Boolean) getBroker().getConfiguration().getProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL)).booleanValue();
         
         // load built-in modules
         Map modules = (Map) config.getProperty(PROPERTY_BUILT_IN_MODULES);
