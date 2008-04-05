@@ -85,8 +85,12 @@ public class UserXQueryJob extends UserJob
 	{
 		return JOB_NAME;	
 	}
-	
-	/**
+
+    public void setName(String name) {
+        JOB_NAME = name;
+    }
+
+    /**
 	 * Returns the XQuery Resource for this Job
 	 * 
 	 * @return The XQuery Resource for this Job
