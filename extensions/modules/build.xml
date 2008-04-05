@@ -35,6 +35,10 @@
         <istrue value="${include.module.xslfo}"/>
     </condition>
 
+    <condition property="include.module.svn.config">
+        <istrue value="${include.module.svn}"/>
+    </condition>
+
     <!-- Special targets for XSLFO module -->
     <condition property="libs.available.xslfo">
 		<and>
@@ -60,7 +64,7 @@
 		</unzip>
 		<delete file="fop-0.94-bin-jdk1.4.zip"/>
 	</target>
-
+    
     <!-- Special targets for simpleql module -->
     <uptodate property="parser.uptodate"
 		srcfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
@@ -77,6 +81,12 @@
             </classpath>
         </antlr>
 	</target>
+    
+    <!-- Special targets for svn module -->
+    <target name="prepare-svn" if="include.module.svn.config">
+        <copy file="${top.dir}/tools/ant/lib"
+            todir="${top.dir}/${lib.user}"/>
+    </target>
     <!-- Special targets end -->
     
     <path id="classpath.core">
@@ -92,7 +102,9 @@
 		<fileset dir="${top.dir}/${lib.user}">
 			<include name="*.jar"/>
 		</fileset>
-		<pathelement path="${top.dir}/tools/ant/lib/xmlunit-1.1.jar"/>
+        <fileset dir="${top.dir}/tools/ant/lib">
+            <include name="*.jar"/>
+        </fileset>
         <pathelement path="${top.dir}/exist.jar"/>
 		<pathelement path="${top.dir}/exist-optional.jar"/>
     	<pathelement path="${top.dir}/start.jar"/>
@@ -122,6 +134,7 @@
             <exclude name="org/exist/xquery/modules/xmldiff/**" unless="include.module.xmldiff.config"/>
             <exclude name="org/exist/xquery/modules/image/**" unless="include.module.image.config"/>
             <exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
+            <exclude name="org/exist/xquery/modules/svn/**" unless="include.module.svn.config"/>
         </javac>
 	</target>
 	
