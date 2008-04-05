@@ -105,6 +105,9 @@ public class XMLDBAuthenticate extends BasicFunction {
             targetColl = XmldbURI.create(uri);
         try {
 			Collection root = DatabaseManager.getCollection(targetColl.toString(), userName, password);
+            if (root == null)
+                throw new XPathException(getASTNode(), "Unable to authenticate user: target collection " + targetColl +
+                    " does not exist");
             if (isCalledAs("login")) {
                 UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
                 User user = ums.getUser(userName);
