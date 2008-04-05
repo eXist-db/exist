@@ -111,7 +111,7 @@
 		<pathelement path="${java.class.path}"/>
     </path>
 		
-	<target name="prepare" depends="prepare-libs-xslfo,prepare-simpleql">
+    <target name="prepare" depends="prepare-svn,prepare-libs-xslfo,prepare-simpleql">
 		<mkdir dir="${classes}"/>
     </target>
 	
