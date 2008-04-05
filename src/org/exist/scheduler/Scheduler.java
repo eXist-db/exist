@@ -21,17 +21,6 @@
  */
 package org.exist.scheduler;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.SecurityManager;
@@ -47,6 +36,17 @@ import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.SimpleTrigger;
 import org.quartz.impl.StdSchedulerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Vector;
 
 
 /**
@@ -525,7 +525,16 @@ public class Scheduler
 					//create an XQuery job
 					User guestUser = brokerpool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
 					job = new UserXQueryJob(jobConfig.getResourceName(), guestUser);
-				}
+                    try {
+                        // check if a job with the same name is already registered
+                        if (scheduler.getJobDetail(job.getName(), UserJob.JOB_GROUP) != null) {
+                            // yes, try to make the job's name unique
+                            ((UserXQueryJob)job).setName(job.getName() + job.hashCode());
+                        }
+                    } catch (SchedulerException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
 			}
 			else
 			{
