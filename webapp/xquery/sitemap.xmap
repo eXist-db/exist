@@ -46,6 +46,13 @@
 				<map:serialize encoding="UTF-8" type="html"/>
             </map:match>
             
+		    <map:match pattern="svnlog.xq">
+		        <map:generate src="svnlog.xq" type="xquery"/>
+		        <map:transform type="xinclude"/>
+		        <map:transform src="../stylesheets/db2html.xsl"/>
+		        <map:serialize encoding="UTF-8" type="html"/>
+		    </map:match>
+		    
 			<map:match pattern="acronyms.xq">
 				<map:generate src="acronyms.xq" type="xquery">
 					<map:parameter name="use-request-parameters"
