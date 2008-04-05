@@ -27,3 +27,13 @@
     background-color: transparent;
     color: black;
 }
+
+.svnentry li {
+    list-style: none;
+    font-family: monospace;
+}
+
+.svn-show-files {
+    cursor: pointer;
+    border: 0;
+}

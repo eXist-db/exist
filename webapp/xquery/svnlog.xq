@@ -46,6 +46,22 @@ declare function svnu:to-html($entries as element(entry)*) as element() {
                 at {string($entry/@date)}
                 </div>
                 <p class="svncomment">{$entry/message/text()}</p>
+                <img class="svn-show-files" src="resources/plus.gif"/>
+                <ul class="svnpaths" style="display: none;">
+                {
+                    for $path in $entry/paths/path
+                    return
+                        <li>
+                        {
+                            let $file := $path/text()
+                            return
+                                <a href="http://exist.svn.sourceforge.net/viewvc/exist{$file}?view=markup&amp;pathrev={$entry/@rev}">
+                                {$file}
+                                </a>
+                        }
+                        </li>
+                }
+                </ul>
             </div>
     }
     </div>
@@ -72,6 +88,8 @@ declare function svnu:print-by-category($log as element(log)) as item()* {
         <productname>Open Source Native XML Database</productname>
         <title>SVN Log</title>
         <link rel="stylesheet" type="text/css" href="styles/svn.css"/>
+        <script type="text/javascript" src="../scripts/yui/utilities.js"/>
+        <script type="text/javascript" src="scripts/svnlog.js"/>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -80,37 +98,51 @@ declare function svnu:print-by-category($log as element(log)) as item()* {
 
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     
-    <chapter>
-        <title>SVN Log for trunk</title>
-        
-        <div id="svnform">
-            <form action="svnlog.xq" method="GET">
-                <label for="sortby">Sort by </label>
-                <select name="sort">
-                    <option value="revision">Revision</option>
-                    <option value="category">Category</option>
-                </select>
-                <select name="uri">
+    {
+        let $sortby := request:get-parameter("sort", "revision")
+        let $uri := request:get-parameter("uri", $URIS/uri[1]/text())
+        return
+            <chapter>
+                <title>SVN Log for trunk</title>
+                
+                <div id="svnform">
+                    <form action="svnlog.xq" method="GET">
+                        <select name="uri">
+                        {
+                            for $u in $URIS/uri
+                            return
+                                <option value="{$u}">
+                                { if ($u eq $uri) then attribute selected { "true" } else () }
+                                {
+                                    string($u/@description)
+                                }
+                                </option>
+                        }
+                        </select>
+                        <label for="sortby"> Sort by </label>
+                        <select name="sort">
+                            <option value="revision">
+                                {if ($sortby eq "revision") then attribute selected { "true" } else ()}
+                                Revision
+                            </option>
+                            <option value="category">
+                                {if ($sortby eq "category") then attribute selected { "true" } else ()}
+                                Category
+                            </option>
+                        </select>
+                        <input type="submit" value="Refresh" />
+                    </form>
+                </div>
                 {
-                    for $uri in $URIS/uri
-                    return
-                        <option value="{$uri}">{string($uri/@description)}</option>
+                    let $log := collection("/db/svn")/log[@uri = $uri]
+                    return (
+                        <h2>{string($URIS/uri[. = $uri]/@description)}</h2>,
+                        if ($sortby eq "category") then
+                            svnu:print-by-category($log)
+                        else
+                            svnu:to-html($log/entry)
+                    )
                 }
-                </select>
-                <input type="submit" value="Go" />
-            </form>
-        </div>
-        {
-            let $sortby := request:get-parameter("sort", "revision")
-            let $uri := request:get-parameter("uri", $URIS/uri[1]/text())
-            let $log := collection("/db/svn")/log[@uri = $uri]
-            return (
-                <h2>{string($URIS/uri[. = $uri]/@description)}</h2>,
-                if ($sortby eq "category") then
-                    svnu:print-by-category($log)
-                else
-                    svnu:to-html($log/entry)
-            )
-        }
-    </chapter>
+            </chapter>
+    }
 </book>
