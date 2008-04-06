@@ -26,13 +26,18 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -45,7 +50,11 @@ import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Observable;
 
 /**
  * This is the base class for all database backends. All the basic database
@@ -204,7 +213,9 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs);
 
-	/**
+    public abstract void getResourcesFailsafe(BTreeCallback callback);
+
+    /**
 	 * Returns the database collection identified by the specified path. The
 	 * path should be absolute, e.g. /db/shakespeare.
 	 * 
