@@ -59,25 +59,29 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 		else
 			prefix = args[0].itemAt(0).getStringValue();
         
-        Sequence result;
-		NodeValue node = (NodeValue) args[1].itemAt(0);		
-		Map prefixes = new HashMap();
-		if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy proxy = (NodeProxy) node;
-			NodeSet ancestors = proxy.getAncestors(contextId, true);
-			for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
-				proxy = (NodeProxy) i.next();
-				FunInScopePrefixes.collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);
-			}
-		} else { // In-memory node
-			NodeImpl next = (NodeImpl) node;
-			do {
-				FunInScopePrefixes.collectNamespacePrefixes((org.exist.memtree.ElementImpl) next, prefixes);
-				next = (NodeImpl) next.getParentNode();
-			} while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
+		String namespace;
+		if (prefix.equals("xml")) {
+			namespace = "http://www.w3.org/XML/1998/namespace";
+		} else {
+			NodeValue node = (NodeValue) args[1].itemAt(0);		
+			Map prefixes = new HashMap();
+			if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+				NodeProxy proxy = (NodeProxy) node;
+				NodeSet ancestors = proxy.getAncestors(contextId, true);
+				for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
+					proxy = (NodeProxy) i.next();
+					FunInScopePrefixes.collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);
+				}
+			} else { // In-memory node
+				NodeImpl next = (NodeImpl) node;
+				do {
+					FunInScopePrefixes.collectNamespacePrefixes((org.exist.memtree.ElementImpl) next, prefixes);
+					next = (NodeImpl) next.getParentNode();
+				} while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
+			}  
+			namespace = (String) prefixes.get(prefix);
 		}
-        
-		String namespace = (String) prefixes.get(prefix);
+		Sequence result;
 		if (namespace == null)
             result = Sequence.EMPTY_SEQUENCE;            
         else
