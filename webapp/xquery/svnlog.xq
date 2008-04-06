@@ -12,9 +12,15 @@ declare variable $PASS := "anonymous";
 
 declare variable $CATEGORIES :=
     <messages>
-        <cat abbrev="[bugfix]">Bug Fixes</cat>
-        <cat abbrev="[feature]">Features</cat>
-        <cat abbrev="[documentation]">Documentation</cat>
+        <cat abbrev="\[bugfix.*\]">Bug Fixes</cat>
+        <cat abbrev="\[feature.*\]">Features</cat>
+        <cat abbrev="\[documentation.*\]">Documentation</cat>
+        <cat abbrev="\[performance\]">Performance</cat>
+        <cat abbrev="\[(lib-)?update\]">Updates</cat>
+        <cat abbrev="\[refactor.*\]">Refactoring</cat>
+        <cat abbrev="\[test.*\]">Test Suite</cat>
+        <cat abbrev="\[general\]">General</cat>
+        <cat abbrev="\[build.*\]">Build</cat>
     </messages>
 ;
  
@@ -25,10 +31,13 @@ declare variable $URIS :=
     </uris>
 ;
 
+declare variable $IGNORE := ('[ignore]', '[ingnore]', '[bugtest]', '[comment]', 
+    '[improvement]', '[unchecked]', '[cosmetic]');
+
 declare function svnu:translate-category($abbrev as xs:string) as xs:string {
-    let $verbose := $CATEGORIES/cat[@abbrev = $abbrev]/text()
+    let $verbose := $CATEGORIES/cat[matches($abbrev, @abbrev)]/text()
     return
-        if ($verbose) then string($verbose)
+        if ($verbose) then string($verbose[1])
         else $abbrev
 };
 
@@ -73,13 +82,28 @@ declare function svnu:print-by-category($log as element(log)) as item()* {
             for $message in $log/entry/message
             return text:groups($message/text(), "^(\[[^\]]+\])")[2]
         )
-    for $cat in $categories
-    where $cat != '[ignore]'
-    return
-        <div class="svncat">
-            <h1>{svnu:translate-category($cat)}</h1>
-            {svnu:to-html($log/entry[starts-with(message, $cat)])}
-        </div>
+    let $translated :=
+        distinct-values(
+            for $cat in $categories where not($cat = $IGNORE) 
+            return svnu:translate-category($cat)
+        )
+    return (
+        <ul>
+        {
+            for $cat at $pos in $translated
+            return
+                <li><a href="#c{$pos}">{$cat}</a></li>
+        }
+        </ul>,
+        
+        for $cat at $pos in $translated
+        let $regex := concat('^', $CATEGORIES/cat[. = $cat]/@abbrev)
+        return
+            <div class="svncat">
+                <h1><a name="c{$pos}">{svnu:translate-category($cat)}</a></h1>
+                {svnu:to-html($log/entry[matches(message, $regex)])}
+            </div>
+    )
 };
 
 <book>
@@ -99,7 +123,7 @@ declare function svnu:print-by-category($log as element(log)) as item()* {
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     
     {
-        let $sortby := request:get-parameter("sort", "revision")
+        let $sortby := request:get-parameter("sort", "category")
         let $uri := request:get-parameter("uri", $URIS/uri[1]/text())
         return
             <chapter>
