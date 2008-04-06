@@ -83,7 +83,8 @@
 	</target>
     
     <!-- Special targets for svn module -->
-    <target name="prepare-svn" if="include.module.svn.config">
+    <target name="prepare-svn" depends="svn-download"
+		if="include.module.svn.config">
         <copy file="${top.dir}/tools/ant/lib/svnkit.jar"
             todir="${top.dir}/${lib.user}"/>
     </target>
