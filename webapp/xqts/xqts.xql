@@ -178,6 +178,24 @@ declare function xqts:compute-specific-static-context($testCaseName as xs:string
         else                        
             <current-dateTime value="2005-12-05T17:10:00.203-05:00"/>
     ,
+        if (starts-with($testCaseName, "modules-") or starts-with($testCaseName, "K-ModuleImport-")) then
+            (
+            <mapModule namespace="http://www.w3.org/TestModules/test1" 
+                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/test1-lib.xq')}"/>,            
+            <mapModule namespace="http://www.w3.org/TestModules/test2" 
+                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/test2-lib.xq')}"/>,            
+            <mapModule namespace="http://www.w3.org/TestModules/module1" 
+                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/module1-lib.xq')}"/>,
+            <mapModule namespace="http://www.w3.org/TestModules/module2" 
+                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/module2-lib.xq')}"/>,
+            <mapModule namespace="http://www.w3.org/TestModules/defs" 
+                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/moduleDefs-lib.xq')}"/>,
+            <mapModule namespace="http://www.w3.org/TestModules/diffns" 
+                uri="{xs:anyURI('xmldb:exist:///db/XQTS/TestSources/modulesdiffns-lib.xq')}"/>            
+            )
+        else
+            ()
+    ,
         if (matches($testCaseName,"^fn-implicit-timezone-.*$") or
             matches($testCaseName,"^K-ContextImplicitTimezoneFunc-.*$")) then      
             <implicit-timezone value="-PT5H"/>
