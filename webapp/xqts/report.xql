@@ -17,7 +17,7 @@ declare option exist:output-size-limit "-1";
 
 declare function xqts:initialize() as element()? {
     let $collection := xdb:create-collection("/db", "XQTS")
-    let $config := doc("/db/XQTS/config.xml")/config
+    let $config := if (doc-available("/db/XQTS/config.xml")) then doc("/db/XQTS/config.xml")/config else () 
     return
         if (exists($config)) then
             $config
@@ -34,7 +34,7 @@ declare function xqts:initialize() as element()? {
                		concat($home, $pathSep, "webapp", $pathSep, "xqts")
             let $stored := xdb:store-files-from-pattern("/db/XQTS", $dir, "*.xml", "text/xml")
             return
-                doc("/db/XQTS/config.xml")/config
+                if (doc-available("/db/XQTS/config.xml")) then doc("/db/XQTS/config.xml")/config else ()               
 };
 
 (:~ The required stylesheets were not found in the db. Try to import them. :)
@@ -161,7 +161,8 @@ declare function xqts:display-page() as element() {
                         <li>Modify <span class="filename">EXIST_HOME/webapp/xqts/config.xml</span>, set <b>&lt;basedir&gt;XQTS_HOME&lt;/basedir&gt;</b></li>                        
                         <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, set <b>suppress-whitespace="none"</b> if required</li>
                         <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, set <b>disable-deprecated-functions="yes"</b> if required</li>
-                        <li>Start eXist as full server in EXIST_HOME : <span class="filename">bin/startup.sh</span></li>
+                        <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, set <b>raise-error-on-failed-retrieval="yes"</b> if required</li>
+                        <li>Start eXist as full server in EXIST_HOME : <span class="filename">bin/startup.sh</span> or <span class="filename">bin\startup.bat</span></li>
                         <li>Start data upload : <span class="filename">build.[sh|bat] -f EXIST_HOME/webapp/xqts/build.xml</span></li>
                         <li>Reload this page!</li>
                     </ul>
