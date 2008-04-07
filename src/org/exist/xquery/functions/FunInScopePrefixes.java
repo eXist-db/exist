@@ -84,7 +84,8 @@ public class FunInScopePrefixes extends BasicFunction {
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
 				}
-			}
+			}			
+			//TODO : should we get the static NS there ? The automatic XML binding normally only stands for constructed nodes
 			// Add xmlNS to all in-memory constructs. /ljo
 	        prefixes.put("xml", Namespaces.XML_NS);				
 		} else { // In-memory node
