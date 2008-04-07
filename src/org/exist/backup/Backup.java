@@ -261,16 +261,14 @@ public class Backup {
 		for (int i = 0; i < resources.length; i++) {
             try {
                 if (resources[i].equals("__contents__.xml")) {
-                    System.out.println("Skipping " + resources[i]);
+                    //Skipping resources[i]
                     continue;
                 }
                 resource = current.getResource(resources[i]);
-                if (dialog == null)
-                    System.out.println("writing " + resources[i]);
-                else {
-                    dialog.setResource(resources[i]);
-                    dialog.setProgress(i);
-                }
+
+                dialog.setResource(resources[i]);
+                dialog.setProgress(i);
+
                 os = output.newEntry(encode(URIUtils.urlDecodeUtf8(resources[i])));
                 if(resource.getResourceType().equals("BinaryResource")) {
                     byte[] bdata = (byte[])resource.getContent();
