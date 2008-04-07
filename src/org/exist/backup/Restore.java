@@ -100,7 +100,7 @@ public class Restore extends DefaultHandler {
 			// put the system collection on top of the stack
 			if (sys.canRead()) {
 				//TODO : find a way to make a corespondance with DBRoker's named constants
-				System.out.println("found 'db" + File.separatorChar + "system'. It will be processed first.");
+				//found 'db/system'. It will be processed first
 				stack.push(sys);
 			}
 		}
@@ -145,7 +145,7 @@ public class Restore extends DefaultHandler {
 				String sysId = contents.toURI().toASCIIString();
 				InputSource is = new InputSource(sysId);
 				is.setEncoding("UTF-8");
-				System.out.println("restoring " + sysId);
+				//restoring sysId
 				reader.parse(is);
 			}
 		}
@@ -302,12 +302,8 @@ public class Restore extends DefaultHandler {
 						((EXistResource)res).setMimeType(mimetype);
 
 					res.setContent(f);
-					
-				
-					
 
-					if(dialog == null)
-						System.out.println("Restoring " + name);
+    				// Restoring name
 					
 					Date date_created = null;
 					Date date_modified = null;
