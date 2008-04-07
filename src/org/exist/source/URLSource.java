@@ -127,4 +127,10 @@ public class URLSource extends AbstractSource {
 			return null;
 		}
 	}
+	
+	public String toString() {
+		if (url == null)
+			return "[not set]";
+		return url.toString();
+	}
 }

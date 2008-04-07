@@ -118,4 +118,8 @@ public class FileSource extends AbstractSource {
             }
         }
     }
+    
+    public String toString() {
+    	return filePath;
+    }
 }

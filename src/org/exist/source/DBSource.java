@@ -132,4 +132,8 @@ public class DBSource extends AbstractSource {
                 encoding = checkedEnc;
         }
     }
+    
+    public String toString() {
+    	return doc.getDocumentURI();
+    }
 }
