@@ -140,6 +140,7 @@ public class Eval extends BasicFunction {
 				"\t<current-dateTime value=\"dateTime\"/>\n" +
 				"\t<implicit-timezone value=\"duration\"/>\n" +
 				"\t<variable name=\"qname\">variable value</variable>\n" +
+				"\t<mapModule namespace=\"uri\" uri=\"uri_to_module\"/>\n" +
 				"</static-context>.\n" +
 				"The third argument specifies if the compiled query expression " +
 				"should be cached. The cached query will be globally available within the db instance.",
@@ -422,7 +423,7 @@ public class Eval extends BasicFunction {
 	 * @param innerContext
 	 * @throws XPathException
 	 */
-	private void initContext(Node root, XQueryContext innerContext) throws XPathException {
+	private void initContext(Node root, XQueryContext innerContext) throws XPathException {		
 		NodeList cl = root.getChildNodes();
 		for (int i = 0; i < cl.getLength(); i++) {
 			Node child = cl.item(i);
@@ -477,6 +478,13 @@ public class Eval extends BasicFunction {
 				//TODO : cleanly seperate the statically know docollection and documents
 				pathes[0] = XmldbURI.create(value.getStringValue());
 				innerContext.setStaticallyKnownDocuments(pathes);
+			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"mapModule".equals(child.getLocalName())) {
+				Element elem = (Element) child;
+				//TODO : error check
+				if (elem.getAttribute("namespace") != null && elem.getAttribute("uri") != null) {		
+					innerContext.mapModule(elem.getAttribute("namespace"), 
+							XmldbURI.create(elem.getAttribute("uri")));
+				}				
 			}
 		}
 	}

@@ -154,6 +154,8 @@ public class XQueryContext {
 	// Inherited prefix/namespace mappings in the current context
 	protected HashMap inheritedInScopePrefixes = new HashMap();	
 	
+	protected HashMap mappedModules = new HashMap();
+	
 	private boolean preserveNamespaces = true;
 	
     private boolean inheritNamespaces = true;	
@@ -405,6 +407,7 @@ public class XQueryContext {
         this.attributes = from.attributes;
         this.updateListener = from.updateListener;
         this.modules = from.modules;
+        this.mappedModules = from.mappedModules;
     }
 
     protected void copyFields(XQueryContext ctx) {
@@ -444,7 +447,8 @@ public class XQueryContext {
         ctx.watchdog = this.watchdog;
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
-        ctx.contextStack = this.contextStack;
+        ctx.contextStack = this.contextStack;        
+        ctx.mappedModules = new HashMap(this.mappedModules); 
     }
     
     /**
@@ -1110,6 +1114,9 @@ public class XQueryContext {
 			Module module = (Module)i.next();
 			module.reset(this);
 		}
+        if (!keepGlobals)
+            mappedModules.clear();
+		
 		clearUpdateListeners();
 	}
 	
@@ -1885,6 +1892,10 @@ public class XQueryContext {
     
     /* ----------------- Module imports ------------------------ */
     
+    public void mapModule(String namespace, XmldbURI uri) {
+    	mappedModules.put(namespace, uri);
+    }
+    
 	/**
 	 * Import a module and make it available in this context. The prefix and
 	 * location parameters are optional. If prefix is null, the default prefix specified
@@ -1896,14 +1907,18 @@ public class XQueryContext {
 	 * @param location
 	 * @throws XPathException
 	 */
-	public void importModule(String namespaceURI, String prefix, String location)
-		throws XPathException {
+	public void importModule(String namespaceURI, String prefix, String location) throws XPathException {
 		Module module = getModule(namespaceURI);
 		if(module != null) {
 			LOG.debug("Module " + namespaceURI + " already present.");
 		} else {
 			if(location == null)
 				location = namespaceURI;
+			
+			//Is the module's namespace mapped to a URL ?
+			if (mappedModules.containsKey(location))
+				location = ((XmldbURI)mappedModules.get(location)).toString();
+			
 			// is it a Java module?
 			if(location.startsWith(JAVA_URI_START)) {
 				location = location.substring(JAVA_URI_START.length());
@@ -1939,7 +1954,7 @@ public class XQueryContext {
     				} catch(URISyntaxException e) {
                         throw new XPathException(e.getMessage(), e);
                     }
-                } else {
+                } else {                 	
 					// No. Load from file or URL
                     try {
                     	//TODO: use URIs to ensure proper resolution of relative locations
@@ -1948,13 +1963,12 @@ public class XQueryContext {
                         throw new XPathException("source location for module " + namespaceURI + " should be a valid URL: " +
                                 e.getMessage());
                     } catch (IOException e) {
-                        throw new XPathException("source for module " + namespaceURI + " not found: " +
+                        throw new XPathException("source for module '" + namespaceURI + "' not found at '" + location + "': " +
                                 e.getMessage());
                     } catch (PermissionDeniedException e) {
-                    	throw new XPathException("Permission denied to access module " + namespaceURI + " : " +
+                    	throw new XPathException("Permission denied to access module '" + namespaceURI + "' at '" + location + "': " +
                                 e.getMessage());
-                    }
-                    
+                    }  
                     module = compileModule(prefix, namespaceURI, location, module, source);
                 }
 			}
@@ -1979,7 +1993,7 @@ public class XQueryContext {
         try {
         	reader = source.getReader();
         } catch (IOException e) {
-        	throw new XPathException("IO exception while loading module " + namespaceURI, e);
+        	throw new XPathException("IO exception while loading module '" + namespaceURI + "' from '" + source + "'", e);
         }
         XQueryContext modContext = new ModuleContext(this, prefix, namespaceURI);
         XQueryLexer lexer = new XQueryLexer(modContext, reader);
@@ -2006,10 +2020,10 @@ public class XQueryContext {
         	path.analyze(new AnalyzeContextInfo());
         	ExternalModule modExternal = astParser.getModule();
         	if(modExternal == null)
-        		throw new XPathException("source at " + location + " is not a valid module");
+        		throw new XPathException("source at " + location + " is not a valid module");        	
         	if(!modExternal.getNamespaceURI().equals(namespaceURI))
         		throw new XPathException("namespace URI declared by module (" + modExternal.getNamespaceURI() + 
-        			") does not match namespace URI in import statement, which was: " + namespaceURI);
+        			") does not match namespace URI in import statement, which was: " + namespaceURI);        	
         	modules.put(modExternal.getNamespaceURI(), modExternal);
         	modExternal.setSource(source);
         	modExternal.setContext(modContext);
