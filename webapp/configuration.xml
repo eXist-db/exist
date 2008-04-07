@@ -889,7 +889,7 @@
                 <example>
                     <title>XQuery Engine Configuration</title>
                     <programlisting>
-                        <markup><![CDATA[<xquery enable-java-binding="no" enable-query-rewriting="no"  backwardCompatible="no">
+                        <markup><![CDATA[<xquery enable-java-binding="no" enable-query-rewriting="no"  disable-deprecated-functions="no" raise-error-on-failed-retrieval="no" backwardCompatible="no">
     <builtin-modules>
         <!-- Default Modules -->
         <module class="org.exist.xquery.functions.util.UtilModule"
@@ -917,6 +917,23 @@
                                 default. If you enable it, you should think about configuring 
                                 <ulink url="xacml.xml">XACML</ulink> to restrict Java access
                                 from XQuery.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>disable-deprecated-functions=yes|no</term>
+                            <listitem>
+                                <para>enables or disables XQuery functions marked as deprecated.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>raise-error-on-failed-retrieval=yes|no</term>
+                            <listitem>
+                                <para>set to <literal>"yes"</literal> if a call to <command>doc()</command>, 
+                                <command>xmldb:document()</command>, <command>collection()</command> or <command>xmldb:xcollection()</command> should 
+                                raise an error (FODC0002) when an XML resource can not be retrieved.</para>
+                                <para>set to <literal>"no"</literal> if a call to <command>doc()</command>, 
+                                <command>xmldb:document()</command>, <command>collection()</command> or 
+                                <command>xmldb:xcollection()</command> should return an empty sequence when an XML resource can not be retrieved.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>

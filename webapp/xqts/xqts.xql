@@ -43,7 +43,7 @@ declare function xqts:initialize() as element() {
         else
             let $stored := xdb:store-files-from-pattern("/db/XQTS", $path, "*.xml", "text/xml")
             return
-                doc("/db/XQTS/config.xml")/config
+                if (doc-available("/db/XQTS/config.xml")) then doc("/db/XQTS/config.xml")/config else ()
     let $xqtsHome := $config/basedir/text()
     let $catalog0 := doc("/db/XQTS/XQTSCatalog.xml")
     let $catalog :=
