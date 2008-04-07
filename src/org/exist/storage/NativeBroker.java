@@ -738,6 +738,8 @@ public class NativeBroker extends DBBroker {
 						collection.getURI());
         if(collection.getId() == destination.getId())
             throw new PermissionDeniedException("Cannot move collection to itself");
+        if(collection.getURI().equals(destination.getURI().append(newUri)))
+        	throw new PermissionDeniedException("Cannot move collection to itself");       
         if(!destination.getPermissions().validate(user, Permission.WRITE))
             throw new PermissionDeniedException("Insufficient privileges on target collection " +
 						destination.getURI());
@@ -818,6 +820,8 @@ public class NativeBroker extends DBBroker {
 		}
         if(collection.getId() == destination.getId())
             throw new PermissionDeniedException("Cannot move collection to itself");
+        if(collection.getURI().equals(destination.getURI().append(newName)))
+        	throw new PermissionDeniedException("Cannot move collection to itself");          
         if(collection.getURI().equals(XmldbURI.ROOT_COLLECTION_URI))
             throw new PermissionDeniedException("Cannot move the db root collection");
         if(!collection.getPermissions().validate(user, Permission.WRITE))
