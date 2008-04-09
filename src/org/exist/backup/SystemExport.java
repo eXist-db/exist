@@ -31,6 +31,7 @@ import org.exist.dom.StoredNode;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.repair.ErrorReport;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
@@ -54,6 +55,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 public class SystemExport {
@@ -95,11 +97,15 @@ public class SystemExport {
             callback.error(message, e);
     }
 
-    public void export() {
+    public void export(List errorList) {
         try {
             Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
-            BackupWriter output = new FileSystemWriter(target + "/db");
-            export(root, output);
+            BackupWriter output;
+            if (target.endsWith(".zip"))
+                output = new ZipWriter(target, "/db");
+            else
+                output = new FileSystemWriter(target + "/db");
+            export(root, output, errorList);
             output.close();
         } catch (IOException e) {
             reportError("A write error occurred while exporting data: '" + e.getMessage() +
@@ -110,7 +116,20 @@ public class SystemExport {
         }
     }
 
-    private void export(Collection current, BackupWriter output) throws IOException, SAXException {
+    private static boolean isDamaged(DocumentImpl doc, List errorList) {
+        if (errorList == null)
+            return false;
+        ErrorReport report;
+        for (int i = 0; i < errorList.size(); i++) {
+            report = (ErrorReport) errorList.get(i);
+            if (report.getErrcode() == ErrorReport.RESOURCE_ACCESS_FAILED &&
+                    report.getDocumentId() == doc.getDocId())
+                return true;
+        }
+        return false;
+    }
+
+    private void export(Collection current, BackupWriter output, List errorList) throws IOException, SAXException {
         if (callback != null)
             callback.startCollection(current.getURI().toString());
         Writer contents = output.newContents();
@@ -143,6 +162,10 @@ public class SystemExport {
         int count = 0;
         for (Iterator i = current.iterator(broker); i.hasNext(); count++) {
             DocumentImpl doc = (DocumentImpl) i.next();
+            if (isDamaged(doc, errorList)) {
+                reportError("Skipping damaged document " + doc.getFileURI(), null);
+                continue;
+            }
             if (doc.getFileURI().equalsInternal(CONTENTS_URI))
                 continue; // skip __contents__.xml documents
             if (callback != null)
@@ -227,7 +250,7 @@ public class SystemExport {
             Collection child = broker.getCollection(uri.append(childUri));
             try {
                 output.newCollection(Backup.encode(URIUtils.urlDecodeUtf8(childUri.toString())));
-                export(child, output);
+                export(child, output, errorList);
             } catch (Exception e) {
                 reportError("An error occurred while writing collection " + child.getURI() +
                     ". Continuing with next collection.", e);
