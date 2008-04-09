@@ -56,6 +56,7 @@ public class CheckerGUI extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        currentTask = new javax.swing.JLabel();
         currentDoc = new javax.swing.JLabel();
         progress = new javax.swing.JProgressBar();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -73,7 +74,8 @@ public class CheckerGUI extends javax.swing.JFrame {
         });
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        currentDoc.setText("Processing");
+        currentTask.setText(" ");
+        currentTask.setMinimumSize(new java.awt.Dimension(0, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -82,10 +84,21 @@ public class CheckerGUI extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        getContentPane().add(currentDoc, gridBagConstraints);
+        getContentPane().add(currentTask, gridBagConstraints);
+
+        currentDoc.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        getContentPane().add(currentDoc, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -104,7 +117,7 @@ public class CheckerGUI extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
@@ -171,15 +184,17 @@ public class CheckerGUI extends javax.swing.JFrame {
             Runnable th = new Runnable() {
 
                 public void run() {
-                    checkDB();
-                    exportDB(chooser.getSelectedFile().getAbsolutePath());
+                    currentTask.setText("Checking database consistency ...");
+                    List errors = checkDB();
+                    currentTask.setText("Exporting data ...");
+                    exportDB(chooser.getSelectedFile().getAbsolutePath(), errors);
                 }
             };
             new Thread(th).start();
         }
     }//GEN-LAST:event_exportBtnActionPerformed
 
-    private void exportDB(String exportTarget) {
+    private void exportDB(String exportTarget, List errorList) {
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
@@ -196,7 +211,8 @@ public class CheckerGUI extends javax.swing.JFrame {
 
                 public void error(String message, Throwable exception) {
                     displayMessage(message);
-                    displayMessage(exception.toString());
+                    if (exception != null)
+                        displayMessage(exception.toString());
                 }
             };
             progress.setIndeterminate(false);
@@ -205,17 +221,18 @@ public class CheckerGUI extends javax.swing.JFrame {
             progress.setMaximum(documentCount);
             
             SystemExport sysexport = new SystemExport(broker, exportTarget, callback);
-            sysexport.export();
+            sysexport.export(errorList);
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
         } finally {
             pool.release(broker);
-            currentDoc.setText("");
+            currentDoc.setText(" ");
             progress.setValue(0);
+            currentTask.setText(" ");
         }
     }
 
-    private void checkDB() {
+    private List checkDB() {
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
@@ -261,13 +278,16 @@ public class CheckerGUI extends javax.swing.JFrame {
             } else {
                 displayMessage("Errors found.");
             }
+            return errors;
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
         } finally {
             pool.release(broker);
-            currentDoc.setText("");
+            currentDoc.setText(" ");
             progress.setValue(0);
+            currentTask.setText(" ");
         }
+        return null;
     }
 
     public void displayMessage(String message) {
@@ -288,6 +308,7 @@ public class CheckerGUI extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel currentDoc;
+    private javax.swing.JLabel currentTask;
     private javax.swing.JButton exportBtn;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JToolBar jToolBar1;

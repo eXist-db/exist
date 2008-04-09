@@ -243,7 +243,7 @@ public class ConsistencyCheck {
                     }
                 }
             } catch (Exception e) {
-                ErrorReport error = new ErrorReport(ErrorReport.ACCESS_FAILED, e.getMessage(), e);
+                ErrorReport error = new ErrorReport(ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
                 error.setDocumentId(docId);
                 errors.add(error);
                 if (progress != null)
