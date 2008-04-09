@@ -21,7 +21,12 @@
  */
 package org.exist.stax;
 
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.CharacterDataImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.storage.btree.Value;
@@ -355,7 +360,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
 
     public String getText() {
-        if (state == CHARACTERS || state == COMMENT) {
+        if (state == CHARACTERS || state == COMMENT || state == CDATA) {
             if (text.length() == 0) {
                 CharacterDataImpl.readData(nodeId, current, text);
             }
@@ -388,7 +393,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
 
     public boolean hasText() {
-        return state == CHARACTERS || state == COMMENT;
+        return state == CHARACTERS || state == COMMENT || state == CDATA;
     }
 
     public Location getLocation() {

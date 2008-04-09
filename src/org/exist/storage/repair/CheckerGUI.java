@@ -6,12 +6,16 @@
 package org.exist.storage.repair;
 
 import org.exist.EXistException;
+import org.exist.backup.SystemExport;
+import org.exist.client.MimeTypeFileFilter;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 
+import javax.swing.*;
+import java.io.File;
 import java.util.List;
 
 /**
@@ -21,7 +25,8 @@ import java.util.List;
 public class CheckerGUI extends javax.swing.JFrame {
 
     private BrokerPool pool = null;
-
+    private int documentCount = 0;
+    
     /** Creates new form CheckerGUI */
     public CheckerGUI() {
         super("Consistency Check and Repair");
@@ -51,11 +56,13 @@ public class CheckerGUI extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        startBtn = new javax.swing.JButton();
         currentDoc = new javax.swing.JLabel();
         progress = new javax.swing.JProgressBar();
         jScrollPane2 = new javax.swing.JScrollPane();
         messages = new javax.swing.JTextArea();
+        jToolBar1 = new javax.swing.JToolBar();
+        startBtn = new javax.swing.JButton();
+        exportBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(320, 200));
@@ -65,18 +72,6 @@ public class CheckerGUI extends javax.swing.JFrame {
             }
         });
         getContentPane().setLayout(new java.awt.GridBagLayout());
-
-        startBtn.setText("Start");
-        startBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                startBtncheck(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        getContentPane().add(startBtn, gridBagConstraints);
 
         currentDoc.setText("Processing");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -98,13 +93,13 @@ public class CheckerGUI extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(progress, gridBagConstraints);
 
-        jScrollPane2.setMinimumSize(null);
+        jScrollPane2.setBorder(javax.swing.BorderFactory.createTitledBorder("Messages"));
         jScrollPane2.setPreferredSize(new java.awt.Dimension(400, 200));
 
         messages.setColumns(20);
+        messages.setLineWrap(true);
         messages.setRows(5);
-        messages.setBorder(javax.swing.BorderFactory.createTitledBorder("Messages"));
-        messages.setMinimumSize(null);
+        messages.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jScrollPane2.setViewportView(messages);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -118,6 +113,36 @@ public class CheckerGUI extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(jScrollPane2, gridBagConstraints);
 
+        jToolBar1.setRollover(true);
+
+        startBtn.setText("Check");
+        startBtn.setFocusable(false);
+        startBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        startBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        startBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startBtncheck(evt);
+            }
+        });
+        jToolBar1.add(startBtn);
+
+        exportBtn.setText("Check & Export");
+        exportBtn.setFocusable(false);
+        exportBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        exportBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        exportBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportBtnActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(exportBtn);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        getContentPane().add(jToolBar1, gridBagConstraints);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -129,45 +154,121 @@ public class CheckerGUI extends javax.swing.JFrame {
         Runnable checkRun = new Runnable() {
 
             public void run() {
-                DBBroker broker = null;
-                try {
-                    broker = pool.get(SecurityManager.SYSTEM_USER);
-                    ConsistencyCheck checker = new ConsistencyCheck(broker);
-                    ConsistencyCheck.ProgressCallback cb = new ConsistencyCheck.ProgressCallback() {
-
-                        public void startDocument(String path) {
-                            currentDoc.setText(path);
-                            progress.setValue(progress.getValue() + 1);
-                        }
-
-                        public void error(ErrorReport error) {
-                            displayMessage(error.toString());
-                        }
-                    };
-                    currentDoc.setText("Counting documents ...");
-                    progress.setIndeterminate(true);
-                    int count = checker.getDocumentCount();
-                    progress.setIndeterminate(false);
-                    progress.setMinimum(0);
-                    progress.setMaximum(count);
-
-                    displayMessage("Start scanning documents ...");
-                    List errors = checker.checkDocuments(cb);
-                    if (errors.size() == 0) {
-                        displayMessage("No errors found.");
-                    } else {
-                        displayMessage("Errors found.");
-                    }
-                } catch (EXistException e) {
-                    System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
-                } finally {
-                    pool.release(broker);
-                    currentDoc.setText("");
-                }
+                checkDB();
             }
         };
         new Thread(checkRun).start();
 }//GEN-LAST:event_startBtncheck
+
+    private void exportBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportBtnActionPerformed
+        final JFileChooser chooser = new JFileChooser();
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/zip"));
+        chooser.setSelectedFile(new File("eXist-backup.zip"));
+		chooser.setCurrentDirectory(null);
+        if (chooser.showDialog(this, "Export") == JFileChooser.APPROVE_OPTION) {
+            Runnable th = new Runnable() {
+
+                public void run() {
+                    checkDB();
+                    exportDB(chooser.getSelectedFile().getAbsolutePath());
+                }
+            };
+            new Thread(th).start();
+        }
+    }//GEN-LAST:event_exportBtnActionPerformed
+
+    private void exportDB(String exportTarget) {
+        DBBroker broker = null;
+        try {
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
+                public void startCollection(String path) {
+                    currentDoc.setText(path);
+                    displayMessage(path);
+                }
+
+                public void startDocument(String name, int current, int count) {
+                    currentDoc.setText(name);
+                    progress.setValue(progress.getValue() + 1);
+                }
+
+                public void error(String message, Throwable exception) {
+                    displayMessage(message);
+                    displayMessage(exception.toString());
+                }
+            };
+            progress.setIndeterminate(false);
+            progress.setValue(0);
+            progress.setMinimum(0);
+            progress.setMaximum(documentCount);
+            
+            SystemExport sysexport = new SystemExport(broker, exportTarget, callback);
+            sysexport.export();
+        } catch (EXistException e) {
+            System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
+        } finally {
+            pool.release(broker);
+            currentDoc.setText("");
+            progress.setValue(0);
+        }
+    }
+
+    private void checkDB() {
+        DBBroker broker = null;
+        try {
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            ConsistencyCheck checker = new ConsistencyCheck(broker);
+            ConsistencyCheck.ProgressCallback cb = new ConsistencyCheck.ProgressCallback() {
+
+                public void startDocument(String path) {
+                    currentDoc.setText(path);
+                    progress.setValue(progress.getValue() + 1);
+                }
+
+                public void error(ErrorReport error) {
+                    displayMessage(error.toString());
+                }
+
+                public void startCollection(String path) {
+                    currentDoc.setText(path);
+                    displayMessage(path);
+                }
+            };
+
+            progress.setIndeterminate(true);
+            displayMessage("Checking collections ...");
+            List errors = checker.checkCollectionTree(cb);
+            if (errors.size() == 0) {
+                displayMessage("No errors found.");
+            } else {
+                displayMessage("Errors found.");
+            }
+
+            currentDoc.setText("Counting documents ...");
+            documentCount = checker.getDocumentCount();
+            progress.setIndeterminate(false);
+
+            progress.setValue(0);
+            progress.setMinimum(0);
+            progress.setMaximum(documentCount);
+
+            displayMessage("Start scanning documents ...");
+            errors = checker.checkDocuments(cb);
+            if (errors.size() == 0) {
+                displayMessage("No errors found.");
+            } else {
+                displayMessage("Errors found.");
+            }
+        } catch (EXistException e) {
+            System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
+        } finally {
+            pool.release(broker);
+            currentDoc.setText("");
+            progress.setValue(0);
+        }
+    }
 
     public void displayMessage(String message) {
         messages.append(message + '\n');
@@ -187,7 +288,9 @@ public class CheckerGUI extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel currentDoc;
+    private javax.swing.JButton exportBtn;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JTextArea messages;
     private javax.swing.JProgressBar progress;
     private javax.swing.JButton startBtn;
