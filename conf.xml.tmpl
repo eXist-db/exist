@@ -348,6 +348,26 @@
     </indexer>
 
     <!--
+        Configure the query pool.
+        - max-stack-size:
+            bla di bla
+
+        - size:
+            maximum number of cached compiled queries. Value "-1"
+            disables cacking.
+
+        - timeout:
+            bla di bla
+
+        - timeout-check-interval:
+            bla di bla. For value "-1" the cached queries will remain 
+            in the cache forever (the timeout is never checked)
+            
+    -->
+    <!--query-pool max-stack-size="5" size="128" timeout="120000" 
+                timeout-check-interval="30000"/--> 
+
+    <!--
         Configures user jobs for the scheduler
     -->
     <scheduler>
