@@ -2108,7 +2108,7 @@ public class XQueryTest extends XMLTestCase {
     
     // DWES Funny in sandbox and REST it fails ; here it is OK... sometimes
     // http://sourceforge.net/tracker/index.php?func=detail&aid=1691112&group_id=17691&atid=117691
-    public void bugtestOrder_1691112(){
+    public void testOrder_1691112(){
         
         String query="declare namespace tt = \"http://example.com\";"+
                 "declare function tt:function( $function as element(Function)) {"+
@@ -2674,7 +2674,7 @@ public class XQueryTest extends XMLTestCase {
     }
     
     // regression http://sourceforge.net/support/tracker.php?aid=1805609
-    public void bugtestWrongAttributeCardinalityCount_1805609() {
+    public void testWrongAttributeCardinalityCount_1805609() {
         
         // OK
         try {
