@@ -107,7 +107,7 @@ public class Main {
             }
             if (export) {
                 SystemExport sysexport = new SystemExport(broker, exportTarget, new Callback());
-                sysexport.export();
+                sysexport.export(null);
             }
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
