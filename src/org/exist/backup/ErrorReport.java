@@ -19,7 +19,9 @@
  *
  * $Id$
  */
-package org.exist.storage.repair;
+package org.exist.backup;
+
+import org.exist.xmldb.XmldbURI;
 
 public class ErrorReport {
 
@@ -40,10 +42,6 @@ public class ErrorReport {
     private String message = null;
 
     private Throwable exception = null;
-    
-    private int documentId = -1;
-
-    private int collectionId = -1;
     
     public ErrorReport(int code, String message) {
         this.code = code;
@@ -76,31 +74,71 @@ public class ErrorReport {
         this.exception = exception;
     }
 
-    public int getDocumentId() {
-        return documentId;
-    }
-
-    public void setDocumentId(int documentId) {
-        this.documentId = documentId;
-    }
-
-    public int getCollectionId() {
-        return collectionId;
-    }
-
-    public void setCollectionId(int collectionId) {
-        this.collectionId = collectionId;
-    }
-
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append(ERRCODES[code]).append(":\n\r");
+        sb.append(ERRCODES[code]).append(":\n");
         if (message != null)
             sb.append(message);
-        if (collectionId != -1)
-            sb.append("\n\rCollection ID: ").append(collectionId);
-        if (documentId != -1)
-            sb.append("\n\rDocument ID: ").append(documentId);
         return sb.toString();
+    }
+
+    public static class ResourceError extends ErrorReport {
+
+        private int documentId = -1;
+        
+        public ResourceError(int code, String message) {
+            super(code, message);
+        }
+
+        public ResourceError(int code, String message, Throwable exception) {
+            super(code, message, exception);
+        }
+
+        public int getDocumentId() {
+            return documentId;
+        }
+
+        public void setDocumentId(int documentId) {
+            this.documentId = documentId;
+        }
+
+        public String toString() {
+            return super.toString() + "\nDocument ID: " + documentId;
+        }
+    }
+
+    public static class CollectionError extends ErrorReport {
+
+        private int collectionId = -1;
+
+        private XmldbURI collectionURI = null;
+
+        public CollectionError(int code, String message) {
+            super(code, message);
+        }
+
+        public CollectionError(int code, String message, Throwable exception) {
+            super(code, message, exception);
+        }
+
+        public int getCollectionId() {
+            return collectionId;
+        }
+
+        public void setCollectionId(int collectionId) {
+            this.collectionId = collectionId;
+        }
+
+        public void setCollectionURI(XmldbURI collectionURI) {
+            this.collectionURI = collectionURI;
+        }
+
+        public XmldbURI getCollectionURI() {
+            return collectionURI;
+        }
+        
+        public String toString() {
+            return super.toString() + "\nCollection ID: " + collectionId;
+        }
     }
 }

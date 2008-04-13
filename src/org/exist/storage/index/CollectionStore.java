@@ -153,6 +153,12 @@ public class CollectionStore extends BFile {
 		public static int LENGTH_TYPE = 1; //sizeof byte
 		public static int OFFSET_VALUE = OFFSET_TYPE + LENGTH_TYPE; //1
 
+        public CollectionKey() {
+            data = new byte[LENGTH_TYPE];
+            data[OFFSET_TYPE] = KEY_TYPE_COLLECTION;
+            len = LENGTH_TYPE;
+        }
+
         public CollectionKey(String name) {
             len = LENGTH_TYPE + UTF8.encoded(name);
             data = new byte[len];
