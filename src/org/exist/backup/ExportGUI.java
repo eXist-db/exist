@@ -9,8 +9,11 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,9 +22,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -30,31 +30,53 @@ import java.util.List;
  */
 public class ExportGUI extends javax.swing.JFrame {
 
-    private final static DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-
     private BrokerPool pool = null;
     private int documentCount = 0;
     private PrintWriter logWriter = null;
-
+            
     /** Creates new form CheckerGUI */
     public ExportGUI() {
         super("Consistency Check and Repair");
         initComponents();
-        pool = startDB();
-        outputDir.setText(new File(pool.getConfiguration().getExistHome(), "export").getAbsolutePath());
+        String existHome = System.getProperty("exist.home", "./");
+        File home = new File(existHome);
+        dbConfig.setText(new File(home, "conf.xml").getAbsolutePath());
+        outputDir.setText(new File(home, "export").getAbsolutePath());
     }
 
+    protected boolean checkOutputDir() {
+        File dir = new File(outputDir.getText());
+        if (!dir.exists()) {
+            if (JOptionPane.showConfirmDialog(this, "The output directory " +
+                    dir.getAbsolutePath() + " does not exist. Create it?", "Confirm",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+                dir.mkdirs();
+            else
+                return false;
+        }
+        return true;
+    }
+    
     protected BrokerPool startDB() {
+        if (pool != null)
+            return pool;
+        File confFile = new File(dbConfig.getText());
+        if (!(confFile.exists() && confFile.canRead())) {
+            JOptionPane.showMessageDialog(this, "The selected database configuration file " +
+                    confFile.getAbsolutePath() + " does not exist or is not readable.", 
+                    "Configuration Error", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
         try {
-            Configuration config = new Configuration();
+            Configuration config = new Configuration(confFile.getAbsolutePath(), null);
             BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
+            pool = BrokerPool.getInstance();
         } catch (DatabaseConfigurationException e) {
             System.err.println("ERROR: Failed to open database: " + e.getMessage());
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to open database: " + e.getMessage());
         }
-        return null;
+        return pool;
     }
 
     /** This method is called from within the constructor to
@@ -76,6 +98,9 @@ public class ExportGUI extends javax.swing.JFrame {
         outputDir = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         btnChangeDir = new javax.swing.JButton();
+        dbConfig = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        btnConfSelect = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         menuQuit = new javax.swing.JMenuItem();
@@ -92,7 +117,7 @@ public class ExportGUI extends javax.swing.JFrame {
         currentTask.setMinimumSize(new java.awt.Dimension(0, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -101,7 +126,7 @@ public class ExportGUI extends javax.swing.JFrame {
         getContentPane().add(currentTask, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -120,7 +145,7 @@ public class ExportGUI extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
@@ -160,7 +185,7 @@ public class ExportGUI extends javax.swing.JFrame {
         getContentPane().add(jToolBar1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
@@ -169,7 +194,7 @@ public class ExportGUI extends javax.swing.JFrame {
         jLabel1.setText("Output Directory:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(jLabel1, gridBagConstraints);
@@ -182,10 +207,41 @@ public class ExportGUI extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(btnChangeDir, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        getContentPane().add(dbConfig, gridBagConstraints);
+
+        jLabel2.setText("DB Configuration:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        getContentPane().add(jLabel2, gridBagConstraints);
+
+        btnConfSelect.setText("Select");
+        btnConfSelect.setMaximumSize(new java.awt.Dimension(75, 24));
+        btnConfSelect.setMinimumSize(new java.awt.Dimension(75, 24));
+        btnConfSelect.setPreferredSize(new java.awt.Dimension(75, 24));
+        btnConfSelect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConfSelectActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        getContentPane().add(btnConfSelect, gridBagConstraints);
 
         jMenu1.setText("File");
 
@@ -210,6 +266,8 @@ public class ExportGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_formWindowClosed
 
     private void startBtncheck(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startBtncheck
+        if (!checkOutputDir())
+            return;
         Runnable checkRun = new Runnable() {
 
             public void run() {
@@ -225,6 +283,8 @@ public class ExportGUI extends javax.swing.JFrame {
 }//GEN-LAST:event_startBtncheck
 
     private void exportBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportBtnActionPerformed
+        if (!checkOutputDir())
+            return;
         Runnable th = new Runnable() {
 
             public void run() {
@@ -259,9 +319,38 @@ public class ExportGUI extends javax.swing.JFrame {
         System.exit(0);
 }//GEN-LAST:event_menuQuitActionPerformed
 
+    private void btnConfSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfSelectActionPerformed
+        File dir = new File(dbConfig.getText()).getParentFile();
+        final JFileChooser chooser = new JFileChooser();
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setSelectedFile(new File(dir, "conf.xml"));
+        chooser.setCurrentDirectory(dir);
+        chooser.setFileFilter(new FileFilter() {
+
+            public boolean accept(File f) {
+                if (f.isDirectory())
+                    return true;
+                MimeType mime = MimeTable.getInstance().getContentTypeFor(f.getName());
+                if (mime == null)
+                    return false;
+                return mime.isXMLType();
+            }
+
+            public String getDescription() {
+                return "Database XML configuration file";
+            }
+            
+        });
+        if (chooser.showDialog(this, "Select") == JFileChooser.APPROVE_OPTION) {
+            dbConfig.setText(chooser.getSelectedFile().getAbsolutePath());
+        }
+}//GEN-LAST:event_btnConfSelectActionPerformed
+
     private void exportDB(String exportTarget, List errorList) {
         DBBroker broker = null;
         try {
+            startDB();
             broker = pool.get(SecurityManager.SYSTEM_USER);
             SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
                 public void startCollection(String path) {
@@ -287,7 +376,7 @@ public class ExportGUI extends javax.swing.JFrame {
             progress.setMaximum(documentCount);
 
             SystemExport sysexport = new SystemExport(broker, callback);
-            sysexport.export(getUniqueFile("data", ".zip", exportTarget).getAbsolutePath(), errorList);
+            sysexport.export(SystemExport.getUniqueFile("data", ".zip", exportTarget).getAbsolutePath(), errorList);
 
             displayMessage("Export completed successfully.");
             progress.setString("");
@@ -303,6 +392,7 @@ public class ExportGUI extends javax.swing.JFrame {
     private List checkDB() {
         DBBroker broker = null;
         try {
+            startDB();
             broker = pool.get(SecurityManager.SYSTEM_USER);
             ConsistencyCheck checker = new ConsistencyCheck(broker);
             org.exist.backup.ConsistencyCheck.ProgressCallback cb = new ConsistencyCheck.ProgressCallback() {
@@ -366,19 +456,9 @@ public class ExportGUI extends javax.swing.JFrame {
         }
     }
 
-    private File getUniqueFile(String base, String extension, String dir) {
-        String filename = base + '-' + dateFormat.format(new Date());
-        File file = new File(dir, filename + extension);
-        int version = 0;
-        while (file.exists()) {
-            file = new File(dir, filename + '_' + version++ + extension);
-        }
-        return file;
-    }
-
     private void openLog(String dir) {
         try {
-            File file = getUniqueFile("report", ".log", dir);
+            File file = SystemExport.getUniqueFile("report", ".log", dir);
             OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
             logWriter = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
@@ -404,9 +484,12 @@ public class ExportGUI extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnChangeDir;
+    private javax.swing.JButton btnConfSelect;
     private javax.swing.JLabel currentTask;
+    private javax.swing.JTextField dbConfig;
     private javax.swing.JButton exportBtn;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane2;

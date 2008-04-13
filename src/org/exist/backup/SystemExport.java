@@ -59,10 +59,13 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -90,7 +93,9 @@ import java.util.Properties;
 public class SystemExport {
 
     private final static Logger LOG = Logger.getLogger(SystemExport.class);
-    
+
+    private final static DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+
     public Properties defaultOutputProperties = new Properties();
 	{
 		defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
@@ -107,6 +112,7 @@ public class SystemExport {
 
     private static final XmldbURI TEMP_COLLECTION = XmldbURI.createInternal(NativeBroker.TEMP_COLLECTION);
     private static final XmldbURI CONTENTS_URI = XmldbURI.createInternal("__contents__.xml");
+    private static final XmldbURI LOST_URI = XmldbURI.createInternal("__lost_and_found__");
 
     private static final int currVersion = 1;
     
@@ -288,7 +294,7 @@ public class SystemExport {
                     reportError("Skipping damaged document " + doc.getFileURI(), null);
                     continue;
                 }
-                if (doc.getFileURI().equalsInternal(CONTENTS_URI))
+                if (doc.getFileURI().equalsInternal(CONTENTS_URI) || doc.getFileURI().equalsInternal(LOST_URI))
                     continue; // skip __contents__.xml documents
                 exportDocument(output, serializer, docsCount, count, doc);
                 docs.add(doc, false);
@@ -467,6 +473,16 @@ public class SystemExport {
         } catch (SAXException e) {
             e.printStackTrace();
         }
+    }
+
+    public static File getUniqueFile(String base, String extension, String dir) {
+        String filename = base + '-' + dateFormat.format(new Date());
+        File file = new File(dir, filename + extension);
+        int version = 0;
+        while (file.exists()) {
+            file = new File(dir, filename + '_' + version++ + extension);
+        }
+        return file;
     }
 
     public static interface StatusCallback {
