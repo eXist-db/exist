@@ -32,6 +32,7 @@ import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 
+import java.io.File;
 import java.util.List;
 
 public class ExportMain {
@@ -40,19 +41,27 @@ public class ExportMain {
 	private final static int HELP_OPT = 'h';
     private final static int EXPORT_OPT = 'x';
     private final static int OUTPUT_DIR_OPT = 'd';
+    private final static int CONFIG_OPT = 'c';
 
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
             HELP_OPT, "print help on command line options and exit." ),
         new CLOptionDescriptor( "dir", CLOptionDescriptor.ARGUMENT_REQUIRED,
             OUTPUT_DIR_OPT, "the directory to which all output will be written." ),
+        new CLOptionDescriptor( "config", CLOptionDescriptor.ARGUMENT_REQUIRED,
+            CONFIG_OPT, "the database configuration (conf.xml) file to use " +
+                "for launching the db." ),
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            EXPORT_OPT, "export database contents, preserving as much data as possible" )
+            EXPORT_OPT, "export database contents while preserving as much data as possible" )
     };
 
-    protected static BrokerPool startDB() {
+    protected static BrokerPool startDB(String configFile) {
         try {
-            Configuration config = new Configuration();
+            Configuration config;
+            if (configFile == null)
+                config = new Configuration();
+            else
+                config = new Configuration(configFile, null);
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
         } catch (DatabaseConfigurationException e) {
@@ -71,6 +80,7 @@ public class ExportMain {
         }
         boolean export = false;
         String exportTarget = "export/";
+        String dbConfig = null;
 
         List opt = optParser.getArguments();
         int size = opt.size();
@@ -81,9 +91,13 @@ public class ExportMain {
                 case HELP_OPT :
                     System.out.println("Usage: java " + ExportMain.class.getName() + " [options]");
                     System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+                    System.exit(0);
                     break;
                 case OUTPUT_DIR_OPT :
                     exportTarget = option.getArgument();
+                    break;
+                case CONFIG_OPT :
+                    dbConfig = option.getArgument();
                     break;
                 case EXPORT_OPT :
                     export = true;
@@ -91,7 +105,7 @@ public class ExportMain {
             }
         }
 
-        BrokerPool pool = startDB();
+        BrokerPool pool = startDB(dbConfig);
         if (pool == null) {
             System.exit(1);
         }
@@ -108,8 +122,12 @@ public class ExportMain {
                 System.out.println("No errors.");
 
             if (export) {
+                File dir = new File(exportTarget);
+                if (!dir.exists())
+                    dir.mkdirs();
+                File exportFile = SystemExport.getUniqueFile("data", ".zip", dir.getAbsolutePath());
                 SystemExport sysexport = new SystemExport(broker, new Callback());
-                sysexport.export(exportTarget, errors);
+                sysexport.export(exportFile.getAbsolutePath(), errors);
             }
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
