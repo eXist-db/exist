@@ -19,14 +19,13 @@
  *
  * $Id$
  */
-package org.exist.storage.repair;
+package org.exist.backup;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.EXistException;
-import org.exist.backup.SystemExport;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -35,17 +34,20 @@ import org.exist.util.DatabaseConfigurationException;
 
 import java.util.List;
 
-public class Main {
+public class ExportMain {
 
     //  command-line options
 	private final static int HELP_OPT = 'h';
     private final static int EXPORT_OPT = 'x';
+    private final static int OUTPUT_DIR_OPT = 'd';
 
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
             HELP_OPT, "print help on command line options and exit." ),
+        new CLOptionDescriptor( "dir", CLOptionDescriptor.ARGUMENT_REQUIRED,
+            OUTPUT_DIR_OPT, "the directory to which all output will be written." ),
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            EXPORT_OPT, "export database contents" )
+            EXPORT_OPT, "export database contents, preserving as much data as possible" )
     };
 
     protected static BrokerPool startDB() {
@@ -67,7 +69,6 @@ public class Main {
             System.err.println( "ERROR: " + optParser.getErrorString());
             return;
         }
-        boolean check = true;
         boolean export = false;
         String exportTarget = "export/";
 
@@ -78,12 +79,14 @@ public class Main {
             option = (CLOption)opt.get(i);
             switch(option.getId()) {
                 case HELP_OPT :
-                    System.out.println("Usage: java " + Main.class.getName() + " [options]");
+                    System.out.println("Usage: java " + ExportMain.class.getName() + " [options]");
                     System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+                    break;
+                case OUTPUT_DIR_OPT :
+                    exportTarget = option.getArgument();
                     break;
                 case EXPORT_OPT :
                     export = true;
-                    check = false;
                     break;
             }
         }
@@ -92,29 +95,30 @@ public class Main {
         if (pool == null) {
             System.exit(1);
         }
+        int retval = 0; // return value
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            if (check) {
-                ConsistencyCheck checker = new ConsistencyCheck(broker);
-                List errors = checker.checkDocuments(null);
-                if (errors != null) {
-                    for (int i = 0; i < errors.size(); i++) {
-                        ErrorReport report = (ErrorReport) errors.get(i);
-                        System.err.println(report.toString());
-                    }
-                }
-            }
+            ConsistencyCheck checker = new ConsistencyCheck(broker);
+            List errors = checker.checkAll(new CheckCallback());
+            if (errors.size() > 0) {
+                System.err.println("ERRORS FOUND.");
+                retval = 1;
+            } else
+                System.out.println("No errors.");
+
             if (export) {
-                SystemExport sysexport = new SystemExport(broker, exportTarget, new Callback());
-                sysexport.export(null);
+                SystemExport sysexport = new SystemExport(broker, new Callback());
+                sysexport.export(exportTarget, errors);
             }
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
+            retval = 2;
         } finally {
             pool.release(broker);
             BrokerPool.stopAll(false);
         }
+        System.exit(retval);
     }
 
     private static class Callback implements SystemExport.StatusCallback {
@@ -129,6 +133,19 @@ public class Main {
         public void error(String message, Throwable exception) {
             System.err.println(message);
             exception.printStackTrace();
+        }
+    }
+
+    private static class CheckCallback implements org.exist.backup.ConsistencyCheck.ProgressCallback {
+
+        public void startDocument(String path) {
+        }
+
+        public void startCollection(String path) {
+        }
+
+        public void error(ErrorReport error) {
+            System.out.println(error.toString());
         }
     }
 }

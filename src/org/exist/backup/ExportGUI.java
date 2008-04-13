@@ -1,13 +1,9 @@
 /*
- * CheckerGUI.java
- *
- * Created on April 6, 2008, 7:00 PM
+ * A GUI frontend to the {@link ConsistencyCheck} and {@link SystemExport} tools.
  */
-package org.exist.storage.repair;
+package org.exist.backup;
 
 import org.exist.EXistException;
-import org.exist.backup.SystemExport;
-import org.exist.client.MimeTypeFileFilter;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -15,23 +11,37 @@ import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 
 import javax.swing.*;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
  *
  * @author  wolf
  */
-public class CheckerGUI extends javax.swing.JFrame {
+public class ExportGUI extends javax.swing.JFrame {
+
+    private final static DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
     private BrokerPool pool = null;
     private int documentCount = 0;
-    
+    private PrintWriter logWriter = null;
+
     /** Creates new form CheckerGUI */
-    public CheckerGUI() {
+    public ExportGUI() {
         super("Consistency Check and Repair");
         initComponents();
         pool = startDB();
+        outputDir.setText(new File(pool.getConfiguration().getExistHome(), "export").getAbsolutePath());
     }
 
     protected BrokerPool startDB() {
@@ -57,16 +67,20 @@ public class CheckerGUI extends javax.swing.JFrame {
         java.awt.GridBagConstraints gridBagConstraints;
 
         currentTask = new javax.swing.JLabel();
-        currentDoc = new javax.swing.JLabel();
         progress = new javax.swing.JProgressBar();
         jScrollPane2 = new javax.swing.JScrollPane();
         messages = new javax.swing.JTextArea();
         jToolBar1 = new javax.swing.JToolBar();
         startBtn = new javax.swing.JButton();
         exportBtn = new javax.swing.JButton();
+        outputDir = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        btnChangeDir = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        menuQuit = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(320, 200));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 formWindowClosed(evt);
@@ -78,28 +92,17 @@ public class CheckerGUI extends javax.swing.JFrame {
         currentTask.setMinimumSize(new java.awt.Dimension(0, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(currentTask, gridBagConstraints);
-
-        currentDoc.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        getContentPane().add(currentDoc, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
@@ -118,7 +121,7 @@ public class CheckerGUI extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -151,10 +154,53 @@ public class CheckerGUI extends javax.swing.JFrame {
         jToolBar1.add(exportBtn);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         getContentPane().add(jToolBar1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        getContentPane().add(outputDir, gridBagConstraints);
+
+        jLabel1.setText("Output Directory:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        getContentPane().add(jLabel1, gridBagConstraints);
+
+        btnChangeDir.setText("Change");
+        btnChangeDir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnChangeDirActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        getContentPane().add(btnChangeDir, gridBagConstraints);
+
+        jMenu1.setText("File");
+
+        menuQuit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        menuQuit.setText("Quit");
+        menuQuit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuQuitActionPerformed(evt);
+            }
+        });
+        jMenu1.add(menuQuit);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -167,32 +213,51 @@ public class CheckerGUI extends javax.swing.JFrame {
         Runnable checkRun = new Runnable() {
 
             public void run() {
-                checkDB();
+                openLog(outputDir.getText());
+                try {
+                    checkDB();
+                } finally {
+                    closeLog();
+                }
             }
         };
         new Thread(checkRun).start();
 }//GEN-LAST:event_startBtncheck
 
     private void exportBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportBtnActionPerformed
-        final JFileChooser chooser = new JFileChooser();
-        chooser.setMultiSelectionEnabled(false);
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/zip"));
-        chooser.setSelectedFile(new File("eXist-backup.zip"));
-		chooser.setCurrentDirectory(null);
-        if (chooser.showDialog(this, "Export") == JFileChooser.APPROVE_OPTION) {
-            Runnable th = new Runnable() {
+        Runnable th = new Runnable() {
 
-                public void run() {
+            public void run() {
+                openLog(outputDir.getText());
+                try {
                     currentTask.setText("Checking database consistency ...");
                     List errors = checkDB();
                     currentTask.setText("Exporting data ...");
-                    exportDB(chooser.getSelectedFile().getAbsolutePath(), errors);
+                    exportDB(outputDir.getText(), errors);
+                } finally {
+                    closeLog();
                 }
-            };
-            new Thread(th).start();
-        }
+            }
+        };
+        new Thread(th).start();
     }//GEN-LAST:event_exportBtnActionPerformed
+
+    private void btnChangeDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeDirActionPerformed
+        File dir = new File(outputDir.getText());
+        final JFileChooser chooser = new JFileChooser();
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setSelectedFile(new File(dir, "export"));
+        chooser.setCurrentDirectory(dir);
+        if (chooser.showDialog(this, "Export") == JFileChooser.APPROVE_OPTION) {
+            outputDir.setText(chooser.getSelectedFile().getAbsolutePath());
+        }
+    }//GEN-LAST:event_btnChangeDirActionPerformed
+
+    private void menuQuitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuQuitActionPerformed
+        BrokerPool.stopAll(false);
+        System.exit(0);
+}//GEN-LAST:event_menuQuitActionPerformed
 
     private void exportDB(String exportTarget, List errorList) {
         DBBroker broker = null;
@@ -200,12 +265,11 @@ public class CheckerGUI extends javax.swing.JFrame {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
                 public void startCollection(String path) {
-                    currentDoc.setText(path);
-                    displayMessage(path);
+                    progress.setString(path);
                 }
 
                 public void startDocument(String name, int current, int count) {
-                    currentDoc.setText(name);
+                    progress.setString(name);
                     progress.setValue(progress.getValue() + 1);
                 }
 
@@ -213,20 +277,24 @@ public class CheckerGUI extends javax.swing.JFrame {
                     displayMessage(message);
                     if (exception != null)
                         displayMessage(exception.toString());
+                    displayMessage("---------------------------------------------------");
                 }
             };
             progress.setIndeterminate(false);
             progress.setValue(0);
+            progress.setStringPainted(true);
             progress.setMinimum(0);
             progress.setMaximum(documentCount);
-            
-            SystemExport sysexport = new SystemExport(broker, exportTarget, callback);
-            sysexport.export(errorList);
+
+            SystemExport sysexport = new SystemExport(broker, callback);
+            sysexport.export(getUniqueFile("data", ".zip", exportTarget).getAbsolutePath(), errorList);
+
+            displayMessage("Export completed successfully.");
+            progress.setString("");
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
         } finally {
             pool.release(broker);
-            currentDoc.setText(" ");
             progress.setValue(0);
             currentTask.setText(" ");
         }
@@ -237,20 +305,20 @@ public class CheckerGUI extends javax.swing.JFrame {
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             ConsistencyCheck checker = new ConsistencyCheck(broker);
-            ConsistencyCheck.ProgressCallback cb = new ConsistencyCheck.ProgressCallback() {
+            org.exist.backup.ConsistencyCheck.ProgressCallback cb = new ConsistencyCheck.ProgressCallback() {
 
                 public void startDocument(String path) {
-                    currentDoc.setText(path);
+                    progress.setString(path);
                     progress.setValue(progress.getValue() + 1);
                 }
 
                 public void error(ErrorReport error) {
                     displayMessage(error.toString());
+                    displayMessage("---------------------------------------------------");
                 }
 
                 public void startCollection(String path) {
-                    currentDoc.setText(path);
-                    displayMessage(path);
+                    progress.setString(path);
                 }
             };
 
@@ -263,7 +331,8 @@ public class CheckerGUI extends javax.swing.JFrame {
                 displayMessage("Errors found.");
             }
 
-            currentDoc.setText("Counting documents ...");
+            progress.setStringPainted(true);
+            progress.setString("Counting documents ...");
             documentCount = checker.getDocumentCount();
             progress.setIndeterminate(false);
 
@@ -272,7 +341,7 @@ public class CheckerGUI extends javax.swing.JFrame {
             progress.setMaximum(documentCount);
 
             displayMessage("Start scanning documents ...");
-            errors = checker.checkDocuments(cb);
+            checker.checkDocuments(cb, errors);
             if (errors.size() == 0) {
                 displayMessage("No errors found.");
             } else {
@@ -283,7 +352,6 @@ public class CheckerGUI extends javax.swing.JFrame {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
         } finally {
             pool.release(broker);
-            currentDoc.setText(" ");
             progress.setValue(0);
             currentTask.setText(" ");
         }
@@ -293,8 +361,36 @@ public class CheckerGUI extends javax.swing.JFrame {
     public void displayMessage(String message) {
         messages.append(message + '\n');
         messages.setCaretPosition(messages.getDocument().getLength());
+        if (logWriter != null) {
+            logWriter.println(message);
+        }
     }
 
+    private File getUniqueFile(String base, String extension, String dir) {
+        String filename = base + '-' + dateFormat.format(new Date());
+        File file = new File(dir, filename + extension);
+        int version = 0;
+        while (file.exists()) {
+            file = new File(dir, filename + '_' + version++ + extension);
+        }
+        return file;
+    }
+
+    private void openLog(String dir) {
+        try {
+            File file = getUniqueFile("report", ".log", dir);
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+            logWriter = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+        } catch (FileNotFoundException e) {
+            System.err.println("ERROR: failed to create log file");
+        }
+    }
+
+    private void closeLog() {
+        if (logWriter != null)
+            logWriter.close();
+    }
     /**
      * @param args the command line arguments
      */
@@ -302,17 +398,22 @@ public class CheckerGUI extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new CheckerGUI().setVisible(true);
+                new ExportGUI().setVisible(true);
             }
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel currentDoc;
+    private javax.swing.JButton btnChangeDir;
     private javax.swing.JLabel currentTask;
     private javax.swing.JButton exportBtn;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JMenuItem menuQuit;
     private javax.swing.JTextArea messages;
+    private javax.swing.JTextField outputDir;
     private javax.swing.JProgressBar progress;
     private javax.swing.JButton startBtn;
     // End of variables declaration//GEN-END:variables

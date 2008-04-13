@@ -215,6 +215,8 @@ public abstract class DBBroker extends Observable {
 
     public abstract void getResourcesFailsafe(BTreeCallback callback);
 
+    public abstract void getCollectionsFailsafe(BTreeCallback callback);
+
     /**
 	 * Returns the database collection identified by the specified path. The
 	 * path should be absolute, e.g. /db/shakespeare.

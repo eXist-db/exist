@@ -23,8 +23,11 @@ package org.exist.dom;
 
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
-import org.exist.security.*;
+import org.exist.security.Group;
+import org.exist.security.Permission;
+import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
@@ -40,7 +43,21 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.DescendantSelector;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeSelector;
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
+import org.w3c.dom.UserDataHandler;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -504,8 +521,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             }
             permissions.setPermissions(perm);
             //Should be > 0 ;-)
-            children = istream.readInt();            
-	    childAddress = new long[children];
+            children = istream.readInt();
+        childAddress = new long[children];
 	    for (int i = 0; i < children; i++) { 
 		childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 	    }
