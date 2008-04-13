@@ -184,7 +184,10 @@ public class ConsistencyCheck {
         try {
             ElementImpl root = (ElementImpl) doc.getDocumentElement();
             EmbeddedXMLStreamReader reader = doc.getBroker().getXMLStreamReader(root, true);
-            NodeId nodeId = null;
+            NodeId nodeId;
+            boolean attribsAllowed = false;
+            int expectedAttribs = 0;
+            int attributeCount = 0;
             while (reader.hasNext()) {
                 int status = reader.next();
 
@@ -193,6 +196,11 @@ public class ConsistencyCheck {
                 if (status != XMLStreamReader.END_ELEMENT && !elementStack.isEmpty()) {
                     parent = (ElementNode) elementStack.peek();
                     parent.childCount++;
+                    // test parent-child relation
+                    if (!nodeId.isChildOf(parent.elem.getNodeId()))
+                        return new ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Node " + nodeId + " is not a child of " +
+                            parent.elem.getNodeId());
+                    // test sibling relation
                     if (parent.prevSibling != null && !(
                             nodeId.isSiblingOf(parent.prevSibling) &&
                             nodeId.compareTo(parent.prevSibling) > 0
@@ -203,6 +211,9 @@ public class ConsistencyCheck {
                     parent.prevSibling = nodeId;
                 }
                 switch (status) {
+                    case XMLStreamReader.ATTRIBUTE :
+                        attributeCount++;
+                        break;
                     case XMLStreamReader.END_ELEMENT :
                         if (elementStack.isEmpty())
                             return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: received END_ELEMENT event " +
@@ -219,12 +230,19 @@ public class ConsistencyCheck {
                                     "Expected an element node, received node of type " +
                                     node.getNodeType());
                         elementStack.push(new ElementNode((ElementImpl) node));
+                        attribsAllowed = true;
+                        attributeCount = 0;
+                        expectedAttribs = reader.getAttributeCount();
+                        break;
                     default :
-                        if (parent != null) {
-                            if (!nodeId.isChildOf(parent.elem.getNodeId()))
-                                return new ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Node " + nodeId + " is not a child of " +
-                                    parent.elem.getNodeId());
+                        if (attribsAllowed) {
+                            if (attributeCount != expectedAttribs)
+                                return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_TYPE,
+                                    "Wrong number of attributes. Expected: " +
+                                    expectedAttribs + "; found: " + attributeCount);
                         }
+                        attribsAllowed = false;
+                        break;
                 }
             }
             if (!elementStack.isEmpty()) {

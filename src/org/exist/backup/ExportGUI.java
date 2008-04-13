@@ -8,7 +8,6 @@ import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 
@@ -57,26 +56,28 @@ public class ExportGUI extends javax.swing.JFrame {
         return true;
     }
     
-    protected BrokerPool startDB() {
+    protected boolean startDB() {
         if (pool != null)
-            return pool;
+            return true;
         File confFile = new File(dbConfig.getText());
         if (!(confFile.exists() && confFile.canRead())) {
             JOptionPane.showMessageDialog(this, "The selected database configuration file " +
                     confFile.getAbsolutePath() + " does not exist or is not readable.", 
                     "Configuration Error", JOptionPane.ERROR_MESSAGE);
-            return null;
+            return false;
         }
         try {
             Configuration config = new Configuration(confFile.getAbsolutePath(), null);
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        } catch (DatabaseConfigurationException e) {
-            System.err.println("ERROR: Failed to open database: " + e.getMessage());
-        } catch (EXistException e) {
+            return true;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Could not start the database instance. Please remember\n" +
+                    "that this tool tries to launch an embedded db instance. No other db instance should\n" +
+                    "be running on the same data.", "DB Error", JOptionPane.ERROR_MESSAGE);
             System.err.println("ERROR: Failed to open database: " + e.getMessage());
         }
-        return pool;
+        return false;
     }
 
     /** This method is called from within the constructor to
@@ -348,9 +349,10 @@ public class ExportGUI extends javax.swing.JFrame {
 }//GEN-LAST:event_btnConfSelectActionPerformed
 
     private void exportDB(String exportTarget, List errorList) {
+        if (!startDB())
+            return;
         DBBroker broker = null;
         try {
-            startDB();
             broker = pool.get(SecurityManager.SYSTEM_USER);
             SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
                 public void startCollection(String path) {
@@ -375,6 +377,7 @@ public class ExportGUI extends javax.swing.JFrame {
             progress.setMinimum(0);
             progress.setMaximum(documentCount);
 
+            displayMessage("Starting export ...");
             SystemExport sysexport = new SystemExport(broker, callback);
             sysexport.export(SystemExport.getUniqueFile("data", ".zip", exportTarget).getAbsolutePath(), errorList);
 
@@ -390,9 +393,10 @@ public class ExportGUI extends javax.swing.JFrame {
     }
 
     private List checkDB() {
+        if (!startDB())
+            return null;
         DBBroker broker = null;
         try {
-            startDB();
             broker = pool.get(SecurityManager.SYSTEM_USER);
             ConsistencyCheck checker = new ConsistencyCheck(broker);
             org.exist.backup.ConsistencyCheck.ProgressCallback cb = new ConsistencyCheck.ProgressCallback() {
@@ -430,13 +434,14 @@ public class ExportGUI extends javax.swing.JFrame {
             progress.setMinimum(0);
             progress.setMaximum(documentCount);
 
-            displayMessage("Start scanning documents ...");
+            displayMessage("Checking documents ...");
             checker.checkDocuments(cb, errors);
             if (errors.size() == 0) {
                 displayMessage("No errors found.");
             } else {
                 displayMessage("Errors found.");
             }
+            progress.setString("");
             return errors;
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
