@@ -220,6 +220,24 @@ public class OrderedValueSequence extends AbstractSequence {
 				" a node set. Item type is " + Type.getTypeName(itemType));
 	}
 
+    /* (non-Javadoc)
+    * @see org.exist.xquery.value.Sequence#isPersistentSet()
+    */
+    public boolean isPersistentSet() {
+        if(count == 0)
+            return true;
+        if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
+            NodeValue v;
+            for (int i = 0; i < count; i++) {
+                v = (NodeValue)items[i].item;
+                if(v.getImplementationType() != NodeValue.PERSISTENT_NODE)
+                    return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
     public MemoryNodeSet toMemNodeSet() throws XPathException {
         if(count == 0)
             return MemoryNodeSet.EMPTY;
@@ -228,7 +246,7 @@ public class OrderedValueSequence extends AbstractSequence {
 				" a node set. Item type is " + Type.getTypeName(itemType));
         }
         NodeValue v;
-        for (int i = 0; i <= count; i++) {
+        for (int i = 0; i < count; i++) {
             v = (NodeValue)items[i].item;
             if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
                 return null;
