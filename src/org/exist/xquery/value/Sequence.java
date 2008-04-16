@@ -255,4 +255,10 @@ public interface Sequence {
      * @param newNode
      */
     void nodeMoved(NodeId oldNodeId, StoredNode newNode);
+
+    public boolean isCacheable();
+    
+    public int getState();
+
+    public boolean hasChanged(int previousState);
 }

@@ -354,8 +354,8 @@ public class Predicate extends PathExpr {
 			}
 		}
 
-		if (contextSequence instanceof NodeSet)
-			cached = new CachedResult((NodeSet)contextSequence, null, result);
+		if (contextSequence.isCacheable())
+			cached = new CachedResult(contextSequence, null, result);
 
 		return result;
 	}

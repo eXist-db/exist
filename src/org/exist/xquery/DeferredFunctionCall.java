@@ -264,4 +264,16 @@ public abstract class DeferredFunctionCall implements Sequence {
     public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
         // not applicable
     }
+
+    public int getState() {
+        return 0;
+    }
+
+    public boolean hasChanged(int previousState) {
+        return true;
+    }
+
+    public boolean isCacheable() {
+        return false;
+    }
 }
