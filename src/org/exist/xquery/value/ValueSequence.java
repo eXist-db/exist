@@ -76,6 +76,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     
     private Variable holderVar = null;
 
+    private int state = 0;
+    
     public ValueSequence() {
 		this(false);
 	}
@@ -131,6 +133,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             itemType = Type.getCommonSuperType(item.getType(), itemType);
         noDuplicates = false;
         isOrdered = false;
+        setHasChanged();
     }
 
 //    public void addAll(ValueSequence otherSequence) throws XPathException {
@@ -415,6 +418,22 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         for (int i = 0; i <= size; i++) {
             values[i].nodeMoved(oldNodeId, newNode);
         }
+    }
+
+    private void setHasChanged() {
+        state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public boolean hasChanged(int previousState) {
+        return state != previousState;
+    }
+
+    public boolean isCacheable() {
+        return true;
     }
 
     /* (non-Javadoc)

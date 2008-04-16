@@ -1,18 +1,19 @@
 package org.exist.dom;
 
-import java.util.Iterator;
-import java.util.Stack;
-
 import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 
+import java.util.Iterator;
+import java.util.Stack;
+
 public class AVLTreeNodeSet extends AbstractNodeSet {
 
     private Node root;
     private int size = 0;
-
+    private int state = 0;
+    
     public AVLTreeNodeSet() {
     }
 
@@ -99,7 +100,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 	public final void add(NodeProxy proxy) {
 		if(proxy == null)
 			return;
-		if (root == null) {
+        setHasChanged();
+        if (root == null) {
 			root = new Node(proxy);
 			++size;
 			return;
@@ -362,6 +364,32 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     public NodeSetIterator iterator() {
         return (this.new InorderTraversal());
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.exist.dom.AbstractNodeSet#hasChanged(int)
+     */
+    public boolean hasChanged(int previousState) {
+        return state != previousState;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.exist.dom.AbstractNodeSet#getState()
+     */
+    public int getState() {
+        return state;
+    }
+
+    public boolean isCacheable() {
+        return true;
+    }
+
+    private void setHasChanged() {
+        state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
     }
 
     class InorderTraversal implements NodeSetIterator, SequenceIterator {

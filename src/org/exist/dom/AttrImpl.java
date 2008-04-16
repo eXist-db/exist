@@ -31,7 +31,12 @@ import org.exist.util.UTF8;
 import org.exist.util.XMLString;
 import org.exist.util.pool.NodePool;
 import org.exist.util.serializer.AttrList;
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.TypeInfo;
+import org.w3c.dom.UserDataHandler;
 
 import java.io.UnsupportedEncodingException;
 

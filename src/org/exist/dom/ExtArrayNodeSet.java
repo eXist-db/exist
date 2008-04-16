@@ -923,6 +923,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         return state;
     }
 
+    public boolean isCacheable() {
+        return true;
+    }
+
     /**
      * The method <code>toString</code>
      *

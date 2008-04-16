@@ -381,14 +381,14 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		    }
 	        
 			// can this result be cached? Don't cache if the result depends on local variables.
-		    boolean canCache = contextSequence instanceof NodeSet &&
+		    boolean canCache = contextSequence != null && contextSequence.isCacheable() &&
 		    	!Dependency.dependsOn(getLeft(), Dependency.CONTEXT_ITEM) &&
 		    	!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM) &&
 		    	!Dependency.dependsOnVar(getLeft()) &&
 		    	!Dependency.dependsOnVar(getRight());
 
 		    if(canCache)
-				cached = new CachedResult((NodeSet)contextSequence, contextItem, result);
+				cached = new CachedResult(contextSequence, contextItem, result);
 
 		}
 		
