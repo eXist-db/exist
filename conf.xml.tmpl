@@ -350,19 +350,20 @@
     <!--
         Configure the query pool.
         - max-stack-size:
-            bla di bla
+            maximum number of queries in the query-pool.
 
         - size:
-            maximum number of cached compiled queries. Value "-1"
-            disables cacking.
+            number of copies of the same query kept in the query-pool. 
+            Value "-1" effectively disables caching. Queries cannot be shared 
+            by threads, each thread needs a private copy of a query.
 
         - timeout:
-            bla di bla
+            amount of time that a query will be cached in the query-pool.
 
         - timeout-check-interval:
-            bla di bla. For value "-1" the cached queries will remain 
-            in the cache forever (the timeout is never checked)
-            
+            time between checking for timed out queries. For value "-1" 
+            the time out is switched off, resulting cached queries to remain 
+            in the cache forever.
     -->
     <!--query-pool max-stack-size="5" size="128" timeout="120000" 
                 timeout-check-interval="30000"/--> 
