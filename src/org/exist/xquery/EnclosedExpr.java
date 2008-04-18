@@ -141,5 +141,9 @@ public class EnclosedExpr extends PathExpr {
     	result.append(super.toString());        
     	result.append("}");
     	return result.toString();
-    }    
+    }
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitPathExpr(this);
+    }
 }

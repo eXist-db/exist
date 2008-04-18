@@ -20,7 +20,11 @@
 package org.exist.xquery;
 
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.StringValue;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -156,7 +160,7 @@ public class AttributeConstructor extends NodeConstructor {
 		for(Iterator i = contents.iterator(); i.hasNext(); ) {
 			next = i.next();
 			if(next instanceof Expression)
-				result.append(((Expression)next).toString());
+				result.append(next.toString());
 			else
 				result.append(next.toString());
 		}      
@@ -176,4 +180,8 @@ public class AttributeConstructor extends NodeConstructor {
 				((Expression)object).resetState(postOptimization);
 		}
 	}
+
+    public Iterator contentIterator() {
+        return contents.iterator();
+    }
 }

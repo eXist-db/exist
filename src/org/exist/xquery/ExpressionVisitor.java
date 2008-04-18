@@ -49,4 +49,12 @@ public interface ExpressionVisitor {
     public void visitUserFunction(UserDefinedFunction function);
 
     public void visitConditional(ConditionalExpression conditional);
+
+    public void visitElementConstructor(ElementConstructor constructor);
+
+    public void visitTextConstructor(DynamicTextConstructor constructor);
+
+    public void visitAttribConstructor(AttributeConstructor constructor);
+
+    public void visitAttribConstructor(DynamicAttributeConstructor constructor);
 }
