@@ -265,8 +265,10 @@ public class Backup {
                 }
                 resource = current.getResource(resources[i]);
 
-                dialog.setResource(resources[i]);
-                dialog.setProgress(i);
+                if (dialog != null) {
+                    dialog.setResource(resources[i]);
+                    dialog.setProgress(i);
+                }
 
                 os = output.newEntry(encode(URIUtils.urlDecodeUtf8(resources[i])));
                 if(resource.getResourceType().equals("BinaryResource")) {
