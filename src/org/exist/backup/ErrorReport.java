@@ -57,6 +57,10 @@ public class ErrorReport {
     public int getErrcode() {
         return code;
     }
+
+    public String getErrcodeString() {
+        return ERRCODES[code];
+    }
     
     public String getMessage() {
         return message;

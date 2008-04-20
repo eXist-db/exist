@@ -26,9 +26,17 @@ import org.exist.management.Agent;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 
-import javax.management.*;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -50,7 +58,9 @@ public class JMXAgent implements Agent {
 
     private MBeanServer server;
     private Map registeredMBeans = new HashMap();
-    
+
+    private SanityReport sanityReport = new SanityReport();
+
     public JMXAgent() {
         if (LOG.isDebugEnabled())
             LOG.debug("Creating the JMX MBeanServer.");
@@ -75,6 +85,8 @@ public class JMXAgent implements Agent {
         try {
             ObjectName name = new ObjectName("org.exist.management:type=LockManager");
             addMBean(name, new org.exist.management.impl.LockManager());
+            name = new ObjectName("org.exist.management.tasks:type=ConsistencyCheckTask");
+            addMBean(name, sanityReport);
         } catch (MalformedObjectNameException e) {
             LOG.warn("Exception while registering cache mbean.", e);
         } catch (DatabaseConfigurationException e) {
@@ -139,5 +151,9 @@ public class JMXAgent implements Agent {
             LOG.warn("Problem registering mbean: " + e.getMessage(), e);
             throw new DatabaseConfigurationException("Exception while registering JMX mbean: " + e.getMessage());
         }
+    }
+
+    public synchronized void updateErrors(List errorList, long startTime) {
+        sanityReport.updateErrors(errorList, startTime);
     }
 }
