@@ -426,6 +426,35 @@
         
         <!-- job class="bar.foo.myjob" period="600000" delay="300000" repeat="10" /-->
         
+        <!--
+            Run a consistency check on the database. This will detect inconsistencies
+            or corruptions in documents or the collection store. The task can also
+            be used to create automatic backups. The backup routine is faster than
+            the one in the standard backup tool and it tries to export as much data
+            as possible, even if parts of the collection tree are destroyed.
+
+            If errors are detected during the consistency check, the job will
+            automatically start creating a backup.
+
+            Errors are reported via the JMX object with the name:
+
+            org.exist.management.tasks:type=ConsistencyCheckTask
+
+            Parameters:
+                output  The output directory used by the job. The path is interpreted
+                        relative to the data directory (WEB-INF/data).
+
+                backup  Set to "yes" to create a backup whenever the job runs, not just
+                        when it detects errors.
+        -->
+        <!--
+        <job type="system" class="org.exist.storage.ConsistencyCheckTask"
+        	cron-trigger="0 0 * * * ?">
+        	<parameter name="output" value="sanity"/>
+            <parameter name="backup" value="no"/>
+        </job>
+        -->
+
         <!-- Automatically creates a copy of the database .dbx files every 2 minutes
         	Parameters:
         		output-dir:
