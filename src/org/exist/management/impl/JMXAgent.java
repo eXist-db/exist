@@ -58,9 +58,8 @@ public class JMXAgent implements Agent {
 
     private MBeanServer server;
     private Map registeredMBeans = new HashMap();
-
-    private SanityReport sanityReport = new SanityReport();
-
+    private Map beanInstances = new HashMap();
+    
     public JMXAgent() {
         if (LOG.isDebugEnabled())
             LOG.debug("Creating the JMX MBeanServer.");
@@ -85,8 +84,6 @@ public class JMXAgent implements Agent {
         try {
             ObjectName name = new ObjectName("org.exist.management:type=LockManager");
             addMBean(name, new org.exist.management.impl.LockManager());
-            name = new ObjectName("org.exist.management.tasks:type=ConsistencyCheckTask");
-            addMBean(name, sanityReport);
         } catch (MalformedObjectNameException e) {
             LOG.warn("Exception while registering cache mbean.", e);
         } catch (DatabaseConfigurationException e) {
@@ -98,6 +95,8 @@ public class JMXAgent implements Agent {
         try {
             addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=Database",
                     new org.exist.management.impl.Database(instance));
+            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ".tasks:type=SanityReport",
+                    new SanityReport(instance));
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Exception while registering database mbean.", e);
         }
@@ -131,6 +130,7 @@ public class JMXAgent implements Agent {
                 }
                 stack.push(on);
             }
+            beanInstances.put(on, mbean);
         } catch (MalformedObjectNameException e) {
             LOG.warn("Problem registering mbean: " + e.getMessage(), e);
             throw new DatabaseConfigurationException("Exception while registering JMX mbean: " + e.getMessage());
@@ -153,7 +153,13 @@ public class JMXAgent implements Agent {
         }
     }
 
-    public synchronized void updateErrors(List errorList, long startTime) {
-        sanityReport.updateErrors(errorList, startTime);
+    public synchronized void updateErrors(BrokerPool instance, List errorList, long startTime) {
+        try {
+            ObjectName name = new ObjectName("org.exist.management." + instance.getId() + ".tasks:type=SanityReport");
+            SanityReport report = (SanityReport) beanInstances.get(name);
+            report.updateErrors(errorList, startTime);
+        } catch (MalformedObjectNameException e) {
+            LOG.warn("Problem calling mbean: " + e.getMessage(), e);
+        }
     }
 }

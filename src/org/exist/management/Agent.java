@@ -38,5 +38,5 @@ public interface Agent {
 
     void addMBean(String dbInstance, String name, Object mbean) throws DatabaseConfigurationException;
 
-    void updateErrors(List errorList, long startTime);
+    void updateErrors(BrokerPool instance, List errorList, long startTime);
 }

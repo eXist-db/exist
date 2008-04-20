@@ -184,7 +184,7 @@ public class JMXClient {
         echo("\nSanity report");
         echo("-----------------------------------------------");
         try {
-            ObjectName name = new ObjectName("org.exist.management.tasks:type=ConsistencyCheckTask");
+            ObjectName name = new ObjectName("org.exist.management." + instance + ".tasks:type=SanityReport");
             String status = (String) connection.getAttribute(name, "Status");
             Date lastCheckStart = (Date) connection.getAttribute(name, "LastCheckStart");
             Date lastCheckEnd = (Date) connection.getAttribute(name, "LastCheckEnd");
@@ -267,7 +267,7 @@ public class JMXClient {
         new CLOptionDescriptor( "instance", CLOptionDescriptor.ARGUMENT_REQUIRED,
             INSTANCE_OPT, "the ID of the database instance to connect to"),
         new CLOptionDescriptor( "report", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            SANITY_OPT, "provide a sanity check report")
+            SANITY_OPT, "retrieve sanity check report from the db")
     };
 
     private final static int MODE_STATS = 0;
