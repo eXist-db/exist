@@ -44,7 +44,7 @@ public class DummyAgent implements Agent {
         // just do nothing
     }
 
-    public void updateErrors(List errorList, long startTime) {
+    public void updateErrors(BrokerPool pool, List errorList, long startTime) {
         // nothing to do
     }
 }

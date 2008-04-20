@@ -33,4 +33,6 @@ public interface SanityReportMBean {
     public String getStatus();
 
     public TabularData getErrors();
+
+    public void triggerCheck();
 }

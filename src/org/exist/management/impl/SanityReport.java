@@ -21,7 +21,12 @@
  */
 package org.exist.management.impl;
 
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.backup.ErrorReport;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.ConsistencyCheckTask;
+import org.exist.storage.SystemTask;
 
 import javax.management.AttributeChangeNotification;
 import javax.management.MBeanNotificationInfo;
@@ -38,12 +43,15 @@ import javax.management.openmbean.TabularType;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMBean {
 
+    private final static Logger LOG = Logger.getLogger(SanityReport.class.getName());
+    
     public final static String STATUS_OK = "OK";
     public final static String STATUS_FAIL = "FAIL";
-
+    
     private static String[] itemNames = { "errcode", "description" };
     private static String[] itemDescriptions = {
             "Error code",
@@ -57,13 +65,16 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     private Date lastCheckStart = null;
 
-    private Date lastCheckEnd = new Date();
+    private Date lastCheckEnd = null;
 
     private String status = STATUS_OK;
     
     private List errors = NO_ERRORS;
+    
+    private BrokerPool pool;
 
-    public SanityReport() {
+    public SanityReport(BrokerPool pool) {
+        this.pool = pool;
     }
 
     public MBeanNotificationInfo[] getNotificationInfo() {
@@ -104,8 +115,19 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             }
             return data;
         } catch (OpenDataException e) {
-            e.printStackTrace();
+            LOG.warn(e.getMessage(), e);
             return null;
+        }
+    }
+
+    public void triggerCheck() {
+        try {
+            SystemTask task = new ConsistencyCheckTask();
+            Properties properties = new Properties();
+            task.configure(pool.getConfiguration(), properties);
+            pool.triggerSystemTask(task);
+        } catch (EXistException e) {
+            LOG.warn("Failed to trigger db sanity check: " + e.getMessage(), e);
         }
     }
 

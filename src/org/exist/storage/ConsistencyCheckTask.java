@@ -46,6 +46,7 @@ public class ConsistencyCheckTask implements SystemTask {
 
     private String exportDir;
     private boolean createBackup = false;
+    private boolean paused = false;
     
     public void configure(Configuration config, Properties properties) throws EXistException {
         exportDir = properties.getProperty("output", "export");
@@ -63,6 +64,11 @@ public class ConsistencyCheckTask implements SystemTask {
     }
 
     public void execute(DBBroker broker) throws EXistException {
+        if (paused) {
+            if (LOG.isDebugEnabled())
+                LOG.debug("Consistency check is paused.");
+            return;
+        }
         long start = System.currentTimeMillis();
         PrintWriter report = openLog();
         CheckCallback cb = new CheckCallback(report);
@@ -75,9 +81,10 @@ public class ConsistencyCheckTask implements SystemTask {
             if (!errors.isEmpty()) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Errors found: " + errors.size());
-                AgentFactory.getInstance().updateErrors(errors, start);
                 doBackup = true;
+                paused = true;
             }
+            AgentFactory.getInstance().updateErrors(broker.getBrokerPool(), errors, start);
             if (doBackup) {
                 File exportFile = SystemExport.getUniqueFile("data", ".zip", exportDir);
                 if (LOG.isDebugEnabled())
