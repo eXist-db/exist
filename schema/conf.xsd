@@ -42,6 +42,14 @@
                                     <xs:attribute name="wait-before-shutdown" type="xs:integer" default="120000"/>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="query-pool" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:attribute name="max-stack-size" type="xs:integer" default="5"/>
+                                    <xs:attribute name="size" type="xs:integer" default="128"/>
+                                    <xs:attribute name="timeout" type="xs:integer" default="120000"/>
+                                    <xs:attribute name="timeout-check-interval" type="xs:integer" default="30000"/>
+                                </xs:complexType>
+                            </xs:element>
                             <xs:element name="recovery">
                                 <xs:complexType>
                                     <xs:attribute name="enabled" type="yes_no" default="yes"/>
@@ -217,7 +225,6 @@
                 </xs:element>
                 <xs:element name="transformer">
                     <xs:complexType>
-                        <xs:attribute name="class" type="xs:string" default="org.apache.xalan.processor.TransformerFactoryImpl"/>
                         <xs:sequence>
                             <xs:element name="attribute" minOccurs="0" maxOccurs="unbounded">
                                 <xs:complexType>
@@ -227,6 +234,7 @@
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
+                        <xs:attribute name="class" type="xs:string" default="org.apache.xalan.processor.TransformerFactoryImpl"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="validation">
@@ -272,8 +280,10 @@
                             </xs:element>
                         </xs:sequence>
                         <xs:attribute name="enable-java-binding" type="yes_no" default="no"/>
-                        <xs:attribute name="enable-query-rewriting" type="yes_no" default="no"/>
-                        <xs:attribute name="backwardCompatible" type="yes_no" default="yes"/>
+                        <xs:attribute name="disable-deprecated-functions" type="yes_no" default="no"/>
+                        <xs:attribute name="enable-query-rewriting" type="yes_no" default="yes"/>
+                        <xs:attribute name="backwardCompatible" type="yes_no" default="no"/>
+                        <xs:attribute name="raise-error-on-failed-retrieval" type="yes_no" default="no"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="xupdate">
