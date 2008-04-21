@@ -143,6 +143,27 @@
         <pool max="20" min="1" sync-period="120000"
             wait-before-shutdown="120000" />
 
+		<!--                                                                     	
+		    Configure the query pool.                                                
+		    - max-stack-size:                                                        
+		        maximum number of queries in the query-pool.                         
+                                                                                     
+		    - size:                                                                  
+		        number of copies of the same query kept in the query-pool.           
+		        Value "-1" effectively disables caching. Queries cannot be shared     
+		        by threads, each thread needs a private copy of a query.             
+                                                                                     
+		    - timeout:                                                               
+		        amount of time that a query will be cached in the query-pool.        
+                                                                                     
+		    - timeout-check-interval:                                                
+		        time between checking for timed out queries. For value "-1"          
+		        the time out is switched off, resulting cached queries to remain     
+		        in the cache forever.                                                
+		-->                                                                          
+		<!--query-pool max-stack-size="5" size="128" timeout="120000"                
+		            timeout-check-interval="30000"/-->                               
+                                                                                     
         <!--
             Settings for the journaling and recovery of the database. With 
             recovery enabled, the database is able to recover from an unclean
@@ -346,27 +367,6 @@
             </fulltext>
         </index>
     </indexer>
-
-    <!--
-        Configure the query pool.
-        - max-stack-size:
-            maximum number of queries in the query-pool.
-
-        - size:
-            number of copies of the same query kept in the query-pool. 
-            Value "-1" effectively disables caching. Queries cannot be shared 
-            by threads, each thread needs a private copy of a query.
-
-        - timeout:
-            amount of time that a query will be cached in the query-pool.
-
-        - timeout-check-interval:
-            time between checking for timed out queries. For value "-1" 
-            the time out is switched off, resulting cached queries to remain 
-            in the cache forever.
-    -->
-    <!--query-pool max-stack-size="5" size="128" timeout="120000" 
-                timeout-check-interval="30000"/--> 
 
     <!--
         Configures user jobs for the scheduler
