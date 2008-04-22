@@ -64,6 +64,8 @@ public class ValueSequence extends AbstractSequence {
 
     private Variable holderVar = null;
 
+    private int state = 0;
+    
     public ValueSequence() {
 		values = new Item[INITIAL_SIZE];
 	}
@@ -98,19 +100,20 @@ public class ValueSequence extends AbstractSequence {
 		if (isEmpty)
 			hasOne = true;
         isEmpty = false;
-		++size;
-		ensureCapacity();
-		values[size] = item;
-		if(itemType == item.getType())
-			return;
-		else if(itemType == Type.ANY_TYPE)
-			itemType = item.getType();
-		else
-			itemType = Type.getCommonSuperType(item.getType(), itemType);
-		noDuplicates = false;
-	}
-	
-	public void addAll(Sequence otherSequence) throws XPathException {
+        ++size;
+        ensureCapacity();
+        values[size] = item;
+        if (itemType == item.getType())
+            return;
+        else if (itemType == Type.ANY_TYPE)
+            itemType = item.getType();
+        else
+            itemType = Type.getCommonSuperType(item.getType(), itemType);
+        noDuplicates = false;
+        setHasChanged();
+    }
+
+    public void addAll(Sequence otherSequence) throws XPathException {
 		if (otherSequence == null)
 			return;
 		SequenceIterator iterator = otherSequence.iterate();
@@ -284,6 +287,22 @@ public class ValueSequence extends AbstractSequence {
         for (int i = 0; i <= size; i++) {
             values[i].nodeMoved(oldNodeId, newNode);
         }
+    }
+
+    private void setHasChanged() {
+        state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public boolean hasChanged(int previousState) {
+        return state != previousState;
+    }
+
+    public boolean isCacheable() {
+        return true;
     }
 
     /* (non-Javadoc)

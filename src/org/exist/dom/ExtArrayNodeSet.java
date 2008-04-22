@@ -784,6 +784,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return state;
     }
 
+    public boolean isCacheable() {
+        return true;
+    }
+
     /**
      * The method <code>toString</code>
      *

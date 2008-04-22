@@ -334,9 +334,9 @@ public class LocationStep extends Step {
             result = NodeSet.EMPTY_SET;
         }
         // Caches the result
-        if (contextSequence instanceof NodeSet) {
+        if (contextSequence != null && contextSequence.isCacheable()) {
             // TODO : cache *after* removing duplicates ? -pb
-            cached = new CachedResult((NodeSet) contextSequence, contextItem, result);
+            cached = new CachedResult(contextSequence, contextItem, result);
             registerUpdateListener();
         }
         // Remove duplicate nodes
