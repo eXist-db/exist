@@ -22,17 +22,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Observable;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
@@ -49,6 +38,7 @@ import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -56,6 +46,16 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
+
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Observable;
 
 /**
  * This is the base class for all database backends. All the basic database
@@ -217,7 +217,9 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract DocumentSet getAllXMLResources(DocumentSet docs);
 
-	/**
+    public abstract void getResourcesFailsafe(BTreeCallback callback);
+
+    /**
 	 * Returns the database collection identified by the specified path. The
 	 * path should be absolute, e.g. /db/shakespeare.
 	 * 

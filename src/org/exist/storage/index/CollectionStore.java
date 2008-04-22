@@ -5,10 +5,6 @@
  */
 package org.exist.storage.index;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
@@ -17,6 +13,10 @@ import org.exist.storage.btree.Value;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
 import org.exist.util.UTF8;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * Handles access to the central collection storage file (collections.dbx). 
@@ -112,6 +112,12 @@ public class CollectionStore extends BFile {
 		public static int LENGTH_DOCUMENT_TYPE = 1; //sizeof byte
 		public static int OFFSET_DOCUMENT_ID = OFFSET_DOCUMENT_TYPE + LENGTH_DOCUMENT_TYPE; //4
 
+        public DocumentKey() {
+            data = new byte[LENGTH_TYPE];
+            data[OFFSET_TYPE] = KEY_TYPE_DOCUMENT;
+            len = LENGTH_TYPE;
+        }
+
         public DocumentKey(int collectionId) {
             data = new byte[LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID];
             data[OFFSET_TYPE] = KEY_TYPE_DOCUMENT;
@@ -130,6 +136,14 @@ public class CollectionStore extends BFile {
             len = LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID + LENGTH_DOCUMENT_TYPE + 
             	DocumentImpl.LENGTH_DOCUMENT_ID;
             pos = OFFSET_TYPE;
+        }
+
+        public static int getCollectionId(Value key) {
+            return ByteConversion.byteToInt(key.data(), key.start() + OFFSET_COLLECTION_ID);
+        }
+
+        public static int getDocumentId(Value key) {
+            return ByteConversion.byteToInt(key.data(), key.start() + OFFSET_DOCUMENT_ID);
         }
     }
 
