@@ -38,10 +38,10 @@
 
 -->
 <exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="schema/conf.xsd">
+       xsi:noNamespaceSchemaLocation="schema/conf.xsd">
 
     <!-- 
-        Configures the cluster configuration
+        Configures the cluster configuration.
         
         - dbaUser:
             defines the user used by the cluster for the replica.
@@ -68,7 +68,7 @@
         protocol="UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=8;ip_mcast=true;mcast_send_buf_size=800000;mcast_recv_buf_size=150000;ucast_send_buf_size=800000;ucast_recv_buf_size=150000;loopback=true):PING(timeout=2000;num_initial_members=3;up_thread=true;down_thread=true):MERGE2(min_interval=10000;max_interval=20000):FD(shun=true;up_thread=true;down_thread=true;timeout=2500;max_tries=5):VERIFY_SUSPECT(timeout=3000;num_msgs=3;up_thread=true;down_thread=true):pbcast.NAKACK(gc_lag=50;retransmit_timeout=300,600,1200,2400,4800;max_xmit_size=8192;up_thread=true;down_thread=true):UNICAST(timeout=300,600,1200,2400,4800;window_size=100;min_threshold=10;down_thread=true):pbcast.STABLE(desired_avg_gossip=20000;up_thread=true;down_thread=true):FRAG(frag_size=8192;down_thread=true;up_thread=true):pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)"/>
 
     <!-- 
-        Configures the database backend:
+        Configures the database backend.
         
         - cacheSize:
             the maximum amount of memory to use for database page buffers.
@@ -82,9 +82,10 @@
         
         - collectionCache:
             maximum amount of memory (in megabytes) to use for collection caches.
-            Memory calculation is just approximate. If your collections are very different
-            in size, it might be possible that the actual amount of memory used exceeds
-            the specified limit. You should thus be careful with this setting.
+            Memory calculation is just approximate. If your collections are very 
+            different in size, it might be possible that the actual amount of 
+            memory used exceeds the specified limit. You should thus be careful 
+            with this setting.
         
         - database:
             selects a database backend. Currently, "native" and "native_cluster"
@@ -119,7 +120,9 @@
             A different default value may be set for a database instance, and 
             local overrides are also possible.
         -->
-        <!--default-permissions collection="0775" resource="0775" /-->
+        <!--
+        <default-permissions collection="0775" resource="0775" />
+        -->
 
         <!-- 
             Settings for the database connection pool:
@@ -143,25 +146,26 @@
         <pool max="20" min="1" sync-period="120000" wait-before-shutdown="120000"/>
 
         <!--                                                                     	
-		    Configure the query pool.                                                
-		    - max-stack-size:                                                        
-		        maximum number of queries in the query-pool.                         
-                                                                                     
-		    - size:                                                                  
-		        number of copies of the same query kept in the query-pool.           
-		        Value "-1" effectively disables caching. Queries cannot be shared     
-		        by threads, each thread needs a private copy of a query.             
-                                                                                     
-		    - timeout:                                                               
-		        amount of time that a query will be cached in the query-pool.        
-                                                                                     
-		    - timeout-check-interval:                                                
-		        time between checking for timed out queries. For value "-1"          
-		        the time out is switched off, resulting cached queries to remain     
-		        in the cache forever.                                                
-		-->
-        <!--query-pool max-stack-size="5" size="128" timeout="120000"                
-		            timeout-check-interval="30000"/-->
+    		    Configure the query pool.
+    		    
+    		    - max-stack-size:                                                        
+    		        maximum number of queries in the query-pool.                         
+                                                                                         
+    		    - size:                                                                  
+    		        number of copies of the same query kept in the query-pool.           
+    		        Value "-1" effectively disables caching. Queries cannot be shared     
+    		        by threads, each thread needs a private copy of a query.             
+                                                                                         
+    		    - timeout:                                                               
+    		        amount of time that a query will be cached in the query-pool.        
+                                                                                         
+    		    - timeout-check-interval:                                                
+    		        time between checking for timed out queries. For value "-1"          
+    		        the time out is switched off, resulting cached queries to remain     
+    		        in the cache forever.                                                
+		    -->
+        <query-pool max-stack-size="5" size="128" timeout="120000"                
+		            timeout-check-interval="30000"/>
 
         <!--
             Settings for the journaling and recovery of the database. With 
@@ -212,8 +216,8 @@
                 will increase the risk of an already committed 
                 operation being rolled back after a database crash.
         -->
-        <recovery enabled="yes" group-commit="no" journal-dir="webapp/WEB-INF/data" size="100M"
-            sync-on-commit="no"/>
+        <recovery enabled="yes" group-commit="no" journal-dir="webapp/WEB-INF/data" 
+                  size="100M" sync-on-commit="no"/>
 
         <!-- 
             The <security> element in the <db-connection> node is used to select
@@ -259,7 +263,9 @@
                 the realm to use for basic auth or http-digest password 
                 challenges.
         -->
-        <!-- security class="org.exist.security.LDAPSecurityManager" /-->
+        <!--
+        <security class="org.exist.security.LDAPSecurityManager" />
+        -->
 
         <!--
             This is the global configuration for the query watchdog. The 
@@ -267,7 +273,7 @@
             long-running queries if they exceed one of the predefined limits. 
             These limits are as follows:
             
-            - output-size-limit
+            - output-size-limit:
                 this attribute limits the size of XML fragments constructed 
                 using XQuery, and thus sets the maximum amount of main memory a
                 query is allowed to use. This limit is expressed as the maximum
@@ -276,7 +282,7 @@
                 cases where users are allowed to run queries that produce very
                 large output fragments.
             
-            - query-timeout
+            - query-timeout:
                 this attribute sets the maximum amount of time (expressed in 
                 milliseconds) that the query can take before it is killed..
             
@@ -326,26 +332,32 @@
         tokenizer="org.exist.storage.analysis.SimpleTokenizer" track-term-freq="yes">
 
         <modules>
-            <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex" file="ngram.dbx"
-                n="3"/>
+            <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex" 
+                    file="ngram.dbx" n="3"/>
+                    
             <!--
             <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
                 connectionTimeout="10000" flushAfter="300" />            
             -->
-            <!-- The full text index is always required and should
-				 not be disabled. We still have some dependencies on
+            
+            <!-- 
+                 The full text index is always required and should
+				         not be disabled. We still have some dependencies on
                  this index in the database core. These will be removed
-                 once the redesign has been completed. -->
+                 once the redesign has been completed. 
+            -->
             <module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
 
-            <!-- The following module is not really an index (though it sits in the
-				 index pipeline). It gathers relevant statistics on the distribution
-				 of elements in the database, which can be used by the query optimizer
-				 for additional optimizations. -->
+            <!-- 
+                 The following module is not really an index (though it sits 
+                 in the index pipeline). It gathers relevant statistics on the
+                 distribution of elements in the database, which can be used 
+                 by the query optimizer for additional optimizations. 
+            -->
             <!--
-			<module id="index-stats" class="org.exist.storage.statistics.IndexStatistics"
-				file="stats.dbx"/>
-			-->
+			     <module id="index-stats" class="org.exist.storage.statistics.IndexStatistics"
+				           file="stats.dbx"/>
+			     -->
         </modules>
 
         <!--
@@ -373,7 +385,8 @@
             Job definitions:
             
             - type:
-            The type of the job to schedule. Must be either "startup", "system" or "user".
+            The type of the job to schedule. Must be either "startup", "system" 
+            or "user".
             
 	            startup - Startup jobs are executed once during the
 	            database startup but before the database becomes available,
@@ -395,8 +408,9 @@
             	org.exist.scheduler.UserJavaJob
             
             - xquery:
-            If the job is written in XQuery (not suitable for system jobs) then this should
-            be a path to an XQuery stored in the database. e.g. /db/myCollection/myJob.xql
+            If the job is written in XQuery (not suitable for system jobs) then 
+            this should be a path to an XQuery stored in the database. e.g. 
+            /db/myCollection/myJob.xql
             XQuery job's will be launched under the guest account initially,
             although the running XQuery may switch permissions through
             calls to xmldb:login().
@@ -419,7 +433,10 @@
             Can be used with a period to define for how many periods a job should be
             executed. If unspecified jobs will repeat for every period indefinitely.
         -->
-        <!-- job class="bar.foo.myjob" period="600000" delay="300000" repeat="10" /-->
+        <!-- 
+        <job class="bar.foo.myjob" period="600000" delay="300000" repeat="10" />
+        -->
+        
         <!--
             Run a consistency check on the database. This will detect inconsistencies
             or corruptions in documents or the collection store. The task can also
@@ -448,15 +465,22 @@
             <parameter name="backup" value="no"/>
         </job>
         -->
-        <!-- Automatically creates a copy of the database .dbx files every 2 minutes
-        	Parameters:
-        		output-dir:
-        			The directory into which the copy will be written
+        
+        <!-- 
+            Automatically creates a copy of the database .dbx files every 2 minutes
+            
+            Parameters:
+            output-dir:
+            	The directory into which the copy will be written
         -->
-        <!--job type="system" class="org.exist.storage.DataBackup" period="120000">
+        <!--
+        <job type="system" class="org.exist.storage.DataBackup" period="120000">
             <parameter name="output-dir" value="backup" />
-        </job-->
-        <!-- Automatically creates a backup of the database every 6 hours.
+        </job>
+        -->
+        
+        <!-- 
+            Automatically creates a backup of the database every 6 hours.
 
             Parameters:
                 dir:
@@ -469,8 +493,9 @@
                 prefix:
                     File prefix for the generated backup file or directory.
 
-		-->
-        <!--job type="system" class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
+		    -->
+        <!--
+        <job type="system" class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
             <parameter name="dir" value="backup"/>
             <parameter name="suffix" value=".zip"/>
             <parameter name="prefix" value="backup-"/>
@@ -478,7 +503,8 @@
             <parameter name="user" value="admin"/>
             <parameter name="password" value=""/>
             <parameter name="zip-files-max" value="28"/>
-        </job-->
+        </job>
+        -->
     </scheduler>
 
     <!-- 
@@ -523,8 +549,9 @@
             Set the parameter to "yes" to enable this feature.
 
     -->
-    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes" enable-xsl="no"
-        indent="yes" match-tagging-attributes="no" match-tagging-elements="no"/>
+    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
+                enable-xsl="no" indent="yes" match-tagging-attributes="no" 
+                match-tagging-elements="no"/>
 
     <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
@@ -533,27 +560,31 @@
         - class:
             the name of the class that implements javax.xml.transform.TransformerFactory
             
-            for Saxon (XSLT 2.0 support) - net.sf.saxon.TransformerFactoryImpl
+            for Saxon (XSLT 2.0 support):
+            - "net.sf.saxon.TransformerFactoryImpl"
             
                 You will need to copy saxon8.jar saxon8-dom.jar and saxon8-xpath.jar
                 into lib/endorsed. 
                 You can get these from http://sourceforge.net/projects/saxon
             
-            for Xalan (XSLT 1.0 support) - org.apache.xalan.processor.TransformerFactoryImpl
+            for Xalan (XSLT 1.0 support):
+            - "org.apache.xalan.processor.TransformerFactoryImpl"
             
             
         For further details see - http://atomic.exist-db.org/wiki/HowTo/XSLT2/
         
-        You can also include attribute child elements, if you wish to pass in attributes 
-        to your particular TransformerFactory as follows:
+        You can also include attribute child elements, if you wish to pass in 
+        attributes to your particular TransformerFactory as follows:
         
             <transformer class="net.sf.saxon.TransformerFactoryImpl">
-                <attribute name="http://saxon.sf.net/feature/version-warning" value="false" type="boolean"/>
+                <attribute name="http://saxon.sf.net/feature/version-warning" 
+                           value="false" type="boolean"/>
             </transformer>
             
-        The example above sets Saxon to suppress warnings when executing a XSLT 1.0 stylesheet 
-        with the XLST 2.0 processor. Check the documentation for your selected TransformerFactory 
-        to determine which attributes can be set. Valid types include "boolean", "integer" 
+        The example above sets Saxon to suppress warnings when executing a 
+        XSLT 1.0 stylesheet with the XLST 2.0 processor. Check the 
+        documentation for your selected TransformerFactory to determine which 
+        attributes can be set. Valid types include "boolean", "integer" 
         and "string".  Anything else will be treated as type "string".
         
     -->
@@ -592,21 +623,23 @@
             -  disable-deprecated-functions:
                 Set to "yes" to disable deprecated functions
             - enable-query-rewriting:
-                Set to "yes" to enable the new query-rewriting optimizer. This is
-                work in progress and may lead to incorrect queries. Use at your own
-                risk.
+                Set to "yes" to enable the new query-rewriting optimizer. This 
+                is work in progress and may lead to incorrect queries. Use at your
+                own risk.
             -  backwardCompatible:
-                Set to "yes" to enable backward compatibility (untyped argument checks for instance)
+                Set to "yes" to enable backward compatibility (untyped argument 
+                checks for instance)
             - raise-error-on-failed-retrieval
                 Set to "yes" if a call to doc(), xmldb:document(), collection() or 
-                xmldb:xcollection() should raise an error (FODC0002) when an XML resource 
-                can not be retrieved.
+                xmldb:xcollection() should raise an error (FODC0002) when an 
+                XML resource can not be retrieved.
                 Set to "no" if a call to doc(), xmldb:document(), collection() or 
-                xmldb:xcollection() should return an empty sequence when an XML resource 
-                can not be retrieved. 
+                xmldb:xcollection() should return an empty sequence when an 
+                XML resource can not be retrieved. 
     -->
-    <xquery enable-java-binding="no" disable-deprecated-functions="no" enable-query-rewriting="yes"
-        backwardCompatible="no" raise-error-on-failed-retrieval="no">
+    <xquery enable-java-binding="no" disable-deprecated-functions="no" 
+            enable-query-rewriting="yes" backwardCompatible="no" 
+            raise-error-on-failed-retrieval="no">
         <builtin-modules>
             <!-- Default Modules -->
             <module class="org.exist.xquery.functions.util.UtilModule"
