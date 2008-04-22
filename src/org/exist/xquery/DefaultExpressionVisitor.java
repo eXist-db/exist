@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -89,5 +90,28 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     public void visitPredicate(Predicate predicate) {
         predicate.getExpression(0).accept(this);
     }
-    
+
+    public void visitElementConstructor(ElementConstructor constructor) {
+        constructor.getNameExpr().accept(this);
+        if (constructor.getContent() != null)
+            constructor.getContent().accept(this);
+    }
+
+    public void visitTextConstructor(DynamicTextConstructor constructor) {
+        constructor.getContent().accept(this);
+    }
+
+    public void visitAttribConstructor(AttributeConstructor constructor) {
+        for (Iterator i = constructor.contentIterator(); i.hasNext(); ) {
+            Object next = i.next();
+            if (next instanceof Expression)
+                ((Expression)next).accept(this);
+        }
+    }
+
+    public void visitAttribConstructor(DynamicAttributeConstructor constructor) {
+        constructor.getNameExpr().accept(this);
+        if (constructor.getContentExpr() != null)
+            constructor.getContentExpr().accept(this);
+    }
 }

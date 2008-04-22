@@ -56,9 +56,17 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     public void setNameExpr(Expression expr) {
         this.qnameExpr = new Atomize(context, expr);
     }
-    
+
+    public Expression getNameExpr() {
+        return this.qnameExpr;
+    }
+
     public void setContentExpr(Expression expr) {
         this.valueExpr  = new Atomize(context, expr);
+    }
+
+    public Expression getContentExpr() {
+        return this.valueExpr;
     }
     
     /* (non-Javadoc)
@@ -159,5 +167,9 @@ public class DynamicAttributeConstructor extends NodeConstructor {
         super.resetState(postOptimization);
         qnameExpr.resetState(postOptimization);
         valueExpr.resetState(postOptimization);
-    }    
+    }
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitAttribConstructor(this);
+    }
 }

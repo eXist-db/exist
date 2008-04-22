@@ -1,9 +1,9 @@
 package org.exist.xquery;
 
+import org.exist.xquery.functions.ExtFulltext;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.exist.xquery.functions.ExtFulltext;
 
 /**
  * Basic implementation of the {@link ExpressionVisitor} interface.
@@ -109,6 +109,18 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     public void visitConditional(ConditionalExpression conditional) {
+    }
+
+    public void visitElementConstructor(ElementConstructor constructor) {
+    }
+
+    public void visitTextConstructor(DynamicTextConstructor constructor) {
+    }
+
+    public void visitAttribConstructor(AttributeConstructor constructor) {
+    }
+
+    public void visitAttribConstructor(DynamicAttributeConstructor constructor) {
     }
 
     public static class FirstStepVisitor extends BasicExpressionVisitor {

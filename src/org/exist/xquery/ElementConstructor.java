@@ -64,14 +64,22 @@ public class ElementConstructor extends NodeConstructor {
 	public void setContent(PathExpr path) {
 		this.content = path;
 	}
-	
-	public void setNameExpr(Expression expr) {
+
+    public PathExpr getContent() {
+        return content;
+    }
+    
+    public void setNameExpr(Expression expr) {
 		//Deferred atomization (we could have a QNameValue)
 	    //this.qnameExpr = new Atomize(context, expr);
 		this.qnameExpr = expr;
 	}
-	
-	public void addAttribute(AttributeConstructor attr) throws XPathException {
+
+    public Expression getNameExpr() {
+        return qnameExpr;
+    }
+    
+    public void addAttribute(AttributeConstructor attr) throws XPathException {
         if(attr.isNamespaceDeclaration()) {
             if(attr.getQName().equals("xmlns"))
                 addNamespaceDecl("", attr.getLiteralValue());
@@ -311,7 +319,7 @@ public class ElementConstructor extends NodeConstructor {
 	public void setPrimaryAxis(int axis) {
 		if(content != null)
 			content.setPrimaryAxis(axis);
-	}
+	} 
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
@@ -327,4 +335,8 @@ public class ElementConstructor extends NodeConstructor {
 				next.resetState(postOptimization);
 			}
 	}
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitElementConstructor(this);
+    }
 }
