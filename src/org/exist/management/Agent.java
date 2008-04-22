@@ -21,8 +21,10 @@
  */
 package org.exist.management;
 
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.storage.BrokerPool;
+import org.exist.util.DatabaseConfigurationException;
+
+import java.util.List;
 
 /**
  * Interface to allow the JMX classes to be plugged in on systems which
@@ -35,4 +37,6 @@ public interface Agent {
     void closeDBInstance(BrokerPool instance);
 
     void addMBean(String dbInstance, String name, Object mbean) throws DatabaseConfigurationException;
+
+    void updateErrors(BrokerPool instance, List errorList, long startTime);
 }

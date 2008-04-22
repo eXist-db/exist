@@ -463,6 +463,10 @@ public class NativeBroker extends DBBroker {
         return ALL_STORAGE_FILES;
     }        
 
+    public int getDefaultIndexDepth() {
+        return defaultIndexDepth;
+    }
+    
     public void backupToArchive(RawDataBackup backup) throws IOException {
         for (byte i = 0; i < ALL_STORAGE_FILES.length; i++) {
             Paged paged = getStorage(i);
@@ -3155,7 +3159,7 @@ public class NativeBroker extends DBBroker {
         public void store() {
             final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
             if (mode == MODE_STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth) {
-            	//TODO : used to be this, but NativeBroker.this avoids an owner change
+                //TODO : used to be this, but NativeBroker.this avoids an owner change
                 new DOMTransaction(NativeBroker.this, domDb, Lock.WRITE_LOCK) {
                     public Object start() throws ReadOnlyException {
                         try {

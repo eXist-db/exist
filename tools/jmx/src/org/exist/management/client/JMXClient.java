@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: JMXClient.java 7641 2008-04-20 19:39:58Z wolfgang_m $
  */
 package org.exist.management.client;
 
@@ -26,14 +26,28 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 
-import javax.management.*;
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  */
@@ -166,6 +180,42 @@ public class JMXClient {
         }
     }
 
+    public void sanityReport() {
+        echo("\nSanity report");
+        echo("-----------------------------------------------");
+        try {
+            ObjectName name = new ObjectName("org.exist.management." + instance + ".tasks:type=SanityReport");
+            String status = (String) connection.getAttribute(name, "Status");
+            Date lastCheckStart = (Date) connection.getAttribute(name, "LastCheckStart");
+            Date lastCheckEnd = (Date) connection.getAttribute(name, "LastCheckEnd");
+            echo(String.format("%22s: %s", "Status", status));
+            echo(String.format("%22s: %s", "Last check start", lastCheckStart));
+            echo(String.format("%22s: %s", "Last check end", lastCheckEnd));
+            if (lastCheckStart != null && lastCheckEnd != null)
+                echo(String.format("%22s: %dms", "Check took", (lastCheckEnd.getTime() - lastCheckStart.getTime())));
+
+            TabularData table = (TabularData)
+                    connection.getAttribute(name, "Errors");
+            for (Iterator i = table.values().iterator(); i.hasNext(); ) {
+                CompositeData data = (CompositeData) i.next();
+                echo(String.format("%22s: %s", "Error code", data.get("errcode")));
+                echo(String.format("%22s: %s", "Description", data.get("description")));
+            }
+        } catch (MBeanException e) {
+            e.printStackTrace();
+        } catch (AttributeNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstanceNotFoundException e) {
+            e.printStackTrace();
+        } catch (ReflectionException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (MalformedObjectNameException e) {
+            e.printStackTrace();
+        }
+    }
+
     private Object[] getValues(AttributeList attribs) {
         Object[] v = new Object[attribs.size()];
         for (int i = 0; i < attribs.size(); i++) {
@@ -192,6 +242,7 @@ public class JMXClient {
     private final static int PORT_OPT = 'p';
     private final static int INSTANCE_OPT = 'i';
     private final static int ADDRESS_OPT = 'a';
+    private final static int SANITY_OPT = 's';
     
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
@@ -214,7 +265,9 @@ public class JMXClient {
         new CLOptionDescriptor( "address", CLOptionDescriptor.ARGUMENT_REQUIRED,
             ADDRESS_OPT, "RMI address of the server"),
         new CLOptionDescriptor( "instance", CLOptionDescriptor.ARGUMENT_REQUIRED,
-            INSTANCE_OPT, "the ID of the database instance to connect to")
+            INSTANCE_OPT, "the ID of the database instance to connect to"),
+        new CLOptionDescriptor( "report", CLOptionDescriptor.ARGUMENT_DISALLOWED,
+            SANITY_OPT, "retrieve sanity check report from the db")
     };
 
     private final static int MODE_STATS = 0;
@@ -236,6 +289,7 @@ public class JMXClient {
         String address = "localhost";
         boolean displayMem = false;
         boolean displayInstance = false;
+        boolean displayReport = false;
         for(int i = 0; i < size; i++) {
             option = (CLOption)opt.get(i);
             switch(option.getId()) {
@@ -281,6 +335,9 @@ public class JMXClient {
                 case INSTANCE_OPT :
                     dbInstance = option.getArgument();
                     break;
+                case SANITY_OPT :
+                    displayReport = true;
+                    break;
             }
         }
         try {
@@ -298,6 +355,7 @@ public class JMXClient {
                 }
                 if (displayInstance) stats.instanceStats();
                 if (displayMem) stats.memoryStats();
+                if (displayReport) stats.sanityReport();
                 if (waitTime > 0) {
                     synchronized (stats) {
                         try {

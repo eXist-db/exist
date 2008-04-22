@@ -19,32 +19,20 @@
  *
  * $Id$
  */
-package org.exist.management;
+package org.exist.management.impl;
 
-import org.exist.storage.BrokerPool;
-import org.exist.util.DatabaseConfigurationException;
+import javax.management.openmbean.TabularData;
+import java.util.Date;
 
-import java.util.List;
+public interface SanityReportMBean {
 
-/**
- * A dummy agent which will be used if JMX is disabled. It just acts as an empty
- * placeholder.
- */
-public class DummyAgent implements Agent {
+    public Date getLastCheckEnd();
 
-    public void initDBInstance(BrokerPool instance) {
-        // do nothing
-    }
+    public Date getLastCheckStart();
 
-    public void closeDBInstance(BrokerPool instance) {
-        // nothing to do
-    }
-    
-    public void addMBean(String dbInstance, String name, Object mbean) throws DatabaseConfigurationException {
-        // just do nothing
-    }
+    public String getStatus();
 
-    public void updateErrors(BrokerPool pool, List errorList, long startTime) {
-        // nothing to do
-    }
+    public TabularData getErrors();
+
+    public void triggerCheck();
 }

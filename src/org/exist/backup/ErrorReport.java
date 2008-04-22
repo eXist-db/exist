@@ -31,10 +31,11 @@ public class ErrorReport {
     public final static int ACCESS_FAILED = 3;
     public final static int CHILD_COLLECTION = 4;
     public final static int RESOURCE_ACCESS_FAILED = 5;
-    
+    public final static int DOM_INDEX = 6;
+
     public final static String[] ERRCODES = {
         "ERR_NODE_ID", "ERR_NODE_TYPE", "ERR_NODE_HIERARCHY", "ERR_ACCESS",
-        "ERR_CHILD_COLLECTION", "RESOURCE_ACCESS_FAILED"
+        "ERR_CHILD_COLLECTION", "RESOURCE_ACCESS_FAILED", "ERR_DOM_INDEX"
     };
     
     private int code;
@@ -56,6 +57,10 @@ public class ErrorReport {
 
     public int getErrcode() {
         return code;
+    }
+
+    public String getErrcodeString() {
+        return ERRCODES[code];
     }
     
     public String getMessage() {
@@ -139,6 +144,29 @@ public class ErrorReport {
         
         public String toString() {
             return super.toString() + "\nCollection ID: " + collectionId;
+        }
+    }
+
+    public static class IndexError extends ErrorReport {
+
+        private int documentId = -1;
+
+        public IndexError(int code, String message, int documentId) {
+            super(code, message);
+            this.documentId = documentId;
+        }
+
+        public IndexError(int code, String message, Throwable exception, int documentId) {
+            super(code, message, exception);
+            this.documentId = documentId;
+        }
+
+        public int getDocumentId() {
+            return documentId;
+        }
+
+        public String toString() {
+            return super.toString() + "\nDocument ID: " + documentId;
         }
     }
 }
