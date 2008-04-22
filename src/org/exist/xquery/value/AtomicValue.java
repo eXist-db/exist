@@ -378,8 +378,20 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	public int compareTo(Object other) {		
 		throw new IllegalArgumentException("Invalid call to compareTo by " + Type.getTypeName(this.getItemType()));
 	}
-    
-	private final static class EmptyValue extends AtomicValue {
+
+    public int getState() {
+        return 0;
+    }
+
+    public boolean hasChanged(int previousState) {
+        return false; // never changes
+    }
+
+    public boolean isCacheable() {
+        return true;
+    }
+
+    private final static class EmptyValue extends AtomicValue {
 		
 		public boolean isEmpty() {
 			return true;

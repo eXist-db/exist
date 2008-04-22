@@ -45,8 +45,9 @@ public class OrderedValueSequence extends AbstractSequence {
 	private OrderSpec orderSpecs[];
 	private Entry[] items = null;
 	private int count = 0;
-	
-	// used to keep track of the type of added items.
+	private int state = 0;
+    
+    // used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
     
 	public OrderedValueSequence(OrderSpec orderSpecs[], int size) {
@@ -101,7 +102,8 @@ public class OrderedValueSequence extends AbstractSequence {
 		}
 		items[count++] = new Entry(item);
 		checkItemType(item.getType());
-	}
+        setHasChanged();
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#addAll(org.exist.xquery.value.Sequence)
@@ -211,8 +213,24 @@ public class OrderedValueSequence extends AbstractSequence {
     public void removeDuplicates() {
         // TODO: is this ever relevant?
     }
-    
-	private class Entry implements Comparable {
+
+    private void setHasChanged() {
+        state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public boolean hasChanged(int previousState) {
+        return state != previousState;
+    }
+
+    public boolean isCacheable() {
+        return true;
+    }
+
+    private class Entry implements Comparable {
 		
 		Item item;
 		AtomicValue values[];

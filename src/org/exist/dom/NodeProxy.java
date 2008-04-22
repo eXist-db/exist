@@ -21,11 +21,9 @@
  */
 package org.exist.dom;
 
-import java.util.Iterator;
-import java.util.Properties;
-
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.StorageAddress;
@@ -48,6 +46,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * Placeholder class for DOM nodes. 
@@ -1051,19 +1055,23 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.dom.NodeSet#getState()
      */
     public int getState() {
-	return 1;
+	    return 0;
     }
 	
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#hasChanged(int)
      */
     public boolean hasChanged(int previousState) {
-	return false;
+	    return false;
     }
 	
+    public boolean isCacheable() {
+        return true;
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.dom.NodeSet#getSizeHint(org.exist.dom.DocumentImpl)
-     */
+    * @see org.exist.dom.NodeSet#getSizeHint(org.exist.dom.DocumentImpl)
+    */
     public int getSizeHint(DocumentImpl document) {
         if(document.getDocId() == doc.getDocId())
             return 1;
@@ -1284,20 +1292,34 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public NodeSet directSelectAttribute(QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
-        //TODO : maybe we could improve performance here
-        NodeImpl node = (NodeImpl) getNode();
-        if (node.getNodeType() != Node.ELEMENT_NODE)
-            return NodeSet.EMPTY_SET;
-        AttrImpl attr = (AttrImpl)
-            ((ElementImpl)node).getAttributeNodeNS(qname.getNamespaceURI(), qname.getLocalName());
-        if (attr == null)
-            return NodeSet.EMPTY_SET;
-        NodeProxy child = new NodeProxy(doc, attr.getNodeId(), Node.ATTRIBUTE_NODE, attr.getInternalAddress());
-        if (Expression.NO_CONTEXT_ID != contextId)
-            child.addContextNode(contextId, this);
-        else
-            child.copyContext(this);
-        return child;
+        try {
+            EmbeddedXMLStreamReader reader = doc.getBroker().getXMLStreamReader(this, true);
+            int status = reader.next();
+            if (status != XMLStreamReader.START_ELEMENT)
+                return NodeSet.EMPTY_SET;
+            int attrs = reader.getAttributeCount();
+            for (int i = 0; i < attrs; i++) {
+                status = reader.next();
+                if (status != XMLStreamReader.ATTRIBUTE)
+                    break;
+                AttrImpl attr = (AttrImpl) reader.getNode();
+                QName qn = attr.getQName();
+                if (qn.getNamespaceURI().equals(qname.getNamespaceURI()) &&
+                        qn.getLocalName().equals(qname.getLocalName())) {
+                    NodeProxy child = new NodeProxy(attr);
+                    if (Expression.NO_CONTEXT_ID != contextId)
+                        child.addContextNode(contextId, this);
+                    else
+                        child.copyContext(this);
+                    return child;
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } catch (XMLStreamException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return NodeSet.EMPTY_SET;
     }
 
     public NodeSet directSelectChild(QName qname, int contextId) {

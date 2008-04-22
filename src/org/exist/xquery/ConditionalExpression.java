@@ -95,7 +95,7 @@ public class ConditionalExpression extends AbstractExpression {
 		throws XPathException {
 		Sequence testSeq = testExpr.eval(contextSequence, contextItem);
         try {
-    		if(testSeq.effectiveBooleanValue()) {
+    		if (testSeq.effectiveBooleanValue()) {
     			return thenExpr.eval(contextSequence, contextItem);
     		} else {
     			return elseExpr.eval(contextSequence, contextItem);

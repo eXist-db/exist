@@ -20,11 +20,6 @@
  */
 package org.exist.xquery.value;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.exist.dom.DocumentSet;
 import org.exist.dom.EmptyNodeSet;
 import org.exist.dom.NodeProxy;
@@ -32,6 +27,11 @@ import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * An abstract implementation of {@link org.exist.xquery.value.Sequence} with
@@ -293,5 +293,17 @@ public abstract class AbstractSequence implements Sequence {
     public boolean isPersistentSet() {
         // always return false by default
         return false;
+    }
+
+    public boolean isCacheable() {
+        return false;
+    }
+    
+    public int getState() {
+        return 0;
+    }
+
+    public boolean hasChanged(int previousState) {
+        return true;
     }
 }
