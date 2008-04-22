@@ -361,7 +361,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
 
     public String getText() {
-        if (state == CHARACTERS || state == COMMENT) {
+        if (state == CHARACTERS || state == COMMENT || state == CDATA) {
             if (text.length() == 0) {
                 CharacterDataImpl.readData(nodeId, current, text);
             }
@@ -394,7 +394,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
 
     public boolean hasText() {
-        return state == CHARACTERS || state == COMMENT;
+        return state == CHARACTERS || state == COMMENT || state == CDATA;
     }
 
     public Location getLocation() {

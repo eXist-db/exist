@@ -27,9 +27,12 @@ public class ErrorReport {
     public final static int INCORRECT_NODE_TYPE = 1;
     public final static int NODE_HIERARCHY = 2;
     public final static int ACCESS_FAILED = 3;
-
+    public final static int CHILD_COLLECTION = 4;
+    public final static int RESOURCE_ACCESS_FAILED = 5;
+    
     public final static String[] ERRCODES = {
-        "ERR_NODE_ID", "ERR_NODE_TYPE", "ERR_NODE_HIERARCHY", "ERR_ACCESS"
+        "ERR_NODE_ID", "ERR_NODE_TYPE", "ERR_NODE_HIERARCHY", "ERR_ACCESS",
+        "ERR_CHILD_COLLECTION", "RESOURCE_ACCESS_FAILED"
     };
     
     private int code;
@@ -41,7 +44,7 @@ public class ErrorReport {
     private int documentId = -1;
 
     private int collectionId = -1;
-
+    
     public ErrorReport(int code, String message) {
         this.code = code;
         this.message = message;
@@ -53,6 +56,10 @@ public class ErrorReport {
         this.exception = exception;
     }
 
+    public int getErrcode() {
+        return code;
+    }
+    
     public String getMessage() {
         return message;
     }
@@ -87,12 +94,13 @@ public class ErrorReport {
 
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append(ERRCODES[code]).append(": ");
+        sb.append(ERRCODES[code]).append(":\n\r");
         if (message != null)
             sb.append(message);
-        sb.append("\r\n");
-        sb.append("Collection ID: ").append(collectionId).append("\r\n");
-        sb.append("Document ID: ").append(documentId);
+        if (collectionId != -1)
+            sb.append("\n\rCollection ID: ").append(collectionId);
+        if (documentId != -1)
+            sb.append("\n\rDocument ID: ").append(documentId);
         return sb.toString();
     }
 }

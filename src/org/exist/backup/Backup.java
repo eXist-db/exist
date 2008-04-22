@@ -21,19 +21,6 @@
  */
 package org.exist.backup;
 
-import java.awt.Dimension;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Properties;
-
-import javax.swing.JFrame;
-import javax.xml.transform.OutputKeys;
-
 import org.exist.Namespaces;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
@@ -55,6 +42,18 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
+import javax.swing.*;
+import javax.xml.transform.OutputKeys;
+import java.awt.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Properties;
 
 public class Backup {
 
@@ -95,7 +94,7 @@ public class Backup {
 		this.defaultOutputProperties.setProperty(OutputKeys.INDENT, property.getProperty("indent","no"));
 	}
 
-	public String encode(String enco) {		
+	public static String encode(String enco) {
 		StringBuffer out = new StringBuffer();
 		char t;
 		for (int y=0; y < enco.length(); y++) {
@@ -126,7 +125,7 @@ public class Backup {
 	}
 	
 	
-	public String decode(String enco) {
+	public static String decode(String enco) {
 		StringBuffer out = new StringBuffer();
 		String temp="";
 		char t;
