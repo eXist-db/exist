@@ -19,7 +19,7 @@
  *
  * $Id$
  */
-package org.exist.storage.repair;
+package org.exist.backup;
 
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
@@ -27,7 +27,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -36,7 +35,6 @@ import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.Value;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
-import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
@@ -69,6 +67,27 @@ public class ConsistencyCheck {
         this.broker = broker;
     }
 
+    /**
+     * Combines {@link #checkCollectionTree(ConsistencyCheck.ProgressCallback)} and
+     * {@link #checkDocuments(ConsistencyCheck.ProgressCallback)}.
+     * 
+     * @param callback the callback object to report to
+     * @return a list of {@link ErrorReport} objects or
+     *  an empty list if no errors were found
+     */
+    public List checkAll(ProgressCallback callback) {
+        List errors = checkCollectionTree(callback);
+        checkDocuments(callback, errors);
+        return errors;
+    }
+
+    /**
+     * Run some tests on the collection hierarchy, starting at
+     * the root collection /db.
+     *
+     * @param callback callback object
+     * @return a list of {@link ErrorReport} instances describing the errors found
+     */
     public List checkCollectionTree(ProgressCallback callback) {
         User.enablePasswordChecks(false);
         try {
@@ -89,20 +108,22 @@ public class ConsistencyCheck {
             try {
                 Collection child = broker.getCollection(uri.append(childUri));
                 if (child == null) {
-                    ErrorReport error = new ErrorReport(ErrorReport.CHILD_COLLECTION,
+                    ErrorReport.CollectionError error = new org.exist.backup.ErrorReport.CollectionError(org.exist.backup.ErrorReport.CHILD_COLLECTION,
                             "Child collection not found: " + childUri + ", parent is " + uri);
                     error.setCollectionId(collection.getId());
+                    error.setCollectionURI(childUri);
                     errors.add(error);
                     callback.error(error);
                     continue;
                 }
                 checkCollection(child, errors, callback);
             } catch (Exception e) {
-                ErrorReport error = new ErrorReport(ErrorReport.ACCESS_FAILED,
+                ErrorReport.CollectionError error = new ErrorReport.CollectionError(org.exist.backup.ErrorReport.CHILD_COLLECTION,
                             "Error while loading child collection: " + childUri + ", parent is " + uri);
-                    error.setCollectionId(collection.getId());
-                    errors.add(error);
-                    callback.error(error);
+                error.setCollectionId(collection.getId());
+                error.setCollectionURI(childUri);
+                errors.add(error);
+                callback.error(error);
             }
         }
     }
@@ -117,33 +138,56 @@ public class ConsistencyCheck {
             User.enablePasswordChecks(true);
         }
     }
-    
+
+    /**
+     * Run some tests on all documents stored in the database. The method
+     * checks if a document is readable and if its DOM representation is
+     * consistent.
+     * 
+     * @param progress progress callback
+     * @return a list of {@link ErrorReport} instances describing the errors found
+     */
     public List checkDocuments(ProgressCallback progress) {
+        List errors = new ArrayList();
+        checkDocuments(progress, errors);
+        return errors;
+    }
+
+    /**
+     * Run some tests on all documents stored in the database. The method
+     * checks if a document is readable and if its DOM representation is
+     * consistent.
+     *
+     * @param progress progress callback
+     * @param errorList error reports will be added to this list, using instances
+     *  of class {@link ErrorReport}.
+     */
+    public void checkDocuments(ProgressCallback progress, List errorList) {
         User.enablePasswordChecks(false);
         try {
-            List errors = new ArrayList();
-            DocumentCallback cb = new DocumentCallback(errors, progress, true);
+            DocumentCallback cb = new DocumentCallback(errorList, progress, true);
             broker.getResourcesFailsafe(cb);
-            return errors;
         } finally {
             User.enablePasswordChecks(true);
         }
     }
 
-    public void checkDocument(String path) throws PermissionDeniedException, InconsistentDocException {
-        DocumentImpl doc = broker.getXMLResource(XmldbURI.create(path), Lock.READ_LOCK);
-        try {
-            checkXMLTree(doc);
-        } finally {
-            doc.getUpdateLock().release(Lock.READ_LOCK);
-        }
-    }
-
-    private ErrorReport checkXMLTree(DocumentImpl doc) {
+    /**
+     * Check the persistent DOM of a document. The method traverses the entire node
+     * tree and checks it for consistency, including node relationships, child and
+     * attribute counts etc.
+     *
+     * @param doc the document to check
+     * @return null if the document is consistent, an error report otherwise.
+     */
+    public org.exist.backup.ErrorReport.ResourceError checkXMLTree(DocumentImpl doc) {
         try {
             ElementImpl root = (ElementImpl) doc.getDocumentElement();
             EmbeddedXMLStreamReader reader = doc.getBroker().getXMLStreamReader(root, true);
-            NodeId nodeId = null;
+            NodeId nodeId;
+            boolean attribsAllowed = false;
+            int expectedAttribs = 0;
+            int attributeCount = 0;
             while (reader.hasNext()) {
                 int status = reader.next();
 
@@ -152,55 +196,69 @@ public class ConsistencyCheck {
                 if (status != XMLStreamReader.END_ELEMENT && !elementStack.isEmpty()) {
                     parent = (ElementNode) elementStack.peek();
                     parent.childCount++;
+                    // test parent-child relation
+                    if (!nodeId.isChildOf(parent.elem.getNodeId()))
+                        return new ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Node " + nodeId + " is not a child of " +
+                            parent.elem.getNodeId());
+                    // test sibling relation
                     if (parent.prevSibling != null && !(
                             nodeId.isSiblingOf(parent.prevSibling) &&
                             nodeId.compareTo(parent.prevSibling) > 0
                     )) {
-                        return new ErrorReport(ErrorReport.INCORRECT_NODE_ID, "Node " + nodeId + " is not a sibling of " +
+                        return new ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_ID, "Node " + nodeId + " is not a sibling of " +
                                 parent.prevSibling);
                     }
                     parent.prevSibling = nodeId;
                 }
                 switch (status) {
-                    case XMLStreamReader.START_ELEMENT :
-                        StoredNode node = reader.getNode();
-                        if (node.getNodeType() != Node.ELEMENT_NODE)
-                            return new ErrorReport(ErrorReport.INCORRECT_NODE_TYPE,
-                                    "Expected an element node, received node of type " +
-                                    node.getNodeType());
-                        elementStack.push(new ElementNode((ElementImpl) node));
+                    case XMLStreamReader.ATTRIBUTE :
+                        attributeCount++;
                         break;
                     case XMLStreamReader.END_ELEMENT :
                         if (elementStack.isEmpty())
-                            return new ErrorReport(ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: received END_ELEMENT event " +
+                            return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: received END_ELEMENT event " +
                                     "but stack was empty!");
                         ElementNode lastElem = (ElementNode) elementStack.pop();
                         if (lastElem.childCount != lastElem.elem.getChildCount())
-                            return new ErrorReport(ErrorReport.NODE_HIERARCHY, "Element reports incorrect child count: expected " +
+                            return new ErrorReport.ResourceError(org.exist.backup.ErrorReport.NODE_HIERARCHY, "Element reports incorrect child count: expected " +
                                     lastElem.elem.getChildCount() + " but found " + lastElem.childCount);
                         break;
+                    case XMLStreamReader.START_ELEMENT :
+                        StoredNode node = reader.getNode();
+                        if (node.getNodeType() != Node.ELEMENT_NODE)
+                            return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_TYPE,
+                                    "Expected an element node, received node of type " +
+                                    node.getNodeType());
+                        elementStack.push(new ElementNode((ElementImpl) node));
+                        attribsAllowed = true;
+                        attributeCount = 0;
+                        expectedAttribs = reader.getAttributeCount();
+                        break;
                     default :
-                        if (parent != null) {
-                            if (!nodeId.isChildOf(parent.elem.getNodeId()))
-                                return new ErrorReport(ErrorReport.NODE_HIERARCHY, "Node " + nodeId + " is not a child of " +
-                                    parent.elem.getNodeId());
+                        if (attribsAllowed) {
+                            if (attributeCount != expectedAttribs)
+                                return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_TYPE,
+                                    "Wrong number of attributes. Expected: " +
+                                    expectedAttribs + "; found: " + attributeCount);
                         }
+                        attribsAllowed = false;
+                        break;
                 }
             }
             if (!elementStack.isEmpty()) {
-                return new ErrorReport(ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: reached end of tree but " +
+                return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: reached end of tree but " +
                         "stack was not empty!");
             }
             return null;
         } catch (IOException e) {
-            return new ErrorReport(ErrorReport.ACCESS_FAILED, e.getMessage(), e);
+            return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
         } catch (XMLStreamException e) {
-            return new ErrorReport(ErrorReport.ACCESS_FAILED, e.getMessage(), e);
+            return new ErrorReport.ResourceError(org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
         } finally {
             elementStack.clear();
         }
     }
-            
+
     private class DocumentCallback implements BTreeCallback {
 
         private List errors;
@@ -232,20 +290,22 @@ public class ConsistencyCheck {
                     if (progress != null)
                         progress.startDocument(doc.getFileURI().toString());
                     if (type == DocumentImpl.XML_FILE) {
-                        ErrorReport report = checkXMLTree(doc);
+                        ErrorReport.ResourceError report = checkXMLTree(doc);
                         if (report != null) {
                             report.setDocumentId(docId);
-                            report.setCollectionId(collectionId);
-                            errors.add(report);
+                            if (errors != null)
+                                errors.add(report);
                             if (progress != null)
                                 progress.error(report);
                         }                    
                     }
                 }
             } catch (Exception e) {
-                ErrorReport error = new ErrorReport(ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
+                org.exist.backup.ErrorReport.ResourceError error =
+                        new org.exist.backup.ErrorReport.ResourceError(org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
                 error.setDocumentId(docId);
-                errors.add(error);
+                if (errors != null)
+                    errors.add(error);
                 if (progress != null)
                     progress.error(error);
             }
@@ -259,6 +319,6 @@ public class ConsistencyCheck {
 
         public void startCollection(String path);
         
-        public void error(ErrorReport error);
+        public void error(org.exist.backup.ErrorReport error);
     }
 }

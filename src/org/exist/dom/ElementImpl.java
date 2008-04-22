@@ -61,6 +61,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -325,6 +326,45 @@ public class ElementImpl extends NamedNode implements Element {
         if (nsId != 0)
             namespace = document.getSymbols().getNamespace(nsId);
         return new QName(name, namespace, prefix == null ? "" : prefix);
+    }
+
+    public static void readNamespaceDecls(List namespaces, Value value, DocumentImpl document, NodeId nodeId) {
+        final byte[] data = value.data();
+        int offset = value.start();
+        int end = offset + value.getLength();
+        byte idSizeType = (byte) (data[offset] & 0x03);
+        boolean hasNamespace = (data[offset] & 0x10) == 0x10;
+        offset += StoredNode.LENGTH_SIGNATURE_LENGTH;
+        offset += LENGTH_ELEMENT_CHILD_COUNT;
+        offset += NodeId.LENGTH_NODE_ID_UNITS;
+        offset += nodeId.size();
+        offset += LENGTH_ATTRIBUTES_COUNT;
+        offset += Signatures.getLength(idSizeType);
+        if (hasNamespace) {
+            offset += LENGTH_NS_ID;
+            int prefixLen = ByteConversion.byteToShort(data, offset);
+            offset += LENGTH_PREFIX_LENGTH;
+            offset += prefixLen;
+        }
+        if (end > offset) {
+            byte[] pfxData = new byte[end - offset];
+            System.arraycopy(data, offset, pfxData, 0, end - offset);
+            ByteArrayInputStream bin = new ByteArrayInputStream(pfxData);
+            DataInputStream in = new DataInputStream(bin);
+            try {
+                short prefixCount = in.readShort();
+                String prefix;
+                short nsId;
+                for (int i = 0; i < prefixCount; i++) {
+                    prefix = in.readUTF();
+                    nsId = in.readShort();
+                    namespaces.add(new String[] { prefix, document.getSymbols().getNamespace(nsId) });
+                }
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void addNamespaceMapping(String prefix, String ns) {

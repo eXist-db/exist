@@ -1715,6 +1715,26 @@ public class NativeBroker extends DBBroker {
         }
     }
 
+    public void getCollectionsFailsafe(BTreeCallback callback) {
+        Lock lock = collectionsDb.getLock();
+        try {
+            lock.acquire(Lock.READ_LOCK);
+            Value key = new CollectionStore.CollectionKey();
+            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
+            collectionsDb.query(query, callback);
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+        } catch (IOException e) {
+            LOG.warn("IOException while reading document data", e);
+        } catch (BTreeException e) {
+            LOG.warn("Exception while reading document data", e);
+        } catch (TerminatedException e) {
+            LOG.warn("Exception while reading document data", e);
+        } finally {
+            lock.release(Lock.READ_LOCK);
+        }
+    }
+
     /**
      *  Get all the documents in this database matching the given
      *  document-type's name.

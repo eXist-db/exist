@@ -521,8 +521,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             }
             permissions.setPermissions(perm);
             //Should be > 0 ;-)
-            children = istream.readInt();            
-	    childAddress = new long[children];
+            children = istream.readInt();
+        childAddress = new long[children];
 	    for (int i = 0; i < children; i++) { 
 		childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 	    }
