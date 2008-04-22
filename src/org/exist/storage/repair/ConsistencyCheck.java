@@ -28,6 +28,7 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
@@ -44,6 +45,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -67,17 +69,65 @@ public class ConsistencyCheck {
         this.broker = broker;
     }
 
+    public List checkCollectionTree(ProgressCallback callback) {
+        User.enablePasswordChecks(false);
+        try {
+            List errors = new ArrayList();
+            Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
+            checkCollection(root, errors, callback);
+            return errors;
+        } finally {
+            User.enablePasswordChecks(true);
+        }
+    }
+    
+    private void checkCollection(Collection collection, List errors, ProgressCallback callback) {
+        XmldbURI uri = collection.getURI();
+        callback.startCollection(uri.toString());
+        for (Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+            XmldbURI childUri = (XmldbURI) i.next();
+            try {
+                Collection child = broker.getCollection(uri.append(childUri));
+                if (child == null) {
+                    ErrorReport error = new ErrorReport(ErrorReport.CHILD_COLLECTION,
+                            "Child collection not found: " + childUri + ", parent is " + uri);
+                    error.setCollectionId(collection.getId());
+                    errors.add(error);
+                    callback.error(error);
+                    continue;
+                }
+                checkCollection(child, errors, callback);
+            } catch (Exception e) {
+                ErrorReport error = new ErrorReport(ErrorReport.ACCESS_FAILED,
+                            "Error while loading child collection: " + childUri + ", parent is " + uri);
+                    error.setCollectionId(collection.getId());
+                    errors.add(error);
+                    callback.error(error);
+            }
+        }
+    }
+    
     public int getDocumentCount() {
-        DocumentCallback cb = new DocumentCallback(null, null, false);
-        broker.getResourcesFailsafe(cb);
-        return cb.docCount;
+        User.enablePasswordChecks(false);
+        try {
+            DocumentCallback cb = new DocumentCallback(null, null, false);
+            broker.getResourcesFailsafe(cb);
+            return cb.docCount;
+        } finally {
+            User.enablePasswordChecks(true);
+        }
     }
     
     public List checkDocuments(ProgressCallback progress) {
-        List errors = new ArrayList();
-        DocumentCallback cb = new DocumentCallback(errors, progress, true);
-        broker.getResourcesFailsafe(cb);
-        return errors;
+        User.enablePasswordChecks(false);
+        try {
+            List errors = new ArrayList();
+            DocumentCallback cb = new DocumentCallback(errors, progress, true);
+            broker.getResourcesFailsafe(cb);
+            return errors;
+        } finally {
+            User.enablePasswordChecks(true);
+        }
     }
 
     public void checkDocument(String path) throws PermissionDeniedException, InconsistentDocException {
@@ -146,9 +196,11 @@ public class ConsistencyCheck {
             return new ErrorReport(ErrorReport.ACCESS_FAILED, e.getMessage(), e);
         } catch (XMLStreamException e) {
             return new ErrorReport(ErrorReport.ACCESS_FAILED, e.getMessage(), e);
+        } finally {
+            elementStack.clear();
         }
     }
-
+            
     private class DocumentCallback implements BTreeCallback {
 
         private List errors;
@@ -187,11 +239,12 @@ public class ConsistencyCheck {
                             errors.add(report);
                             if (progress != null)
                                 progress.error(report);
-                        }
+                        }                    
                     }
                 }
             } catch (Exception e) {
-                ErrorReport error = new ErrorReport(ErrorReport.ACCESS_FAILED, e.getMessage(), e);
+                ErrorReport error = new ErrorReport(ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
+                error.setDocumentId(docId);
                 errors.add(error);
                 if (progress != null)
                     progress.error(error);
@@ -204,6 +257,8 @@ public class ConsistencyCheck {
 
         public void startDocument(String path);
 
+        public void startCollection(String path);
+        
         public void error(ErrorReport error);
     }
 }

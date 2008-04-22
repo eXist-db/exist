@@ -1,9 +1,6 @@
 
 package org.exist.security;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
@@ -13,6 +10,9 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  *  Represents a user within the database.
@@ -54,7 +54,11 @@ public class User {
         option = props.getProperty("passwords.check", "yes");
         CHECK_PASSWORDS = option.equalsIgnoreCase("yes") || option.equalsIgnoreCase("true");
 	}
-        
+
+   static public void enablePasswordChecks(boolean check) {
+       CHECK_PASSWORDS = check;
+   }
+
    static public void setPasswordEncoding(String encoding) {
       if (encoding != null) {
          LOG.equals("Setting password encoding to "+encoding);
