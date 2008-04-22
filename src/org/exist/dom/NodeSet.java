@@ -22,14 +22,14 @@
  */
 package org.exist.dom;
 
-import java.util.Iterator;
-
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.NodeList;
+
+import java.util.Iterator;
 
 /**
  * @author wolf
@@ -248,12 +248,12 @@ public interface NodeSet extends Sequence, NodeList {
      * Optimized method to select attributes. Use this if the context has just one or
      * two nodes. Attributes will be directly looked up in the persistent DOM store.
      *  
-     * @param qname the QName of the attribute
+     * @param test a node test
      * @param contextId used to track context nodes when evaluating predicate 
      * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
      * will be added to each result of the of the selection. 
      */
-    public NodeSet directSelectAttribute(QName qname, int contextId);
+    public NodeSet directSelectAttribute(org.exist.xquery.NodeTest test, int contextId);
     
 	/**
 	 * If all nodes in this set have an index, returns the common

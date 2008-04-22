@@ -298,7 +298,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return NodeSetHelper.selectFollowingSiblings(this, siblings, contextId);
     }
 
-    public NodeSet directSelectAttribute(QName qname, int contextId) {
+    public NodeSet directSelectAttribute(org.exist.xquery.NodeTest qname, int contextId) {
         return NodeSetHelper.directSelectAttributes(this, qname, contextId);
     }
 

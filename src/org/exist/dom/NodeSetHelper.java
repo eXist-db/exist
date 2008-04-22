@@ -21,8 +21,6 @@
  */
 package org.exist.dom;
 
-import java.util.Iterator;
-
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
@@ -33,6 +31,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+
+import java.util.Iterator;
 
 /**
  * Collection of static methods operating on node sets.
@@ -538,14 +538,14 @@ public class NodeSetHelper {
     }
 
     public static NodeSet directSelectAttributes(NodeSet candidates,
-                                                 QName qname, int contextId) {
+                                                 org.exist.xquery.NodeTest test, int contextId) {
         if (candidates.isEmpty())
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
         for (Iterator iCandidates = candidates.iterator(); iCandidates
                  .hasNext();) {
             NodeProxy candidate = (NodeProxy) iCandidates.next();
-            result.addAll(candidate.directSelectAttribute(qname, contextId));
+            result.addAll(candidate.directSelectAttribute(test, contextId));
         }
         return result;
     }
