@@ -21,10 +21,7 @@
  */
 package org.exist.scheduler;
 
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Properties;
-
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -43,12 +40,13 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.StringValue;
-
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Properties;
 
 /**
  * Class to represent a User's XQuery Job
@@ -148,7 +146,16 @@ public class UserXQueryJob extends UserJob
 		        context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(resource.getCollection().getURI()).toString());
 		        context.setStaticallyKnownDocuments( new XmldbURI[] { resource.getCollection().getURI() } );
 		        
-		        //declare any parameters as external variables
+		        if(compiled == null) {
+		            try {
+		                compiled = xquery.compile(context, source);
+		            }
+		            catch(IOException e) {
+		                abort("Failed to read query from " + resource.getURI());
+		            }
+		        }
+
+                //declare any parameters as external variables
 				if( params != null ) {
 			        String bindingPrefix = params.getProperty("bindingPrefix");
 			        if( bindingPrefix == null ) {
@@ -161,17 +168,8 @@ public class UserXQueryJob extends UserJob
 			        	context.declareVariable(bindingPrefix + ":" + name, new StringValue(value));
 			        }
 				}
-		        
-		        if(compiled == null) {
-		            try {
-		                compiled = xquery.compile(context, source);
-		            }
-		            catch(IOException e) {
-		                abort("Failed to read query from " + resource.getURI());
-		            }
-		        }
-		        
-		        try {
+
+                try {
 		            xquery.execute(compiled, null);
 		        }
 		        finally {
