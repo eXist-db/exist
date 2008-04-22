@@ -168,6 +168,10 @@ public class XQueryPool extends Object2ObjectHashMap {
 
     private void timeoutCheck() {
         final long currentTime = System.currentTimeMillis();
+        
+        if (timeoutCheckInterval < 0)
+            return; 
+        
         if (currentTime - lastTimeOutCheck < timeoutCheckInterval)
             return;
 
@@ -179,3 +183,4 @@ public class XQueryPool extends Object2ObjectHashMap {
         }
     }
 }
+

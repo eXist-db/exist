@@ -37,7 +37,8 @@
     $Id$
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="schema/conf.xsd">
 
     <!-- 
         Configures the cluster configuration
@@ -62,10 +63,9 @@
         - protocol:
             defines a protocol stack. Refers the jgroups protocol stack.
    -->
-    <cluster dbaPassword="" dbaUser="admin"
-        exclude="/db/system,/db/system/config"
+    <cluster dbaPassword="" dbaUser="admin" exclude="/db/system,/db/system/config"
         journalDir="webapp/WEB-INF/data/journal"
-        protocol="UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=8;ip_mcast=true;mcast_send_buf_size=800000;mcast_recv_buf_size=150000;ucast_send_buf_size=800000;ucast_recv_buf_size=150000;loopback=true):PING(timeout=2000;num_initial_members=3;up_thread=true;down_thread=true):MERGE2(min_interval=10000;max_interval=20000):FD(shun=true;up_thread=true;down_thread=true;timeout=2500;max_tries=5):VERIFY_SUSPECT(timeout=3000;num_msgs=3;up_thread=true;down_thread=true):pbcast.NAKACK(gc_lag=50;retransmit_timeout=300,600,1200,2400,4800;max_xmit_size=8192;up_thread=true;down_thread=true):UNICAST(timeout=300,600,1200,2400,4800;window_size=100;min_threshold=10;down_thread=true):pbcast.STABLE(desired_avg_gossip=20000;up_thread=true;down_thread=true):FRAG(frag_size=8192;down_thread=true;up_thread=true):pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)" />
+        protocol="UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=8;ip_mcast=true;mcast_send_buf_size=800000;mcast_recv_buf_size=150000;ucast_send_buf_size=800000;ucast_recv_buf_size=150000;loopback=true):PING(timeout=2000;num_initial_members=3;up_thread=true;down_thread=true):MERGE2(min_interval=10000;max_interval=20000):FD(shun=true;up_thread=true;down_thread=true;timeout=2500;max_tries=5):VERIFY_SUSPECT(timeout=3000;num_msgs=3;up_thread=true;down_thread=true):pbcast.NAKACK(gc_lag=50;retransmit_timeout=300,600,1200,2400,4800;max_xmit_size=8192;up_thread=true;down_thread=true):UNICAST(timeout=300,600,1200,2400,4800;window_size=100;min_threshold=10;down_thread=true):pbcast.STABLE(desired_avg_gossip=20000;up_thread=true;down_thread=true):FRAG(frag_size=8192;down_thread=true;up_thread=true):pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)"/>
 
     <!-- 
         Configures the database backend:
@@ -140,8 +140,28 @@
                 defines how long the database instance will wait for running
                 operations to complete before it forces a shutdown.
         -->
-        <pool max="20" min="1" sync-period="120000"
-            wait-before-shutdown="120000" />
+        <pool max="20" min="1" sync-period="120000" wait-before-shutdown="120000"/>
+
+        <!--                                                                     	
+		    Configure the query pool.                                                
+		    - max-stack-size:                                                        
+		        maximum number of queries in the query-pool.                         
+                                                                                     
+		    - size:                                                                  
+		        number of copies of the same query kept in the query-pool.           
+		        Value "-1" effectively disables caching. Queries cannot be shared     
+		        by threads, each thread needs a private copy of a query.             
+                                                                                     
+		    - timeout:                                                               
+		        amount of time that a query will be cached in the query-pool.        
+                                                                                     
+		    - timeout-check-interval:                                                
+		        time between checking for timed out queries. For value "-1"          
+		        the time out is switched off, resulting cached queries to remain     
+		        in the cache forever.                                                
+		-->
+        <!--query-pool max-stack-size="5" size="128" timeout="120000"                
+		            timeout-check-interval="30000"/-->
 
         <!--
             Settings for the journaling and recovery of the database. With 
@@ -192,8 +212,8 @@
                 will increase the risk of an already committed 
                 operation being rolled back after a database crash.
         -->
-        <recovery enabled="yes" group-commit="no"
-            journal-dir="webapp/WEB-INF/data" size="100M" sync-on-commit="no" />
+        <recovery enabled="yes" group-commit="no" journal-dir="webapp/WEB-INF/data" size="100M"
+            sync-on-commit="no"/>
 
         <!-- 
             The <security> element in the <db-connection> node is used to select
@@ -261,7 +281,7 @@
                 milliseconds) that the query can take before it is killed..
             
         -->
-        <watchdog output-size-limit="10000" query-timeout="-1" />
+        <watchdog output-size-limit="10000" query-timeout="-1"/>
 
     </db-connection>
 
@@ -301,20 +321,18 @@
         - track-term-freq:
             not documented.
     -->
-    <indexer caseSensitive="yes" index-depth="5"
-        preserve-whitespace-mixed-content="no" stemming="no"
-        suppress-whitespace="none"
-        tokenizer="org.exist.storage.analysis.SimpleTokenizer"
-        track-term-freq="yes">
+    <indexer caseSensitive="yes" index-depth="5" preserve-whitespace-mixed-content="no"
+        stemming="no" suppress-whitespace="none"
+        tokenizer="org.exist.storage.analysis.SimpleTokenizer" track-term-freq="yes">
 
         <modules>
-            <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
-                file="ngram.dbx" n="3"/>
+            <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex" file="ngram.dbx"
+                n="3"/>
             <!--
             <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
                 connectionTimeout="10000" flushAfter="300" />            
             -->
-			<!-- The full text index is always required and should
+            <!-- The full text index is always required and should
 				 not be disabled. We still have some dependencies on
                  this index in the database core. These will be removed
                  once the redesign has been completed. -->
@@ -325,7 +343,7 @@
             The file for this element points to a file containing a list of 
             stopwords. Note that stopwords are NOT added to the fullext index.
         -->
-        <stopwords file="stopword" />
+        <stopwords file="stopword"/>
 
         <!--
             Default index settings. Default settings apply if there's no 
@@ -333,37 +351,15 @@
         -->
         <index>
             <fulltext attributes="true" default="all">
-                <exclude path="/auth" />
+                <exclude path="/auth"/>
             </fulltext>
         </index>
     </indexer>
 
     <!--
-        Configure the query pool.
-        - max-stack-size:
-            maximum number of queries in the query-pool.
-
-        - size:
-            number of copies of the same query kept in the query-pool. 
-            Value "-1" effectively disables caching. Queries cannot be shared 
-            by threads, each thread needs a private copy of a query.
-
-        - timeout:
-            amount of time that a query will be cached in the query-pool.
-
-        - timeout-check-interval:
-            time between checking for timed out queries. For value "-1" 
-            the time out is switched off, resulting cached queries to remain 
-            in the cache forever.
-    -->
-    <!--query-pool max-stack-size="5" size="128" timeout="120000" 
-                timeout-check-interval="30000"/--> 
-
-    <!--
         Configures user jobs for the scheduler
     -->
     <scheduler>
-        
         <!-- 
             Job definitions:
             
@@ -375,9 +371,9 @@
 	            these jobs are synchronous.
 	            
 	            system - System jobs require the database to be in a consistent state.
-	            All database operations will be stopped until the method returns or throws
-	            an exception. Any exception will be caught and a warning written to the
-	            log.
+	            All database operations will be stopped until the method returns or 
+	            throws an exception. Any exception will be caught and a warning written to
+	            the log.
 	            
 	            user - User jobs may be scheduled at any time and may be mutually exclusive
 	            or non-exclusive
@@ -414,9 +410,7 @@
             Can be used with a period to define for how many periods a job should be
             executed. If unspecified jobs will repeat for every period indefinitely.
         -->
-        
         <!-- job class="bar.foo.myjob" period="600000" delay="300000" repeat="10" /-->
-        
         <!--
             Run a consistency check on the database. This will detect inconsistencies
             or corruptions in documents or the collection store. The task can also
@@ -445,7 +439,6 @@
             <parameter name="backup" value="no"/>
         </job>
         -->
-
         <!-- Automatically creates a copy of the database .dbx files every 2 minutes
         	Parameters:
         		output-dir:
@@ -454,17 +447,16 @@
         <!--job type="system" class="org.exist.storage.DataBackup" period="120000">
             <parameter name="output-dir" value="backup" />
         </job-->
-        
         <!-- Automatically creates a backup of the database every 6 hours.
 
             Parameters:
                 dir:
                     The directory into which the backup will be written.
                 suffix:
-                    File suffix for the generated backup file or directory. Specify .zip to write the
-                    backup into a .zip. Otherwise, the backup will be written to a plain directory.
-                    The name of the final backup file or directory will be:
-                    prefix + current-date + suffix.
+                    File suffix for the generated backup file or directory. Specify
+                    .zip to write the backup into a .zip. Otherwise, the backup will 
+                    be written to a plain directory. The name of the final backup 
+                    file or directory will be: prefix + current-date + suffix.
                 prefix:
                     File prefix for the generated backup file or directory.
 
@@ -478,7 +470,6 @@
             <parameter name="password" value=""/>
             <parameter name="zip-files-max" value="28"/>
         </job-->
-        
     </scheduler>
 
     <!-- 
@@ -523,9 +514,8 @@
             Set the parameter to "yes" to enable this feature.
 
     -->
-    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
-        enable-xsl="no" indent="yes" match-tagging-attributes="no"
-        match-tagging-elements="no" />
+    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes" enable-xsl="no"
+        indent="yes" match-tagging-attributes="no" match-tagging-elements="no"/>
 
     <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
@@ -545,8 +535,20 @@
             
         For further details see - http://atomic.exist-db.org/wiki/HowTo/XSLT2/
         
+        You can also include attribute child elements, if you wish to pass in attributes 
+        to your particular TransformerFactory as follows:
+        
+            <transformer class="net.sf.saxon.TransformerFactoryImpl">
+                <attribute name="http://saxon.sf.net/feature/version-warning" value="false" type="boolean"/>
+            </transformer>
+            
+        The example above sets Saxon to suppress warnings when executing a XSLT 1.0 stylesheet 
+        with the XLST 2.0 processor. Check the documentation for your selected TransformerFactory 
+        to determine which attributes can be set. Valid types include "boolean", "integer" 
+        and "string".  Anything else will be treated as type "string".
+        
     -->
-    <transformer class="org.apache.xalan.processor.TransformerFactoryImpl" />
+    <transformer class="org.apache.xalan.processor.TransformerFactoryImpl"/>
 
     <!--
         Settings for XML validation
@@ -568,7 +570,7 @@
             "${WEBAPP_HOME}" can be used as magic string. 
         -->
         <entity-resolver>
-            <catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml" />
+            <catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml"/>
         </entity-resolver>
     </validation>
 
@@ -583,35 +585,35 @@
                 work in progress and may lead to incorrect queries. Use at your own
                 risk.
             -  backwardCompatible:
-                Set to "yes" to enable backward compatibility (untyped argument checks for instance) 
+                Set to "yes" to enable backward compatibility (untyped argument checks for instance)
     -->
     <xquery enable-java-binding="no" enable-query-rewriting="yes"  backwardCompatible="no">
         <builtin-modules>
             <!-- Default Modules -->
             <module class="org.exist.xquery.functions.util.UtilModule"
-                uri="http://exist-db.org/xquery/util" />
+                uri="http://exist-db.org/xquery/util"/>
             <module class="org.exist.xquery.functions.transform.TransformModule"
-                uri="http://exist-db.org/xquery/transform" />
+                uri="http://exist-db.org/xquery/transform"/>
             <module class="org.exist.xquery.functions.xmldb.XMLDBModule"
-                uri="http://exist-db.org/xquery/xmldb" />
+                uri="http://exist-db.org/xquery/xmldb"/>
             <module class="org.exist.xquery.functions.request.RequestModule"
-                uri="http://exist-db.org/xquery/request" />
+                uri="http://exist-db.org/xquery/request"/>
             <module class="org.exist.xquery.functions.response.ResponseModule"
-                uri="http://exist-db.org/xquery/response" />
+                uri="http://exist-db.org/xquery/response"/>
             <module class="org.exist.xquery.functions.session.SessionModule"
-                uri="http://exist-db.org/xquery/session" />
+                uri="http://exist-db.org/xquery/session"/>
             <module class="org.exist.xquery.functions.text.TextModule"
-                uri="http://exist-db.org/xquery/text" />
+                uri="http://exist-db.org/xquery/text"/>
             <module class="org.exist.xquery.modules.example.ExampleModule"
-                uri="http://exist-db.org/xquery/examples" />
+                uri="http://exist-db.org/xquery/examples"/>
             <module class="org.exist.xquery.functions.validation.ValidationModule"
-                uri="http://exist-db.org/xquery/validation" />
+                uri="http://exist-db.org/xquery/validation"/>
             <module class="org.exist.xquery.functions.system.SystemModule"
-                uri="http://exist-db.org/xquery/system" />
+                uri="http://exist-db.org/xquery/system"/>
 
             <!-- New Modularized Indexes -->
             <module class="org.exist.xquery.modules.ngram.NGramModule"
-                uri="http://exist-db.org/xquery/ngram" />
+                uri="http://exist-db.org/xquery/ngram"/>
             <!--
             <module class="org.exist.xquery.modules.spatial.SpatialModule"
                 uri="http://exist-db.org/xquery/spatial" />
