@@ -33,6 +33,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.Value;
+import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.xmldb.XmldbURI;
@@ -62,9 +63,11 @@ public class ConsistencyCheck {
     }
 
     private DBBroker broker;
+    private int defaultIndexDepth;
 
     public ConsistencyCheck(DBBroker broker) {
         this.broker = broker;
+        this.defaultIndexDepth = ((NativeBroker) broker).getDefaultIndexDepth();
     }
 
     /**
@@ -180,7 +183,8 @@ public class ConsistencyCheck {
      * @param doc the document to check
      * @return null if the document is consistent, an error report otherwise.
      */
-    public org.exist.backup.ErrorReport.ResourceError checkXMLTree(DocumentImpl doc) {
+    public org.exist.backup.ErrorReport checkXMLTree(DocumentImpl doc) {
+        DOMFile domDb = ((NativeBroker)doc.getBroker()).getDOMFile();
         try {
             ElementImpl root = (ElementImpl) doc.getDocumentElement();
             EmbeddedXMLStreamReader reader = doc.getBroker().getXMLStreamReader(root, true);
@@ -224,6 +228,22 @@ public class ConsistencyCheck {
                                     lastElem.elem.getChildCount() + " but found " + lastElem.childCount);
                         break;
                     case XMLStreamReader.START_ELEMENT :
+                        if (nodeId.getTreeLevel() <= defaultIndexDepth) {
+                            // check dom.dbx btree, which maps the node id to the node's storage address
+                            // look up the node id and check if the returned storage address is correct
+                            NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), nodeId);
+                            try {
+                                long p = domDb.findValue(nodeRef);
+                                if (p != reader.getCurrentPosition())
+                                    return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node " + nodeId +
+                                            " through dom.dbx index.", doc.getDocId());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node " + nodeId +
+                                        " through dom.dbx index.", e, doc.getDocId());
+                            }
+                        }
+                        
                         StoredNode node = reader.getNode();
                         if (node.getNodeType() != Node.ELEMENT_NODE)
                             return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_TYPE,
@@ -251,8 +271,10 @@ public class ConsistencyCheck {
             }
             return null;
         } catch (IOException e) {
+            e.printStackTrace();
             return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
         } catch (XMLStreamException e) {
+            e.printStackTrace();
             return new ErrorReport.ResourceError(org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
         } finally {
             elementStack.clear();
@@ -290,9 +312,10 @@ public class ConsistencyCheck {
                     if (progress != null)
                         progress.startDocument(doc.getFileURI().toString());
                     if (type == DocumentImpl.XML_FILE) {
-                        ErrorReport.ResourceError report = checkXMLTree(doc);
+                        ErrorReport report = checkXMLTree(doc);
                         if (report != null) {
-                            report.setDocumentId(docId);
+                            if (report instanceof ErrorReport.ResourceError)
+                                ((ErrorReport.ResourceError)report).setDocumentId(docId);
                             if (errors != null)
                                 errors.add(report);
                             if (progress != null)
@@ -301,6 +324,7 @@ public class ConsistencyCheck {
                     }
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 org.exist.backup.ErrorReport.ResourceError error =
                         new org.exist.backup.ErrorReport.ResourceError(org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
                 error.setDocumentId(docId);

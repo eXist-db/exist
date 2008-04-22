@@ -26,11 +26,19 @@ import org.exist.management.Agent;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 
-import javax.management.*;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import java.util.ArrayList;
-import java.util.Stack;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * Real implementation of interface {@link org.exist.management.Agent}
@@ -50,6 +58,7 @@ public class JMXAgent implements Agent {
 
     private MBeanServer server;
     private Map registeredMBeans = new HashMap();
+    private Map beanInstances = new HashMap();
     
     public JMXAgent() {
         if (LOG.isDebugEnabled())
@@ -86,6 +95,8 @@ public class JMXAgent implements Agent {
         try {
             addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=Database",
                     new org.exist.management.impl.Database(instance));
+            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ".tasks:type=SanityReport",
+                    new SanityReport(instance));
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Exception while registering database mbean.", e);
         }
@@ -97,7 +108,8 @@ public class JMXAgent implements Agent {
             while (!stack.isEmpty()) {
                 ObjectName on = (ObjectName) stack.pop();
                 LOG.debug("deregistering JMX MBean: " + on);
-                server.unregisterMBean(on);
+                if (server.isRegistered(on))
+                    server.unregisterMBean(on);
             }
         } catch (InstanceNotFoundException e) {
             LOG.warn("Problem found while unregistering JMX", e);
@@ -118,6 +130,7 @@ public class JMXAgent implements Agent {
                 }
                 stack.push(on);
             }
+            beanInstances.put(on, mbean);
         } catch (MalformedObjectNameException e) {
             LOG.warn("Problem registering mbean: " + e.getMessage(), e);
             throw new DatabaseConfigurationException("Exception while registering JMX mbean: " + e.getMessage());
@@ -137,6 +150,16 @@ public class JMXAgent implements Agent {
         } catch (NotCompliantMBeanException e) {
             LOG.warn("Problem registering mbean: " + e.getMessage(), e);
             throw new DatabaseConfigurationException("Exception while registering JMX mbean: " + e.getMessage());
+        }
+    }
+
+    public synchronized void updateErrors(BrokerPool instance, List errorList, long startTime) {
+        try {
+            ObjectName name = new ObjectName("org.exist.management." + instance.getId() + ".tasks:type=SanityReport");
+            SanityReport report = (SanityReport) beanInstances.get(name);
+            report.updateErrors(errorList, startTime);
+        } catch (MalformedObjectNameException e) {
+            LOG.warn("Problem calling mbean: " + e.getMessage(), e);
         }
     }
 }

@@ -92,7 +92,7 @@ public class SystemExport {
 
     private final static Logger LOG = Logger.getLogger(SystemExport.class);
 
-    private final static DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    private final static DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmm");
 
     public Properties defaultOutputProperties = new Properties();
 	{

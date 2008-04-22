@@ -417,6 +417,7 @@ public class ExportGUI extends javax.swing.JFrame {
             };
 
             progress.setIndeterminate(true);
+            messages.setText("");
             displayMessage("Checking collections ...");
             List errors = checker.checkCollectionTree(cb);
             if (errors.size() == 0) {

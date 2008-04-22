@@ -1,16 +1,5 @@
 package org.exist.storage;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.Date;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.Backup;
@@ -18,6 +7,17 @@ import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.XMLDBException;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * BackupSystemTask creates an XML backup of the current database into a directory
@@ -102,7 +102,6 @@ public class BackupSystemTask implements SystemTask {
                 zipFilesMax = new Integer(filesMaxStr).intValue();
             }
             catch (NumberFormatException e) {LOG.debug("zip-files-max property error", e);}
-
     }
 
 
