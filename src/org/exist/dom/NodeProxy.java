@@ -1294,14 +1294,15 @@ public class NodeProxy implements NodeSet, NodeValue, DocumentSet, Comparable {
     /**
      * The method <code>directSelectAttribute</code>
      *
-     * @param qname a <code>QName</code> value
+     * @param test a node test
      * @param contextId an <code>int</code> value
      * @return a <code>NodeSet</code> value
      */
-    public NodeSet directSelectAttribute(QName qname, int contextId) {
+    public NodeSet directSelectAttribute(org.exist.xquery.NodeTest test, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
         try {
+            ExtArrayNodeSet result = null;
             EmbeddedXMLStreamReader reader = doc.getBroker().getXMLStreamReader(this, true);
             int status = reader.next();
             if (status != XMLStreamReader.START_ELEMENT)
@@ -1312,23 +1313,25 @@ public class NodeProxy implements NodeSet, NodeValue, DocumentSet, Comparable {
                 if (status != XMLStreamReader.ATTRIBUTE)
                     break;
                 AttrImpl attr = (AttrImpl) reader.getNode();
-                QName qn = attr.getQName();
-                if (qn.getNamespaceURI().equals(qname.getNamespaceURI()) &&
-                        qn.getLocalName().equals(qname.getLocalName())) {
+                if (test.matches(attr)) {
                     NodeProxy child = new NodeProxy(attr);
                     if (Expression.NO_CONTEXT_ID != contextId)
                         child.addContextNode(contextId, this);
                     else
                         child.copyContext(this);
-                    return child;
+                    if (!test.isWildcardTest())
+                        return child;
+                    if (result == null)
+                        result = new ExtArrayNodeSet();
+                    result.add(child);
                 }
             }
+            return result == null ? NodeSet.EMPTY_SET : result;
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         } catch (XMLStreamException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-        return NodeSet.EMPTY_SET;
     }
 
     public NodeSet directSelectChild(QName qname, int contextId) {
