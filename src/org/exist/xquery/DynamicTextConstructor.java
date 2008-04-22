@@ -47,6 +47,10 @@ public class DynamicTextConstructor extends NodeConstructor {
         this.content = new Atomize(context, contentExpr);
     }
 
+    public Expression getContent() {
+        return content;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
@@ -127,5 +131,9 @@ public class DynamicTextConstructor extends NodeConstructor {
     public void resetState(boolean postOptimization) {
     	super.resetState(postOptimization);
     	content.resetState(postOptimization);
+    }
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitTextConstructor(this);
     }
 }
