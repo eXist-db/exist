@@ -19,38 +19,49 @@
  *
  * $Id$
  */
-package org.exist.storage.repair;
+package org.exist.backup;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.EXistException;
-import org.exist.backup.SystemExport;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 
+import java.io.File;
 import java.util.List;
 
-public class Main {
+public class ExportMain {
 
     //  command-line options
 	private final static int HELP_OPT = 'h';
     private final static int EXPORT_OPT = 'x';
+    private final static int OUTPUT_DIR_OPT = 'd';
+    private final static int CONFIG_OPT = 'c';
 
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
             HELP_OPT, "print help on command line options and exit." ),
+        new CLOptionDescriptor( "dir", CLOptionDescriptor.ARGUMENT_REQUIRED,
+            OUTPUT_DIR_OPT, "the directory to which all output will be written." ),
+        new CLOptionDescriptor( "config", CLOptionDescriptor.ARGUMENT_REQUIRED,
+            CONFIG_OPT, "the database configuration (conf.xml) file to use " +
+                "for launching the db." ),
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            EXPORT_OPT, "export database contents" )
+            EXPORT_OPT, "export database contents while preserving as much data as possible" )
     };
 
-    protected static BrokerPool startDB() {
+    protected static BrokerPool startDB(String configFile) {
         try {
-            Configuration config = new Configuration();
+            Configuration config;
+            if (configFile == null)
+                config = new Configuration();
+            else
+                config = new Configuration(configFile, null);
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
         } catch (DatabaseConfigurationException e) {
@@ -67,9 +78,9 @@ public class Main {
             System.err.println( "ERROR: " + optParser.getErrorString());
             return;
         }
-        boolean check = true;
         boolean export = false;
         String exportTarget = "export/";
+        String dbConfig = null;
 
         List opt = optParser.getArguments();
         int size = opt.size();
@@ -78,43 +89,54 @@ public class Main {
             option = (CLOption)opt.get(i);
             switch(option.getId()) {
                 case HELP_OPT :
-                    System.out.println("Usage: java " + Main.class.getName() + " [options]");
+                    System.out.println("Usage: java " + ExportMain.class.getName() + " [options]");
                     System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+                    System.exit(0);
+                    break;
+                case OUTPUT_DIR_OPT :
+                    exportTarget = option.getArgument();
+                    break;
+                case CONFIG_OPT :
+                    dbConfig = option.getArgument();
                     break;
                 case EXPORT_OPT :
                     export = true;
-                    check = false;
                     break;
             }
         }
 
-        BrokerPool pool = startDB();
+        BrokerPool pool = startDB(dbConfig);
         if (pool == null) {
             System.exit(1);
         }
+        int retval = 0; // return value
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            if (check) {
-                ConsistencyCheck checker = new ConsistencyCheck(broker);
-                List errors = checker.checkDocuments(null);
-                if (errors != null) {
-                    for (int i = 0; i < errors.size(); i++) {
-                        ErrorReport report = (ErrorReport) errors.get(i);
-                        System.err.println(report.toString());
-                    }
-                }
-            }
+            ConsistencyCheck checker = new ConsistencyCheck(broker);
+            List errors = checker.checkAll(new CheckCallback());
+            if (errors.size() > 0) {
+                System.err.println("ERRORS FOUND.");
+                retval = 1;
+            } else
+                System.out.println("No errors.");
+
             if (export) {
-                SystemExport sysexport = new SystemExport(broker, exportTarget, new Callback());
-                sysexport.export(null);
+                File dir = new File(exportTarget);
+                if (!dir.exists())
+                    dir.mkdirs();
+                File exportFile = SystemExport.getUniqueFile("data", ".zip", dir.getAbsolutePath());
+                SystemExport sysexport = new SystemExport(broker, new Callback());
+                sysexport.export(exportFile.getAbsolutePath(), errors);
             }
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
+            retval = 2;
         } finally {
             pool.release(broker);
             BrokerPool.stopAll(false);
         }
+        System.exit(retval);
     }
 
     private static class Callback implements SystemExport.StatusCallback {
@@ -129,6 +151,19 @@ public class Main {
         public void error(String message, Throwable exception) {
             System.err.println(message);
             exception.printStackTrace();
+        }
+    }
+
+    private static class CheckCallback implements org.exist.backup.ConsistencyCheck.ProgressCallback {
+
+        public void startDocument(String path) {
+        }
+
+        public void startCollection(String path) {
+        }
+
+        public void error(ErrorReport error) {
+            System.out.println(error.toString());
         }
     }
 }

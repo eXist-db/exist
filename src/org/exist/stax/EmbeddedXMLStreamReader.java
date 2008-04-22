@@ -21,16 +21,6 @@
  */
 package org.exist.stax;
 
-import java.io.IOException;
-import java.util.NoSuchElementException;
-import java.util.Stack;
-
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CharacterDataImpl;
 import org.exist.dom.DocumentImpl;
@@ -46,6 +36,17 @@ import org.exist.util.XMLString;
 import org.exist.util.serializer.AttrList;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
+
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Stack;
 
 /**
  * Lazy implementation of a StAX {@link javax.xml.stream.XMLStreamReader}, which directly reads
@@ -75,6 +76,9 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
 
     private XMLString text = new XMLString(256);
 
+    private List namespaces = new ArrayList(6);
+    private boolean nsRead = false;
+    
     private AttrList attributes = null;
 
     private boolean reportAttribs = false;
@@ -219,6 +223,10 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         qname = null;
         attributes = null;
         text.reuse();
+        if (state != END_ELEMENT) {
+            namespaces.clear();
+            nsRead = false;
+        }
     }
 
     public void require(int i, String string, String string1) throws XMLStreamException {
@@ -341,15 +349,24 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
 
     public int getNamespaceCount() {
-        throw new UnsupportedOperationException();
+        readNamespaceDecls();
+        return namespaces.size();
     }
 
     public String getNamespacePrefix(int i) {
-        throw new UnsupportedOperationException();
+        readNamespaceDecls();
+        if (i < 0 || i > namespaces.size())
+            return null;
+        String[] decl = (String[]) namespaces.get(i);
+        return decl[0];
     }
 
     public String getNamespaceURI(int i) {
-        throw new UnsupportedOperationException();
+        readNamespaceDecls();
+        if (i < 0 || i > namespaces.size())
+            return null;
+        String[] decl = (String[]) namespaces.get(i);
+        return decl[1];
     }
 
     public NamespaceContext getNamespaceContext() {
@@ -416,6 +433,21 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         return qname;
     }
 
+    /**
+     * Read all namespace declarations defined on the current element.
+     * Cache them in the namespaces map.
+     */
+    private void readNamespaceDecls() {
+        if (nsRead)
+            return;
+        if (state == START_ELEMENT || state == END_ELEMENT) {
+            if (nodeId == null)
+                readNodeId();
+            ElementImpl.readNamespaceDecls(namespaces, current, document, nodeId);
+        }
+        nsRead = true;
+    }
+    
     public String getPrefix() {
         return getName().getPrefix();
     }

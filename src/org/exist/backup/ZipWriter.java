@@ -47,7 +47,10 @@ public class ZipWriter implements BackupWriter {
     }
 
     public void newCollection(String name) {
-        currentPath = currentPath + '/' + name;
+        if (name.startsWith("/"))
+            currentPath = name;
+        else
+            currentPath = currentPath + '/' + name;
     }
 
     public void closeCollection() {
