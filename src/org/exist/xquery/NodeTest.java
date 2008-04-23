@@ -25,6 +25,8 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.w3c.dom.Node;
 
+import javax.xml.stream.XMLStreamReader;
+
 /**
  * The interface <code>NodeTest</code>
  *
@@ -60,6 +62,8 @@ public interface NodeTest {
      * @return a <code>boolean</code> value
      */
     public boolean matches(Node node);
+
+    public boolean matches(XMLStreamReader reader);
     
     /**
      * The method <code>isWildcardTest</code>
