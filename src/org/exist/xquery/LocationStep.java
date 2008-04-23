@@ -454,15 +454,6 @@ public class LocationStep extends Step {
      * @return a <code>NodeSet</code> value
      */
     protected NodeSet getAttributes(XQueryContext context, NodeSet contextSet) {
-        if (test.isWildcardTest()) {
-            NodeSet result = new VirtualNodeSet(axis, test, contextId,
-                                                contextSet);
-            ((VirtualNodeSet) result)
-                .setInPredicate(Expression.NO_CONTEXT_ID != contextId);
-            return result;
-            // if there's just a single known node in the context, it is faster
-            // do directly search for the attribute in the parent node.
-        }
         boolean selectDirect = false;
         if (useDirectAttrSelect && axis == Constants.ATTRIBUTE_AXIS) {
             if (contextSet instanceof VirtualNodeSet)
@@ -478,10 +469,15 @@ public class LocationStep extends Step {
             if (contextSet.isEmpty())
             	return NodeSet.EMPTY_SET;
             NodeProxy proxy = contextSet.get(0);
-            if (proxy != null
-                && proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                return contextSet.directSelectAttribute(test.getName(),
-                                                        contextId);
+            if (proxy != null)
+                return contextSet.directSelectAttribute(test, contextId);
+        }
+        if (test.isWildcardTest()) {
+            NodeSet result = new VirtualNodeSet(axis, test, contextId, contextSet);
+            ((VirtualNodeSet) result).setInPredicate(Expression.NO_CONTEXT_ID != contextId);
+            return result;
+            // if there's just a single known node in the context, it is faster
+            // do directly search for the attribute in the parent node.
         }
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
@@ -552,7 +548,14 @@ public class LocationStep extends Step {
                                                      contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
-        } else if (useDirectChildSelect) {
+        }
+
+//        IndexStatistics stats = (IndexStatistics) context.getBroker().getBrokerPool().
+//            getIndexManager().getIndexById(IndexStatistics.ID);
+//        int parentDepth = stats.getMaxParentDepth(test.getName());
+//        LOG.debug("parentDepth for " + test.getName() + ": " + parentDepth);
+
+        if (useDirectChildSelect) {
             ExtArrayNodeSet result = new ExtArrayNodeSet();
             for (Iterator i = contextSet.iterator(); i.hasNext(); ) {
                 NodeProxy p = (NodeProxy) i.next();
