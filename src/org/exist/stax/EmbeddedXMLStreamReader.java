@@ -134,6 +134,10 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         iterator.seek(proxy);
     }
 
+    public short getNodeType() {
+        return Signatures.getType(current.data()[current.start()]);
+    }
+    
     private void initNode() {
         final short type = Signatures.getType(current.data()[current.start()]);
         switch (type) {
@@ -431,6 +435,15 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
             qname = ElementImpl.readQName(current, document, nodeId).toJavaQName();
         }
         return qname;
+    }
+
+    public org.exist.dom.QName getQName() {
+        if (state == START_ELEMENT || state == END_ELEMENT) {
+            if (nodeId == null)
+                readNodeId();
+            return ElementImpl.readQName(current, document, nodeId);
+        }
+        return null;
     }
 
     /**
