@@ -204,10 +204,6 @@
 
             <synopsis>java -jar WEB-INF/lib/start.jar client -ls</synopsis>
 
-            <important>
-                <para>It is currently not possible to run more than one instance of the eXist
-                    database in one servlet container.</para>
-            </important>
         </section>
 
         <section>
