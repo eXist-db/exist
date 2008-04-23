@@ -27,6 +27,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
+import javax.xml.stream.XMLStreamReader;
+
 /**
  * The class <code>AnyNodeTest</code>
  *
@@ -71,10 +73,12 @@ public class AnyNodeTest implements NodeTest {
 		} else {
 		    return type != Node.ATTRIBUTE_NODE;
 		}
-
-
 	}
-    
+
+    public boolean matches(XMLStreamReader reader) {
+        return reader.getEventType() != XMLStreamReader.ATTRIBUTE;
+    }
+
     public void dump(ExpressionDumper dumper) {
         if(dumper.verbosity() > 1) {            
             dumper.display("node()"); 

@@ -21,9 +21,8 @@
  */
 package org.exist.dom;
 
-import java.util.Iterator;
-
 import org.exist.numbering.NodeId;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
@@ -33,6 +32,11 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * This node set is called virtual because it is just a placeholder for
@@ -320,12 +324,11 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
 
                 // Add root node if axis is either self, ancestor-self or descendant-self /ljo
-                if (test.matches(proxy)) {
-                    if (axis == Constants.SELF_AXIS ||
-                        axis == Constants.ANCESTOR_SELF_AXIS || 
-                        axis == Constants.DESCENDANT_SELF_AXIS) {
-                        result.add(proxy);
-                    }
+                if ((axis == Constants.SELF_AXIS ||
+                    axis == Constants.ANCESTOR_SELF_AXIS || 
+                    axis == Constants.DESCENDANT_SELF_AXIS) &&
+                    test.matches(proxy)) {
+                    result.add(proxy);
                 }
                 NodeList cl = proxy.getDocument().getChildNodes();
                 for (int j = 0; j < cl.getLength(); j++) {
@@ -370,15 +373,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
                 continue;
             } else {
-                if(test.matches(proxy)) {
-                    if (axis == Constants.SELF_AXIS ||
-                        axis == Constants.ANCESTOR_SELF_AXIS || 
-                        axis == Constants.DESCENDANT_SELF_AXIS) {
+                if((axis == Constants.SELF_AXIS ||
+                    axis == Constants.ANCESTOR_SELF_AXIS ||
+                    axis == Constants.DESCENDANT_SELF_AXIS) &&
+                    test.matches(proxy)) {
                         if(useSelfAsContext && inPredicate) {
                             proxy.addContextNode(contextId, proxy);
                         }
                         result.add(proxy);
-                    }
                 }
                 if (test.getType() == Type.PROCESSING_INSTRUCTION ||
                     test.getType() == Type.COMMENT ||
@@ -412,11 +414,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
                 if (axis != Constants.SELF_AXIS) {
                     //TODO : is this StroredNode construction necessary ?
-                    Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(new StoredNode(proxy));
-                    StoredNode node = (StoredNode) domIter.next();
-                    node.setOwnerDocument(proxy.getDocument());
-                    node.setNodeId(proxy.getNodeId());
-                    addChildren(proxy, result, node, domIter, 0);
+//                    Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(new StoredNode(proxy));
+//                    StoredNode node = (StoredNode) domIter.next();
+//                    node.setOwnerDocument(proxy.getDocument());
+//                    node.setNodeId(proxy.getNodeId());
+//                    addChildren(proxy, result, node, domIter, 0);
+                    addChildren(proxy,result);
                 }
             }
         }
@@ -432,7 +435,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param iter an <code>Iterator</code> value
      * @param recursions an <code>int</code> value
      */
-    private final void addChildren(NodeProxy contextNode, NodeSet result,
+    private void addChildren(NodeProxy contextNode, NodeSet result,
                                    StoredNode node, Iterator iter,
                                    int recursions) {
         if (node.hasChildNodes()) {
@@ -464,6 +467,48 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
                 addChildren(contextNode, result, child, iter, recursions + 1);
             }
+        }
+    }
+
+    private void addChildren(NodeProxy contextNode, NodeSet result) {
+        try {
+            EmbeddedXMLStreamReader reader = contextNode.getDocument().getBroker().getXMLStreamReader(contextNode, true);
+            int status = reader.next();
+            int level = 0;
+            if (status == XMLStreamReader.START_ELEMENT) {
+                while (reader.hasNext()) {
+                    status = reader.next();
+                    if (axis == Constants.ATTRIBUTE_AXIS && status != XMLStreamReader.ATTRIBUTE)
+                        break;
+                    if (status == XMLStreamReader.END_ELEMENT) {
+                        if (--level < 0)
+                            break;
+                    } else if (test.matches(reader)) {
+                        if (((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS)
+                            && level == 0) ||
+                            (axis == Constants.DESCENDANT_AXIS ||
+                            axis == Constants.DESCENDANT_SELF_AXIS) ||
+                            axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                            NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                            NodeProxy p = new NodeProxy(contextNode.getDocument(), nodeId,
+                                    reader.getNodeType(), reader.getCurrentPosition());
+                            p.deepCopyContext(contextNode);
+                            if (useSelfAsContext && inPredicate) {
+                                p.addContextNode(contextId, p);
+                            } else if (inPredicate) {
+                                p.addContextNode(contextId, contextNode);
+                            }
+                            result.add(p);
+                        }
+                    }
+                    if (status == XMLStreamReader.START_ELEMENT)
+                        ++level;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
         }
     }
 

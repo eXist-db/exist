@@ -8,6 +8,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
+import javax.xml.stream.XMLStreamReader;
+
 public class NameTest extends TypeTest {
 
 	protected final QName nodeName;
@@ -45,8 +47,8 @@ public class NameTest extends TypeTest {
 			return false;
 		return matchesName(other);
 	}
-	
-	public boolean matchesName(Node other) {
+
+    public boolean matchesName(Node other) {
         if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
             return matchesName(((ReferenceNode)other).getReference().getNode());
         if (nodeName.getNamespaceURI() != null) {
@@ -58,8 +60,21 @@ public class NameTest extends TypeTest {
 		}
 		return true;
 	}
-	
-	/* (non-Javadoc)
+
+    public boolean matches(XMLStreamReader reader) {
+        if (!isOfEventType(reader.getEventType()))
+            return false;
+        if (nodeName.getNamespaceURI() != null) {
+            if (!nodeName.getNamespaceURI().equals(reader.getNamespaceURI()))
+                return false;
+        }
+        if (nodeName.getLocalName() != null) {
+			return nodeName.getLocalName().equals(reader.getLocalName());
+		}
+		return true;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.NodeTest#isWildcardTest()
 	 */
 	public boolean isWildcardTest() {
