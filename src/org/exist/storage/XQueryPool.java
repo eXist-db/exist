@@ -49,9 +49,9 @@ public class XQueryPool extends Object2ObjectHashMap {
     
     public final static int MAX_STACK_SIZE = 5;
 
-    public final static long TIMEOUT = 120000;
+    public final static long TIMEOUT = 120000L;
 
-    public final static long TIMEOUT_CHECK_INTERVAL = 30000;
+    public final static long TIMEOUT_CHECK_INTERVAL = 30000L;
 
     private final static Logger LOG = Logger.getLogger(XQueryPool.class);
 
@@ -169,7 +169,7 @@ public class XQueryPool extends Object2ObjectHashMap {
     private void timeoutCheck() {
         final long currentTime = System.currentTimeMillis();
         
-        if (timeoutCheckInterval < 0)
+        if (timeoutCheckInterval < 0L)
             return; 
         
         if (currentTime - lastTimeOutCheck < timeoutCheckInterval)
