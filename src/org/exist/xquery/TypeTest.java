@@ -26,6 +26,8 @@ import org.exist.dom.QName;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
+import javax.xml.stream.XMLStreamReader;
+
 /**
  * Tests if a node is of a given node type.
  * 
@@ -76,6 +78,32 @@ public class TypeTest implements NodeTest {
         return (type == domType);
     }
 
+    protected boolean isOfEventType(int type) {
+        if (nodeType == Type.NODE)
+            return true;
+        int xpathType;
+        switch (type) {
+            case XMLStreamReader.START_ELEMENT :
+                xpathType = Type.ELEMENT;
+                break;
+            case XMLStreamReader.ATTRIBUTE :
+                xpathType = Type.ATTRIBUTE;
+                break;
+            case XMLStreamReader.CHARACTERS :
+                xpathType = Type.TEXT;
+                break;
+            case XMLStreamReader.COMMENT :
+                xpathType = Type.COMMENT;
+                break;
+            case XMLStreamReader.PROCESSING_INSTRUCTION :
+                xpathType = Type.PROCESSING_INSTRUCTION;
+                break;
+            default:
+                return false;
+        }
+        return xpathType == nodeType;
+    }
+
     public String toString() {
         return nodeType == Type.NODE ? "node()" : Type.NODETYPES[nodeType] + "()";
     }
@@ -100,6 +128,10 @@ public class TypeTest implements NodeTest {
         if(other == null)
             return false;
         return isOfType(other.getNodeType());
+    }
+
+    public boolean matches(XMLStreamReader reader) {
+        return isOfEventType(reader.getEventType());
     }
 
     /* (non-Javadoc)
