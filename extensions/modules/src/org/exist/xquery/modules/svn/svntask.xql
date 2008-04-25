@@ -35,19 +35,25 @@ declare variable $svnu:PASS := "anonymous";
 declare function svnu:update() {
     let $log := /log[@uri = $svnu:uri][@start = $svnu:startRevision]
     return
-        if ($log) then
-            let $lastRev := max(for $rev in $log/entry/@rev return xs:integer($rev))
-            let $updated := svn:log(xs:anyURI($svnu:uri), $svnu:USER, $svnu:PASS, $lastRev + 1, ())
-            let $l := util:log("DEBUG", $updated)
-            return
-                update insert $updated/entry into $log
-        else
-            let $all := 
-                svn:log(xs:anyURI($svnu:uri), $svnu:USER, $svnu:PASS, 
-                    xs:integer($svnu:startRevision), 7250)
-            let $l := util:log("DEBUG", $all)
-            return
-                xdb:store($svnu:collection, (), $all)
+        util:catch("java.lang.Exception",
+            if ($log) then
+                let $lastRev := max(for $rev in $log/entry/@rev return xs:integer($rev))
+                let $updated := svn:log(xs:anyURI($svnu:uri), $svnu:USER, $svnu:PASS, $lastRev, ())
+                let $entries := $updated/entry[@rev != $lastRev]
+                return
+                    if (count($entries) gt 0) then
+                        update insert $entries into $log
+                    else
+                        ()
+            else
+                let $all := 
+                    svn:log(xs:anyURI($svnu:uri), $svnu:USER, $svnu:PASS, 
+                        xs:integer($svnu:startRevision), 7250)
+                let $l := util:log("DEBUG", $all)
+                return
+                    xdb:store($svnu:collection, (), $all),
+            ()
+        )
 };
 
 xdb:login($svnu:collection, "admin", $svnu:PASS),
