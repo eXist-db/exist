@@ -2950,14 +2950,13 @@ public class XQueryTest extends XMLTestCase {
     
     
     // http://sourceforge.net/support/tracker.php?aid=1938498 
-    public void testMemproc_1938498() {
+    public void bugtestMemproc_1938498() {
 
         try {
-            String xmldocument="<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                    +"<Root>\n\t<Child/>\n</Root>";
-            String location="/db/1938498.xml";
+            String xmldocument="<Root><Child/></Root>";
+            String location="1938498.xml";
             String query=
-                    "let $test := doc(\"/db/1938498.xml\")" 
+                    "let $test := doc(\"1938498.xml\")" 
                     + "let $inmems := <InMem>{$test}</InMem>" 
                     + "return <Test>{$inmems/X}</Test>";
             String output="<Test/>";
