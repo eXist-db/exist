@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 
 public class ProfilePragma extends Pragma {
 
-    public  final static QName PROFILIE_PRAGMA = new QName("profiling", Namespaces.EXIST_NS, "exist");
+    public final static QName PROFILING_PRAGMA = new QName("profiling", Namespaces.EXIST_NS, "exist");
     
     public ProfilePragma(QName qname, String contents) throws XPathException {
         super(qname, contents);
