@@ -2974,6 +2974,33 @@ public class XQueryTest extends XMLTestCase {
         }
     }
     
+    
+    public void bugtestCCE_SaxException() {
+
+        try {
+            String xmldocument="<a><b><c>mmm</c></b></a>";
+            String location="ccesax.xml";
+            String query=
+                    "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "
+                    +"declare option exist:serialize 'indent=no';" 
+                    +"let $results := doc(\"ccesax.xml\")/element() "
+                    +"let $output := let $body := <e>{$results/b/c}</e>   return <d>{$body}</d> "
+                    +"let $id := $output/e/c return xmldb:store(\"/db\", \"output.xml\", $output)";
+            String output="<d><b><c>mmm</c></b></d>";
+
+            XPathQueryService service=
+                    storeXMLStringAndGetQueryService(location, xmldocument);
+
+            ResourceSet result=service.query(query);
+            assertEquals("XQuery: " + query, 1, result.getSize());
+            assertEquals("XQuery: " + query, output,
+                    result.getResource(0).getContent().toString());
+            
+        } catch(XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
+    
 
     // ======================================
     
