@@ -21,6 +21,13 @@
 
 package org.exist.http.servlets;
 
+import org.exist.util.MimeType;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,14 +43,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Vector;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import org.exist.util.MimeType;
 
 /** A wrapper for HttpServletRequest
  * - differentiates between POST parameters in the URL or Content Body
@@ -600,8 +599,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	 */
 	public ServletInputStream getInputStream() throws IOException
 	{
-		return request.getInputStream();
-	}
+        return request.getInputStream();
+    }
 
 //	public InputStream getStringBufferInputStream() throws IOException {
 //		return new StringBufferInputStream( contentBodyAsString );
