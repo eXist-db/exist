@@ -231,14 +231,14 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 			return NodeSet.EMPTY_SET;
 		*/
 		throw new XPathException(
-			"cannot convert value of type "
-				+ Type.getTypeName(getType())
-				+ " to a node set");
+				"cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue() + "')"
+					+ " to a node set");
 	}
 
     public MemoryNodeSet toMemNodeSet() throws XPathException {
-        throw new XPathException("cannot convert value of type " + Type.getTypeName(getType())
-				+ " to a node set");
+		throw new XPathException(
+				"cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue() + "')"
+					+ " to a node set");
     }
 
     /* (non-Javadoc)
