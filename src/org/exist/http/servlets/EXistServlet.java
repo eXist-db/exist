@@ -21,19 +21,6 @@
  */
 package org.exist.http.servlets;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.Principal;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -56,6 +43,18 @@ import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.Principal;
 
 /**
  * Implements the REST-style interface if eXist is running within
@@ -156,7 +155,7 @@ public class EXistServlet extends HttpServlet {
 			useDynamicContentType = "no";
 		
 		//Instantiate REST Server
-		srvREST = new RESTServer(formEncoding, containerEncoding, 
+		srvREST = new RESTServer(pool, formEncoding, containerEncoding, 
 				useDynamicContentType.equalsIgnoreCase("yes") ||
 				useDynamicContentType.equalsIgnoreCase("true"));
                 

@@ -22,31 +22,6 @@
  */
 package org.exist.storage.serializers;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TemplatesHandler;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.DocumentImpl;
@@ -89,6 +64,30 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
 /**
  * Serializer base class, used to serialize a document or document fragment 
  * back to XML. A serializer may be obtained by calling DBBroker.getSerializer().
@@ -125,8 +124,9 @@ public abstract class Serializer implements XMLReader {
 	public static final String PROPERTY_TAG_MATCHING_ELEMENTS = "serialization.match-tagging-elements";
 	public static final String TAG_MATCHING_ATTRIBUTES_ATTRIBUTE = "match-tagging-attributes";
 	public static final String PROPERTY_TAG_MATCHING_ATTRIBUTES = "serialization.match-tagging-attributes";
+    public static final String PROPERTY_SESSION_ID = "serialization.session-id";
 
-	// constants to configure the highlighting of matches in text and attributes
+    // constants to configure the highlighting of matches in text and attributes
 	public final static int TAG_NONE = 0x0;
 	public final static int TAG_ELEMENT_MATCHES = 0x1;
 	public final static int TAG_ATTRIBUTE_MATCHES = 0x2;
@@ -145,7 +145,7 @@ public abstract class Serializer implements XMLReader {
     protected final static QName ATTR_START_QNAME = new QName("start", Namespaces.EXIST_NS, "exist");
     protected final static QName ATTR_COUNT_QNAME = new QName("count", Namespaces.EXIST_NS, "exist");
     protected final static QName ELEM_RESULT_QNAME = new QName("result", Namespaces.EXIST_NS, "exist");
-
+    protected final static QName ATTR_SESSION_ID = new QName("session", Namespaces.EXIST_NS, "exist");
     protected final static QName ATTR_TYPE_QNAME = new QName("type", Namespaces.EXIST_NS, "exist");
     protected final static QName ELEM_VALUE_QNAME = new QName("value", Namespaces.EXIST_NS, "exist");
     protected DBBroker broker;
@@ -800,7 +800,9 @@ public abstract class Serializer implements XMLReader {
 		attrs.addAttribute(ATTR_HITS_QNAME, Integer.toString(seq.getItemCount()));
 		attrs.addAttribute(ATTR_START_QNAME, Integer.toString(start));
 		attrs.addAttribute(ATTR_COUNT_QNAME, Integer.toString(count));
-		
+		if (outputProperties.getProperty(PROPERTY_SESSION_ID) != null) {
+            attrs.addAttribute(ATTR_SESSION_ID, outputProperties.getProperty(PROPERTY_SESSION_ID));
+        }
 		receiver.startDocument();
 		if(wrap) {
 			receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
