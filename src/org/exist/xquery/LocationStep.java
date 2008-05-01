@@ -273,7 +273,7 @@ public class LocationStep extends Step {
             result = cached.getResult();
             if (context.getProfiler().isEnabled()) {
             	LOG.debug("Using cached results");
-            }          	
+            }
             context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                           "Using cached results", result);
 
@@ -333,7 +333,7 @@ public class LocationStep extends Step {
             result = NodeSet.EMPTY_SET;
         }
         // Caches the result
-        if (contextSequence != null && contextSequence.isCacheable()) {
+        if (axis != Constants.SELF_AXIS && contextSequence != null && contextSequence.isCacheable()) {
             // TODO : cache *after* removing duplicates ? -pb
             cached = new CachedResult(contextSequence, contextItem, result);
             registerUpdateListener();
