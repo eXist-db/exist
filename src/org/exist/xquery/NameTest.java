@@ -56,16 +56,26 @@ public class NameTest extends TypeTest {
 	}
 
     public boolean matches(XMLStreamReader reader) {
-        if (!isOfEventType(reader.getEventType()))
+        final int ev = reader.getEventType();
+        if (!isOfEventType(ev))
             return false;
-        if (nodeName.getNamespaceURI() != null) {
-            if (!nodeName.getNamespaceURI().equals(reader.getNamespaceURI()))
-                return false;
+        switch (ev) {
+            case XMLStreamReader.START_ELEMENT :
+                if (nodeName.getNamespaceURI() != null) {
+                    if (!nodeName.getNamespaceURI().equals(reader.getNamespaceURI()))
+                        return false;
+                }
+                if (nodeName.getLocalName() != null) {
+                    return nodeName.getLocalName().equals(reader.getLocalName());
+                }
+                break;
+            case XMLStreamReader.PROCESSING_INSTRUCTION :
+                if (nodeName.getLocalName() != null) {
+                    return nodeName.getLocalName().equals(reader.getPITarget());
+                }
+                break;
         }
-        if (nodeName.getLocalName() != null) {
-			return nodeName.getLocalName().equals(reader.getLocalName());
-		}
-		return true;
+        return true;
     }
 
     /* (non-Javadoc)
