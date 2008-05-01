@@ -21,18 +21,7 @@
  */
 package org.exist.client;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -44,6 +33,18 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 /**
  * Class to represent a collection.xconf which holds the configuration data for a collection
  * 
@@ -52,8 +53,15 @@ import org.xmldb.api.base.XMLDBException;
  * @version 1.2
  */
 public class CollectionXConf
-{	
-	private InteractiveClient client = null;	//the client
+{
+
+    public final static String TYPE_QNAME = "qname";
+    public final static String TYPE_PATH = "path";
+
+    public final static String ACTION_INCLUDE = "include";
+    public final static String ACTION_EXCLUDE = "exclude";
+
+    private InteractiveClient client = null;	//the client
 	private String path = null;				//path of the collection.xconf file
 	Collection collection = null;				//the configuration collection
 	Resource resConfig = null;					//the collection.xconf resource
@@ -61,7 +69,6 @@ public class CollectionXConf
 	private LinkedHashMap customNamespaces = null;		//custom namespaces
 	private FullTextIndex fulltextIndex = null;		//fulltext index model
 	private RangeIndex[] rangeIndexes = null;			//range indexes model
-	private QNameIndex[] qnameIndexes;					//qname indexes model
 	private Trigger[] triggers = null;					//triggers model
 	
 	private boolean hasChanged = false;	//indicates if changes have been made to the current collection configuration
@@ -70,7 +77,7 @@ public class CollectionXConf
 	/**
 	 * Constructor
 	 * 
-	 * @param collectionName	The path of the collection to retreive the collection.xconf for
+	 * @param CollectionName	The path of the collection to retreive the collection.xconf for
 	 * @param client	The interactive client
 	 */
 	CollectionXConf(String CollectionName, InteractiveClient client) throws XMLDBException
@@ -86,7 +93,13 @@ public class CollectionXConf
 			return;
 		
 		//get the resource from the db
-		resConfig = collection.getResource(CollectionConfigurationManager.COLLECTION_CONFIG_FILENAME);
+        String[] resources = collection.listResources();
+        for (int i = 0; i < resources.length; i++) {
+            if (resources[i].endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
+                resConfig = collection.getResource(resources[i]);
+                break;
+            }
+        }
 		
 		if(resConfig == null) //if, no config file exists for that collection
 			return;
@@ -123,9 +136,6 @@ public class CollectionXConf
 		
 		//Read Range Indexes from xconf
 		rangeIndexes = getRangeIndexes(xconf);
-		
-		//Read QName Indexes from xconf
-		qnameIndexes = getQNameIndexes(xconf);
 		
 		//read Triggers from xconf
 		triggers = getTriggers(xconf);
@@ -226,10 +236,14 @@ public class CollectionXConf
 	 */
 	public String getFullTextIndexPath(int index)
 	{
-		return fulltextIndex.getXPath(index);
+		return fulltextIndex.getPath(index);
 	}
-	
-	/**
+
+    public String getFullTextIndexType(int index) {
+        return fulltextIndex.getType(index);
+    }
+
+    /**
 	 * Returns a full text index path action
 	 * 
 	 * @param index	The numeric index of the fulltext index path action to retreive
@@ -264,7 +278,7 @@ public class CollectionXConf
 	 * @param XPath		The XPath to index
 	 * @param action	The action to take on the path, either "include" or "exclude"
 	 */
-	public void addFullTextIndex(String XPath, String action)
+	public void addFullTextIndex(String type, String XPath, String action)
 	{
 		hasChanged = true;
 		
@@ -274,7 +288,7 @@ public class CollectionXConf
 			fulltextIndex = new FullTextIndex(false, false, false, null);
 		}
 		
-		fulltextIndex.addIndex(XPath, action);
+		fulltextIndex.addIndex(type, XPath, action);
 	}
 	
 	/**
@@ -284,12 +298,15 @@ public class CollectionXConf
 	 * @param XPath		The new XPath, or null to just set the action
 	 * @param action	The new action, either "include" or "exclude", or null to just set the XPath
 	 */
-	public void updateFullTextIndex(int index, String XPath, String action)
+	public void updateFullTextIndex(int index, String type, String XPath, String action)
 	{
 		hasChanged = true;
-		
-		if(XPath != null)
-			fulltextIndex.setXPath(index, XPath);
+
+        if (type != null)
+            fulltextIndex.setType(index, type);
+
+        if(XPath != null)
+			fulltextIndex.setPath(index, XPath);
 		
 		if(action != null)
 			fulltextIndex.setAction(index, action);
@@ -388,11 +405,14 @@ public class CollectionXConf
 	 * @param XPath		The new XPath, or null to just set the type
 	 * @param xsType	The new type of the path, a valid xs:type, or just null to set the path
 	 */
-	public void updateRangeIndex(int index, String XPath, String xsType)
+	public void updateRangeIndex(int index, String type, String XPath, String xsType)
 	{
 		hasChanged = true;
-		
-		if(XPath != null)
+
+        if (type != null)
+            rangeIndexes[index].setType(type);
+        
+        if(XPath != null)
 			rangeIndexes[index].setXPath(XPath);
 		
 		if(xsType != null)
@@ -405,137 +425,21 @@ public class CollectionXConf
 	 * @param XPath		The XPath to index
 	 * @param xsType	The type of the path, a valid xs:type
 	 */
-	public void addRangeIndex(String XPath, String xsType)
+	public void addRangeIndex(String type, String XPath, String xsType)
 	{
 		hasChanged = true;
 		
 		if(rangeIndexes == null)
 		{
 			rangeIndexes = new RangeIndex[1];
-			rangeIndexes[0] = new RangeIndex(XPath, xsType);
+			rangeIndexes[0] = new RangeIndex(type, XPath, xsType);
 		}
 		else
 		{
 			RangeIndex newRangeIndexes[] = new RangeIndex[rangeIndexes.length + 1];
 			System.arraycopy(rangeIndexes, 0, newRangeIndexes, 0, rangeIndexes.length);
-			newRangeIndexes[rangeIndexes.length] = new RangeIndex(XPath, xsType);
+			newRangeIndexes[rangeIndexes.length] = new RangeIndex(type, XPath, xsType);
 			rangeIndexes = newRangeIndexes;
-		}
-	}
-	
-	/**
-	 * Returns an array of the QName Indexes
-	 * 
-	 * @return Array of QName Indexes
-	 */
-	public QNameIndex[] getQNameIndexes()
-	{
-		return qnameIndexes;
-	}
-	
-	/**
-	 * Returns a specific QName Index
-	 * 
-	 * @param index	The numeric index of the QName index to return
-	 * 
-	 * @return The QName Index
-	 */
-	public QNameIndex getQNameIndex(int index)
-	{
-		return qnameIndexes[index];
-	}
-	
-	/**
-	 * Returns the number of QName Indexes defined
-	 *  
-	 * @return The number of QName indexes
-	 */
-	public int getQNameIndexCount()
-	{
-		if(qnameIndexes != null)
-		{
-			return qnameIndexes.length;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	
-	/**
-	 * Delete a QName Index
-	 * 
-	 * @param index	The numeric index of the QName Index to delete
-	 */
-	public void deleteQNameIndex(int index)
-	{
-		//can only remove an index which is in the array
-		if(index < qnameIndexes.length)
-		{
-			hasChanged = true;
-			
-			//if its the last item in the array just null the array 
-			if(qnameIndexes.length == 1)
-			{
-				qnameIndexes = null;
-			}
-			else
-			{
-				QNameIndex newQNameIndexes[] = new QNameIndex[qnameIndexes.length - 1];
-				int x = 0;
-				for(int i = 0; i < qnameIndexes.length; i++)
-				{
-					if(i != index)
-					{
-						newQNameIndexes[x] = qnameIndexes[i];
-						x++;
-					}
-				}
-				
-				qnameIndexes = newQNameIndexes;
-			}
-		}
-	}
-	
-	/**
-	 * Update the details of a QName Index
-	 *
-	 * @param index		The numeric index of the qname index to update
-	 * @param QName		The new QName, or null to just set the type
-	 * @param xsType	The new type of the path, a valid xs:type, or just null to set the QName
-	 */
-	public void updateQNameIndex(int index, String QName, String xsType)
-	{
-		hasChanged = true;
-		
-		if(QName != null)
-			qnameIndexes[index].setQName(QName);
-		
-		if(xsType != null)
-			qnameIndexes[index].setxsType(xsType);
-	}
-	
-	/**
-	 * Add a QName Index
-	 *
-	 * @param QName		The QName to index
-	 * @param xsType	The type of the QName, a valid xs:type
-	 */
-	public void addQNameIndex(String QName, String xsType)
-	{
-		hasChanged = true;
-		
-		if(qnameIndexes == null)
-		{
-			qnameIndexes = new QNameIndex[1];
-			qnameIndexes[0] = new QNameIndex(QName, xsType);
-		}
-		else
-		{
-			QNameIndex newQNameIndexes[] = new QNameIndex[qnameIndexes.length + 1];
-			System.arraycopy(qnameIndexes, 0, newQNameIndexes, 0, qnameIndexes.length);
-			newQNameIndexes[qnameIndexes.length] = new QNameIndex(QName, xsType);
-			qnameIndexes = newQNameIndexes;
 		}
 	}
 	
@@ -699,17 +603,18 @@ public class CollectionXConf
 			boolean attributes = false;
 			boolean alphanum = false;
 			FullTextIndexPath[] paths = null;
-			
-			Element elemFullTextIndex = (Element)nlFullTextIndex.item(0);
+
+            Element elemFullTextIndex = (Element)nlFullTextIndex.item(0);
 			defaultAll = elemFullTextIndex.getAttribute("default").equals("all");
 			attributes = elemFullTextIndex.getAttribute("attributes").equals("true");
 			alphanum = elemFullTextIndex.getAttribute("alphanum").equals("true");
 			
 			NodeList nlInclude = elemFullTextIndex.getElementsByTagName("include");
 			NodeList nlExclude = elemFullTextIndex.getElementsByTagName("exclude");
-			
-			int iPaths = nlInclude.getLength() + nlExclude.getLength();
-			
+			NodeList nlQName = elemFullTextIndex.getElementsByTagName("create");
+
+            int iPaths = nlInclude.getLength() + nlExclude.getLength() + nlQName.getLength();
+			int pos = 0;
 			if(iPaths > 0 )
 			{
 				paths = new FullTextIndexPath[iPaths];
@@ -718,7 +623,7 @@ public class CollectionXConf
 				{
 					for(int i = 0; i < nlInclude.getLength(); i++)
 					{
-						paths[i] = new FullTextIndexPath(((Element)nlInclude.item(i)).getAttribute("path"), FullTextIndexPath.ACTION_INCLUDE);
+						paths[pos++] = new FullTextIndexPath(TYPE_PATH, ((Element)nlInclude.item(i)).getAttribute("path"), ACTION_INCLUDE);
 					}
 				}
 				
@@ -726,11 +631,17 @@ public class CollectionXConf
 				{	
 					for(int i = 0; i < nlExclude.getLength(); i++)
 					{
-						paths[i] = new FullTextIndexPath(((Element)nlExclude.item(i)).getAttribute("path"), FullTextIndexPath.ACTION_EXCLUDE);
+						paths[pos++] = new FullTextIndexPath(TYPE_PATH, ((Element)nlExclude.item(i)).getAttribute("path"), ACTION_EXCLUDE);
 					}
 				}
-			}
-			return new FullTextIndex(defaultAll, attributes, alphanum, paths);
+
+                if (nlQName.getLength() > 0) {
+                    for (int i = 0; i < nlQName.getLength(); i++) {
+                        paths[pos++] = new FullTextIndexPath(TYPE_QNAME, ((Element)nlQName.item(i)).getAttribute("qname"), ACTION_EXCLUDE);
+                    }
+                }
+            }
+            return new FullTextIndex(defaultAll, attributes, alphanum, paths);
 			
 		}
 		return null;
@@ -740,55 +651,23 @@ public class CollectionXConf
 	//given the root element of collection.xconf it will return an array of range indexes
 	private RangeIndex[] getRangeIndexes(Element xconf)
 	{
-		ArrayList alRangeIndexes = new ArrayList();
-		
 		NodeList nlRangeIndexes = xconf.getElementsByTagName("create");
-		if(nlRangeIndexes.getLength() > 0)
+        if(nlRangeIndexes.getLength() > 0)
 		{
-			for(int i = 0; i < nlRangeIndexes.getLength(); i++)
+            List rl = new ArrayList();
+            for(int i = 0; i < nlRangeIndexes.getLength(); i++)
 			{	
 				Element rangeIndex = (Element)nlRangeIndexes.item(i);
-				//is it a range index or a qname index
-				if(rangeIndex.getAttribute("path").length() > 0)
-				{
-					alRangeIndexes.add(new RangeIndex(rangeIndex.getAttribute("path"), rangeIndex.getAttribute("type")));
-				}
-			}
-			
-			RangeIndex[] rangeIndexes = new RangeIndex[alRangeIndexes.size()];
-			for(int i=0; i < alRangeIndexes.size(); i++)
-			{
-				rangeIndexes[i] = (RangeIndex)alRangeIndexes.get(i);
-			}
-			return rangeIndexes;
-		}
-		return null;
-	}
-
-	//given the root element of collection.xconf it will return an array of qname indexes
-	private QNameIndex[] getQNameIndexes(Element xconf)
-	{		
-		ArrayList alQNameIndexes = new ArrayList();
-		
-		NodeList nlQNameIndexes = xconf.getElementsByTagName("create");
-		if(nlQNameIndexes.getLength() > 0)
-		{ 
-			for(int i = 0; i < nlQNameIndexes.getLength(); i++)
-			{	
-				Element qnameIndex = (Element)nlQNameIndexes.item(i);
-				//is it a range index or a qname index
-				if(qnameIndex.getAttribute("qname").length() > 0)
-				{
-					alQNameIndexes.add(new QNameIndex(qnameIndex.getAttribute("qname"), qnameIndex.getAttribute("type")));
-				}
-			}
-			
-			QNameIndex[] qnameIndexes = new QNameIndex[alQNameIndexes.size()];
-			for(int i=0; i < alQNameIndexes.size(); i++)
-			{
-				qnameIndexes[i] = (QNameIndex)alQNameIndexes.get(i);
-			}
-			return qnameIndexes;
+                if (rangeIndex.hasAttribute("type")) {
+                    if (rangeIndex.hasAttribute("qname"))
+                        rl.add(new RangeIndex(TYPE_QNAME, rangeIndex.getAttribute("qname"), rangeIndex.getAttribute("type")));
+                    else
+                        rl.add(new RangeIndex(TYPE_PATH, rangeIndex.getAttribute("path"), rangeIndex.getAttribute("type")));
+                }
+            }
+            RangeIndex[] rangeIndexes = new RangeIndex[rl.size()];
+            rangeIndexes = (RangeIndex[]) rl.toArray(rangeIndexes);
+            return rangeIndexes;
 		}
 		return null;
 	}
@@ -858,7 +737,7 @@ public class CollectionXConf
 		xconf.append(System.getProperty("line.separator"));
 		
 		//index
-		if(fulltextIndex != null || rangeIndexes != null || qnameIndexes != null)
+		if(fulltextIndex != null || rangeIndexes != null)
 		{
 			xconf.append('\t');
 			xconf.append("<index>");
@@ -879,17 +758,6 @@ public class CollectionXConf
 				{
 					xconf.append("\t\t\t");
 					xconf.append(rangeIndexes[r].toXMLString());
-					xconf.append(System.getProperty("line.separator"));
-				}
-			}
-			
-			//qname indexes
-			if(qnameIndexes != null)
-			{
-				for(int q = 0; q < qnameIndexes.length; q ++)
-				{
-					xconf.append("\t\t\t");
-					xconf.append(qnameIndexes[q].toXMLString());
 					xconf.append(System.getProperty("line.separator"));
 				}
 			}
@@ -964,38 +832,45 @@ public class CollectionXConf
 	//represents a path in the fulltext index in the collection.xconf
 	protected class FullTextIndexPath
 	{
-		public final static String ACTION_INCLUDE = "include";
-		public final static String ACTION_EXCLUDE = "exclude";
+        private String type = TYPE_QNAME;
+
+        private String path = null;
+        private String action = ACTION_INCLUDE;
 		
-		private String xpath = null;
-		private String action = null;
-		
-		FullTextIndexPath(String xpath, String action)
+		FullTextIndexPath(String type, String path, String action)
 		{
-			this.xpath = xpath;
+            this.type = type;
+            this.path = path;
 			this.action = action;
 		}
 		
 		public String getXPath()
 		{
-			return xpath;
+			return path;
 		}
 		
 		public String getAction()
 		{
 			return action;
 		}
-		
-		public void setXPath(String xpath)
+
+        public String getType() {
+            return type;
+        }
+
+        public void setPath(String xpath)
 		{
-			this.xpath = xpath;
+			this.path = xpath;
 		}
-		
-		public void setAction(String action)
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public void setAction(String action)
 		{
 			this.action = action;
-		}
-		
+		}	
 	}
 	
 	/**
@@ -1007,8 +882,8 @@ public class CollectionXConf
 		boolean attributes = false;
 		boolean alphanum = false;
 		FullTextIndexPath[] xpaths = null;
-	
-		/**
+        
+        /**
 		 * Constructor
 		 * 
 		 * @param defaultAll	Should the fulltext index default to indexing all nodes
@@ -1023,7 +898,7 @@ public class CollectionXConf
 			this.alphanum = alphanum;
 			
 			this.xpaths = xpaths;
-		}
+        }
 		
 		public boolean getDefaultAll()
 		{
@@ -1055,7 +930,7 @@ public class CollectionXConf
 			this.alphanum = alphanum;
 		}
 		
-		public String getXPath(int index)
+		public String getPath(int index)
 		{
 			return xpaths[index].getXPath();
 		}
@@ -1064,37 +939,45 @@ public class CollectionXConf
 		{
 			return xpaths[index].getAction();
 		}
-		
-		public int getLength()
+
+        public int getLength()
 		{
 			return xpaths != null ? xpaths.length : 0;
 		}
-		
-		public void setXPath(int index, String XPath)
+
+        public void setType(int index, String type) {
+            xpaths[index].setType(type);
+        }
+
+        public String getType(int index) {
+            return xpaths[index].getType();
+        }
+        
+        public void setPath(int index, String XPath)
 		{
-			xpaths[index].setXPath(XPath);
-		}
-		
-		public void setAction(int index, String action)
+            xpaths[index].setPath(XPath);
+        }
+        
+        public void setAction(int index, String action)
 		{
 			xpaths[index].setAction(action);
 		}
 		
-		public void addIndex(String XPath, String action)
+		public void addIndex(String type, String XPath, String action)
 		{
-			if(xpaths == null)
-			{
-				xpaths = new FullTextIndexPath[1];
-				xpaths[0] = new FullTextIndexPath(XPath, action);
-			}
-			else
-			{
-				FullTextIndexPath newxpaths[] = new FullTextIndexPath[xpaths.length + 1];
-				System.arraycopy(xpaths, 0, newxpaths, 0, xpaths.length);
-				newxpaths[xpaths.length] = new FullTextIndexPath(XPath, action);
-				xpaths = newxpaths;
-			}
-		}
+            if(xpaths == null)
+            {
+                xpaths = new FullTextIndexPath[1];
+                xpaths[0] = new FullTextIndexPath(type, XPath, action);
+            }
+            else
+            {
+                FullTextIndexPath newxpaths[] = new FullTextIndexPath[xpaths.length + 1];
+                System.arraycopy(xpaths, 0, newxpaths, 0, xpaths.length);
+                newxpaths[xpaths.length] = new FullTextIndexPath(type, XPath, action);
+                xpaths = newxpaths;
+            }
+        }
 		
 		public void deleteIndex(int index)
 		{
@@ -1145,9 +1028,14 @@ public class CollectionXConf
                     fulltext.append('\t');
                     
                     fulltext.append("<");
-                    fulltext.append(xpaths[i].getAction());
-                    fulltext.append(" path=\"");
-                    fulltext.append(xpaths[i].getXPath());
+                    if (TYPE_PATH.equals(xpaths[i].getType())) {
+                        fulltext.append(xpaths[i].getAction());
+                        fulltext.append(" path=\"");
+                        fulltext.append(xpaths[i].getXPath());
+                    } else {
+                        fulltext.append("create qname=\"");
+                        fulltext.append(xpaths[i].getXPath());
+                    }
                     fulltext.append("\"/>");
                     
                     fulltext.append(System.getProperty("line.separator"));
@@ -1155,8 +1043,6 @@ public class CollectionXConf
             }
 			
 			fulltext.append("</fulltext>");
-			
-			
 			return fulltext.toString();
 		}
 	}
@@ -1166,7 +1052,8 @@ public class CollectionXConf
 	 */
 	protected class RangeIndex
 	{
-		private String XPath = null;
+        private String type = TYPE_QNAME;
+        private String XPath = null;
 		private String xsType = null;
 		
 		/**
@@ -1175,9 +1062,10 @@ public class CollectionXConf
 		 * @param XPath		The XPath to create a range index on
 		 * @param xsType	The data type pointed to by the XPath as an xs:type 
 		 */
-		RangeIndex(String XPath, String xsType)
+		RangeIndex(String type, String XPath, String xsType)
 		{
-			this.XPath = XPath;
+            this.type = type;
+            this.XPath = XPath;
 			this.xsType = xsType;
 		}
 		
@@ -1190,8 +1078,12 @@ public class CollectionXConf
 		{
 			return(xsType);
 		}
-		
-		public void setXPath(String XPath)
+
+        public String getType() {
+            return type;
+        }
+
+        public void setXPath(String XPath)
 		{
 			this.XPath = XPath;
 		}
@@ -1200,74 +1092,26 @@ public class CollectionXConf
 		{
 			this.xsType = xsType;
 		}
-		
-		//produces a collection.xconf suitable string of XML describing the range index
+
+        public void setType(String type) {
+            this.type = type;
+        }
+        
+        //produces a collection.xconf suitable string of XML describing the range index
 		protected String toXMLString()
 		{
 			StringBuffer range = new StringBuffer();
-			
-			range.append("<create path=\"");
-			range.append(XPath);
+
+            if (TYPE_PATH.equals(type))
+                range.append("<create path=\"");
+            else
+                range.append("<create qname=\"");
+            range.append(XPath);
 			range.append("\" type=\"");
 			range.append(xsType);
 			range.append("\"/>");
 			
 			return range.toString();
-		}
-	}
-	
-	/**
-	 * Represents a QName Index in the collection.xconf
-	 */
-	protected class QNameIndex
-	{
-		private String QName = null;
-		private String xsType = null;
-		
-		/**
-		 * Constructor
-		 * 
-		 * @param QName		The QName to create a qname index on
-		 * @param xsType	The data type of the element indicated by QName as an xs:type 
-		 */
-		QNameIndex(String QName, String xsType)
-		{
-			this.QName = QName;
-			this.xsType = xsType;
-		}
-		
-		public String getQName()
-		{
-			return(QName);	
-		}
-		
-		public String getxsType()
-		{
-			return(xsType);
-		}
-		
-		public void setQName(String QName)
-		{
-			this.QName = QName;	
-		}
-		
-		public void setxsType(String xsType)
-		{
-			this.xsType = xsType;
-		}
-		
-		//produces a collection.xconf suitable string of XML describing the qname index
-		protected String toXMLString()
-		{
-			StringBuffer qname = new StringBuffer();
-			
-			qname.append("<create qname=\"");
-			qname.append(QName);
-			qname.append("\" type=\"");
-			qname.append(xsType);
-			qname.append("\"/>");
-			
-			return qname.toString();
 		}
 	}
 	
@@ -1294,7 +1138,7 @@ public class CollectionXConf
 		 * @param REMOVE_DOCUMENT_EVENT		true indicates that the trigger should receive the Remove Document Event
 		 * @param CREATE_COLLECTION_EVENT	true indicates that the trigger should receive the Create Collection Event
 		 * @param RENAME_COLLECTION_EVENT	true indicates that the trigger should receive the Rename Collection Event
-		 * @param DELET_COLLECTION_EVENT	true indicates that the trigger should receive the Delete Collection Event
+		 * @param DELETE_COLLECTION_EVENT	true indicates that the trigger should receive the Delete Collection Event
 		 * @param parameters				Properties describing any name=value parameters for the trigger
 		 */
 		Trigger(String triggerClass, boolean STORE_DOCUMENT_EVENT, boolean UPDATE_DOCUMENT_EVENT, boolean REMOVE_DOCUMENT_EVENT, boolean CREATE_COLLECTION_EVENT, boolean RENAME_COLLECTION_EVENT, boolean DELETE_COLLECTION_EVENT, Properties parameters)
