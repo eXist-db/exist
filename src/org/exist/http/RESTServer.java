@@ -21,31 +21,6 @@
  */
 package org.exist.http;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.net.URI;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerConfigurationException;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
@@ -66,6 +41,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
@@ -101,6 +77,29 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerConfigurationException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URI;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  *
@@ -151,12 +150,15 @@ public class RESTServer {
     private String containerEncoding;
     private boolean useDynamicContentType;
 
+    private SessionManager sessionManager;
+    
     //Constructor
-	public RESTServer(String formEncoding, String containerEncoding,
+	public RESTServer(BrokerPool pool, String formEncoding, String containerEncoding,
 			boolean useDynamicContentType) {
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
         this.useDynamicContentType = useDynamicContentType;
+        this.sessionManager = new SessionManager(pool);
     }
     
     /**
@@ -204,65 +206,79 @@ public class RESTServer {
 			HttpServletResponse response, String path)
     throws BadRequestException, PermissionDeniedException,
             NotFoundException, IOException {
-    	
-    	//if required, set character encoding
-    	if (request.getCharacterEncoding() == null)
-			request.setCharacterEncoding(formEncoding);
-    	
-        // Process special parameters
+
+        //if required, set character encoding
+        if (request.getCharacterEncoding() == null)
+            request.setCharacterEncoding(formEncoding);
         
+        String option;
+        if ((option = request.getParameter("_release")) != null) {
+            int sessionId = Integer.parseInt(option);
+            sessionManager.release(sessionId);
+            if (LOG.isDebugEnabled())
+                LOG.debug("Released session " + sessionId);
+            response.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+
+        // Process special parameters
+
         int howmany = 10;
         int start = 1;
         boolean wrap = true;
         boolean source = false;
-		Properties outputProperties = new Properties(
-				defaultOutputKeysProperties);
+        boolean cache = false;
+        Properties outputProperties = new Properties(defaultOutputKeysProperties);
+
         String query = request.getParameter("_xpath");
         if (query == null)
             query = request.getParameter("_query");
-        
-        String p_howmany = request.getParameter("_howmany");
-        if (p_howmany != null) {
+
+        if ((option = request.getParameter("_howmany")) != null) {
             try {
-                howmany = Integer.parseInt(p_howmany);
+                howmany = Integer.parseInt(option);
             } catch (NumberFormatException nfe) {
                 throw new BadRequestException(
                         "Parameter _howmany should be an int");
             }
         }
-        String p_start = request.getParameter("_start");
-        if (p_start != null) {
+        if ((option = request.getParameter("_start")) != null) {
             try {
-                start = Integer.parseInt(p_start);
+                start = Integer.parseInt(option);
             } catch (NumberFormatException nfe) {
                 throw new BadRequestException(
                         "Parameter _start should be an int");
             }
         }
-        String option;
         if ((option = request.getParameter("_wrap")) != null) {
             wrap = option.equals("yes");
-	}
+        }
+        if ((option = request.getParameter("_cache")) != null) {
+            cache = option.equals("yes");
+        }
         if ((option = request.getParameter("_indent")) != null) {
             outputProperties.setProperty(OutputKeys.INDENT, option);
-	}
+        }
         if((option = request.getParameter("_source")) != null) {
-        	source = option.equals("yes");
-	}
+            source = option.equals("yes");
+        }
+        if ((option = request.getParameter("_session")) != null) {
+            outputProperties.setProperty(Serializer.PROPERTY_SESSION_ID, option);
+        }
         String stylesheet;
         if ((stylesheet = request.getParameter("_xsl")) != null) {
             if (stylesheet.equals("no")) {
-				outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI,
-						"no");
+                outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI,
+                        "no");
                 outputProperties.remove(EXistOutputKeys.STYLESHEET);
                 stylesheet = null;
             } else {
                 outputProperties.setProperty(EXistOutputKeys.STYLESHEET,
                         stylesheet);
-	    }
+            }
         } else {
             outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
-	}
+        }
         LOG.debug("stylesheet = " + stylesheet);
         LOG.debug("query = " + query);
         String encoding;
@@ -271,173 +287,172 @@ public class RESTServer {
         else
             encoding = "UTF-8";
 
-	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
-        
-		if (query != null) {
-			// query parameter specified, search method does all the rest of the
-			// work
-        try {
-				String result = search(broker, query, path, howmany, start,
-						outputProperties, wrap, (HttpServletRequest) request,
-						response);
-                    encoding = outputProperties.getProperty(OutputKeys.ENCODING);
-                    mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+        String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
 
-                    //only write the response if it is not already committed,
-                    //some xquery functions can write directly to the response
-                    if(!response.isCommitted()) {
-                        writeResponse(response, result, mimeType, encoding);
-                    }
+        if (query != null) {
+            // query parameter specified, search method does all the rest of the
+            // work
+            try {
+                String result = search(broker, query, path, howmany, start,
+                        outputProperties, wrap, cache, request, response);
+                encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+                mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
 
-                } catch (XPathException e) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-					writeResponse(response,
-							formatXPathException(query, path, e), mimeType,
-							encoding);
-                    } else {
-					writeResponse(response, formatXPathExceptionHtml(query,
-							path, e), MimeType.HTML_TYPE.getName(), encoding);
-                    }
-
+                //only write the response if it is not already committed,
+                //some xquery functions can write directly to the response
+                if(!response.isCommitted()) {
+                    writeResponse(response, result, mimeType, encoding);
                 }
+
+            } catch (XPathException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+                    writeResponse(response,
+                            formatXPathException(query, path, e), mimeType,
+                            encoding);
+                } else {
+                    writeResponse(response, formatXPathExceptionHtml(query,
+                            path, e), MimeType.HTML_TYPE.getName(), encoding);
+                }
+
+            }
+            return;
+        }
+        // Process the request
+        DocumentImpl resource = null;
+        XmldbURI pathUri = XmldbURI.create(path);
+        try {
+            // check if path leads to an XQuery resource
+            String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
+            resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+
+            if (null != resource
+                    && (!xquery_mime_type.equals(resource.getMetadata()
+                    .getMimeType()) || // not xquery mime time
+                    (resource.getResourceType() != DocumentImpl.BINARY_FILE))) { // not
+                // a
+                // binary
+                // file
+                // return regular resource that is not an xquery
+                writeResourceAs(resource, broker, stylesheet, encoding, null,
+                        outputProperties, response);
+                return;
+            }
+            if (resource == null) { // could be request for a Collection
+                // no document: check if path points to a collection
+                Collection collection = broker.getCollection(pathUri);
+                if (collection != null) {
+                    if (!collection.getPermissions().validate(broker.getUser(),
+                            Permission.READ))
+                        throw new PermissionDeniedException(
+                                "Not allowed to read collection");
+                    // return a listing of the collection contents
+                    writeResponse(response,
+                            printCollection(broker, collection),
+                            MimeType.XML_TYPE.getName(), encoding);
+                    return;
+                } else if (source) {
+                    // didn't find regular resource, or user wants source
+                    // on a possible xquery resource that was not found
+                    throw new NotFoundException("Document " + path
+                            + " not found");
+                }
+            }
+
+            XmldbURI servletPath = pathUri;
+
+            // if resource is still null, work up the url path to find an
+            // xquery resource
+            while (null == resource) {
+                // traverse up the path looking for xquery objects
+                servletPath = servletPath.removeLastSegment();
+                if (servletPath == XmldbURI.EMPTY_URI)
+                    break;
+
+                resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
+                if (null != resource
+                        && resource.getResourceType() == DocumentImpl.BINARY_FILE
+                        && xquery_mime_type.equals(resource.getMetadata()
+                        .getMimeType())) {
+                    break; // found a binary file with mime-type xquery
+
+                } else if (null != resource) {
+                    // not an xquery resource. This means we have a path
+                    // that cannot contain an xquery object even if we keep
+                    // moving up the path, so bail out now
+                    throw new NotFoundException("Document " + path
+                            + " not found");
+                }
+            }
+
+            if (null == resource) { // path search failed
+                throw new NotFoundException("Document " + path + " not found");
+            }
+
+            // found an XQuery resource, fixup request values
+            String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
+
+            // Should we display the source of the XQuery or execute it
+            Descriptor descriptor = Descriptor.getDescriptorSingleton();
+            if (source) {
+                // show the source
+
+                // check are we allowed to show the xquery source -
+                // descriptor.xml
+                if ((null != descriptor) && descriptor.allowSourceXQuery(path)) {
+                    // TODO: change writeResourceAs to use a serializer
+                    // that will serialize xquery to syntax coloured
+                    // xhtml, replace the asMimeType parameter with a
+                    // method for specifying the serializer, or split
+                    // the code into two methods. - deliriumsky
+
+                    // Show the source of the XQuery
+                    writeResourceAs(resource, broker, stylesheet, encoding,
+                            MimeType.TEXT_TYPE.getName(), outputProperties,
+                            response);
+                } else {
+                    // we are not allowed to show the source - query not
+                    // allowed in descriptor.xml
+                    // or descriptor not found, so assume source view not
+                    // allowed
+                    response
+                            .sendError(
+                                    HttpServletResponse.SC_FORBIDDEN,
+                                    "Permission to view XQuery source for: "
+                                            + path
+                                            + " denied. Must be explicitly defined in descriptor.xml");
                     return;
                 }
-		// Process the request
-		DocumentImpl resource = null;
-		XmldbURI pathUri = XmldbURI.create(path);
+            } else { // Execute the XQuery
                 try {
-			// check if path leads to an XQuery resource
-			String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
-			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-                    
-			if (null != resource
-					&& (!xquery_mime_type.equals(resource.getMetadata()
-							.getMimeType()) || // not xquery mime time
-					(resource.getResourceType() != DocumentImpl.BINARY_FILE))) { // not
-				// a
-				// binary
-				// file
-				// return regular resource that is not an xquery
-				writeResourceAs(resource, broker, stylesheet, encoding, null,
-						outputProperties, response);
-				return;
+                    String result = executeXQuery(broker, resource, request, response,
+                            outputProperties, servletPath.toString(), pathInfo);
+                    encoding = outputProperties
+                            .getProperty(OutputKeys.ENCODING);
+                    mimeType = outputProperties
+                            .getProperty(OutputKeys.MEDIA_TYPE);
+
+                    // only write the response if it is not already
+                    // committed,
+                    // some xquery functions can write directly to the
+                    // response
+                    if (!response.isCommitted()) {
+                        writeResponse(response, result, mimeType, encoding);
                     }
-			if (resource == null) { // could be request for a Collection
-                    // no document: check if path points to a collection
-                    Collection collection = broker.getCollection(pathUri);
-                    if (collection != null) {
-					if (!collection.getPermissions().validate(broker.getUser(),
-							Permission.READ))
-                            throw new PermissionDeniedException(
-                                    "Not allowed to read collection");
-                        // return a listing of the collection contents
-					writeResponse(response,
-							printCollection(broker, collection),
-							MimeType.XML_TYPE.getName(), encoding);
-				} else if (source) {
-					// didn't find regular resource, or user wants source
-					// on a possible xquery resource that was not found
-                        throw new NotFoundException("Document " + path
-                                + " not found");
+                } catch (XPathException e) {
+                    if (LOG.isDebugEnabled())
+                        LOG.debug(e.getMessage(), e);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+                        writeResponse(response, formatXPathException(query,
+                                path, e), mimeType, encoding);
+                    } else {
+                        writeResponse(response, formatXPathExceptionHtml(query,
+                                path, e), MimeType.HTML_TYPE.getName(),
+                                encoding);
                     }
-			}
-
-			XmldbURI servletPath = pathUri;
-
-			// if resource is still null, work up the url path to find an
-			// xquery resource
-			while (null == resource) {
-				// traverse up the path looking for xquery objects
-				servletPath = servletPath.removeLastSegment();
-				if (servletPath == XmldbURI.EMPTY_URI)
-					break;
-
-				resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
-				if (null != resource
-						&& resource.getResourceType() == DocumentImpl.BINARY_FILE
-						&& xquery_mime_type.equals(resource.getMetadata()
-								.getMimeType())) {
-					break; // found a binary file with mime-type xquery
-
-				} else if (null != resource) {
-					// not an xquery resource. This means we have a path
-					// that cannot contain an xquery object even if we keep
-					// moving up the path, so bail out now
-					throw new NotFoundException("Document " + path
-							+ " not found");
-				}
-			}
-
-			if (null == resource) { // path search failed
-				throw new NotFoundException("Document " + path + " not found");
-			}
-
-			// found an XQuery resource, fixup request values
-			String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
-
-			// Should we display the source of the XQuery or execute it
-			Descriptor descriptor = Descriptor.getDescriptorSingleton();
-			if (source) {
-				// show the source
-
-				// check are we allowed to show the xquery source -
-				// descriptor.xml
-				if ((null != descriptor) && descriptor.allowSourceXQuery(path)) {
-					// TODO: change writeResourceAs to use a serializer
-					// that will serialize xquery to syntax coloured
-					// xhtml, replace the asMimeType parameter with a
-					// method for specifying the serializer, or split
-					// the code into two methods. - deliriumsky
-
-					// Show the source of the XQuery
-					writeResourceAs(resource, broker, stylesheet, encoding,
-							MimeType.TEXT_TYPE.getName(), outputProperties,
-							response);
-                } else {
-					// we are not allowed to show the source - query not
-					// allowed in descriptor.xml
-					// or descriptor not found, so assume source view not
-					// allowed
-					response
-							.sendError(
-									HttpServletResponse.SC_FORBIDDEN,
-									"Permission to view XQuery source for: "
-											+ path
-											+ " denied. Must be explicitly defined in descriptor.xml");
-					return;
                 }
-			} else { // Execute the XQuery
-				try {
-					String result = executeXQuery(broker, resource,
-							(HttpServletRequest) request, response,
-							outputProperties, servletPath.toString(), pathInfo);
-					encoding = outputProperties
-							.getProperty(OutputKeys.ENCODING);
-					mimeType = outputProperties
-							.getProperty(OutputKeys.MEDIA_TYPE);
-
-					// only write the response if it is not already
-					// committed,
-					// some xquery functions can write directly to the
-					// response
-					if (!response.isCommitted()) {
-						writeResponse(response, result, mimeType, encoding);
             }
-				} catch (XPathException e) {
-					if (LOG.isDebugEnabled())
-						LOG.debug(e.getMessage(), e);
-					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-					if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-						writeResponse(response, formatXPathException(query,
-								path, e), mimeType, encoding);
-					} else {
-						writeResponse(response, formatXPathExceptionHtml(query,
-								path, e), MimeType.HTML_TYPE.getName(),
-								encoding);
-					}
-				}
-			}
         } finally {
             if (resource != null)
                 resource.getUpdateLock().release(Lock.READ_LOCK);
@@ -562,80 +577,80 @@ public class RESTServer {
      * @throws BadRequestException
      * @throws PermissionDeniedException
      */
-	public void doPost(DBBroker broker, HttpServletRequest request,
-			HttpServletResponse response, String path)
-			throws BadRequestException, PermissionDeniedException, IOException {
-    	//if required, set character encoding
-    	if (request.getCharacterEncoding() == null)
-			request.setCharacterEncoding(formEncoding);
-    
-		Properties outputProperties = new Properties(
-				defaultOutputKeysProperties);
+    public void doPost(DBBroker broker, HttpServletRequest request,
+                       HttpServletResponse response, String path)
+            throws BadRequestException, PermissionDeniedException, IOException {
+        //if required, set character encoding
+        if (request.getCharacterEncoding() == null)
+            request.setCharacterEncoding(formEncoding);
+
+        Properties outputProperties = new Properties(
+                defaultOutputKeysProperties);
         XmldbURI pathUri = XmldbURI.create(path);
         DocumentImpl resource = null;
-	
-	String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
-	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+
+        String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+        String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
         try {
             // check if path leads to an XQuery resource.
             // if yes, the resource is loaded and the XQuery executed.
-			String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
+            String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
             resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
-			XmldbURI servletPath = pathUri;
+            XmldbURI servletPath = pathUri;
 
-			// if resource is still null, work up the url path to find an
-			// xquery resource
-			while (null == resource) {
-				// traverse up the path looking for xquery objects
-				servletPath = servletPath.removeLastSegment();
-				if (servletPath == XmldbURI.EMPTY_URI)
-					break;
+            // if resource is still null, work up the url path to find an
+            // xquery resource
+            while (null == resource) {
+                // traverse up the path looking for xquery objects
+                servletPath = servletPath.removeLastSegment();
+                if (servletPath == XmldbURI.EMPTY_URI)
+                    break;
 
-				resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
-				if (null != resource
-						&& resource.getResourceType() == DocumentImpl.BINARY_FILE
-						&& xquery_mime_type.equals(resource.getMetadata()
-								.getMimeType())) {
-					break; // found a binary file with mime-type xquery
+                resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
+                if (null != resource
+                        && resource.getResourceType() == DocumentImpl.BINARY_FILE
+                        && xquery_mime_type.equals(resource.getMetadata()
+                        .getMimeType())) {
+                    break; // found a binary file with mime-type xquery
 
-				} else if (null != resource) {
-					// not an xquery resource. This means we have a path
-					// that cannot contain an xquery object even if we keep
-					// moving up the path, so bail out now
-					resource.getUpdateLock().release(Lock.READ_LOCK);
-					resource = null;
-					break;
-				}
-			}
+                } else if (null != resource) {
+                    // not an xquery resource. This means we have a path
+                    // that cannot contain an xquery object even if we keep
+                    // moving up the path, so bail out now
+                    resource.getUpdateLock().release(Lock.READ_LOCK);
+                    resource = null;
+                    break;
+                }
+            }
 
             if (resource != null) {
-				if (resource.getResourceType() == DocumentImpl.BINARY_FILE
-						&& xquery_mime_type.equals(resource.getMetadata()
-								.getMimeType())) {
+                if (resource.getResourceType() == DocumentImpl.BINARY_FILE
+                        && xquery_mime_type.equals(resource.getMetadata()
+                        .getMimeType())) {
 
-					// found an XQuery resource, fixup request values
-					String pathInfo = pathUri.trimFromBeginning(servletPath)
-							.toString();
+                    // found an XQuery resource, fixup request values
+                    String pathInfo = pathUri.trimFromBeginning(servletPath)
+                            .toString();
                     try {
-						String result = executeXQuery(broker, resource,
-								request, response, outputProperties,
-								servletPath.toString(), pathInfo.toString());
-						encoding = outputProperties
-								.getProperty(OutputKeys.ENCODING);
-						mimeType = outputProperties
-								.getProperty(OutputKeys.MEDIA_TYPE);
+                        String result = executeXQuery(broker, resource,
+                                request, response, outputProperties,
+                                servletPath.toString(), pathInfo.toString());
+                        encoding = outputProperties
+                                .getProperty(OutputKeys.ENCODING);
+                        mimeType = outputProperties
+                                .getProperty(OutputKeys.MEDIA_TYPE);
                         writeResponse(response, result, mimeType, encoding);
                     } catch (XPathException e) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-							writeResponse(response, formatXPathException(null,
-									path, e), mimeType, encoding);
-			} else {
-							writeResponse(response, formatXPathExceptionHtml(
-									null, path, e), MimeType.HTML_TYPE
-									.getName(), encoding);
-			}
+                        if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+                            writeResponse(response, formatXPathException(null,
+                                    path, e), mimeType, encoding);
+                        } else {
+                            writeResponse(response, formatXPathExceptionHtml(
+                                    null, path, e), MimeType.HTML_TYPE
+                                    .getName(), encoding);
+                        }
                     }
                     return;
                 }
@@ -644,16 +659,17 @@ public class RESTServer {
             if(resource != null)
                 resource.getUpdateLock().release(Lock.READ_LOCK);
         }
-        
+
         // third, normal POST: read the request content and check if
         // it is an XUpdate or a query request.        
         int howmany = 10;
         int start = 1;
         boolean enclose = true;
+        boolean cache = false;
         String mime = MimeType.XML_TYPE.getName();
         String query = null;
-		TransactionManager transact = broker.getBrokerPool()
-				.getTransactionManager();
+        TransactionManager transact = broker.getBrokerPool()
+                .getTransactionManager();
         Txn transaction = transact.beginTransaction();
         try {
             String content = getRequestContent(request);
@@ -687,25 +703,32 @@ public class RESTServer {
                             howmany = Integer.parseInt(option);
                         } catch (NumberFormatException e) {
                         }
-                    
+
                     option = root.getAttribute("enclose");
                     if (option != null) {
                         if (option.equals("no"))
                             enclose = false;
                     }
-                    
+
                     option = root.getAttribute("mime");
                     mime = MimeType.XML_TYPE.getName();
                     if ((option != null) && (!option.equals(""))) {
                         mime = option;
                     }
-                    
+
+                    if ((option = root.getAttribute("cache")) != null) {
+                        cache = option.equals("yes");
+                    }
+
+                    if ((option = root.getAttribute("session")) != null && option.length() > 0) {
+                        outputProperties.setProperty(Serializer.PROPERTY_SESSION_ID, option);
+                    }
                     NodeList children = root.getChildNodes();
                     for (int i = 0; i < children.getLength(); i++) {
                         Node child = children.item(i);
                         if (child.getNodeType() == Node.ELEMENT_NODE
-								&& child.getNamespaceURI().equals(
-										Namespaces.EXIST_NS)) {
+                                && child.getNamespaceURI().equals(
+                                Namespaces.EXIST_NS)) {
                             if (child.getLocalName().equals("text")) {
                                 StringBuffer buf = new StringBuffer();
                                 Node next = child.getFirstChild();
@@ -716,15 +739,15 @@ public class RESTServer {
                                     next = next.getNextSibling();
                                 }
                                 query = buf.toString();
-							} else if (child.getLocalName()
-									.equals("properties")) {
+                            } else if (child.getLocalName()
+                                    .equals("properties")) {
                                 Node node = child.getFirstChild();
                                 while (node != null) {
                                     if (node.getNodeType() == Node.ELEMENT_NODE
-											&& node.getNamespaceURI().equals(
-													Namespaces.EXIST_NS)
-											&& node.getLocalName().equals(
-													"property")) {
+                                            && node.getNamespaceURI().equals(
+                                            Namespaces.EXIST_NS)
+                                            && node.getLocalName().equals(
+                                            "property")) {
                                         Element property = (Element) node;
                                         String key = property
                                                 .getAttribute("name");
@@ -743,31 +766,30 @@ public class RESTServer {
                 }
                 // execute query
                 if (query != null) {
-                    String result = "";
+                    String result;
                     try {
-						result = search(broker, query, path, howmany, start,
-								outputProperties, enclose, request, response);
+                        result = search(broker, query, path, howmany, start,
+                                outputProperties, enclose, cache, request, response);
                     } catch (Exception e) {
                         response.setStatus(HttpServletResponse.SC_ACCEPTED);
                         result = e.getMessage();
                     }
-					writeResponse(response, result, mime, outputProperties
-							.getProperty(OutputKeys.ENCODING));
+                    writeResponse(response, result, mime, outputProperties.getProperty(OutputKeys.ENCODING));
 
                 } else {
                     transact.abort(transaction);
                     throw new BadRequestException("No query specified");
                 }
-			} else if (rootNS != null
-					&& rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
+            } else if (rootNS != null
+                    && rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
                 LOG.debug("Got xupdate request: " + content);
                 DocumentSet docs = new DocumentSet();
                 Collection collection = broker.getCollection(pathUri);
                 if (collection != null) {
                     collection.allDocs(broker, docs, true, true);
                 } else {
-					DocumentImpl xupdateDoc = (DocumentImpl) broker
-							.getXMLResource(pathUri);
+                    DocumentImpl xupdateDoc = (DocumentImpl) broker
+                            .getXMLResource(pathUri);
                     if (xupdateDoc != null) {
                         if (!xupdateDoc.getPermissions().validate(
                                 broker.getUser(), Permission.READ)) {
@@ -779,9 +801,9 @@ public class RESTServer {
                     } else
                         broker.getAllXMLResources(docs);
                 }
-                
-				XUpdateProcessor processor = new XUpdateProcessor(broker, docs,
-						AccessContext.REST);
+
+                XUpdateProcessor processor = new XUpdateProcessor(broker, docs,
+                        AccessContext.REST);
                 Modification modifications[] = processor.parse(new InputSource(
                         new StringReader(content)));
                 long mods = 0;
@@ -790,12 +812,12 @@ public class RESTServer {
                     broker.flush();
                 }
                 transact.commit(transaction);
-                
+
                 // FD : Returns an XML doc
-				writeResponse(response, "<?xml version='1.0'?>\n"
-						+ "<exist:modifications xmlns:exist='"
-						+ Namespaces.EXIST_NS + "' count='" + mods + "'>"
-						+ mods
+                writeResponse(response, "<?xml version='1.0'?>\n"
+                        + "<exist:modifications xmlns:exist='"
+                        + Namespaces.EXIST_NS + "' count='" + mods + "'>"
+                        + mods
                         + "modifications processed.</exist:modifications>",
                         MimeType.XML_TYPE.getName(), "UTF-8");
                 // END FD
@@ -809,11 +831,10 @@ public class RESTServer {
             Exception cause = e;
             if (e.getException() != null)
                 cause = e.getException();
-            LOG.debug("SAX exception while parsing request: "
-                    + cause.getMessage(), cause);
+            LOG.debug("SAX exception while parsing request: " + cause.getMessage(), cause);
             throw new BadRequestException(
                     "SAX exception while parsing request: "
-                    + cause.getMessage());
+                            + cause.getMessage());
         } catch (ParserConfigurationException e) {
             transact.abort(transaction);
             throw new BadRequestException(
@@ -1011,7 +1032,7 @@ public class RESTServer {
     }
     
 	private String getRequestContent(HttpServletRequest request)
-			throws IOException, UnsupportedEncodingException {
+			throws IOException {
         String encoding = request.getCharacterEncoding();
         if(encoding == null)
             encoding = "UTF-8";
@@ -1033,9 +1054,27 @@ public class RESTServer {
      */
     protected String search(DBBroker broker, String query, String path,
             int howmany, int start, Properties outputProperties, boolean wrap,
-            HttpServletRequest request, HttpServletResponse response)
+            boolean cache, HttpServletRequest request, HttpServletResponse response)
             throws BadRequestException, PermissionDeniedException,
             XPathException {
+        String sessionIdParam = outputProperties.getProperty(Serializer.PROPERTY_SESSION_ID);
+        if (sessionIdParam != null) {
+            try {
+                int sessionId = Integer.parseInt(sessionIdParam);
+                if (sessionId > -1) {
+                    Sequence cached = sessionManager.get(query, sessionId);
+                    if (cached != null) {
+                        LOG.debug("Returning cached query result");
+                        return printResults(broker, cached, howmany, start,
+                            outputProperties, wrap);
+                    } else {
+                        LOG.debug("Cached query result not found. Probably timed out. Repeating query.");
+                    }
+                }
+            } catch (NumberFormatException e) {
+                throw new BadRequestException("Invalid session id passed in query request: " + sessionIdParam);
+            }
+        }
         XmldbURI pathUri = XmldbURI.create(path);
         try {
             Source source = new StringSource(query);
@@ -1061,8 +1100,16 @@ public class RESTServer {
                 if (LOG.isDebugEnabled())
                 	LOG.debug("Found " + resultSequence.getItemCount() + " in "
                         + queryTime + "ms.");
+
+                if (cache) {
+                    int sessionId = sessionManager.add(query, resultSequence);
+                    outputProperties.setProperty(Serializer.PROPERTY_SESSION_ID, Integer.toString(sessionId));
+                    if (!response.isCommitted())
+                        response.setIntHeader("X-Session-Id", sessionId);
+                }
+                
                 return printResults(broker, resultSequence, howmany, start,
-                        queryTime, outputProperties, wrap);
+                        outputProperties, wrap);
             } finally {
                 pool.returnCompiledXQuery(source, compiled);
             }
@@ -1135,7 +1182,7 @@ public class RESTServer {
         context.checkOptions(outputProperties);
         try {
             Sequence result = xquery.execute(compiled, null);
-			return printResults(broker, result, -1, 1, 0, outputProperties,
+			return printResults(broker, result, -1, 1, outputProperties,
 					false);
         } finally {
             pool.returnCompiledXQuery(source, compiled);
@@ -1329,7 +1376,7 @@ public class RESTServer {
     }
     
     protected String printResults(DBBroker broker, Sequence results,
-            int howmany, int start, long queryTime,
+            int howmany, int start,
             Properties outputProperties, boolean wrap)
             throws BadRequestException {        
         if (!results.isEmpty()) {
@@ -1344,7 +1391,7 @@ public class RESTServer {
         Serializer serializer = broker.getSerializer();
         serializer.reset();
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-        SAXSerializer sax = null;
+        SAXSerializer sax;
         try {
             StringWriter writer = new StringWriter();
 			sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
