@@ -21,42 +21,25 @@
  */
 package org.exist.client;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.util.ArrayList;
-
-import javax.swing.Box;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.border.TitledBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.ArrayList;
 
 /**
  * Dialog for viewing and editing Indexes in the Admin Client 
@@ -66,8 +49,13 @@ import org.xmldb.api.base.XMLDBException;
  * @version 1.0
  */
 class IndexDialog extends JFrame {
-	
-	private static final String[] FULLTEXT_INDEX_ACTIONS = {
+
+    private static final String[] CONFIG_TYPE = {
+        "qname",
+        "path"
+    };
+    
+    private static final String[] FULLTEXT_INDEX_ACTIONS = {
 		"include",
 		"exclude"
 	};
@@ -94,8 +82,6 @@ class IndexDialog extends JFrame {
 	private FullTextIndexTableModel fulltextIndexModel;
 	private JTable tblRangeIndexes;
 	private RangeIndexTableModel rangeIndexModel;
-	private JTable tblQNameIndexes;
-	private QNameIndexTableModel qnameIndexModel;
 	
 	private InteractiveClient client;
 	
@@ -110,7 +96,7 @@ class IndexDialog extends JFrame {
 		{
 			public void windowClosing (WindowEvent e)
 			{
-				saveChanges();
+                saveChanges(true);
 				
 				IndexDialog.this.setVisible(false);
 				IndexDialog.this.dispose();
@@ -174,7 +160,7 @@ class IndexDialog extends JFrame {
         	public void actionPerformed(ActionEvent e)
         	{
         		
-        		saveChanges();
+        		saveChanges(true);
         		
         		JComboBox cb = (JComboBox)e.getSource();
    				actionGetIndexes(cb.getSelectedItem().toString());
@@ -255,10 +241,14 @@ class IndexDialog extends JFrame {
 		fulltextIndexModel = new FullTextIndexTableModel();
         tblFullTextIndexes = new JTable(fulltextIndexModel);
         tblFullTextIndexes.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
+        tblFullTextIndexes.setRowHeight(20);
         tblFullTextIndexes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        TableColumn colAction = tblFullTextIndexes.getColumnModel().getColumn(1);
+        TableColumn colAction = tblFullTextIndexes.getColumnModel().getColumn(2);
         colAction.setCellEditor(new ComboBoxCellEditor(FULLTEXT_INDEX_ACTIONS));
         colAction.setCellRenderer(new ComboBoxCellRenderer(FULLTEXT_INDEX_ACTIONS));
+        colAction = tblFullTextIndexes.getColumnModel().getColumn(0);
+        colAction.setCellEditor(new ComboBoxCellEditor(CONFIG_TYPE));
+        colAction.setCellRenderer(new ComboBoxCellRenderer(CONFIG_TYPE));
         JScrollPane scrollFullTextIndexes = new JScrollPane(tblFullTextIndexes);
 		scrollFullTextIndexes.setPreferredSize(new Dimension(250, 150));
 		c.gridx = 0;
@@ -323,10 +313,14 @@ class IndexDialog extends JFrame {
 		rangeIndexModel = new RangeIndexTableModel();
         tblRangeIndexes = new JTable(rangeIndexModel);
         tblRangeIndexes.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
+        tblRangeIndexes.setRowHeight(20);
         tblRangeIndexes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        TableColumn colxsType = tblRangeIndexes.getColumnModel().getColumn(1);
+        TableColumn colxsType = tblRangeIndexes.getColumnModel().getColumn(2);
         colxsType.setCellEditor(new ComboBoxCellEditor(INDEX_TYPES));
         colxsType.setCellRenderer(new ComboBoxCellRenderer(INDEX_TYPES));
+        colxsType = tblRangeIndexes.getColumnModel().getColumn(0);
+        colxsType.setCellEditor(new ComboBoxCellEditor(CONFIG_TYPE));
+        colxsType.setCellRenderer(new ComboBoxCellRenderer(CONFIG_TYPE));
         JScrollPane scrollRangeIndexes = new JScrollPane(tblRangeIndexes);
 		scrollRangeIndexes.setPreferredSize(new Dimension(350, 150));
 		c.gridx = 0;
@@ -380,91 +374,58 @@ class IndexDialog extends JFrame {
 	    grid.setConstraints(panelRangeIndexes, c);
 		getContentPane().add(panelRangeIndexes);
 
-		
-		//Panel to hold controls relating to the QName Indexes
-		JPanel panelQNameIndexes = new JPanel();
-		panelQNameIndexes.setBorder(new TitledBorder("QName Indexes"));
-		GridBagLayout panelQNameIndexesGrid = new GridBagLayout();
-		panelQNameIndexes.setLayout(panelQNameIndexesGrid);
+        Box mainBtnBox = Box.createHorizontalBox();
+        JButton cancelBtn = new JButton("Cancel");
+        cancelBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                IndexDialog.this.setVisible(false);
+				IndexDialog.this.dispose();
+            }
+        });
+        JButton saveBtn = new JButton("Save");
+        saveBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveChanges(false);
+                IndexDialog.this.setVisible(false);
+				IndexDialog.this.dispose();
+            }
+        });
+        mainBtnBox.add(saveBtn);
+        mainBtnBox.add(cancelBtn);
         
-        //Table to hold the qname Indexes with Sroll bar
-		qnameIndexModel = new QNameIndexTableModel();
-        tblQNameIndexes = new JTable(qnameIndexModel);
-        tblQNameIndexes.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-        tblQNameIndexes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        JScrollPane scrollQNameIndexes = new JScrollPane(tblQNameIndexes);
-		scrollQNameIndexes.setPreferredSize(new Dimension(350, 150));
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 1;
-		panelQNameIndexesGrid.setConstraints(scrollQNameIndexes, c);
-		panelQNameIndexes.add(scrollQNameIndexes);
-        
-		//Toolbar with add/delete buttons for qname Index
-		Box qnameIndexToolbarBox = Box.createHorizontalBox();
-		//add button
-		JButton btnAddQNameIndex = new JButton("Add");
-		btnAddQNameIndex.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				actionAddQNameIndex();
-			}
-		});
-		qnameIndexToolbarBox.add(btnAddQNameIndex);
-		//delete button
-		JButton btnDeleteQNameIndex = new JButton("Delete");
-		btnDeleteQNameIndex.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				actionDeleteQNameIndex();
-			}
-		});
-		qnameIndexToolbarBox.add(btnDeleteQNameIndex);
-		c.gridx = 0;
-		c.gridy = 1;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.CENTER;
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 0;
-		c.weighty = 0;
-		panelQNameIndexesGrid.setConstraints(qnameIndexToolbarBox, c);
-		panelQNameIndexes.add(qnameIndexToolbarBox);
-
-		//add qname panel to content frame
-		c.gridx = 0;
+        c.gridx = 0;
 		c.gridy = 3;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 	    c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 1F / 3F;
-	    grid.setConstraints(panelQNameIndexes, c);
-		getContentPane().add(panelQNameIndexes);
+		c.weightx = 0;
+		c.weighty = 0;
+	    grid.setConstraints(mainBtnBox, c);
+		getContentPane().add(mainBtnBox);
 
-		
-		pack();
+        pack();
 	}
 
 	//if changes have been made, allows the user to save them
-	private void saveChanges()
+	private void saveChanges(boolean ask)
 	{
-		//the collection has been changed
+        //the collection has been changed
 		if(cx.hasChanged())
 		{
-			//ask the user if they would like to save the changes
-			int result = JOptionPane.showConfirmDialog(getContentPane(), "The configuration for the collection has changed, would you like to save the changes?", "Save Changes", JOptionPane.YES_NO_OPTION);
+            boolean doSave = true;
+            if (ask) {
+                //ask the user if they would like to save the changes
+                int result = JOptionPane.showConfirmDialog(getContentPane(), "The configuration for the collection has changed, would you like to save the changes?", "Save Changes", JOptionPane.YES_NO_OPTION);
+                doSave = result == JOptionPane.YES_OPTION;
+            }
 			
-			if(result == JOptionPane.YES_OPTION)
+            if(doSave)
 			{
 				//save the collection.xconf changes
 				if(cx.Save())
 				{
 					//save ok, reindex?
-					result = JOptionPane.showConfirmDialog(getContentPane(), "Your changes have been saved, but will not take effect until the collection is reindexed!\n Would you like to reindex " + cmbCollections.getSelectedItem() + " and sub-collections now?", "Reindex", JOptionPane.YES_NO_OPTION);
+					int result = JOptionPane.showConfirmDialog(getContentPane(), "Your changes have been saved, but will not take effect until the collection is reindexed!\n Would you like to reindex " + cmbCollections.getSelectedItem() + " and sub-collections now?", "Reindex", JOptionPane.YES_NO_OPTION);
 					
 					if(result == JOptionPane.YES_OPTION)
 					{
@@ -549,21 +510,6 @@ class IndexDialog extends JFrame {
 		}
 	}
 	
-	private void actionAddQNameIndex()
-	{
-		qnameIndexModel.addRow();
-	}
-	
-	private void actionDeleteQNameIndex()
-	{
-		int iSelectedRow = tblQNameIndexes.getSelectedRow();
-		if(iSelectedRow > -1 )
-		{
-			qnameIndexModel.removeRow(iSelectedRow);
-		}
-		
-	}
-	
 	//Displays the indexes when a collection is selection
 	private void actionGetIndexes(String collectionName)
 	{
@@ -576,7 +522,6 @@ class IndexDialog extends JFrame {
 			chkAttributes.setSelected(cx.getFullTextIndexAttributes());
 			fulltextIndexModel.fireTableDataChanged();
 			rangeIndexModel.fireTableDataChanged();
-			qnameIndexModel.fireTableDataChanged();
 		}
 		catch(XMLDBException xe)
 		{
@@ -622,26 +567,30 @@ class IndexDialog extends JFrame {
 	
     class FullTextIndexTableModel extends AbstractTableModel
 	{	
-		private final String[] columnNames = new String[] { "XPath", "action" };
+		private final String[] columnNames = new String[] { "Type", "QName/Path", "Action" };
 
 		public FullTextIndexTableModel()
 		{
 			super();
 			fireTableDataChanged();
-		}
+        }
 		
 		/* (non-Javadoc)
 		* @see javax.swing.table.TableModel#isCellEditable()
 		*/
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex)
 		{
-			switch (columnIndex)
+            System.out.println(columnIndex + "->" + aValue);
+            switch (columnIndex)
 			{
-				case 0:		/* XPath */
-					cx.updateFullTextIndex(rowIndex, aValue.toString(), null);					
+                case 0:
+                    cx.updateFullTextIndex(rowIndex, aValue.toString(), null, null);
+                    break;
+                case 1:		/* XPath */
+					cx.updateFullTextIndex(rowIndex, null, aValue.toString(), null);
 					break;
-				case 1 :	/* action */
-					cx.updateFullTextIndex(rowIndex, null, aValue.toString());
+				case 2 :	/* action */
+					cx.updateFullTextIndex(rowIndex, null, null, aValue.toString());
 					break;
 				default :
 					break;
@@ -658,7 +607,7 @@ class IndexDialog extends JFrame {
 		
 		public void addRow()
 		{	
-			cx.addFullTextIndex("", "xs:string");
+			cx.addFullTextIndex(CollectionXConf.TYPE_QNAME, "", CollectionXConf.ACTION_INCLUDE);
 			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
 		}
 		
@@ -667,7 +616,7 @@ class IndexDialog extends JFrame {
 		*/
 		public boolean isCellEditable(int rowIndex, int columnIndex)
 		{
-			return true;
+            return true;
 		}
 		
 		/* (non-Javadoc)
@@ -694,16 +643,18 @@ class IndexDialog extends JFrame {
 				return cx != null ? cx.getFullTextPathCount() : 0;
 		}
 
-		/* (non-Javadoc)
+        /* (non-Javadoc)
 		 * @see javax.swing.table.TableModel#getValueAt(int, int)
 		 */
 		public Object getValueAt(int rowIndex, int columnIndex)
 		{
 			switch (columnIndex)
 			{
-				case 0 :	/* XPath */
+                case 0 :
+                    return cx.getFullTextIndexType(rowIndex);
+                case 1 :	/* XPath */
 					return cx.getFullTextIndexPath(rowIndex);
-				case 1 :	/* action */
+				case 2 :	/* action */
 					return cx.getFullTextIndexPathAction(rowIndex);
 				default :
 					return null;
@@ -713,7 +664,7 @@ class IndexDialog extends JFrame {
     
 	class RangeIndexTableModel extends AbstractTableModel
 	{	
-		private final String[] columnNames = new String[] { "XPath", "xsType" };
+		private final String[] columnNames = new String[] { "Type", "XPath", "xsType" };
 
 		public RangeIndexTableModel()
 		{
@@ -728,11 +679,14 @@ class IndexDialog extends JFrame {
 		{
 			switch (columnIndex)
 			{
-				case 0:		/* XPath */
-					cx.updateRangeIndex(rowIndex, aValue.toString(), null);
+                case 0:
+                    cx.updateRangeIndex(rowIndex, aValue.toString(), null, null);
+                    break;
+                case 1:		/* XPath */
+					cx.updateRangeIndex(rowIndex, null, aValue.toString(), null);
 					break;
-				case 1 :	/* xsType */
-					cx.updateRangeIndex(rowIndex, null, aValue.toString());
+				case 2 :	/* xsType */
+					cx.updateRangeIndex(rowIndex, null, null, aValue.toString());
 					break;
 				default :
 					break;
@@ -749,7 +703,7 @@ class IndexDialog extends JFrame {
 		
 		public void addRow()
 		{			
-			cx.addRangeIndex("", "xs:string");
+			cx.addRangeIndex(CollectionXConf.TYPE_QNAME, "", "xs:string");
 			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
 		}
 		
@@ -792,103 +746,12 @@ class IndexDialog extends JFrame {
 		{
 			switch (columnIndex)
 			{
-				case 0 :	/* XPath */
+                case 0 :
+                    return cx.getRangeIndex(rowIndex).getType();
+                case 1 :	/* XPath */
 					return cx.getRangeIndex(rowIndex).getXPath();
-				case 1 :	/* xsType */
+				case 2 :	/* xsType */
 					return cx.getRangeIndex(rowIndex).getxsType();
-				default :
-					return null;
-			}
-		}
-	}
-	
-	class QNameIndexTableModel extends AbstractTableModel
-	{	
-		private final String[] columnNames = new String[] { "QName", "xsType" };
-		//private CollectionXConf.QNameIndex qnameIndexes[] = null;
-
-		public QNameIndexTableModel()
-		{
-			super();
-			fireTableDataChanged();
-		}
-		
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#isCellEditable()
-		*/
-		public void setValueAt(Object aValue, int rowIndex, int columnIndex)
-		{
-			switch (columnIndex)
-			{
-				case 0:		/* QName */
-					cx.updateQNameIndex(rowIndex, aValue.toString(), null);
-					break;
-				case 1 :	/* xsType */
-					cx.updateQNameIndex(rowIndex, null, aValue.toString());
-					break;
-				default :
-					break;
-			}
-			
-			fireTableCellUpdated(rowIndex, columnIndex);
-		}
-		
-		public void removeRow(int rowIndex)
-		{
-			cx.deleteQNameIndex(rowIndex);
-			fireTableRowsDeleted(rowIndex, rowIndex);
-			
-		}
-		
-		public void addRow()
-		{	
-			cx.addQNameIndex("", "include");
-			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
-		}
-		
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#isCellEditable()
-		*/
-		public boolean isCellEditable(int rowIndex, int columnIndex)
-		{
-			return true;
-		}
-		
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#getColumnCount()
-		*/
-		public int getColumnCount()
-		{
-			return columnNames.length;
-		}
-
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getColumnName(int)
-		 */
-		public String getColumnName(int column)
-		{
-			return columnNames[column];
-		}
-
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getRowCount()
-		 */
-		public int getRowCount()
-		{
-			return cx != null ? cx.getQNameIndexCount() : 0;
-		}
-
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getValueAt(int, int)
-		 */
-		public Object getValueAt(int rowIndex, int columnIndex)
-		{
-			switch (columnIndex)
-			{
-				case 0 :	/* QName */
-					return cx.getQNameIndex(rowIndex).getQName();
-				case 1 :	/* xsType */
-					return cx.getQNameIndex(rowIndex).getxsType();
 				default :
 					return null;
 			}
