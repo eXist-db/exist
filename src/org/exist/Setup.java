@@ -40,7 +40,7 @@ public class Setup {
 
     public static void main(String[] args) {
         if (args.length < 1 || args[0].length() == 0) {
-            System.err.println("No password specified. Aborting.");
+            System.err.println("No password specified. Admin password will be empty.");
             return;
         }
         initDb(args[0]);
