@@ -64,7 +64,6 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	 */
 	public abstract String getStringValue() throws XPathException;
 
-	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
 	public abstract boolean compareTo(Collator collator, int operator, AtomicValue other)
 		throws XPathException;
@@ -231,11 +230,10 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 			return NodeSet.EMPTY_SET;
 		*/
 		throw new XPathException(
-			"cannot convert value of type "
-				+ Type.getTypeName(getType())
-				+ " to a node set");
+				"cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue() + "')"
+					+ " to a node set");
 	}
-    
+
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getDocumentSet()
      */
