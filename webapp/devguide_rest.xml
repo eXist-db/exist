@@ -212,6 +212,32 @@
                                 default value is <option>yes</option>.</para>
                         </listitem>
                     </varlistentry>
+                    <varlistentry>
+                        <term>_cache=<emphasis>yes | no</emphasis></term>
+                        <listitem>
+                            <para>If set to "yes", the query results of the current query are stored
+                            into a session on the server. A session id will be returned with the
+                            response. Subsequent requests can pass this session id via the
+                            <option>_session</option> parameter. If the server finds a valid session
+                            id, it will return the cached results instead of re-evaluating the query.
+                            For more info see below.
+                            </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>_session=<emphasis>session id</emphasis></term>
+                        <listitem>
+                            <para>Specifies a session id returned by a previous query request.
+                            If the session is valid, query results will be read from the
+                            cached session.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>_release=<emphasis>session id</emphasis></term>
+                        <listitem>
+                            <para>Release the session identified by the session id.</para>
+                        </listitem>
+                    </varlistentry>
                 </variablelist>
                 <para>EXAMPLE: The following URI will find all <sgmltag>SPEECH</sgmltag> elements in
                     the collection <filename>/db/shakespeare</filename> with "Juliet" as the
@@ -298,7 +324,9 @@ else:
                     <programlisting><markup><![CDATA[
 <query xmlns="http://exist.sourceforge.net/NS/exist"
     start="[first item to be returned]" 
-    max="[maximum number of items to be returned]">
+    max="[maximum number of items to be returned]"
+    cache="[yes|no: create a session and cache results]"
+    session-id="[session id as returned by previous request]">
     <text>[XQuery expression]</text>
     <properties>
         <property name="[name1]" value="[value1]"/>
@@ -308,7 +336,8 @@ else:
                 </example>
                 <para>The root element <option>query</option> identifies the fragment as an extended
                     query request, and the XQuery expression for this request is enclosed in the
-                        <option>text</option> element. Optional output properties, such as
+                    <option>text</option> element. The start, max, cache and session-id attributes
+                    have the same meaning as the corresponding GET parameters. Optional output properties, such as
                     pretty-print, may be passed in the <option>properties</option> element. An
                     example of POST for Perl is provided below:</para>
                 <example>
@@ -373,8 +402,72 @@ if($res->is_success) {
                 resource of a GET or POST request is a binary resource with the mime-type
                 <option>application/xquery</option>, the REST server will try to compile and
                 execute it as an XQuery. The XQuery has access to the entire HTTP context, including
-                parameters and session attributes. Please have a look at the example given
-                in section <ulink url="devguide_rest.xml#storedxq">Using the REST Server and Stored XQueries</ulink>.</para>
+                parameters and session attributes.</para>
+                
+                <para>Stored XQueries are a good way to provide dynamic
+                views on the data or create small services. However, they can do more: 
+                since you can also store binary resources like
+                images, CSS stylesheets or Javascript files into a database collection, it is
+                easily possible to serve a complex application entirely out of the database.
+                </para>
+                
+                <para>Please have a look at the example given
+                in section <ulink url="devguide_xquery.xml#storedxq">Using the REST Server and 
+                Stored XQueries</ulink>.</para>
+            </section>
+            <section>
+                <title>Cached Query Results</title>
+                
+                <para>When executing queries using GET or POST, the server can cache query results
+                in a server-side session. The results are cached in memory. In general, memory
+                consumption will be low for query results which reference nodes stored in the
+                database. It is high for nodes constructed within the XQuery itself.</para>
+                
+                <para>To create a session and store query results into it, pass parameter
+                <option>_cache=yes</option> with a GET request or set attribute
+                <option>cache="yes"</option> within the XML payload of a POST query request.
+                The server will execute the query as usual. If the result sequence contains
+                more than one item, the entire sequence will be stored into a newly created 
+                session.</para>
+                
+                <para>The id of the created session is included with the response. For requests
+                which return a <sgmltag>exist:result</sgmltag> wrapper element, the session id
+                will be specified in the <option>exist:session</option> attribute. The session
+                id is also available in the HTTP header <option>X-Session-Id</option>. The
+                following example shows the header and <sgmltag>exist:result</sgmltag>
+                tag returned by the server:</para>
+                
+                <example>
+                    <title>Sample Response</title>
+                    <screen><![CDATA[HTTP/1.1 200 OK
+Date: Thu, 01 May 2008 16:28:16 GMT
+Server: Jetty/5.1.12 (Linux/2.6.22-14-generic i386 java/1.6.0_03
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Last-Modified: Tue, 29 Apr 2008 20:34:33 GMT
+X-Session-Id: 2
+Content-Type: text/xml; charset=UTF-8
+Content-Length: 4699
+
+<exist:result xmlns:exist="http://exist.sourceforge.net/NS/exist" 
+    exist:hits="3406" exist:start="1" exist:count="10" 
+    exist:session="2">
+...
+</exist:result>]]></screen>
+                </example>
+                
+                <para>The session id can then be passed with subsequent requests to retrieve
+                further chunks of data without re-evaluating the query. For a GET request, pass
+                the session id with parameter <option>_session</option>. For a POST request,
+                add an attribute <option>session="sessionId"</option> to the XML content of the
+                request.</para>
+                
+                <para>If the session does not exist or has timed out, the server will simply
+                re-evaluate the query. The timeout is set to 2 minutes.</para>
+                
+                <para>A session can be deleted by sending a GET request to an arbitrary collection
+                url. The session id is passed in a parameter <option>_release</option>:</para>
+                
+                <synopsis>http://localhost:8080/exist/rest/db?_release=0</synopsis>
             </section>
         </section>
     </chapter>
