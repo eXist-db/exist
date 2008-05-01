@@ -414,12 +414,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
                 if (axis != Constants.SELF_AXIS) {
                     //TODO : is this StroredNode construction necessary ?
-//                    Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(new StoredNode(proxy));
-//                    StoredNode node = (StoredNode) domIter.next();
-//                    node.setOwnerDocument(proxy.getDocument());
-//                    node.setNodeId(proxy.getNodeId());
-//                    addChildren(proxy, result, node, domIter, 0);
-                    addChildren(proxy,result);
+                    Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(new StoredNode(proxy));
+                    StoredNode node = (StoredNode) domIter.next();
+                    node.setOwnerDocument(proxy.getDocument());
+                    node.setNodeId(proxy.getNodeId());
+                    addChildren(proxy, result, node, domIter, 0);
+//                    addChildren(proxy,result);
                 }
             }
         }
@@ -480,26 +480,44 @@ public class VirtualNodeSet extends AbstractNodeSet {
                     status = reader.next();
                     if (axis == Constants.ATTRIBUTE_AXIS && status != XMLStreamReader.ATTRIBUTE)
                         break;
-                    if (status == XMLStreamReader.END_ELEMENT) {
-                        if (--level < 0)
+                    switch (status) {
+                        case XMLStreamReader.END_ELEMENT:
+                            if (--level < 0)
+                                return;
                             break;
-                    } else if (test.matches(reader)) {
-                        if (((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS)
-                            && level == 0) ||
-                            (axis == Constants.DESCENDANT_AXIS ||
-                            axis == Constants.DESCENDANT_SELF_AXIS) ||
-                            axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-                            NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
-                            NodeProxy p = new NodeProxy(contextNode.getDocument(), nodeId,
-                                    reader.getNodeType(), reader.getCurrentPosition());
-                            p.deepCopyContext(contextNode);
-                            if (useSelfAsContext && inPredicate) {
-                                p.addContextNode(contextId, p);
-                            } else if (inPredicate) {
-                                p.addContextNode(contextId, contextNode);
+                        case XMLStreamReader.ATTRIBUTE:
+                            if ((axis == Constants.ATTRIBUTE_AXIS && level == 0) ||
+                                axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                                AttrImpl attr = (AttrImpl) reader.getNode();
+                                if (test.matches(attr)) {
+                                    NodeProxy p = new NodeProxy(attr);
+                                    p.deepCopyContext(contextNode);
+                                    if (useSelfAsContext && inPredicate) {
+                                        p.addContextNode(contextId, p);
+                                    } else if (inPredicate) {
+                                        p.addContextNode(contextId, contextNode);
+                                    }
+                                    result.add(p);
+                                }
                             }
-                            result.add(p);
-                        }
+                            break;
+                        default:
+                            if (((axis == Constants.CHILD_AXIS && level == 0) ||
+                                axis == Constants.DESCENDANT_AXIS ||
+                                axis == Constants.DESCENDANT_SELF_AXIS) &&
+                                test.matches(reader)) {
+                                NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                                NodeProxy p = new NodeProxy(contextNode.getDocument(), nodeId,
+                                        reader.getNodeType(), reader.getCurrentPosition());
+                                p.deepCopyContext(contextNode);
+                                if (useSelfAsContext && inPredicate) {
+                                    p.addContextNode(contextId, p);
+                                } else if (inPredicate) {
+                                    p.addContextNode(contextId, contextNode);
+                                }
+                                result.add(p);
+                            }
+                            break;
                     }
                     if (status == XMLStreamReader.START_ELEMENT)
                         ++level;
