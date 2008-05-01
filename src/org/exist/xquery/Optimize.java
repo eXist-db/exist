@@ -48,6 +48,7 @@ public class Optimize extends Pragma {
     private Optimizable optimizables[];
     private Expression innerExpr = null;
     private LocationStep contextStep = null;
+    private int contextId = Expression.NO_CONTEXT_ID;
 
     private NodeSet cachedContext = null;
     private int cachedTimestamp;
@@ -65,6 +66,11 @@ public class Optimize extends Pragma {
                 enabled = "yes".equals(param[1]);
             }
         }
+    }
+
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        super.analyze(contextInfo);
+        this.contextId = contextInfo.getContextId();
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
@@ -109,11 +115,11 @@ public class Optimize extends Pragma {
                 // determine the set of potential ancestors for which the predicate has to
                 // be re-evaluated to filter out wrong matches
                 if (contextStep == null || current > 0) {
-                    ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR, true, -1);
+                    ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR, true, contextId);
                 } else {
                     NodeSelector selector;
                     long start = System.currentTimeMillis();
-                    selector = new AncestorSelector(selection, -1, true);
+                    selector = new AncestorSelector(selection, contextId, true);
 //                    switch (optimizables[current].getOptimizeAxis()) {
 //                        case Constants.CHILD_AXIS:
 //                        case Constants.ATTRIBUTE_AXIS:
@@ -126,7 +132,7 @@ public class Optimize extends Pragma {
                     ElementIndex index = context.getBroker().getElementIndex();
                     QName ancestorQN = contextStep.getTest().getName();
                     if (optimizables[current].optimizeOnSelf()) {
-                        selector = new SelfSelector(selection, -1);
+                        selector = new SelfSelector(selection, contextId);
                         ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
                                 ancestorQN, selector);
 //                        ancestors = selection;
