@@ -19,15 +19,6 @@
  */
 package org.exist.util.serializer;
 
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
-
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.util.XMLString;
@@ -38,6 +29,14 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.NamespaceSupport;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 
@@ -174,15 +173,15 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 			namespaceDecls.clear();
 			nsSupport.pushContext();
 			receiver.startElement(qname);
-			String prefix = "";
+			String elemPrefix = "";
 			int p = qname.indexOf(':');
 			if (p > 0)
-				prefix = qname.substring(0, p);
+				elemPrefix = qname.substring(0, p);
 			if (namespaceURI == null)
 				namespaceURI = "";
-			if (nsSupport.getURI(prefix) == null) {
-				namespaceDecls.put(prefix, namespaceURI);
-				nsSupport.declarePrefix(prefix, namespaceURI);
+			if (nsSupport.getURI(elemPrefix) == null) {
+				namespaceDecls.put(elemPrefix, namespaceURI);
+				nsSupport.declarePrefix(elemPrefix, namespaceURI);
 			}
 
 			// check attributes for required namespace declarations
@@ -198,14 +197,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 							nsSupport.declarePrefix("", uri);
 						}
 					} else if (attrName.startsWith("xmlns:")) {
-						prefix = attrName.substring(6);
+						String prefix = attrName.substring(6);
 						if (nsSupport.getURI(prefix) == null) {
 							uri = attribs.getValue(i);
 							namespaceDecls.put(prefix, uri);
 							nsSupport.declarePrefix(prefix, uri);
 						}
 					} else if ((p = attrName.indexOf(':')) > 0) {
-						prefix = attrName.substring(0, p);
+						String prefix = attrName.substring(0, p);
 						uri = attribs.getURI(i);
 						if (nsSupport.getURI(prefix) == null) {
 							namespaceDecls.put(prefix, uri);
@@ -215,10 +214,9 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 				}
 			}
 			Map.Entry nsEntry;
-			for (Iterator i = optionalNamespaceDecls.entrySet().iterator();	i.hasNext();
-			) {
+			for (Iterator i = optionalNamespaceDecls.entrySet().iterator();	i.hasNext();) {
 				nsEntry = (Map.Entry) i.next();
-				prefix = (String) nsEntry.getKey();
+				String prefix = (String) nsEntry.getKey();
 				uri = (String) nsEntry.getValue(); 
 				receiver.namespace(prefix, uri);
 				nsSupport.declarePrefix(prefix, uri); //nsSupport.declarePrefix(prefix, namespaceURI);
@@ -226,14 +224,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 			// output all namespace declarations
 			for (Iterator i = namespaceDecls.entrySet().iterator();	i.hasNext(); ) {
 				nsEntry = (Map.Entry) i.next();
-				prefix = (String) nsEntry.getKey();
+				String prefix = (String) nsEntry.getKey();
 				uri = (String) nsEntry.getValue(); 
 				if(!optionalNamespaceDecls.containsKey(prefix)) {
 					receiver.namespace(prefix, uri);
 				}
 			}
 			//cancels current xmlns if relevant
-			if ("".equals(prefix) && !namespaceURI.equals(receiver.getDefaultNamespace())) {
+			if ("".equals(elemPrefix) && !namespaceURI.equals(receiver.getDefaultNamespace())) {
 				receiver.namespace("", namespaceURI);
 				nsSupport.declarePrefix("", namespaceURI); 
 			}
