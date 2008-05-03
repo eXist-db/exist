@@ -313,8 +313,6 @@ public class Eval extends BasicFunction {
 			}	
 				
 			sequence = xquery.execute(compiled, exprContext, false);
-            if (innerContext != this.context)
-                innerContext.reset();
             ValueSequence newSeq = new ValueSequence();
             boolean hasSupplements = false;
             for (int i = 0;  i < sequence.getItemCount(); i++) {
@@ -340,7 +338,9 @@ public class Eval extends BasicFunction {
 		} catch (IOException e) {
 			throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
-			if (compiled != null) {
+            if (innerContext != this.context)
+                innerContext.reset();
+            if (compiled != null) {
 				if (cache)
 					pool.returnCompiledXQuery(querySource, compiled);
 				else
