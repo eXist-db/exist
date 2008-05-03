@@ -21,7 +21,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.util.ExpressionDumper;
@@ -57,21 +56,29 @@ public class CDATAConstructor extends NodeConstructor {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        int nodeNr = builder.cdataSection(cdata);
-        NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
-        
-        if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", node);   
-        
-        return node;
+
+        if (newDocumentContext)
+            context.pushDocumentContext();
+        try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            int nodeNr = builder.cdataSection(cdata);
+            NodeImpl node = builder.getDocument().getNode(nodeNr);
+
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().end(this, "", node);
+
+            return node;
+        } finally {
+            if (newDocumentContext)
+                context.popDocumentContext();
+        }
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        super.analyze(contextInfo);
     }
 
     /* (non-Javadoc)

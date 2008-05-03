@@ -33,16 +33,21 @@ import org.exist.xquery.value.Type;
 public abstract class NodeConstructor extends AbstractExpression {
 
 	protected MemTreeBuilder builder = null;
-	
-	public NodeConstructor(XQueryContext context) {
+	protected boolean newDocumentContext = false;
+
+    public NodeConstructor(XQueryContext context) {
 		super(context);
 	}
 	
 	public void setDocumentBuilder(MemTreeBuilder builder) {
 		this.builder = builder;
 	}
-	
-	/* (non-Javadoc)
+
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        newDocumentContext = (contextInfo.getFlags() & IN_NODE_CONSTRUCTOR) == 0;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public abstract Sequence eval(
