@@ -23,7 +23,6 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.util.XMLChar;
@@ -73,7 +72,8 @@ public class DynamicAttributeConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
+        super.analyze(contextInfo);
+        contextInfo.setParent(this);
         qnameExpr.analyze(contextInfo);
         valueExpr.analyze(contextInfo);
     }
@@ -90,40 +90,49 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
+
+        if (newDocumentContext)
+            context.pushDocumentContext();
         
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        context.proceed(this, builder);
-        
-        Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
-        if(!nameSeq.hasOne())
+        NodeImpl node;
+        try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            context.proceed(this, builder);
+
+            Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
+            if(!nameSeq.hasOne())
             throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
-        
-        QName qn = QName.parse(context, nameSeq.getStringValue(), null);
-        
-		//Not in the specs but... makes sense
-		if(!XMLChar.isValidName(qn.getLocalName()))
+
+            QName qn = QName.parse(context, nameSeq.getStringValue(), null);
+
+            //Not in the specs but... makes sense
+            if(!XMLChar.isValidName(qn.getLocalName()))
 			throw new XPathException("XPTY0004 '" + qn.getLocalName() + "' is not a valid attribute name");
 
-		String value;
-        Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
-        if(valueSeq.isEmpty())
+            String value;
+            Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
+            if(valueSeq.isEmpty())
             value = "";
-        else {
-            StringBuffer buf = new StringBuffer();
-            for(SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
-                Item next = i.nextItem();
-                buf.append(next.getStringValue());
-                if(i.hasNext())
-                    buf.append(' ');
+            else {
+                StringBuffer buf = new StringBuffer();
+                for(SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
+                    Item next = i.nextItem();
+                    buf.append(next.getStringValue());
+                    if(i.hasNext())
+                        buf.append(' ');
+                }
+                value = buf.toString();
             }
-            value = buf.toString();
-        }
-        NodeImpl node = null;
-        try {
-            int nodeNr = builder.addAttribute(qn, value);
-            node = ((DocumentImpl)builder.getDocument()).getAttribute(nodeNr);
-        } catch (DOMException e) {
-            throw new XPathException(getASTNode(), "Error XQDY0025: element has more than one attribute '" + qn + "'");
+            node = null;
+            try {
+                int nodeNr = builder.addAttribute(qn, value);
+                node = builder.getDocument().getAttribute(nodeNr);
+            } catch (DOMException e) {
+                throw new XPathException(getASTNode(), "Error XQDY0025: element has more than one attribute '" + qn + "'");
+            } 
+        } finally {
+            if (newDocumentContext)
+                context.popDocumentContext();
         }
 
         if (context.getProfiler().isEnabled())           

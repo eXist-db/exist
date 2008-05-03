@@ -22,7 +22,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -52,7 +51,8 @@ public class DynamicCommentConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
+        super.analyze(contextInfo);
+        contextInfo.setParent(this);
         content.analyze(contextInfo);
     }
     
@@ -68,33 +68,41 @@ public class DynamicCommentConstructor extends NodeConstructor {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
+
+        if (newDocumentContext)
+            context.pushDocumentContext();
         
         Sequence result;
-        Sequence contentSeq = content.eval(contextSequence, contextItem);
-       
-        if(contentSeq.isEmpty())
+        try {
+            Sequence contentSeq = content.eval(contextSequence, contextItem);
+
+            if(contentSeq.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
-        else {            
-            MemTreeBuilder builder = context.getDocumentBuilder();
-    		context.proceed(this, builder);
-            
-    		StringBuffer buf = new StringBuffer();
-            for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+            else {
+                MemTreeBuilder builder = context.getDocumentBuilder();
                 context.proceed(this, builder);
-                Item next = i.nextItem();
-                if(buf.length() > 0)
-                    buf.append(' ');
-                buf.append(next.toString());
+
+                StringBuffer buf = new StringBuffer();
+                for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+                    context.proceed(this, builder);
+                    Item next = i.nextItem();
+                    if(buf.length() > 0)
+                        buf.append(' ');
+                    buf.append(next.toString());
+                }
+
+                if (buf.indexOf("--") != Constants.STRING_NOT_FOUND|| buf.toString().endsWith("-")) {
+                    throw new XPathException("XQDY0072 '" + buf.toString() + "' is not a valid comment");
+                }
+
+                int nodeNr = builder.comment(buf.toString());
+                result = builder.getDocument().getNode(nodeNr);
             }
-            
-            if (buf.indexOf("--") != Constants.STRING_NOT_FOUND|| buf.toString().endsWith("-")) {
-            	throw new XPathException("XQDY0072 '" + buf.toString() + "' is not a valid comment");            	
-            }
-            
-            int nodeNr = builder.comment(buf.toString());
-            result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+        } finally {
+            if (newDocumentContext)
+                context.popDocumentContext();
         }
-        
+
         if (context.getProfiler().isEnabled())           
             context.getProfiler().end(this, "", result);  
         

@@ -684,11 +684,12 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         public int compare(Object o1, Object o2) {
             NodeImpl n1 = (NodeImpl) o1;
             NodeImpl n2 = (NodeImpl) o2;
-            if (n1.getDocument().compareTo(n2.getDocument()) == 0) {
+            final int docCmp = n1.getDocument().compareTo(n2.getDocument());
+            if (docCmp == 0) {
                 return n1.getNodeNumber() == n2.getNodeNumber() ? Constants.EQUAL :
                     (n1.getNodeNumber() > n2.getNodeNumber() ? Constants.SUPERIOR : Constants.INFERIOR);
             } else
-                return Constants.INFERIOR;
+                return docCmp;
         }
     }
 }
