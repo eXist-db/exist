@@ -45,15 +45,20 @@ public class GrammarPool implements XMLGrammarPool {
     
     private XMLGrammarPool pool;
     
-    /**  Constructs a grammar pool with a default number of buckets. */
+    /**
+     * Constructs a grammar pool with a default number of buckets. 
+     */
     public GrammarPool() {
         if (logger.isInfoEnabled())
             logger.info("Initializing GrammarPool.");
         pool = new XMLGrammarPoolImpl();
     }
     
-    /**  Constructs a grammar pool with a default number of buckets. 
-         The supplied grammar pool is reused */
+    /**  
+     * Constructs a grammar pool with a default number of buckets using pool.
+     * 
+     * @param pool The supplied grammar pool is reused.
+     */
     public GrammarPool(XMLGrammarPool pool) {
         if (logger.isInfoEnabled())
             logger.info("Initializing GrammarPool using supplied pool.");
