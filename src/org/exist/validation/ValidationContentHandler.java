@@ -41,6 +41,7 @@ public class ValidationContentHandler extends DefaultHandler {
     /**
      * @see org.xml.sax.helpers.DefaultHandler#startElement(String,String,String,Attributes)
      */
+    @Override
     public void startElement(String uri, String localName, String qName, 
                              Attributes attributes) throws SAXException {
         
@@ -50,6 +51,11 @@ public class ValidationContentHandler extends DefaultHandler {
         }
     }
     
+    /**
+     *  Get namespace of root element. To be used for reporting.
+     * 
+     * @return Namespace of root element.
+     */
     public String getNamespaceUri(){
         return namespaceUri;
     }
