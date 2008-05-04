@@ -2950,7 +2950,7 @@ public class XQueryTest extends XMLTestCase {
     
     
     // http://sourceforge.net/support/tracker.php?aid=1938498 
-    public void bugtestMemproc_1938498() {
+    public void testMemproc_1938498() {
 
         try {
             String xmldocument="<Root><Child/></Root>";
