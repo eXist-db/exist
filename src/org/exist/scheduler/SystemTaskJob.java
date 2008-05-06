@@ -54,10 +54,13 @@ public class SystemTaskJob implements JobDescription, org.quartz.StatefulJob
 	/**
 	 * Constructor for Creating a new SystemTask Job
 	 */
-	public SystemTaskJob(SystemTask task)
+	public SystemTaskJob(String jobName, SystemTask task)
 	{
 		this.task = task;
-		this.JOB_NAME += ": " + task.getClass().getName();
+        if (jobName == null)
+            this.JOB_NAME += ": " + task.getClass().getName();
+        else
+            this.JOB_NAME = jobName;
 	}
 	
 	public final String getName()
