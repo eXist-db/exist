@@ -2855,7 +2855,7 @@ public class XQueryTest extends XMLTestCase {
     }
     
     // http://sourceforge.net/support/tracker.php?aid=1884360
-    public void bugtestCardinalityAttributeNamespace_1884360() {
+    public void testCardinalityAttributeNamespace_1884360() {
 
         try {
             String query = "let $el := <element a=\"1\" b=\"2\"/> "+
@@ -2867,8 +2867,8 @@ public class XQueryTest extends XMLTestCase {
 
             assertEquals(2, result.getSize());
             assertEquals(query, "<c a=\"1\"/>",
-                    result.getResource(1).getContent().toString());
-            assertEquals(query, "<c a=\"2\"/>",
+                    result.getResource(0).getContent().toString());
+            assertEquals(query, "<c b=\"2\"/>",
                     result.getResource(1).getContent().toString());
         } catch (XMLDBException ex) {
             ex.printStackTrace();
