@@ -24,6 +24,7 @@ package org.exist.xquery.functions.util;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -64,10 +65,12 @@ public class NodeId extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		NodeValue docNode =(NodeValue) args[0].itemAt(0);
-		if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-			throw new XPathException(getASTNode(), "First argument to function node-by-id " +
-					"should be a persistent node, not an in-memory node.");
-		org.exist.numbering.NodeId nodeId = ((NodeProxy)docNode).getNodeId();
+                org.exist.numbering.NodeId nodeId;
+		if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+                    nodeId = ((NodeImpl)docNode).getNodeId();
+                } else {
+                    nodeId = ((NodeProxy)docNode).getNodeId();
+                }
 		return new StringValue(nodeId.toString());
 	}
 }

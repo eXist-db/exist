@@ -154,6 +154,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	}
 
     public NodeId getNodeId() {
+        expand();
         return document.nodeId[nodeNumber];
     }
     

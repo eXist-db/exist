@@ -25,6 +25,7 @@ package org.exist.xquery.functions.util;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -69,14 +70,14 @@ public class GetNodeById extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		NodeValue docNode =(NodeValue) args[0].itemAt(0);
-		if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-			throw new XPathException(getASTNode(), "First argument to function node-by-id " +
-					"should be a persistent node, not an in-memory node.");
-		DocumentImpl doc = ((NodeProxy)docNode).getDocument();
-		String id = args[1].itemAt(0).getStringValue();
-		NodeId nodeId = context.getBroker().getBrokerPool().getNodeFactory().createFromString(id);
-		NodeProxy node = new NodeProxy(doc, nodeId);
-		return node;
+        String id = args[1].itemAt(0).getStringValue();
+        NodeId nodeId = context.getBroker().getBrokerPool().getNodeFactory().createFromString(id);
+        NodeValue docNode = (NodeValue) args[0].itemAt(0);
+        if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+            return ((NodeImpl) docNode).getDocument().getNodeById(nodeId);
+        } else {
+            DocumentImpl doc = ((NodeProxy)docNode).getDocument();
+            return new NodeProxy(doc, nodeId);
+        }
 	}
 }

@@ -995,6 +995,15 @@ public class DocumentImpl extends NodeImpl implements Document {
         return newDoc;
     }
 
+    public NodeImpl getNodeById(NodeId id) {
+        expand();
+        for (int i = 0; i < size; i++) {
+            if (id.equals(nodeId[i]))
+                return getNode(i);
+        }
+        return null;
+    }
+    
     private void computeNodeIds() {
         if (nodeId[0] != null)
             return;
