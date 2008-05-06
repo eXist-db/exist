@@ -1798,7 +1798,7 @@ public class XQueryTest extends XMLTestCase {
         }
     }    
 
-    public void bugtestInstanceOf() {
+    public void testInstanceOfDocumentNode() {
     	try {
 			XPathQueryService service = 
 				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
