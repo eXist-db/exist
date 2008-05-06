@@ -95,13 +95,14 @@ public class Configuration implements ErrorHandler
     public static final class JobConfig
     {
     	private String type = null;
+        private String jobName = null;
         private String resourceName = null;
         private String schedule = null;
 		private long delay = -1;
 		private int repeat = SimpleTrigger.REPEAT_INDEFINITELY;
 		private Properties parameters = new Properties();
 		
-		public JobConfig(String type, String resourceName, String schedule) throws JobException
+		public JobConfig(String type, String jobName, String resourceName, String schedule) throws JobException
 		{
 			if(type != null)
 			{
@@ -112,6 +113,8 @@ public class Configuration implements ErrorHandler
 				this.type = Scheduler.JOB_TYPE_USER;
 			}
 			
+            this.jobName = jobName;
+            
 			if(resourceName != null)
 			{
 				this.resourceName = resourceName;
@@ -135,7 +138,11 @@ public class Configuration implements ErrorHandler
 		{
 			return type;
 		}
-		
+	
+        public String getJobName() {
+            return jobName;
+        }
+        
 		public String getResourceName()
 		{
 			return resourceName;
@@ -562,6 +569,7 @@ public class Configuration implements ErrorHandler
         ArrayList jobList = new ArrayList();
         
         String jobType = null;
+        String jobName = null;
         String jobResource = null;
         String jobSchedule = null;
 		String jobDelay    = null;
@@ -576,6 +584,8 @@ public class Configuration implements ErrorHandler
             if(jobType == null)
             	jobType = Scheduler.JOB_TYPE_USER; //default to user if unspecified
             
+            jobName = job.getAttribute(Scheduler.JOB_NAME_ATTRIBUTE);
+            
             //get the job resource
             jobResource = job.getAttribute(Scheduler.JOB_CLASS_ATTRIBUTE);
             if(jobResource == null)
@@ -589,7 +599,7 @@ public class Configuration implements ErrorHandler
             //create the job config
             try
             {
-	            JobConfig jobConfig = new JobConfig(jobType, jobResource, jobSchedule);
+	            JobConfig jobConfig = new JobConfig(jobType, jobName, jobResource, jobSchedule);
 	            
 				//get and set the job delay
 	            jobDelay = job.getAttribute(Scheduler.JOB_DELAY_ATTRIBUTE);

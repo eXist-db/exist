@@ -73,14 +73,15 @@ public class UserXQueryJob extends UserJob
 	/**
 	 * Constructor for Creating a new XQuery User Job
 	 */
-	public UserXQueryJob(String XQueryResource, User user)
-	{
-		this.XQueryResource = XQueryResource;
+    public UserXQueryJob(String jobName, String XQueryResource, User user) {
+        this.XQueryResource = XQueryResource;
 		this.user = user;
-		
-		this.JOB_NAME += ": " + XQueryResource;
-	}
-	
+        if (jobName == null)
+            this.JOB_NAME += ": " + XQueryResource;
+        else
+            this.JOB_NAME = jobName;
+    }
+    
 	public final String getName()
 	{
 		return JOB_NAME;	
