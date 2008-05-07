@@ -115,7 +115,7 @@ public class ScheduleFunctions extends BasicFunction
 		//scheule-xquery-cron-job
 		if(isCalledAs("schedule-xquery-cron-job"))
 		{
-			job = new UserXQueryJob(resource, user);
+			job = new UserXQueryJob(null, resource, user);
 		}
 		
 		//schedule-java-cron-job
