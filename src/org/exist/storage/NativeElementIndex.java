@@ -578,9 +578,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * does directly operate on the input stream containing the potential descendant nodes. It thus needs
      * less comparisons than {@link #findElementsByTagName(byte, DocumentSet, QName, NodeSelector)}.
      * 
-     * @param type either {@link ElementValue#ATTRIBUTE}, {@link ElementValue#ELEMENT}
-     *      or {@link ElementValue#ATTRIBUTE_ID} or {@link ElementValue#ATTRIBUTE_IDREF} 
-     *      or {@link ElementValue#ATTRIBUTE_IDREFS}
+     * @param type either {@link ElementValue#ATTRIBUTE} or {@link ElementValue#ELEMENT}
      * @param docs the set of documents to look up in the index
      * @param contextSet the set of ancestor nodes for which the method will try to find descendants
      * @param contextId id of the current context expression as passed by the query engine
@@ -656,7 +654,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     long prevPosition = ((BFile.PageInputStream)is).position();
                     long markedPosition = prevPosition;
                     NodeId markedId = null;
-                    NodeId lastMarked = ancestorId;
                     NodeId previousId = null;
                     NodeProxy lastAncestor = null;
 
@@ -735,11 +732,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                         address = StorageAddress.read(is);
                                     } else {
                                         // mark the current position in the input stream
-                                        if (!next.getNodeId().isDescendantOf(lastMarked)) {
-                                            lastMarked = next.getNodeId();
-                                            markedPosition = prevPosition;
-                                            markedId = nodeId;
-                                        }
+                                        markedPosition = prevPosition;
+                                        markedId = nodeId;
                                     }
                                     ancestor = next;
                                     ancestorId = ancestor.getNodeId();
