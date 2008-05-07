@@ -2431,9 +2431,9 @@ public class XQueryContext {
         enableOptimizer = param != null && param.equals("yes");
         
         param = (String) getBroker().getConfiguration().getProperty(PROPERTY_XQUERY_BACKWARD_COMPATIBLE);
-        backwardsCompatible = param == null ? true : param.equals("yes");
-        
-        raiseErrorOnFailedRetrieval = ((Boolean) getBroker().getConfiguration().getProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL)).booleanValue();
+        backwardsCompatible = param == null || param.equals("yes");
+        Boolean option = ((Boolean) getBroker().getConfiguration().getProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL));
+        raiseErrorOnFailedRetrieval = option != null && option.booleanValue();
         
         // load built-in modules
         Map modules = (Map) config.getProperty(PROPERTY_BUILT_IN_MODULES);
