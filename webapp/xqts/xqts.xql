@@ -238,7 +238,7 @@ declare function xqts:normalize-and-expand($text as item()*) as xs:string {
 		"&amp;gt;", "&gt;")
 };
 
-declare function xqts:get-expected-results($testCase as element(catalog:test-case)) as element()* { 
+declare function xqts:get-expected-results($testCase as element(catalog:test-case), $inMemory as xs:boolean) as element()* { 
     let $testName := $testCase/@name   
     let $hackedTest := /hack:test-cases/hack:test-case[@name = $testName]    
     return
@@ -265,7 +265,7 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                     else if ($compare eq "TextAsXML") then
                         xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
                     else if ($compare eq "XML") then
-                        if ($xqts:IN_MEMORY) then
+                        if ($inMemory) then
                             util:parse(util:file-read($outputFilePath, "UTF-8"))
                         else
                             util:catch(
@@ -277,7 +277,7 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                     else if ($compare eq "Fragment") then
                         let $xmlFrag := concat("<f>", util:file-read($outputFilePath, "UTF-8"), "</f>")
                         return
-                            if ($xqts:IN_MEMORY) then
+                            if ($inMemory) then
                                 util:parse($xmlFrag)
                             else
                                 util:catch(
@@ -299,7 +299,7 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
     )
 };
 
-declare function xqts:execute-test-case($testCase as element(catalog:test-case)) as element()? {
+declare function xqts:execute-test-case($testCase as element(catalog:test-case), $inMemory as xs:boolean) as element()? {
     let $context :=
         <static-context>
             { 
@@ -308,7 +308,7 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case))
             {                           
                 for $input in $testCase/catalog:input-file
                 return
-                    if ($xqts:IN_MEMORY) then
+                    if ($inMemory) then
                         <variable name="{$input/@variable}" source="{xqts:get-input-value-uri($input)}"/>
                     else
                         <variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
@@ -333,7 +333,7 @@ declare function xqts:execute-test-case($testCase as element(catalog:test-case))
             }
         </static-context>                   
     let $query := xqts:get-query($testCase)
-    let $expectedResults := xqts:get-expected-results($testCase)
+    let $expectedResults := xqts:get-expected-results($testCase, $inMemory)
     let $formatedResult := 
         util:catch(
             "java.lang.Exception",            
@@ -453,8 +453,8 @@ declare function xqts:format-result($testCase as element(catalog:test-case), $pa
 };
 
 declare function xqts:run-single-test-case($case as element(catalog:test-case),
-    $resultRoot as element()?) as empty() {
-    let $result := xqts:execute-test-case($case)
+    $resultRoot as element()?, $inMemory as xs:boolean) as empty() {
+    let $result := xqts:execute-test-case($case, $inMemory)
     return 
         util:catch(
             "java.lang.Exception",            
@@ -476,7 +476,7 @@ declare function xqts:run-single-test-case($case as element(catalog:test-case),
                 ()
 };
 
-declare function xqts:run-test-group($group as element(catalog:test-group)) as empty() {
+declare function xqts:run-test-group($group as element(catalog:test-group), $inMemory as xs:boolean) as empty() {
     (: Create the collection hierarchy for this group and get the results.xml doc to append to. :)
     let $resultsDoc := xqts:create-collections($group)
     let $tests := $group/catalog:test-case
@@ -486,7 +486,7 @@ declare function xqts:run-test-group($group as element(catalog:test-group)) as e
             for $test in $tests
                 let $log := util:log("DEBUG", ("Running test case: ", string($test/@name)))
                 return
-                    xqts:run-single-test-case($test, $resultsDoc/test-result),
+                    xqts:run-single-test-case($test, $resultsDoc/test-result, $inMemory),
                     if (fn:exists($tests) and fn:exists($resultsDoc/test-result)) then 
                         xqts:finish($resultsDoc/test-result)
                     else
@@ -495,34 +495,34 @@ declare function xqts:run-test-group($group as element(catalog:test-group)) as e
                         for $childGroup in $group/catalog:test-group
                             let $log := util:log("DEBUG", ("Entering group: ", string($childGroup/@name)))
                             return
-                                xqts:run-test-group($childGroup)
+                                xqts:run-test-group($childGroup, $inMemory)
         )
 };
 
-declare function xqts:test-single($name as xs:string) as element() {
+declare function xqts:test-single($name as xs:string, $inMemory as xs:boolean) as element() {
     let $test := //catalog:test-case[@name = $name]
     return
         if ($test) then
             let $resultsDoc := xqts:create-collections($test/parent::catalog:test-group)
-            let $dummy := xqts:run-single-test-case($test, $resultsDoc/test-result)
+            let $dummy := xqts:run-single-test-case($test, $resultsDoc/test-result, $inMemory)
             return
                 $resultsDoc/test-result
         else
             <error>Test case not found: {$name}.</error>
 };
 
-declare function xqts:test-group($groupName as xs:string) as empty() {
+declare function xqts:test-group($groupName as xs:string, $inMemory as xs:boolean) as empty() {
     let $group := //catalog:test-group[@name = $groupName]
     return (
         xqts:create-progress-file(count($group//catalog:test-case)),
-        xqts:run-test-group($group)
+        xqts:run-test-group($group, $inMemory)
     )
 };
 
-declare function xqts:test-all() as empty() {
+declare function xqts:test-all($inMemory as xs:boolean) as empty() {
     for $test in /catalog:test-suite/catalog:test-group
     return
-        xqts:test-group($test/@name)
+        xqts:test-group($test/@name, $inMemory)
 };
 
 declare function xqts:report-progress($test-case as element()) as empty() {
@@ -561,9 +561,10 @@ declare function xqts:overall-result() {
             percentage="{$passed div ($passed + $failed)}"/>
 };
 
-let $group := request:get-parameter('group', ())
+let $group := request:get-parameter('group', ()),
+    $mode := request:get-parameter('mode', xs:string($xqts:IN_MEMORY))
 return
     if ($group) then
-        xqts:test-group($group)
+        xqts:test-group($group, xs:boolean($mode))
     else
         ()

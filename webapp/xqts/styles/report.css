@@ -120,6 +120,14 @@ a {
     font-size: 100%;
 }
 
+.group-heading select {
+    float: right;
+    border: 1px solid #666666;
+    background-color: #EEEEEE;
+    color: #666666;
+    font-size: 100%;
+}
+
 #tests {
     overflow: auto;
 }
