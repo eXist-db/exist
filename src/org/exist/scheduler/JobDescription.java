@@ -34,7 +34,14 @@ public interface JobDescription
 	 *  @return The job's name
 	 */
 	public String getName();
-	
+
+    /**
+     * Set the name of the job
+     * 
+     * @param name The job's new name
+     */
+    public void setName(String name);
+    
 	/**
 	 * Get the name group for the job
 	 * 
