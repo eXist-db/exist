@@ -537,7 +537,7 @@ public class LocationStep extends Step {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
-            if (contextSet instanceof ExtArrayNodeSet) {
+            if (contextSet instanceof ExtArrayNodeSet && !contextSet.getProcessInReverseOrder()) {
                 return index.findDescendantsByTagName(ElementValue.ATTRIBUTE, test.getName(), axis,
                                                       docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
@@ -603,7 +603,7 @@ public class LocationStep extends Step {
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
             DocumentSet docs = getDocumentSet(contextSet);
-            if (contextSet instanceof ExtArrayNodeSet) {
+            if (contextSet instanceof ExtArrayNodeSet && !contextSet.getProcessInReverseOrder()) {
                 return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
                                                       docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
