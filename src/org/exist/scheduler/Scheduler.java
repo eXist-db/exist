@@ -561,6 +561,8 @@ public class Scheduler
 					else
 					{
 						job = (JobDescription)jobObject;
+                        if (jobConfig.getJobName() != null)
+                            job.setName(jobConfig.getJobName());
 					}
 				}
 				catch(Exception e)

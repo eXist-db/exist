@@ -58,6 +58,9 @@ public class SessionManager {
             return "REST_TimeoutCheck";
         }
 
+        public void setName(String name) {
+        }
+
         public void execute(BrokerPool brokerpool, Map params) throws JobException {
             final long now = System.currentTimeMillis();
             for (int i = 0; i < slots.length; i++) {

@@ -68,6 +68,10 @@ public class SystemTaskJob implements JobDescription, org.quartz.StatefulJob
 		return JOB_NAME;	
 	}
 	
+    public final void setName(String jobName) {
+        this.JOB_NAME = jobName;
+    }
+    
 	public final String getGroup()
 	{
 		return JOB_GROUP;
