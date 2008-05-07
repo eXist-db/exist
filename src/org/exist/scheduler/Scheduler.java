@@ -107,7 +107,7 @@ public class Scheduler
             {
                 throw new EXistException("Failed to load scheduler settings from org/exist/scheduler/quartz.properties");
             }
-
+            properties.setProperty(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, brokerpool.getId() + "_QuartzScheduler");
             SchedulerFactory schedulerFactory = new StdSchedulerFactory(properties);
 			scheduler = schedulerFactory.getScheduler();
 		}
