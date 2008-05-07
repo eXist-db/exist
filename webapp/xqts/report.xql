@@ -103,7 +103,7 @@ declare function xqts:display-page() as element() {
 			<script language="Javascript" type="text/javascript" src="scripts/container.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/report.js"/>
         </head>
-        <body>
+        <body>            
             <div id="header">
                 <ul id="menu">
                     <li><a href="../index.xml">Home</a></li>
@@ -123,7 +123,7 @@ declare function xqts:display-page() as element() {
                 </div>
                 <div id="panel-right">
                     <div id="testcases">
-                        <div id="group-details">
+                        <div id="group-details">                            
                             <div class="group-heading">
                                 <h1>Test Cases</h1>
                                 <h2>Select a test group to view its test cases</h2>
@@ -181,6 +181,20 @@ declare function xqts:print-tests($collection as xs:string, $name as xs:string) 
         <div id="group-details">
             <div class="group-heading">
                 <button type="button" onclick="runTest('{$collection}', '{$name}')">Run Test</button>
+                <form>                    
+                {
+                    if ($xqts:CONFIG/mode/text() = "memory") then      
+                        <select name="processing">                                          
+                          <option value="true" selected="">In memory nodes</option>
+                          <option value="false">Persistent nodes</option>
+                        </select>                          
+                    else
+                        <select name="processing">                  
+                          <option value="true">In memory nodes</option>
+                          <option value="false" selected="">Persistent nodes</option>
+                        </select>
+                    }
+                </form>
                 <h1>{$info/catalog:title/text()}</h1>
                 <h2>{$info/catalog:description/text()}</h2>
             </div>

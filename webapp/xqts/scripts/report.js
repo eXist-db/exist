@@ -31,6 +31,7 @@ var currentCollection = null;
 var currentGroup = null;
 var treeWidget = null;
 var installWarning;
+var mode;
 
 function init() {
 	resize();
@@ -157,10 +158,11 @@ function detailsLoaded(request) {
 	dp.SyntaxHighlighter.HighlightAll('code');
 }
 
-function runTest(collection, group) {
+function runTest(collection, group) {    
+    setMode();
 	if (confirm('Launch test group: ' + group + '?')) {
 		currentCollection = collection;
-		currentGroup = group;
+		currentGroup = group;		
 		
 		progress = new YAHOO.widget.Panel('progress', {
 			width: '400px',
@@ -172,7 +174,7 @@ function runTest(collection, group) {
 			visible: false,
 			draggable: false
 		});
-		progress.setHeader('Running tests ...');
+		progress.setHeader('Running tests on ' + (mode == 'true' ? 'in-memory nodes' : 'persistent nodes') + '...');
 		progress.setBody(PROGRESS_DIALOG);
 		progress.render(document.body);
 		
@@ -186,7 +188,7 @@ function runTest(collection, group) {
 		);
 		progress.show();
 		
-		var params = 'group=' + group;
+		var params = 'group=' + group + '&mode=' + mode;
 		var callback = {
 			success: testCompleted,
 			failure: requestFailed
@@ -194,6 +196,11 @@ function runTest(collection, group) {
 		YAHOO.util.Connect.asyncRequest('POST', 'xqts.xql', callback, params);
 		timer = setTimeout('reportProgress()', 1000);
 	}
+}
+
+function setMode() {
+    var select = document.getElementsByTagName('*')['processing'];
+    mode = select.options[select.selectedIndex].value;
 }
 
 function testCompleted(request) {
