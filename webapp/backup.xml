@@ -55,9 +55,9 @@
             <title>Backing Up the Database</title>
             <para>You can backup your database either by using the Admin Client menu, or the backup
                 command line utility.</para>
-            
+
             <para>If you are using the Admin Client, do the following:</para>
-            
+
             <procedure>
                 <step>
                     <para>Select either the Backup Icon (arrow pointed upward) in the toolbar OR
@@ -73,10 +73,11 @@
                 </step>
                 <step>
                     <para>In the <command>Backup-Directory</command> field, enter the full directory
-                        path to the where you want the backup database files to be stored or the path
-                        to a zip file into which the backup will be written. In general, if the
+                        path to the where you want the backup database files to be stored or the
+                        path to a zip file into which the backup will be written. In general, if the
                         file name ends with <filename>.zip</filename>, the client will attempt to
-                        write to a ZIP. Otherwise, it tries to create the specified directory.</para>
+                        write to a ZIP. Otherwise, it tries to create the specified
+                    directory.</para>
                 </step>
                 <step>
                     <para>Click <command>OK</command>.</para>
@@ -115,8 +116,8 @@
             <para>By default, the utility connects to the database at the URI:
                     <filename>xmldb:exist://localhost:8080/exist/xmlrpc</filename>. If you want to
                 backup a database at a different location, specify its <command>XML:DB URI</command>
-                (excluding any collection path) using the <parameter>-ouri</parameter> parameter. For
-                example, the following backup on a Unix system specifies the database URI
+                (excluding any collection path) using the <parameter>-ouri</parameter> parameter.
+                For example, the following backup on a Unix system specifies the database URI
                     <filename>xmldb:exist://192.168.1.2:8080/exist/xmlrpc</filename></para>
             <synopsis>bin/backup.sh -u admin -p admin-pass -b /db -d /var/backup/hd060501
                                                     -ouri=xmldb:exist://192.168.1.2:8080/exist/xmlrpc</synopsis>
@@ -127,13 +128,13 @@
             </note>
         </section>
 
-        <section>
+        <section id="restore">
             <title>Restoring the Database</title>
             <para>To restore the database files from a backup, you can again use either the Admin
-            Client, or the backup command line utility.</para>
+                Client, or the backup command line utility.</para>
             <note>
-                <para>Currently, the restore tool can not directly read from a zipped backup. You have
-                to extract it before restoring.</para>
+                <para>Currently, the restore tool can not directly read from a zipped backup. You
+                    have to extract it before restoring.</para>
             </note>
             <para>If you are using the Admin Client, do the following:</para>
             <procedure>
@@ -191,37 +192,53 @@
             </note>
 
         </section>
-        
+
         <section id="backuptask">
             <title>Automatic Backup/Restore</title>
-            
-            <para>In addition to the manual backup, you can also schedule automatic backups in eXist's configuration file
-            <filename>conf.xml</filename>. The backup will be executed as a system task and will thus be configured in the
-            <option>system-task</option> section of the configuration file.</para>
-            
-            <para>Contrary to the manual backup, running the backup as a system task means that the database will be switched to 
-                a protected service mode before the backup starts. eXist will wait for all pending transactions to complete before it enters
-                protected mode. A database checkpoint will be performed and the backup task is executed. While the system task is running,
-                no new transactions will be allowed. Concurrent requests by other clients will be blocked and added to the internal queue.
-                Once the backup is complete, the database will switch back to normal service and all locks will be released.</para>
-            
+
+            <para>In addition to the manual backup, you can also schedule automatic backups in
+                eXist's configuration file <filename>conf.xml</filename>. The backup will be
+                executed as a system task and will thus be configured in the
+                <option>system-task</option> section of the configuration file.</para>
+
+            <para>Contrary to the manual backup, running the backup as a system task means that the
+                database will be switched to a protected service mode before the backup starts.
+                eXist will wait for all pending transactions to complete before it enters protected
+                mode. A database checkpoint will be performed and the backup task is executed. While
+                the system task is running, no new transactions will be allowed. Concurrent requests
+                by other clients will be blocked and added to the internal queue. Once the backup is
+                complete, the database will switch back to normal service and all locks will be
+                released.</para>
+
             <para>This approach has some advantages:</para>
-            
+
             <itemizedlist>
-                <listitem><para>the backup runs within the database process and will be faster than a manual backup over the network.</para></listitem>
-                <listitem><para>it is guaranteed that the database is in a consistent state. No writes will occur while the backup runs.</para></listitem>
+                <listitem>
+                    <para>the backup runs within the database process and will be faster than a
+                        manual backup over the network.</para>
+                </listitem>
+                <listitem>
+                    <para>it is guaranteed that the database is in a consistent state. No writes
+                        will occur while the backup runs.</para>
+                </listitem>
             </itemizedlist>
+
+            <para>On the other hand, the db might be blocked for quite some time, so running the
+                backup as system task will only be possible during periods of low load.</para>
+
+            <note>
+                <para>The consistency check service described <ulink url="#consistency">below</ulink>
+                can be used as an alternative to the BackupSystemTask. It is slightly faster.</para>
+            </note>
             
-            <para>On the other hand, the db might be blocked for quite some time, so running the backup as system task will only be possible during 
-            periods of low load.</para>
-            
-            <para>An example configuration for the BackupSystemTask is shown below. Backups will be written into the directory specified
-            in parameter <parameter>dir</parameter>. For each backup, a new file or directory will be created. The name of this file or directory contains
-            the current date and time plus an optional prefix and/or suffix.</para>
-            
+            <para>An example configuration for the BackupSystemTask is shown below. Backups will be
+                written into the directory specified in parameter <parameter>dir</parameter>. For
+                each backup, a new file or directory will be created. The name of this file or
+                directory contains the current date and time plus an optional prefix and/or suffix.</para>
+
             <example>
                 <title>Configuring a BackupSystemTask</title>
-<programlisting><markup><![CDATA[<scheduler>
+                <programlisting><markup><![CDATA[<scheduler>
     <job type="system" class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
         <parameter name="dir" value="backup"/>
         <parameter name="suffix" value=".zip"/>
@@ -233,22 +250,25 @@
     </job>
 </scheduler>]]></markup></programlisting>
             </example>
-            
-            <para>The backup task can either directly write into a <option>.zip</option> file or a plain directory. It will generate a zip file if the
-                suffix is <option>.zip</option>, a directory otherwise. The files generated by the configuration above will look like this one: 
-                <filename>backup-2006-11-20T10:10:15.zip</filename>.</para>
-            
-            <para>The time/frequency of the backup is specified in the <option>cron-trigger</option> attribute. The syntax is borrowed from the 
-                Unix cron utility, though there are small differences. Please consult the Quartz documentation about
-                <ulink url="http://www.opensymphony.com/quartz/wikidocs/TutorialLesson6.html">CronTrigger</ulink> configuration.</para>
+
+            <para>The backup task can either directly write into a <option>.zip</option> file or a
+                plain directory. It will generate a zip file if the suffix is <option>.zip</option>,
+                a directory otherwise. The files generated by the configuration above will look like
+                this one: <filename>backup-2006-11-20T10:10:15.zip</filename>.</para>
+
+            <para>The time/frequency of the backup is specified in the <option>cron-trigger</option>
+                attribute. The syntax is borrowed from the Unix cron utility, though there are small
+                differences. Please consult the Quartz documentation about <ulink
+                    url="http://www.opensymphony.com/quartz/wikidocs/TutorialLesson6.html"
+                    >CronTrigger</ulink> configuration.</para>
         </section>
         <section>
             <title>Triggering a Backup</title>
-            
-            <para>The <classname>BackupSystemTask</classname> can also be triggered via XQuery, using the
-                <command>system:trigger-system-task</command> function defined in the "system" module:
-            </para>
-            
+
+            <para>The <classname>BackupSystemTask</classname> can also be triggered via XQuery,
+                using the <command>system:trigger-system-task</command> function defined in the
+                "system" module: </para>
+
             <example>
                 <title>Triggering a Backup From XQuery</title>
                 <programlisting language="xquery"><![CDATA[let $params :=
@@ -261,10 +281,144 @@
  return
     system:trigger-system-task("org.exist.storage.BackupSystemTask", $params)]]></programlisting>
             </example>
-            
-            <para>The function will schedule a backup to be executed as soon as possible. As explained above, 
-                the database will be switched to service mode, and eXist 
-                will wait for all pending transactions to complete before the backup starts.</para>
+
+            <para>The function will schedule a backup to be executed as soon as possible. As
+                explained above, the database will be switched to service mode, and eXist will wait
+                for all pending transactions to complete before the backup starts.</para>
+        </section>
+
+        <section id="consistency">
+            <title>Database Consistency Checks</title>
+
+            <para> When deploying eXist in a production environment, you really want to make sure
+                that the database is in a consistent state and that potential problems are detected
+                as early as possible. Even if the database is running well, bad things can happen
+                which are outside of eXist's reach (e.g. an OutOfMemory error in the servlet
+                container, which can be fatal).</para>
+
+            <para>Beginning with version 1.2.1, eXist offers an automatic consistency and sanity
+                checker, whose main job is to detect inconsistencies or damages in the core database
+                files. This includes the document and collection storage (dom.dbx, collections.dbx)
+                as well as the symbol table (symbols.dbx). While all the indexes can be rebuild
+                after a crash, a corruption in the core files can lead to real data loss.</para>
+
+            <para>The tool will first check the collection hierarchy, then scan through the stored
+                node tree of every document in the db, testing node properties like the node's id,
+                child count, attribute count and node relationships. Contrary to normal database
+                operations, the different dbx files are checked independently. This means that even
+                if a collection is no longer readable, the tool will still be able to scan the
+                documents in the damaged collection (this becomes important in connection with
+                emergency backups, see below).</para>
+
+            <para>Checking documents is very fast, much faster than serializing or exporting the
+                data.</para>
+
+            <section>
+                <title>Emergency Export Tool</title>
+
+                <para>The consistency check can be coupled with a new emergency backup class, called
+                    SystemExport. If an error is reported by the consistency checker, the service
+                    can immediately trigger an emergency export of the entire database. Contrary to
+                    the standard backup/restore, the SystemExport class operates on a much
+                    lower-level of the db, directly accessing the core database files.</para>
+
+                <para>It uses the information provided by the consistency check to work around
+                    damages in the db. SystemExport tries to export as much data as possible, even
+                    if parts of the collection hierarchy are corrupted or documents are damaged:</para>
+
+                <itemizedlist>
+                    <listitem>
+                        <para>Descendant collections will be exported properly even if their
+                            ancestor collection is corrupted</para>
+                    </listitem>
+                    <listitem>
+                        <para>Documents which are intact but belong to a destroyed collection will
+                            be stored into a special collection /db/lost_and_found</para>
+                    </listitem>
+                    <listitem>
+                        <para>Damaged documents are detected and are removed from the backup</para>
+                    </listitem>
+                </itemizedlist>
+
+                <para>The format of the emergency backup is compatible with the standard
+                    backup/restore tools.</para>
+            </section>
+
+            <section>
+                <title>Manual Checks/Exports</title>
+
+                <para>A standalone version of the consistency check and export tools can be launched
+                    with</para>
+
+                <synopsis>bin/run.sh org.exist.backup.ExportGUI</synopsis>
+
+                <para>On a headless system you can use the command-line version instead:</para>
+                
+                <synopsis>bin/run.sh org.exist.backup.ExportMain</synopsis>
+                
+                <para>Call it with parameter <parameter>-h</parameter> to get a list of
+                possible options.</para>
+                
+                <para>The main purpose of this utility is to create emergency backups from a
+                    database which can no longer be started normally. The utility needs to open the
+                    database embedded. You have to shut down any running eXist instance before
+                    starting the scan or you will get an exception.</para>
+
+                <screenshot>
+                    <graphic align="right" fileref="resources/exportgui.png"/>
+                </screenshot>
+
+                <para>For every check run, an error report will be written into the directory
+                    specified in <guimenuitem>Output Directory</guimenuitem>. If you clicked on
+                        <guimenuitem>Check Export</guimenuitem>, the utility will also export the
+                    database into a zip file in the same directory. This backup can be restored via
+                    the standard <ulink url="#restore">backup/restore
+                        tools</ulink>.</para>
+            </section>
+
+            <section>
+                <title>Scheduling the Service</title>
+
+                <para>To run the consistency checker in a live environment, it needs to be set up as
+                    a <emphasis>system task</emphasis>. System tasks are launched by eXist's core
+                    scheduler. The scheduler will wait for all active transactions to complete then
+                    start the system task. New transactions will be blocked while the task is
+                    running. The system task can be configured in <filename>conf.xml</filename>
+                    (though it is also possible to schedule it via XQuery). Add the following job
+                    definition to the scheduler section:</para>
+
+                <example>
+                    <title>Job Definition in conf.xml</title>
+                    <programlisting lang="xml"><![CDATA[<job type="system" class="org.exist.storage.ConsistencyCheckTask"
+    cron-trigger="0 0 0/12 * * ?">
+    <!-- the output directory. paths are relative to the data dir -->
+    <parameter name="output" value="sanity"/>
+    <parameter name="backup" value="no"/>
+</job>]]></programlisting>
+                </example>
+
+                <para>This will launch a consistency check every 12 hours, starting at midnight. If
+                    parameter "backup" is set to "yes", a complete backup of the system will be
+                    triggered after each check run. If set to "no", a backup will only be created if
+                    consistency errors are detected.</para>
+            </section>
+
+            <section>
+                <title>Using JMX for Remote Access</title>
+
+                <para>If Java Management Extensions (JMX) are enabled in the Java VM that is running
+                    eXist, you can use a JMX client to see the latest consistency check reports. The
+                    screenshot shows jconsole, which is included with the Java 5 and 6 JDKs.</para>
+
+                <screenshot>
+                    <graphic fileref="resources/jconsole.png"/>
+                </screenshot>
+                
+                <para>You can also subscribe to the notifications made available by the SanityReport
+                    MBean to be informed of sanity check results. Please consult the <ulink
+                        url="jmx.xml">documentation</ulink> on how to configure
+                    JMX.</para>
+            </section>
         </section>
     </chapter>
 </book>
