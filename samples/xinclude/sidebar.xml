@@ -67,7 +67,7 @@
             <link href="../../../api/index.html">Javadocs</link>
         </item>
         <item>
-        	<link href="http://atomic.exist-db.org/wiki/changes/">ChangeLog</link>
+            <link href="http://demo.exist-db.org/xquery/svnlog.xq">ChangeLog</link>
         </item>
         <item>
             <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
