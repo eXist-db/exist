@@ -350,7 +350,7 @@
                 <para>A standalone version of the consistency check and export tools can be launched
                     with</para>
 
-                <synopsis>bin/run.sh org.exist.backup.ExportGUI</synopsis>
+                <synopsis>java -jar start.jar org.exist.backup.ExportGUI</synopsis>
 
                 <para>On a headless system you can use the command-line version instead:</para>
                 
@@ -413,6 +413,26 @@
                 <screenshot>
                     <graphic fileref="resources/jconsole.png"/>
                 </screenshot>
+                
+                <para>eXist also includes a command-line JMX client. Call it with parameter 
+                    <parameter>-s</parameter> to see the latest consistency report:</para>
+                
+                <synopsis>java -jar start.jar org.exist.management.client.JMXClient -s</synopsis>
+                
+                <para>This may produce output as shown below:</para>
+                
+                <example>
+                    <title>JMXClient Output</title>
+                    
+                    <screen><![CDATA[Sanity report
+-----------------------------------------------
+                Status: FAIL
+      Last check start: Thu May 08 21:40:00 CEST 2008
+        Last check end: Thu May 08 21:40:00 CEST 2008
+            Check took: 594ms
+            Error code: RESOURCE_ACCESS_FAILED
+            Description: 32]]></screen>
+                </example>
                 
                 <para>You can also subscribe to the notifications made available by the SanityReport
                     MBean to be informed of sanity check results. Please consult the <ulink
