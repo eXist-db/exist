@@ -354,6 +354,14 @@
 
     <xsl:template match="graphic">
         <img src="{$pathToWebapp}{@fileref}" border="0">
+            <xsl:choose>
+                <xsl:when test="@align='right'">
+                    <xsl:attribute name="class">float-right</xsl:attribute>
+                </xsl:when>
+                <xsl:when test="@align='left'">
+                    <xsl:attribute name="class">float-left</xsl:attribute>
+                </xsl:when>
+            </xsl:choose>
             <xsl:copy-of select="@width|@height"/>
         </img>
     </xsl:template>
