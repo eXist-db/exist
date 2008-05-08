@@ -152,6 +152,11 @@ bin\server.bat -jmx 1099
                         </listitem>
                     </varlistentry>
                     <varlistentry>
+                        <term>-s, --report</term>
+                        <listitem><para>Retrieves the most recent sanity/consistency check report</para></listitem>
+                    </varlistentry>
+                    
+                    <varlistentry>
                         <term>-w, --wait &lt;argument&gt;</term>
                         <listitem>
                             <para> while displaying server statistics: keep retrieving statistics,
