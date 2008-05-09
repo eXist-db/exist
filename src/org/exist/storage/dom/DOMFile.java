@@ -21,12 +21,26 @@
  */
 package org.exist.storage.dom;
 
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.*;
-import org.exist.storage.btree.*;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.BufferStats;
+import org.exist.storage.CacheManager;
+import org.exist.storage.NativeBroker;
+import org.exist.storage.Signatures;
+import org.exist.storage.StorageAddress;
+import org.exist.storage.btree.BTree;
+import org.exist.storage.btree.BTreeCallback;
+import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.DBException;
+import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Value;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
@@ -48,7 +62,13 @@ import org.w3c.dom.Node;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
@@ -2153,7 +2173,8 @@ public class DOMFile extends BTree implements Lockable {
 	    return;
 	}
 	case Node.TEXT_NODE:
-        case Node.CDATA_SECTION_NODE: {
+    case Node.COMMENT_NODE:
+    case Node.CDATA_SECTION_NODE: {
 	    final int dlnLen = ByteConversion.byteToShort(data, readOffset);
 	    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 	    final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
