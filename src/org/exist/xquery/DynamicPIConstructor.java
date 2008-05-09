@@ -61,7 +61,8 @@ public class DynamicPIConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
+        super.analyze(contextInfo);
+        contextInfo.setParent(this);
         name.analyze(contextInfo);
         content.analyze(contextInfo);
     }
@@ -78,58 +79,65 @@ public class DynamicPIConstructor extends NodeConstructor {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        context.proceed(this, builder);
-        
-        Sequence nameSeq = name.eval(contextSequence, contextItem);
-        //TODO : get rid of getLength()
-        if(!nameSeq.hasOne())
+
+        if (newDocumentContext)
+            context.pushDocumentContext();
+        try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            context.proceed(this, builder);
+
+            Sequence nameSeq = name.eval(contextSequence, contextItem);
+            //TODO : get rid of getLength()
+            if(!nameSeq.hasOne())
             throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
-        
-        Item nameItem = nameSeq.itemAt(0);
-        if(!(nameItem.getType() == Type.STRING || nameItem.getType() == Type.NCNAME || 
-        		nameItem.getType() == Type.UNTYPED_ATOMIC))
-            throw new XPathException(getASTNode(), "The name expression should evaluate to a " + 
-            		Type.getTypeName(Type.STRING) + " or a " + Type.getTypeName(Type.NCNAME) + 
-            		" or a " + Type.getTypeName(Type.UNTYPED_ATOMIC) + ". Got: " + 
-            		Type.getTypeName(nameItem.getType()));
-        
-		if(!XMLChar.isValidNCName(nameSeq.getStringValue()))
+
+            Item nameItem = nameSeq.itemAt(0);
+            if(!(nameItem.getType() == Type.STRING || nameItem.getType() == Type.NCNAME ||
+                    nameItem.getType() == Type.UNTYPED_ATOMIC))
+                throw new XPathException(getASTNode(), "The name expression should evaluate to a " +
+                        Type.getTypeName(Type.STRING) + " or a " + Type.getTypeName(Type.NCNAME) +
+                        " or a " + Type.getTypeName(Type.UNTYPED_ATOMIC) + ". Got: " +
+                        Type.getTypeName(nameItem.getType()));
+
+            if(!XMLChar.isValidNCName(nameSeq.getStringValue()))
 			throw new XPathException("XQDY0041 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
-		
-		if (nameSeq.getStringValue().equalsIgnoreCase("XML"))
-        	throw new XPathException("XQDY0064 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");            	
 
-		String contentString;
-        Sequence contentSeq = content.eval(contextSequence, contextItem);
-        if(contentSeq.isEmpty())
+            if (nameSeq.getStringValue().equalsIgnoreCase("XML"))
+throw new XPathException("XQDY0064 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
+
+            String contentString;
+            Sequence contentSeq = content.eval(contextSequence, contextItem);
+            if(contentSeq.isEmpty())
         	contentString = "";
-        else {
-	        StringBuffer buf = new StringBuffer();
-	        for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
-	            context.proceed(this, builder);
-	            Item next = i.nextItem();
-	            if(buf.length() > 0)
-	                buf.append(' ');
-	            buf.append(next.getStringValue());
-	        }
-	        while (buf.length() > 0 && Character.isWhitespace(buf.charAt(0)))
-	        	buf.deleteCharAt(0);
-	        contentString = buf.toString();	       
-        }
-        
-		if (contentString.indexOf("?>") != Constants.STRING_NOT_FOUND)
-        	throw new XPathException("XQDY0026 '" + contentString + "' is not a valid processing intruction content");            	
-        
-        int nodeNr = builder.processingInstruction(nameSeq.getStringValue(), contentString);
+            else {
+                StringBuffer buf = new StringBuffer();
+                for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+                    context.proceed(this, builder);
+                    Item next = i.nextItem();
+                    if(buf.length() > 0)
+                        buf.append(' ');
+                    buf.append(next.getStringValue());
+                }
+                while (buf.length() > 0 && Character.isWhitespace(buf.charAt(0)))
+                    buf.deleteCharAt(0);
+                contentString = buf.toString();
+            }
 
-        Sequence result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
-                
-        if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", result);  
-        
-        return result;
+            if (contentString.indexOf("?>") != Constants.STRING_NOT_FOUND)
+throw new XPathException("XQDY0026 '" + contentString + "' is not a valid processing intruction content");
+
+            int nodeNr = builder.processingInstruction(nameSeq.getStringValue(), contentString);
+
+            Sequence result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().end(this, "", result);
+
+            return result;
+        } finally {
+            if (newDocumentContext)
+                context.popDocumentContext();
+        }
     }
 
     /* (non-Javadoc)

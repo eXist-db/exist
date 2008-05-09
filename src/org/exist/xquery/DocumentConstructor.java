@@ -55,8 +55,10 @@ public class DocumentConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
-        content.analyze(contextInfo);
+        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        newContextInfo.setParent(this);
+        newContextInfo.addFlag(IN_NODE_CONSTRUCTOR);
+        content.analyze(newContextInfo);
     }
     
     /* (non-Javadoc)

@@ -22,7 +22,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.util.ExpressionDumper;
@@ -39,8 +38,8 @@ public class TextConstructor extends NodeConstructor {
 
 	private final String text;
 	private boolean isWhitespaceOnly = true;
-	
-	public TextConstructor(XQueryContext context, String text) throws XPathException {
+
+    public TextConstructor(XQueryContext context, String text) throws XPathException {
 		super(context);
 		this.text = StringValue.expand(text);
 		for(int i = 0; i < text.length(); i++)
@@ -49,12 +48,6 @@ public class TextConstructor extends NodeConstructor {
 				break;
 			}
 	}
-	
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
-     */
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    }
     
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
@@ -65,12 +58,19 @@ public class TextConstructor extends NodeConstructor {
 		throws XPathException {
 		if(isWhitespaceOnly && context.stripWhitespace())
 			return Sequence.EMPTY_SEQUENCE;
-		MemTreeBuilder builder = context.getDocumentBuilder();
-		context.proceed(this, builder);
-		int nodeNr = builder.characters(text);
-		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
-		return node;
-	}
+        if (newDocumentContext)
+            context.pushDocumentContext();
+        try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            context.proceed(this, builder);
+            int nodeNr = builder.characters(text);
+            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            return node;
+        } finally {
+            if (newDocumentContext)
+                context.popDocumentContext();
+        }
+    }
 
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)

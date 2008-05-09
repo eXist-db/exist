@@ -69,7 +69,9 @@ public interface Expression {
     public final static int USE_TREE_TRAVERSAL = 32;
     
     public final static int DOT_TEST = 128;
-    
+
+    public final static int IN_NODE_CONSTRUCTOR = 256;
+
     /**
      * Indicates that no context id is supplied to an expression.
      */

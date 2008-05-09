@@ -71,9 +71,10 @@ public class AttributeConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
+        super.analyze(contextInfo);
+        contextInfo.setParent(this);
         for(Iterator i = contents.iterator(); i.hasNext(); ) {
-			Object next = (Object)i.next();
+			Object next = i.next();
 			if(next instanceof Expression)
 				((Expression)next).analyze(contextInfo);
 		}
@@ -96,8 +97,8 @@ public class AttributeConstructor extends NodeConstructor {
 				buf.append(next);
 		}
 		StringValue result = new StringValue(buf.toString());
-                // String values as expressions are already expanded by
-                // the parser -- Alex
+        // String values as expressions are already expanded by
+        // the parser -- Alex
 		//result.expand();
 		return result;
 	}
