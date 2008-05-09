@@ -29,7 +29,12 @@ import org.exist.xmldb.EXistResource;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
@@ -1851,9 +1856,48 @@ public class XQueryTest extends XMLTestCase {
             e.printStackTrace();
             fail(e.getMessage());
         }
-    }      
+    }
 
-	public void testLargeAttributeContains() {
+    public void testCDATAQuery() {
+        ResourceSet result;
+        String query;
+        XMLResource resu;
+        String xml = "<root><node><![CDATA[world]]></node></root>";
+        try {
+            XPathQueryService service =
+				storeXMLStringAndGetQueryService("cdata.xml", xml);
+            service.setProperty(OutputKeys.INDENT, "no");
+            query = "//text()";
+            result = service.query(query);
+            assertEquals(1, result.getSize());
+            resu = (XMLResource) result.getResource(0);
+            assertEquals( "XQuery: " + query, "world", resu.getContent().toString());
+
+            query = "//node/text()";
+            result = service.query(query);
+            assertEquals(1, result.getSize());
+            resu = (XMLResource) result.getResource(0);
+            assertEquals( "XQuery: " + query, "world", resu.getContent().toString());
+
+            query = "//node/node()";
+            result = service.query(query);
+            assertEquals(1, result.getSize());
+            resu = (XMLResource) result.getResource(0);
+            assertEquals( "XQuery: " + query, "world", resu.getContent().toString());
+
+            query = "/root[node = 'world']";
+            result = service.query(query);
+            assertEquals(1, result.getSize());
+            resu = (XMLResource) result.getResource(0);
+            assertEquals( "XQuery: " + query, xml, resu.getContent().toString());
+        } catch (XMLDBException e) {
+            System.out.println("testCDATAQuery(): XMLDBException: "+e);
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
+    public void testLargeAttributeContains() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
