@@ -2537,8 +2537,8 @@ public class XQueryContext {
     private class ContextUpdateListener implements UpdateListener {
 
 		private List listeners = new ArrayList();
-		
-		public void addListener(UpdateListener listener) {
+
+        public void addListener(UpdateListener listener) {
 			listeners.add(listener);
 		}
 		
@@ -2557,6 +2557,7 @@ public class XQueryContext {
                     listener.unsubscribe();
                 }
             }
+            listeners.clear();
         }
 
         public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
