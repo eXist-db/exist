@@ -19,11 +19,11 @@ public class XmldbLocalTests {
 		suite.addTest(new TestSuite(TestEXistXMLSerialize.class));
 		suite.addTest(new TestSuite(CopyMoveTest.class));
         suite.addTest(new TestSuite(ContentAsDOMTest.class));
-//        suite.addTest(new TestSuite(MultiDBTest.class));
         suite.addTestSuite(XmldbURITest.class);
         suite.addTestSuite(CollectionConfigurationTest.class);
         suite.addTestSuite(CollectionTest.class);
-		//$JUnit-END$
+        suite.addTest(new TestSuite(MultiDBTest.class));
+        //$JUnit-END$
 		return suite;
 	}
 }
