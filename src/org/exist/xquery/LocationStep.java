@@ -288,7 +288,7 @@ public class LocationStep extends Step {
                     break;
                 case Constants.CHILD_AXIS:
                     //VirtualNodeSets may have modified the axis ; checking the type
-                    //TODO : futher checks ?
+                    //TODO : further checks ?
                     if (this.test.getType() == Type.ATTRIBUTE) {
                         this.axis = Constants.ATTRIBUTE_AXIS;
                         result = getAttributes(context, contextSequence);
@@ -307,7 +307,11 @@ public class LocationStep extends Step {
                     if (!(contextSequence instanceof VirtualNodeSet)
                         && Type.subTypeOf(contextSequence.getItemType(),
                                           Type.ATOMIC)) {
-                        result = getSelfAtomic(contextSequence);
+                    	//This test is copied from the legacy method getSelfAtomic()
+                        if (!test.isWildcardTest())
+                            throw new XPathException(getASTNode(), test.toString()
+                                                     + " cannot be applied to an atomic value.");
+                        result = contextSequence;
                     } else {
                         result = getSelf(context, contextSequence);
                     }
@@ -388,8 +392,7 @@ public class LocationStep extends Step {
         }
         NodeSet contextSet = contextSequence.toNodeSet();
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                                                     contextSet);
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         }
@@ -404,8 +407,7 @@ public class LocationStep extends Step {
                         ((VirtualNodeSet) contextSet).setInPredicate(true);
                         ((VirtualNodeSet) contextSet).setSelfIsContext();
                         ((VirtualNodeSet) contextSet).setContextId(contextId);
-                    } else if (Type.subTypeOf(contextSet.getItemType(),
-                                              Type.NODE)) {
+                    } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
                         NodeProxy p;
                         for (Iterator i = contextSet.iterator(); i.hasNext();) {
                             p = (NodeProxy) i.next();
@@ -415,39 +417,22 @@ public class LocationStep extends Step {
                     }
                 }
                 return contextSet;
-
             } else {
-                VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                                                         contextSet);
+                VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);
                 vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
                 return vset;
             }
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
-            NodeSelector selector = new SelfSelector(contextSet, contextId);
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
-            return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-                                               .getName(), selector);
+            NodeSelector selector = new SelfSelector(contextSet, contextId);
+            return index.findElementsByTagName(ElementValue.ELEMENT, 
+            		docs, test.getName(), selector);
         }
-    }
-
-    /**
-     * The method <code>getSelfAtomic</code>
-     *
-     * @param contextSequence a <code>Sequence</code> value
-     * @return a <code>Sequence</code> value
-     * @exception XPathException if an error occurs
-     */
-    protected Sequence getSelfAtomic(Sequence contextSequence)
-        throws XPathException {
-        if (!test.isWildcardTest())
-            throw new XPathException(getASTNode(), test.toString()
-                                     + " cannot be applied to an atomic value.");
-        return contextSequence;
     }
 
     /**
@@ -480,6 +465,7 @@ public class LocationStep extends Step {
                                               "OPTIMIZATION", "direct attribute selection");
             if (contextSet.isEmpty())
                 return NodeSet.EMPTY_SET;
+            //TODO : why only the first node ?
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null)
                 return contextSet.directSelectAttribute(test, contextId);
@@ -501,37 +487,21 @@ public class LocationStep extends Step {
                                                   "OPTIMIZATION",
                                                   "Using structural index '" + index.toString() + "'");
                 // TODO : why a null selector here ? We have one below !
-                currentSet = index.findElementsByTagName(
-                                                         ElementValue.ATTRIBUTE, docs, test.getName(), null);
+                currentSet = index.findElementsByTagName(ElementValue.ATTRIBUTE, 
+                		docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
             switch (axis) {
                 case Constants.ATTRIBUTE_AXIS:
-                    return currentSet.selectParentChild(contextSet,
-                                                        NodeSet.DESCENDANT, contextId);
+                    return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, contextId);
                 case Constants.DESCENDANT_ATTRIBUTE_AXIS:
-                    return currentSet.selectAncestorDescendant(contextSet,
-                                                               NodeSet.DESCENDANT, false, contextId);
+                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, contextId);
                 default:
-                    throw new IllegalArgumentException(
-                                                       "Unsupported axis specified");
+                    throw new IllegalArgumentException("Unsupported axis specified");
             }
         } else {
-            NodeSelector selector;
-            DocumentSet docs = getDocumentSet(contextSet);
-            // TODO : why a selector here ? We havn't one above !
-            switch (axis) {
-                case Constants.ATTRIBUTE_AXIS:
-                    selector = new ChildSelector(contextSet, contextId);
-                    break;
-                case Constants.DESCENDANT_ATTRIBUTE_AXIS:
-                    selector = new DescendantSelector(contextSet, contextId);
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                                                       "Unsupported axis specified");
-            }
+        	DocumentSet docs = getDocumentSet(contextSet);
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -541,6 +511,17 @@ public class LocationStep extends Step {
                 return index.findDescendantsByTagName(ElementValue.ATTRIBUTE, test.getName(), axis,
                                                       docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
+            	NodeSelector selector;            
+                switch (axis) {
+                    case Constants.ATTRIBUTE_AXIS:
+                        selector = new ChildSelector(contextSet, contextId);
+                        break;
+                    case Constants.DESCENDANT_ATTRIBUTE_AXIS:
+                        selector = new DescendantSelector(contextSet, contextId);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unsupported axis specified");
+                }
                 return index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), selector);
             }
         }
@@ -559,10 +540,10 @@ public class LocationStep extends Step {
             return nodes.getChildren(test);
         }
         NodeSet contextSet = contextSequence.toNodeSet();
+        //TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
             // test is one out of *, text(), node() including processing-instruction(targetname)
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                                                     contextSet);
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         }
@@ -594,24 +575,23 @@ public class LocationStep extends Step {
                 currentDocs = docs;
                 registerUpdateListener();
             }
-            return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT,
-                                                contextId);
+            return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, contextId);
         } else {
+            DocumentSet docs = getDocumentSet(contextSet);
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
-            DocumentSet docs = getDocumentSet(contextSet);
             if (contextSet instanceof ExtArrayNodeSet && !contextSet.getProcessInReverseOrder()) {
-                return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
-                                                      docs, (ExtArrayNodeSet) contextSet, contextId);
+                return index.findDescendantsByTagName(ElementValue.ELEMENT, 
+                		test.getName(), axis, docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
                 //            	if (contextSet instanceof VirtualNodeSet)
                 //            		((VirtualNodeSet)contextSet).realize();
                 NodeSelector selector = new ChildSelector(contextSet, contextId);
-                return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-                                                   .getName(), selector);
+                return index.findElementsByTagName(ElementValue.ELEMENT, 
+                		docs, test.getName(), selector);
             }
         }
     }
@@ -629,10 +609,10 @@ public class LocationStep extends Step {
             return nodes.getDescendants(axis == Constants.DESCENDANT_SELF_AXIS, test);
         }
         NodeSet contextSet = contextSequence.toNodeSet();
+        //TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
             // test is one out of *, text(), node() including processing-instruction(targetname)
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                                                     contextSet);
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         } else if (preloadNodeSets()) {
@@ -652,32 +632,16 @@ public class LocationStep extends Step {
             }
             switch (axis) {
                 case Constants.DESCENDANT_SELF_AXIS:
-                    NodeSet tempSet = currentSet.selectAncestorDescendant(contextSet,
-                                                                          NodeSet.DESCENDANT, true, contextId);
-                    return tempSet;
+                    return currentSet.selectAncestorDescendant(contextSet, 
+                    		NodeSet.DESCENDANT, true, contextId);
                 case Constants.DESCENDANT_AXIS:
-                    return currentSet.selectAncestorDescendant(contextSet,
-                                                               NodeSet.DESCENDANT, false, contextId);
+                    return currentSet.selectAncestorDescendant(contextSet, 
+                    		NodeSet.DESCENDANT, false, contextId);
                 default:
-                    throw new IllegalArgumentException(
-                                                       "Unsupported axis specified");
+                    throw new IllegalArgumentException("Unsupported axis specified");
             }
         } else {
-            NodeSelector selector;
             DocumentSet docs = contextSet.getDocumentSet();
-            switch (axis) {
-                case Constants.DESCENDANT_SELF_AXIS:
-                    selector = new DescendantOrSelfSelector(contextSet,
-                                                            contextId);
-                    break;
-                case Constants.DESCENDANT_AXIS:
-                    selector = new DescendantSelector(contextSet, contextId);
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                                                       "Unsupported axis specified");
-            }
-
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled()) {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -685,9 +649,20 @@ public class LocationStep extends Step {
                                               "Using structural index '" + index.toString() + "'");
             }
             if (contextSet instanceof ExtArrayNodeSet) {
-            	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
-                                                      docs, (ExtArrayNodeSet) contextSet, contextId);
+            	return index.findDescendantsByTagName(ElementValue.ELEMENT, 
+            			test.getName(), axis, docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
+                NodeSelector selector;
+                switch (axis) {
+                    case Constants.DESCENDANT_SELF_AXIS:
+                        selector = new DescendantOrSelfSelector(contextSet, contextId);
+                        break;
+                    case Constants.DESCENDANT_AXIS:
+                        selector = new DescendantSelector(contextSet, contextId);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unsupported axis specified");
+                }
                 return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
             }
 
@@ -710,10 +685,9 @@ public class LocationStep extends Step {
                 return nodes.getFollowingSiblings(test);
         }
         NodeSet contextSet = contextSequence.toNodeSet();
+        //TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                                                     contextSet);
-            
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);            
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         }
@@ -750,8 +724,7 @@ public class LocationStep extends Step {
                 case Constants.FOLLOWING_SIBLING_AXIS:
                     return currentSet.selectFollowingSiblings(contextSet, contextId);
                 default:
-                    throw new IllegalArgumentException(
-                                                       "Unsupported axis specified");
+                    throw new IllegalArgumentException("Unsupported axis specified");
             }
         }
     }
@@ -808,10 +781,9 @@ public class LocationStep extends Step {
             return nodes.getPreceding(test);
         }
         NodeSet contextSet = contextSequence.toNodeSet();
+        //TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                                                     contextSet);
-            
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);            
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         }
@@ -827,8 +799,8 @@ public class LocationStep extends Step {
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                                   "OPTIMIZATION",
                                                   "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                                                         docs, test.getName(), null);
+                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, 
+                		docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
@@ -851,10 +823,9 @@ public class LocationStep extends Step {
             return nodes.getFollowing(test);
         }
         NodeSet contextSet = contextSequence.toNodeSet();
+        //TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                                                     contextSet);
-            
+            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);            
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         }
@@ -870,8 +841,8 @@ public class LocationStep extends Step {
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                                   "OPTIMIZATION",
                                                   "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                                                         docs, test.getName(), null);
+                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, 
+                		docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
@@ -949,44 +920,38 @@ public class LocationStep extends Step {
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                                   "OPTIMIZATION",
                                                   "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                                                         docs, test.getName(), null);
+                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, 
+                		docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
             switch (axis) {
                 case Constants.ANCESTOR_SELF_AXIS:
-                    return currentSet.selectAncestors(contextSet, true,
-                                                      contextId);
+                    return currentSet.selectAncestors(contextSet, true, contextId);
                 case Constants.ANCESTOR_AXIS:
-                    return currentSet.selectAncestors(contextSet, false,
-                                                      contextId);
+                    return currentSet.selectAncestors(contextSet, false, contextId);
                 default:
-                    throw new IllegalArgumentException(
-                                                       "Unsupported axis specified");
+                    throw new IllegalArgumentException("Unsupported axis specified");
             }
         } else {
-            NodeSelector selector;
             DocumentSet docs = getDocumentSet(contextSet);
-            switch (axis) {
-                case Constants.ANCESTOR_SELF_AXIS:
-                    selector = new AncestorSelector(contextSet, contextId, true);
-                    break;
-                case Constants.ANCESTOR_AXIS:
-                    selector = new AncestorSelector(contextSet, contextId,
-                                                    false);
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                                                       "Unsupported axis specified");
-            }
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
-            return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-                                               .getName(), selector);
+            NodeSelector selector;
+            switch (axis) {
+                case Constants.ANCESTOR_SELF_AXIS:
+                    selector = new AncestorSelector(contextSet, contextId, true);
+                    break;
+                case Constants.ANCESTOR_AXIS:
+                    selector = new AncestorSelector(contextSet, contextId, false);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported axis specified");
+            }
+            return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
         }
     }
 
@@ -1024,22 +989,22 @@ public class LocationStep extends Step {
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                                   "OPTIMIZATION",
                                                   "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                                                         docs, test.getName(), null);
+                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, 
+                		docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
             return contextSet.selectParentChild(currentSet, NodeSet.ANCESTOR); 
         } else {
-            DocumentSet docs = getDocumentSet(contextSet);
-            NodeSelector selector = new ParentSelector(contextSet, contextId);
-            ElementIndex index = context.getBroker().getElementIndex();
+        	DocumentSet docs = getDocumentSet(contextSet);
+            ElementIndex index = context.getBroker().getElementIndex();            
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
-            return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-                                               .getName(), selector);
+            NodeSelector selector = new ParentSelector(contextSet, contextId);
+            return index.findElementsByTagName(ElementValue.ELEMENT, 
+            		docs, test.getName(), selector);
         }
     }
 
@@ -1061,7 +1026,7 @@ public class LocationStep extends Step {
      *
      * @return an <code>Expression</code> value
      */
-    public Expression getParent() {
+    public Expression getParentExpression() {
         return this.parent;
     }
     
