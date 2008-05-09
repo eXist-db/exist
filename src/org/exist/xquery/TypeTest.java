@@ -75,6 +75,8 @@ public class TypeTest implements NodeTest {
             default :
                 return true;
         }
+        if (type == Node.CDATA_SECTION_NODE)
+            type = Node.TEXT_NODE;
         return (type == domType);
     }
 
@@ -90,6 +92,7 @@ public class TypeTest implements NodeTest {
                 xpathType = Type.ATTRIBUTE;
                 break;
             case XMLStreamReader.CHARACTERS :
+            case XMLStreamReader.CDATA :
                 xpathType = Type.TEXT;
                 break;
             case XMLStreamReader.COMMENT :
