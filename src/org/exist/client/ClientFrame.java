@@ -1517,12 +1517,12 @@ public class ClientFrame extends JFrame
                 }
             }
             this.action = action;
-            notify();
+            notifyAll();
         }
         
         synchronized public void terminate() {
             terminate = true;
-            notify();
+            notifyAll();
         }
         
         synchronized public boolean getStatus() {
@@ -1551,7 +1551,7 @@ public class ClientFrame extends JFrame
                 synchronized (this) {
                     action = null;
                     actionFinished();
-                    notify();
+                    notifyAll();
                 }
             }
         }
