@@ -88,7 +88,7 @@ public class Optimizer extends DefaultExpressionVisitor {
         if (optimize) {
             // we found at least one Optimizable. Rewrite the whole expression and
             // enclose it in an (#exist:optimize#) pragma.
-            Expression parent = locationStep.getParent();
+            Expression parent = locationStep.getParentExpression();
             if (!(parent instanceof PathExpr)) {
                 LOG.warn("Parent expression of step is not a PathExpr: " + parent);
                 return;
