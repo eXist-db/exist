@@ -22,12 +22,6 @@
  */
 package org.exist.storage.serializers;
 
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.exist.Namespaces;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CDATASectionImpl;
@@ -49,6 +43,12 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Serializer implementation for the native database backend.
@@ -277,9 +277,13 @@ public class NativeSerializer extends Serializer {
             break;
         case Node.CDATA_SECTION_NODE:
             String str = ((CDATASectionImpl)node).getData();
-            data = new char[str.length()];
-            str.getChars(0,str.length(), data, 0);
-            receiver.cdataSection(data, 0, data.length);
+            if (first)
+                receiver.characters(str);
+            else {
+                data = new char[str.length()];
+                str.getChars(0,str.length(), data, 0);   
+                receiver.cdataSection(data, 0, data.length);
+            }
             break;
         //TODO : how to process other types ? -pb
         }
