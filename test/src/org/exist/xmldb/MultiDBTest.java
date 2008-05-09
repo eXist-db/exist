@@ -21,24 +21,22 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
-import java.io.FileOutputStream;
-
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
 import org.exist.storage.DBBroker;
-import org.exist.util.SingleInstanceConfiguration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.SingleInstanceConfiguration;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import java.io.File;
+import java.io.FileOutputStream;
 
 /**
  * @author wolf
@@ -83,7 +81,8 @@ public class MultiDBTest extends TestCase {
 	            
 	            doQuery(test, "//SPEECH[SPEAKER='HAMLET']");
 	        }
-        } catch (Exception e) {            
+        } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage()); 
         }
     }
@@ -110,7 +109,8 @@ public class MultiDBTest extends TestCase {
 	        for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
 	            String content = i.nextResource().getContent().toString();
 	        }
-        } catch (Exception e) {            
+        } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage()); 
         }
     }

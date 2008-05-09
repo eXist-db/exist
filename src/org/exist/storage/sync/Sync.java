@@ -22,11 +22,11 @@
  */
 package org.exist.storage.sync;
 
-import java.util.Map;
-
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.UserJavaJob;
 import org.exist.storage.BrokerPool;
+
+import java.util.Map;
 
 /**
  * It will periodically trigger a cache sync to write
@@ -51,7 +51,7 @@ public class Sync extends UserJavaJob {
 
     public void setName(String name) {
     }
-	
+
 	public void execute(BrokerPool pool, Map params) throws JobException
 	{
 		if(System.currentTimeMillis() - pool.getLastMajorSync() > pool.getMajorSyncPeriod())
