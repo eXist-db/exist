@@ -2907,6 +2907,31 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+    // http://sourceforge.net/support/tracker.php?aid=1938498 
+    public void testMemproc_1938498() {
+
+        try {
+            String xmldocument="<Root><Child/></Root>";
+            String location="1938498.xml";
+            String query=
+                    "let $test := doc(\"1938498.xml\")"
+                    + "let $inmems := <InMem>{$test}</InMem>"
+                    + "return <Test>{$inmems/X}</Test>";
+            String output="<Test/>";
+
+            XPathQueryService service=
+                    storeXMLStringAndGetQueryService(location, xmldocument);
+
+            ResourceSet result=service.query(query);
+            assertEquals("XQuery: " + query, 1, result.getSize());
+            assertEquals("XQuery: " + query, output,
+                    result.getResource(0).getContent().toString());
+
+        } catch(XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
+    
     // ======================================
     
 	/**

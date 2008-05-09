@@ -22,7 +22,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.util.ExpressionDumper;
@@ -42,6 +41,7 @@ public class CommentConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        super.analyze(contextInfo);
     }
     
 	/* (non-Javadoc)
@@ -51,11 +51,18 @@ public class CommentConstructor extends NodeConstructor {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		MemTreeBuilder builder = context.getDocumentBuilder();
-		int nodeNr = builder.comment(data);
-		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
-		return node;
-	}
+        if (newDocumentContext)
+            context.pushDocumentContext();
+        try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            int nodeNr = builder.comment(data);
+            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            return node;
+        } finally {
+            if (newDocumentContext)
+                context.popDocumentContext();
+        }
+    }
 
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)

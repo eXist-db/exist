@@ -69,7 +69,13 @@ import org.xml.sax.SAXException;
  */
 public class DocumentImpl extends NodeImpl implements Document {
 
-	protected XQueryContext context;
+    private static long nextDocId = 0;
+
+    private static long createDocId() {
+        return nextDocId++;
+    }
+
+    protected XQueryContext context;
 	
     protected NamePool namePool = new NamePool();
 
@@ -121,16 +127,19 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     protected int nextRef = 0;
     
-    private final static int NODE_SIZE = 128;
-    private final static int ATTR_SIZE = 64;
-    private final static int CHAR_BUF_SIZE = 1024;
-    private final static int REF_SIZE = 128;
+    protected long docId;
+
+    private final static int NODE_SIZE = 32;
+    private final static int ATTR_SIZE = 16;
+    private final static int CHAR_BUF_SIZE = 512;
+    private final static int REF_SIZE = 16;
 
 	private Int2ObjectHashMap storedNodes = null;
     
     public DocumentImpl(XQueryContext context) {
         super(null, 0);
         this.context = context;
+        this.docId = createDocId();
     }
     
     private void init() {

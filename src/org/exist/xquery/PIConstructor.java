@@ -21,15 +21,14 @@
  */
 package org.exist.xquery;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Constructor for processing-instruction nodes.
@@ -62,12 +61,6 @@ public class PIConstructor extends NodeConstructor {
             throw new XPathException("XPST0003 : The target 'xml' is not allowed in XML processing instructions.");
         }
 	}
-	
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
-     */
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    }
     
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
@@ -76,11 +69,18 @@ public class PIConstructor extends NodeConstructor {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		MemTreeBuilder builder = context.getDocumentBuilder();
-		int nodeNr = builder.processingInstruction(target, data);
-		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
-		return node;
-	}
+        if (newDocumentContext)
+            context.pushDocumentContext();
+        try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            int nodeNr = builder.processingInstruction(target, data);
+            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            return node;
+        } finally {
+            if (newDocumentContext)
+                context.popDocumentContext();
+        }
+    }
 
 	 /* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)

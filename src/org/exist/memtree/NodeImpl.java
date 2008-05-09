@@ -255,9 +255,11 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 				return Constants.INFERIOR;
 			else
 				return Constants.SUPERIOR;
-		} else
-			return Constants.INFERIOR;
-	}
+		} else if (document.docId < n.document.docId)
+            return Constants.INFERIOR;
+        else
+            return Constants.SUPERIOR;
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getChildNodes()
