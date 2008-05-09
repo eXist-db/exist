@@ -433,7 +433,8 @@
                         when it detects errors.
         -->
         <!--
-        <job type="system" class="org.exist.storage.ConsistencyCheckTask"
+        <job type="system" name="check1" 
+            class="org.exist.storage.ConsistencyCheckTask"
         	cron-trigger="0 0 * * * ?">
         	<parameter name="output" value="sanity"/>
             <parameter name="backup" value="no"/>
@@ -444,7 +445,10 @@
         		output-dir:
         			The directory into which the copy will be written
         -->
-        <!--job type="system" class="org.exist.storage.DataBackup" period="120000">
+
+        <!--
+        <job type="system" name="databackup" 
+            class="org.exist.storage.DataBackup" period="120000">
             <parameter name="output-dir" value="backup" />
         </job-->
         <!-- Automatically creates a backup of the database every 6 hours.
@@ -460,8 +464,11 @@
                 prefix:
                     File prefix for the generated backup file or directory.
 
-		-->
-        <!--job type="system" class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
+		    -->
+        <!--
+        <job type="system" name="backup"
+            class="org.exist.storage.BackupSystemTask" 
+            cron-trigger="0 0 */6 * * ?">
             <parameter name="dir" value="backup"/>
             <parameter name="suffix" value=".zip"/>
             <parameter name="prefix" value="backup-"/>

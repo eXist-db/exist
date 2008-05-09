@@ -70,6 +70,7 @@ public class Scheduler
 	public static final String JOB_TYPE_USER = "user";
 	public static final String JOB_TYPE_STARTUP = "startup";
 	public static final String JOB_TYPE_SYSTEM = "system";
+    public static final String JOB_NAME_ATTRIBUTE = "name";
 	
 	//the scheduler
 	private org.quartz.Scheduler scheduler = null;
@@ -524,7 +525,7 @@ public class Scheduler
 				{
 					//create an XQuery job
 					User guestUser = brokerpool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
-					job = new UserXQueryJob(jobConfig.getResourceName(), guestUser);
+					job = new UserXQueryJob(jobConfig.getJobName(), jobConfig.getResourceName(), guestUser);
 				}
 			}
 			else
@@ -541,7 +542,7 @@ public class Scheduler
 						{
 							SystemTask task = (SystemTask)jobObject;
 							task.configure(config, jobConfig.getParameters());
-							job = new SystemTaskJob(task);
+							job = new SystemTaskJob(jobConfig.getJobName(), task);
 						}
 						else
 						{
@@ -551,6 +552,8 @@ public class Scheduler
 					else
 					{
 						job = (JobDescription)jobObject;
+                        if (jobConfig.getJobName() != null)
+                            job.setName(jobConfig.getJobName());
 					}
 				}
 				catch(Exception e)

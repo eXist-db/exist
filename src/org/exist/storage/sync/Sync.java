@@ -48,6 +48,9 @@ public class Sync extends UserJavaJob {
 	{
 		return JOB_NAME;
 	}
+
+    public void setName(String name) {
+    }
 	
 	public void execute(BrokerPool pool, Map params) throws JobException
 	{
