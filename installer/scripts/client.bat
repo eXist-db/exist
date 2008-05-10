@@ -13,7 +13,7 @@ set JAVA_ARGS=
 if not "%JAVA_HOME%" == "" goto gotJavaHome
 
 rem will be set by the installer
-set JAVA_HOME=$JAVA_HOME
+set JAVA_HOME=$JDKPath
 
 :gotJavaHome
 if not "%EXIST_HOME%" == "" goto gotExistHome
