@@ -26,7 +26,8 @@
         type="Application"
 		encoding="UTF-8"
         target="$INSTALL_PATH/bin/client.sh"
-		description="Start the command-line client" 
+		description="Start the command-line client"
+        terminal="false" 
 		programGroup="yes"
         desktop="yes"/>
 	<shortcut name="Database Shutdown"
