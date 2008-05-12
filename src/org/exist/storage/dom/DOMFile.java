@@ -2095,7 +2095,7 @@ public class DOMFile extends BTree implements Lockable {
      * and all its descendants.
      */
     private void getNodeValue(DocumentImpl doc, ByteArrayOutputStream os, RecordPos rec,
-			      boolean acceptAttributeValue, boolean addWhitespace) {
+			      boolean isTopNode, boolean addWhitespace) {
         if (!lock.hasLock())
             LOG.warn("the file doesn't own a lock");
         // locate the next real node, skipping relocated nodes
@@ -2173,7 +2173,6 @@ public class DOMFile extends BTree implements Lockable {
 	    return;
 	}
 	case Node.TEXT_NODE:
-    case Node.COMMENT_NODE:
     case Node.CDATA_SECTION_NODE: {
 	    final int dlnLen = ByteConversion.byteToShort(data, readOffset);
 	    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
@@ -2183,7 +2182,7 @@ public class DOMFile extends BTree implements Lockable {
 	    break;
 	}
 	case Node.ATTRIBUTE_NODE:
-	    if (acceptAttributeValue) {
+	    if (isTopNode) {
                 final int start = readOffset - StoredNode.LENGTH_SIGNATURE_LENGTH;
                 final byte idSizeType = (byte) (data[start] & 0x3);
 		final boolean hasNamespace = (data[start] & 0x10) == 0x10;
@@ -2201,7 +2200,16 @@ public class DOMFile extends BTree implements Lockable {
                 os.write(rec.getPage().data, readOffset, realLen - (readOffset - start));
 	    }
 	    break;
-	}
+    case Node.COMMENT_NODE:
+        if (isTopNode) {
+            final int dlnLen = ByteConversion.byteToShort(data, readOffset);
+            readOffset += NodeId.LENGTH_NODE_ID_UNITS;
+            final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+            readOffset += nodeIdLen;
+            os.write(data, readOffset, realLen - (StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen));
+        }
+        break;
+    }
 	if (!inOverflow)
 	    // if it isn't an overflow value, add the value length to the current offset
 	    //We position the offset *after* the next TID
