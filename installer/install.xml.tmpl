@@ -37,9 +37,9 @@
         <panel classname="TargetPanel"/>
         <panel classname="PacksPanel"/>
         <panel classname="InstallPanel"/>
+        <panel classname="ShortcutPanel"/>
         <panel classname="UserInputPanel"/>
         <panel classname="ProcessPanel"/>
-        <panel classname="ShortcutPanel"/>
         <panel classname="HTMLInfoPanel"/>
         <!--panel classname="FinishPanel"/-->
     </panels>
@@ -130,11 +130,13 @@
                 <include name="server.sh"/>
                 <include name="shutdown.sh"/>
                 <include name="backup.sh"/>
+                <include name="check.sh"/>
                 <include name="client.bat"/>
                 <include name="startup.bat"/>
                 <include name="server.bat"/>
                 <include name="shutdown.bat"/>
                 <include name="backup.bat"/>
+                <include name="check.bat"/>
             </fileset>
             <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
                 <include name="*.sh"/>
@@ -151,6 +153,7 @@
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/setup.sh"/>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/check.sh"/>
             <parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
@@ -158,6 +161,7 @@
             <parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/setup.bat"/>
             <parsable targetfile="$INSTALL_PATH/build.bat"/>
+            <parsable targetfile="$INSTALL_PATH/bin/check.bat"/>
             <singlefile src="tools/wrapper/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
             <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
@@ -167,6 +171,7 @@
             <executable targetfile="$INSTALL_PATH/bin/server.sh" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/shutdown.sh" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/backup.sh" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/bin/check.sh" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/functions.d/eXist-settings.sh" stage="never"
                 os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/functions.d/getopt-settings.sh" stage="never"
@@ -213,6 +218,7 @@
             <fileset targetdir="$INSTALL_PATH/installer" dir="installer">
                 <exclude name="**/hs_err_pid*.log"/>
                 <exclude name="**/*.jar"/>
+                <exclude name="**/*.exe"/>
                 <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
                 <exclude name="**/CVS/"/>

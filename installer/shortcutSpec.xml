@@ -26,4 +26,8 @@
 		programGroup="yes" desktop="no"/>
 	<shortcut name="Uninstall" target="$INSTALL_PATH/Uninstaller/uninstaller.jar"
 		description="Uninstall eXist" programGroup="yes"/>
+	<shortcut name="DB Check and Export Tool"
+        target="$INSTALL_PATH/bin/check.bat"
+		description="Start the consistency check and export tool" programGroup="yes"
+        desktop="yes" terminal="false"/>
 </shortcuts>
