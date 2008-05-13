@@ -2,12 +2,13 @@
     <panel order="0">
         <field type="title" align="left" txt="Setup Admin Password" bold="false" size="2" id="title"/>
 
-        <field type="staticText" align="left" txt="Please enter a password for user 'admin', the database administrator:"/>
+        <field type="staticText" align="left" 
+            txt="Please enter a password for user 'admin', the database administrator:"/>
         <field type="password" variable="adminPasswd">
             <validator class="org.exist.izpack.PasswordValidator" txt="Passwords did not match!"/>
             <spec>
-                <pwd txt="Enter password: " size="30"/>
-                <pwd txt="Retype password: " size="30"/>
+                <pwd txt="Enter password: " size="20" set=""/>
+                <pwd txt="Retype password: " size="20" set=""/>
             </spec>
         </field>
     </panel>

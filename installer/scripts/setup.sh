@@ -9,7 +9,7 @@
 # will be set by the installer
 EXIST_HOME="%{INSTALL_PATH}"
 
-JAVA_HOME="%{JAVA_HOME}"
+JAVA_HOME="%{JDKPath}"
 
 JAVA_CMD="$JAVA_HOME/bin/java"
 

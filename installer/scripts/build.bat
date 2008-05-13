@@ -6,7 +6,7 @@ set EXIST_HOME=$INSTALL_PATH
 
 :gotExistHome
 if not "%JAVA_HOME%" == "" goto gotJavaHome
-set JAVA_HOME=$JAVA_HOME
+set JAVA_HOME=$JDKPath
 
 :gotJavaHome
 set ANT_HOME=%EXIST_HOME%\tools\ant
