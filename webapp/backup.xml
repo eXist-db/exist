@@ -24,15 +24,18 @@
                 system crash or loss of data. Backups are also very useful for exporting data in
                 order to re-import all or parts of the data to a different database, e.g. while
                 upgrading eXist to a newer version. </para>
+            
             <para>During backup, eXist exports the contents of its database (as standard XML files)
                 to a hierarchy of directories on the hard drive. This hierarchy is organized
                 according to the organization of collections in the database.</para>
+            
             <para>Other files stored during backup include index configuration files and user
                 settings. As well, resource and collection metadata is exported to a special XML
                 file, called <filename>__contents__.xml</filename>, which lists information
                 including the resource type, owner, modification date and/or the permissions
                 assigned to a resource. You will find one <filename>__contents__.xml</filename> file
                 in each directory created by the backup.</para>
+            
             <para>Since eXist uses an open XML format rather than a proprietary format for its
                 database files, users can manually modify files in the backup directories without
                 requiring special software. Any changes made to these files are reflected in the
@@ -130,66 +133,107 @@
 
         <section id="restore">
             <title>Restoring the Database</title>
-            <para>To restore the database files from a backup, you can again use either the Admin
-                Client, or the backup command line utility.</para>
-            <note>
-                <para>Currently, the restore tool can not directly read from a zipped backup. You
-                    have to extract it before restoring.</para>
-            </note>
-            <para>If you are using the Admin Client, do the following:</para>
-            <procedure>
-                <step>
-                    <para>Select either the Restore Icon (arrow pointed downward) in the toolbar OR
-                            <guimenuitem>Tools &#187; Restore</guimenuitem> from the
-                    menu.</para>
-                </step>
-                <step>
-                    <para>The dialog box shown below will then prompt you to select the backup file
-                            <filename>__contents__.xml</filename> from the topmost directory you
-                        want restored. To restore the entire database, select the
-                            <filename>__contents__.xml</filename> from the <filename>db/</filename>
-                        directory.</para>
-                    <screenshot><graphic fileref="resources/backup2.png"/></screenshot>
-                </step>
-                <step>
-                    <para>A second dialog box will then prompt you for an admin password to use for
-                        the restore process. This password is required ONLY IF the password of the
-                        "admin" user set during the backup differs from the log-in password for the
-                        current session. (If you provide an incorrect password, the restore will be
-                        aborted.) If the passwords are different, note that restoring the user
-                        settings from the backup will cause the current user password to become
-                        invalid. </para>
-                </step>
-                <step>
-                    <para>If the restore was accepted, a progress dialog box will display the
-                        restored files:</para>
-                    <screenshot><graphic fileref="resources/backup3.png"/></screenshot>
-                </step>
-            </procedure>
 
-            <para>To restore from a backup using the command-line utility, follow the instructions
-                above for launching <filename>bin/backup.sh</filename> (Unix), OR the
-                    <filename>bin/backup.bat</filename> (Windows/DOS) script files. Include the
-                    <parameter>-r</parameter> parameter, and the full path of the
-                    <filename>__contents__.xml</filename> file to restore. As with the Admin Client,
-                if the backup uses a different password for the "admin" user than the current
-                session, you must specify the backup password using the <parameter>-P</parameter>.
-                For Example:</para>
-            <synopsis>bin/backup.sh -u admin -p admin-pass -P backup-pass 
+            <section>
+                <title>Important Note about the Restore Process</title>
+
+                <para>Restoring from a backup (or parts of it) does not mean that the existing data
+                    in the current database instance will be deleted entirely. The restore process
+                    will upload the collections and documents contained in the backup. Collections
+                    and documents which exist in the database but are not part of the backup will
+                    not be modified.</para>
+
+                <para>This is a feature, not a bug. It allows us to restore selected parts of the
+                    database without touching the rest.</para>
+
+                <para>If you really need to restore into a fresh, completely clean database, proceed
+                    as follows:</para>
+
+                <procedure>
+                    <step>
+                        <para>Stop the running eXist database instance</para>
+                    </step>
+                    <step>
+                        <para>Change into directory
+                            <filename>EXIST_HOME/webapp/WEB-INF/data</filename> or another directory
+                            you specified as data directory in the configuration (conf.xml). </para>
+                    </step>
+                    <step>
+                        <para>Remove all <filename>.dbx</filename>, <filename>.lck</filename> and
+                                <filename>.log</filename> files. This means removing all your old
+                            data! eXist will recreate those files upon the next restart.</para>
+                    </step>
+                    <step>
+                        <para>Start eXist again and launch a restore.</para>
+                    </step>
+                </procedure>
+
+            </section>
+
+            <section>
+                <title>Restore Using the Java Client</title>
+
+                <para>To restore the database files from a backup, you can again use either the
+                    Admin Client, or the backup command line utility.</para>
+                <note>
+                    <para>Currently, the restore tool can not directly read from a zipped backup.
+                        You have to extract it before restoring.</para>
+                </note>
+                <para>If you are using the Admin Client, do the following:</para>
+                <procedure>
+                    <step>
+                        <para>Select either the Restore Icon (arrow pointed downward) in the toolbar
+                            OR <guimenuitem>Tools &#187; Restore</guimenuitem> from the
+                        menu.</para>
+                    </step>
+                    <step>
+                        <para>The dialog box shown below will then prompt you to select the backup
+                            file <filename>__contents__.xml</filename> from the topmost directory
+                            you want restored. To restore the entire database, select the
+                                <filename>__contents__.xml</filename> from the
+                            <filename>db/</filename> directory.</para>
+                        <screenshot><graphic fileref="resources/backup2.png"/></screenshot>
+                    </step>
+                    <step>
+                        <para>A second dialog box will then prompt you for an admin password to use
+                            for the restore process. This password is required ONLY IF the password
+                            of the "admin" user set during the backup differs from the log-in
+                            password for the current session. (If you provide an incorrect password,
+                            the restore will be aborted.) If the passwords are different, note that
+                            restoring the user settings from the backup will cause the current user
+                            password to become invalid. </para>
+                    </step>
+                    <step>
+                        <para>If the restore was accepted, a progress dialog box will display the
+                            restored files:</para>
+                        <screenshot><graphic fileref="resources/backup3.png"/></screenshot>
+                    </step>
+                </procedure>
+
+                <para>To restore from a backup using the command-line utility, follow the
+                    instructions above for launching <filename>bin/backup.sh</filename> (Unix), OR
+                    the <filename>bin/backup.bat</filename> (Windows/DOS) script files. Include the
+                        <parameter>-r</parameter> parameter, and the full path of the
+                        <filename>__contents__.xml</filename> file to restore. As with the Admin
+                    Client, if the backup uses a different password for the "admin" user than the
+                    current session, you must specify the backup password using the
+                    <parameter>-P</parameter>. For Example:</para>
+                <synopsis>bin/backup.sh -u admin -p admin-pass -P backup-pass 
                                             -r /var/backup/hd060501/db/__contents__.xml</synopsis>
 
-            <note>
-                <para>The restore operation will overwrite any existing resource in the database
-                    with the same path and name as a resource in the backup. However, resources in
-                    the database with different names will not be touched.</para>
-            </note>
+                <note>
+                    <para>The restore operation will overwrite any existing resource in the database
+                        with the same path and name as a resource in the backup. However, resources
+                        in the database with different names will not be touched.</para>
+                </note>
 
-            <note>
-                <para>Whenever the <filename>/db/system</filename> collection is restored, the
-                    existing user database is overwritten by the backup database. Consequently, new
-                    users added or user setting changes to the old database after a backup will be
-                    lost following a database restore. </para>
-            </note>
+                <note>
+                    <para>Whenever the <filename>/db/system</filename> collection is restored, the
+                        existing user database is overwritten by the backup database. Consequently,
+                        new users added or user setting changes to the old database after a backup
+                        will be lost following a database restore. </para>
+                </note>
+            </section>
 
         </section>
 
@@ -227,10 +271,11 @@
                 backup as system task will only be possible during periods of low load.</para>
 
             <note>
-                <para>The consistency check service described <ulink url="#consistency">below</ulink>
-                can be used as an alternative to the BackupSystemTask. It is slightly faster.</para>
+                <para>The consistency check service described <ulink url="#consistency"
+                    >below</ulink> can be used as an alternative to the BackupSystemTask. It is
+                    slightly faster.</para>
             </note>
-            
+
             <para>An example configuration for the BackupSystemTask is shown below. Backups will be
                 written into the directory specified in parameter <parameter>dir</parameter>. For
                 each backup, a new file or directory will be created. The name of this file or
@@ -347,33 +392,32 @@
             <section>
                 <title>Manual Checks/Exports</title>
 
+                <screenshot>
+                    <graphic align="right" fileref="resources/exportgui.png"/>
+                </screenshot>
+                
                 <para>A standalone version of the consistency check and export tools can be launched
                     with</para>
 
                 <synopsis>java -jar start.jar org.exist.backup.ExportGUI</synopsis>
 
                 <para>On a headless system you can use the command-line version instead:</para>
-                
+
                 <synopsis>bin/run.sh org.exist.backup.ExportMain</synopsis>
-                
-                <para>Call it with parameter <parameter>-h</parameter> to get a list of
-                possible options.</para>
-                
+
+                <para>Call it with parameter <parameter>-h</parameter> to get a list of possible
+                    options.</para>
+
                 <para>The main purpose of this utility is to create emergency backups from a
                     database which can no longer be started normally. The utility needs to open the
                     database embedded. You have to shut down any running eXist instance before
                     starting the scan or you will get an exception.</para>
 
-                <screenshot>
-                    <graphic align="right" fileref="resources/exportgui.png"/>
-                </screenshot>
-
                 <para>For every check run, an error report will be written into the directory
                     specified in <guimenuitem>Output Directory</guimenuitem>. If you clicked on
                         <guimenuitem>Check Export</guimenuitem>, the utility will also export the
                     database into a zip file in the same directory. This backup can be restored via
-                    the standard <ulink url="#restore">backup/restore
-                        tools</ulink>.</para>
+                    the standard <ulink url="#restore">backup/restore tools</ulink>.</para>
             </section>
 
             <section>
@@ -413,7 +457,7 @@
                 <screenshot>
                     <graphic fileref="resources/jconsole.png"/>
                 </screenshot>
-                
+
                 <para>eXist also includes a command-line JMX client. Call it with parameter 
                     <parameter>-s</parameter> to see the latest consistency report:</para>
                 
@@ -436,8 +480,7 @@
                 
                 <para>You can also subscribe to the notifications made available by the SanityReport
                     MBean to be informed of sanity check results. Please consult the <ulink
-                        url="jmx.xml">documentation</ulink> on how to configure
-                    JMX.</para>
+                        url="jmx.xml">documentation</ulink> on how to configure JMX.</para>
             </section>
         </section>
     </chapter>
