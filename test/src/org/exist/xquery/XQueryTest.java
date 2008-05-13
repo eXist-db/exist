@@ -1868,25 +1868,25 @@ public class XQueryTest extends XMLTestCase {
 				storeXMLStringAndGetQueryService("cdata.xml", xml);
             service.setProperty(OutputKeys.INDENT, "no");
             query = "//text()";
-            result = service.query(query);
+            result = service.queryResource("cdata.xml", query);
             assertEquals(1, result.getSize());
             resu = (XMLResource) result.getResource(0);
             assertEquals( "XQuery: " + query, "world", resu.getContent().toString());
 
             query = "//node/text()";
-            result = service.query(query);
+            result = service.queryResource("cdata.xml", query);
             assertEquals(1, result.getSize());
             resu = (XMLResource) result.getResource(0);
             assertEquals( "XQuery: " + query, "world", resu.getContent().toString());
 
             query = "//node/node()";
-            result = service.query(query);
+            result = service.queryResource("cdata.xml", query);
             assertEquals(1, result.getSize());
             resu = (XMLResource) result.getResource(0);
             assertEquals( "XQuery: " + query, "world", resu.getContent().toString());
 
             query = "/root[node = 'world']";
-            result = service.query(query);
+            result = service.queryResource("cdata.xml", query);
             assertEquals(1, result.getSize());
             resu = (XMLResource) result.getResource(0);
             assertEquals( "XQuery: " + query, xml, resu.getContent().toString());
