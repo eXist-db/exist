@@ -37,6 +37,7 @@ public class NGramModule extends AbstractInternalModule {
         new FunctionDef(NGramSearch.signatures[0], NGramSearch.class),
         new FunctionDef(NGramSearch.signatures[1], NGramSearch.class),
         new FunctionDef(NGramSearch.signatures[2], NGramSearch.class),
+        new FunctionDef(NGramSearch.signatures[3], NGramSearch.class),
         new FunctionDef(HighlightMatches.signature, HighlightMatches.class)
     };
 
