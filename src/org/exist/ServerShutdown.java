@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
+import java.awt.*;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
@@ -20,10 +21,13 @@ import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.client.Messages;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.*;
 
 /**
  * Call the main method of this class to shut down a running database instance.
@@ -63,7 +67,7 @@ public class ServerShutdown {
         }
         Properties properties = loadProperties();
         String user = "admin";
-        String passwd = "";
+        String passwd = null;
         String uri = properties.getProperty("uri", "xmldb:exist://localhost:8080/exist/xmlrpc");
         List opt = optParser.getArguments();
         int size = opt.size();
@@ -86,6 +90,18 @@ public class ServerShutdown {
                 case URI_OPT:
                     uri = option.getArgument();
             }
+        }
+        if (passwd == null) {
+            JPanel askPass = new JPanel(new BorderLayout());
+            askPass.add(new JLabel(Messages.getString("ShutdownDialog.2")), BorderLayout.NORTH);
+            JPasswordField passInput = new JPasswordField(25);
+        	askPass.add(passInput, BorderLayout.CENTER);
+            if (JOptionPane.showOptionDialog(null, askPass, Messages.getString("ShutdownDialog.1"),
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                    null, null, null) == JOptionPane.OK_OPTION)
+                passwd = new String(passInput.getPassword());
+            else
+                return;
         }
         try {
             // initialize database drivers
