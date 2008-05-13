@@ -115,7 +115,12 @@ public class JettyStart {
 			BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
 			server.start();
 
-			if (registerShutdownHook) {
+            System.out.println("-----------------------------------------------------");
+            System.out.println("Server has started. You should now be able to access ");
+            System.out.println("eXist's front page at http://localhost:8080/exist/");
+            System.out.println("-----------------------------------------------------");
+            
+            if (registerShutdownHook) {
 				// register a shutdown hook for the server
 				Thread hook = new Thread() {
 					public void run() {

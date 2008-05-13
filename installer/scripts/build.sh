@@ -6,7 +6,7 @@ if [ -z "$EXIST_HOME" ]; then
 fi
 
 if [ -z "$JAVA_HOME" ]; then
-    JAVA_HOME="%{JAVA_HOME}"
+    JAVA_HOME="%{JDKPath}"
 fi
 
 JAVA_CMD="$JAVA_HOME/bin/java"
