@@ -20,7 +20,8 @@ public class NGramSearch extends Function implements Optimizable {
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("contains", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
-            "",
+            "Returns all nodes from $a containing the string $b at any position. " +
+            "Strings are compared case-insensitive.",
             new SequenceType[] {
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
@@ -29,7 +30,8 @@ public class NGramSearch extends Function implements Optimizable {
         ),
         new FunctionSignature(
             new QName("ends-with", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
-            "",
+            "Returns all nodes from $a ending with the string $b. " +
+            "Strings are compared case-insensitive.",
             new SequenceType[] {
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
@@ -38,7 +40,18 @@ public class NGramSearch extends Function implements Optimizable {
         ),
         new FunctionSignature(
             new QName("starts-with", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
-            "",
+            "Returns all nodes from $a starting with the string $b. " +
+            "Strings are compared case-insensitive.",
+            new SequenceType[] {
+                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        ),
+        new FunctionSignature(
+            new QName("equals", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
+            "Returns all nodes from $a whose string content equals $b. " +
+            "Strings are compared case-insensitive",
             new SequenceType[] {
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
@@ -127,7 +140,7 @@ public class NGramSearch extends Function implements Optimizable {
         String[] ngrams = index.getDistinctNGrams(key);
         List qnames = new ArrayList(1);
         qnames.add(contextQName);
-        preselectResult = processMatches(index, docs, qnames, ngrams, useContext ? contextSequence.toNodeSet() : null,
+        preselectResult = processMatches(index, docs, qnames, key, ngrams, useContext ? contextSequence.toNodeSet() : null,
             NodeSet.DESCENDANT);
         return preselectResult;
     }
@@ -156,7 +169,7 @@ public class NGramSearch extends Function implements Optimizable {
                     qnames = new ArrayList(1);
                     qnames.add(contextQName);
                 }
-                result = processMatches(index, docs, qnames, ngrams, inNodes, NodeSet.ANCESTOR);
+                result = processMatches(index, docs, qnames, key, ngrams, inNodes, NodeSet.ANCESTOR);
             }
         } else {
             contextStep.setPreloadNodeSets(true);
@@ -167,7 +180,7 @@ public class NGramSearch extends Function implements Optimizable {
         return result;
     }
 
-    private NodeSet processMatches(NGramIndexWorker index, DocumentSet docs, List qnames, String[] ngrams, NodeSet nodeSet, int axis) throws TerminatedException {
+    private NodeSet processMatches(NGramIndexWorker index, DocumentSet docs, List qnames, String key, String[] ngrams, NodeSet nodeSet, int axis) throws TerminatedException {
         NodeSet result = null;
         for (int i = 0; i < ngrams.length; i++) {
             long start = System.currentTimeMillis();
@@ -227,6 +240,8 @@ public class NGramSearch extends Function implements Optimizable {
         	result = startsWith(result);
         else if (isCalledAs("ends-with"))
         	result = endsWith(result);
+        else if (isCalledAs("equals"))
+            result = equals(key, result);
         return result;
     }
 
@@ -248,7 +263,6 @@ public class NGramSearch extends Function implements Optimizable {
 
     private NodeSet endsWith(NodeSet nodes) {
     	NodeSet temp = new ExtArrayNodeSet();
-        LOG.debug("Filtering " + nodes.getLength());
         for (NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
             NodeProxy next = (NodeProxy) iterator.next();
             String data = next.getNodeValue();
@@ -264,8 +278,19 @@ public class NGramSearch extends Function implements Optimizable {
         }
 		return temp;
     }
-    
-	public int getDependencies() {
+
+    private NodeSet equals(String key, NodeSet nodes) {
+        NodeSet temp = new ExtArrayNodeSet();
+        for (NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
+            NodeProxy next = (NodeProxy) iterator.next();
+            String data = next.getNodeValue();
+            if (key.equalsIgnoreCase(data))
+                temp.add(next);
+        }
+        return temp;
+    }
+
+    public int getDependencies() {
         final Expression stringArg = getArgument(0);
         if (Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
             !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM)) {
