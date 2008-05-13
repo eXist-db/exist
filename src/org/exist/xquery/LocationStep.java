@@ -395,23 +395,25 @@ public class LocationStep extends Step {
                 nodeTestType = new Integer(test.getType());
             }
             if (Type.subTypeOf(nodeTestType.intValue(), Type.NODE)) {
-                if (Expression.NO_CONTEXT_ID != contextId) {
-                    if (contextSet instanceof VirtualNodeSet) {
-                        ((VirtualNodeSet) contextSet).setInPredicate(true);
-                        ((VirtualNodeSet) contextSet).setSelfIsContext();
-                        ((VirtualNodeSet) contextSet).setContextId(contextId);
-                    } else if (Type.subTypeOf(contextSet.getItemType(),
-                                              Type.NODE)) {
-                        NodeProxy p;
-                        for (Iterator i = contextSet.iterator(); i.hasNext();) {
-                            p = (NodeProxy) i.next();
-                            if (test.matches(p))
-                                p.addContextNode(contextId, p);
+                NodeSet result = null;
+                if (Expression.NO_CONTEXT_ID != contextId && contextSet instanceof VirtualNodeSet) {
+                    ((VirtualNodeSet) contextSet).setInPredicate(true);
+                    ((VirtualNodeSet) contextSet).setSelfIsContext();
+                    ((VirtualNodeSet) contextSet).setContextId(contextId);
+                } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
+                    NodeProxy p;
+                    if (test.getType() != Type.NODE)
+                        result = new ExtArrayNodeSet();
+                    for (Iterator i = contextSet.iterator(); i.hasNext();) {
+                        p = (NodeProxy) i.next();
+                        if (test.matches(p)) {
+                            p.addContextNode(contextId, p);
+                            if (result != null)
+                                result.add(p);
                         }
                     }
                 }
-                return contextSet;
-
+                return result == null ? contextSet : result;
             } else {
                 VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                          contextSet);
