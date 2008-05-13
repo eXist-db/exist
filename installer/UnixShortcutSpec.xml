@@ -30,6 +30,14 @@
         terminal="false" 
 		programGroup="yes"
         desktop="yes"/>
+    <shortcut name="DB Check and Export Tool"
+        type="Application"
+		encoding="UTF-8"
+        target="$INSTALL_PATH/bin/check.sh"
+		description="Start the consistency check and export tool"
+        terminal="false" 
+		programGroup="yes"
+        desktop="yes"/>
 	<shortcut name="Database Shutdown"
         type="Application"
 		encoding="UTF-8"
