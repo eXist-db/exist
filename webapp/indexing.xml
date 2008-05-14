@@ -15,7 +15,7 @@
             <para>In this section, we discuss the types of database indexes used by eXist, as well
                 as how they are created, configured and maintained. It assumes readers have a basic
                 understanding of XML and XQuery. For an introduction we suggest to first read the
-                wiki article <ulink url="http://atomic.exist-db.org/wiki/blogs/eXist/NewIndexing">
+                wiki article <ulink url="http://atomic.exist-db.org/blogs/eXist/NewIndexing">
                     "Understanding the new indexing features"</ulink>, which also lists some simple
                 guidelines on which index should be used for what.</para>
 
@@ -72,7 +72,7 @@
                 types of indexes have been moved out of the database core and are now maintained as
                 pluggable extensions. The full text, ngram and spatial indexes fall under this
                 category. Please refer to the above-mentioned <ulink
-                    url="http://atomic.exist-db.org/wiki/blogs/eXist/NewIndexing">article</ulink>
+                    url="http://atomic.exist-db.org/blogs/eXist/NewIndexing">article</ulink>
                 for a description of the new architecture.</para>
         </section>
 

@@ -82,9 +82,7 @@
                 in this document concern the other two deployment options. In section 2, we
                 introduce the XML:DB URI and explain how different servers are addressed by Java
                 clients. Section 3 deals with running eXist as a stand-alone server, and in Section
-                4 we discuss the required steps to directly embed eXist into an application,
-                including how to embed in the <ulink url="http://titanium.dstc.edu.au"
-                >XMLdbGUI</ulink>.</para>
+                4 we discuss the required steps to directly embed eXist into an application.</para>
         </section>
 
         <section>

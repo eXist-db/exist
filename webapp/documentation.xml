@@ -191,7 +191,7 @@
       <itemizedlist>
         <listitem>
           <para>
-              <ulink url="http://atomic.exist-db.org/wiki/HowTo/">Various HowTos</ulink>
+              <ulink url="http://atomic.exist-db.org/HowTo/">Various HowTos</ulink>
           </para>
         </listitem>
 
@@ -203,7 +203,7 @@
 
         <listitem>
           <para>
-              <ulink url="http://atomic.exist-db.org/wiki/articles/XMLPrague2006">XMLPrague 2006 papers and
+              <ulink url="http://atomic.exist-db.org/articles/XMLPrague2006">XMLPrague 2006 papers and
                   presentations</ulink>
           </para>
         </listitem>
@@ -219,14 +219,14 @@
       <title>Articles</title>
 
       <para>An up-to-date list of articles can be found <ulink
-          url="http://atomic.exist-db.org/wiki/articles/Articles">on the wiki</ulink>.</para>
+          url="http://atomic.exist-db.org/articles/Articles">on the wiki</ulink>.</para>
 
       <para>If you would like to know more about the internal workings of eXist, you may read the
         following introductory article:</para>
 
       <para>Wolfgang Meier. <ulink url="xmlprague06.xml">Index-Driven XQuery Processing in the eXist
           XML Database</ulink>. Paper presented at XML Prague 2006. Presentation slides can be found
-          <ulink url="http://atomic.exist-db.org/wiki/articles/wolfgangs_talk.pdf">here</ulink>
+          <ulink url="http://atomic.exist-db.org/articles/wolfgangs_talk.pdf">here</ulink>
         as well.</para>
 
       <para>An older article is:</para>
