@@ -59,6 +59,8 @@ public class ExportGUI extends javax.swing.JFrame {
     protected boolean startDB() {
         if (pool != null)
             return true;
+        progress.setIndeterminate(true);
+        currentTask.setText("Initializing ...");
         File confFile = new File(dbConfig.getText());
         if (!(confFile.exists() && confFile.canRead())) {
             JOptionPane.showMessageDialog(this, "The selected database configuration file " +
@@ -76,6 +78,9 @@ public class ExportGUI extends javax.swing.JFrame {
                     "that this tool tries to launch an embedded db instance. No other db instance should\n" +
                     "be running on the same data.", "DB Error", JOptionPane.ERROR_MESSAGE);
             System.err.println("ERROR: Failed to open database: " + e.getMessage());
+        } finally {
+            progress.setIndeterminate(false);
+            currentTask.setText("");
         }
         return false;
     }

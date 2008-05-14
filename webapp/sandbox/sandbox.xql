@@ -39,7 +39,9 @@ declare function sandbox:check-paths() as item()* {
             if (not(doc-available($sandbox:XML_HIGHLIGHT_STYLE))) then
                 concat($sandbox:XML_HIGHLIGHT_STYLE, " not found! Please store this file into ",
                     "the database collection or the application will not work properly.")
-            else ()
+            else
+                <span>You can also try out an <a href="../sandbox2/sandbox.xql">updated XQuery sandbox</a>.
+                It does not work with all browsers yet though.</span>
     else
         <span>You can also try out an <a href="../sandbox2/sandbox.xql">updated XQuery sandbox</a>.
         It does not work with all browsers yet though.</span>
