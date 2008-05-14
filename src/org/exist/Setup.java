@@ -29,6 +29,9 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
+import org.apache.log4j.PropertyConfigurator;
+
+import java.util.Properties;
 
 /**
  * Initial database setup: called from the installer to set the admin password.
@@ -43,6 +46,9 @@ public class Setup {
             System.err.println("No password specified. Admin password will be empty.");
             return;
         }
+        Properties properties = new Properties();
+        properties.setProperty("log4j.threshold", "off");
+        PropertyConfigurator.configure(properties);
         initDb(args[0]);
         shutdown(args[0]);
     }
@@ -55,8 +61,7 @@ public class Setup {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
             Collection root = DatabaseManager.getCollection(URI, "admin", "");
-            UserManagementService service =
-                    (UserManagementService) root.getService("UserManagementService", "1.0");
+            UserManagementService service = (UserManagementService) root.getService("UserManagementService", "1.0");
             User admin = service.getUser("admin");
             admin.setPassword(adminPass);
             System.out.println("Setting admin user password...");
