@@ -67,7 +67,7 @@ public class LocationStep extends Step {
 
     protected int parentDeps = Dependency.UNKNOWN_DEPENDENCY;
 
-    protected boolean preload = false;
+    protected boolean preloadedData = false;
 
     protected boolean optimized = false;
 
@@ -135,9 +135,9 @@ public class LocationStep extends Step {
      * 
      * @return Whether or not we can optimize 
      */
-    protected boolean preloadNodeSets() {
+    protected boolean hasPreloadedData() {
         // TODO : log elsewhere ?
-        if (preload) {
+        if (preloadedData) {
             context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null,
                                           "Preloaded NodeSets");
             return true;
@@ -153,22 +153,14 @@ public class LocationStep extends Step {
     }
 
     /**
-     * The method <code>setPreloadNodeSets</code>
-     *
-     * @param doPreload a <code>boolean</code> value
-     */
-    public void setPreloadNodeSets(boolean doPreload) {
-        this.preload = doPreload;
-    }
-
-    /**
      * The method <code>setPreloadedData</code>
      *
      * @param docs a <code>DocumentSet</code> value
      * @param nodes a <code>NodeSet</code> value
      */
     public void setPreloadedData(DocumentSet docs, NodeSet nodes) {
-        this.currentDocs = docs;
+    	this.preloadedData = true;
+    	this.currentDocs = docs;
         this.currentSet = nodes;
         this.optimized = true;
     }
@@ -213,7 +205,7 @@ public class LocationStep extends Step {
         if ((contextInfo.getFlags() & IN_UPDATE) > 0)
             inUpdate = true;
         if ((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
-            preload = true;
+            preloadedData = true;
         }
         if ((contextInfo.getFlags() & NEED_INDEX_INFO) > 0) {
             useDirectAttrSelect = false;
@@ -477,8 +469,10 @@ public class LocationStep extends Step {
             // if there's just a single known node in the context, it is faster
             // do directly search for the attribute in the parent node.
         }
-        if (preloadNodeSets()) {
+        if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
+            //TODO : currentDocs can not be null here
+            //TODO : currentSet can not be null here
             if (!optimized && (currentSet == null || currentDocs == null
                 || !(docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
@@ -560,9 +554,11 @@ public class LocationStep extends Step {
                 result.addAll(p.directSelectChild(test.getName(), contextId));
             }
             return result;
-        } else if (preloadNodeSets()) {
+        } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
+            //TODO : currentDocs can not be null here
+            //TODO : currentSet can not be null here
             if (!optimized && (currentSet == null || currentDocs == null
                 || !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
@@ -615,9 +611,11 @@ public class LocationStep extends Step {
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId, contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
-        } else if (preloadNodeSets()) {
+        } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
+            //TODO : currentDocs can not be null here
+            //TODO : currentSet can not be null here
             if (!optimized && (currentSet == null || currentDocs == null
                 || !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
@@ -705,6 +703,7 @@ public class LocationStep extends Step {
             }
             return result;
         } else {
+        	//TODO : no test on preloaded data ?
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
                 || !(docs.equalDocs(currentDocs))) {
@@ -791,6 +790,7 @@ public class LocationStep extends Step {
             // TODO : throw an exception here ! Don't let this pass through
             return NodeSet.EMPTY_SET;
         } else {
+        	//TODO : no test on preloaded data ?
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
                 || !(docs.equalDocs(currentDocs))) {
@@ -833,6 +833,7 @@ public class LocationStep extends Step {
             // TODO : throw an exception here ! Don't let this pass through
             return NodeSet.EMPTY_SET;
         } else {
+        	//TODO : no test on preloaded data ?
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
                 || !(docs.equalDocs(currentDocs))) {
@@ -911,8 +912,10 @@ public class LocationStep extends Step {
                 }
             }
             return result;
-        } else if (preloadNodeSets()) {
+        } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
+            //TODO : currentDocs can not be null here
+            //TODO : currentSet can not be null here
             if (!optimized && (currentSet == null || currentDocs == null
                 || !(docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
@@ -980,8 +983,10 @@ public class LocationStep extends Step {
                 }
             }
             return result;
-        } else if (preloadNodeSets()) {
+        } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
+            //TODO : currentDocs can not be null here
+            //TODO : currentSet can not be null here
             if (!optimized && (currentSet == null || currentDocs == null
                 || !(docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
@@ -1099,6 +1104,7 @@ public class LocationStep extends Step {
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         if (!postOptimization) {
+        	//TODO : preloadedData = false ?
             currentSet = null;
             currentDocs = null;
             optimized = false;

@@ -212,9 +212,7 @@ public class ExtRegexp extends Function implements Optimizable {
                 List terms = getSearchTerms(contextSequence);
                 result = evalQuery(nodes, terms).toNodeSet();
             } else {
-                contextStep.setPreloadNodeSets(true);
                 contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-
                 result = path.eval(contextSequence).toNodeSet();
             }
             if(canCache && contextSequence.isCacheable())

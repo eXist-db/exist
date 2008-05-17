@@ -256,9 +256,7 @@ public class MatchRegexp extends Function implements Optimizable {
                 List terms = getSearchTerms(termsExpr, contextSequence);
                 result = evalQuery(nodes, terms, matchAll).toNodeSet();
             } else {
-                contextStep.setPreloadNodeSets(true);
                 contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-
                 result = path.eval(contextSequence).toNodeSet();
             }
             if(canCache && contextSequence.isCacheable())

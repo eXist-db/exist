@@ -159,9 +159,7 @@ public class NGramSearch extends Function implements Optimizable {
                 result = processMatches(index, docs, qnames, ngrams, inNodes, NodeSet.ANCESTOR);
             }
         } else {
-            contextStep.setPreloadNodeSets(true);
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-
             result = getArgument(0).eval(contextSequence).toNodeSet();
         }
         return result;

@@ -254,9 +254,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                 result = evalGeneric(contextSequence, contextItem, input);
             }
         } else {
-            contextStep.setPreloadNodeSets(true);
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-
             result = getArgument(0).eval(contextSequence).toNodeSet();
         }
 
