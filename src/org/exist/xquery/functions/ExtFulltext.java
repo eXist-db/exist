@@ -219,9 +219,7 @@ public class ExtFulltext extends Function implements Optimizable {
                 String arg = searchTerm.eval(contextSequence).getStringValue();
                 result = evalQuery(arg, nodes).toNodeSet();
             } else {
-                contextStep.setPreloadNodeSets(true);
                 contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-
                 result = path.eval(contextSequence).toNodeSet();
             }
             if(canCache && contextSequence.isCacheable())

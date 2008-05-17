@@ -345,8 +345,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 			// if we were optimizing and the preselect did not return anything,
 	        // we won't have any matches and can return
 	        if (preselectResult != null && preselectResult.isEmpty())
-	            result = Sequence.EMPTY_SEQUENCE;
-	        
+	            result = Sequence.EMPTY_SEQUENCE;	        
 	        else {
 		        if (contextStep == null || preselectResult == null) {
 		            /*
@@ -373,9 +372,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		                result = genericCompare(contextSequence, contextItem);
 		            }
 		        } else {
-		            contextStep.setPreloadNodeSets(true);
-                    contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
-		
+                    contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);		
 		            result = getLeft().eval(contextSequence).toNodeSet();
 		        }
 		    }

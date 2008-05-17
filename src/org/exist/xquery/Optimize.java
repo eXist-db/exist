@@ -150,7 +150,6 @@ public class Optimize extends Pragma {
             if (contextStep == null) {
                 return innerExpr.eval(result);
             } else {
-                contextStep.setPreloadNodeSets(true);
                 contextStep.setPreloadedData(result.getDocumentSet(), result);
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: context after optimize: " + result.getLength());
