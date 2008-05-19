@@ -157,16 +157,48 @@ public class ModuleUtils {
 	 * 
 	 * @param parameters
 	 *            The parameters Node
-	 * @return a set of name value properties for representing the parameters
+	 * @return a set of name value properties for representing the XML
+	 *         parameters
 	 */
-	public static Properties parseParameters(Node parameters)
+	public static Properties parseParameters(Node nParameters)
 			throws XPathException {
+
+		return parseProperties(nParameters, "param");
+	}
+
+	/**
+	 * Parses a structure like <properties><property name="a" value="1"/><property
+	 * name="b" value="2"/></properties> into a set of Properties
+	 * 
+	 * @param nProperties
+	 *            The properties Node
+	 * @return a set of name value properties for representing the XML
+	 *         properties
+	 */
+	public static Properties parseProperties(Node nProperties)
+			throws XPathException {
+
+		return parseProperties(nProperties, "property");
+	}
+
+	/**
+	 * Parses a structure like <properties><property name="a" value="1"/><property
+	 * name="b" value="2"/></properties> into a set of Properties
+	 * 
+	 * @param container
+	 *            The container of the properties
+	 * @param elementName
+	 *            The name of the property element
+	 * @return a set of name value properties for representing the XML
+	 *         properties
+	 */
+	private final static Properties parseProperties(Node container,
+			String elementName) throws XPathException {
 		Properties properties = new Properties();
 
-		if (parameters != null && parameters.getNodeType() == Node.ELEMENT_NODE
-				&& parameters.getLocalName().equals("parameters")) {
-			NodeList params = ((Element) parameters)
-					.getElementsByTagName("param");
+		if (container != null && container.getNodeType() == Node.ELEMENT_NODE) {
+			NodeList params = ((Element) container)
+					.getElementsByTagName(elementName);
 
 			for (int i = 0; i < params.getLength(); i++) {
 				Element param = ((Element) params.item(i));
@@ -177,8 +209,8 @@ public class ModuleUtils {
 				if (name != null && value != null) {
 					properties.setProperty(name, value);
 				} else {
-					LOG
-							.warn("Name or value attribute missing for stylesheet parameter");
+					LOG.warn("Name or value attribute missing for "
+							+ elementName);
 				}
 			}
 		}
