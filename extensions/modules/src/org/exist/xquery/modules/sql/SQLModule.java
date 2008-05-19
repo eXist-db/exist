@@ -61,8 +61,14 @@ public class SQLModule extends AbstractInternalModule {
 					GetConnectionFunction.class),
 			new FunctionDef(GetConnectionFunction.signatures[2],
 					GetConnectionFunction.class),
+			new FunctionDef(GetJNDIConnectionFunction.signatures[0],
+					GetJNDIConnectionFunction.class),
+			new FunctionDef(GetJNDIConnectionFunction.signatures[1],
+					GetJNDIConnectionFunction.class),
 			new FunctionDef(ExecuteFunction.signatures[0],
-					ExecuteFunction.class) };
+					ExecuteFunction.class),
+
+	};
 
 	private static long currentConnectionUID = System.currentTimeMillis();
 	public final static String CONNECTIONS_CONTEXTVAR = "_eXist_sql_connections";
