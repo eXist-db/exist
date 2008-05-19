@@ -21,8 +21,6 @@
 
 package org.exist.xquery.modules.xslfo;
 
-import org.apache.fop.apps.FopFactory;
-
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -35,40 +33,24 @@ public class XSLFOModule extends AbstractInternalModule {
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslfo";
 	public final static String PREFIX = "xslfo";
 
-	private static FopFactory fopFactory = null;
-	
-	private final static FunctionDef[] functions = {
-		new FunctionDef(RenderFunction.signature, RenderFunction.class)
-	};
-	
-	public XSLFOModule()
-	{
+	private final static FunctionDef[] functions = { new FunctionDef(
+			RenderFunction.signature, RenderFunction.class) };
+
+	public XSLFOModule() {
 		super(functions);
 	}
 
+	@Override
 	public String getNamespaceURI() {
 		return NAMESPACE_URI;
 	}
 
+	@Override
 	public String getDefaultPrefix() {
 		return PREFIX;
 	}
 
 	public String getDescription() {
 		return "Module for performing XSL-FO transformations";
-	}
-
-	/**
-	 * Getter for the FOPFactory
-	 * 
-	 * @return FopFactory
-	 */
-	public static synchronized FopFactory getFopFactory()
-	{
-		if(fopFactory == null)
-		{
-			fopFactory = FopFactory.newInstance();
-		}
-		return fopFactory;
 	}
 }
