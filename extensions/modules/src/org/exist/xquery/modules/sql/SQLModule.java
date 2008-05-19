@@ -77,12 +77,10 @@ public class SQLModule extends AbstractInternalModule {
 		super(functions);
 	}
 
-	@Override
 	public String getNamespaceURI() {
 		return NAMESPACE_URI;
 	}
 
-	@Override
 	public String getDefaultPrefix() {
 		return PREFIX;
 	}
@@ -196,7 +194,6 @@ public class SQLModule extends AbstractInternalModule {
 	 * @param xqueryContext
 	 *            The XQueryContext
 	 */
-	@Override
 	public void reset(XQueryContext xqueryContext) {
 		// reset the module context
 		super.reset(xqueryContext);

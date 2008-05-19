@@ -89,7 +89,6 @@ public class ExecuteFunction extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
 	 *      org.exist.xquery.value.Sequence)
 	 */
-	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		// was a connection and SQL statement specified?
