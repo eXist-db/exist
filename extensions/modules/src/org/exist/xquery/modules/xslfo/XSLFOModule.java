@@ -40,12 +40,10 @@ public class XSLFOModule extends AbstractInternalModule {
 		super(functions);
 	}
 
-	@Override
 	public String getNamespaceURI() {
 		return NAMESPACE_URI;
 	}
 
-	@Override
 	public String getDefaultPrefix() {
 		return PREFIX;
 	}
