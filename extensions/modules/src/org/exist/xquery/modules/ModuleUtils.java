@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-08 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -48,9 +48,9 @@ import org.xml.sax.XMLReader;
 /**
  * Utility Functions for XQuery Extension Modules
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2007-04-17
- * @version 1.0
+ * @author Adam Retter <adam@exist-db.org>
+ * @serial 200805202059
+ * @version 1.1
  */
 public class ModuleUtils {
 	protected final static Logger LOG = Logger.getLogger(ModuleUtils.class);
