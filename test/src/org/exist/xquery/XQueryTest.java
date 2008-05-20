@@ -2389,7 +2389,7 @@ public class XQueryTest extends XMLTestCase {
     }
     
     // http://sourceforge.net/support/tracker.php?aid=1740883
-    public void bugtestNoErrorNeOperatorWithSequence_1740883(){
+    public void testNoErrorNeOperatorWithSequence_1740883(){
         
         try {
             String query="let $foo := <Foo> <Bar>A</Bar> <Bar>B</Bar> <Bar>C</Bar> </Foo> " +
@@ -2405,9 +2405,11 @@ public class XQueryTest extends XMLTestCase {
            
             
         } catch (XMLDBException ex) {
-            ex.printStackTrace();
-            // TODO add real test criterium
-            fail("To be removed" +ex.getMessage());
+            if(!ex.getMessage().contains("one item")){
+                ex.printStackTrace();
+                fail(ex.getMessage());
+            }
+
         }
         
     }
