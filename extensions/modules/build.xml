@@ -45,6 +45,8 @@
 			<available file="${top.dir}/${lib.user}/fop.jar"/>
 			<available file="${top.dir}/${lib.user}/batik-all-1.6.jar"/>
 			<available file="${top.dir}/${lib.user}/xmlgraphics-commons-1.2.jar"/>
+			<available file="${top.dir}/${lib.user}/avalon-framework-api-4.2.0.jar"/>
+			<available file="${top.dir}/${lib.user}/avalon-framework-impl-4.2.0.jar"/>
 	    </and>
 	</condition>
 	
@@ -53,6 +55,8 @@
         <echo message="------------------------------------------------------"/>
 	    <echo message="Downloading libraries required by the xsl-fo module"/>
 	    <echo message="------------------------------------------------------"/>
+
+		<!-- Apache FOP -->
 		<get src="${include.module.xslfo.url}" dest="fop-0.94-bin-jdk1.4.zip" verbose="true" usetimestamp="true" />
 		<unzip src="fop-0.94-bin-jdk1.4.zip" dest="${top.dir}/${lib.user}">
 			<patternset>
@@ -63,6 +67,17 @@
 			<mapper type="flatten"/>
 		</unzip>
 		<delete file="fop-0.94-bin-jdk1.4.zip"/>
+		
+		<!-- Avalon -->
+		<get src="${include.module.xslfo.avalon.url}" dest="avalon-framework-4.2.0.zip" verbose="true" usetimestamp="true" />
+		<unzip src="avalon-framework-4.2.0.zip" dest="${top.dir}/${lib.user}">
+			<patternset>
+				<include name="avalon-framework/jars/avalon-framework-api-4.2.0.jar"/>
+				<include name="avalon-framework/jars/avalon-framework-impl-4.2.0.jar"/>
+			</patternset>
+			<mapper type="flatten"/>
+		</unzip>
+		<delete file="avalon-framework-4.2.0.zip"/>
 	</target>
     
     <!-- Special targets for simpleql module -->
