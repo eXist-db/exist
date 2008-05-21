@@ -1,5 +1,5 @@
 /*
- *  eXist SQL Module Extension GetConnectionFunction
+ *  eXist SQL Module Extension GetJNDIConnectionFunction
  *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
@@ -23,8 +23,10 @@
 package org.exist.xquery.modules.sql;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -32,17 +34,15 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * eXist SQL Module Extension GetConnectionFunction
+ * eXist SQL Module Extension GetJNDIConnectionFunction
  * 
- * Get a connection to a SQL Database
+ * Get a connection to a SQL Database via JNDI
  * 
  * @author Adam Retter <adam@exist-db.org>
  * @serial 2008-05-19
@@ -51,13 +51,13 @@ import org.exist.xquery.value.Type;
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
  *      org.exist.xquery.FunctionSignature)
  */
-public class GetConnectionFunction extends BasicFunction {
+public class GetJNDIConnectionFunction extends BasicFunction {
 
 	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
-					new QName("get-connection", SQLModule.NAMESPACE_URI,
+					new QName("get-jndi-connection", SQLModule.NAMESPACE_URI,
 							SQLModule.PREFIX),
-					"Open's a connection to a SQL Database. Expects a JDBC Driver class name in $a and a JDBC URL in $b. Returns an xs:long representing the connection handle.",
+					"Open's a connection to a SQL Database. Expects a JNDI name in $a. Returns an xs:long representing the connection handle.",
 					new SequenceType[] {
 							new SequenceType(Type.STRING,
 									Cardinality.EXACTLY_ONE),
@@ -66,29 +66,10 @@ public class GetConnectionFunction extends BasicFunction {
 					new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)),
 
 			new FunctionSignature(
-					new QName("get-connection", SQLModule.NAMESPACE_URI,
+					new QName("get-jndi-connection", SQLModule.NAMESPACE_URI,
 							SQLModule.PREFIX),
-					"Open's a connection to a SQL Database. Expects "
-							+ "a JDBC Driver class name in $a and a JDBC URL in $b."
-							+ " Additional JDBC properties may be set in $c in the"
-							+ " form <properties><property name=\"\" value=\"\"/></properties>. "
-							+ "Returns an xs:long representing the connection handle.",
+					"Open's a connection to a SQL Database. Expects a JNDI name in $a, a username in $b and a password in $c. Returns an xs:long representing the connection handle.",
 					new SequenceType[] {
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.ELEMENT,
-									Cardinality.ZERO_OR_ONE) },
-					new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)),
-
-			new FunctionSignature(
-					new QName("get-connection", SQLModule.NAMESPACE_URI,
-							SQLModule.PREFIX),
-					"Open's a connection to a SQL Database. Expects a JDBC Driver class name in $a, a JDBC URL in $b, a username in $c and a password in $d. Returns an xs:long representing the connection handle.",
-					new SequenceType[] {
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
 							new SequenceType(Type.STRING,
 									Cardinality.EXACTLY_ONE),
 							new SequenceType(Type.STRING,
@@ -98,22 +79,22 @@ public class GetConnectionFunction extends BasicFunction {
 					new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)) };
 
 	/**
-	 * GetConnectionFunction Constructor
+	 * GetJNDIConnectionFunction Constructor
 	 * 
 	 * @param context
 	 *            The Context of the calling XQuery
 	 */
-	public GetConnectionFunction(XQueryContext context,
+	public GetJNDIConnectionFunction(XQueryContext context,
 			FunctionSignature signature) {
 		super(context, signature);
 	}
 
 	/**
-	 * evaluate the call to the xquery get-connection() function, it is really
-	 * the main entry point of this class
+	 * evaluate the call to the xquery get-jndi-connection() function, it is
+	 * really the main entry point of this class
 	 * 
 	 * @param args
-	 *            arguments from the get-connection() function call
+	 *            arguments from the get-jndi-connection() function call
 	 * @param contextSequence
 	 *            the Context Sequence to operate on (not used here internally!)
 	 * @return A xs:long representing a handle to the connection
@@ -123,35 +104,27 @@ public class GetConnectionFunction extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		// was a db driver and url specified?
-		if (args[0].isEmpty() || args[1].isEmpty())
+		// was a JNDI name specified?
+		if (args[0].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
 
 		try {
 			Connection con = null;
 
-			// get the db connection details
-			String dbDriver = args[0].getStringValue();
-			String dbURL = args[1].getStringValue();
+			// get the JNDI source
+			String jndiName = args[0].getStringValue();
+			Context ctx = new InitialContext();
+			DataSource ds = (DataSource) ctx.lookup(jndiName);
 
-			// load the driver
-			Class.forName(dbDriver).newInstance();
+			// try and get the connection
+			if (args.length == 1) {
+				con = ds.getConnection();
+			}
+			if (args.length == 3) {
+				String jndiUser = args[1].getStringValue();
+				String jndiPassword = args[2].getStringValue();
 
-			if (args.length == 2) {
-				// try and get the connection
-				con = DriverManager.getConnection(dbURL);
-			} else if (args.length == 3) {
-				// try and get the connection
-				Properties props = ModuleUtils
-						.parseProperties(((NodeValue) args[2].itemAt(0))
-								.getNode());
-				con = DriverManager.getConnection(dbURL, props);
-			} else if (args.length == 4) {
-				String dbUser = args[2].getStringValue();
-				String dbPassword = args[3].getStringValue();
-
-				// try and get the connection
-				con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+				con = ds.getConnection(jndiUser, jndiPassword);
 			}
 
 			// store the connection and return the uid handle of the connection
