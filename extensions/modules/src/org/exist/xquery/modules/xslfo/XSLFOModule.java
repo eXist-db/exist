@@ -33,8 +33,9 @@ public class XSLFOModule extends AbstractInternalModule {
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslfo";
 	public final static String PREFIX = "xslfo";
 
-	private final static FunctionDef[] functions = { new FunctionDef(
-			RenderFunction.signature, RenderFunction.class) };
+	private final static FunctionDef[] functions = {
+			new FunctionDef(RenderFunction.signatures[0], RenderFunction.class),
+			new FunctionDef(RenderFunction.signatures[1], RenderFunction.class) };
 
 	public XSLFOModule() {
 		super(functions);

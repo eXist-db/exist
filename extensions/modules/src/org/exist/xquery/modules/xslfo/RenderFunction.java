@@ -22,8 +22,6 @@
 package org.exist.xquery.modules.xslfo;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -32,12 +30,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.avalon.framework.configuration.Configuration;
-import org.apache.avalon.framework.configuration.ConfigurationException;
-import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
+import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
 import org.exist.dom.QName;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -59,19 +57,42 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
 public class RenderFunction extends BasicFunction {
-	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
-			"Renders a given XSL-FO document. $a is the XSL-FO node, $b is the required mime-type, $c is parameters to the transformation. "
-					+ "Returns an xs:base64binary of the result."
-					+ "Parameters are specified with the structure: "
-					+ "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
-					+ "</parameters>. "
-					+ "Recognised rendering parameters are: author, title, keywords, dpi and user-config.",
-			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE));
+	public final static FunctionSignature signatures[] = {
+
+			new FunctionSignature(
+					new QName("render", XSLFOModule.NAMESPACE_URI,
+							XSLFOModule.PREFIX),
+					"Renders a given XSL-FO document. $a is the XSL-FO node, $b is the required mime-type, $c is parameters to the transformation. "
+							+ "Returns an xs:base64binary of the result."
+							+ "Parameters are specified with the structure: "
+							+ "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
+							+ "</parameters>. "
+							+ "Recognised rendering parameters are: author, title, keywords and dpi.",
+					new SequenceType[] {
+							new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+							new SequenceType(Type.STRING,
+									Cardinality.EXACTLY_ONE),
+							new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
+					new SequenceType(Type.BASE64_BINARY,
+							Cardinality.ZERO_OR_ONE)),
+
+			new FunctionSignature(
+					new QName("render", XSLFOModule.NAMESPACE_URI,
+							XSLFOModule.PREFIX),
+					"Renders a given XSL-FO document. $a is the XSL-FO node, $b is the required mime-type, $c is parameters to the transformation, $d is an Apache FOP Configuration file."
+							+ "Returns an xs:base64binary of the result."
+							+ "Parameters are specified with the structure: "
+							+ "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
+							+ "</parameters>. "
+							+ "Recognised rendering parameters are: author, title, keywords and dpi.",
+					new SequenceType[] {
+							new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+							new SequenceType(Type.STRING,
+									Cardinality.EXACTLY_ONE),
+							new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+							new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
+					new SequenceType(Type.BASE64_BINARY,
+							Cardinality.ZERO_OR_ONE)) };
 
 	/**
 	 * Constructor for RenderFunction, which returns a new instance of this
@@ -132,11 +153,10 @@ public class RenderFunction extends BasicFunction {
 
 			// setup the FopFactory
 			FopFactory fopFactory = FopFactory.newInstance();
-			String userConfig = parameters.getProperty("user-config");
-			if (userConfig != null) {
-				DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
-				Configuration cfg = cfgBuilder.buildFromFile(new File(
-						userConfig));
+			if (args.length == 4 && args[3] != null && !args[3].isEmpty()) {
+				FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(
+						context.getBroker());
+				Configuration cfg = cfgBuilder.buildFromItem(args[3].itemAt(0));
 				fopFactory.setUserConfig(cfg);
 			}
 
@@ -162,10 +182,6 @@ public class RenderFunction extends BasicFunction {
 			return new Base64Binary(baos.toByteArray());
 		} catch (TransformerException te) {
 			throw new XPathException(te);
-		} catch (IOException ioe) {
-			throw new XPathException(ioe);
-		} catch (ConfigurationException ce) {
-			throw new XPathException(ce);
 		} catch (SAXException se) {
 			throw new XPathException(se);
 		}
@@ -210,5 +226,33 @@ public class RenderFunction extends BasicFunction {
 		}
 
 		return foUserAgent;
+	}
+
+	/**
+	 * Extension of the Apache Avalon DefaultConfigurationBuilder Allows better
+	 * integration with Nodes passed in from eXist as Configuration files
+	 */
+	private class FopConfigurationBuilder
+			extends
+			org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
+		DBBroker broker = null;
+
+		public FopConfigurationBuilder(DBBroker broker) {
+			super();
+			this.broker = broker;
+		}
+
+		public FopConfigurationBuilder(DBBroker broker,
+				final boolean enableNamespaces) {
+			super(enableNamespaces);
+			this.broker = broker;
+		}
+
+		public Configuration buildFromItem(Item item) throws SAXException {
+			SAXConfigurationHandler handler = getHandler();
+			handler.clear();
+			item.toSAX(broker, handler, new Properties());
+			return handler.getConfiguration();
+		}
 	}
 }
