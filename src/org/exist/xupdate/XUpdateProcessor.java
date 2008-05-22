@@ -27,20 +27,9 @@
  */
 package org.exist.xupdate;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+import antlr.collections.AST;
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.DocumentSet;
@@ -79,9 +68,18 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
 
 /**
  * Main class to pre-process an XUpdate request. XUpdateProcessor
@@ -729,8 +727,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	}
 	
 	private Sequence processQuery(String select) throws SAXException {
-		try {
-			XQueryContext context = new XQueryContext(broker, accessCtx);
+        XQueryContext context = null;
+        try {
+			context = new XQueryContext(broker, accessCtx);
 			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry entry;
 			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
@@ -770,7 +769,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			throw new SAXException(e);
 		} catch (XPathException e) {
 			throw new SAXException(e);
-		}
+		} finally {
+            if (context != null)
+                context.reset(false);
+        }
 	}
 
 	/* (non-Javadoc)
