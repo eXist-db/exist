@@ -2740,14 +2740,14 @@ public class XQueryTest extends XMLTestCase {
         
         // OK
         try {
-            String query = "element {\"a\"} { <element b=\"\"/>"
-                    +"/attribute()[namespace-uri(.) != \"http://www.asml.com/metainformation\"]}";
+            String query = "element {\"a\"} { <element b=\"\" c=\"\" />/attribute()[namespace-uri(.) != "
+                    +"\"http://www.asml.com/metainformation\"]}";
 
             XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
 
             assertEquals(1, result.getSize());
-            assertEquals(query, "<a b=\"\"/>", result.getResource(0).getContent().toString());
+            assertEquals(query, "<a b=\"\" c=\"\"/>", result.getResource(0).getContent().toString());
         } catch (XMLDBException ex) {
             ex.printStackTrace();
             fail(ex.toString());
