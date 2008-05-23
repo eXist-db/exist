@@ -2875,6 +2875,25 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+    // http://sourceforge.net/support/tracker.php?aid=1970717
+    public void bugtestConstructTextNodeWithEmptyString_1970717() {
+
+        // OK
+        try {
+            String query = "text {\"\"} =\"\"";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "true",
+                    result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
     // http://sourceforge.net/support/tracker.php?aid=1848497
     public void bugtestAttributeNamespaceDeclaration_1848497() {
 
