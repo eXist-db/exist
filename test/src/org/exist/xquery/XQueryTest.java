@@ -1897,6 +1897,22 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+    /**
+     * Tests that no result will be returned if an attribute's value is selected on a node which wasn't found
+     */
+    public void testAttributeForNoResult() {
+        String query = "let $a := <a><b>-1</b><b>-2</b></a> " + //
+                "return /a[./c]/@id/string()";
+        try {
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals(0, result.getSize());
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
     public void testLargeAttributeContains() {
 		ResourceSet result;
 		String query;
