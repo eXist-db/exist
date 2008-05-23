@@ -250,7 +250,8 @@ public class MemTreeBuilder {
 	public int characters(CharSequence s) {
         int lastNode = doc.getLastNode();
         if (0 < lastNode && level == doc.getTreeLevel(lastNode)) {
-            if (doc.getNodeType(lastNode) == Node.TEXT_NODE) {
+            if (doc.getNodeType(lastNode) == Node.TEXT_NODE ||
+                    doc.getNodeType(lastNode) == Node.CDATA_SECTION_NODE) {
                 // if the last node is a text node, we have to append the
                 // characters to this node. XML does not allow adjacent text nodes.
                 doc.appendChars(lastNode, s);
@@ -259,7 +260,8 @@ public class MemTreeBuilder {
             if (doc.getNodeType(lastNode) == NodeImpl.REFERENCE_NODE) {
                 // check if the previous node is a reference node. if yes, check if it is a text node
                 int p = doc.alpha[lastNode];
-                if (doc.references[p].getNodeType() == Node.TEXT_NODE) {
+                if (doc.references[p].getNodeType() == Node.TEXT_NODE ||
+                        doc.references[p].getNodeType() == Node.CDATA_SECTION_NODE) {
                     // found a text node reference. create a new char sequence containing
                     // the concatenated text of both nodes
                     doc.replaceReferenceNode(lastNode, doc.references[p].getStringValue() + s);
@@ -289,6 +291,28 @@ public class MemTreeBuilder {
 	}
     
     public int cdataSection(CharSequence data) {
+        int lastNode = doc.getLastNode();
+        if (0 < lastNode && level == doc.getTreeLevel(lastNode)) {
+            if (doc.getNodeType(lastNode) == Node.TEXT_NODE ||
+                    doc.getNodeType(lastNode) == Node.CDATA_SECTION_NODE) {
+                // if the last node is a text node, we have to append the
+                // characters to this node. XML does not allow adjacent text nodes.
+                doc.appendChars(lastNode, data);
+                return lastNode;
+            }
+            if (doc.getNodeType(lastNode) == NodeImpl.REFERENCE_NODE) {
+                // check if the previous node is a reference node. if yes, check if it is a text node
+                int p = doc.alpha[lastNode];
+                if (doc.references[p].getNodeType() == Node.TEXT_NODE ||
+                        doc.references[p].getNodeType() == Node.CDATA_SECTION_NODE) {
+                    // found a text node reference. create a new char sequence containing
+                    // the concatenated text of both nodes
+                    doc.replaceReferenceNode(lastNode, doc.references[p].getStringValue() + data);
+                    return lastNode;
+                }
+                // fall through and add the node below
+            }
+        }
         int nodeNr = doc.addNode(Node.CDATA_SECTION_NODE, level, null);
         doc.addChars(nodeNr, data);
         linkNode(nodeNr);
