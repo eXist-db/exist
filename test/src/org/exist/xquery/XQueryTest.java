@@ -2857,7 +2857,7 @@ public class XQueryTest extends XMLTestCase {
     // http://sourceforge.net/support/tracker.php?aid=1841105
     // in a path expression, a step returning an empty sequence stops the evaluation
     // (and return an empty sequence) as confirmed by Michael Kay on the XQuery mailing list
-    public void bugtestStringOfEmptySequence_1841105() {
+    public void testStringOfEmptySequence_1841105() {
 
         // OK
         try {
