@@ -12,10 +12,6 @@
         target="$INSTALL_PATH/bin/client.bat"
 		description="Start the command-line client" programGroup="yes"
         desktop="yes" terminal="false"/>
-	<shortcut name="Database Shutdown"
-		target="$INSTALL_PATH/bin/shutdown.bat"
-        description="Cleanly shutdown a running database" 
-        programGroup="yes" desktop="no"/>
 	<shortcut name="Install eXist as Service" 
 		target="$INSTALL_PATH/tools/wrapper/bin/install.bat"
 		description="Install the eXist server as a service"
