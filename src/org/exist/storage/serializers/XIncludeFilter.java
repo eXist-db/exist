@@ -361,9 +361,13 @@ public class XIncludeFilter implements Receiver {
                     context = xquery.newContext(AccessContext.XINCLUDE);
                 context.declareNamespaces(namespaces);
                 context.declareNamespace("xinclude", XINCLUDE_NS);
+                
                 //TODO: change these to putting the XmldbURI in, but we need to warn users!
-                context.declareVariable("xinclude:current-doc", document.getFileURI().toString());
-                context.declareVariable("xinclude:current-collection", document.getCollection().getURI().toString());
+                if(document!=null){
+                    context.declareVariable("xinclude:current-doc", document.getFileURI().toString());
+                    context.declareVariable("xinclude:current-collection", document.getCollection().getURI().toString());
+                }
+                
                 if (xpointer != null) {
                     if(doc != null)
                         context.setStaticallyKnownDocuments(new XmldbURI[] { doc.getURI() } );
