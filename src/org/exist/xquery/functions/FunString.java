@@ -76,18 +76,20 @@ public class FunString extends Function {
         
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-        
-		if(getArgumentCount() == 1)
+
+        // if the function is called with an argument and it is empty,
+        // return the empty string
+        if(getArgumentCount() == 1) {
 			contextSequence = getArgument(0).eval(contextSequence);
-		
-		if (contextSequence == null)
+            if (contextSequence.isEmpty())
+                return StringValue.EMPTY_STRING;
+        } else if (contextSequence == null)
 			throw new XPathException(getASTNode(), "err:XPDY0002 : undefined context sequence for '" + this.toString() + "'");
+        // no argument and the context sequence is empty: return the empty sequence
+        else if (contextSequence.isEmpty())
+            return Sequence.EMPTY_SEQUENCE;
         
-        Sequence result;        
-		if(contextSequence.isEmpty())
-			result = StringValue.EMPTY_STRING;
-        else
-            result = contextSequence.convertTo(Type.STRING);        
+        Sequence result = contextSequence.convertTo(Type.STRING);        
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
