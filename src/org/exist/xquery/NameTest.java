@@ -35,7 +35,7 @@ public class NameTest extends TypeTest {
 			return false;
 		if(node == null)
 			node = proxy.getNode();
-		return matchesName(node);
+        return matchesName(node);
 	}
 
 	public boolean matches(Node other) {
