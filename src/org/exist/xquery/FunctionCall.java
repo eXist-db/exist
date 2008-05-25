@@ -92,13 +92,15 @@ public class FunctionCall extends Function {
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		contextInfo.setParent(this);
 		if (!analyzed) {
-			super.analyze(contextInfo);
+            AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+            newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
+            super.analyze(newContextInfo);
 			if (context.tailRecursiveCall(functionDef.getSignature())) {
 				isRecursive = true;
 			}
 			context.functionStart(functionDef.getSignature());
 			try {
-				expression.analyze(contextInfo);
+				expression.analyze(newContextInfo);
 				analyzed = true;
 			} finally {
 				context.functionEnd();
