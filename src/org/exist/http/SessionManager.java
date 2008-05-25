@@ -28,6 +28,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.xquery.value.Sequence;
 
 import java.util.Map;
+import java.util.Properties;
 
 public class SessionManager {
 
@@ -52,7 +53,10 @@ public class SessionManager {
         }
     }
 
-    private class TimeoutCheck extends UserJavaJob {
+    public static class TimeoutCheck extends UserJavaJob {
+
+        public TimeoutCheck() {
+        }
 
         public String getName() {
             return "REST_TimeoutCheck";
@@ -62,20 +66,19 @@ public class SessionManager {
         }
 
         public void execute(BrokerPool brokerpool, Map params) throws JobException {
-            final long now = System.currentTimeMillis();
-            for (int i = 0; i < slots.length; i++) {
-                if (now - slots[i].created > TIMEOUT) {
-                    LOG.debug("Removing cached query result for session " + i);
-                    slots[i] = null;
-                }
-            }
+            SessionManager manager = (SessionManager) params.get("session-manager");
+            if (manager == null)
+                throw new JobException(JobException.JOB_ABORT, "parameter 'session-manager' is not set");
+            manager.timeoutCheck();
         }
     }
 
     private QueryResult[] slots = new QueryResult[32];
 
     public SessionManager(BrokerPool pool) {
-        pool.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new TimeoutCheck(), 2000);
+        Properties props = new Properties();
+        props.put("session-manager", this);
+        pool.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new TimeoutCheck(), 2000, props);
     }
 
     public int add(String query, Sequence sequence) {
@@ -110,5 +113,15 @@ public class SessionManager {
         if (sessionId < 0 || sessionId >= slots.length)
             return; // out of scope
         slots[sessionId] = null;
+    }
+
+    protected void timeoutCheck() {
+        final long now = System.currentTimeMillis();
+        for (int i = 0; i < slots.length; i++) {
+            if (slots[i] != null && now - slots[i].created > TIMEOUT) {
+                LOG.debug("Removing cached query result for session " + i);
+                slots[i] = null;
+            }
+        }
     }
 }
