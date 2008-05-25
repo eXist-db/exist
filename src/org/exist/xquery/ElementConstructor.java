@@ -232,7 +232,7 @@ public class ElementConstructor extends NodeConstructor {
                  */
                 if (qn.getPrefix() == null && context.getInScopeNamespace("") != null) {
                      qn.setNamespaceURI(context.getInScopeNamespace(""));
-                 }
+                }
              }
 
             //Not in the specs but... makes sense
