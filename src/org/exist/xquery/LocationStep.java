@@ -1105,6 +1105,8 @@ public class LocationStep extends Step {
         super.resetState(postOptimization);
         if (!postOptimization) {
         	//TODO : preloadedData = false ?
+        	//No : introduces a regression in testMatchCount
+        	//TODO : Investigate...
             currentSet = null;
             currentDocs = null;
             optimized = false;
