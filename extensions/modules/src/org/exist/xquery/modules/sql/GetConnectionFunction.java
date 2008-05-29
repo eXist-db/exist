@@ -24,6 +24,7 @@ package org.exist.xquery.modules.sql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import org.exist.dom.QName;
@@ -45,8 +46,8 @@ import org.exist.xquery.value.Type;
  * Get a connection to a SQL Database
  * 
  * @author Adam Retter <adam@exist-db.org>
- * @serial 2008-05-19
- * @version 1.2
+ * @serial 2008-05-29
+ * @version 1.21
  * 
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
  *      org.exist.xquery.FunctionSignature)
@@ -127,16 +128,15 @@ public class GetConnectionFunction extends BasicFunction {
 		if (args[0].isEmpty() || args[1].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
 
+		// get the db connection details
+		String dbDriver = args[0].getStringValue();
+		String dbURL = args[1].getStringValue();
+
 		try {
-			Connection con = null;
-
-			// get the db connection details
-			String dbDriver = args[0].getStringValue();
-			String dbURL = args[1].getStringValue();
-
 			// load the driver
 			Class.forName(dbDriver).newInstance();
 
+			Connection con = null;
 			if (args.length == 2) {
 				// try and get the connection
 				con = DriverManager.getConnection(dbURL);
@@ -156,8 +156,33 @@ public class GetConnectionFunction extends BasicFunction {
 
 			// store the connection and return the uid handle of the connection
 			return new IntegerValue(SQLModule.storeConnection(context, con));
-		} catch (Exception e) {
-			throw new XPathException(e.getMessage());
+		} catch (IllegalAccessException iae) {
+			LOG.error(
+					"sql:get-connection() Illegal Access to database driver class: "
+							+ dbDriver, iae);
+			throw new XPathException(
+					"sql:get-connection() Illegal Access to database driver class: "
+							+ dbDriver, iae);
+		} catch (ClassNotFoundException cnfe) {
+			LOG.error(
+					"sql:get-connection() Cannot find database driver class: "
+							+ dbDriver, cnfe);
+			throw new XPathException(
+					"sql:get-connection() Cannot find database driver class: "
+							+ dbDriver, cnfe);
+		} catch (InstantiationException ie) {
+			LOG.error(
+					"sql:get-connection() Cannot instantiate database driver class: "
+							+ dbDriver, ie);
+			throw new XPathException(
+					"sql:get-connection() Cannot instantiate database driver class: "
+							+ dbDriver, ie);
+		} catch (SQLException sqle) {
+			LOG.error("sql:get-connection() Cannot connect to database: "
+					+ dbURL, sqle);
+			throw new XPathException(
+					"sql:get-connection() Cannot connect to database: " + dbURL,
+					sqle);
 		}
 	}
 }
