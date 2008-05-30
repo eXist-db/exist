@@ -68,6 +68,7 @@ public class ConsistencyCheck {
     public ConsistencyCheck(DBBroker broker) {
         this.broker = broker;
         this.defaultIndexDepth = ((NativeBroker) broker).getDefaultIndexDepth();
+        System.out.println("DefaultIndexDepth = " + this.defaultIndexDepth);
     }
 
     /**
@@ -234,9 +235,14 @@ public class ConsistencyCheck {
                             NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), nodeId);
                             try {
                                 long p = domDb.findValue(nodeRef);
-                                if (p != reader.getCurrentPosition())
-                                    return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node " + nodeId +
-                                            " through dom.dbx index.", doc.getDocId());
+                                if (p != reader.getCurrentPosition()) {
+                                    Value v = domDb.get(p);
+                                    if (v == null)
+                                        return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node " + nodeId +
+                                            " through dom.dbx index. Wrong storage address. Expected: " +
+                                            p + "; got: " +
+                                            reader.getCurrentPosition() + " - ", doc.getDocId());
+                                }
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node " + nodeId +
