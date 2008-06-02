@@ -90,6 +90,12 @@ public class DataGuide {
         return other;
     }
 
+    public int getMaxParentDepth(QName qname) {
+        NodeStats temp = new NodeStats(qname);
+        root.getMaxParentDepth(qname, temp);
+        return temp.getMaxDepth();
+    }
+
     public String toString() {
         List paths = new ArrayList();
         root.dump(new StringBuffer(), paths);
@@ -158,35 +164,5 @@ public class DataGuide {
             }
             handler.endElement(Namespaces.EXIST_NS, "distribution", "distribution");
         }
-    }
-
-    private static NodePath createPath(String[] tags) {
-        NodePath p = new NodePath();
-        for (int i = 0; i < tags.length; i++) {
-            String tag = tags[i];
-            p.addComponent(new QName(tag, "", ""));
-        }
-        return p;
-    }
-
-    public static void main(String[] args) {
-        DataGuide guide = new DataGuide();
-        guide.add(createPath(new String[] { "root", "body", "head" }));
-        guide.add(createPath(new String[] { "root", "body", "section" }));
-        guide.add(createPath(new String[] { "root", "body", "section", "head" }));
-        guide.add(createPath(new String[] { "root", "body", "section", "p" }));
-        guide.add(createPath(new String[] { "root", "body", "section", "p" }));
-        guide.add(createPath(new String[] { "root", "body", "section", "hi" }));
-        guide.add(createPath(new String[] { "root", "body", "section", "hi", "hi" }));
-        guide.add(createPath(new String[] { "root", "body", "backmatter" }));
-
-        System.out.println(guide.toString());
-
-        DataGuide guide2 = new DataGuide();
-        guide2.add(createPath(new String[] { "root", "body", "head", "hi" }));
-        guide2.add(createPath(new String[] { "root", "body", "section", "p" }));
-
-        guide.mergeInto(guide2);
-        System.out.println(guide2.toString());
     }
 }

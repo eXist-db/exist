@@ -49,7 +49,8 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(GetModuleLoadPath.signature, GetModuleLoadPath.class),
             new FunctionDef(TriggerSystemTask.signature, TriggerSystemTask.class),
             new FunctionDef(AsUser.signature, AsUser.class),
-            new FunctionDef(GetIndexStatistics.signature, GetIndexStatistics.class)
+            new FunctionDef(GetIndexStatistics.signature, GetIndexStatistics.class),
+            new FunctionDef(UpdateStatistics.signature, UpdateStatistics.class)
     };
 	
 	public SystemModule() {
