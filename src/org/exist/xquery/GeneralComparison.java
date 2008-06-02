@@ -304,7 +304,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 }
             }
         }
-        return preselectResult;
+        return preselectResult == null ? NodeSet.EMPTY_SET : preselectResult;
     }
 
     /* (non-Javadoc)
