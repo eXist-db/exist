@@ -509,7 +509,8 @@ public class SystemExport {
                 CollectionStore store = (CollectionStore) ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
                 uri = UTF8.decode(value.data(), value.start() + CollectionStore.CollectionKey.OFFSET_VALUE,
                         value.getLength() - CollectionStore.CollectionKey.OFFSET_VALUE).toString();
-                if (CollectionStore.NEXT_COLLECTION_ID_KEY.equals(uri) || CollectionStore.NEXT_DOC_ID_KEY.equals(uri))
+                if (CollectionStore.NEXT_COLLECTION_ID_KEY.equals(uri) || CollectionStore.NEXT_DOC_ID_KEY.equals(uri) ||
+                    CollectionStore.FREE_COLLECTION_ID_KEY.equals(uri) || CollectionStore.FREE_DOC_ID_KEY.equals(uri))
                     return true;
                 if (callback != null)
                     callback.startCollection(uri);
@@ -542,9 +543,7 @@ public class SystemExport {
 
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             CollectionStore store = (CollectionStore) ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
-            int collectionId = CollectionStore.DocumentKey.getCollectionId(key);
             int docId = CollectionStore.DocumentKey.getDocumentId(key);
-
             if (!exportedDocs.contains(docId)) {
                 try {
                     byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
