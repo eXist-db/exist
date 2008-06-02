@@ -1,6 +1,7 @@
 package org.exist.storage.statistics;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
 import org.exist.storage.BrokerPool;
@@ -30,7 +31,7 @@ public class IndexStatistics extends AbstractIndex {
 
     public final static String ID = IndexStatistics.class.getName();
 
-    private final static Logger LOG = Logger.getLogger(IndexStatistics.class);
+    protected final static Logger LOG = Logger.getLogger(IndexStatistics.class);
 
     private File dataFile;
     private DataGuide dataGuide = new DataGuide();
@@ -42,8 +43,16 @@ public class IndexStatistics extends AbstractIndex {
         return ID;
     }
 
+    public int getMaxParentDepth(QName qname) {
+        return dataGuide.getMaxParentDepth(qname);
+    }
+
     protected void mergeStats(DataGuide other) {
         dataGuide = other.mergeInto(dataGuide);
+    }
+
+    protected void updateStats(DataGuide newGuide) {
+        dataGuide = newGuide;
     }
 
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {

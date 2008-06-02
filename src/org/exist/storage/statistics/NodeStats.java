@@ -23,9 +23,15 @@ class NodeStats {
 
     transient private int depth = 0;
 
+    protected NodeStats parent = null;
     protected NodeStats[] children = null;
 
     protected NodeStats(QName qname) {
+        this(null, qname);
+    }
+
+    protected NodeStats(NodeStats parent, QName qname) {
+        this.parent = parent;
         this.qname = qname;
     }
 
@@ -39,6 +45,10 @@ class NodeStats {
         depth = 0;
     }
 
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+    
     protected void addOccurrence() {
         nodeCount++;
     }
@@ -59,7 +69,7 @@ class NodeStats {
             System.arraycopy(children, 0, tc, 0, children.length);
             children = tc;
         }
-        children[children.length - 1] = new NodeStats(qn);
+        children[children.length - 1] = new NodeStats(this, qn);
         return children[children.length - 1];
     }
 
@@ -97,6 +107,17 @@ class NodeStats {
         return s;
     }
 
+    protected void getMaxParentDepth(QName name, NodeStats max) {
+        if (parent != null && qname != null && qname.equalsSimple(name)) {
+            max.maxDepth = Math.max(parent.maxDepth, max.maxDepth);
+        }
+        if (children != null) {
+            for (int i = 0; i < children.length; i++) {
+                children[i].getMaxParentDepth(name, max);
+            }
+        }
+    }
+
     protected void write(ByteBuffer buffer, SymbolTable symbols) {
         buffer.putShort(symbols.getNSSymbol(qname.getNamespaceURI()));
         buffer.putShort(symbols.getSymbol(qname.getLocalName()));
@@ -125,7 +146,7 @@ class NodeStats {
         if (childCount > 0) {
             children = new NodeStats[childCount];
             for (int i = 0; i < childCount; i++) {
-                children[i] = new NodeStats(null);
+                children[i] = new NodeStats(this, null);
                 children[i].read(buffer, symbols);
             }
         }
