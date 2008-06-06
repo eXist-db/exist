@@ -167,10 +167,10 @@ public class FunctionCall extends Function {
 			if (!(result instanceof DeferredFunctionCall) &&
 				//Don't test on empty sequences since they can have several types
 				//TODO : add a prior cardinality check on wether an empty result is allowed or not
-				!result.isEmpty() && 
 				//TODO : should we introduce a deffered type check on VirtualNodeSet 
 				// and trigger it when the nodeSet is realized ?
-				!(result instanceof VirtualNodeSet))
+				!(result instanceof VirtualNodeSet) &&
+                !result.isEmpty())
 				getSignature().getReturnType().checkType(result.getItemType()); 
 		} catch (XPathException e) {
 			throw new XPathException(getASTNode(), "err:XPTY0004 in function '" + getSignature().getName() + "'. " + 
