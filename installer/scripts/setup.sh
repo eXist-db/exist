@@ -11,6 +11,10 @@ EXIST_HOME="%{INSTALL_PATH}"
 
 JAVA_HOME="%{JDKPath}"
 
+if [ ! -d "$JAVA_HOME" ]; then
+    JAVA_HOME="%{JAVA_HOME}"
+fi
+
 JAVA_CMD="$JAVA_HOME/bin/java"
 
 OPTIONS=

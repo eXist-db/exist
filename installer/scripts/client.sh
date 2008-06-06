@@ -14,6 +14,10 @@ if [ -z "$JAVA_HOME" ]; then
     JAVA_HOME="%{JDKPath}"
 fi
 
+if [ ! -d "$JAVA_HOME" ]; then
+    JAVA_HOME="%{JAVA_HOME}"
+fi
+
 #
 # In addition to the other parameter options for the interactive client 
 # pass -j or --jmx to enable JMX agent.  The port for it can be specified 
