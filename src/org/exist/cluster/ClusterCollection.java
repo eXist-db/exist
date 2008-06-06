@@ -295,12 +295,20 @@ public final class ClusterCollection extends Collection {
         return collection.getPermissions();
     }
 
+    public Permission getPermissionsNoLock() {
+        return collection.getPermissionsNoLock();
+    }
+
     public boolean hasDocument(XmldbURI name) {
         return collection.hasDocument(name);
     }
 
     public boolean hasSubcollection(XmldbURI name) {
         return collection.hasSubcollection(name);
+    }
+
+    public boolean hasSubcollectionNoLock(XmldbURI name) {
+        return collection.hasSubcollectionNoLock(name);
     }
 
     public Iterator iterator(DBBroker broker) {
