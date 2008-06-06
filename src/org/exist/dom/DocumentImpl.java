@@ -644,7 +644,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 				 new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[0])
 				 );
     }	
-    
+
+    public NodeProxy getFirstChildProxy() {
+        return new NodeProxy(this, NodeId.ROOT_NODE, Node.ELEMENT_NODE, childAddress[0]);
+    }
+
     /**
      * The method <code>getFirstChildAddress</code>
      *
