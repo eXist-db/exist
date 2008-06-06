@@ -330,44 +330,59 @@ public class VirtualNodeSet extends AbstractNodeSet {
                     test.matches(proxy)) {
                     result.add(proxy);
                 }
-                NodeList cl = proxy.getDocument().getChildNodes();
-                for (int j = 0; j < cl.getLength(); j++) {
-                    StoredNode node = (StoredNode) cl.item(j);
-                    NodeProxy p = new NodeProxy(node);
+                if ((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS) &&
+                        proxy.getDocument().getChildCount() == 1) {
+                    // Optimization: if the document has just 1 child node, we know that
+                    // it has to be an element. Instead of calling Document.getChildNodes(),
+                    // we just create a NodeProxy for the first child and return it if the
+                    // test matches
+                    NodeProxy p = proxy.getDocument().getFirstChildProxy();
                     if (test.matches(p)) {
-                        // fixme! check for unwanted 
-                        // side effects. /ljo
-                        //p.deepCopyContext(proxy);
-
                         if (useSelfAsContext && inPredicate) {
                             p.addContextNode(contextId, p);
                         }
                         result.add(p);
                     }
-                    if (node.getNodeType() == Node.ELEMENT_NODE &&
-                        (axis == Constants.DESCENDANT_AXIS ||
-                         axis == Constants.DESCENDANT_SELF_AXIS ||
-                         axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
-                        // note: we create a copy of the docElemProxy here to 
-                        // be used as context when traversing the tree.
-                        NodeProxy contextNode = new NodeProxy(p);
-                        contextNode.deepCopyContext(proxy);
-                        //TODO : is this StoredNode construction necessary ?
-                        Iterator domIter = contextNode.getDocument().getBroker().getNodeIterator(new StoredNode(contextNode));
-                        domIter.next();
-                        contextNode.setMatches(proxy.getMatches());
-                        addChildren(contextNode, result, node, domIter, 0);
-                    }
-                    if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
-                        && (axis == Constants.CHILD_AXIS ||
-                            axis == Constants.DESCENDANT_AXIS ||
-                            axis == Constants.DESCENDANT_SELF_AXIS ||
-                            // fixme! self axis probably not needed /ljo
-                            axis == Constants.SELF_AXIS ||
-                            axis == Constants.PRECEDING_AXIS ||
-                            axis == Constants.FOLLOWING_AXIS)) {
-                        if (test.matches(node)) {
+                } else {
+                    NodeList cl = proxy.getDocument().getChildNodes();
+                    for (int j = 0; j < cl.getLength(); j++) {
+                        StoredNode node = (StoredNode) cl.item(j);
+                        NodeProxy p = new NodeProxy(node);
+                        if (test.matches(p)) {
+                            // fixme! check for unwanted
+                            // side effects. /ljo
+                            //p.deepCopyContext(proxy);
+
+                            if (useSelfAsContext && inPredicate) {
+                                p.addContextNode(contextId, p);
+                            }
                             result.add(p);
+                        }
+                        if (node.getNodeType() == Node.ELEMENT_NODE &&
+                            (axis == Constants.DESCENDANT_AXIS ||
+                             axis == Constants.DESCENDANT_SELF_AXIS ||
+                             axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
+                            // note: we create a copy of the docElemProxy here to
+                            // be used as context when traversing the tree.
+                            NodeProxy contextNode = new NodeProxy(p);
+                            contextNode.deepCopyContext(proxy);
+                            //TODO : is this StoredNode construction necessary ?
+                            Iterator domIter = contextNode.getDocument().getBroker().getNodeIterator(new StoredNode(contextNode));
+                            domIter.next();
+                            contextNode.setMatches(proxy.getMatches());
+                            addChildren(contextNode, result, node, domIter, 0);
+                        }
+                        if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
+                            && (axis == Constants.CHILD_AXIS ||
+                                axis == Constants.DESCENDANT_AXIS ||
+                                axis == Constants.DESCENDANT_SELF_AXIS ||
+                                // fixme! self axis probably not needed /ljo
+                                axis == Constants.SELF_AXIS ||
+                                axis == Constants.PRECEDING_AXIS ||
+                                axis == Constants.FOLLOWING_AXIS)) {
+                            if (test.matches(node)) {
+                                result.add(p);
+                            }
                         }
                     }
                 }
