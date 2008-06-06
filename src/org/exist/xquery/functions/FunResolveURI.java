@@ -107,7 +107,7 @@ public class FunResolveURI extends Function {
 			URI baseURI;
 			try {
 				relativeURI = new URI(relative.getStringValue());
-				baseURI = new URI(base.getStringValue() + "/");
+				baseURI = new URI(base.getStringValue() );
 			} catch (URISyntaxException e) {
 				throw new XPathException(getASTNode(), "err:FORG0009: unable to resolve a relative URI against a base URI in fn:resolve-uri(): " + e.getMessage(), e);				
 			}
