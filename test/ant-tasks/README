@@ -1,0 +1,98 @@
+------------------------
+eXist AntUnit testcases
+------------------------
+
+These testcases contain integration/functional/regression 
+tests of eXists Ant tasks. It uses the Apache antunit library.
+
+
+------------------------
+Dependencies
+------------------------
+
+* Ant 1.7.0 Beta 2 or later.
+http://ant.apache.org
+
+* antunit.jar (easy to just put in ant /lib)
+https://svn.apache.org/repos/asf/ant/antlibs/antunit/trunk/
+
+* eXist's /db/test collection, which is installed by default 
+
+------------------------
+Organisation
+------------------------
+
+exist.properties contains configurable parameters
+
+common.xml: contains common ant datatypes shared by other files
+
+antunit.xml: is antunit test runner.
+    
+base.xml: test existence of each Ant task class and low level artifacts
+
+file.xml: test file functions
+
+server.xml: test shutdown, back & restore
+
+user.xml: tests user functions
+
+xmldb.xml: tests xmldb functions
+
+
+------------------------
+Setting up and Running
+------------------------
+
+Step 1) adjust exist.properties to reflect your test instance of eXist
+
+Step 2) startup eXist (easy to automate this as well, but I left it)
+
+Step 3) ensure antunit.jar is in Ant lib directory are accessible to Ant
+
+Step 4) run ant on antunit.xml with All target e.g.
+
+ant -f antunit.xml All
+
+
+------------------------
+Rationale
+------------------------
+
+If one looks at these tests and thinks 'these are not unit tests'...I would agree
+which is why I described them more as functional tests...note they are still useful
+as unit tests in a regression sense which is where I think there is value with respect
+to the eXist XMLDB project.
+
+A good (and short) arguement for using antunit can be found here; 
+http://stefan.samaflost.de/blog/en/Apache/Ant/AntUnit
+
+
+------------------------
+Credit / License
+------------------------
+
+Author: James Fuller
+Email: jim.fuller@webcomposite.com
+
+This module is released under the same terms as eXist e.g.
+
+/*
+ *  eXist antunit tests
+ *  Copyright (C) 2007 Jim Fuller
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ *  $Id$
+ */

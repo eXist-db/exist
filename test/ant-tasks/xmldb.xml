@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="test-exist-user" xmlns:au="antlib:org.apache.ant.antunit" xmlns:xdb="http://exist-db.org/ant">
+
+    <!-- $Id$ -->
+    
+    <import file="common.xml"/>
+
+    <target name="test_XMLDBCopy" description="test the copying of resources">
+
+        <xdb:copy uri="${test.coll}" resource="test.xml" user="admin" password="" destination="/db/test" name="test1.xml"/>
+
+        <au:assertTrue message="XLMDBCopy doesnt work">
+            <xdb:exist uri="${test.coll}" resource="test1.xml"/>
+        </au:assertTrue>
+
+    </target>
+
+    <target name="test_XMLDBCreate" description="test creation of collection">
+
+        <xdb:create uri="${test.coll}" user="admin" password="" collection="antunit"/>
+
+        <au:assertTrue message="XLMDBCreate doesnt work">
+            <xdb:exist uri="${test.coll}/antunit"/>
+        </au:assertTrue>
+
+    </target>
+
+    <target name="test_XMLDBExist" description="test existence task">
+        <au:assertTrue message="XLMDBExists doesnt work or resource exists">
+            <xdb:exist uri="${test.coll}" resource="${test.file}"/>
+        </au:assertTrue>
+        <au:assertTrue message="XLMDBExists has found a resource that shouldnt exist">
+            <not>
+                <xdb:exist uri="${test.coll}" resource="${test.file}.test"/>
+            </not>
+        </au:assertTrue>
+    </target>
+
+    <target name="test_XMLDBExtract" description="test extraction of XML into files and collections">
+
+        <!-- destfile attribute is actually file //-->
+        <xdb:extract uri="${test.coll}" resource="test.xml" destfile="extract-test.xml"/>
+
+        <au:assertFileExists file="extract-test.xml"/>
+
+    </target>
+
+    <target name="test_XMLDBList" description="test listing of resources">
+
+        <xdb:list uri="${test.coll}" resources="true" outputproperty="resources"/>
+
+        <au:assertTrue message="XLMDBXPath did not match">
+            <contains string="${resources}" substring="test.xml"/>
+        </au:assertTrue>
+
+        <au:assertFalse message="XLMDBXPath did not match">
+            <contains string="${resources}" substring="somenon-existentfile.xml"/>
+        </au:assertFalse>
+
+    </target>
+
+    <target name="problem_XMLDBMove" description="test moving of resources">
+
+        <xdb:copy uri="${test.coll}" resource="test.xml" user="admin" password="" destination="/db/test" name="test2.xml"/>     
+
+        <!-- move reuses xdb:remove...error messages //-->
+        <xdb:move uri="${test.coll}" user="admin" password="" resource="test2.xml" destination="/db/test" name="test3.xml"/>
+
+        <au:assertTrue message="XLMDBMove did not work">
+            <xdb:exist uri="${test.coll}/test3.xml"/>
+        </au:assertTrue>
+
+    </target>
+
+    <target name="test_XMLDBQuery" description="test querying of resources">
+        <echo>test3</echo>
+    </target>
+
+    <target name="test_XMLDBRemove" description="test removal of resources">
+        <xdb:remove uri="${test.coll}" user="admin" password="" collection="antunit"/>
+
+        <au:assertFalse message="XLMDBRemove doesnt work">
+            <xdb:exist uri="${test.coll}/antunit"/>
+        </au:assertFalse>
+    </target>
+
+    <target name="test_XMLDBStore" description="test uploading of resource">
+
+        <xdb:store user="admin" password="" uri="${test.coll}" createcollection="true" srcfile="common.xml"/>
+
+        <au:assertFalse message="XLMDBStore doesnt work">
+            <xdb:exist uri="${test.coll}/common.xml"/>
+        </au:assertFalse>
+
+    </target>
+
+    <target name="test_XMLDBXPath" description="test xpath query">
+
+        <!-- xdb:xpath does not support destfile 
+        <xdb:xpath uri="${test.coll}" query="//para" destfile="xpath-return.txt"/>
+        //-->
+
+        <xdb:xpath uri="${test.coll}" query="//para[1]" outputproperty="xpath-result"/>
+
+        <au:assertTrue message="XLMDBXPath did not match">
+            <contains string="${xpath-result}" substring="Inserted paragraph."/>
+        </au:assertTrue>
+
+    </target>
+
+    <target name="test_XMLDBXQuery" description="test xquery query">
+        <xdb:xquery uri="${test.coll}" outputproperty="xquery-result" query="collection('/db/test')//para[1]"/>
+
+        <au:assertTrue message="XLMDBXQuery did not match">
+            <contains string="${xquery-result}" substring="Inserted paragraph."/>
+        </au:assertTrue>
+
+    </target>
+
+    <target name="test_XMLDBXUpdate" description="test xupdate operation">
+
+        <!-- not sure if there is such a task //-->
+
+    </target>
+
+
+</project>

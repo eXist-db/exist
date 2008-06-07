@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="test-exist-user" xmlns:au="antlib:org.apache.ant.antunit" xmlns:xdb="http://exist-db.org/ant">
+
+    <!-- $Id$ -->
+    
+    <import file="common.xml"/>
+
+    <target name="test_Chmod">
+        <echo>tbd</echo>
+    </target>
+
+    <target name="test_Chown">
+        <echo>tbd</echo>
+    </target>
+
+    <target name="test_LockResource">
+        <echo>tbd</echo>
+    </target>
+
+</project>

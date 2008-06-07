@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="test-exist-base" xmlns:au="antlib:org.apache.ant.antunit" xmlns:xdb="http://exist-db.org/ant">
+
+    <!-- $Id$ -->
+
+    <property file="exist.properties"/>
+
+    <path id="exist.classpath">
+        <fileset dir="${exist.dir}/lib/core">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement path="${exist.dir}/exist.jar"/>
+        <pathelement path="${exist.dir}/exist-optional.jar"/>
+    </path>
+
+    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+        <classpath refid="exist.classpath"/>
+    </typedef>
+
+</project>
