@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="test-exist-base" xmlns:xdb="http://exist-db.org/ant" xmlns:au="antlib:org.apache.ant.antunit">
+    
+    <!-- $Id$ -->
+
+    <import file="common.xml"/>
+
+    <target name="test1_Does_eXist_exist">
+        <au:assertTrue message="eXist does not...er...exist">
+            <available file="${exist.dir}/exist.jar"/>
+        </au:assertTrue>
+    </target>
+
+    <target name="test2_Does_eXist_AddUserTask_exist">
+        <au:assertTrue message="eXist ant AddUser task not defined">
+            <available classname="org.exist.ant.AddUserTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+
+    <target name="test3_Does_eXist_RemoveUserTask_exist">
+        <au:assertTrue message="eXist ant RemoveUser task not defined">
+            <available classname="org.exist.ant.RemoveUserTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+
+    <target name="test4_Does_eXist_ListUserTask_exist">
+        <au:assertTrue message="eXist ant ListUser task not defined">
+            <available classname="org.exist.ant.ListUsersTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+
+    <target name="test_Does_eXist_BackupUserTask_exist">
+        <au:assertTrue message="eXist ant ListUser task not defined">
+            <available classname="org.exist.ant.BackupTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+
+    <target name="test_Does_eXist_ChmodUserTask_exist">
+        <au:assertTrue message="eXist ant Chmod task not defined">
+            <available classname="org.exist.ant.ChmodTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+
+    <target name="test_Does_eXist_ChownTask_exist">
+        <au:assertTrue message="eXist ant Chown task not defined">
+            <available classname="org.exist.ant.ChownTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_UserTask_exist">
+        <au:assertTrue message="eXist ant User task not defined">
+            <available classname="org.exist.ant.UserTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_ListGroupsTask_exist">
+        <au:assertTrue message="eXist ant ListGroups task not defined">
+            <available classname="org.exist.ant.ListGroupsTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_LockResourceTask_exist">
+        <au:assertTrue message="eXist ant LockResource task not defined">
+            <available classname="org.exist.ant.LockResourceTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_RestoreTask_exist">
+        <au:assertTrue message="eXist ant Restore task not defined">
+            <available classname="org.exist.ant.RestoreTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+
+    <target name="test_Does_eXist_XMLDBCopyTask_exist">
+        <au:assertTrue message="eXist ant XMLDBCopy task not defined">
+            <available classname="org.exist.ant.XMLDBCopyTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+
+    <target name="test_Does_eXist_XMLDBCreateTask_exist">
+        <au:assertTrue message="eXist ant XMLDBCreate task not defined">
+            <available classname="org.exist.ant.XMLDBCreateTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBExistTask_exist">
+        <au:assertTrue message="eXist ant XMLDBExist task not defined">
+            <available classname="org.exist.ant.XMLDBExistTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBExtractTask_exist">
+        <au:assertTrue message="eXist ant XMLDBExtract task not defined">
+            <available classname="org.exist.ant.XMLDBExtractTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBListTask_exist">
+        <au:assertTrue message="eXist ant XMLDBList task not defined">
+            <available classname="org.exist.ant.XMLDBListTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBMoveTask_exist">
+        <au:assertTrue message="eXist ant XMLDBMove task not defined">
+            <available classname="org.exist.ant.XMLDBMoveTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBQueryTask_exist">
+        <au:assertTrue message="eXist ant XMLDBQuery task not defined">
+            <available classname="org.exist.ant.XMLDBQueryTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBRemoveTask_exist">
+        <au:assertTrue message="eXist ant XMLDBRemove task not defined">
+            <available classname="org.exist.ant.XMLDBRemoveTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBShutdownTask_exist">
+        <au:assertTrue message="eXist ant XMLDBShutdown task not defined">
+            <available classname="org.exist.ant.XMLDBShutdownTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBStoreTask_exist">
+        <au:assertTrue message="eXist ant XMLDBStore task not defined">
+            <available classname="org.exist.ant.XMLDBStoreTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBXPathTask_exist">
+        <au:assertTrue message="eXist ant XMLDBXpath task not defined">
+            <available classname="org.exist.ant.XMLDBXPathTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBXQueryTask_exist">
+        <au:assertTrue message="eXist ant XMLDBXQuery task not defined">
+            <available classname="org.exist.ant.XMLDBXQueryTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+    <target name="test_Does_eXist_XMLDBXUpdateTask_exist">
+        <au:assertTrue message="eXist ant XMLDBXUpdate task not defined">
+            <available classname="org.exist.ant.XMLDBXUpdateTask" classpathref="exist.classpath"/>
+        </au:assertTrue>
+    </target>
+
+</project>

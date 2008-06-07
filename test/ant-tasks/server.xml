@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="test-exist-user" xmlns:au="antlib:org.apache.ant.antunit" xmlns:xdb="http://exist-db.org/ant">
+
+    <!-- $Id$ -->
+    
+    <import file="common.xml"/>
+
+    <target name="test_Backup">
+        <echo>test1</echo>
+    </target>
+
+    <target name="test_Restore">
+        <echo>test3</echo>
+    </target>
+
+    <target name="test_XMLDBShutdown">
+        <echo>test3</echo>
+    </target>
+
+</project>
