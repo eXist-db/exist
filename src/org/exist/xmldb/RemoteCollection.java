@@ -23,9 +23,11 @@
  */
 package org.exist.xmldb;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -41,7 +43,9 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.util.Compressor;
+import org.exist.util.EXistInputSource;
 import org.exist.validation.service.RemoteValidationService;
+import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
@@ -471,19 +475,30 @@ public class RemoteCollection implements CollectionImpl {
 
 	public void storeResource(Resource res, Date a, Date b) throws XMLDBException {
 		Object content = res.getContent();
-		if (content instanceof File) {
-			File file = (File) content;
-			if (!file.canRead())
-				throw new XMLDBException(
-					ErrorCodes.INVALID_RESOURCE,
-					"failed to read resource from file " + file.getAbsolutePath());
-			if (file.length() < MAX_CHUNK_LENGTH) {
-				((RemoteXMLResource)res).dateCreated =a;
-				((RemoteXMLResource)res).dateModified =b;
-				store((RemoteXMLResource)res);
+		if (content instanceof File || content instanceof InputSource) {
+			long fileLength=-1;
+			if(content instanceof File) {
+				File file = (File) content;
+				if (!file.canRead())
+					throw new XMLDBException(
+						ErrorCodes.INVALID_RESOURCE,
+						"failed to read resource from file " + file.getAbsolutePath());
+				fileLength=file.length();
+			} else if(content instanceof EXistInputSource) {
+				fileLength=((EXistInputSource)content).getByteStreamLength();
+			}
+			
+			if(res.getResourceType().equals("BinaryResource")) {
+				((RemoteBinaryResource)res).dateCreated =a;
+				((RemoteBinaryResource)res).dateModified =b;
 			} else {
 				((RemoteXMLResource)res).dateCreated =a;
 				((RemoteXMLResource)res).dateModified =b;
+			}
+			
+			if (!res.getResourceType().equals("BinaryResource") && fileLength!=-1 && fileLength < MAX_CHUNK_LENGTH) {
+				store((RemoteXMLResource)res);
+			} else {
 				uploadAndStore(res);
 			}
 		} else if(res.getResourceType().equals("BinaryResource"))
@@ -564,10 +579,33 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	private void uploadAndStore(Resource res) throws XMLDBException {
-		File file = (File) res.getContent();
+		InputStream is=null;
+		String descstring="<unknown>";
+		if(res instanceof RemoteBinaryResource) {
+			is=((RemoteBinaryResource)res).getStreamContent();
+			descstring=((RemoteBinaryResource)res).getStreamSymbolicPath();
+		} else {
+			Object content=((RemoteXMLResource)res).getContent();
+			if(content instanceof File) {
+				File file=(File)content;
+				try {
+					is=new BufferedInputStream(new FileInputStream(file));
+				} catch (FileNotFoundException e) {
+					throw new XMLDBException(
+						ErrorCodes.INVALID_RESOURCE,
+						"could not read resource from file " + file.getAbsolutePath(),
+						e);
+				}
+			} else if(content instanceof InputSource) {
+				is=((InputSource)content).getByteStream();
+				if(content instanceof EXistInputSource) {
+					descstring=((EXistInputSource)content).getSymbolicPath();
+				}
+			}
+		}
+		
 		byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
 		try {
-			FileInputStream is = new FileInputStream(file);
 			int len;
 			String fileName = null;
 			Vector params;
@@ -596,15 +634,10 @@ public class RemoteCollection implements CollectionImpl {
 				}
 
 			rpcClient.execute("parseLocal", params);
-		} catch (FileNotFoundException e) {
-			throw new XMLDBException(
-				ErrorCodes.INVALID_RESOURCE,
-				"could not read resource from file " + file.getAbsolutePath(),
-				e);
 		} catch (IOException e) {
 			throw new XMLDBException(
 				ErrorCodes.INVALID_RESOURCE,
-				"failed to read resource from file " + file.getAbsolutePath(),
+				"failed to read resource from " + descstring,
 				e);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);

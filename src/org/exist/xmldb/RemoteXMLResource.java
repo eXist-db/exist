@@ -21,9 +21,11 @@
  */
 package org.exist.xmldb;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -48,6 +50,7 @@ import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
+import org.exist.util.EXistInputSource;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -86,6 +89,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     protected RemoteCollection parent;
     protected String content = null;
     protected File file = null;
+    protected InputSource inputSource = null;
 	
     protected Permission permissions = null;
     protected int contentLen = 0;
@@ -135,6 +139,9 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
         }
         if (file != null) {
             return file;
+        }
+        if (inputSource != null) {
+            return inputSource;
         }
         Properties properties = parent.getProperties();
         byte[] data = null;
@@ -198,35 +205,56 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     }
 
     public Node getContentAsDOM() throws XMLDBException {
-	if (content == null)
-	    getContent();
-	// content can be a file
-	if (file != null)
-	    getData();
+    	InputSource is=null;
+	
+	if (file != null) {
+		try {
+			is=new InputSource(new BufferedInputStream(new FileInputStream(file)));
+		} catch(IOException ioe) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+		}
+	} else if(inputSource!=null) {
+		is=inputSource;
+	} else {
+		if (content == null)
+			getContent();
+		is=new InputSource(new StringReader(content));
+	}
+	
 	try {
 	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	    factory.setNamespaceAware(true);
 	    factory.setValidating(false);
 	    DocumentBuilder builder = factory.newDocumentBuilder();
-	    Document doc = builder.parse(new InputSource(new StringReader(content)));
+	    Document doc = builder.parse(is);
         // <frederic.glorieux@ajlsm.com> return a full DOM doc, with root PI and comments
 	    return doc;
 	} catch (SAXException saxe) {
 	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 	} catch (ParserConfigurationException pce) {
 	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
-	} catch (IOException ioe) {
-	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+	} catch(IOException ioe) {
+		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 	}
     }
 
     public void getContentAsSAX(ContentHandler handler) throws XMLDBException {
-	if (content == null)
-	    getContent();
-	//		content can be a file
-	if (file != null)
-	    getData();
-        
+    	InputSource is=null;
+	
+	if (file != null) {
+		try {
+			is=new InputSource(new BufferedInputStream(new FileInputStream(file)));
+		} catch(IOException ioe) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+		}
+	} else if(inputSource!=null) {
+		is=inputSource;
+	} else {
+		if (content == null)
+			getContent();
+		is=new InputSource(new StringReader(content));
+	}
+	
         XMLReader reader = null;
 	if (xmlReader == null) {
 	    SAXParserFactory saxFactory = SAXParserFactory.newInstance();
@@ -249,7 +277,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	    if(lexicalHandler != null) {
 	    	reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
         }
-	    reader.parse(new InputSource(new StringReader(content)));
+	    reader.parse(is);
         } catch (SAXException saxe) {
             saxe.printStackTrace();
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
@@ -290,10 +318,16 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     }
 
     public void setContent(Object value) throws XMLDBException {
+	file = null;
+	inputSource = null;
+	content = null;
 	if (value instanceof File) {
 	    file = (File) value;
-	} else
+	} else if (value instanceof InputSource) {
+		inputSource = (InputSource) value;
+	} else {
 	    content = value.toString();
+	}
     }
 
     public void setContentAsDOM(Node root) throws XMLDBException {
@@ -314,12 +348,16 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "invalid node type");
 	    }
 	    content = sout.toString();
+	    file = null;
+	    inputSource = null;
 	} catch (TransformerException e) {
 	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 	}
     }
 
     public ContentHandler setContentAsSAX() throws XMLDBException {
+	file = null;
+	inputSource = null;
 	return new InternalXMLSerializer();
     }
 
@@ -362,15 +400,32 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
      * @throws XMLDBException
      */
     protected byte[] getData() throws XMLDBException {
-	if (file != null) {
-	    if (!file.canRead())
-		throw new XMLDBException(
-					 ErrorCodes.INVALID_RESOURCE,
-					 "failed to read resource content from file " + file.getAbsolutePath());
+	if (file != null || inputSource!=null) {
+		final InputStream in;
+		String sourcedesc="<unknown>";
+		if(file!=null) {
+			sourcedesc=file.getAbsolutePath();
+		    if (!file.canRead())
+				throw new XMLDBException(
+							 ErrorCodes.INVALID_RESOURCE,
+							 "failed to read resource content from file " + sourcedesc);
+		    try {
+		    	in=new BufferedInputStream(new FileInputStream(file));
+		    } catch(IOException ioe) {
+				throw new XMLDBException(
+						 ErrorCodes.INVALID_RESOURCE,
+						 "failed to read resource content from file " + sourcedesc,
+						 ioe);
+		    }
+		} else {
+			in=inputSource.getByteStream();
+			if(inputSource instanceof EXistInputSource) {
+				sourcedesc=((EXistInputSource)inputSource).getSymbolicPath();
+			}
+		}
 	    try {
 		final byte[] chunk = new byte[512];
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		final FileInputStream in = new FileInputStream(file);
 		int l;
 		do {
 		    l = in.read(chunk);
@@ -386,7 +441,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	    } catch (IOException e) {
 		throw new XMLDBException(
 					 ErrorCodes.INVALID_RESOURCE,
-					 "failed to read resource content from file " + file.getAbsolutePath(),
+					 "failed to read resource content from file " + sourcedesc,
 					 e);
 	    }
 	} else if(content != null)

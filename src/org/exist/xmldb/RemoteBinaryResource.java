@@ -22,18 +22,22 @@
  */
 package org.exist.xmldb;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.exist.util.EXistInputSource;
 import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
+import org.xml.sax.InputSource;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -51,6 +55,8 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
     private String mimeType = MimeType.BINARY_TYPE.getName();
 	private RemoteCollection parent;
 	private byte[] data = null;
+	private File file = null;
+	private InputSource inputSource = null;
 	
 	private Permission permissions = null;
 	private int contentLen = 0;
@@ -93,8 +99,17 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	 * @see org.xmldb.api.base.Resource#getContent()
 	 */
 	public Object getContent() throws XMLDBException {
-		if(data != null)
+		if(data != null || file!=null || inputSource!=null) {
+			if(data==null) {
+				if(file!=null) {
+					readFile(file);
+				} else if(inputSource!=null) {
+					readFile(inputSource);
+				}
+			}
+		
 			return data;
+		}
 		Vector params = new Vector();
 		params.addElement(path.toString());
 		try {
@@ -107,13 +122,57 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 		return data;
 	}
 
+	protected InputStream getStreamContent() {
+		InputStream retval=null;
+		if(file!=null) {
+			try {
+				retval=new FileInputStream(file);
+			} catch(FileNotFoundException fnfe) {
+				// Cannot fire it :-(
+			}
+		} else if(inputSource!=null) {
+			retval=inputSource.getByteStream();
+		} else if(data!=null) {
+			retval=new ByteArrayInputStream(data);
+		}
+		
+		return retval;
+	}
+	
+	protected String getStreamSymbolicPath() {
+		String retval="<streamunknown>";
+		
+		if(file!=null) {
+			retval=file.getAbsolutePath();
+		} else if(inputSource!=null && inputSource instanceof EXistInputSource) {
+			retval=((EXistInputSource)inputSource).getSymbolicPath();
+		} 
+		
+		return retval;
+	}
+	
+	protected long getStreamLength() {
+		long retval=-1;
+		if(file!=null) {
+			retval=file.length();
+		} else if(inputSource!=null && inputSource instanceof EXistInputSource) {
+			retval=((EXistInputSource)inputSource).getByteStreamLength();
+		} else if(data!=null) {
+			retval=data.length;
+		}
+		
+		return retval;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.base.Resource#setContent(java.lang.Object)
 	 */
 	public void setContent(Object obj) throws XMLDBException {
-		if(obj instanceof File)
-			readFile((File)obj);
-		else if(obj instanceof byte[])
+		if(obj instanceof File) {
+			file=(File)obj;
+		} else if(obj instanceof InputSource) {
+			inputSource=(InputSource)obj;
+		} else if(obj instanceof byte[])
 			data = (byte[])obj;
 		else if(obj instanceof String)
 			data = ((String)obj).getBytes();
@@ -124,7 +183,19 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	
 	private void readFile(File file) throws XMLDBException {
 		try {
-			FileInputStream is = new FileInputStream(file);
+			readFile(new FileInputStream(file));
+		} catch (FileNotFoundException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+				"file " + file.getAbsolutePath() + " could not be found", e);
+		}
+	}
+
+	private void readFile(InputSource is) throws XMLDBException {
+		readFile(is.getByteStream());
+	}
+
+	private void readFile(InputStream is) throws XMLDBException {
+		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
 			byte[] temp = new byte[1024];
 			int count = 0;
@@ -134,10 +205,10 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 			data = bos.toByteArray();
 		} catch (FileNotFoundException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-					"file " + file.getAbsolutePath() + " could not be found", e);
+				"file " + file.getAbsolutePath() + " could not be found", e);
 		} catch (IOException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-					"IO exception while reading file " + file.getAbsolutePath(), e);
+				"IO exception while reading file " + file.getAbsolutePath(), e);
 		}
 	}
 

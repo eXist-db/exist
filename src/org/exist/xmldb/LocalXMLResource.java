@@ -58,6 +58,7 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -82,6 +83,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	// may have to deal with
 	protected String content = null;
 	protected File file = null;
+	protected InputSource inputSource = null;
 	protected Node root = null;
 	protected AtomicValue value = null;
 	
@@ -144,7 +146,17 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 						"error while reading resource contents", e);
 			}
 
-			// Case 4: content is a document or internal node
+			// Case 4: content is an input source
+		} else if (inputSource != null) {
+			try {
+				content = XMLUtil.readFile(inputSource);
+				return content;
+			} catch (IOException e) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+						"error while reading resource contents", e);
+			}
+
+			// Case 5: content is a document or internal node
 		} else {
 		    DocumentImpl document = null;
 			DBBroker broker = null;
@@ -381,10 +393,16 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	 */
 	public void setContent(Object obj) throws XMLDBException {
 		content = null;
+		file = null;
+		value = null;
+		inputSource = null;
+		root = null;
 		if (obj instanceof File)
 			file = (File) obj;
 		else if (obj instanceof AtomicValue)
 			value = (AtomicValue) obj;
+		else if (obj instanceof InputSource)
+			inputSource=(InputSource) obj;
 		else {
 			content = obj.toString();
 		}
@@ -394,10 +412,18 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		if (root instanceof AttributeImpl)
 			throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE,
 					"SENR0001: can not serialize a standalone attribute");
+		content = null;
+		file = null;
+		value = null;
+		inputSource = null;
 		this.root = root;
 	}
 
 	public ContentHandler setContentAsSAX() throws XMLDBException {
+		file = null;
+		value = null;
+		inputSource = null;
+		root = null;
 		return new InternalXMLSerializer();
 	}
 

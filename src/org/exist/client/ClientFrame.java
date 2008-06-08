@@ -1172,7 +1172,7 @@ public class ClientFrame extends JFrame
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter(new BackupContentsFilter());
         // re-enable later
-        //chooser.addChoosableFileFilter(new ZipFilter());
+        chooser.addChoosableFileFilter(new ZipFilter());
         //chooser.setSelectedFile(new File("eXist-backup.zip"));
 
         if (chooser.showDialog(null, Messages.getString("ClientFrame.169")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$

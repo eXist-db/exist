@@ -22,10 +22,12 @@
  */
 package org.exist.xmldb;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.IOException;
 import java.util.Date;
 
@@ -37,7 +39,9 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.util.EXistInputSource;
 import org.exist.util.LockException;
+import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -48,6 +52,8 @@ import org.xmldb.api.modules.BinaryResource;
  */
 public class LocalBinaryResource extends AbstractEXistResource implements BinaryResource {
 
+	protected InputSource inputSource = null;
+	protected File file = null;
 	protected byte[] rawData = null;
 	
 	protected Date datecreated= null;
@@ -86,21 +92,27 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	 */
 	public Object getContent() throws XMLDBException {
 		if(rawData == null) {
-			DBBroker broker = null;
-			BinaryDocument blob = null;
-			try {
-				broker = pool.get(user);
-				blob = (BinaryDocument)getDocument(broker, Lock.READ_LOCK);
-				if(!blob.getPermissions().validate(user, Permission.READ))
-				    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-				    	"Permission denied to read resource");
-				rawData = broker.getBinaryResource(blob);
-			} catch(EXistException e) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-					"error while loading binary resource " + getId(), e);
-			} finally {
-			    parent.getCollection().releaseDocument(blob, Lock.READ_LOCK);
-				pool.release(broker);
+			if(file!=null) {
+				readFile(file);
+			} else if(inputSource!=null) {
+				readFile(inputSource);
+			} else {
+				DBBroker broker = null;
+				BinaryDocument blob = null;
+				try {
+					broker = pool.get(user);
+					blob = (BinaryDocument)getDocument(broker, Lock.READ_LOCK);
+					if(!blob.getPermissions().validate(user, Permission.READ))
+					    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+					    	"Permission denied to read resource");
+					rawData = broker.getBinaryResource(blob);
+				} catch(EXistException e) {
+					throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+						"error while loading binary resource " + getId(), e);
+				} finally {
+				    parent.getCollection().releaseDocument(blob, Lock.READ_LOCK);
+					pool.release(broker);
+				}
 			}
 		}
 		return rawData;
@@ -111,7 +123,9 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	 */
 	public void setContent(Object value) throws XMLDBException {
 		if(value instanceof File) {
-			readFile((File)value);
+			file=(File)value;
+		} else if(value instanceof InputSource) {
+				inputSource=(InputSource)value;
 		} else if(value instanceof byte[])
 			rawData = (byte[])value;
 		else if(value instanceof String)
@@ -120,10 +134,52 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"don't know how to handle value of type " + value.getClass().getName());
 	}
-
+	
+	protected InputStream getStreamContent() {
+		InputStream retval=null;
+		if(file!=null) {
+			try {
+				retval=new FileInputStream(file);
+			} catch(FileNotFoundException fnfe) {
+				// Cannot fire it :-(
+			}
+		} else if(inputSource!=null) {
+			retval=inputSource.getByteStream();
+		} else if(rawData!=null) {
+			retval=new ByteArrayInputStream(rawData);
+		}
+		
+		return retval;
+	}
+	
+	protected long getStreamLength() {
+		long retval=-1;
+		if(file!=null) {
+			retval=file.length();
+		} else if(inputSource!=null && inputSource instanceof EXistInputSource) {
+			retval=((EXistInputSource)inputSource).getByteStreamLength();
+		} else if(rawData!=null) {
+			retval=rawData.length;
+		}
+		
+		return retval;
+	}
+	
 	private void readFile(File file) throws XMLDBException {
 		try {
-			FileInputStream is = new FileInputStream(file);
+			readFile(new FileInputStream(file));
+		} catch (FileNotFoundException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+				"file " + file.getAbsolutePath() + " could not be found", e);
+		}
+	}
+
+	private void readFile(InputSource is) throws XMLDBException {
+		readFile(is.getByteStream());
+	}
+
+	private void readFile(InputStream is) throws XMLDBException {
+		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
 			byte[] temp = new byte[1024];
 			int count = 0;
