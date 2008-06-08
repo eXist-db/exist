@@ -23,6 +23,7 @@ import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
+import org.exist.util.EXistInputSource;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.EXistResource;
@@ -50,7 +51,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class Restore extends DefaultHandler {
 
-	private File contents;
+	private BackupDescriptor contents;
 	private String uri;
 	private String username;
 	private String pass;
@@ -82,27 +83,30 @@ public class Restore extends DefaultHandler {
 		SAXParser sax = saxFactory.newSAXParser();
 		reader = sax.getXMLReader();
 		reader.setContentHandler(this);
-
-		stack.push(contents);
+		
+		BackupDescriptor bd=null;
+		
+		try {
+			if(contents.isDirectory()) {
+				bd=new FileSystemBackupDescriptor(new File(contents,BackupDescriptor.COLLECTION_DESCRIPTOR));
+			} else if(contents.getName().endsWith(".zip") || contents.getName().endsWith(".ZIP")) {
+				bd=new ZipArchiveBackupDescriptor(contents);
+			} else {
+				bd=new FileSystemBackupDescriptor(contents);
+			}
+		} catch(Exception e) {
+			throw new SAXException("Unable to create backup descriptor object from "+contents,e);
+		}
+		
+		stack.push(bd);
 
 		// check if the system collection is in the backup. We have to process
 		// this first to create users.
 		File dir = contents.getParentFile();	
 		//TODO : find a way to make a corespondance with DBRoker's named constants
-		if (dir.isDirectory()) {
-			File sys =				
-				new File(
-					dir.getAbsolutePath()
-						+ File.separatorChar
-						+ "system"
-						+ File.separatorChar
-						+ "__contents__.xml");
-			// put the system collection on top of the stack
-			if (sys.canRead()) {
-				//TODO : find a way to make a corespondance with DBRoker's named constants
-				//found 'db/system'. It will be processed first
-				stack.push(sys);
-			}
+		BackupDescriptor sysbd=bd.getChildBackupDescriptor("system");
+		if (sysbd!=null) {
+			stack.push(sysbd);
 		}
 	}
 
@@ -115,8 +119,8 @@ public class Restore extends DefaultHandler {
 				public void run() {
 					while (!stack.isEmpty()) {
 						try {
-							contents = (File) stack.pop();
-							reader.parse(new InputSource(new FileInputStream(contents)));
+							contents = (BackupDescriptor) stack.pop();
+							reader.parse(contents.getInputSource());
 						} catch (FileNotFoundException e) {
 							dialog.displayMessage(e.getMessage());
 						} catch (IOException e) {
@@ -141,9 +145,8 @@ public class Restore extends DefaultHandler {
 			}
 		} else {
 			while(!stack.isEmpty()) {
-				contents = (File) stack.pop();
-				String sysId = contents.toURI().toASCIIString();
-				InputSource is = new InputSource(sysId);
+				contents = (BackupDescriptor) stack.pop();
+				EXistInputSource is = contents.getInputSource();
 				is.setEncoding("UTF-8");
 				//restoring sysId
 				reader.parse(is);
@@ -233,18 +236,12 @@ public class Restore extends DefaultHandler {
 				if (name == null) {
 					name = atts.getValue("name");
 				}
-
-				final String fname =
-					contents.getParentFile().getAbsolutePath()
-						+ File.separatorChar
-						+ name
-						+ File.separatorChar
-						+ "__contents__.xml";
-				final File f = new File(fname);
-				if (f.exists() && f.canRead())
-					stack.push(f);
+				
+				BackupDescriptor subbd=contents.getChildBackupDescriptor(name);
+				if (subbd!=null)
+					stack.push(subbd);
 				else
-					System.err.println(f.getAbsolutePath() + " does not exist or is not readable.");
+					System.err.println(subbd.getSymbolicPath(name,true) + " does not exist or is not readable.");
 			} else if (localName.equals("resource")) {
 
 				String type = atts.getValue("type");
@@ -287,9 +284,7 @@ public class Restore extends DefaultHandler {
 						return;
 					}
 				}
-				final File f =
-					new File(
-						contents.getParentFile().getAbsolutePath() + File.separatorChar + filename);
+				InputSource is=contents.getInputSource(filename);
 				try {
 					if (dialog != null && current instanceof Observable) {
 						((Observable) current).addObserver(dialog.getObserver());
@@ -301,7 +296,7 @@ public class Restore extends DefaultHandler {
 					if (mimetype != null)
 						((EXistResource)res).setMimeType(mimetype);
 
-					res.setContent(f);
+					res.setContent(is);
 
     				// Restoring name
 					
@@ -351,14 +346,14 @@ public class Restore extends DefaultHandler {
 				} catch (Exception e) {
                     if (dialog != null) {
                             dialog.displayMessage("Failed to restore resource '" + name + "'\nfrom file '" +
-                                    f.getAbsolutePath() + "'.\nReason: " + e.getMessage());
+                                    contents.getSymbolicPath(name,false) + "'.\nReason: " + e.getMessage());
                             showErrorMessage(
                                     "Failed to restore resource '" + name + "' from file: '" +
-                                    f.getAbsolutePath() + "'.\n\nReason: " + e.getMessage()
+                                    contents.getSymbolicPath(name,false) + "'.\n\nReason: " + e.getMessage()
                             );
                     } else {
                         System.err.println("Failed to restore resource '" + name + "' from file '" +
-					        f.getAbsolutePath() + "'");
+                        		contents.getSymbolicPath(name,false) + "'");
                         e.printStackTrace();
                     }
 				}

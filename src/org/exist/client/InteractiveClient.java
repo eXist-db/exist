@@ -48,6 +48,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -61,6 +62,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -89,6 +92,8 @@ import org.exist.util.MimeType;
 import org.exist.util.Occurrences;
 import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
+import org.exist.util.GZIPInputSource;
+import org.exist.util.ZipEntryInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.service.ValidationService;
@@ -204,6 +209,10 @@ public class InteractiveClient {
         messageln("ls                   list collection contents");
         messageln("cd [collection|..]   change current collection");
         messageln("put [file pattern] upload file or directory"
+                + " to the database");
+        messageln("putgz [file pattern] upload possibly gzip compressed file or directory"
+                + " to the database");
+        messageln("putzip [file pattern] upload the contents of a ZIP archive"
                 + " to the database");
         messageln("edit [resource] open the resource for editing");
         messageln("mkcol collection     create new sub-collection in "
@@ -667,6 +676,26 @@ public class InteractiveClient {
                     return true;
                 }
                 boolean r = parse(args[1]);
+                getResources();
+                return r;
+                
+            } else if (args[0].equalsIgnoreCase("putzip")) {
+                // put the contents of a zip archive into the database
+                if (args.length < 2) {
+                    messageln("missing argument.");
+                    return true;
+                }
+                boolean r = parseZip(args[1]);
+                getResources();
+                return r;
+                
+            } else if (args[0].equalsIgnoreCase("putgz")) {
+                // put the contents of a zip archive into the database
+                if (args.length < 2) {
+                    messageln("missing argument.");
+                    return true;
+                }
+                boolean r = parseGZip(args[1]);
                 getResources();
                 return r;
                 
@@ -1386,6 +1415,231 @@ public class InteractiveClient {
         return true;
     }
     
+    
+    private synchronized boolean findGZipRecursive(Collection collection, File dir,
+            XmldbURI base) {
+        File files[] = dir.listFiles();
+        Collection c;
+        Resource document;
+        CollectionManagementServiceImpl mgtService;
+        //The XmldbURIs here aren't really used...
+        XmldbURI next;
+        MimeType mimeType;
+        for (int i = 0; i < files.length; i++) {
+            next = base.append(files[i].getName());
+            try {
+                if (files[i].isDirectory()) {
+                    messageln("entering directory " + files[i].getAbsolutePath());
+                    c = collection.getChildCollection(files[i].getName());
+                    if (c == null) {
+                        mgtService = (CollectionManagementServiceImpl) collection
+                                .getService("CollectionManagementService",
+                                "1.0");
+                        c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(files[i].getName()));
+                    }
+                    if (c instanceof Observable && verbose) {
+                        ProgressObserver observer = new ProgressObserver();
+                        ((Observable) c).addObserver(observer);
+                    }
+                    findGZipRecursive(c, files[i], next);
+                } else {
+                    long start1 = System.currentTimeMillis();
+                    String compressedName=files[i].getName();
+                    String localName=compressedName;
+                    String[] cSuffix={".gz",".Z"};
+                    boolean isCompressed=false;
+                    for(int isuf=0;isuf<cSuffix.length;isuf++) {
+                    	String suf=cSuffix[isuf];
+                    	if(localName.endsWith(suf)) {
+                    		// Removing compressed prefix to validate
+                    		localName=compressedName.substring(0, localName.length()-suf.length());
+                    		isCompressed=true;
+                    		break;
+                    	}
+                    }
+                    mimeType = MimeTable.getInstance().getContentTypeFor(localName);
+                    if(mimeType == null)
+                        messageln("File " + compressedName + " has an unknown " +
+                                "suffix. Cannot determine file type.");
+                    else {
+                        message("storing document " + compressedName + " (" + i
+                                + " of " + files.length + ") " + "...");
+                        document = collection.createResource(URIUtils.urlEncodeUtf8(compressedName), mimeType.getXMLDBType());
+                        document.setContent(isCompressed?new GZIPInputSource(files[i]):files[i]);
+                        ((EXistResource)document).setMimeType(mimeType.getName());
+                        collection.storeResource(document);
+                        ++filesCount;
+                        messageln(" " + files[i].length() + (isCompressed?" compressed":"") + " bytes in "
+                                + (System.currentTimeMillis() - start1) + "ms.");
+                    }
+                }
+            } catch (URISyntaxException e) {
+                messageln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
+            } catch (XMLDBException e) {
+                messageln("could not parse file " + files[i].getAbsolutePath() + ": " + e.getMessage());
+            }
+        }
+        return true;
+    }
+    
+    /** stores given Resource
+     * @param fileName simple file or directory
+     * @return
+     * @throws XMLDBException
+     */
+    protected synchronized boolean parseGZip(String fileName) throws XMLDBException {
+        //TODO : why is this test for ? Fileshould make it, shouldn't it ? -pb
+        fileName = fileName.replace('/', File.separatorChar).replace('\\',
+                File.separatorChar);
+        File file = new File(fileName);
+        Resource document;
+        // String xml;
+        File files[];
+        if (current instanceof Observable && verbose) {
+            ProgressObserver observer = new ProgressObserver();
+            ((Observable) current).addObserver(observer);
+        }
+        if (file.canRead()) {
+            // TODO, same logic as for the graphic client
+            if (file.isDirectory()) {
+                if (recurseDirs) {
+                    filesCount = 0;
+                    long start = System.currentTimeMillis();
+                    boolean result = findGZipRecursive(current, file, path);
+                    messageln("storing " + filesCount + " compressed files took "
+                            + ((System.currentTimeMillis() - start) / 1000)
+                            + "sec.");
+                    return result;
+                } 
+                files = file.listFiles();
+            } else {
+                files = new File[1];
+                files[0] = file;
+            }
+        } else
+            files = DirectoryScanner.scanDir(fileName);
+        
+        long start;
+        long start0 = System.currentTimeMillis();
+        long bytes = 0;
+        MimeType mimeType;
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory())
+                continue;
+            start = System.currentTimeMillis();
+            String compressedName=files[i].getName();
+            String localName=compressedName;
+            String[] cSuffix={".gz",".Z"};
+            boolean isCompressed=false;
+            for(int isuf=0;isuf<cSuffix.length;isuf++) {
+            	String suf=cSuffix[isuf];
+            	if(localName.endsWith(suf)) {
+            		// Removing compressed prefix to validate
+            		localName=compressedName.substring(0, localName.length()-suf.length());
+            		isCompressed=true;
+            		break;
+            	}
+            }
+            mimeType = MimeTable.getInstance().getContentTypeFor(localName);
+            if(mimeType == null)
+                mimeType = MimeType.BINARY_TYPE;
+            document = current.createResource(compressedName,mimeType.getXMLDBType());
+            message("storing document " + compressedName + " (" + (i + 1)
+            + " of " + files.length + ") ...");
+            document.setContent(isCompressed?new GZIPInputSource(files[i]):files[i]);
+            ((EXistResource)document).setMimeType(mimeType.getName());
+            current.storeResource(document);
+            messageln("done.");
+            messageln("parsing " + files[i].length() + (isCompressed?" compressed":"") + " bytes took "
+                    + (System.currentTimeMillis() - start) + "ms.\n");
+            bytes += files[i].length();
+        }
+        messageln("parsed " + bytes + " compressed bytes in "
+                + (System.currentTimeMillis() - start0) + "ms.");
+        return true;
+    }
+    
+    /** stores given Resource
+     * @param fileName simple file or directory
+     * @return
+     * @throws XMLDBException
+     */
+    protected synchronized boolean parseZip(String fileName) throws XMLDBException {
+        fileName = fileName.replace('/', File.separatorChar).replace('\\',
+                File.separatorChar);
+        
+        try {
+	        ZipFile zfile = new ZipFile(fileName);
+	        Resource document;
+	        // String xml;
+	        if (current instanceof Observable && verbose) {
+	            ProgressObserver observer = new ProgressObserver();
+	            ((Observable) current).addObserver(observer);
+	        }
+	        
+	        long start;
+	        long start0 = System.currentTimeMillis();
+	        long bytes = 0;
+	        MimeType mimeType;
+	    	Enumeration e = zfile.entries();
+	    	int number=0;
+	    	
+            Collection base=current;
+            String baseStr="";
+	    	while(e.hasMoreElements()) {
+	    		number++;
+	    		ZipEntry ze=(ZipEntry)e.nextElement();
+	    		String zeName=ze.getName().replace('\\','/');
+	    		String[] pathSteps=zeName.split("/");
+	    		String currStr=pathSteps[0];
+	    		for(int i=1;i<pathSteps.length-1;i++) {
+	    			currStr += "/"+pathSteps[i];
+	    		}
+	    		if(!baseStr.equals(currStr)) {
+	    			base=current;
+	    			for(int i=0;i<pathSteps.length-1;i++) {
+	    				Collection c = base.getChildCollection(pathSteps[i]);
+	    				if (c == null) {
+	    					CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) base.getService("CollectionManagementService","1.0");
+	    					c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(pathSteps[i]));
+	    				}
+	    				base=c;
+	    			}
+    				if (base instanceof Observable && verbose) {
+    					ProgressObserver observer = new ProgressObserver();
+    					((Observable) base).addObserver(observer);
+    				}
+	    			baseStr=currStr;
+    				messageln("entering directory " + baseStr);
+	    		}
+	    		if (!ze.isDirectory()) {
+	    			String localName=pathSteps[pathSteps.length-1];
+	    			start = System.currentTimeMillis();
+	    			mimeType = MimeTable.getInstance().getContentTypeFor(localName);
+	    			if(mimeType == null)
+	    				mimeType = MimeType.BINARY_TYPE;
+	    			document = base.createResource(localName,mimeType.getXMLDBType());
+	    			message("storing Zip-entry document " + localName + " (" + (number)
+	    					+ " of " + zfile.size() + ") ...");
+	    			document.setContent(new ZipEntryInputSource(zfile,ze));
+	    			((EXistResource)document).setMimeType(mimeType.getName());
+	    			base.storeResource(document);
+	    			messageln("done.");
+	    			messageln("parsing " + ze.getSize() + " bytes took "
+	    					+ (System.currentTimeMillis() - start) + "ms.\n");
+	    			bytes += ze.getSize();
+	    		}
+	    	}
+	        messageln("parsed " + bytes + " bytes in "
+	                + (System.currentTimeMillis() - start0) + "ms.");
+        } catch (URISyntaxException e) {
+            messageln("uri syntax exception parsing a ZIP entry from " + fileName + ": " + e.getMessage());
+	    } catch (IOException e) {
+	    	messageln("could not parse ZIP file " + fileName+": "+e.getMessage());
+	    }
+        return true;
+    }
+    
     /**
      * 
      * Method called by the store Dialog
@@ -1424,6 +1678,21 @@ public class InteractiveClient {
             else
                 size += files[i].length();
         }
+        return size;
+    }
+    
+    /*
+     * This is for a future GUI implementation of ZIP archive loads
+     */
+    private long calculateFileSizes(ZipFile file) throws XMLDBException {
+    	Enumeration e = file.entries();
+        long size = 0;
+    	while(e.hasMoreElements()) {
+    		ZipEntry ze=(ZipEntry)e.nextElement();
+    		if(!ze.isDirectory())
+    			size += ze.getSize();
+    	}
+    	
         return size;
     }
     

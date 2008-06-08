@@ -680,8 +680,15 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 transact.abort(txn);
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
             }
-            collection.addBinaryResource(txn, broker, resURI, (byte[]) res.getContent(),
-                    res.getMimeType(), res.datecreated, res.datemodified);
+            
+            long conLength=res.getStreamLength();
+            if(conLength!=-1) {
+	            collection.addBinaryResource(txn, broker, resURI, res.getStreamContent(),
+	                    res.getMimeType(), (int)conLength, res.datecreated, res.datemodified);
+            } else {
+	            collection.addBinaryResource(txn, broker, resURI, (byte[])res.getContent(),
+	                    res.getMimeType(), res.datecreated, res.datemodified);
+            }
             transact.commit(txn);
         } catch (Exception e) {
             transact.abort(txn);
@@ -721,9 +728,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     observer = (Observer) i.next();
                     collection.addObserver(observer);
                 }
-                if (uri != null) {
+                if (uri != null || res.inputSource!=null) {
                     setupParser(collection, res);
-                    info = collection.validateXMLResource(txn, broker, resURI, new InputSource(uri));
+                    info = collection.validateXMLResource(txn, broker, resURI, (uri!=null)?new InputSource(uri):res.inputSource);
                 } else if (res.root != null)
                     info = collection.validateXMLResource(txn, broker, resURI, res.root);
                 else
@@ -740,8 +747,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
             	if (collection != null)
             		collection.release(Lock.WRITE_LOCK);
             }
-            if (uri != null) {
-                collection.store(txn, broker, info, new InputSource(uri), false);
+            if (uri != null || res.inputSource!=null) {
+                collection.store(txn, broker, info, (uri!=null)?new InputSource(uri):res.inputSource, false);
             } else if (res.root != null) {
                 collection.store(txn, broker, info, res.root, false);
             } else {

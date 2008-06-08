@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentFragment;
+import org.xml.sax.InputSource;
 
 /**
  *  Defines some static utility methods. 
@@ -166,6 +167,12 @@ public class XMLUtil {
 		throws IOException {
 		// read the file into a string
 		return readFile(new FileInputStream(file), defaultEncoding);
+	}
+
+	public static String readFile(InputSource is)
+		throws IOException {
+		// read the file into a string
+		return readFile(is.getByteStream(), is.getEncoding());
 	}
 
 	public static String readFile(InputStream in, String defaultEncoding)

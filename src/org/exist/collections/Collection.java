@@ -862,11 +862,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
             public void run() throws EXistException, SAXException {
                 try {
                     final InputStream is = source.getByteStream();
-                    if (is != null)
+                    if (is != null && is.markSupported())
                         is.reset();
                     else {
                         final Reader cs = source.getCharacterStream();
-                        if (cs != null)
+                        if (cs != null && cs.markSupported())
                             cs.reset();
                     }
                 } catch (IOException e) {
