@@ -37,7 +37,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.zip.ZipEntry;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipOutputStream;
+import java.util.zip.GZIPOutputStream;
 
 
 /**
@@ -51,27 +53,34 @@ public class ZipFunction extends BasicFunction {
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-        new QName("zip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-        "Zip's resources and/or collections. $a is a sequence of URI's, if a URI points to a collection" +
-        "then the collection, its resources and sub-collections are zipped recursively. " +
-        "$b indicates whether to use the collection hierarchy in the zip file.",
-        new SequenceType[]{
-    new SequenceType(Type.ANY_URI, Cardinality.ONE_OR_MORE),
-    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-},
-        new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)),
+            new QName("gzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+            "Gzip's the $a resource. $a is a URI of gzipped resource.",
+            new SequenceType[]{
+            	new SequenceType(Type.ANY_URI, Cardinality.ONE),
+            },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)),
         new FunctionSignature(
-        new QName("zip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-        "Zip's resources and/or collections. $a is a sequence of URI's, if a URI points to a collection" +
-        "then the collection, its resources and sub-collections are zipped recursively. " +
-        "$b indicates whether to use the collection hierarchy in the zip file." +
-        "$c is removed from the beginning of each file path.",
-        new SequenceType[]{
-    new SequenceType(Type.ANY_URI, Cardinality.ONE_OR_MORE),
-    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
-    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-},
-        new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE))
+            new QName("zip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+            "Zip's resources and/or collections. $a is a sequence of URI's, if a URI points to a collection" +
+            "then the collection, its resources and sub-collections are zipped recursively. " +
+            "$b indicates whether to use the collection hierarchy in the zip file.",
+            new SequenceType[]{
+            	new SequenceType(Type.ANY_URI, Cardinality.ONE_OR_MORE),
+            	new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+            },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)),
+        new FunctionSignature(
+	        new QName("zip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+	        "Zip's resources and/or collections. $a is a sequence of URI's, if a URI points to a collection" +
+	        "then the collection, its resources and sub-collections are zipped recursively. " +
+	        "$b indicates whether to use the collection hierarchy in the zip file. " +
+	        "$c is removed from the beginning of each file path.",
+	        new SequenceType[]{
+			    new SequenceType(Type.ANY_URI, Cardinality.ONE_OR_MORE),
+			    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+			    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+	        new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE))
     };
 
     public ZipFunction(XQueryContext context, FunctionSignature signature) {
@@ -79,58 +88,96 @@ public class ZipFunction extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+
         //are there some uri's to zip?
         if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        //use a hierarchy in the zip file?
-        boolean useHierarchy = args[1].effectiveBooleanValue();
-
-        // Get offset
-        String stripOffset = "";
-        if (args.length == 3) {
-            stripOffset = args[2].getStringValue();
-        }
-
-
+    	DeflaterOutputStream zos;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ZipOutputStream zos = new ZipOutputStream(baos);
-
-        // iterate through the argument sequence
-        for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
-            AnyURIValue uri = (AnyURIValue) i.nextItem();
+        
+        if (isCalledAs("gzip")){
+ 
             DocumentImpl doc = null;
             try {
+                AnyURIValue uri = new AnyURIValue(args[0].getStringValue());
+                
+                zos = new GZIPOutputStream(baos);
+
                 //try for a doc
                 doc = context.getBroker().getXMLResource(uri.toXmldbURI(), Lock.READ_LOCK);
 
                 if (doc == null) {
-                    //no doc, try for a collection
-                    Collection col = context.getBroker().getCollection(uri.toXmldbURI());
-
-                    if (col != null) {
-                        //got a collection
-                        zipCollection(zos, col, useHierarchy, stripOffset);
-                    } else {
-                        //no doc or collection
-                        throw new XPathException(getASTNode(), "Invalid URI: " + uri.toString());
-                    }
+                    //no doc
+                    throw new XPathException(getASTNode(), "Invalid URI: " + uri.toString());
                 } else {
                     //got a doc
-                    zipResource(zos, doc, useHierarchy, stripOffset);
+                    gzipResource((GZIPOutputStream)zos, doc);
                 }
+                
             } catch (PermissionDeniedException pde) {
                 throw new XPathException(getASTNode(), pde.getMessage());
             } catch (IOException ioe) {
                 throw new XPathException(getASTNode(), ioe.getMessage());
             } catch (SAXException se) {
                 throw new XPathException(getASTNode(), se.getMessage());
-            } catch (LockException le) {
-                throw new XPathException(getASTNode(), le.getMessage());
             } finally {
                 if (doc != null) {
                     doc.getUpdateLock().release(Lock.READ_LOCK);
+                }
+            }
+        	
+        }
+        else { 	//zip 
+        	
+            //use a hierarchy in the zip file?
+            boolean useHierarchy = args[1].effectiveBooleanValue();
+
+            // Get offset
+            String stripOffset = "";
+            if (args.length == 3) {
+                stripOffset = args[2].getStringValue();
+            }
+
+            zos = new ZipOutputStream(baos);
+
+            // iterate through the argument sequence
+            for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
+                AnyURIValue uri = (AnyURIValue) i.nextItem();
+                DocumentImpl doc = null;
+                try {
+                    //try for a doc
+                    doc = context.getBroker().getXMLResource(uri.toXmldbURI(), Lock.READ_LOCK);
+
+                    if (doc == null) {
+                        //no doc, try for a collection
+                        Collection col = context.getBroker().getCollection(uri.toXmldbURI());
+
+                        if (col != null) {
+                            //got a collection
+                            zipCollection((ZipOutputStream)zos, col, useHierarchy, stripOffset);
+                        } else {
+                            //no doc or collection
+                            throw new XPathException(getASTNode(), "Invalid URI: " + uri.toString());
+                        }
+                    } else {
+                        //got a doc
+                        zipResource((ZipOutputStream)zos, doc, useHierarchy, stripOffset);
+                    }
+                    
+                } catch (PermissionDeniedException pde) {
+                    throw new XPathException(getASTNode(), pde.getMessage());
+                } catch (IOException ioe) {
+                    throw new XPathException(getASTNode(), ioe.getMessage());
+                } catch (SAXException se) {
+                    throw new XPathException(getASTNode(), se.getMessage());
+                } catch (LockException le) {
+                    throw new XPathException(getASTNode(), le.getMessage());
+                } finally {
+                    if (doc != null) {
+                        doc.getUpdateLock().release(Lock.READ_LOCK);
+                    }
                 }
             }
         }
@@ -144,6 +191,30 @@ public class ZipFunction extends BasicFunction {
         return new Base64Binary(baos.toByteArray());
     }
 
+    /**
+     * Adds a document to a Gzip
+     * 
+     * @param gzos The Gzip Output Stream to add the document to
+     * @param doc The document to add to the Gzip
+     */
+    private void gzipResource(GZIPOutputStream gzos, DocumentImpl doc) throws IOException, SAXException {
+        //add the document to the Gzip
+        if (doc.getResourceType() == DocumentImpl.XML_FILE) {
+            //xml file
+            Serializer serializer = context.getBroker().getSerializer();
+            serializer.setUser(context.getUser());
+            serializer.setProperty("omit-xml-declaration", "no");
+            String strDoc = serializer.serialize(doc);
+            gzos.write(strDoc.getBytes());
+        } else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+            //binary file
+            byte[] data = context.getBroker().getBinaryResource((BinaryDocument) doc);
+            gzos.write(data);
+        }
+        //finish the Gzip
+        gzos.finish();
+    }
+    
     /**
      * Adds a document to a Zip
      * 
