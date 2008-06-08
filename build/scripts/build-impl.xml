@@ -594,7 +594,7 @@
 
         <!-- Saxon XSLT2 Processor                 -->
         <!-- http://sourceforge.net/projects/saxon -->
-        <get src="http://prdownloads.sourceforge.net/saxon/saxonb9-0-0-3j.zip"
+        <get src="http://prdownloads.sourceforge.net/saxon/saxonb9-0-0-6j.zip"
             dest="${lib.endorsed}/saxon.zip" verbose="true"/>
 
         <unzip src="${lib.endorsed}/saxon.zip" dest="${lib.endorsed}">
