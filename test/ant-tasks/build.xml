@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="test-exist-ant" default="run" xmlns:au="antlib:org.apache.ant.antunit" xmlns:xdb="http://exist-db.org/ant">
+
+    <!-- $Id$ -->
+
+    <import file="common.xml"/>
+
+    <target name="setup">
+        <echo>startup eXist</echo>
+    </target>
+
+
+    <target name="alltests">
+        <au:antunit>
+            <file file="base.xml"/>
+            <file file="user.xml"/>
+            <file file="file.xml"/>
+            <file file="xmldb.xml"/>
+            <file file="server.xml"/>
+            <au:plainlistener/>
+        </au:antunit>
+    </target>
+
+    <target name="teardown">
+        <xdb:remove uri="${test.coll}" user="admin" password="" resource="test1.xml"/>
+
+        <xdb:remove uri="${test.coll}" user="admin" password="" collection="antunit"/>
+        <xdb:remove uri="${test.coll}" user="admin" password="" resource="common.xml"/>
+
+        <delete file="extract-test.xml"/>
+        <delete file="xpath-result-test.xml"/>
+
+        <!-- remove testtest user //-->
+        <xdb:rmuser uri="${exist.uri}/db" user="admin" password="" name="testtest"/>
+
+    </target>
+
+    <target name="run" depends="setup, alltests, teardown"/>
+</project>
