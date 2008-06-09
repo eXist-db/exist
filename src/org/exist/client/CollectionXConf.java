@@ -696,7 +696,7 @@ public class CollectionXConf
 				}
 				
 				//create the trigger
-				triggers[i] = new Trigger(trigger.getAttribute("event"), trigger.getAttribute("class"), parameters);
+				triggers[i] = new Trigger(trigger.getAttribute("class"), trigger.getAttribute("event"), parameters);
 			}
 			
 			return triggers;
