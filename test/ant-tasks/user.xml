@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="test-exist-user" xmlns:au="antlib:org.apache.ant.antunit" xmlns:xdb="http://exist-db.org/ant">
+
+    <!-- $Id$ -->
+    
+    <import file="common.xml"/>
+
+    <target name="test1_AddUser">
+        
+        <!-- add testtest user (note: user/pass attributes doesn't resolve ant properties)//-->
+        <xdb:adduser uri="${exist.uri}/db" user="${exist.user}" password="${exist.password}" name="testtest" secret="password" primaryGroup="guest" />
+        
+        <!-- list users //-->
+        <xdb:users uri="${exist.uri}/db/system" outputproperty="list1.user"/>
+
+        <au:assertTrue message="Add user task did not add testtest user">
+            <contains string="${list1.user}" substring="testtest"/>
+        </au:assertTrue>
+
+    </target>
+
+    <target name="test2_ListUser">
+        <xdb:users uri="${exist.uri}/db/system" outputproperty="exist.users"/>
+
+        <au:assertTrue message="List users task not setting propery">
+            <isset property="exist.users"/>
+        </au:assertTrue>
+
+        <au:assertTrue message="List users task not returning admin and/or guest user">
+            <and>
+                <contains string="${exist.users}" substring="admin"/>
+                <contains string="${exist.users}" substring="guest"/>
+            </and>
+        </au:assertTrue>
+    </target>
+
+    <target name="test3_ListGroups">
+        <echo>test3</echo>
+    </target>
+    
+
+    <target name="test4_RemoveUser">
+        
+        <!-- remove testtest user //-->
+        <xdb:rmuser uri="${exist.uri}/db" user="admin" password="" name="testtest"/>        
+        
+        <!-- list users //-->
+        <xdb:users uri="${exist.uri}/db/system" outputproperty="list2.user"/>
+
+        <au:assertFalse message="Remove user task did not remove testtest user">
+            <contains string="${list2.user}" substring="testtest"/>
+        </au:assertFalse>
+        <echo message="${list2.user}"/>
+
+    </target>
+    
+
+</project>
