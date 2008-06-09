@@ -34,9 +34,11 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AbstractDateTimeValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.DateValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FloatValue;
 import org.exist.xquery.value.IntegerValue;
@@ -98,6 +100,29 @@ public class ValueIndexFactory {
 			}
 		}
 		
+    /* xs:date */
+    else if(Type.subTypeOf(type, Type.DATE))   {
+      //get the date back as a long
+      long value = ByteConversion.byteToLong(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE));
+      //Create a GregorianCalendar from the long (normalized datetime as milliseconds since the Epoch)
+      GregorianCalendar utccal = new GregorianCalendar();
+      utccal.setTimeInMillis(value);
+      //Create a XMLGregorianCalendar from the GregorianCalendar
+      try
+      {
+        XMLGregorianCalendar xmlutccal = DatatypeFactory.newInstance().newXMLGregorianCalendar(utccal);
+        return new DateValue(xmlutccal);
+      }
+      catch(DatatypeConfigurationException dtce)
+      {
+        throw new EXistException("Could not deserialize xs:date data type for range index key: " + Type.getTypeName(type) + " - " + dtce.getMessage());
+      }
+      catch(XPathException xpe)
+      {
+        throw new EXistException("Could not deserialize xs:date data type for range index key: " + Type.getTypeName(type) + " - " + xpe.getMessage());
+      }
+    }
+    
 		/* xs:integer */
 		else if(Type.subTypeOf(type, Type.INTEGER))
 		{
@@ -271,6 +296,16 @@ public class ValueIndexFactory {
 			return(data);										//return the byte array
 		}
 		
+    /* xs:date */
+    else if(Type.subTypeOf(value.getType(), Type.DATE))    {
+        GregorianCalendar utccal = ((AbstractDateTimeValue)value).calendar.normalize().toGregorianCalendar(); //Get the dateTime (XMLGregorianCalendar) normalized to UTC (as a GregorianCalendar)
+      long millis = utccal.getTimeInMillis();                 //Get the normalized dateTime as a long (milliseconds since the Epoch)
+      final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + 8];   //allocate an appropriately sized byte array for holding Type,long
+      data[offset] = (byte) Type.DATE;       //put the Type in the byte array
+      ByteConversion.longToByte(millis, data, offset+1);  //put the long into the byte array
+      return(data);                   //return the byte array
+    }
+    
 		/* xs:integer */
 		else if(Type.subTypeOf(value.getType(), Type.INTEGER))
 		{
