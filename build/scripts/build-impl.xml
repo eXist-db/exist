@@ -122,7 +122,7 @@
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->
-    <target name="prepare" depends="svn-prepare">
+    <target name="prepare">
 
         <tstamp/>
         <property file="VERSION.txt"/>
@@ -597,8 +597,8 @@
 
         <!-- International Components for Unicode -->
         <!-- http://www.icu-project.org/          -->
-        <get src="http://prdownloads.sourceforge.net/icu/icu4j-3_6.jar"
-            dest="${lib.user}/icu4j-3_6.jar" verbose="true"/>
+        <get src="http://download.icu-project.org/files/icu4j/3.8.1/icu4j-3_8_1.jar"
+            dest="${lib.user}/icu4j-3_8_1.jar" verbose="true"/>
 
         <!-- Java Uuid Generator (JUG) -->
         <!-- http://jug.safehaus.org   -->
@@ -607,7 +607,7 @@
 
         <!-- Saxon XSLT2 Processor                 -->
         <!-- http://sourceforge.net/projects/saxon -->
-        <get src="http://prdownloads.sourceforge.net/saxon/saxonb8-9-0-3j.zip"
+        <get src="http://prdownloads.sourceforge.net/saxon/saxonb9-0-0-6j.zip"
             dest="${lib.endorsed}/saxon.zip" verbose="true"/>
 
         <unzip src="${lib.endorsed}/saxon.zip" dest="${lib.endorsed}">
