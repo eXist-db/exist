@@ -407,11 +407,13 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
                 serializer.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, highlight);
                 
                 xml = new String[howmany];
-                for (int i = 0; i < howmany; i++) {
-                    NodeProxy proxy = ((NodeSet) hitsByDoc).get(start);
+                int j=0;
+                for (int i = start; i < start + howmany; i++) {
+                    NodeProxy proxy = ((NodeSet) hitsByDoc).get(i);
                     if (proxy == null)
                         throw new RuntimeException("not found: " + start);
-                    xml[i] = serializer.serialize(proxy);
+                    xml[j] = serializer.serialize(proxy);
+                    j++; // update count number of results
                 }
             } else
                 throw new RemoteException("result set is not a node list");
