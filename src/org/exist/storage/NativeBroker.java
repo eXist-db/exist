@@ -656,7 +656,7 @@ public class NativeBroker extends DBBroker {
     }    
 
     public Collection getCollection(XmldbURI uri) {
-	return openCollection(uri, BFile.UNKNOWN_ADDRESS, Lock.NO_LOCK);
+	return openCollection(uri, Lock.NO_LOCK);
     }
 	
     public Collection openCollection(XmldbURI uri, int lockMode) {
