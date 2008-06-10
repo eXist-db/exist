@@ -103,14 +103,14 @@ public class ExecuteFunction extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
+		// get the SQL statement
+		String sql = args[1].getStringValue();
+
 		Statement stmt = null;
 		ResultSet rs = null;
 
 		try {
 			StringBuffer xmlBuf = new StringBuffer();
-
-			// get the SQL statement
-			String sql = args[1].getStringValue();
 
 			// execute the SQL statement
 			stmt = con.createStatement();
@@ -213,10 +213,19 @@ public class ExecuteFunction extends BasicFunction {
 
 			// return the XML result set
 			return ModuleUtils.stringToXML(context, xmlBuf.toString());
-		} catch (SAXException se) {
-			throw new XPathException(se);
-		} catch (SQLException e) {
-			throw new XPathException(e);
+		} catch (SAXException saxe) {
+			LOG.error(
+					"sql:execute() Could not serialize SQL results to XML for SQL: \""
+							+ sql + "\"", saxe);
+			throw new XPathException(
+					"sql:execute() Could not serialize SQL results to XML for SQL: \""
+							+ sql + "\"", saxe);
+		} catch (SQLException sqle) {
+			LOG.error("sql:execute() Caught SQLException for SQL: \"" + sql
+					+ "\"", sqle);
+			throw new XPathException(
+					"sql:execute() Caught SQLException for SQL: \"" + sql
+							+ "\"", sqle);
 		} finally {
 			// close any record set or statement
 			try {
