@@ -24,9 +24,9 @@ package org.exist.xquery.modules.compression;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarOutputStream;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
@@ -52,20 +52,20 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 /**
- * Compresses a sequence of resources and/or collections into a Zip file
+ * Compresses a sequence of resources and/or collections into a Tar file
  * 
  * @author Adam Retter <adam@exist-db.org>
  * @version 1.0
  */
-public class ZipFunction extends BasicFunction {
+public class TarFunction extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
-					new QName("zip", CompressionModule.NAMESPACE_URI,
+					new QName("tar", CompressionModule.NAMESPACE_URI,
 							CompressionModule.PREFIX),
-					"Zip's resources and/or collections. $a is a sequence of URI's, if a URI points to a collection"
-							+ "then the collection, its resources and sub-collections are zipped recursively. "
-							+ "$b indicates whether to use the collection hierarchy in the zip file.",
+					"Tar's resources and/or collections. $a is a sequence of URI's, if a URI points to a collection"
+							+ "then the collection, its resources and sub-collections are tarred recursively. "
+							+ "$b indicates whether to use the collection hierarchy in the tar file.",
 					new SequenceType[] {
 							new SequenceType(Type.ANY_URI,
 									Cardinality.ONE_OR_MORE),
@@ -74,11 +74,11 @@ public class ZipFunction extends BasicFunction {
 					new SequenceType(Type.BASE64_BINARY,
 							Cardinality.ZERO_OR_MORE)),
 			new FunctionSignature(
-					new QName("zip", CompressionModule.NAMESPACE_URI,
+					new QName("tar", CompressionModule.NAMESPACE_URI,
 							CompressionModule.PREFIX),
-					"Zip's resources and/or collections. $a is a sequence of URI's, if a URI points to a collection"
-							+ "then the collection, its resources and sub-collections are zipped recursively. "
-							+ "$b indicates whether to use the collection hierarchy in the zip file."
+					"Tar's resources and/or collections. $a is a sequence of URI's, if a URI points to a collection"
+							+ "then the collection, its resources and sub-collections are tarred recursively. "
+							+ "$b indicates whether to use the collection hierarchy in the tar file."
 							+ "$c is removed from the beginning of each file path.",
 					new SequenceType[] {
 							new SequenceType(Type.ANY_URI,
@@ -90,18 +90,18 @@ public class ZipFunction extends BasicFunction {
 					new SequenceType(Type.BASE64_BINARY,
 							Cardinality.ZERO_OR_MORE)) };
 
-	public ZipFunction(XQueryContext context, FunctionSignature signature) {
+	public TarFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		// are there some uri's to zip?
+		// are there some uri's to tar?
 		if (args[0].isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
-		// use a hierarchy in the zip file?
+		// use a hierarchy in the tar file?
 		boolean useHierarchy = args[1].effectiveBooleanValue();
 
 		// Get offset
@@ -111,7 +111,7 @@ public class ZipFunction extends BasicFunction {
 		}
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ZipOutputStream zos = new ZipOutputStream(baos);
+		TarOutputStream tos = new TarOutputStream(baos);
 
 		// iterate through the argument sequence
 		for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
@@ -129,7 +129,7 @@ public class ZipFunction extends BasicFunction {
 
 					if (col != null) {
 						// got a collection
-						zipCollection(zos, col, useHierarchy, stripOffset);
+						tarCollection(tos, col, useHierarchy, stripOffset);
 					} else {
 						// no doc or collection
 						throw new XPathException(getASTNode(), "Invalid URI: "
@@ -137,7 +137,7 @@ public class ZipFunction extends BasicFunction {
 					}
 				} else {
 					// got a doc
-					zipResource(zos, doc, useHierarchy, stripOffset);
+					tarResource(tos, doc, useHierarchy, stripOffset);
 				}
 			} catch (PermissionDeniedException pde) {
 				throw new XPathException(getASTNode(), pde.getMessage());
@@ -155,7 +155,7 @@ public class ZipFunction extends BasicFunction {
 		}
 
 		try {
-			zos.close();
+			tos.close();
 		} catch (IOException ioe) {
 			throw new XPathException(getASTNode(), ioe.getMessage());
 		}
@@ -164,21 +164,21 @@ public class ZipFunction extends BasicFunction {
 	}
 
 	/**
-	 * Adds a document to a Zip
+	 * Adds a document to a Tar
 	 * 
-	 * @param zos
-	 *            The Zip Output Stream to add the document to
+	 * @param tos
+	 *            The Tar Output Stream to add the document to
 	 * @param doc
-	 *            The document to add to the Zip
+	 *            The document to add to the Tar
 	 * @param useHierarchy
-	 *            Whether to use a folder hierarchy in the Zip file that
+	 *            Whether to use a folder hierarchy in the Tar file that
 	 *            reflects the collection hierarchy
 	 */
-	private void zipResource(ZipOutputStream zos, DocumentImpl doc,
+	private void tarResource(TarOutputStream tos, DocumentImpl doc,
 			boolean useHierarchy, String stripOffset) throws IOException,
 			SAXException {
-		// create an entry in the Zip for the document
-		ZipEntry entry = null;
+		// create an entry in the Tar for the document
+		TarEntry entry = null;
 		if (useHierarchy) {
 			String docCollection = doc.getCollection().getURI().toString();
 
@@ -194,44 +194,44 @@ public class ZipFunction extends BasicFunction {
 
 			XmldbURI collection = XmldbURI.create(docCollection);
 
-			entry = new ZipEntry(collection.append(doc.getFileURI()).toString());
+			entry = new TarEntry(collection.append(doc.getFileURI()).toString());
 		} else {
-			entry = new ZipEntry(doc.getFileURI().toString());
+			entry = new TarEntry(doc.getFileURI().toString());
 		}
-		zos.putNextEntry(entry);
+		tos.putNextEntry(entry);
 
-		// add the document to the Zip
+		// add the document to the Tar
 		if (doc.getResourceType() == DocumentImpl.XML_FILE) {
 			// xml file
 			Serializer serializer = context.getBroker().getSerializer();
 			serializer.setUser(context.getUser());
 			serializer.setProperty("omit-xml-declaration", "no");
 			String strDoc = serializer.serialize(doc);
-			zos.write(strDoc.getBytes());
+			tos.write(strDoc.getBytes());
 		} else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary file
 			byte[] data = context.getBroker().getBinaryResource(
 					(BinaryDocument) doc);
-			zos.write(data);
+			tos.write(data);
 		}
 
-		// close the entry in the Zip
-		zos.closeEntry();
+		// close the entry in the Tar
+		tos.closeEntry();
 	}
 
 	/**
 	 * Adds a Collection and its child collections and resources recursively to
-	 * a Zip
+	 * a Tar
 	 * 
-	 * @param zos
-	 *            The Zip Output Stream to add the document to
+	 * @param tos
+	 *            The Tar Output Stream to add the document to
 	 * @param col
-	 *            The Collection to add to the Zip
+	 *            The Collection to add to the Tar
 	 * @param useHierarchy
-	 *            Whether to use a folder hierarchy in the Zip file that
+	 *            Whether to use a folder hierarchy in the Tar file that
 	 *            reflects the collection hierarchy
 	 */
-	private void zipCollection(ZipOutputStream zos, Collection col,
+	private void tarCollection(TarOutputStream tos, Collection col,
 			boolean useHierarchy, String stripOffset) throws IOException,
 			SAXException, LockException {
 		// iterate over child documents
@@ -242,8 +242,8 @@ public class ZipFunction extends BasicFunction {
 			DocumentImpl childDoc = (DocumentImpl) itChildDocs.next();
 			childDoc.getUpdateLock().acquire(Lock.READ_LOCK);
 			try {
-				// zip the resource
-				zipResource(zos, childDoc, useHierarchy, stripOffset);
+				// tar the resource
+				tarResource(tos, childDoc, useHierarchy, stripOffset);
 			} finally {
 				childDoc.getUpdateLock().release(Lock.READ_LOCK);
 			}
@@ -258,7 +258,7 @@ public class ZipFunction extends BasicFunction {
 					col.getURI().append(childColURI));
 
 			// recurse
-			zipCollection(zos, childCol, useHierarchy, stripOffset);
+			tarCollection(tos, childCol, useHierarchy, stripOffset);
 		}
 	}
 }
