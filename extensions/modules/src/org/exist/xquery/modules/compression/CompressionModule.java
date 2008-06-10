@@ -27,38 +27,35 @@ import org.exist.xquery.FunctionDef;
 /**
  * XQuery Extension module for compression and de-compression functions
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  * @version 1.0
  */
-public class CompressionModule extends AbstractInternalModule
-{
+public class CompressionModule extends AbstractInternalModule {
 
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
-	
+
 	public final static String PREFIX = "compression";
-	
+
 	private final static FunctionDef[] functions = {
-		new FunctionDef(ZipFunction.signatures[0], ZipFunction.class),
-        new FunctionDef(ZipFunction.signatures[1], ZipFunction.class)
-	};
-	
-	public CompressionModule()
-	{
+			new FunctionDef(ZipFunction.signatures[0], ZipFunction.class),
+			new FunctionDef(ZipFunction.signatures[1], ZipFunction.class),
+			new FunctionDef(GZipFunction.signatures[0], GZipFunction.class),
+			new FunctionDef(TarFunction.signatures[0], TarFunction.class),
+			new FunctionDef(TarFunction.signatures[1], TarFunction.class), };
+
+	public CompressionModule() {
 		super(functions);
 	}
 
-	public String getNamespaceURI()
-	{
+	public String getNamespaceURI() {
 		return NAMESPACE_URI;
 	}
 
-	public String getDefaultPrefix()
-	{
+	public String getDefaultPrefix() {
 		return PREFIX;
 	}
 
-	public String getDescription()
-	{
+	public String getDescription() {
 		return "Compression and De-Compression functions";
 	}
 }
