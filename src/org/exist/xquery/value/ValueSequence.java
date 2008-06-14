@@ -332,7 +332,7 @@ public class ValueSequence extends AbstractSequence {
         int pos = 0;
 
         CollectionIterator() {
-            nextCollection = (Collection) next();
+            next();
         }
 
         public boolean hasNext() {
