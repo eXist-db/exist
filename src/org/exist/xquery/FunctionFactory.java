@@ -237,7 +237,8 @@ public class FunctionFactory {
 					}
 					if (((Boolean)context.broker.getConfiguration().getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS)).booleanValue()
 							&& def.getSignature().isDeprecated()) {
-						throw new XPathException(ast, "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied.");
+						throw new XPathException(ast, "Access to deprecated functions is not allowed. Call to '" 
+                                + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
 					}
 					Function func = Function.createFunction(context, ast, def );
 					func.setArguments(params);
