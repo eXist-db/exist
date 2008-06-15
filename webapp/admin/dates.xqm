@@ -13,7 +13,7 @@ declare variable $date:months {
 
 declare function date:format-date($date as xs:dateTime) as xs:string {
 	string-join((
-		item-at($date:months, month-from-date($date)),
+		$date:months[month-from-date($date)],
 		xs:string( day-from-date($date)  ),
 		xs:string( year-from-date($date) ) ), " ")
 };
