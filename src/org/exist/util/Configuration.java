@@ -818,7 +818,7 @@ public class Configuration implements ErrorHandler
         }
         NodeList recoveries = con.getElementsByTagName(BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME);
         if (recoveries.getLength() > 0) {
-            configureRecovery((Element)recoveries.item(0));
+            configureRecovery(dbHome, (Element)recoveries.item(0));
         }
         NodeList defaultPermissions = con.getElementsByTagName(XMLSecurityManager.CONFIGURATION_ELEMENT_NAME); 
         if (defaultPermissions.getLength() > 0) {
@@ -826,7 +826,7 @@ public class Configuration implements ErrorHandler
         }
     }
     
-    private void configureRecovery(Element recovery) throws DatabaseConfigurationException {
+    private void configureRecovery(String dbHome, Element recovery) throws DatabaseConfigurationException {
         String option = recovery.getAttribute(BrokerPool.RECOVERY_ENABLED_ATTRIBUTE);
         setProperty(BrokerPool.PROPERTY_RECOVERY_ENABLED, parseBoolean(option, true));
         LOG.debug(BrokerPool.PROPERTY_RECOVERY_ENABLED + ": " + config.get(BrokerPool.PROPERTY_RECOVERY_ENABLED));
@@ -841,7 +841,13 @@ public class Configuration implements ErrorHandler
         
         option = recovery.getAttribute(Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE);
         if (option != null) {
-            setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, option);
+            //DWES
+            File rf = ConfigurationHelper.lookup(option, dbHome);
+            if (!rf.canRead())
+                throw new DatabaseConfigurationException(
+                    "cannot read data directory: "
+                    + rf.getAbsolutePath());
+            setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, rf.getAbsolutePath());
             LOG.debug(Journal.PROPERTY_RECOVERY_JOURNAL_DIR + ": " + config.get(Journal.PROPERTY_RECOVERY_JOURNAL_DIR));
         }
         
