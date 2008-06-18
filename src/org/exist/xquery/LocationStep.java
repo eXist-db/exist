@@ -471,8 +471,10 @@ public class LocationStep extends Step {
             if (contextSet.isEmpty())
             	return NodeSet.EMPTY_SET;
             NodeProxy proxy = contextSet.get(0);
-            if (proxy != null)
+            if (proxy != null) {
+                proxy.getDocument().setBroker(context.getBroker());
                 return contextSet.directSelectAttribute(test, contextId);
+            }
         }
         if (test.isWildcardTest()) {
             NodeSet result = new VirtualNodeSet(axis, test, contextId, contextSet);
