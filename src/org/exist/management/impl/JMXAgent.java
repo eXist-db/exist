@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-08 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ *  $Id$
  */
 package org.exist.management.impl;
 
@@ -84,6 +84,10 @@ public class JMXAgent implements Agent {
         try {
             ObjectName name = new ObjectName("org.exist.management:type=LockManager");
             addMBean(name, new org.exist.management.impl.LockManager());
+            
+            name = new ObjectName("org.exist.management:type=SystemInfo");
+            addMBean(name, new org.exist.management.impl.SystemInfo());
+            
         } catch (MalformedObjectNameException e) {
             LOG.warn("Exception while registering cache mbean.", e);
         } catch (DatabaseConfigurationException e) {
@@ -95,8 +99,13 @@ public class JMXAgent implements Agent {
         try {
             addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=Database",
                     new org.exist.management.impl.Database(instance));
+            
             addMBean(instance.getId(), "org.exist.management." + instance.getId() + ".tasks:type=SanityReport",
                     new SanityReport(instance));
+            
+            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=DiskUsage",
+                    new DiskUsage(instance));
+                        
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Exception while registering database mbean.", e);
         }
