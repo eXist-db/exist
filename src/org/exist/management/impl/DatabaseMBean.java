@@ -21,7 +21,7 @@ import javax.management.openmbean.TabularData;
 *  License along with this library; if not, write to the Free Software
 *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 *
-* $Id: DatabaseMBean.java 6177 2007-07-08 14:42:37Z wolfgang_m $
+* $Id$
 */
 public interface DatabaseMBean {
 
@@ -40,4 +40,5 @@ public interface DatabaseMBean {
     long getCollectionCacheMem();
 
     TabularData getActiveBrokersMap();
+
 }
