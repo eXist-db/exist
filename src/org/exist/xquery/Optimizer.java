@@ -110,6 +110,48 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
+    public void visitFilteredExpr(FilteredExpression filtered) {
+        super.visitFilteredExpr(filtered);
+        boolean optimize = false;
+        List preds = filtered.getPredicates();
+        // walk through the predicates attached to the current location step.
+        // try to find a predicate containing an expression which is an instance
+        // of Optimizable.
+        for (Iterator i = preds.iterator(); i.hasNext(); ) {
+            Predicate pred = (Predicate) i.next();
+            FindOptimizable find = new FindOptimizable();
+            pred.accept(find);
+            List list = find.getOptimizables();
+            if (list.size() > 0 && canOptimize(list)) {
+                optimize = true;
+                break;
+            }
+        }
+        if (optimize) {
+            // we found at least one Optimizable. Rewrite the whole expression and
+            // enclose it in an (#exist:optimize#) pragma.
+            Expression parent = filtered.getParent();
+            if (!(parent instanceof PathExpr)) {
+                LOG.warn("Parent expression of step is not a PathExpr: " + parent);
+                return;
+            }
+            if (LOG.isTraceEnabled())
+                LOG.trace("Rewriting expression: " + ExpressionDumper.dump(filtered));
+            hasOptimized = true;
+            PathExpr path = (PathExpr) parent;
+            try {
+                // Create the pragma
+                ExtensionExpression extension = new ExtensionExpression(context);
+                extension.addPragma(new Optimize(context, Optimize.OPTIMIZE_PRAGMA, null, false));
+                extension.setExpression(filtered);
+                // Replace the old expression with the pragma
+                path.replaceExpression(filtered, extension);
+            } catch (XPathException e) {
+                LOG.warn("Failed to optimize expression: " + filtered + ": " + e.getMessage(), e);
+            }
+        }
+    }
+
     public void visitAndExpr(OpAnd and) {
         if (predicates > 0) {
             Expression parent = and.getParent();

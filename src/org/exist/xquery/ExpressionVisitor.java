@@ -25,6 +25,8 @@ public interface ExpressionVisitor {
     /** Found a LocationStep */
     public void visitLocationStep(LocationStep locationStep);
 
+    public void visitFilteredExpr(FilteredExpression filtered);
+    
     public void visitPredicate(Predicate predicate);
 
     public void visitGeneralComparison(GeneralComparison comparison);
