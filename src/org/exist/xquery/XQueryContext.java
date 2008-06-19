@@ -62,6 +62,7 @@ import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
@@ -271,8 +272,14 @@ public class XQueryContext {
 	 * fragments
 	 */
 	private MemTreeBuilder builder = null;
-	
-	/**
+
+    /**
+     * Shared name pool used by all in-memory documents constructed in
+     * this query context.
+     */
+    private NamePool sharedNamePool = new NamePool();
+    
+    /**
 	 * Stack for temporary document fragments
 	 */
 	private Stack fragmentStack = new Stack();
@@ -1597,8 +1604,21 @@ public class XQueryContext {
 		}
 		return builder;
 	}
-	
-	/* Methods delegated to the watchdog */
+
+    /**
+     * Returns the shared name pool used by all in-memory
+     * documents which are created within this query context.
+     * Create a name pool for every document would be a waste of
+     * memory, especially since it is likely that the documents
+     * contain elements or attributes with similar names.
+     * 
+     * @return the shared name pool
+     */
+    public NamePool getSharedNamePool() {
+        return sharedNamePool;
+    }
+    
+    /* Methods delegated to the watchdog */
 	
 	public void proceed() throws TerminatedException {
 	    proceed(null);
