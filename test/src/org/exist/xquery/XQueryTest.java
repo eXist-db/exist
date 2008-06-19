@@ -26,6 +26,7 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
+import org.exist.TestUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
@@ -153,8 +154,8 @@ public class XQueryTest extends XMLTestCase {
 		"</series>";
 	
 	private static String attributeXML;
-	private static int stringSize;
-	private static int nbElem;
+	private static int stringSize = 512;
+	private static int nbElem = 1;
 	private String file_name = "detail_xml.xml";
 	private String xml;
 	private Database database;
@@ -187,10 +188,10 @@ public class XQueryTest extends XMLTestCase {
 	 */
 	public void tearDown() throws Exception {
 		// testCollection.removeResource( testCollection .getResource(file_name));
-
+        TestUtils.cleanupDB();
 		DatabaseInstanceManager dim =
-			(DatabaseInstanceManager) getTestCollection().getService(
-				"DatabaseInstanceManager", "1.0");
+			(DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", null)
+                    .getService("DatabaseInstanceManager", "1.0");
 		dim.shutdown();
         DatabaseManager.deregisterDatabase(database);
         database = null;
@@ -504,10 +505,8 @@ public class XQueryTest extends XMLTestCase {
 		boolean exceptionThrown;
 		String message;				
 		try {
-			XPathQueryService service =
-				(XPathQueryService) getTestCollection().getService(
-					"XPathQueryService",
-					"1.0");
+            XPathQueryService service =
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 
             System.out.println("testVariable 1: ========" );
             query = "xquery version \"1.0\";\n"                 
@@ -607,9 +606,7 @@ public class XQueryTest extends XMLTestCase {
 		String message;				
 		try {
 			XPathQueryService service =
-				(XPathQueryService) getTestCollection().getService(
-					"XPathQueryService",
-					"1.0");
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 			service.setProperty(OutputKeys.INDENT, "no");
 
 			query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant::*/attribute::id " +
@@ -650,9 +647,7 @@ public class XQueryTest extends XMLTestCase {
 		String message;				
 		try {
 			XPathQueryService service =
-				(XPathQueryService) getTestCollection().getService(
-					"XPathQueryService",
-					"1.0");
+				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 			service.setProperty(OutputKeys.INDENT, "no");
 
 			query = "let $a := element node1 { " +
@@ -2049,7 +2044,9 @@ public class XQueryTest extends XMLTestCase {
 
 	public void testRetrieveLargeAttribute() throws XMLDBException{
 		System.out.println("testRetrieveLargeAttribute 1: ========" );
-		XMLResource res = (XMLResource) getTestCollection().getResource(file_name);
+        createXMLContentWithLargeString();
+        storeXMLStringAndGetQueryService(file_name, xml);
+        XMLResource res = (XMLResource) getTestCollection().getResource(file_name);
 		System.out.println("res.getContent(): " + res.getContent() );
 	}
 	
