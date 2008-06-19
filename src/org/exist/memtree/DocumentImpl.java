@@ -77,7 +77,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     protected XQueryContext context;
 	
-    protected NamePool namePool = new NamePool();
+    protected NamePool namePool;
 
     // holds the node type of a node
     protected short[] nodeKind = null;
@@ -123,16 +123,16 @@ public class DocumentImpl extends NodeImpl implements Document {
     protected String documentURI = null;
 
     // reference nodes (link to an external, persistent document fragment)
-    protected NodeProxy references[];
+    protected NodeProxy references[] = null;
 
     protected int nextRef = 0;
     
     protected long docId;
 
-    private final static int NODE_SIZE = 32;
-    private final static int ATTR_SIZE = 16;
+    private final static int NODE_SIZE = 16;
+    private final static int ATTR_SIZE = 8;
     private final static int CHAR_BUF_SIZE = 512;
-    private final static int REF_SIZE = 16;
+    private final static int REF_SIZE = 8;
 
 	private Int2ObjectHashMap storedNodes = null;
     
@@ -140,6 +140,11 @@ public class DocumentImpl extends NodeImpl implements Document {
         super(null, 0);
         this.context = context;
         this.docId = createDocId();
+
+        if (context == null)
+            namePool = new NamePool();
+        else
+            namePool = context.getSharedNamePool();
     }
     
     private void init() {
@@ -160,8 +165,6 @@ public class DocumentImpl extends NodeImpl implements Document {
 
         namespaceCode = new int[5];
         namespaceParent = new int[5];
-        
-        references = new NodeProxy[REF_SIZE];
 
         treeLevel[0] = 0;
         nodeKind[0] = Node.DOCUMENT_NODE;
@@ -173,6 +176,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         nextChar = 0;
         nextAttr = 0;
         nextRef = 0;
+        references = null;
     }
     
     public int getSize() {
@@ -252,7 +256,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     
     public void addReferenceNode(int nodeNr, NodeProxy proxy) {
         if (nodeKind == null) init();
-        if (nextRef == references.length) growReferences();
+        if (references == null || nextRef == references.length) growReferences();
         references[nextRef] = proxy;
         alpha[nodeNr] = nextRef++;
     }
@@ -359,12 +363,16 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
 
     private void growReferences() {
-        int size = references.length;
-        int newSize = (size * 3) / 2;
+        if (references == null)
+            references = new NodeProxy[REF_SIZE];
+        else {
+            int size = references.length;
+            int newSize = (size * 3) / 2;
 
-        NodeProxy newReferences[] = new NodeProxy[newSize];
-        System.arraycopy(references, 0, newReferences, 0, size);
-        references = newReferences;
+            NodeProxy newReferences[] = new NodeProxy[newSize];
+            System.arraycopy(references, 0, newReferences, 0, size);
+            references = newReferences;
+        }
     }
 
     private void growNamespaces() {
