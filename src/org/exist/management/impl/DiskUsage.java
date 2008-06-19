@@ -45,7 +45,8 @@ public class DiskUsage implements DiskUsageMBean {
     }
 
     public long getDataDirectoryFreeDiskSpace() {
-        return (new File( getJournalDirectory() ).getUsableSpace());
+        //return (new File( getJournalDirectory() ).getUsableSpace());
+        return -(1L);
     }
 
     public String getDataDirectory() {
@@ -57,15 +58,18 @@ public class DiskUsage implements DiskUsageMBean {
     }
 
     public long getJournalDirectoryFreeSpace() {
-        return new File(getJournalDirectory()).getUsableSpace();
+        //return new File(getJournalDirectory()).getUsableSpace();
+        return -(1L);
     }
 
     public long getDataDirectoryTotalSpace() {
-        return (new File( getJournalDirectory() ).getTotalSpace());
+        //return (new File( getJournalDirectory() ).getTotalSpace());
+        return -(1L);
     }
 
     public long getJournalDirectoryTotalSpace() {
-         return new File(getJournalDirectory()).getTotalSpace();
+         //return new File(getJournalDirectory()).getTotalSpace();
+        return -(1L);
     }
     
     
