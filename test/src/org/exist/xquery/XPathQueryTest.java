@@ -13,6 +13,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.StandaloneServer;
+import org.exist.TestUtils;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -227,6 +228,7 @@ public class XPathQueryTest extends XMLTestCase {
     
     protected void tearDown() throws Exception {
         try {
+            TestUtils.cleanupDB();
             if (!((CollectionImpl) testCollection).isRemoteCollection()) {
                 DatabaseInstanceManager dim =
                         (DatabaseInstanceManager) testCollection.getService(
@@ -476,9 +478,8 @@ public class XPathQueryTest extends XMLTestCase {
     
     public void testRoot() {
         try {
-            XQueryService service =
-                    storeXMLStringAndGetQueryService("nested2.xml", nested2);
-            
+            storeXMLStringAndGetQueryService("nested2.xml", nested2);
+            XQueryService service = storeXMLStringAndGetQueryService("numbers.xml", numbers);
             String query = "let $doc := <a><b/></a> return root($doc)";
             ResourceSet result = service.queryResource("numbers.xml", query);
             assertEquals("XPath: " + query, 1, result.getSize());
@@ -551,7 +552,7 @@ public class XPathQueryTest extends XMLTestCase {
         try {
             XQueryService service =
                     storeXMLStringAndGetQueryService("nested2.xml", nested2);
-            
+            storeXMLStringAndGetQueryService("numbers.xml", numbers);
             queryResource(service, "nested2.xml", "/RootElement/descendant::*/parent::ChildA", 1);
             queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildB]/parent::RootElement", 0);
             queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildA]/parent::RootElement", 1);
