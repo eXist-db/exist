@@ -1428,7 +1428,7 @@ public class NativeBroker extends DBBroker {
 			metadata.setLastModified(now);
 			metadata.setCreated(now);
 			targetDoc.setMetadata(metadata);
-			targetDoc.setDocId(getNextResourceId(transaction, temp));
+			targetDoc.setDocId(getNextResourceId(transaction, temp, false));
 
 			//index the temporary document
 			DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
@@ -2137,17 +2137,23 @@ public class NativeBroker extends DBBroker {
 		}
 		return freeDocId;
     }
-	
-    /** get next Free Doc Id */
+
     public int getNextResourceId(Txn transaction, Collection collection) {
-		int nextDocId;
-		try {
-		    nextDocId = getFreeResourceId(transaction);
-		} catch (ReadOnlyException e) {
-	        //TODO : rethrow ? -pb
-		    return 1;
-		}
-		if (nextDocId != DocumentImpl.UNKNOWN_DOCUMENT_ID)
+        return getNextResourceId(transaction, collection, true);
+    }
+
+    /** get next Free Doc Id */
+    public int getNextResourceId(Txn transaction, Collection collection, boolean reuseOld) {
+		int nextDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;
+        if (reuseOld) {
+            try {
+                nextDocId = getFreeResourceId(transaction);
+            } catch (ReadOnlyException e) {
+                //TODO : rethrow ? -pb
+                return 1;
+            }
+        }
+        if (nextDocId != DocumentImpl.UNKNOWN_DOCUMENT_ID)
 		    return nextDocId;
 		else
 		    nextDocId = 1;
