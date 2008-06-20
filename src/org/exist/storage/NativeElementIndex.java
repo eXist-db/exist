@@ -503,6 +503,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final Lock lock = dbNodes.getLock();
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;
+        boolean setIsOrdered = true;
         boolean descendantAxis = selector instanceof DescendantSelector;
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             //Compute a key for the node
@@ -555,7 +556,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         }
                     }
                     nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(NodeId.ROOT_NODE, is);
-                    result.setSorted(storedDocument, ordered == ENTRIES_ORDERED && !descendantAxis);
+                    if (setIsOrdered)
+                        setIsOrdered = ordered == ENTRIES_ORDERED && !descendantAxis;
                 }
             } catch (EOFException e) {
                 //EOFExceptions are expected here
@@ -569,6 +571,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             }
         }
 //        LOG.debug("Found: " + result.getLength() + " for " + qname);
+        result.setSorted(null, setIsOrdered);
         if (sameDocSet) {
         	result.setDocumentSet(docs);
         }
