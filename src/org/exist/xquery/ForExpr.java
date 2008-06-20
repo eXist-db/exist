@@ -234,8 +234,8 @@ public class ForExpr extends BindingExpression {
 		if(resultSequence == null) {
 			if(orderSpecs != null && !fastOrderBy)
 				resultSequence = new OrderedValueSequence(orderSpecs, in.getItemCount());
-			else
-				resultSequence = new ValueSequence();
+            else
+                resultSequence = new ValueSequence();
 		}
 
 		Sequence val = null;
@@ -294,7 +294,7 @@ public class ForExpr extends BindingExpression {
                 // otherwise call the return expression and add results to resultSequence 
                 else {                 
                     val = returnExpr.eval(null); 
-                    resultSequence.addAll(val); 
+                    resultSequence.addAll(val);
                 } 
             } 
             else { 
@@ -381,7 +381,7 @@ public class ForExpr extends BindingExpression {
 	public int returnsType() {
 		if (sequenceType != null)
 			return sequenceType.getPrimaryType();
-		//Type.ITEM by default : this may change *after* evaluation
+        //Type.ITEM by default : this may change *after* evaluation
 		return actualReturnType;
 	}
 

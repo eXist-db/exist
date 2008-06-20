@@ -43,6 +43,8 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.dom.TextImpl;
+import org.exist.dom.NewArrayNodeSet;
+import org.exist.dom.ExtNodeSet;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
@@ -497,7 +499,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
         short nodeType = getIndexType(type);
-        final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
+        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getLength(), 256);
         final Lock lock = dbNodes.getLock();
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;
@@ -585,11 +587,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @param qname the QName to search for
      */
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis,
-    		DocumentSet docs, ExtArrayNodeSet contextSet,  int contextId) {
+    		DocumentSet docs, ExtNodeSet contextSet,  int contextId) {
 //        LOG.debug(contextSet.toString());
         short nodeType = getIndexType(type);
         ByDocumentIterator citer = contextSet.iterateByDocument();
-        final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
+        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getLength(), 256);
         final Lock lock = dbNodes.getLock();
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;

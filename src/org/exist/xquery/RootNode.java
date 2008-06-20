@@ -22,10 +22,10 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
@@ -74,7 +74,7 @@ public class RootNode extends Step {
         if (cachedDocs != null && cachedDocs.equals(ds)) return cached;
         
         // check if the loaded documents should remain locked
-        NodeSet result = new ExtArrayNodeSet(2);
+        NodeSet result = new NewArrayNodeSet(2);
         try {
             // wait for pending updates
             if (!context.inProtectedMode())
@@ -85,7 +85,7 @@ public class RootNode extends Step {
                 if (context.inProtectedMode() && !context.getProtectedDocs().containsKey(doc.getDocId()))
                     continue;
                 if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
-	            	result.add(new NodeProxy(doc));
+	               	result.add(new NodeProxy(doc));
 	            }
             }
 	        cached = result;
