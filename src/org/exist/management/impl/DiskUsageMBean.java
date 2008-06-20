@@ -35,15 +35,17 @@ public interface DiskUsageMBean
     
     public long getDataDirectoryTotalSpace();
     
+    public long getDataDirectoryUsedSpace();
+    
     public String getJournalDirectory();
     
     public long getJournalDirectoryFreeSpace();
     
     public long getJournalDirectoryTotalSpace();
     
-    public long getDataDirectoryUsedSpace();
-    
     public long getJournalDirectoryUsedSpace();
+    
+    public int getJournalDirectoryNumberOfFiles();
     
 }
 
