@@ -452,7 +452,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");
         if (LOG.isTraceEnabled())
         	LOG.trace("No index: fall back to nodeSetCompare");        
-		NodeSet result = new ExtArrayNodeSet();
+		NodeSet result = new NewArrayNodeSet();
 		final Collator collator = getCollator(contextSequence);
 		if (contextSequence != null && !contextSequence.isEmpty() && !contextSequence.getDocumentSet().contains(nodes.getDocumentSet()))
 		{
