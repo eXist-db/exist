@@ -29,6 +29,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
 
+
 /**
  * Class DiskUsage
  * 
@@ -111,8 +112,13 @@ public class DiskUsage implements DiskUsageMBean {
 
         return totalSize;
     }
-}
 
+    public int getJournalDirectoryNumberOfFiles() {
+       File dir = new File(getJournalDirectory());
+       File[] files = dir.listFiles(new JournalFilenameFilter());
+       return files.length;
+    }
+}
 class DbxFilenameFilter implements FilenameFilter {
 
     public boolean accept(File directory, String name) {
