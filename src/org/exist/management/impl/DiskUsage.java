@@ -23,7 +23,8 @@
 package org.exist.management.impl;
 import java.io.File;
 import java.io.FilenameFilter;
-import javax.management.*;
+import java.lang.reflect.Method;
+
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
@@ -44,9 +45,20 @@ public class DiskUsage implements DiskUsageMBean {
         config = pool.getConfiguration();
     }
 
-    public long getDataDirectoryFreeDiskSpace() {
-        //return (new File( getJournalDirectory() ).getUsableSpace());
-        return -(1L);
+    private long getSpace(File dir, String method) {
+        try {
+            Class cls = dir.getClass();
+            Method m = cls.getMethod(method, new Class[0]);
+            Long a = (Long) m.invoke(dir, new Object[0]);
+            return a;
+        } catch (NoSuchMethodException ex){
+            // method not 
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return -1;
     }
 
     public String getDataDirectory() {
@@ -57,20 +69,26 @@ public class DiskUsage implements DiskUsageMBean {
         return (String) config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR);
     }
 
-    public long getJournalDirectoryFreeSpace() {
-        //return new File(getJournalDirectory()).getUsableSpace();
-        return -(1L);
+    public long getDataDirectoryTotalSpace() {
+        File dir = new File(getDataDirectory());
+        return getSpace(dir, "getTotalSpace");
     }
 
-    public long getDataDirectoryTotalSpace() {
-        //return (new File( getJournalDirectory() ).getTotalSpace());
-        return -(1L);
+    public long getDataDirectoryFreeDiskSpace() {
+        File dir = new File(getDataDirectory());
+        return getSpace(dir, "getUsableSpace");
     }
 
     public long getJournalDirectoryTotalSpace() {
-         //return new File(getJournalDirectory()).getTotalSpace();
-        return -(1L);
+        File dir = new File(getJournalDirectory());
+        return getSpace(dir, "getTotalSpace");
     }
+
+    public long getJournalDirectoryFreeSpace() {
+        File dir = new File(getJournalDirectory());
+        return getSpace(dir, "getUsableSpace");
+    }
+
     
     
     
