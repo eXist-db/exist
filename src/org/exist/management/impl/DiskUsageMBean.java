@@ -25,7 +25,7 @@ package org.exist.management.impl;
 /**
  * Interface DiskUsageMBean
  *
- * @author wessels
+ * @author dizzzz@exist-db.org
  */
 public interface DiskUsageMBean 
 {
@@ -41,7 +41,9 @@ public interface DiskUsageMBean
     
     public long getJournalDirectoryTotalSpace();
     
-//    public int getNumberOfTransactionLogs();
+    public long getDataDirectoryUsedSpace();
+    
+    public long getJournalDirectoryUsedSpace();
     
 }
 

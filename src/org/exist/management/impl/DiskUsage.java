@@ -19,8 +19,8 @@
  *
  *  $Id$
  */
-
 package org.exist.management.impl;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Method;
@@ -32,16 +32,15 @@ import org.exist.util.Configuration;
 /**
  * Class DiskUsage
  * 
- * @author wessels
+ * @author dizzzz@exist-db.org
  */
 public class DiskUsage implements DiskUsageMBean {
-    
+
     private BrokerPool pool;
     private Configuration config;
 
-    
-    public DiskUsage(BrokerPool pool){
-        this.pool=pool;
+    public DiskUsage(BrokerPool pool) {
+        this.pool = pool;
         config = pool.getConfiguration();
     }
 
@@ -51,9 +50,8 @@ public class DiskUsage implements DiskUsageMBean {
             Method m = cls.getMethod(method, new Class[0]);
             Long a = (Long) m.invoke(dir, new Object[0]);
             return a;
-        } catch (NoSuchMethodException ex){
+        } catch (NoSuchMethodException ex) {
             // method not 
-            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -89,33 +87,52 @@ public class DiskUsage implements DiskUsageMBean {
         return getSpace(dir, "getUsableSpace");
     }
 
-    
-    
-    
+    public long getDataDirectoryUsedSpace() {
+
+        long totalSize = 0;
+
+        File dir = new File(getDataDirectory());
+        File[] files = dir.listFiles(new DbxFilenameFilter());
+        for (File file : files) {
+            totalSize += file.length();
+        }
+
+        return totalSize;
+    }
+
+    public long getJournalDirectoryUsedSpace() {
+        long totalSize = 0;
+
+        File dir = new File(getJournalDirectory());
+        File[] files = dir.listFiles(new JournalFilenameFilter());
+        for (File file : files) {
+            totalSize += file.length();
+        }
+
+        return totalSize;
+    }
 }
 
-class DbxFilenameFiler implements FilenameFilter {
+class DbxFilenameFilter implements FilenameFilter {
 
     public boolean accept(File directory, String name) {
-        if(name.endsWith(".dbx")){
+        if (name.endsWith(".dbx")) {
             return true;
         } else {
             return false;
         }
     }
-    
 }
 
-class JournalFilenameFiler implements FilenameFilter {
+class JournalFilenameFilter implements FilenameFilter {
 
     public boolean accept(File directory, String name) {
-        if(name.endsWith(".log")){
+        if (name.endsWith(".log")) {
             return true;
         } else {
             return false;
         }
     }
-    
 }
 
 
