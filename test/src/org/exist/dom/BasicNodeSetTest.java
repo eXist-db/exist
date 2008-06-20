@@ -53,6 +53,12 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.junit.Test;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test basic {@link org.exist.dom.NodeSet} operations to ensure that
@@ -61,7 +67,7 @@ import org.xml.sax.SAXException;
  * @author wolf
  *
  */
-public class BasicNodeSetTest extends TestCase {
+public class BasicNodeSetTest {
 
 	private final static String NESTED_XML =
         "<section n='1'>" +
@@ -89,16 +95,12 @@ public class BasicNodeSetTest extends TestCase {
       File existDir = existHome==null ? new File(".") : new File(existHome);
       dir = new File(existDir,directory);
     }
-    
-	public static void main(String[] args) {
-		BasicConfigurator.configure();
-		junit.textui.TestRunner.run(BasicNodeSetTest.class);
-	}
 
-	private BrokerPool pool = null;
-	private Collection root = null;
-	
-	public void testSelectors() {
+	private static BrokerPool pool = null;
+	private static Collection root = null;
+
+    @Test
+    public void testSelectors() {
 		DBBroker broker = null;
         try {
         	assertNotNull(pool);
@@ -157,8 +159,9 @@ public class BasicNodeSetTest extends TestCase {
         	if (pool != null) pool.release(broker);
         }
 	}
-	
-	public void testAxes() {
+
+    @Test
+    public void testAxes() {
 		DBBroker broker = null;
         try {
         	assertNotNull(pool);
@@ -234,7 +237,7 @@ public class BasicNodeSetTest extends TestCase {
             result = ((AbstractNodeSet) speakers).selectPrecedingSiblings(largeSet.toNodeSet(), -1);
             assertEquals(160, result.getLength());
             
-            System.out.println("Testing ExtArrayNodeSet.selectParentChild ...");
+            System.out.println("Testing ExtNodeSet.selectParentChild ...");
             Sequence nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1')]", 2, null);
             test = new NameTest(Type.ELEMENT, new QName("para", ""));
             NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
@@ -263,7 +266,8 @@ public class BasicNodeSetTest extends TestCase {
         	if (pool != null) pool.release(broker);
         }
 	}
-	
+
+    @Test
     public void testOptimizations() {
         DBBroker broker = null;
         try {
@@ -277,14 +281,14 @@ public class BasicNodeSetTest extends TestCase {
 
             System.out.println("------------ Testing NativeElementIndex.findChildNodesByTagName ---------");
             // parent set: 1.1.1; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
-            ExtArrayNodeSet nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1.1']", 1, null);
+            ExtNodeSet nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.1']", 1, null);
             NodeSet children = 
             	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
             			new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
             assertEquals(3, children.getLength());
             
             // parent set: 1.1; child set: 1.1.1, 1.1.2
-            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
+            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
             children = 
             	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
             			new QName("section", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
@@ -292,7 +296,7 @@ public class BasicNodeSetTest extends TestCase {
             
             // parent set: 1, 1.1, 1.1.1, 1.1.2 ; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
             // problem: ancestor set contains nested nodes
-            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.1.2')]", 3, null);
+            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.1.2')]", 3, null);
             children = 
             	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
         			new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
@@ -300,37 +304,37 @@ public class BasicNodeSetTest extends TestCase {
             
             // parent set: 1.1, 1.1.2, 1.2 ; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
             // problem: ancestor set contains nested nodes
-            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
+            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
             children = 
                 broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
                 		Constants.CHILD_AXIS, docs, nestedSet, -1);
             assertEquals(2, children.getLength());
             
-            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
+            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
             children = 
                 broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
                 		Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
             assertEquals(4, children.getLength());
             
-            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1']", 1, null);
+            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1']", 1, null);
             children = 
                 broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
                 		Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
             assertEquals(5, children.getLength());
             
-            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
+            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
             children = 
                 broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("section", ""), 
                 		Constants.DESCENDANT_SELF_AXIS, docs, nestedSet, -1);
             assertEquals(1, children.getLength());
             
-            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
+            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
             children = 
                 broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
                 		Constants.ATTRIBUTE_AXIS, docs, nestedSet, -1);
             assertEquals(1, children.getLength());
             
-            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
+            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
             children = 
                 broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
                 		Constants.DESCENDANT_ATTRIBUTE_AXIS, docs, nestedSet, -1);
@@ -344,8 +348,9 @@ public class BasicNodeSetTest extends TestCase {
             if (pool != null) pool.release(broker);
         }
     }
-    
-	public void testVirtualNodeSet() {
+
+    @Test
+    public void testVirtualNodeSet() {
 		DBBroker broker = null;
         try {
         	assertNotNull(pool);
@@ -404,8 +409,9 @@ public class BasicNodeSetTest extends TestCase {
 			value = item.getStringValue();
 		return value;
 	}
-	
-	protected void setUp() throws Exception {        
+
+    @BeforeClass
+    public static void setup() throws Exception {
         DBBroker broker = null;
         TransactionManager transact = null;
         Txn transaction = null;
@@ -458,7 +464,7 @@ public class BasicNodeSetTest extends TestCase {
         }
 	}
 	
-	protected BrokerPool startDB() {
+	protected static BrokerPool startDB() {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
         if (home == null)
@@ -473,7 +479,8 @@ public class BasicNodeSetTest extends TestCase {
         return null;
     }
 
-    protected void tearDown() {
+    @AfterClass
+    public static void shutdown() {
         DBBroker broker = null;
         TransactionManager transact = null;
         Txn transaction = null;
@@ -488,7 +495,7 @@ public class BasicNodeSetTest extends TestCase {
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
-//            broker.removeCollection(transaction, root);
+            broker.removeCollection(transaction, root);
             
             transact.commit(transaction);
         } catch (Exception e) {

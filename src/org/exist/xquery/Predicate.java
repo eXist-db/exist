@@ -28,6 +28,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
@@ -294,7 +295,7 @@ public class Predicate extends PathExpr {
 	 * @throws XPathException
 	 */
 	private Sequence selectByNodeSet(Sequence contextSequence) throws XPathException {
-		ExtArrayNodeSet result = new ExtArrayNodeSet();
+		NewArrayNodeSet result = new NewArrayNodeSet();
 		NodeSet contextSet = contextSequence.toNodeSet();
 		boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
 		
@@ -368,7 +369,7 @@ public class Predicate extends PathExpr {
 	private Sequence selectByPosition(Sequence outerSequence, Sequence contextSequence, int mode, Sequence innerSeq) throws XPathException {
 		if(outerSequence != null && !outerSequence.isEmpty() && 
 				Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
-			Sequence result = new ExtArrayNodeSet(100);
+			Sequence result = new NewArrayNodeSet(100);
 			NodeSet contextSet = contextSequence.toNodeSet();
             switch(mode) {
             case Constants.CHILD_AXIS:
@@ -385,7 +386,7 @@ public class Predicate extends PathExpr {
         		
         		if (outerSequence instanceof VirtualNodeSet) {
 
-        			outerNodeSet = new ExtArrayNodeSet();
+        			outerNodeSet = new NewArrayNodeSet();
         			for (int i = 0 ; i < outerSequence.getItemCount() ; i++) {
         				outerNodeSet.add(outerSequence.itemAt(i));
         			}
@@ -405,7 +406,7 @@ public class Predicate extends PathExpr {
 						NodeSet.ANCESTOR, true, getExpressionId());
 				if (contextSet.getDocumentSet().intersection(outerNodeSet.getDocumentSet()).getLength() == 0)
 					LOG.info("contextSet and outerNodeSet don't share any document");
-				ExtArrayNodeSet temp = new ExtArrayNodeSet(100);
+				NewArrayNodeSet temp = new NewArrayNodeSet(100);
 				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {
 				    NodeProxy p = (NodeProxy)i.nextItem();
 				    ContextItem contextNode = p.getContext();

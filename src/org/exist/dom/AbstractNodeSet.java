@@ -339,7 +339,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @return a <code>NodeSet</code> value
      */
     public NodeSet getParents(int contextId) {
-        NodeSet parents = new ExtArrayNodeSet();
+        NodeSet parents = new NewArrayNodeSet();
         NodeProxy parent = null;
         for (Iterator i = iterator(); i.hasNext();) {
             NodeProxy current = (NodeProxy) i.next();
@@ -488,7 +488,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     public NodeSet filterDocuments(NodeSet otherSet) {
         DocumentSet docs = otherSet.getDocumentSet();
-        NodeSet newSet = new ExtArrayNodeSet();
+        NodeSet newSet = new NewArrayNodeSet();
         for (Iterator i = iterator(); i.hasNext();) {
             NodeProxy p = (NodeProxy) i.next();
             if (docs.contains(p.getDocument().getDocId()))
@@ -512,7 +512,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @param other
      */
     public NodeSet union(NodeSet other) {
-        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        NewArrayNodeSet result = new NewArrayNodeSet();
         result.addAll(other);
         NodeProxy p, c;
         for (Iterator i = iterator(); i.hasNext();) {
@@ -538,7 +538,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet getContextNodes(int contextId) {
         NodeProxy current, context;
         ContextItem contextNode;
-        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        NewArrayNodeSet result = new NewArrayNodeSet();
         DocumentImpl lastDoc = null;
         for (Iterator i = iterator(); i.hasNext();) {
             current = (NodeProxy) i.next();

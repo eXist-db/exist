@@ -25,6 +25,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.ExtNodeSet;
 import org.exist.numbering.NodeId;
 
 public class AncestorSelector implements NodeSelector {
@@ -38,7 +39,7 @@ public class AncestorSelector implements NodeSelector {
         super();
         this.contextId = contextId;
         this.includeSelf = includeSelf;
-        if (descendants instanceof ExtArrayNodeSet)
+        if (descendants instanceof ExtNodeSet)
             this.descendants = descendants;
         else
             this.ancestors = descendants.getAncestors(contextId, includeSelf);
@@ -49,6 +50,6 @@ public class AncestorSelector implements NodeSelector {
         if (descendants == null)
             return ancestors.get(doc, nodeId);
         else
-            return ((ExtArrayNodeSet) descendants).hasDescendantsInSet(doc, nodeId, includeSelf, contextId);
+            return ((ExtNodeSet) descendants).hasDescendantsInSet(doc, nodeId, includeSelf, contextId);
     }
 }

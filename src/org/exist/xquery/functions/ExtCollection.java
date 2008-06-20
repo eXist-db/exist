@@ -34,6 +34,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
@@ -107,8 +108,8 @@ public class ExtCollection extends Function {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }       
-        
-	    List args = getParameterValues(contextSequence, contextItem);
+
+        List args = getParameterValues(contextSequence, contextItem);
 		boolean cacheIsValid = false;
 		if(cachedArgs != null)
 		    cacheIsValid = compareArguments(cachedArgs, args);
@@ -143,7 +144,7 @@ public class ExtCollection extends Function {
             throw new XPathException("FODC0002: " + e.getMessage(), e);
         }
         // iterate through all docs and create the node set
-		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);
+		NodeSet result = new NewArrayNodeSet(docs.getLength(), 1);
 		Lock dlock;
 		DocumentImpl doc;
 		for (Iterator i = docs.iterator(); i.hasNext();) {
@@ -168,8 +169,8 @@ public class ExtCollection extends Function {
 		cachedArgs = args;
         cachedDocs = docs;
         registerUpdateListener();
-        
-        if (context.getProfiler().isEnabled())           
+
+        if (context.getProfiler().isEnabled())
                context.getProfiler().end(this, "", result);
        
 		return result;

@@ -31,6 +31,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Node;
 
 import java.util.Arrays;
@@ -58,7 +59,7 @@ import java.util.Iterator;
  * @author Wolfgang <wolfgang@exist-db.org>
  * @since 0.9.3
  */
-public class ExtArrayNodeSet extends AbstractNodeSet {
+public class ExtArrayNodeSet extends AbstractNodeSet implements ExtNodeSet {
 
     private final static int INITIAL_DOC_SIZE = 64;
 
@@ -350,6 +351,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         final Part part = getPart(proxy.getDocument(), false, 0);
         return part == null ? false : part.contains(proxy.getNodeId());
     }
+
+//    public void addAll(Sequence other) throws XPathException {
+//        if (other instanceof AbstractNodeSet)
+//            addAll((NodeSet) other);
+//        else
+//            super.addAll(other);
+//    }
 
     /*
      * (non-Javadoc)

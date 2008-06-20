@@ -1035,7 +1035,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.dom.NodeSet#getContextNodes(boolean)
      */
     public NodeSet getContextNodes(int contextId) {
-        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        NewArrayNodeSet result = new NewArrayNodeSet();
         ContextItem contextNode = getContext();
         while (contextNode != null) {
             NodeProxy p = contextNode.getNode();
@@ -1139,7 +1139,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.dom.NodeSet#union(org.exist.dom.NodeSet)
      */
     public NodeSet union(NodeSet other) {
-        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        NewArrayNodeSet result = new NewArrayNodeSet();
         result.addAll(other);
         result.add(this);
         return result;
@@ -1206,7 +1206,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @return a <code>NodeSet</code> value
      */
     public NodeSet getAncestors(int contextId, boolean includeSelf) {        
-        NodeSet ancestors = new ExtArrayNodeSet();
+        NodeSet ancestors = new NewArrayNodeSet();
         if (includeSelf)
             ancestors.add(this);
         NodeId pid = nodeId.getParentId();        
@@ -1293,7 +1293,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
         try {
-            ExtArrayNodeSet result = null;
+            NewArrayNodeSet result = null;
             EmbeddedXMLStreamReader reader = doc.getBroker().getXMLStreamReader(this, true);
             int status = reader.next();
             if (status != XMLStreamReader.START_ELEMENT)
@@ -1313,7 +1313,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
                     if (!test.isWildcardTest())
                         return child;
                     if (result == null)
-                        result = new ExtArrayNodeSet();
+                        result = new NewArrayNodeSet();
                     result.add(child);
                 }
             }
@@ -1335,7 +1335,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         if (children.getLength() == 0)
             return NodeSet.EMPTY_SET;
 //        System.out.println("Retrieving child nodes for " + node + ": " + children.getLength());
-        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        NewArrayNodeSet result = new NewArrayNodeSet();
         StoredNode child;
         for (int i = 0; i < children.getLength(); i++) {
             child = (StoredNode) children.item(i);

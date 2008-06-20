@@ -29,6 +29,8 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.NodeVisitor;
 import org.exist.dom.StoredNode;
 import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.NewArrayNodeSet;
+import org.exist.dom.ExtNodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
@@ -42,11 +44,11 @@ import java.util.Iterator;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
- * 
+ *
  * The results of the first evaluation of the expression are cached for the
  * lifetime of the object and only reloaded if the context sequence (as passed
  * to the {@link #eval(Sequence, Item)} method) has changed.
- * 
+ *
  * @author wolf
  */
 public class LocationStep extends Step {
@@ -75,7 +77,7 @@ public class LocationStep extends Step {
     protected boolean useDirectAttrSelect = true;
 
     protected boolean useDirectChildSelect = false;
-    
+
     // Cache for the current NodeTest type
     private Integer nodeTestType = null;
 
@@ -102,28 +104,28 @@ public class LocationStep extends Step {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.exist.xquery.AbstractExpression#getDependencies()
      */
     public int getDependencies() {
         int deps = Dependency.CONTEXT_SET;
-        
+
         //self axis has an obvious dependency on the context item
         //TODO : I guess every other axis too... so we might consider using Constants.UNKNOWN_AXIS here
         //BUT
         //in a predicate, the expression can't depend on... itself
         if (!this.inPredicate && this.axis == Constants.SELF_AXIS)
-        	deps = deps | Dependency.CONTEXT_ITEM; 
-        
+        	deps = deps | Dependency.CONTEXT_ITEM;
+
         //TODO : normally, we should call this one...
         //int deps = super.getDependencies(); ???
         for (Iterator i = predicates.iterator(); i.hasNext();) {
             deps |= ((Predicate) i.next()).getDependencies();
         }
-        
+
         //TODO : should we remove the CONTEXT_ITEM dependency returned by the predicates ? See the comment above.
         //consider nested predicates however...
-        
+
         return deps;
     }
 
@@ -131,8 +133,8 @@ public class LocationStep extends Step {
      * If the current path expression depends on local variables from a for
      * expression, we can optimize by preloading entire element or attribute
      * sets.
-     * 
-     * @return Whether or not we can optimize 
+     *
+     * @return Whether or not we can optimize
      */
     protected boolean preloadNodeSets() {
         // TODO : log elsewhere ?
@@ -202,7 +204,7 @@ public class LocationStep extends Step {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.exist.xquery.Step#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
@@ -224,7 +226,7 @@ public class LocationStep extends Step {
         //even though it may *also* be relevant with atomic sequences
         if (this.axis == Constants.SELF_AXIS && this.test.getType()== Type.NODE)
             contextInfo.addFlag(DOT_TEST);
-        
+
         // TODO : log somewhere ?
         super.analyze(contextInfo);
     }
@@ -262,7 +264,7 @@ public class LocationStep extends Step {
          * return cached results else
          */
         if (cached != null && cached.isValid(contextSequence, contextItem)) {
-	    
+
             // WARNING : commented since predicates are *also* applied below !
             // -pb
             /*
@@ -347,7 +349,7 @@ public class LocationStep extends Step {
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
         //actualReturnType = result.getItemType();
-        
+
         return result;
     }
 
@@ -403,7 +405,7 @@ public class LocationStep extends Step {
                 } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
                     NodeProxy p;
                     if (test.getType() != Type.NODE)
-                        result = new ExtArrayNodeSet();
+                        result = new NewArrayNodeSet();
                     for (Iterator i = contextSet.iterator(); i.hasNext();) {
                         p = (NodeProxy) i.next();
                         if (test.matches(p)) {
@@ -529,9 +531,9 @@ public class LocationStep extends Step {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
-            if (contextSet instanceof ExtArrayNodeSet && !contextSet.getProcessInReverseOrder()) {
+            if (contextSet instanceof ExtNodeSet && !contextSet.getProcessInReverseOrder()) {
                 return index.findDescendantsByTagName(ElementValue.ATTRIBUTE, test.getName(), axis,
-                                                      docs, (ExtArrayNodeSet) contextSet, contextId);
+                                                      docs, (ExtNodeSet) contextSet, contextId);
             } else {
                 return index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), selector);
             }
@@ -560,7 +562,7 @@ public class LocationStep extends Step {
 //        LOG.debug("parentDepth for " + test.getName() + ": " + parentDepth);
 
         if (useDirectChildSelect) {
-            ExtArrayNodeSet result = new ExtArrayNodeSet();
+            NewArrayNodeSet result = new NewArrayNodeSet();
             for (Iterator i = contextSet.iterator(); i.hasNext(); ) {
                 NodeProxy p = (NodeProxy) i.next();
                 result.addAll(p.directSelectChild(test.getName(), contextId));
@@ -590,9 +592,9 @@ public class LocationStep extends Step {
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
             DocumentSet docs = getDocumentSet(contextSet);
-            if (contextSet instanceof ExtArrayNodeSet && !contextSet.getProcessInReverseOrder()) {
+            if (contextSet instanceof ExtNodeSet && !contextSet.getProcessInReverseOrder()) {
             	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
-                                                      docs, (ExtArrayNodeSet) contextSet, contextId);
+                                                      docs, (ExtNodeSet) contextSet, contextId);
             } else {
                 //            	if (contextSet instanceof VirtualNodeSet)
                 //            		((VirtualNodeSet)contextSet).realize();
@@ -666,9 +668,9 @@ public class LocationStep extends Step {
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
             }
-            if (contextSet instanceof ExtArrayNodeSet) {
+            if (contextSet instanceof ExtNodeSet) {
             	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
-                                                      docs, (ExtArrayNodeSet) contextSet, contextId);
+                                                      docs, (ExtNodeSet) contextSet, contextId);
             } else {
                 return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
             }
@@ -687,7 +689,7 @@ public class LocationStep extends Step {
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
-            
+
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         }
@@ -729,24 +731,24 @@ public class LocationStep extends Step {
             }
         }
     }
-    
+
     private class SiblingVisitor implements NodeVisitor {
-    	
+
     	private ExtArrayNodeSet resultSet;
     	private NodeProxy contextNode;
-    	
+
     	public SiblingVisitor(ExtArrayNodeSet resultSet) {
             this.resultSet = resultSet;
     	}
-    	
+
     	public void setContext(NodeProxy contextNode) {
             this.contextNode = contextNode;
     	}
-    	
+
     	public boolean visit(StoredNode current) {
             if (contextNode.getNodeId().getTreeLevel() == current.getNodeId().getTreeLevel()) {
                 int cmp = current.getNodeId().compareTo(contextNode.getNodeId());
-                if (((axis == Constants.FOLLOWING_SIBLING_AXIS && cmp > 0) || 
+                if (((axis == Constants.FOLLOWING_SIBLING_AXIS && cmp > 0) ||
                      (axis == Constants.PRECEDING_SIBLING_AXIS && cmp < 0)) &&
                     test.matches(current)) {
                     NodeProxy sibling = resultSet.get((DocumentImpl) current.getOwnerDocument(), current.getNodeId());
@@ -780,7 +782,7 @@ public class LocationStep extends Step {
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
-            
+
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         }
@@ -818,7 +820,7 @@ public class LocationStep extends Step {
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                                                      contextSet);
-            
+
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         }
@@ -859,7 +861,7 @@ public class LocationStep extends Step {
                 NodeProxy ancestor;
                 if (axis == Constants.ANCESTOR_SELF_AXIS
                     && test.matches(current)) {
-                    ancestor = new NodeProxy(current.getDocument(), current.getNodeId(), 
+                    ancestor = new NodeProxy(current.getDocument(), current.getNodeId(),
                                              Node.ELEMENT_NODE, current.getInternalAddress());
                     NodeProxy t = result.get(ancestor);
                     if (t == null) {
@@ -878,7 +880,7 @@ public class LocationStep extends Step {
                 while (parentID != null) {
                     ancestor = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
                     // Filter out the temporary nodes wrapper element
-                    if (parentID != NodeId.DOCUMENT_NODE && 
+                    if (parentID != NodeId.DOCUMENT_NODE &&
                         !(parentID.getTreeLevel() == 1  && current.getDocument().getCollection().isTempCollection())) {
                         if (test.matches(ancestor)) {
                             NodeProxy t = result.get(ancestor);
@@ -959,7 +961,7 @@ public class LocationStep extends Step {
     protected NodeSet getParents(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             NodeSet temp = contextSet.getParents(contextId);
-            NodeSet result = new ExtArrayNodeSet();
+            NodeSet result = new NewArrayNodeSet();
             NodeProxy p;
             for (Iterator i = temp.iterator(); i.hasNext(); ) {
                 p = (NodeProxy) i.next();

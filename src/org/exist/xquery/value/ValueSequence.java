@@ -32,6 +32,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
@@ -174,7 +175,7 @@ public class ValueSequence extends AbstractSequence {
 			return NodeSet.EMPTY_SET;
         // for this method to work, all items have to be nodes
 		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
-			NodeSet set = new ExtArrayNodeSet();
+			NodeSet set = new NewArrayNodeSet();
 			NodeValue v;
 			for (int i = 0; i <= size; i++) {
 				v = (NodeValue)values[i];

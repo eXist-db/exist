@@ -26,9 +26,9 @@ import java.text.Collator;
 import java.util.Iterator;
 
 import org.exist.dom.ContextItem;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
@@ -79,7 +79,7 @@ public class ValueComparison extends GeneralComparison {
 	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {		
         if (context.getProfiler().isEnabled())
             context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");		
-		NodeSet result = new ExtArrayNodeSet();
+		NodeSet result = new NewArrayNodeSet();
         Collator collator = getCollator(contextSequence);
         if (contextSequence != null && !contextSequence.isEmpty()) {
             for (Iterator i = nodes.iterator(); i.hasNext();) {
