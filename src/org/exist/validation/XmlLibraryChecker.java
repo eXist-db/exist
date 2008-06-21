@@ -46,7 +46,70 @@ public class XmlLibraryChecker
         new ClassVersion("Saxon", "8.9.0", "net.sf.saxon.Version.getProductVersion()"),
 		new ClassVersion("Xalan", "Xalan Java 2.7.1", "org.apache.xalan.Version.getVersion()"),
 	};
+    
+	/**
+	 * Possible XML resolvers, at least one must be valid
+	 */
+	private final static ClassVersion[] validResolvers = {
+        new ClassVersion("Resolver", "XmlResolver 1.2", "org.apache.xml.resolver.Version.getVersion()"),
+	};
+    
+    
+    public static void check() {
+        StringBuffer message = new StringBuffer();
+
+        if (hasValidClassVersion("Parser", validParsers, message)) {
+            System.out.println(message.toString());
+        } else {
+            System.err.println(message.toString());
+        }
+
+        message = new StringBuffer();
+        if (hasValidClassVersion("Transformers", validTransformers, message)) {
+            System.out.println(message.toString());
+        } else {
+            System.err.println(message.toString());
+        }
+
+        message = new StringBuffer();
+        if (hasValidClassVersion("Resolver", validResolvers, message)) {
+            System.out.println(message.toString());
+        } else {
+            System.err.println(message.toString());
+        }
+    }
 	
+    public static boolean hasValidClassVersion(String type, ClassVersion[] validClasses, StringBuffer message) {
+
+        String sep = System.getProperty("line.separator");
+
+        message.append("Looking for a valid " + type + "..." + sep);
+
+        for (int i = 0; i < validClasses.length; i++) {
+            String actualVersion = validClasses[i].getActualVersion();
+
+            message.append("Checking for " + validClasses[i].getSimpleName());
+
+            if (actualVersion != null) {
+                message.append(", found version " + actualVersion);
+
+                if (actualVersion.compareToIgnoreCase(validClasses[i].getRequiredVersion()) >= 0) {
+                    message.append(sep + "OK!" + sep);
+                    return true;
+                } else {
+                    message.append(" needed version " + validClasses[i].getRequiredVersion() + sep);
+                }
+            } else {
+                message.append(", not found!" + sep);
+            }
+        }
+
+        message.append("Warning: Failed find a valid " + type + "!" + sep);
+        message.append(sep + "Please add an appropriate " + type + " to the " + "class-path, e.g. in the 'endorsed' folder of " + "the servlet container or in the 'endorsed' folder " + "of the JRE." + sep);
+
+        return false;
+
+    }
 	
 	/**
 	 * Checks to see if a valid XML Parser exists
