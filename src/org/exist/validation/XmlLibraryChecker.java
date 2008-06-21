@@ -130,45 +130,7 @@ public class XmlLibraryChecker
 	 */
 	public static boolean hasValidParser(StringBuffer message)
 	{
-		String sep = System.getProperty("line.separator");
-		
-		message.append("Looking for a valid Parser..." + sep);
-		
-		for(int i = 0;  i < validParsers.length; i++)
-		{
-			String actualVersion = validParsers[i].getActualVersion();
-			
-			message.append("Checking for " +  validParsers[i].getSimpleName());
-			
-			if(actualVersion != null)
-			{
-				message.append(", found version " +  actualVersion);
-				
-				if(actualVersion.compareToIgnoreCase(validParsers[i].getRequiredVersion())>=0)
-				{
-					message.append(sep + "OK!" +  sep);
-					return true;	
-				}
-				else
-				{
-					message.append(" needed version " + validParsers[i].getRequiredVersion() + sep);
-				}
-			}
-			else
-			{
-				message.append(", not found!" + sep);
-			}
-		}
-		
-		message.append("Warning: Failed find a valid Parser!" + sep);
-		message.append(sep
-				+ "Please add an appropriate Parser to the "
-				+ "class-path, e.g. in the 'endorsed' folder of " 
-				+ "the servlet container or in the 'endorsed' folder "
-				+ "of the JRE."
-				+ sep);
-		
-		return false;
+        return hasValidClassVersion("Parser", validParsers, message);
 	}
 	
 	/**
@@ -190,45 +152,7 @@ public class XmlLibraryChecker
 	 */
 	public static boolean hasValidTransformer(StringBuffer message)
 	{
-		String sep = System.getProperty("line.separator");
-		
-		message.append("Looking for a valid Transformer..." + sep);
-		
-		for(int i = 0;  i < validTransformers.length; i++)
-		{
-			String actualVersion = validTransformers[i].getActualVersion();
-			
-			message.append("Checking for " +  validTransformers[i].getSimpleName());
-			
-			if(actualVersion != null)
-			{
-				message.append(", found version " +  actualVersion);
-				
-				if(actualVersion.compareToIgnoreCase(validTransformers[i].getRequiredVersion())>=0)
-				{
-					message.append(sep + "OK!" +  sep);
-					return true;	
-				}
-				else
-				{
-					message.append(" needed version " + validTransformers[i].getRequiredVersion() + sep);
-				}
-			}
-			else
-			{
-				message.append(", not found!" + sep);
-			}
-		}
-		
-		message.append("Warning: Failed find a valid Transformer!" + sep);
-		message.append(sep
-				+ "Please add an appropriate Transformer to the "
-				+ "class-path, e.g. in the 'endorsed' folder of " 
-				+ "the servlet container or in the 'endorsed' folder "
-				+ "of the JRE."
-				+ sep);
-		
-		return false;
+		return hasValidClassVersion("Transformer", validTransformers, message);
 	}
 	  
 	/**
