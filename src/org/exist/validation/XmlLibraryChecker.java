@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-08 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -23,6 +23,9 @@ package org.exist.validation;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import javax.xml.parsers.SAXParserFactory;
+import org.apache.log4j.Logger;
+import org.xml.sax.XMLReader;
 
 /**
  *  Class for checking dependencies with XML libraries.
@@ -31,6 +34,7 @@ import java.lang.reflect.Method;
  */
 public class XmlLibraryChecker
 {    
+    private final static Logger logger = Logger.getLogger(XmlLibraryChecker.class);
 
 	/**
 	 * Possible XML Parsers, at least one must be valid
@@ -54,7 +58,64 @@ public class XmlLibraryChecker
         new ClassVersion("Resolver", "XmlResolver 1.2", "org.apache.xml.resolver.Version.getVersion()"),
 	};
     
+    /**
+     *  Remove "@" from string.
+     */
+    private static String getClassName(String classid){
+        String className;
+        
+        int lastChar = classid.lastIndexOf("@");
+        if(lastChar==-1){
+            className=classid;
+        } else {
+            className=classid.substring(0,lastChar);
+        }
+        return className;
+    }
     
+    /**
+     *  Determine the class that is actually used during XML parsing. Possible
+     * values:
+     * - com.bluecast.xml.Piccolo
+     * - com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser
+     * - org.apache.xerces.jaxp.SAXParserImpl$JAXPSAXParser
+     * 
+     * @return Full classname of parser.
+     */
+    private static String determineActualParserClass(){
+        
+        String parserClass="unknown";
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+            String classId=xmlReader.toString();
+            parserClass=getClassName(classId);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return parserClass;
+    }
+
+    /**
+     * Convert a parser classname into human readable name.
+     */
+    private static String determineActualUsedParser(String parserClass){
+        
+        if(parserClass.startsWith("com.bluecast.xml")){
+            return "Piccolo XML Parser for Java";
+        } else if(parserClass.startsWith("org.apache.xerces")){
+            return "Apache Xerces2 Java Parser";
+        } else if(parserClass.startsWith("com.sun.org.apache.xerces")){
+            return "Sun Java embeddeds Xerces2 Java Parser";
+        } else {
+            return "Unknown parser";
+        }
+    }
+    
+    /**
+     *  Perform checks on parsers, transformers and resolvers.
+     */
     public static void check() {
         StringBuffer message = new StringBuffer();
 
@@ -77,6 +138,12 @@ public class XmlLibraryChecker
         } else {
             System.err.println(message.toString());
         }
+        
+        String actualParserClassName=determineActualParserClass();
+        String msg="Used parser: "+determineActualUsedParser(actualParserClassName)
+                + " ("+actualParserClassName+").";
+        System.out.println(msg);
+        System.out.println();
     }
 	
     public static boolean hasValidClassVersion(String type, ClassVersion[] validClasses, StringBuffer message) {
@@ -158,7 +225,7 @@ public class XmlLibraryChecker
 	/**
 	 * Simple class to describe a class, its required version and how to obtain the actual version 
 	 */
-    private static class ClassVersion
+    public static class ClassVersion
     {
     	private String simpleName;
     	private String requiredVersion;
