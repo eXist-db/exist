@@ -37,7 +37,7 @@ public class NoIndexPragma extends Pragma {
         super(qname, contents);
     }
 
-    public void ananlyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Switching indexes off ...");
         }
