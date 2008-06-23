@@ -63,9 +63,9 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet {
 
     private final static int INITIAL_DOC_SIZE = 64;
 
-    private int documentIds[];
-    private int documentOffsets[];
-    private int documentLengths[];
+    private int documentIds[] = new int[16];
+    private int documentOffsets[] = new int[16];
+    private int documentLengths[] = new int[16];
     private int documentCount = 0;
     
     private NodeProxy nodes[];
@@ -118,9 +118,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet {
      */
     public void reset() {
         Arrays.fill(nodes, null);
-        documentIds = null;
-        documentLengths = null;
-        documentOffsets = null;
+        documentCount = 0;
         size = 0;
         isSorted = false;
         state = 0;
@@ -720,11 +718,6 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet {
     }
 
     private void updateDocs() {
-        if (documentIds == null) {
-            documentIds = new int[16];
-            documentLengths = new int[16];
-            documentOffsets = new int[16];
-        }
         if (size == 1) {
             documentIds[0] = nodes[0].getDocument().getDocId();
             documentOffsets[0] = 0;
