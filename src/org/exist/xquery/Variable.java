@@ -80,7 +80,7 @@ public class Variable {
     }
 
     public Sequence getValue() {
-		return value;
+        return value;
 	}
 	
 	public QName getQName() {

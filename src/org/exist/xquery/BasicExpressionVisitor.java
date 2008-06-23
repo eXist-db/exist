@@ -59,6 +59,9 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     public void visitPredicate(Predicate predicate) {
     }
 
+    public void visitVariableReference(VariableReference ref) {
+    }
+
     protected void processWrappers(Expression expr) {
 		if (expr instanceof Atomize ||
 				expr instanceof DynamicCardinalityCheck ||
@@ -99,6 +102,12 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         return steps;
     }
 
+    public static VariableReference findVariableRef(Expression expr) {
+        VariableRefVisitor visitor = new VariableRefVisitor();
+        expr.accept(visitor);
+        return visitor.ref;
+    }
+
     public void visitForExpression(ForExpr forExpr) {
     }
 
@@ -136,6 +145,22 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
 
         public void visitLocationStep(LocationStep locationStep) {
             firstStep = locationStep;
+        }
+    }
+
+    public static class VariableRefVisitor extends BasicExpressionVisitor {
+
+        private VariableReference ref = null;
+
+        public void visitVariableReference(VariableReference ref) {
+            this.ref = ref;
+        }
+
+        public void visitPathExpr(PathExpr expression) {
+            for (int i = 0; i < expression.getLength(); i++) {
+                Expression next = expression.getExpression(i);
+                next.accept(this);
+            }
         }
     }
 }

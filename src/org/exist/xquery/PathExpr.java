@@ -184,14 +184,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 Variable var = ((VariableReference) expr).getVariable();
                 //TOUNDERSTAND : how null could be possible here ? -pb
                 if (var != null) 
-                    contextDocs = var.getContextDocs();            
+                    contextDocs = var.getContextDocs();
             }
             //contextDocs == null *is* significant
             setContextDocSet(contextDocs);
             
             //To prevent processing nodes after atomic values...
             //TODO : let the parser do it ? -pb
-            boolean gotAtomicResult = false;  
+            boolean gotAtomicResult = false;
 
             for (Iterator iter = steps.iterator(); iter.hasNext();) {
                 

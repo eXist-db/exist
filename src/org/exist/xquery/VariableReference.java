@@ -162,4 +162,8 @@ public class VariableReference extends AbstractExpression {
 	 */
 	public void resetState(boolean postOptimization) {
 	}
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitVariableReference(this);
+    }
 }
