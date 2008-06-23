@@ -25,6 +25,7 @@ import org.exist.numbering.NodeId;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
+import org.exist.storage.DBBroker;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -537,7 +538,7 @@ public class NodeSetHelper {
         return result;
     }
 
-    public static NodeSet directSelectAttributes(NodeSet candidates,
+    public static NodeSet directSelectAttributes(DBBroker broker, NodeSet candidates,
                                                  org.exist.xquery.NodeTest test, int contextId) {
         if (candidates.isEmpty())
             return NodeSet.EMPTY_SET;
@@ -545,7 +546,7 @@ public class NodeSetHelper {
         for (Iterator iCandidates = candidates.iterator(); iCandidates
                  .hasNext();) {
             NodeProxy candidate = (NodeProxy) iCandidates.next();
-            result.addAll(candidate.directSelectAttribute(test, contextId));
+            result.addAll(candidate.directSelectAttribute(broker, test, contextId));
         }
         return result;
     }

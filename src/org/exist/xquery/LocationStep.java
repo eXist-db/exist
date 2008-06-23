@@ -475,7 +475,7 @@ public class LocationStep extends Step {
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null) {
                 proxy.getDocument().setBroker(context.getBroker());
-                return contextSet.directSelectAttribute(test, contextId);
+                return contextSet.directSelectAttribute(context.getBroker(), test, contextId);
             }
         }
         if (test.isWildcardTest()) {

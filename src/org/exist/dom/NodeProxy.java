@@ -1289,12 +1289,12 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @param contextId an <code>int</code> value
      * @return a <code>NodeSet</code> value
      */
-    public NodeSet directSelectAttribute(org.exist.xquery.NodeTest test, int contextId) {
+    public NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
         try {
             NewArrayNodeSet result = null;
-            EmbeddedXMLStreamReader reader = doc.getBroker().getXMLStreamReader(this, true);
+            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
             int status = reader.next();
             if (status != XMLStreamReader.START_ELEMENT)
                 return NodeSet.EMPTY_SET;
