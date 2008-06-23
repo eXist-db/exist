@@ -674,8 +674,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet {
      * @param sorted a <code>boolean</code> value
      */
     public void setSorted(DocumentImpl document, boolean sorted) {
-    	isSorted = sorted;
-        updateDocs();
+        // has to be ignored for this node set implementation
     }
 
     /**
