@@ -27,6 +27,7 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.exist.storage.DBBroker;
 import org.w3c.dom.NodeList;
 
 import java.util.Iterator;
@@ -253,7 +254,7 @@ public interface NodeSet extends Sequence, NodeList {
      * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
      * will be added to each result of the of the selection. 
      */
-    public NodeSet directSelectAttribute(org.exist.xquery.NodeTest test, int contextId);
+    public NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId);
     
 	/**
 	 * If all nodes in this set have an index, returns the common

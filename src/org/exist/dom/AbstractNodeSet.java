@@ -34,6 +34,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.storage.DBBroker;
 import org.w3c.dom.Node;
 
 /**
@@ -297,8 +298,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return NodeSetHelper.selectFollowingSiblings(this, siblings, contextId);
     }
 
-    public NodeSet directSelectAttribute(org.exist.xquery.NodeTest qname, int contextId) {
-        return NodeSetHelper.directSelectAttributes(this, qname, contextId);
+    public NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest qname, int contextId) {
+        return NodeSetHelper.directSelectAttributes(broker, this, qname, contextId);
     }
 
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
