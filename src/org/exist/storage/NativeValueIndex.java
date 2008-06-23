@@ -37,13 +37,13 @@ import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.dom.TextImpl;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
@@ -623,7 +623,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @param value right hand comparison value */
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value)
             throws TerminatedException {        
-        final NodeSet result = new ExtArrayNodeSet();
+        final NodeSet result = new NewArrayNodeSet();
         final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
@@ -687,7 +687,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     		}
         }
 		final TermMatcher comparator = new RegexMatcher(expr, type, flags);
-        final NodeSet result = new ExtArrayNodeSet();
+        final NodeSet result = new NewArrayNodeSet();
         final RegexCallback cb = new RegexCallback(docs, contextSet, result, comparator, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {			
