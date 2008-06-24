@@ -59,4 +59,6 @@ public interface ExpressionVisitor {
     public void visitAttribConstructor(AttributeConstructor constructor);
 
     public void visitAttribConstructor(DynamicAttributeConstructor constructor);
+
+    public void visitVariableReference(VariableReference ref);
 }

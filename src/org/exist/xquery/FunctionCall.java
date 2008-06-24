@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import com.sun.xacml.ctx.RequestCtx;
+import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.security.PermissionDeniedException;
@@ -48,16 +49,18 @@ public class FunctionCall extends Function {
 
 	private UserDefinedFunction functionDef;
 	private Expression expression;
-	
-	// the name of the function. Used for forward references.
+
+    // the name of the function. Used for forward references.
 	private QName name = null;
 	private List arguments = null;
 	
 	private boolean isRecursive = false;
 	
 	private boolean analyzed = false;
-	
-	public FunctionCall(XQueryContext context, QName name, List arguments) {
+
+    private VariableReference varDeps[];
+
+    public FunctionCall(XQueryContext context, QName name, List arguments) {
 		super(context);
 		this.name = name;
 		this.arguments = arguments;
@@ -105,7 +108,16 @@ public class FunctionCall extends Function {
 			} finally {
 				context.functionEnd();
 			}
-		}
+
+            varDeps = new VariableReference[getArgumentCount()];
+            for(int i = 0; i < getArgumentCount(); i++) {
+                Expression arg = getArgument(i);
+                VariableReference varRef = BasicExpressionVisitor.findVariableRef(arg);
+                if (varRef != null) {
+                    varDeps[i] = varRef;
+                }
+            }
+        }
 	}
 	
     /**
@@ -147,9 +159,15 @@ public class FunctionCall extends Function {
 		Item contextItem)
 		throws XPathException {
 		Sequence[] seq = new Sequence[getArgumentCount()];
-		for(int i = 0; i < getArgumentCount(); i++) {
+        DocumentSet[] contextDocs = new DocumentSet[getArgumentCount()];
+        for(int i = 0; i < getArgumentCount(); i++) {
 			try {
                 seq[i] = getArgument(i).eval(contextSequence, contextItem);
+                if (varDeps[i] != null) {
+                    Variable var = varDeps[i].getVariable();
+                    if (var != null)
+                        contextDocs[i] = var.getContextDocs();
+                }
 //			System.out.println("found " + seq[i].getLength() + " for " + getArgument(i).pprint());
             } catch (XPathException e) {
                 if(e.getLine() == 0)
@@ -159,7 +177,7 @@ public class FunctionCall extends Function {
                 throw e;
             }
 		}
-		Sequence result = evalFunction(contextSequence, contextItem, seq);
+		Sequence result = evalFunction(contextSequence, contextItem, seq, contextDocs);
 
 		try {
 			//Don't check deferred calls : it would result in a stack overflow
@@ -187,6 +205,10 @@ public class FunctionCall extends Function {
      * @throws XPathException
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
+        return evalFunction(contextSequence, contextItem, seq, null);
+    }
+
+    public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) throws XPathException {
         if (context.isProfilingEnabled()) {
             context.getProfiler().start(this);     
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -212,7 +234,7 @@ public class FunctionCall extends Function {
 			throw xe;
 		}
 		
-        functionDef.setArguments(seq);
+        functionDef.setArguments(seq, contextDocs);
         
         if (isRecursive) {
 //            LOG.warn("Tail recursive function: " + functionDef.getSignature().toString());
@@ -247,12 +269,19 @@ public class FunctionCall extends Function {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
     public void resetState(boolean postOptimization) {
-    	super.resetState(postOptimization);
-		functionDef.resetState(postOptimization);
+         super.resetState(postOptimization);
+         functionDef.resetState(postOptimization);
          analyzed = false;
         //TODO : reset expression ?        
 	}
 
+    /* (non-Javadoc)
+    * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.DocumentSet)
+    */
+    public void setContextDocSet(DocumentSet contextSet) {
+        super.setContextDocSet(contextSet);
+        functionDef.setContextDocSet(contextSet);
+    }
 
     public void accept(ExpressionVisitor visitor) {
         // forward to the called function

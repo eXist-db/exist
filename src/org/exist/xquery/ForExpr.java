@@ -303,7 +303,7 @@ public class ForExpr extends BindingExpression {
                     ((BindingExpression)returnExpr).eval(null, null, resultSequence, null); 
                 // otherwise call the return expression and add results to resultSequence 
                 else {                 
-                    val = returnExpr.eval(null); 
+                     val = returnExpr.eval(null); 
                     resultSequence.addAll(val); 
                 } 
             } 
