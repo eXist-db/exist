@@ -222,7 +222,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         return gmlStreamListener;
     }
     
-    public MatchListener getMatchListener(NodeProxy proxy) {
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
     	return null;
     }
 

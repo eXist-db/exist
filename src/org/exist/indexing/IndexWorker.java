@@ -157,7 +157,7 @@ public interface IndexWorker {
      * @return a MatchListener or null if the implementation does not want to receive
      * serialization events
      */
-    MatchListener getMatchListener(NodeProxy proxy);
+    MatchListener getMatchListener(DBBroker broker, NodeProxy proxy);
     
     /**
      * Flush the index. This method will be called when indexing a document. The implementation should

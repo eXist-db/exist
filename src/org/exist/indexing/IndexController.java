@@ -399,7 +399,7 @@ public class IndexController {
         IndexWorker worker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             worker = (IndexWorker) i.next();
-            current = worker.getMatchListener(proxy);
+            current = worker.getMatchListener(broker, proxy);
             if (current != null) {
                 if (first == null) {
                     first = current;

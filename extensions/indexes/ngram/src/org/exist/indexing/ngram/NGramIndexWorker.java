@@ -486,11 +486,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return listener;
     }
 
-    public MatchListener getMatchListener(NodeProxy proxy) {
-        return getMatchListener(proxy, null);
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
+        return getMatchListener(broker, proxy, null);
     }
 
-    public MatchListener getMatchListener(NodeProxy proxy, NGramMatchCallback callback) {
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy, NGramMatchCallback callback) {
         boolean needToFilter = false;
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
@@ -503,9 +503,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (!needToFilter)
             return null;
         if (matchListener == null)
-            matchListener = new NGramMatchListener(proxy);
+            matchListener = new NGramMatchListener(broker, proxy);
         else
-            matchListener.reset(proxy);
+            matchListener.reset(broker, proxy);
         matchListener.setMatchCallback(callback);
         return matchListener;
     }
@@ -696,15 +696,15 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private NGramMatchCallback callback = null;
         private NodeProxy root;
 
-        public NGramMatchListener(NodeProxy proxy) {
-            reset(proxy);
+        public NGramMatchListener(DBBroker broker, NodeProxy proxy) {
+            reset(broker, proxy);
         }
 
         protected void setMatchCallback(NGramMatchCallback cb) {
             this.callback = cb;
         }
         
-        protected void reset(NodeProxy proxy) {
+        protected void reset(DBBroker broker, NodeProxy proxy) {
             this.root = proxy;
             this.match = proxy.getMatches();
             setNextInChain(null);
@@ -730,7 +730,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     NodeProxy p = (NodeProxy) i.next();
                     int startOffset = 0;
                     try {
-                        XMLStreamReader reader = proxy.getDocument().getBroker().getXMLStreamReader(p, false);
+                        XMLStreamReader reader = broker.getXMLStreamReader(p, false);
                         while (reader.hasNext()) {
                             int ev = reader.next();
                             NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);

@@ -142,7 +142,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return listener;
     }
 
-    public MatchListener getMatchListener(NodeProxy proxy) {
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
         boolean needToFilter = false;
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
@@ -155,9 +155,9 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (!needToFilter)
             return null;
         if (matchListener == null)
-            matchListener = new FTMatchListener(proxy);
+            matchListener = new FTMatchListener(broker, proxy);
         else
-            matchListener.reset(proxy);
+            matchListener.reset(broker, proxy);
         return matchListener;
     }
 
