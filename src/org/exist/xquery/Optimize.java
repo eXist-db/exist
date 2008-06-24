@@ -82,8 +82,9 @@ public class Optimize extends Pragma {
         boolean optimize = false;
         NodeSet originalContext = null;
 
-        if (contextSequence.isPersistentSet()) {    // don't try to optimize in-memory node sets!
-            originalContext = contextSequence.toNodeSet(); // contextSequence will be overwritten
+        if (contextSequence == null || contextSequence.isPersistentSet()) {    // don't try to optimize in-memory node sets!
+            // contextSequence will be overwritten
+            originalContext = contextSequence == null ? null : contextSequence.toNodeSet();
             if (cachedContext != null && cachedContext == originalContext)
                 useCached = !originalContext.hasChanged(cachedTimestamp);
             if (contextVar != null) {
