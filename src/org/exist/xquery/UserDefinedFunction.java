@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -41,8 +42,10 @@ public class UserDefinedFunction extends Function {
 	private List parameters = new ArrayList(5);
 	
 	private Sequence[] currentArguments = null;
-	
-	private boolean inRecursion = false;
+
+    private DocumentSet[] contextDocs = null;
+    
+    private boolean inRecursion = false;
 	
 	public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -64,9 +67,10 @@ public class UserDefinedFunction extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
-	public void setArguments(Sequence[] args) throws XPathException {
+	public void setArguments(Sequence[] args, DocumentSet[] contextDocs) throws XPathException {
 		this.currentArguments = args;
-	}
+        this.contextDocs = contextDocs;
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
@@ -103,11 +107,13 @@ public class UserDefinedFunction extends Function {
 		QName varName;
 		LocalVariable var;
 		int j = 0;
-		for(Iterator i = parameters.iterator(); i.hasNext(); j++) {
-			varName = (QName)i.next();
+        for (int i = 0; i < parameters.size(); i++, j++) {
+			varName = (QName)parameters.get(i);
 			var = new LocalVariable(varName);
 			var.setValue(currentArguments[j]);
-			context.declareVariableBinding(var);
+            if (contextDocs != null)
+                var.setContextDocs(contextDocs[i]);
+            context.declareVariableBinding(var);
 
 	        int actualCardinality;
 	        if (currentArguments[j].isEmpty()) actualCardinality = Cardinality.EMPTY;
@@ -178,9 +184,11 @@ public class UserDefinedFunction extends Function {
 			body.resetState(postOptimization);
 			inRecursion = false;
 		}
-        if (!postOptimization)
+        if (!postOptimization) {
             currentArguments = null;
-	}
+            contextDocs = null;
+        }
+    }
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitUserFunction(this);
