@@ -53,6 +53,9 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     public void visitLocationStep(LocationStep locationStep) {
     }
 
+    public void visitFilteredExpr(FilteredExpression filtered) {
+    }
+
     public void visitPredicate(Predicate predicate) {
     }
 
