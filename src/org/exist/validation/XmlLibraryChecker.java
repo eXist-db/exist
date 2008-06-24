@@ -24,7 +24,8 @@ package org.exist.validation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.xml.parsers.SAXParserFactory;
-import org.apache.log4j.Logger;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import org.xml.sax.XMLReader;
 
 /**
@@ -60,6 +61,7 @@ public class XmlLibraryChecker {
                 "org.apache.xml.resolver.Version.getVersion()"),
     };
 
+
     /**
      *  Remove "@" from string.
      */
@@ -76,42 +78,42 @@ public class XmlLibraryChecker {
     }
 
     /**
-     *  Determine the class that is actually used during XML parsing. Possible
-     * values:
-     * - com.bluecast.xml.Piccolo
-     * - com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser
-     * - org.apache.xerces.jaxp.SAXParserImpl$JAXPSAXParser
+     *  Determine the class that is actually used as XML parser. 
      * 
      * @return Full classname of parser.
      */
     private static String determineActualParserClass() {
 
-        String parserClass = "unknown";
+        String parserClass = "Unable to determine parser class";
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             XMLReader xmlReader = factory.newSAXParser().getXMLReader();
             String classId = xmlReader.toString();
             parserClass = getClassName(classId);
+            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return parserClass;
     }
 
+    
     /**
-     * Convert a parser classname into human readable name.
+     *  Determine the class that is actually used as XML transformer. 
+     * 
+     * @return Full classname of transformer.
      */
-    private static String determineActualUsedParser(String parserClass) {
-
-        if (parserClass.startsWith("com.bluecast.xml")) {
-            return "Piccolo XML Parser for Java";
-        } else if (parserClass.startsWith("org.apache.xerces")) {
-            return "Apache Xerces2 Java Parser";
-        } else if (parserClass.startsWith("com.sun.org.apache.xerces")) {
-            return "Sun Java embedded Xerces2 Java Parser";
-        } else {
-            return "Unknown parser";
+    private static String determineActualTransformerClass(){
+        String transformerClass = "Unable to determine transformer class";
+        try {
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Transformer transformer = factory.newTransformer();
+            String classId = transformer.toString();
+            transformerClass = getClassName(classId);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+        return transformerClass;    
     }
 
     /**
@@ -127,7 +129,7 @@ public class XmlLibraryChecker {
         }
 
         message = new StringBuffer();
-        if (hasValidClassVersion("Transformers", validTransformers, message)) {
+        if (hasValidClassVersion("Transformer", validTransformers, message)) {
             System.out.println(message.toString());
         } else {
             System.err.println(message.toString());
@@ -140,14 +142,20 @@ public class XmlLibraryChecker {
             System.err.println(message.toString());
         }
 
-        String actualParserClassName = determineActualParserClass();
-        String msg = "Used parser: " 
-                +  determineActualUsedParser(actualParserClassName) 
-                + " (" + actualParserClassName + ").";
-        System.out.println(msg);
-        System.out.println();
+        System.out.println("Using parser " + determineActualParserClass());
+        System.out.println("Using transformer " + determineActualTransformerClass());
+        System.out.println(); 
     }
 
+    /**
+     *  Check if for the specified service object one of the required
+     * classes is availabe.
+     * 
+     * @param type  Parser, Transformer or Resolver, used for reporting only.
+     * @param validClasses Array of valid classes. 
+     * @param message  Output message of detecting classes.
+     * @return TRUE if valid class has been found, otherwise FALSE.
+     */
     public static boolean hasValidClassVersion(String type, 
                         ClassVersion[] validClasses, StringBuffer message) {
 
