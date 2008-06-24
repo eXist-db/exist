@@ -24,6 +24,7 @@ package org.exist.dom;
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -298,8 +299,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return NodeSetHelper.selectFollowingSiblings(this, siblings, contextId);
     }
 
-    public NodeSet directSelectAttribute(org.exist.xquery.NodeTest qname, int contextId) {
-        return NodeSetHelper.directSelectAttributes(this, qname, contextId);
+    public NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest qname, int contextId) {
+        return NodeSetHelper.directSelectAttributes(broker, this, qname, contextId);
     }
 
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {

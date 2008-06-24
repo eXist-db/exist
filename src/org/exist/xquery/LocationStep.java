@@ -460,7 +460,7 @@ public class LocationStep extends Step {
             //TODO : why only the first node ?
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null)
-                return contextSet.directSelectAttribute(test, contextId);
+                return contextSet.directSelectAttribute(context.getBroker(), test, contextId);
         }
         if (test.isWildcardTest()) {
             NodeSet result = new VirtualNodeSet(axis, test, contextId, contextSet);
