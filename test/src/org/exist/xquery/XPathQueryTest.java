@@ -1,24 +1,37 @@
 package org.exist.xquery;
 
+import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.StandaloneServer;
+import org.exist.TestUtils;
+import org.exist.storage.DBBroker;
+import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XPathQueryServiceImpl;
+import org.mortbay.util.MultiException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.CompiledExpression;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XQueryService;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import java.io.StringReader;
 import java.net.BindException;
 import java.util.Iterator;
-import java.util.regex.*;
-
-import javax.xml.parsers.*;
-import javax.xml.transform.OutputKeys;
-
-import org.custommonkey.xmlunit.XMLTestCase;
-import org.exist.StandaloneServer;
-import org.exist.storage.DBBroker;
-import org.exist.xmldb.*;
-import org.mortbay.util.MultiException;
-import org.w3c.dom.*;
-import org.xml.sax.InputSource;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
-import org.xmldb.api.modules.XQueryService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class XPathQueryTest extends XMLTestCase {
     
@@ -211,6 +224,7 @@ public class XPathQueryTest extends XMLTestCase {
     
     protected void tearDown() throws Exception {
         try {
+            TestUtils.cleanupDB();
             if (!((CollectionImpl) testCollection).isRemoteCollection()) {
                 DatabaseInstanceManager dim =
                         (DatabaseInstanceManager) testCollection.getService(
@@ -460,9 +474,8 @@ public class XPathQueryTest extends XMLTestCase {
     
     public void testRoot() {
         try {
-            XQueryService service =
-                    storeXMLStringAndGetQueryService("nested2.xml", nested2);
-            
+            storeXMLStringAndGetQueryService("nested2.xml", nested2);
+            XQueryService service = storeXMLStringAndGetQueryService("numbers.xml", numbers);
             String query = "let $doc := <a><b/></a> return root($doc)";
             ResourceSet result = service.queryResource("numbers.xml", query);
             assertEquals("XPath: " + query, 1, result.getSize());
@@ -535,7 +548,7 @@ public class XPathQueryTest extends XMLTestCase {
         try {
             XQueryService service =
                     storeXMLStringAndGetQueryService("nested2.xml", nested2);
-            
+            storeXMLStringAndGetQueryService("numbers.xml", numbers);
             queryResource(service, "nested2.xml", "/RootElement/descendant::*/parent::ChildA", 1);
             queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildB]/parent::RootElement", 0);
             queryResource(service, "nested2.xml", "/RootElement/descendant::*[self::ChildA]/parent::RootElement", 1);
