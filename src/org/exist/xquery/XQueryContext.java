@@ -2308,7 +2308,7 @@ public class XQueryContext {
     			DocumentImpl doc = (DocumentImpl)itDoc.next();
     			
     			//finish the trigger
-    	        CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
+    	        CollectionConfiguration config = doc.getCollection().getConfiguration(getBroker());
     	        if(config != null)
     	        {
                     DocumentTrigger trigger = null;
@@ -2321,7 +2321,7 @@ public class XQueryContext {
     	        	{
     	        		try
     	        		{
-    	        			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), TriggerStatePerThread.getTransaction(), doc.getURI(), doc);
+    	        			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, getBroker(), TriggerStatePerThread.getTransaction(), doc.getURI(), doc);
     	        		}
     	        		catch(Exception e)
     	        		{

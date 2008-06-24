@@ -386,7 +386,7 @@ public class LocationStep extends Step {
      */
     protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
+            VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId,
                                                      contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
@@ -417,7 +417,7 @@ public class LocationStep extends Step {
                 }
                 return result == null ? contextSet : result;
             } else {
-                VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
+                VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId,
                                                          contextSet);
                 vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
                 return vset;
@@ -479,7 +479,7 @@ public class LocationStep extends Step {
             }
         }
         if (test.isWildcardTest()) {
-            NodeSet result = new VirtualNodeSet(axis, test, contextId, contextSet);
+            NodeSet result = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
             ((VirtualNodeSet) result).setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return result;
             // if there's just a single known node in the context, it is faster
@@ -550,7 +550,7 @@ public class LocationStep extends Step {
     protected NodeSet getChildren(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
             // test is one out of *, text(), node() including processing-instruction(targetname)
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
+            VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId,
                                                      contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
@@ -615,7 +615,7 @@ public class LocationStep extends Step {
     protected NodeSet getDescendants(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
             // test is one out of *, text(), node() including processing-instruction(targetname)
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
+            VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId,
                                                      contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
@@ -687,7 +687,7 @@ public class LocationStep extends Step {
      */
     protected NodeSet getSiblings(XQueryContext context, NodeSet contextSet) {
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
+            VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId,
                                                      contextSet);
 
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
@@ -780,8 +780,7 @@ public class LocationStep extends Step {
     protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet)
         throws XPathException {
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                                                     contextSet);
+            VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
 
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
@@ -818,8 +817,7 @@ public class LocationStep extends Step {
     protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet)
         throws XPathException {
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                                                     contextSet);
+            VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
 
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
