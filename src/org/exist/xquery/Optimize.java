@@ -48,6 +48,7 @@ public class Optimize extends Pragma {
     private Optimizable optimizables[];
     private Expression innerExpr = null;
     private LocationStep contextStep = null;
+    private VariableReference contextVar = null;
     private int contextId = Expression.NO_CONTEXT_ID;
 
     private NodeSet cachedContext = null;
@@ -85,6 +86,9 @@ public class Optimize extends Pragma {
             originalContext = contextSequence.toNodeSet(); // contextSequence will be overwritten
             if (cachedContext != null && cachedContext == originalContext)
                 useCached = !originalContext.hasChanged(cachedTimestamp);
+            if (contextVar != null) {
+                contextSequence = contextVar.eval(contextSequence);
+            }
             // check if all Optimizable expressions signal that they can indeed optimize
             // in the current context
             if (useCached)
@@ -104,9 +108,9 @@ public class Optimize extends Pragma {
         }
         if (optimize) {
             cachedContext = originalContext;
-            cachedTimestamp = originalContext.getState();
+            cachedTimestamp = originalContext == null ? 0 : originalContext.getState();
             cachedOptimize = true;
-            NodeSet ancestors = null;
+            NodeSet ancestors;
             NodeSet result = null;
             for (int current = 0; current < optimizables.length; current++) {
                 NodeSet selection = optimizables[current].preSelect(contextSequence, current > 0);
@@ -120,22 +124,12 @@ public class Optimize extends Pragma {
                     NodeSelector selector;
                     long start = System.currentTimeMillis();
                     selector = new AncestorSelector(selection, contextId, true);
-//                    switch (optimizables[current].getOptimizeAxis()) {
-//                        case Constants.CHILD_AXIS:
-//                        case Constants.ATTRIBUTE_AXIS:
-//                            selector = new ParentSelector(selection, -1);
-//                            break;
-//                        default:
-//                            selector = new AncestorSelector(selection, -1, true);
-//                            break;
-//                    }
                     ElementIndex index = context.getBroker().getElementIndex();
                     QName ancestorQN = contextStep.getTest().getName();
                     if (optimizables[current].optimizeOnSelf()) {
                         selector = new SelfSelector(selection, contextId);
                         ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
                                 ancestorQN, selector);
-//                        ancestors = selection;
                     } else
                         ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
                                 ancestorQN, selector);
@@ -154,7 +148,10 @@ public class Optimize extends Pragma {
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: context after optimize: " + result.getLength());
                 long start = System.currentTimeMillis();
-                contextSequence = originalContext.filterDocuments(result);
+                if (originalContext != null)
+                    contextSequence = originalContext.filterDocuments(result);
+                else
+                    contextSequence = null;
                 Sequence seq = innerExpr.eval(contextSequence);
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: inner expr took " + (System.currentTimeMillis() - start) +
@@ -164,6 +161,8 @@ public class Optimize extends Pragma {
         } else {
             if (LOG.isTraceEnabled())
                 LOG.trace("exist:optimize: Cannot optimize expression.");
+            if (originalContext != null)
+                contextSequence = originalContext;
             return innerExpr.eval(contextSequence, contextItem);
         }
     }
@@ -185,6 +184,17 @@ public class Optimize extends Pragma {
 
             public void visitLocationStep(LocationStep locationStep) {
                 List predicates = locationStep.getPredicates();
+                for (int i = 0; i < predicates.size(); i++) {
+                    Predicate pred = (Predicate) predicates.get(i);
+                    pred.accept(this);
+                }
+            }
+
+            public void visitFilteredExpr(FilteredExpression filtered) {
+                Expression filteredExpr = filtered.getExpression();
+                if (filteredExpr instanceof VariableReference)
+                    contextVar = (VariableReference) filteredExpr;
+                List predicates = filtered.getPredicates();
                 for (int i = 0; i < predicates.size(); i++) {
                     Predicate pred = (Predicate) predicates.get(i);
                     pred.accept(this);
@@ -223,8 +233,10 @@ public class Optimize extends Pragma {
         contextStep = BasicExpressionVisitor.findFirstStep(innerExpr);
         if (contextStep != null && contextStep.getTest().isWildcardTest())
             contextStep = null;
-        if (LOG.isTraceEnabled())
+        if (LOG.isTraceEnabled()) {
             LOG.trace("exist:optimize: context step: " + contextStep);
+            LOG.trace("exist:optimize: context var: " + contextVar);
+        }
     }
 
     public void after(XQueryContext context, Expression expression) throws XPathException {

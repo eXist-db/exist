@@ -131,8 +131,10 @@ public class ExtRegexp extends Function implements Optimizable {
                     contextQName = new QName(test.getName());
                     if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
                         contextQName.setNameType(ElementValue.ATTRIBUTE);
-                    axis = firstStep.getAxis();
                     contextStep = lastStep;
+                    axis = firstStep.getAxis();
+                    if (axis == Constants.SELF_AXIS && steps.size() > 1)
+                        axis = ((LocationStep) steps.get(1)).getAxis();
                 }
             }
         }

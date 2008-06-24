@@ -23,16 +23,40 @@
 package org.exist.xquery.functions;
 
 import org.exist.EXistException;
-import org.exist.dom.*;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
-import org.exist.xquery.*;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Atomize;
+import org.exist.xquery.BasicExpressionVisitor;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.DynamicCardinalityCheck;
+import org.exist.xquery.Expression;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.IndexUseReporter;
+import org.exist.xquery.LocationStep;
 import org.exist.xquery.NodeTest;
+import org.exist.xquery.Optimizable;
+import org.exist.xquery.Optimize;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 import java.util.Iterator;
 import java.util.List;
@@ -126,8 +150,10 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                 contextQName = new QName(test.getName());
                 if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
                     contextQName.setNameType(ElementValue.ATTRIBUTE);
-                axis = firstStep.getAxis();
                 contextStep = lastStep;
+                axis = firstStep.getAxis();
+                if (axis == Constants.SELF_AXIS && steps.size() > 1)
+                    axis = ((LocationStep) steps.get(1)).getAxis();
             }
         }
     }

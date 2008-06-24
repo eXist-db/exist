@@ -41,8 +41,9 @@ public class FilteredExpression extends AbstractExpression {
 
 	final protected Expression expression;
 	final protected List predicates = new ArrayList(2);
-
-	/**
+    private Expression parent;
+    
+    /**
 	 * @param context
 	 */
 	public FilteredExpression(XQueryContext context, Expression expr) {
@@ -54,11 +55,22 @@ public class FilteredExpression extends AbstractExpression {
 		predicates.add(pred);
 	}
 
+    public List getPredicates() {
+        return predicates;
+    }
+
+    public Expression getExpression() {
+        if (expression instanceof PathExpr)
+            return ((PathExpr)expression).getExpression(0);
+        return expression;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
+        parent = contextInfo.getParent();
+        contextInfo.setParent(this);
         expression.analyze(contextInfo);
         for (Iterator i = predicates.iterator(); i.hasNext();) {
 			Predicate pred = (Predicate) i.next();
@@ -156,4 +168,12 @@ public class FilteredExpression extends AbstractExpression {
 		}
 		return deps;
 	}
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitFilteredExpr(this);
+    }
+
+    public Expression getParent() {
+        return parent;
+    }
 }
