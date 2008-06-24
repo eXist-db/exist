@@ -62,7 +62,7 @@ public class HighlightMatches extends BasicFunction {
                     ((NodeImpl)v).copyTo(context.getBroker(), docBuilder);
                 } else {
                     NodeProxy p = (NodeProxy) v;
-                    MatchListener ml = index.getMatchListener(p, matchCb);
+                    MatchListener ml = index.getMatchListener(context.getBroker(), p, matchCb);
                     Receiver receiver;
                     if (ml == null)
                         receiver = docBuilder;
