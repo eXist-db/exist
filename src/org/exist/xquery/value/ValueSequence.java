@@ -579,7 +579,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         int pos = 0;
 
         CollectionIterator() {
-            nextCollection = (Collection) next();
+            next();
         }
 
         public boolean hasNext() {
