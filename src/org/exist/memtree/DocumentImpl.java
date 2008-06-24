@@ -96,7 +96,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     protected int[] alphaLen;
 
-    protected char[] characters;
+    protected char[] characters = null;
 
     protected int nextChar = 0;
 
@@ -114,9 +114,9 @@ public class DocumentImpl extends NodeImpl implements Document {
     protected int nextAttr = 0;
 
     // namespaces
-    protected int[] namespaceParent;
+    protected int[] namespaceParent = null;
     
-    protected int[] namespaceCode;
+    protected int[] namespaceCode = null;
     
     protected int nextNamespace = 0;
     
@@ -136,7 +136,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     private final static int NODE_SIZE = 16;
     private final static int ATTR_SIZE = 8;
-    private final static int CHAR_BUF_SIZE = 512;
+    private final static int CHAR_BUF_SIZE = 256;
     private final static int REF_SIZE = 8;
     
     public DocumentImpl(XQueryContext context) {
@@ -160,17 +160,12 @@ public class DocumentImpl extends NodeImpl implements Document {
         alpha = new int[NODE_SIZE];
         alphaLen = new int[NODE_SIZE];
         Arrays.fill(alphaLen, -1);
-        
-        characters = new char[CHAR_BUF_SIZE];
 
         attrName = new int[ATTR_SIZE];
         attrParent = new int[ATTR_SIZE];
         attrValue = new String[ATTR_SIZE];
         attrType = new int[ATTR_SIZE];
         attrNodeId = new NodeId[NODE_SIZE];
-
-        namespaceCode = new int[5];
-        namespaceParent = new int[5];
 
         treeLevel[0] = 0;
         nodeKind[0] = Node.DOCUMENT_NODE;
@@ -202,7 +197,9 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     public void addChars(int nodeNr, char[] ch, int start, int len) {
         if (nodeKind == null) init();
-        if (nextChar + len >= characters.length) {
+        if (characters == null)
+            characters = new char[len > CHAR_BUF_SIZE ? len : CHAR_BUF_SIZE];
+        else if (nextChar + len >= characters.length) {
             int newLen = (characters.length * 3) / 2;
             if (newLen < nextChar + len) newLen = nextChar + len;
             char[] nc = new char[newLen];
@@ -218,7 +215,9 @@ public class DocumentImpl extends NodeImpl implements Document {
     public void addChars(int nodeNr, CharSequence s) {
         if (nodeKind == null) init();
         int len = s.length();
-        if (nextChar + len >= characters.length) {
+        if (characters == null)
+            characters = new char[len > CHAR_BUF_SIZE ? len : CHAR_BUF_SIZE];
+        else if (nextChar + len >= characters.length) {
             int newLen = (characters.length * 3) / 2;
             if (newLen < nextChar + len) newLen = nextChar + len;
             char[] nc = new char[newLen];
@@ -233,7 +232,9 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
 
     public void appendChars(int nodeNr, char[] ch, int start, int len) {
-        if (nextChar + len >= characters.length) {
+        if (characters == null)
+            characters = new char[len > CHAR_BUF_SIZE ? len : CHAR_BUF_SIZE];
+        else if (nextChar + len >= characters.length) {
             int newLen = (characters.length * 3) / 2;
             if (newLen < nextChar + len) newLen = nextChar + len;
             char[] nc = new char[newLen];
@@ -247,7 +248,9 @@ public class DocumentImpl extends NodeImpl implements Document {
     
     public void appendChars(int nodeNr, CharSequence s) {
         int len = s.length();
-        if (nextChar + len >= characters.length) {
+        if (characters == null)
+            characters = new char[len > CHAR_BUF_SIZE ? len : CHAR_BUF_SIZE];
+        else if (nextChar + len >= characters.length) {
             int newLen = (characters.length * 3) / 2;
             if (newLen < nextChar + len) newLen = nextChar + len;
             char[] nc = new char[newLen];
@@ -303,7 +306,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     public int addNamespace(int nodeNr, QName qname) {
     	if(nodeKind == null) init();
-    	if(nextNamespace == namespaceCode.length) growNamespaces();
+    	if(namespaceCode == null || nextNamespace == namespaceCode.length) growNamespaces();
     	namespaceCode[nextNamespace] = namePool.add(qname);
     	namespaceParent[nextNamespace] = nodeNr;
     	if(alphaLen[nodeNr] < 0) { 
@@ -403,16 +406,21 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
 
     private void growNamespaces() {
-    	int size = namespaceCode.length;
-    	int newSize = (size * 3) / 2;
-    	
-    	int[] newCodes = new int[newSize];
-    	System.arraycopy(namespaceCode, 0, newCodes, 0, size);
-    	namespaceCode = newCodes;
-    	
-    	int[] newParents = new int[newSize];
-    	System.arraycopy(namespaceParent, 0, newParents, 0, size);
-    	namespaceParent = newParents;
+        if (namespaceCode == null) {
+            namespaceCode = new int[5];
+            namespaceParent = new int[5];
+        } else {
+            int size = namespaceCode.length;
+            int newSize = (size * 3) / 2;
+
+            int[] newCodes = new int[newSize];
+            System.arraycopy(namespaceCode, 0, newCodes, 0, size);
+            namespaceCode = newCodes;
+
+            int[] newParents = new int[newSize];
+            System.arraycopy(namespaceParent, 0, newParents, 0, size);
+            namespaceParent = newParents;
+        }
     }
     
     public NodeImpl getAttribute(int nodeNr) throws DOMException {
