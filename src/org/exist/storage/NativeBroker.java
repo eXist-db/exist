@@ -513,9 +513,9 @@ public class NativeBroker extends DBBroker {
 	throws IOException, XMLStreamException {
         if (streamReader == null) {
             RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
-            streamReader = new EmbeddedXMLStreamReader((DocumentImpl) node.getOwnerDocument(), iterator, reportAttributes);
+            streamReader = new EmbeddedXMLStreamReader(this, (DocumentImpl) node.getOwnerDocument(), iterator, reportAttributes);
         } else {
-            streamReader.reposition(node, reportAttributes);
+            streamReader.reposition(this, node, reportAttributes);
         }
         return streamReader;
     }
@@ -524,9 +524,9 @@ public class NativeBroker extends DBBroker {
 	throws IOException, XMLStreamException {
         if (streamReader == null) {
             RawNodeIterator iterator = new RawNodeIterator(this, domDb, proxy);
-            streamReader = new EmbeddedXMLStreamReader((DocumentImpl) proxy.getOwnerDocument(), iterator, reportAttributes);
+            streamReader = new EmbeddedXMLStreamReader(this, (DocumentImpl) proxy.getOwnerDocument(), iterator, reportAttributes);
         } else {
-            streamReader.reposition(proxy, reportAttributes);
+            streamReader.reposition(this, proxy, reportAttributes);
         }
         return streamReader;
     }
