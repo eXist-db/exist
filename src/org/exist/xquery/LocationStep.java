@@ -23,7 +23,8 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.ExtNodeSet;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.NodeVisitor;
@@ -502,9 +503,9 @@ public class LocationStep extends Step {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
-            if (contextSet instanceof ExtArrayNodeSet && !contextSet.getProcessInReverseOrder()) {
+            if (contextSet instanceof ExtNodeSet && !contextSet.getProcessInReverseOrder()) {
                 return index.findDescendantsByTagName(ElementValue.ATTRIBUTE, test.getName(), axis,
-                                                      docs, (ExtArrayNodeSet) contextSet, contextId);
+                                                      docs, (ExtNodeSet) contextSet, contextId);
             } else {
             	NodeSelector selector;            
                 switch (axis) {
@@ -550,7 +551,7 @@ public class LocationStep extends Step {
 //        LOG.debug("parentDepth for " + test.getName() + ": " + parentDepth);
 
         if (useDirectChildSelect) {
-            ExtArrayNodeSet result = new ExtArrayNodeSet();
+            NewArrayNodeSet result = new NewArrayNodeSet();
             for (Iterator i = contextSet.iterator(); i.hasNext(); ) {
                 NodeProxy p = (NodeProxy) i.next();
                 result.addAll(p.directSelectChild(test.getName(), contextId));
@@ -581,9 +582,9 @@ public class LocationStep extends Step {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
-            if (contextSet instanceof ExtArrayNodeSet && !contextSet.getProcessInReverseOrder()) {
+            if (contextSet instanceof ExtNodeSet && !contextSet.getProcessInReverseOrder()) {
                 return index.findDescendantsByTagName(ElementValue.ELEMENT, 
-                		test.getName(), axis, docs, (ExtArrayNodeSet) contextSet, contextId);
+                		test.getName(), axis, docs, (ExtNodeSet) contextSet, contextId);
             } else {
                 //            	if (contextSet instanceof VirtualNodeSet)
                 //            		((VirtualNodeSet)contextSet).realize();
@@ -649,9 +650,9 @@ public class LocationStep extends Step {
                                               "OPTIMIZATION",
                                               "Using structural index '" + index.toString() + "'");
             }
-            if (contextSet instanceof ExtArrayNodeSet) {
+            if (contextSet instanceof ExtNodeSet) {
             	return index.findDescendantsByTagName(ElementValue.ELEMENT, 
-            			test.getName(), axis, docs, (ExtArrayNodeSet) contextSet, contextId);
+            			test.getName(), axis, docs, (ExtNodeSet) contextSet, contextId);
             } else {
                 NodeSelector selector;
                 switch (axis) {
@@ -694,7 +695,7 @@ public class LocationStep extends Step {
             return vset;
         }
         if (test.isWildcardTest()) {
-            ExtArrayNodeSet result = new ExtArrayNodeSet(contextSet.getLength());
+            NewArrayNodeSet result = new NewArrayNodeSet(contextSet.getLength());
             SiblingVisitor visitor = new SiblingVisitor(result);
             for (Iterator i = contextSet.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
@@ -734,10 +735,10 @@ public class LocationStep extends Step {
     
     private class SiblingVisitor implements NodeVisitor {
     	
-    	private ExtArrayNodeSet resultSet;
+    	private ExtNodeSet resultSet;
     	private NodeProxy contextNode;
     	
-    	public SiblingVisitor(ExtArrayNodeSet resultSet) {
+    	public SiblingVisitor(ExtNodeSet resultSet) {
             this.resultSet = resultSet;
     	}
     	
@@ -869,7 +870,7 @@ public class LocationStep extends Step {
         }
         NodeSet contextSet = contextSequence.toNodeSet();
         if (test.isWildcardTest()) {
-            NodeSet result = new ExtArrayNodeSet();
+            NodeSet result = new NewArrayNodeSet();
             result.setProcessInReverseOrder(true);
             for (Iterator i = contextSet.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
@@ -977,7 +978,7 @@ public class LocationStep extends Step {
         NodeSet contextSet = contextSequence.toNodeSet();
         if (test.isWildcardTest()) {
             NodeSet temp = contextSet.getParents(contextId);
-            NodeSet result = new ExtArrayNodeSet();
+            NodeSet result = new NewArrayNodeSet();
             NodeProxy p;
             for (Iterator i = temp.iterator(); i.hasNext(); ) {
                 p = (NodeProxy) i.next();

@@ -25,19 +25,43 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.Match;
+import org.exist.dom.NewArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.fulltext.ElementContent;
 import org.exist.fulltext.FTMatch;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.TextToken;
-import org.exist.storage.btree.*;
+import org.exist.storage.btree.BTreeCallback;
+import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.DBException;
+import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Value;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
-import org.exist.util.*;
+import org.exist.util.ByteArray;
+import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
+import org.exist.util.LockException;
+import org.exist.util.Occurrences;
+import org.exist.util.ProgressIndicator;
+import org.exist.util.ReadOnlyException;
+import org.exist.util.UTF8;
+import org.exist.util.XMLString;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
@@ -45,7 +69,13 @@ import org.w3c.dom.Node;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 /**
@@ -401,7 +431,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             token = stemmer.stem(expr);
         else
             token = expr;
-        final NodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 250);         
+        final NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 250);
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = ((Collection) iter.next()).getId();
             Value key;
@@ -549,7 +579,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			TermMatcher matcher, CharSequence startTerm) throws TerminatedException {
         if (LOG.isTraceEnabled() && qname != null)
             LOG.trace("Index lookup by QName: " + qname);
-        final NodeSet result = new ExtArrayNodeSet();
+        final NodeSet result = new NewArrayNodeSet();
         final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, axis, docs, qname);
 		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
@@ -1403,7 +1433,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             
             //TOUNDERSTAND : why sort here ? -pb
 			if (contextSet != null)
-				((ExtArrayNodeSet) result).sort();
+				((NewArrayNodeSet) result).sort();
             
 			return true;
 		}

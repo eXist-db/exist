@@ -21,7 +21,7 @@
 
 package org.exist.xquery.functions;
 
-import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -108,7 +108,7 @@ public class FunNot extends Function {
 				else
                     result = evalBoolean(contextSequence, contextItem, arg);
 			} else {            
-    			result = new ExtArrayNodeSet();
+    			result = new NewArrayNodeSet();
     			
     			if(!contextSequence.isEmpty())
     				result.addAll(contextSequence);

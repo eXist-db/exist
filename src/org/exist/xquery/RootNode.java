@@ -22,7 +22,7 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
@@ -74,7 +74,7 @@ public class RootNode extends Step {
         if (cachedDocs != null && cachedDocs.equalDocs(ds)) return cached;
         
         // check if the loaded documents should remain locked
-        NodeSet result = new ExtArrayNodeSet(2);
+        NodeSet result = new NewArrayNodeSet(2);
         try {
             // wait for pending updates
             if (!context.inProtectedMode())

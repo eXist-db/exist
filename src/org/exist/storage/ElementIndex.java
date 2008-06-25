@@ -20,18 +20,18 @@
  */
 package org.exist.storage;
 
-import java.util.Observable;
-import java.util.TreeMap;
-
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.ExtNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.NodeSelector;
+
+import java.util.Observable;
+import java.util.TreeMap;
 
 /** base class for {@link org.exist.storage.NativeElementIndex} */
 public abstract class ElementIndex extends Observable {
@@ -61,7 +61,7 @@ public abstract class ElementIndex extends Observable {
 	public abstract NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname,	NodeSelector selector);
 	
     public abstract NodeSet findDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, 
-    		ExtArrayNodeSet contextSet,  int contextId);
+    		ExtNodeSet contextSet,  int contextId);
 	
 	public abstract Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
         throws PermissionDeniedException;

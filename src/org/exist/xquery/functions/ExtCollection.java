@@ -26,8 +26,8 @@ import org.exist.collections.Collection;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -155,7 +155,7 @@ public class ExtCollection extends Function {
             throw new XPathException("FODC0002: " + e.getMessage(), e);
         }
         // iterate through all docs and create the node set
-		NodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
+		NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 1);
 		Lock dlock;
 		DocumentImpl doc;
 		for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
