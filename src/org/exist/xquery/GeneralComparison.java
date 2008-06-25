@@ -25,7 +25,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -465,7 +465,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");
         if (LOG.isTraceEnabled())
         	LOG.trace("No index: fall back to nodeSetCompare");        
-		NodeSet result = new ExtArrayNodeSet();
+		NodeSet result = new NewArrayNodeSet();
 		final Collator collator = getCollator(contextSequence);
 		if (contextSequence != null && !contextSequence.isEmpty() && !contextSequence.getDocumentSet().contains(nodes.getDocumentSet()))
 		{

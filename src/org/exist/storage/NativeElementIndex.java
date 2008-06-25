@@ -28,6 +28,7 @@ import org.exist.dom.ByDocumentIterator;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.ExtNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -585,7 +586,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @param qname the QName to search for
      */
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis,
-    		DocumentSet docs, ExtArrayNodeSet contextSet,  int contextId) {
+    		DocumentSet docs, ExtNodeSet contextSet,  int contextId) {
 //        LOG.debug(contextSet.toString());
         short nodeType = getIndexType(type);
         ByDocumentIterator citer = contextSet.iterateByDocument();

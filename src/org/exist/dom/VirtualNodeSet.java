@@ -263,7 +263,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 
     private void addInternal(NodeProxy p) {
         if (realSet == null)
-            realSet = new ExtArrayNodeSet(256);
+            realSet = new NewArrayNodeSet(256);
         realSet.add(p);
 
         knownIsEmptyCardinality = true;
@@ -320,7 +320,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeSet</code> value
      */
     private final NodeSet getNodes() {
-        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        NewArrayNodeSet result = new NewArrayNodeSet();
         for (Iterator i = context.iterator(); i.hasNext();) {
             NodeProxy proxy = (NodeProxy) i.next();            
             if (proxy.getNodeId() == NodeId.DOCUMENT_NODE) {

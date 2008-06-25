@@ -26,20 +26,41 @@ package org.exist.storage;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NewArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexUtils;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
-import org.exist.storage.btree.*;
+import org.exist.storage.btree.BTreeCallback;
+import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.DBException;
+import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Value;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
+import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
+import org.exist.util.FastQSort;
+import org.exist.util.LockException;
+import org.exist.util.ReadOnlyException;
+import org.exist.util.UTF8;
+import org.exist.util.ValueOccurrences;
+import org.exist.util.XMLString;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
@@ -50,7 +71,13 @@ import org.w3c.dom.Node;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 /**
  * Maintains an index on typed node values.
@@ -608,7 +635,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @param value right hand comparison value */
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value)
             throws TerminatedException {        
-        final NodeSet result = new ExtArrayNodeSet();
+        final NodeSet result = new NewArrayNodeSet();
         final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
@@ -674,7 +701,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     		}
         }
 		final TermMatcher comparator = new RegexMatcher(expr, type, flags);
-        final NodeSet result = new ExtArrayNodeSet();
+        final NodeSet result = new NewArrayNodeSet();
         final RegexCallback cb = new RegexCallback(docs, contextSet, result, comparator, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {			

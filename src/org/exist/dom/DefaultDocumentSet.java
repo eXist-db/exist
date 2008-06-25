@@ -236,7 +236,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 	}
 
 	public NodeSet docsToNodeSet() {
-		NodeSet result = new ExtArrayNodeSet(getDocumentCount());
+		NodeSet result = new NewArrayNodeSet(getDocumentCount());
 		DocumentImpl doc;
         for (Iterator i = getDocumentIterator(); i.hasNext();) {
             doc = (DocumentImpl) i.next();
