@@ -23,6 +23,7 @@ package org.exist.dom;
 
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
@@ -56,6 +57,8 @@ import java.util.Iterator;
  */
 public class VirtualNodeSet extends AbstractNodeSet {
 
+    private static final int MAX_CHILD_COUNT_FOR_OPTIMIZE = 5;
+
     protected int axis = Constants.UNKNOWN_AXIS;
     protected NodeTest test;
     protected NodeSet context;
@@ -64,7 +67,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     protected boolean inPredicate = false;
     protected boolean useSelfAsContext = false;
     protected int contextId = Expression.NO_CONTEXT_ID;
-    private static final int MAX_CHILD_COUNT_FOR_OPTIMIZE = 5;
+
     private DocumentSet realDocumentSet = null; 
     
     private boolean knownIsEmptyCardinality = false;
@@ -72,6 +75,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
     private boolean knownHasManyCardinality = false;
     
     protected boolean hasMany = false; 
+
+    private DBBroker broker;
 
     /**
      * Creates a new <code>VirtualNodeSet</code> instance.
@@ -81,13 +86,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param contextId an <code>int</code> value
      * @param context a <code>NodeSet</code> value
      */
-    public VirtualNodeSet(int axis, NodeTest test, int contextId, NodeSet context) {
+    public VirtualNodeSet(DBBroker broker, int axis, NodeTest test, int contextId, NodeSet context) {
         isEmpty = true;
         hasOne = false;
         this.axis = axis;
         this.test = test;
         this.context = context;
         this.contextId = contextId;
+        this.broker = broker;
     }
 
     /**
@@ -367,7 +373,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                             NodeProxy contextNode = new NodeProxy(p);
                             contextNode.deepCopyContext(proxy);
                             //TODO : is this StoredNode construction necessary ?
-                            Iterator domIter = contextNode.getDocument().getBroker().getNodeIterator(new StoredNode(contextNode));
+                            Iterator domIter = broker.getNodeIterator(new StoredNode(contextNode));
                             domIter.next();
                             contextNode.setMatches(proxy.getMatches());
                             addChildren(contextNode, result, node, domIter, 0);
@@ -487,7 +493,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 
     private void addChildren(NodeProxy contextNode, NodeSet result) {
         try {
-            EmbeddedXMLStreamReader reader = contextNode.getDocument().getBroker().getXMLStreamReader(contextNode, true);
+            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(contextNode, true);
             int status = reader.next();
             int level = 0;
             if (status == XMLStreamReader.START_ELEMENT) {
