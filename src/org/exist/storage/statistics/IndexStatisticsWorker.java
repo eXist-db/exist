@@ -96,7 +96,7 @@ public class IndexStatisticsWorker implements IndexWorker {
         return null;
     }
 
-    public MatchListener getMatchListener(NodeProxy proxy) {
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
         return null;
     }
 
