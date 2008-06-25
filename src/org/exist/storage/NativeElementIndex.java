@@ -27,8 +27,8 @@ import org.exist.dom.AttrImpl;
 import org.exist.dom.ByDocumentIterator;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.ExtNodeSet;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -498,7 +498,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
         short nodeType = getIndexType(type);
-        final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 256);
+        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
         final Lock lock = dbNodes.getLock();
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;
@@ -590,7 +590,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 //        LOG.debug(contextSet.toString());
         short nodeType = getIndexType(type);
         ByDocumentIterator citer = contextSet.iterateByDocument();
-        final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 256);
+        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
         final Lock lock = dbNodes.getLock();
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;
