@@ -11,8 +11,21 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.Receiver;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionCall;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.xml.sax.SAXException;
 
 /**
@@ -62,7 +75,7 @@ public class HighlightMatches extends BasicFunction {
                     ((NodeImpl)v).copyTo(context.getBroker(), docBuilder);
                 } else {
                     NodeProxy p = (NodeProxy) v;
-                    MatchListener ml = index.getMatchListener(p, matchCb);
+                    MatchListener ml = index.getMatchListener(context.getBroker(), p, matchCb);
                     Receiver receiver;
                     if (ml == null)
                         receiver = docBuilder;

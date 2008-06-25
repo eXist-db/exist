@@ -23,11 +23,34 @@ package org.exist.indexing.ngram;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
-import org.exist.indexing.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
+import org.exist.indexing.AbstractMatchListener;
+import org.exist.indexing.AbstractStreamListener;
+import org.exist.indexing.Index;
+import org.exist.indexing.IndexController;
+import org.exist.indexing.IndexWorker;
+import org.exist.indexing.MatchListener;
+import org.exist.indexing.OrderedValuesIndex;
+import org.exist.indexing.QNamedKeysIndex;
+import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.*;
+import org.exist.storage.DBBroker;
+import org.exist.storage.ElementValue;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.NodePath;
+import org.exist.storage.OccurrenceList;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.IndexQuery;
@@ -37,7 +60,15 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
+import org.exist.util.ByteArray;
+import org.exist.util.ByteConversion;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FastQSort;
+import org.exist.util.LockException;
+import org.exist.util.Occurrences;
+import org.exist.util.ReadOnlyException;
+import org.exist.util.UTF8;
+import org.exist.util.XMLString;
 import org.exist.util.serializer.AttrList;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
@@ -53,7 +84,13 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
 
 /**
  *
@@ -448,11 +485,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return listener;
     }
 
-    public MatchListener getMatchListener(NodeProxy proxy) {
-        return getMatchListener(proxy, null);
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
+        return getMatchListener(broker, proxy, null);
     }
 
-    public MatchListener getMatchListener(NodeProxy proxy, NGramMatchCallback callback) {
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy, NGramMatchCallback callback) {
         boolean needToFilter = false;
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
@@ -465,9 +502,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (!needToFilter)
             return null;
         if (matchListener == null)
-            matchListener = new NGramMatchListener(proxy);
+            matchListener = new NGramMatchListener(broker, proxy);
         else
-            matchListener.reset(proxy);
+            matchListener.reset(broker, proxy);
         matchListener.setMatchCallback(callback);
         return matchListener;
     }
@@ -659,15 +696,15 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private NGramMatchCallback callback = null;
         private NodeProxy root;
 
-        public NGramMatchListener(NodeProxy proxy) {
-            reset(proxy);
+        public NGramMatchListener(DBBroker broker, NodeProxy proxy) {
+            reset(broker, proxy);
         }
 
         protected void setMatchCallback(NGramMatchCallback cb) {
             this.callback = cb;
         }
         
-        protected void reset(NodeProxy proxy) {
+        protected void reset(DBBroker broker, NodeProxy proxy) {
             this.root = proxy;
             this.match = proxy.getMatches();
             setNextInChain(null);
@@ -693,7 +730,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     NodeProxy p = (NodeProxy) i.next();
                     int startOffset = 0;
                     try {
-                        XMLStreamReader reader = proxy.getDocument().getBroker().getXMLStreamReader(p, false);
+                        XMLStreamReader reader = broker.getXMLStreamReader(p, false);
                         while (reader.hasNext()) {
                             int ev = reader.next();
                             NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);

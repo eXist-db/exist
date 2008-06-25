@@ -21,8 +21,6 @@
  */
 package org.exist.indexing;
 
-import java.util.Map;
-
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -35,6 +33,8 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.NodeList;
+
+import java.util.Map;
 
 /**
  * Provide concurrent access to the index structure. Implements the core operations on the index.
@@ -157,7 +157,7 @@ public interface IndexWorker {
      * @return a MatchListener or null if the implementation does not want to receive
      * serialization events
      */
-    MatchListener getMatchListener(NodeProxy proxy);
+    MatchListener getMatchListener(DBBroker broker, NodeProxy proxy);
     
     /**
      * Flush the index. This method will be called when indexing a document. The implementation should
