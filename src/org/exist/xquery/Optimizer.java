@@ -196,7 +196,9 @@ public class Optimizer extends DefaultExpressionVisitor {
             Optimizable optimizable = (Optimizable) list.get(j);
             int axis = optimizable.getOptimizeAxis();
             if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
-                    axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS)) {
+                    axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
+                    axis == Constants.DESCENDANT_ATTRIBUTE_AXIS
+            )) {
                 return false;
             }
         }
