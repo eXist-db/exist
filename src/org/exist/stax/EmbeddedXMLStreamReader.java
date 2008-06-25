@@ -28,6 +28,7 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
+import org.exist.storage.DBBroker;
 import org.exist.storage.Signatures;
 import org.exist.storage.btree.Value;
 import org.exist.storage.dom.RawNodeIterator;
@@ -83,6 +84,8 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
 
     private boolean reportAttribs = false;
 
+    private DBBroker broker;
+
     /**
      * Construct an EmbeddedXMLStreamReader.
      *
@@ -91,8 +94,9 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
      * @param reportAttributes if set to true, attributes will be reported as top-level events.
      * @throws XMLStreamException
      */
-    public EmbeddedXMLStreamReader(DocumentImpl doc, RawNodeIterator iterator, boolean reportAttributes)
+    public EmbeddedXMLStreamReader(DBBroker broker, DocumentImpl doc, RawNodeIterator iterator, boolean reportAttributes)
             throws XMLStreamException {
+        this.broker = broker;
         this.document = doc;
         this.iterator = iterator;
         this.reportAttribs = reportAttributes;
@@ -105,8 +109,9 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
      * @param reportAttributes if set to true, attributes will be reported as top-level events.
      * @throws IOException
      */
-    public void reposition(StoredNode node, boolean reportAttributes) throws IOException {
+    public void reposition(DBBroker broker, StoredNode node, boolean reportAttributes) throws IOException {
         reset();
+        this.broker = broker;
         this.current = null;
         this.previous = null;
         this.elementStack.clear();
@@ -123,8 +128,9 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
      * @param reportAttributes if set to true, attributes will be reported as top-level events.
      * @throws IOException
      */
-    public void reposition(NodeProxy proxy, boolean reportAttributes) throws IOException {
+    public void reposition(DBBroker broker, NodeProxy proxy, boolean reportAttributes) throws IOException {
         reset();
+        this.broker = broker;
         this.current = null;
         this.previous = null;
         this.elementStack.clear();
@@ -184,7 +190,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
             attributes = new AttrList();
             for (int i = 0; i < count; i++) {
                 Value v = iterator.next();
-                AttrImpl.addToList(document.getBroker(), v.data(), v.start(), v.getLength(), attributes);
+                AttrImpl.addToList(broker, v.data(), v.start(), v.getLength(), attributes);
                 parent.incrementChild();
             }
         }
@@ -196,7 +202,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         	offset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
         int dlnLen = ByteConversion.byteToShort(current.data(), offset);
         offset += NodeId.LENGTH_NODE_ID_UNITS;
-        nodeId = document.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, current.data(), offset);
+        nodeId = broker.getBrokerPool().getNodeFactory().createFromData(dlnLen, current.data(), offset);
     }
     
     public int next() throws XMLStreamException {
