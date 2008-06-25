@@ -1,11 +1,15 @@
 package org.exist.fulltext;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.*;
-import org.exist.fulltext.FTIndexWorker;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.storage.DBBroker;
 import org.exist.util.FastQSort;
 import org.exist.util.serializer.AttrList;
 import org.xml.sax.SAXException;
@@ -30,11 +34,8 @@ public class FTMatchListener extends AbstractMatchListener {
     private Match match;
     private Stack offsetStack = null;
 
-    public FTMatchListener() {
-    }
-
-    public FTMatchListener(NodeProxy proxy) {
-        reset(proxy);
+    public FTMatchListener(DBBroker broker, NodeProxy proxy) {
+        reset(broker, proxy);
     }
 
     public boolean hasMatches(NodeProxy proxy) {
@@ -48,7 +49,7 @@ public class FTMatchListener extends AbstractMatchListener {
         return false;
     }
 
-    public void reset(NodeProxy proxy) {
+    protected void reset(DBBroker broker, NodeProxy proxy) {
         this.match = proxy.getMatches();
         setNextInChain(null);
 
@@ -73,7 +74,7 @@ public class FTMatchListener extends AbstractMatchListener {
                 NodeProxy p = (NodeProxy) i.next();
                 int startOffset = 0;
                 try {
-                    XMLStreamReader reader = proxy.getDocument().getBroker().getXMLStreamReader(p, false);
+                    XMLStreamReader reader = broker.getXMLStreamReader(p, false);
                     while (reader.hasNext()) {
                         int ev = reader.next();
                         NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);

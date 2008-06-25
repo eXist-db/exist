@@ -23,20 +23,11 @@
  */
 package org.exist.indexing.spatial;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.TransformerException;
-
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKBReader;
+import com.vividsolutions.jts.io.WKBWriter;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.WKTWriter;
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
@@ -91,11 +82,18 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.WKBWriter;
-import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
 
 public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	
@@ -222,7 +220,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         return gmlStreamListener;
     }
     
-    public MatchListener getMatchListener(NodeProxy proxy) {
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
     	return null;
     }
 

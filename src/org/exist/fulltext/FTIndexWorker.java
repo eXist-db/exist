@@ -22,11 +22,31 @@
 package org.exist.fulltext;
 
 import org.exist.collections.Collection;
-import org.exist.dom.*;
-import org.exist.indexing.*;
-import org.exist.storage.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
+import org.exist.indexing.AbstractStreamListener;
+import org.exist.indexing.IndexController;
+import org.exist.indexing.IndexWorker;
+import org.exist.indexing.MatchListener;
+import org.exist.indexing.OrderedValuesIndex;
+import org.exist.indexing.QNamedKeysIndex;
+import org.exist.indexing.StreamListener;
+import org.exist.storage.DBBroker;
+import org.exist.storage.ElementValue;
+import org.exist.storage.FulltextIndexSpec;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.NativeTextEngine;
+import org.exist.storage.NodePath;
+import org.exist.storage.TextSearchEngine;
 import org.exist.storage.btree.DBException;
-import org.exist.fulltext.FTMatchListener;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
@@ -142,7 +162,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return listener;
     }
 
-    public MatchListener getMatchListener(NodeProxy proxy) {
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
         boolean needToFilter = false;
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
@@ -155,9 +175,9 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (!needToFilter)
             return null;
         if (matchListener == null)
-            matchListener = new FTMatchListener(proxy);
+            matchListener = new FTMatchListener(broker, proxy);
         else
-            matchListener.reset(proxy);
+            matchListener.reset(broker, proxy);
         return matchListener;
     }
 

@@ -21,10 +21,6 @@
  */
 package org.exist.indexing;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
@@ -38,6 +34,10 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Internally used to dispatch an operation to each of the
@@ -399,7 +399,7 @@ public class IndexController {
         IndexWorker worker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             worker = (IndexWorker) i.next();
-            current = worker.getMatchListener(proxy);
+            current = worker.getMatchListener(broker, proxy);
             if (current != null) {
                 if (first == null) {
                     first = current;
