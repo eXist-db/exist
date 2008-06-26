@@ -27,10 +27,27 @@ import org.exist.Indexer;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
-import org.exist.security.*;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.QName;
+import org.exist.security.Group;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
-import org.exist.storage.*;
+import org.exist.security.User;
+import org.exist.security.XMLSecurityManager;
+import org.exist.storage.DBBroker;
+import org.exist.storage.FulltextIndexSpec;
+import org.exist.storage.GeneralRangeIndexSpec;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.NodePath;
+import org.exist.storage.QNameRangeIndexSpec;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
@@ -40,7 +57,11 @@ import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
+import org.exist.util.Configuration;
+import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.SyntaxException;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
@@ -50,8 +71,19 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.TreeMap;
 
 /**
  * This class represents a collection in the database. A collection maintains a list of
@@ -863,14 +895,21 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 try {
                     final InputStream is = source.getByteStream();
                     if (is != null && is.markSupported())
-                        is.reset();
+                        is.reset();final InputStream is = source.getByteStream();
+                    if (is != null && is.markSupported())
+                        is.mark(Integer.MAX_VALUE);
+                    else {
+                        final Reader cs = source.getCharacterStream();
+                        if (cs != null && cs.markSupported())
+                            cs.mark(Integer.MAX_VALUE);
+                    }
                     else {
                         final Reader cs = source.getCharacterStream();
                         if (cs != null && cs.markSupported())
                             cs.reset();
                     }
                 } catch (IOException e) {
-                    LOG.debug("could not reset input source", e);
+                    // mark is not supported: exception is expected, do nothing
                 }
 
                 XMLReader reader = getReader(broker, info.getCollectionConfig());
