@@ -895,14 +895,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 try {
                     final InputStream is = source.getByteStream();
                     if (is != null && is.markSupported())
-                        is.reset();final InputStream is = source.getByteStream();
-                    if (is != null && is.markSupported())
-                        is.mark(Integer.MAX_VALUE);
-                    else {
-                        final Reader cs = source.getCharacterStream();
-                        if (cs != null && cs.markSupported())
-                            cs.mark(Integer.MAX_VALUE);
-                    }
+                        is.reset();
                     else {
                         final Reader cs = source.getCharacterStream();
                         if (cs != null && cs.markSupported())
