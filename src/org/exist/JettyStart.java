@@ -20,9 +20,6 @@
  */
 package org.exist;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
 import org.exist.storage.BrokerPool;
@@ -31,9 +28,14 @@ import org.exist.util.SingleInstanceConfiguration;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
+import org.mortbay.http.HttpContext;
+import org.mortbay.http.HttpListener;
 import org.mortbay.jetty.Server;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -95,12 +97,19 @@ public class JettyStart {
 		final Server server;
 		try {
 			server = new Server(args[0]);
-			BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
+            BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
 			server.start();
 
+            HttpListener[] listeners = server.getListeners();
+            int port = 8080;
+            if (listeners.length > 0)
+                port = listeners[0].getPort();
+            HttpContext[] contexts = server.getContexts();
             System.out.println("-----------------------------------------------------");
-            System.out.println("Server has started. You should now be able to access ");
-            System.out.println("eXist's front page at http://localhost:8080/exist/");
+            System.out.println("Server has started on port " + port + ". Configured contexts:");
+            for (int i = 0; i < contexts.length; i++) {
+                System.out.println("http://localhost:" + port + contexts[i].getContextPath());                
+            }
             System.out.println("-----------------------------------------------------");
             
             if (registerShutdownHook) {
