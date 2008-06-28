@@ -97,10 +97,10 @@ public class GetData extends BasicFunction {
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		
 		if(var == null || var.getValue() == null)
-			throw new XPathException("No request object found in the current XQuery context.");
+			throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
 		
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $request is not bound to an Java object.");
+			throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
 		
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		
@@ -131,7 +131,7 @@ public class GetData extends BasicFunction {
 			}
 			catch(IOException ioe)
 			{
-				throw new XPathException("An IO exception ocurred: " + ioe.getMessage(), ioe);
+				throw new XPathException(getASTNode(), "An IO exception ocurred: " + ioe.getMessage(), ioe);
 			}
 			
 			//was there any POST content
@@ -204,7 +204,7 @@ public class GetData extends BasicFunction {
 				}
 				catch (IOException e)
 				{
-					throw new XPathException("An IO exception ocurred: " + e.getMessage(), e);
+					throw new XPathException(getASTNode(), "An IO exception ocurred: " + e.getMessage(), e);
 				}
 			}
 			else
@@ -215,7 +215,7 @@ public class GetData extends BasicFunction {
 		}
 		else
 		{
-			throw new XPathException("Variable $request is not bound to a Request object.");
+			throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
 		}
 	}
 }

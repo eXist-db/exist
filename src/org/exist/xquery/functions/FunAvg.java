@@ -89,7 +89,7 @@ public class FunAvg extends Function {
             if (value.getType() == Type.UNTYPED_ATOMIC) 
             	value = value.convertTo(Type.DOUBLE);
     		if (!(value instanceof ComputableValue))
-				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+				throw new XPathException(getASTNode(), "XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
     		//Set the first value
     		ComputableValue sum = (ComputableValue) value;
     		while (iter.hasNext()) {
@@ -99,7 +99,7 @@ public class FunAvg extends Function {
                 if (value.getType() == Type.UNTYPED_ATOMIC) 
                 	value = value.convertTo(Type.DOUBLE);
         		if (!(value instanceof ComputableValue))
-    				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+    				throw new XPathException(getASTNode(), "XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
     			if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
     				if (((NumericValue)value).isInfinite())
     					gotInfinity = true;    					
@@ -113,7 +113,7 @@ public class FunAvg extends Function {
 	    			//Aggregate next values	    	
     				sum = sum.plus((ComputableValue) value);
 				} catch(XPathException e) {
-					throw new XPathException("FORG0006: " + e.getMessage(), e);    					
+					throw new XPathException(getASTNode(), "FORG0006: " + e.getMessage(), e);    					
 				}
     		}
     		result = sum.div(new IntegerValue(inner.getItemCount()));

@@ -83,7 +83,7 @@ public class FunUnEscapeURI extends BasicFunction {
 		}
 		catch(java.io.UnsupportedEncodingException e)
 		{
-			throw new XPathException("Unsupported Encoding Scheme: " + e.getMessage(), e);
+			throw new XPathException(getASTNode(), "Unsupported Encoding Scheme: " + e.getMessage(), e);
 		}
 	}
 	

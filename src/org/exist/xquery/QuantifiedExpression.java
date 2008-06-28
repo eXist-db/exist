@@ -93,7 +93,7 @@ public class QuantifiedExpression extends BindingExpression {
         if (sequenceType != null) {
         	//Type.EMPTY is *not* a subtype of other types ; the tests below would fail without this prior cardinality check
         	if (!inSeq.isEmpty() && !Type.subTypeOf(inSeq.getItemType(), sequenceType.getPrimaryType()))
-				throw new XPathException("XPTY0004: Invalid type for variable $" + varName +
+				throw new XPathException(getASTNode(), "XPTY0004: Invalid type for variable $" + varName +
 						". Expected " +
 						Type.getTypeName(sequenceType.getPrimaryType()) +
 						", got " +Type.getTypeName(inSeq.getItemType()));        	
@@ -123,12 +123,12 @@ public class QuantifiedExpression extends BindingExpression {
         		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
         		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
 	            	if (!Type.subTypeOf(item.toSequence().getItemType(), sequenceType.getPrimaryType()))
-	    				throw new XPathException("XPTY0004: Invalid type for variable $" + varName +
+	    				throw new XPathException(getASTNode(), "XPTY0004: Invalid type for variable $" + varName +
 	    						". Expected " +
 	    						Type.getTypeName(sequenceType.getPrimaryType()) +
 	    						", got " +Type.getTypeName(contextItem.toSequence().getItemType()));
             	} else if (!Type.subTypeOf(item.getType(), Type.NODE))
-    				throw new XPathException("XPTY0004: Invalid type for variable $" + varName +
+    				throw new XPathException(getASTNode(), "XPTY0004: Invalid type for variable $" + varName +
     						". Expected " +
     						Type.getTypeName(Type.NODE) +
     						" (or more specific), got " + Type.getTypeName(item.getType()));

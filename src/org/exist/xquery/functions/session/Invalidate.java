@@ -73,16 +73,16 @@ public class Invalidate extends BasicFunction {
         // session object is read from global variable $session
 		Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException("Session not set");
+			throw new XPathException(getASTNode(), "Session not set");
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $session is not bound to an Java object.");
+			throw new XPathException(getASTNode(), "Variable $session is not bound to an Java object.");
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if(value.getObject() instanceof SessionWrapper) {
 			SessionWrapper session = (SessionWrapper)value.getObject();
 			session.invalidate();
 			return Sequence.EMPTY_SEQUENCE;
 		} else
-			throw new XPathException("Type error: variable $session is not bound to a session object");
+			throw new XPathException(getASTNode(), "Type error: variable $session is not bound to a session object");
     }
 
 }

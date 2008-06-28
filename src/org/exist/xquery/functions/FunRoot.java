@@ -111,7 +111,7 @@ public class FunRoot extends Function {
 		for (SequenceIterator i = seq.iterate(); i.hasNext(); j++) {
 			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException("FOTY0011: item is not a node; got '" + item + "'");
+                throw new XPathException(getASTNode(), "FOTY0011: item is not a node; got '" + item + "'");
             Sequence s = item.toSequence();
             if (s.isPersistentSet()) {
                 NodeProxy p = s.toNodeSet().get(0);

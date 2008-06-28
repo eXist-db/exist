@@ -103,7 +103,7 @@ public class FunSum extends Function {
             if (value.getType() == Type.UNTYPED_ATOMIC) 
             	value = value.convertTo(Type.DOUBLE);
     		if (!(value instanceof ComputableValue))
-				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+				throw new XPathException(getASTNode(), "XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
     		//Set the first value
     		ComputableValue sum = (ComputableValue) value;
     		while (iter.hasNext()) {
@@ -113,7 +113,7 @@ public class FunSum extends Function {
                 if (value.getType() == Type.UNTYPED_ATOMIC) 
                 	value = value.convertTo(Type.DOUBLE);
         		if (!(value instanceof ComputableValue))
-    				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+    				throw new XPathException(getASTNode(), "XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
     			if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
     				if (((NumericValue)value).isInfinite())
     					gotInfinity = true;    					

@@ -100,7 +100,7 @@ public class XMLDBURIFunctions extends BasicFunction {
 				return new StringValue(URIUtils.urlDecodeUtf8(args[0].getStringValue()));
 			}
 		} catch(URISyntaxException e) {
-			throw new XPathException("URI Syntax Exception: " + e.getMessage(), e);
+			throw new XPathException(getASTNode(), "URI Syntax Exception: " + e.getMessage(), e);
 		}
 	}
 	

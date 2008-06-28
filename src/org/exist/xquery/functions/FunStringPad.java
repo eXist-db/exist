@@ -82,7 +82,7 @@ public class FunStringPad extends Function {
     		String str = seq.getStringValue();
     		int count = ((IntegerValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER)).getInt();
     		if(count < 0)
-    			throw new XPathException("Invalid string-pad count");
+    			throw new XPathException(getASTNode(), "Invalid string-pad count");
             if(count == 0)
                 result = StringValue.EMPTY_STRING;
             else {

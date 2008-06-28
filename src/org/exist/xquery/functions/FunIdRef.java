@@ -95,7 +95,7 @@ public class FunIdRef extends Function {
         }
         
         if (getArgumentCount() < 1)
-			throw new XPathException("function id requires one argument");
+			throw new XPathException(getASTNode(), "function id requires one argument");
 		
         if(contextItem != null)
 			contextSequence = contextItem.toSequence();

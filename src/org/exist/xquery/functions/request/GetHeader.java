@@ -83,6 +83,6 @@ public class GetHeader extends BasicFunction {
                         String headerValue = ((RequestWrapper)value.getObject()).getHeader(param);
                         return XPathUtil.javaObjectToXPath(headerValue, null, false);
                 } else
-                        throw new XPathException("Variable $request is not bound to a Request object.");
+                        throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
         }
 }

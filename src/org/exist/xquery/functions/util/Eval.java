@@ -381,14 +381,14 @@ public class Eval extends BasicFunction {
                 try {
                     sourceDoc = context.getBroker().getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
                     if (sourceDoc == null)
-                        throw new XPathException("source for module " + location + " not found in database");
+                        throw new XPathException(getASTNode(), "source for module " + location + " not found in database");
                     if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
                             !sourceDoc.getMetadata().getMimeType().equals("application/xquery"))
-                        throw new XPathException("source for module " + location + " is not an XQuery or " +
+                        throw new XPathException(getASTNode(), "source for module " + location + " is not an XQuery or " +
                         "declares a wrong mime-type");
                     querySource = new DBSource(context.getBroker(), (BinaryDocument) sourceDoc, true);
                 } catch (PermissionDeniedException e) {
-                    throw new XPathException("permission denied to read module source from " + location);
+                    throw new XPathException(getASTNode(), "permission denied to read module source from " + location);
                 } finally {
                     if(sourceDoc != null)
                         sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
@@ -402,13 +402,13 @@ public class Eval extends BasicFunction {
                 //TODO: use URIs to ensure proper resolution of relative locations
                 querySource = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), location, true);
             } catch (MalformedURLException e) {
-                throw new XPathException("source location for query at " + location + " should be a valid URL: " +
+                throw new XPathException(getASTNode(), "source location for query at " + location + " should be a valid URL: " +
                         e.getMessage());
             } catch (IOException e) {
-                throw new XPathException("source for query at " + location + " not found: " +
+                throw new XPathException(getASTNode(), "source for query at " + location + " not found: " +
                         e.getMessage());
             } catch (PermissionDeniedException e) {
-            	throw new XPathException("Permission denied to access query at " + location + " : " +
+            	throw new XPathException(getASTNode(), "Permission denied to access query at " + location + " : " +
                         e.getMessage());
             }
         }

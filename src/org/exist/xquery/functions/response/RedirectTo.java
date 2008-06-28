@@ -78,19 +78,19 @@ public class RedirectTo extends BasicFunction {
 		// response object is read from global variable $response
 		Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException("No response object found in the current XQuery context.");
+			throw new XPathException(getASTNode(), "No response object found in the current XQuery context.");
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $response is not bound to an Java object.");
+			throw new XPathException(getASTNode(), "Variable $response is not bound to an Java object.");
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof ResponseWrapper)
 			try {
 				((ResponseWrapper) value.getObject()).sendRedirect(redirectURI);
 			} catch (IOException e) {
-				throw new XPathException("An IO exception occurred during redirect: " + e.getMessage(), e);
+				throw new XPathException(getASTNode(), "An IO exception occurred during redirect: " + e.getMessage(), e);
 			}
 		else
-			throw new XPathException("Variable response is not bound to a response object.");
+			throw new XPathException(getASTNode(), "Variable response is not bound to a response object.");
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	

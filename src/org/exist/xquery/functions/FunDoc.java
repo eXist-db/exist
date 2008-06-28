@@ -102,7 +102,7 @@ public class FunDoc extends Function {
     		try {
     			result = DocUtils.getDocument(this.context, path);
     			if (result.isEmpty() && context.isRaiseErrorOnFailedRetrieval()) {
-    				throw new XPathException("FODC0002: can not access '" + path + "'");
+    				throw new XPathException(getASTNode(), "FODC0002: can not access '" + path + "'");
     			}
     //			TODO: we still need a final decision about this. Also check base-uri.
     //			if (result == Sequence.EMPTY_SEQUENCE)

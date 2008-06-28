@@ -317,7 +317,7 @@ public class Transform extends BasicFunction {
 		}
 		catch (TransformerConfigurationException e)
 		{
-			throw new XPathException("Unable to set up transformer: " + e.getMessage(), e);
+			throw new XPathException(getASTNode(), "Unable to set up transformer: " + e.getMessage(), e);
 		}
         return handler;
     }
@@ -331,7 +331,7 @@ public class Transform extends BasicFunction {
 					String name = elem.getAttribute("name");
 					String value = elem.getAttribute("value");
 					if(name == null || value == null)
-						throw new XPathException("Name or value attribute missing for stylesheet parameter");
+						throw new XPathException(getASTNode(), "Name or value attribute missing for stylesheet parameter");
 					handler.setParameter(name, value);
 				}
 				child = child.getNextSibling();
@@ -367,9 +367,9 @@ public class Transform extends BasicFunction {
 			return cached.getTemplates();
 		} catch (MalformedURLException e) {
 			LOG.debug(e.getMessage(), e);
-			throw new XPathException("Malformed URL for stylesheet: " + stylesheet, e);
+			throw new XPathException(getASTNode(), "Malformed URL for stylesheet: " + stylesheet, e);
 		} catch (IOException e) {
-			throw new XPathException("IO error while loading stylesheet: " + stylesheet, e);
+			throw new XPathException(getASTNode(), "IO error while loading stylesheet: " + stylesheet, e);
 		}
 	}
 	
@@ -414,7 +414,7 @@ public class Transform extends BasicFunction {
 						templates = getSource(doc);
 					lastModified = doc.getMetadata().getLastModified();
 				} catch (PermissionDeniedException e) {
-					throw new XPathException("Permission denied to read stylesheet: " + uri);
+					throw new XPathException(getASTNode(), "Permission denied to read stylesheet: " + uri);
 				} finally {
 					doc.getUpdateLock().release(Lock.READ_LOCK);
 				}
