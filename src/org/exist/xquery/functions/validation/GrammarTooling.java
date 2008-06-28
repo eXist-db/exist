@@ -185,11 +185,11 @@ public class GrammarTooling extends BasicFunction  {
 
                 } catch(ExistIOException ex) {
                     LOG.debug(ex.getCause());
-                    throw new XPathException(ex.getCause());
+                    throw new XPathException(getASTNode(), ex.getCause());
                     
                 } catch(Exception ex) {
                     LOG.debug(ex);
-                    throw new XPathException(ex);
+                    throw new XPathException(getASTNode(), ex);
                 }
                 
                 
