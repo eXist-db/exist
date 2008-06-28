@@ -97,7 +97,7 @@ public class POSTFunction extends BaseHTTPClientFunction
 	        try {
 	            osw = new OutputStreamWriter( baos, "UTF-8" );
 	        } catch (UnsupportedEncodingException e) {
-	            throw new XPathException("Internal error");
+	            throw new XPathException(getASTNode(), "Internal error");
 	        }
 	        SAXSerializer sax           = new SAXSerializer(osw, new Properties());
 	        
@@ -133,7 +133,7 @@ public class POSTFunction extends BaseHTTPClientFunction
 
         }
         catch( IOException ioe ) {
-            throw( new XPathException( ioe ) );
+            throw( new XPathException(getASTNode(), ioe ) );
         }
         finally {
             post.releaseConnection();

@@ -91,7 +91,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                     String value = ((Element)header).getAttribute( "value" );
                     
                     if( name == null || value == null ) {
-                        throw( new XPathException( "Name or value attribute missing for request header parameter" ) );
+                        throw( new XPathException(getASTNode(), "Name or value attribute missing for request header parameter" ) );
                     }
                     
                     method.addRequestHeader( new Header( name, value ) );
@@ -294,7 +294,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                         responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );                  
                     }
                     catch( URIException ue ) {
-                        throw( new XPathException (ue ) );
+                        throw( new XPathException (getASTNode(), ue ) );
                     }
                     catch( SAXException se ) {
                         //could not parse to xml(html)

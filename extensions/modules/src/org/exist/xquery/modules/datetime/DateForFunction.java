@@ -69,13 +69,13 @@ public class DateForFunction extends BasicFunction {
 		
 		//check bounds of supplied parameters
 		if(monthOfInterest < 1 || monthOfInterest > 12)
-			throw new XPathException("The month of interest must be between 1 and 12");
+			throw new XPathException(getASTNode(), "The month of interest must be between 1 and 12");
 		
 		if(weekInMonth < 1 || weekInMonth > 5)
-			throw new XPathException("The week in the month of interest must be between 1 and 5");
+			throw new XPathException(getASTNode(), "The week in the month of interest must be between 1 and 5");
 		
 		if(dayInWeek < 1 || dayInWeek > 7)
-			throw new XPathException("The day in the week of interest must be between 1 and 7");
+			throw new XPathException(getASTNode(), "The day in the week of interest must be between 1 and 7");
 		
 		//create date
 		GregorianCalendar cal = new GregorianCalendar();

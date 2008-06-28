@@ -181,9 +181,9 @@ public class RenderFunction extends BasicFunction {
 			// return the result
 			return new Base64Binary(baos.toByteArray());
 		} catch (TransformerException te) {
-			throw new XPathException(te);
+			throw new XPathException(getASTNode(), te);
 		} catch (SAXException se) {
-			throw new XPathException(se);
+			throw new XPathException(getASTNode(), se);
 		}
 	}
 
