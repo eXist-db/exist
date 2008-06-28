@@ -92,7 +92,7 @@ public class GETFunction extends BaseHTTPClientFunction {
             response = doRequest( context, get, persistCookies );	
         }
         catch( IOException ioe ) {
-            throw( new XPathException( ioe ) );
+            throw( new XPathException( getASTNode(), ioe ) );
         }
         finally {
             get.releaseConnection();

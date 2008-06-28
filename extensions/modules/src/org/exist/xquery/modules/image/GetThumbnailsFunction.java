@@ -158,7 +158,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 						thumbPath.toXmldbURI());
 				dbbroker.saveCollection(transaction, thumbCollection);
 			} catch (Exception e) {
-				throw new XPathException(e.getMessage());
+				throw new XPathException(getASTNode(),e.getMessage());
 			}
 		} else {
 			thumbDir = new File(thumbPath.toString());
@@ -166,7 +166,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 				try {
 					thumbDir.mkdirs();
 				} catch (Exception e) {
-					throw new XPathException(e.getMessage());
+					throw new XPathException(getASTNode(),e.getMessage());
 				}
 
 		}
@@ -219,14 +219,14 @@ public class GetThumbnailsFunction extends BasicFunction {
 							image = ImageIO.read(new ByteArrayInputStream(
 									imgData));
 						} catch (IOException ioe) {
-							throw new XPathException(ioe.getMessage());
+							throw new XPathException(getASTNode(),ioe.getMessage());
 						}
 
 						try {
 							bImage = ImageModule.createThumb(image, maxThumbHeight,
 									maxThumbWidth);
 						} catch (Exception e) {
-							throw new XPathException(e.getMessage());
+							throw new XPathException(getASTNode(),e.getMessage());
 						}
 
 						if (isSaveToDataBase) {
@@ -234,7 +234,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 							try {
 								ImageIO.write(bImage, "jpg", os);
 							} catch (Exception e) {
-								throw new XPathException(e.getMessage());
+								throw new XPathException(getASTNode(),e.getMessage());
 							}
 							try {
 								doc = thumbCollection.addBinaryResource(
@@ -243,7 +243,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 												+ docImage.getFileURI()), os
 												.toByteArray(), "image/jpeg");
 							} catch (Exception e) {
-								throw new XPathException(e.getMessage());
+								throw new XPathException(getASTNode(),e.getMessage());
 							}
 							// result.add(new
 							// StringValue(""+docImage.getFileURI()+"|"+thumbCollection.getURI()+THUMBPREFIX
@@ -258,7 +258,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 														+ "/" + prefix
 														+ docImage.getFileURI()));
 							} catch (Exception e) {
-								throw new XPathException(e.getMessage());
+								throw new XPathException(getASTNode(),e.getMessage());
 							}
 							// result.add(new StringValue(
 							// thumbPath.toString() + "/"
@@ -281,7 +281,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 		try {
 			transact.commit(transaction);
 		} catch (Exception e) {
-			throw new XPathException(e.getMessage());
+			throw new XPathException(getASTNode(),e.getMessage());
 		}
 		transact.getJournal().flushToLog(true);
 		dbbroker.closeDocument();

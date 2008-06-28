@@ -155,7 +155,7 @@ public class SendEmailFunction extends BasicFunction
 		}
 		catch(TransformerException e)
 		{
-			throw new XPathException("Could not Transform XHTML Message Body: " + e.getMessage(), e);
+			throw new XPathException(getASTNode(), "Could not Transform XHTML Message Body: " + e.getMessage(), e);
 		}
 	}
 	
