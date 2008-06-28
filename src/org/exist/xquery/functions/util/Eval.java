@@ -394,7 +394,7 @@ public class Eval extends BasicFunction {
                         sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
                 }
             } catch(URISyntaxException e) {
-                throw new XPathException(e.getMessage(), e);
+                throw new XPathException(getASTNode(), e.getMessage(), e);
             }
         } else {
             // No. Load from file or URL
