@@ -79,7 +79,7 @@ public class TriggerSystemTask extends BasicFunction {
 					String name = elem.getAttribute("name");
 					String value = elem.getAttribute("value");
 					if(name == null || value == null)
-						throw new XPathException("Name or value attribute missing for stylesheet parameter");
+						throw new XPathException(getASTNode(), "Name or value attribute missing for stylesheet parameter");
 					properties.setProperty(name, value);
 				}
 				child = child.getNextSibling();

@@ -139,7 +139,7 @@ public class ExtCollection extends Function {
 				    Collection coll = context.getBroker().getCollection(uri);            
 				    if(coll == null) {
 				    	if (context.isRaiseErrorOnFailedRetrieval()) {
-		    				throw new XPathException("FODC0002: can not access collection '" + uri + "'");
+		    				throw new XPathException(getASTNode(), "FODC0002: can not access collection '" + uri + "'");
 		    			}					    	
 				    } else {
 	                    if (context.inProtectedMode())
@@ -152,7 +152,7 @@ public class ExtCollection extends Function {
             }
         } catch (XPathException e) { //From AnyURIValue constructor
         	e.setASTNode(getASTNode());
-            throw new XPathException("FODC0002: " + e.getMessage(), e);
+            throw new XPathException(getASTNode(), "FODC0002: " + e.getMessage(), e);
         }
         // iterate through all docs and create the node set
 		NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 1);

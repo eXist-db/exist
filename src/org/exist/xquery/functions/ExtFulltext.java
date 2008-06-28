@@ -166,7 +166,7 @@ public class ExtFulltext extends Function implements Optimizable {
         try {
 			terms = getSearchTerms(arg);
 		} catch (EXistException e) {
-			throw new XPathException(e.getMessage(), e);
+			throw new XPathException(getASTNode(), e.getMessage(), e);
 		}
         // lookup the terms in the fulltext index. returns one node set for each term
         NodeSet[] hits = getMatches(contextSequence.getDocumentSet(),
@@ -278,7 +278,7 @@ public class ExtFulltext extends Function implements Optimizable {
         try {
 			terms = getSearchTerms(searchArg);
 		} catch (EXistException e) {
-			throw new XPathException(e.getMessage(), e);
+			throw new XPathException(getASTNode(), e.getMessage(), e);
 		}
 		NodeSet hits = processQuery(terms, nodes);
 		if (hits == null)

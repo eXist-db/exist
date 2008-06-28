@@ -76,7 +76,7 @@ public class Compile extends BasicFunction {
 		    parser.xpath();
 			if(parser.foundErrors()) {
 				LOG.debug(parser.getErrorMessage());
-				throw new XPathException("error found while executing expression: " +
+				throw new XPathException(getASTNode(), "error found while executing expression: " +
 					parser.getErrorMessage());
 			}
 			AST ast = parser.getAST();
@@ -84,7 +84,7 @@ public class Compile extends BasicFunction {
 			PathExpr path = new PathExpr(context);
 			astParser.xpath(ast, path);
 			if(astParser.foundErrors()) {
-				throw new XPathException("error found while executing expression: " +
+				throw new XPathException(getASTNode(), "error found while executing expression: " +
 						astParser.getErrorMessage(), astParser.getLastException());
 			}
 			path.analyze(new AnalyzeContextInfo());

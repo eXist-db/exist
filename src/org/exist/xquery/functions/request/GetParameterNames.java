@@ -82,9 +82,9 @@ public class GetParameterNames extends BasicFunction {
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException("No request object found in the current XQuery context.");
+			throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $request is not bound to an Java object.");
+			throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			ValueSequence result = new ValueSequence();
@@ -97,6 +97,6 @@ public class GetParameterNames extends BasicFunction {
 			}
 			return result;
 		} else
-			throw new XPathException("Variable $request is not bound to a Request object.");
+			throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
 	}
 }

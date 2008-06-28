@@ -82,7 +82,7 @@ public class FunItemAt extends Function {
 			getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER);
 		long pos = posArg.getValue();
 		if (pos < 1 || pos > seq.getItemCount())
-			throw new XPathException("Invalid position: " + pos);
+			throw new XPathException(getASTNode(), "Invalid position: " + pos);
 		Item item = seq.itemAt((int)pos - 1);
         
         Sequence result;

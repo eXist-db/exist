@@ -107,7 +107,7 @@ public class FunNormalizeUnicode extends Function {
 	        			try {
 	        				modeField = clazz.getField(newNormalizationForm);
 	        			} catch (NoSuchFieldException e) {
-	        				throw new XPathException("err:FOCH0003: unknown normalization form");
+	        				throw new XPathException(getASTNode(), "err:FOCH0003: unknown normalization form");
 	        			}
 	    	        	//com.ibm.icu.text.Normalizer.Mode
 	            		modeObject = modeField.get(null);
@@ -127,7 +127,7 @@ public class FunNormalizeUnicode extends Function {
 		        	//result = new StringValue(n.getText());
 		        	returnedObject = method.invoke( instance, (Object[])null );
         		} catch (Exception e) {
-        			throw new XPathException("Can not find the ICU4J library in the classpath " + e.getMessage());
+        			throw new XPathException(getASTNode(), "Can not find the ICU4J library in the classpath " + e.getMessage());
         		}
         		result = new StringValue((String)returnedObject);
 			}
