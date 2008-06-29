@@ -72,13 +72,10 @@ public class ModuleUtils {
 		try {
 			// try and construct xml document from input stream, we use eXist's
 			// in-memory DOM implementation
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setNamespaceAware(true);
+                        XMLReader reader= context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
+                        LOG.debug("Parsing XML response ...");
 			// TODO : we should be able to cope with context.getBaseURI()
-			InputSource src = new InputSource(new ByteArrayInputStream(xml
-					.getBytes()));
-			SAXParser parser = factory.newSAXParser();
-			XMLReader reader = parser.getXMLReader();
+			InputSource src = new InputSource(new ByteArrayInputStream(xml.getBytes()));
 			MemTreeBuilder builder = context.getDocumentBuilder();
 			DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(
 					builder);
@@ -87,8 +84,6 @@ public class ModuleUtils {
 			Document doc = receiver.getDocument();
 			// return (NodeValue)doc.getDocumentElement();
 			return (NodeValue) doc;
-		} catch (ParserConfigurationException e) {
-			throw new XPathException(e.getMessage());
 		} catch (IOException e) {
 			throw new XPathException(e.getMessage());
 		} finally {
