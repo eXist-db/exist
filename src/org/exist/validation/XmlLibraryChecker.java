@@ -23,9 +23,13 @@ package org.exist.validation;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
+
+import org.apache.log4j.Logger;
+
 import org.xml.sax.XMLReader;
 
 /**
@@ -60,6 +64,9 @@ public class XmlLibraryChecker {
         new ClassVersion("Resolver", "XmlResolver 1.2", 
                 "org.apache.xml.resolver.Version.getVersion()"),
     };
+	
+	
+	private final static Logger logger = Logger.getLogger( XmlLibraryChecker.class );
 
 
     /**
@@ -120,31 +127,43 @@ public class XmlLibraryChecker {
      *  Perform checks on parsers, transformers and resolvers.
      */
     public static void check() {
-        StringBuffer message = new StringBuffer();
+        StringBuffer message 				= new StringBuffer();
+		boolean		 invalidVersionFound	= false;
 
-        if (hasValidClassVersion("Parser", validParsers, message)) {
-            System.out.println(message.toString());
+        if( hasValidClassVersion( "Parser", validParsers, message ) ) {
+			logger.info( message.toString() );
         } else {
-            System.err.println(message.toString());
+			logger.warn( message.toString() );
+            System.err.println( message.toString() );
+			invalidVersionFound	= true;
         }
 
         message = new StringBuffer();
-        if (hasValidClassVersion("Transformer", validTransformers, message)) {
-            System.out.println(message.toString());
+        if( hasValidClassVersion( "Transformer", validTransformers, message ) ) {
+            logger.info( message.toString() );
         } else {
-            System.err.println(message.toString());
+            logger.warn( message.toString() );
+            System.err.println( message.toString() );
+			invalidVersionFound	= true;
         }
 
         message = new StringBuffer();
-        if (hasValidClassVersion("Resolver", validResolvers, message)) {
-            System.out.println(message.toString());
+        if( hasValidClassVersion( "Resolver", validResolvers, message ) ) {
+            logger.info( message.toString() );
         } else {
-            System.err.println(message.toString());
+            logger.warn( message.toString() );
+            System.err.println( message.toString() );
+			invalidVersionFound	= true;
         }
 
-        System.out.println("Using parser " + determineActualParserClass());
-        System.out.println("Using transformer " + determineActualTransformerClass());
-        System.out.println(); 
+		logger.info( "Using parser " + determineActualParserClass() );
+		logger.info( "Using transformer " + determineActualTransformerClass() );
+		
+		if( invalidVersionFound ) {
+			System.err.println( "Using parser " + determineActualParserClass() );
+			System.err.println( "Using transformer " + determineActualTransformerClass() );
+			System.err.println();
+		}
     }
 
     /**
