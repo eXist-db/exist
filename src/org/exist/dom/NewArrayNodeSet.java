@@ -239,7 +239,25 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet {
     }
 
     private int findDoc(DocumentImpl doc) {
-        return Arrays.binarySearch(documentIds, 0, documentCount, doc.getDocId());
+        return findDoc(doc.getDocId());
+    }
+
+    private int findDoc(int docId) {
+        int low = 0;
+        int high = documentCount - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            int midVal = documentIds[mid];
+
+            if (midVal < docId)
+                low = mid + 1;
+            else if (midVal > docId)
+                high = mid - 1;
+            else
+                return mid; // key found
+        }
+        return -(low + 1);  // key not found.
     }
 
     /**
@@ -656,7 +674,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet {
     public NodeSet filterDocuments(NewArrayNodeSet other) {
         NewArrayNodeSet result = new NewArrayNodeSet();
         for (int i = 0; i < other.size; i++) {
-            int idx = Arrays.binarySearch(documentIds, 0, documentCount, other.nodes[i].getDocument().getDocId());
+            int idx = findDoc(other.nodes[i].getDocument().getDocId());
             if (idx > -1)
                 result.add(other.nodes[i]);
         }
