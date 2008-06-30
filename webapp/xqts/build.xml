@@ -65,38 +65,17 @@
             <fileset dir="${config.basedir}/TestSources">
                 <include name="*"/>
                 <!-- This list should be not very long -->
-                <exclude name="fsx.xml"/> <!-- Irregular file --> 
-                <exclude name="orders"/>  <!-- No Mime type   -->
-                <exclude name="strong-queries-results-q2.xsd"/> <!-- syntax eror -->
-                <exclude name="strong-queries-results-q3.xsd"/> <!-- syntax eror -->
+                <exclude name="orders"/> 
             </fileset>
         </xmldb:store>
-        
-        <echo>The files strong-queries-results-q2.xsd and strong-queries-results-q3.xsd in ${config.basedir}/TestSources cannot be uploaded because they have content in prolog. Please remove first line.</echo>
-        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true">
-            <fileset dir="${config.basedir}/TestSources">
-                <include name="strong-queries-results-q2.xsd"/> 
-                <include name="strong-queries-results-q3.xsd"/> 
-            </fileset>
-        </xmldb:store>
-        
+             
         <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true" type="xml">
             <fileset dir="${config.basedir}/TestSources">
                 <include name="orders"/>
             </fileset>
         </xmldb:store>
-        
-        <antcall target="dln-add"/>
-    </target>
 
-    <target name="dln-add" if="exist.dln" xmlns:xmldb="http://exist-db.org/ant">
-      <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true">
-        <fileset dir="${config.basedir}/TestSources">
-          <include name="fsx.xml"/>
-        </fileset>
-      </xmldb:store>
     </target>
-    
     
     <target name="check-files" unless="xqts.present">
         <echo message="The XQTS sources could not be found in directory {$config.basedir}. Please edit"/>
