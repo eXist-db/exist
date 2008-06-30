@@ -1,23 +1,5 @@
 package org.exist.backup;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.Observable;
-import java.util.Stack;
-
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.exist.Namespaces;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.SecurityManager;
@@ -42,6 +24,18 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.Observable;
+import java.util.Stack;
 
 
 /**
@@ -241,7 +235,7 @@ public class Restore extends DefaultHandler {
 				if (subbd!=null)
 					stack.push(subbd);
 				else
-					System.err.println(subbd.getSymbolicPath(name,true) + " does not exist or is not readable.");
+					System.err.println(name + " does not exist or is not readable.");
 			} else if (localName.equals("resource")) {
 
 				String type = atts.getValue("type");
