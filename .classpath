@@ -69,7 +69,6 @@
 	<classpathentry kind="lib" path="lib/core/sunxacml.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-1.2-patched.jar"/>
-	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-ant.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-schema.jar"/>
@@ -97,5 +96,6 @@
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/stax-api-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/onvdl-20070517.jar"/>
+	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
