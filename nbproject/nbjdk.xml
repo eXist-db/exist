@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="eXist-1.3dev">
+    <property file="nbproject/nbjdk.properties"/>
+    <property location="${netbeans.user}/build.properties" name="user.properties.file"/>
+    <property file="${user.properties.file}"/>
+    <import file="jdk.xml"/>
+    <target depends="-jdk-init" name="all">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="all"/>
+    </target>
+    <target depends="-jdk-init" name="clean">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="clean"/>
+    </target>
+    <target depends="-jdk-init" name="javadocs">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="javadocs"/>
+    </target>
+    <target depends="-jdk-init" name="run-nb">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="run-nb"/>
+    </target>
+    <target depends="-jdk-init" name="run-nb.single">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="run-nb.single"/>
+    </target>
+    <target depends="-jdk-init" name="test">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="test"/>
+    </target>
+    <target depends="-jdk-init" name="test-nb.single">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="test-nb.single"/>
+    </target>
+    <target depends="-jdk-init,-jdk-presetdef-nbjpdastart" name="debug-nb">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="debug-nb"/>
+    </target>
+    <target depends="-jdk-init,-jdk-presetdef-nbjpdastart" name="debug-nb.single">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="debug-nb.single"/>
+    </target>
+    <target depends="-jdk-init" name="profile-yourkit">
+        <ant antfile="nbproject/nbjdk.xml" inheritall="false" target="profile-yourkit"/>
+    </target>
+</project>
