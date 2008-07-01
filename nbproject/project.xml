@@ -330,7 +330,7 @@
             </compilation-unit>
             <compilation-unit>
                 <package-root>tools/wrapper/src</package-root>
-                <classpath mode="compile">tools/wrapper/lib/wrapper.jar;start.jar</classpath>
+                <classpath mode="compile">tools/wrapper/lib/wrapper.jar:start.jar</classpath>
                 <built-to>build/classes</built-to>
                 <built-to>extensions/modules/classes</built-to>
                 <built-to>tools/wrapper/classes</built-to>
