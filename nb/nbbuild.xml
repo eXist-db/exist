@@ -2,8 +2,8 @@
 <!-- You may freely edit this file. See commented blocks below for -->
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
-<project name="exist" default="default" basedir=".">
-    <description>Builds, tests, and runs the project exist.</description>
+<project name="eXist-db_1.3dev" default="default" basedir=".">
+    <description>Builds, tests, and runs the project eXist-db 1.3dev.</description>
     <import file="nbproject/build-impl.xml"/>
     <!--
 
@@ -54,7 +54,7 @@
 
     An example of overriding the target for project execution could look like this:
 
-        <target name="run" depends="exist-impl.jar">
+        <target name="run" depends="eXist-db_1.3dev-impl.jar">
             <exec dir="bin" executable="launcher.exe">
                 <arg file="${dist.jar}"/>
             </exec>
