@@ -66,4 +66,17 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-post-init">
+         <property file="../VERSION.txt"/>
+         
+        <filter token="database" value="native"/>
+        <filter token="version" value="${project.version}-rev:${svn.revision}-${DSTAMP}"/>
+        
+        <copy file="../conf.xml.tmpl" tofile="../conf.xml" filtering="true"/>
+        
+        <property name="jetty.dir" value="../tools/jetty"/>
+        <mkdir dir="${jetty.dir}/logs"/>
+        <mkdir dir="${jetty.dir}/work"/>
+    </target>
+    
 </project>
