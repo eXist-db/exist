@@ -44,45 +44,52 @@ import org.exist.xquery.value.Type;
 
 public class GetHeader extends BasicFunction {
 
-        public final static FunctionSignature signature =
-                new FunctionSignature(
-                        new QName(
-                                "get-header",
-                                RequestModule.NAMESPACE_URI,
-                                RequestModule.PREFIX),
-                        "Returns the HTTP request header identified by $a. The list of all " +
-                        "headers included in the HTTP request are available through the " +
-                        "request:get-header-names function.",
-                        new SequenceType[] {
-                                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-                        new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+	public final static FunctionSignature signature = new FunctionSignature(
+			new QName("get-header", RequestModule.NAMESPACE_URI,
+					RequestModule.PREFIX),
+			"Returns the HTTP request header identified by $a. The list of all "
+					+ "headers included in the HTTP request are available through the "
+					+ "request:get-header-names function.",
+			new SequenceType[] { new SequenceType(Type.STRING,
+					Cardinality.EXACTLY_ONE) }, new SequenceType(Type.STRING,
+					Cardinality.ZERO_OR_ONE));
 
-        public GetHeader(XQueryContext context) {
-                super(context, signature);
-        }
+	public GetHeader(XQueryContext context) {
+		super(context, signature);
+	}
 
-        
-        /* (non-Javadoc)
-         * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-         */
-        public Sequence eval(Sequence[] args, Sequence contextSequence)
-                        throws XPathException {
-                RequestModule myModule =
-                        (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
+	 *      org.exist.xquery.value.Sequence)
+	 */
+	public Sequence eval(Sequence[] args, Sequence contextSequence)
+			throws XPathException {
+		RequestModule myModule = (RequestModule) context
+				.getModule(RequestModule.NAMESPACE_URI);
 
-                // request object is read from global variable $request
-                Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-                if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT)
-                        throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
+		// request object is read from global variable $request
+		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		if (var == null || var.getValue() == null
+				|| var.getValue().getItemType() != Type.JAVA_OBJECT)
+			throw new XPathException(getASTNode(),
+					"Variable $request is not bound to an Java object.");
 
-                // get parameters
-                String param = args[0].getStringValue();
+		// get parameters
+		String param = args[0].getStringValue();
 
-                JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-                if (value.getObject() instanceof RequestWrapper) {
-                        String headerValue = ((RequestWrapper)value.getObject()).getHeader(param);
-                        return XPathUtil.javaObjectToXPath(headerValue, null, false);
-                } else
-                        throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
-        }
+		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		if (value.getObject() instanceof RequestWrapper) {
+			String headerValue = ((RequestWrapper) value.getObject())
+					.getHeader(param);
+			if (headerValue == null) {
+				return Sequence.EMPTY_SEQUENCE;
+			} else {
+				return XPathUtil.javaObjectToXPath(headerValue, null, false);
+			}
+		} else
+			throw new XPathException(
+					"Variable $request is not bound to a Request object.");
+	}
 }
