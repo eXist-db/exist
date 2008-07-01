@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.java.j2seproject</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
+            <name>exist</name>
+            <minimum-ant-version>1.6.5</minimum-ant-version>
+            <source-roots>
+                <root id="src.dir"/>
+                <root id="exist2.dir" name="Fluent"/>
+                <root id="exist3.dir" name="NGram"/>
+                <root id="src.src.dir" name="Modules"/>
+                <root id="src.src2.dir" name="Wrapper"/>
+            </source-roots>
+            <test-roots>
+                <root id="test.src.dir"/>
+                <root id="test.src2.dir" name="Fluent test"/>
+                <root id="test.src3.dir" name="NGram test"/>
+            </test-roots>
+        </data>
+        <libraries xmlns="http://www.netbeans.org/ns/ant-project-libraries/1">
+            <definitions>./nblibraries.properties</definitions>
+        </libraries>
+    </configuration>
+</project>
