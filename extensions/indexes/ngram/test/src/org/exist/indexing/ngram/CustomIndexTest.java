@@ -606,7 +606,7 @@ public class CustomIndexTest extends TestCase {
                 "\n";
             
             String query = queryBody + "util:index-keys(/test/item, \'\', util:function(\'local:callback\', 2), 1000, 'ngram-index')";
-            //String query = queryBody + "util:index-keys(/test/item, \'\', util:function(\'local:callback\', 2), 1000, 'org.exist.indexing.impl.NGramIndex')";
+            //String query = queryBody + "util:index-keys(/test/item, \'\', util:function(\xs:QName('local:callback\'), 2), 1000, 'org.exist.indexing.impl.NGramIndex')";
             seq = xquery.execute(query, null, AccessContext.TEST);
             assertNotNull(seq);
             //TODO : check cardinality

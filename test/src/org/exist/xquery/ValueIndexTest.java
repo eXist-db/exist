@@ -288,14 +288,14 @@ public class ValueIndexTest extends TestCase {
                 "\n";
             
             XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
-            String query = queryBody + "u:index-keys(//item/name, \'\', util:function(\'f:term-callback\', 2), 1000)";
+            String query = queryBody + "u:index-keys(//item/name, \'\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
             ResourceSet result = service.query(query);
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
                 System.out.println(i.nextResource().getContent());
             }
             assertEquals(7, result.getSize());
 
-            query = queryBody + "u:index-keys(//item/stock, 0, util:function(\'f:term-callback\', 2), 1000)";
+            query = queryBody + "u:index-keys(//item/stock, 0, util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
             result = service.query(query);
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
                 System.out.println(i.nextResource().getContent());

@@ -205,15 +205,15 @@ public class FtQueryTest extends XMLTestCase {
 
 	        XQueryService service = (XQueryService)
 	            testCollection.getService("XQueryService", "1.0");
-	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "'), \'is\', util:function(\'f:term-callback\', 2), 1000)";
+	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "'), \'is\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        ResourceSet result = service.query(query);
 	        assertEquals(7, result.getSize());
 
-	        query = queryBody + "t:index-terms(collection('"  + TEST_COLLECTION_PATH + "')//LINE, \'is\', util:function(\'f:term-callback\', 2), 1000)";
+	        query = queryBody + "t:index-terms(collection('"  + TEST_COLLECTION_PATH + "')//LINE, \'is\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        result = service.query(query);
 	        assertEquals(6, result.getSize());
 
-	        query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//mods:title, \'s\', util:function(\'f:term-callback\', 2), 1000)";
+	        query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//mods:title, \'s\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        result = service.query(query);
 	        assertEquals(20, result.getSize());
 		} catch (XMLDBException e) {
