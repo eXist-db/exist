@@ -270,7 +270,7 @@ public abstract class Serializer implements XMLReader {
 	protected int getHighlightingMode() {
 		String option =
 			getProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
-		if (option.equals("both"))
+		if (option.equals("both") || option.equals("all"))
 			return TAG_BOTH;
 		else if (option.equals("elements"))
 			return TAG_ELEMENT_MATCHES;
