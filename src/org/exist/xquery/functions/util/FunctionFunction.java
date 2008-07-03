@@ -44,7 +44,7 @@ public class FunctionFunction extends BasicFunction {
             "Please note: due to the special character of util:function, the arguments to this function " +
             "have to be literals or need to be resolvable at compile time at least.",
             new SequenceType[] {
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
             },
             new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE)
