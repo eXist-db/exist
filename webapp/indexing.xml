@@ -867,7 +867,7 @@ include.index.spatial = false
    </entry>
 };
 
-util:index-keys(//name, "A", util:function("local:term-callback", 2), 1000)]]></programlisting>
+util:index-keys(//name, "A", util:function(xs:QName("local:term-callback"), 2), 1000)]]></programlisting>
             </example>
             
             <para>This query will show you the first 1000 keys (starting with the letter 'A') indexed for the
@@ -895,7 +895,7 @@ util:index-keys(//name, "A", util:function("local:term-callback", 2), 1000)]]></
    </entry>
 };
 
-text:index-terms(//name, "A", util:function("local:term-callback", 2), 1000)]]>
+text:index-terms(//name, "A", util:function(xs:QName("local:term-callback"), 2), 1000)]]>
                 </programlisting>
             </example>
         </section>
