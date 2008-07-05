@@ -88,7 +88,7 @@ declare function irc:display-event($event as element()) as element() {
             <td class="nick">{xs:string($event/@nick)}</td>
             <td class="message">
             {
-                let $cb := util:function("irc:highlight", 3)
+                let $cb := util:function(xs:QName("irc:highlight"), 3)
                 for $node in $event/node()
                 return
                 	if ($node instance of text()) then
@@ -135,7 +135,7 @@ declare function irc:highlight($term as xs:string, $node as text(), $args as ite
 
 declare function irc:query($query as xs:string) as element() {
     util:declare-option("exist:serialize", "media-type=text/xml omit-xml-declaration=no"),
-    let $cb := util:function('irc:highlight', 3)
+    let $cb := util:function(xs:QName('irc:highlight'), 3)
     let $hits := /xlog/message[. &= $query]
     return
         <table>

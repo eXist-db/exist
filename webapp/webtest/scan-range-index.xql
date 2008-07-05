@@ -16,12 +16,12 @@ declare function f:term-callback($term, $data as xs:int+) as element() {
 <entries>
 	<cities>
 	{
-		util:index-keys(//city/name, "T", util:function("f:term-callback", 2), 1000)
+		util:index-keys(//city/name, "T", util:function(xs:QName("f:term-callback"), 2), 1000)
 	}
 	</cities>
 	<population>
 	{
-		util:index-keys(//city/population, 1, util:function("f:term-callback", 2), 1000)
+		util:index-keys(//city/population, 1, util:function(xs:QName("f:term-callback"), 2), 1000)
 	}
 	</population>
 </entries>
