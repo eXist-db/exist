@@ -204,7 +204,7 @@ public class GMLIndexTest extends TestCase {
 	        	"     <position>{$data[3]}</position>" +
 	        	"   </entry> " +	        	
 	        	"}; " +
-	        	//"util:index-keys(//gml:*, '', util:function('local:key-callback', 2), 1000, 'spatial-index')[entry/frequency > 1] ",
+	        	//"util:index-keys(//gml:*, '', util:function(xs:QName('local:key-callback'), 2), 1000, 'spatial-index')[entry/frequency > 1] ",
 	        	"util:index-keys(//gml:*, '', util:function(xs:QName('local:key-callback'), 2), 1000, 'spatial-index') ",
 	        	null, AccessContext.TEST);
 	        assertNotNull(seq);

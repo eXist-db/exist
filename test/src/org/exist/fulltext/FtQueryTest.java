@@ -448,7 +448,7 @@ public class FtQueryTest extends XMLTestCase {
 	            "};\n" +
 	            "\n";
 
-	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//node, (), util:function(\'f:term-callback\', 2), 1000)";
+	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//node, (), util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        ResourceSet result = service.query(query);
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
                 Resource resource = i.nextResource();
