@@ -77,9 +77,16 @@ public class MemTreeBuilder {
 	 * Start building the document.
 	 */
 	public void startDocument() {
-		this.doc = new DocumentImpl(context);
+		this.doc = new DocumentImpl(context, false);
 	}
 
+	/**
+	 * Start building the document.
+	 */
+	public void startDocument(boolean explicitCreation) {
+		this.doc = new DocumentImpl(context, explicitCreation);
+	}
+	
 	/**
 	 * End building the document.
 	 */

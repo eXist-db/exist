@@ -1626,6 +1626,14 @@ public class XQueryContext {
 		}
 		return builder;
 	}
+	
+	public MemTreeBuilder getDocumentBuilder(boolean explicitCreation) {
+		if (builder == null) {
+			builder = new MemTreeBuilder(this);
+			builder.startDocument(explicitCreation);
+		}
+		return builder;
+	}	
 
     /**
      * Returns the shared name pool used by all in-memory
