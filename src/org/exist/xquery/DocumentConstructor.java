@@ -78,7 +78,7 @@ public class DocumentConstructor extends NodeConstructor {
         
         context.pushDocumentContext();
         
-        MemTreeBuilder builder = context.getDocumentBuilder();
+        MemTreeBuilder builder = context.getDocumentBuilder(true);
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         
         try {        
