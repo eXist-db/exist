@@ -2855,6 +2855,26 @@ public class XQueryTest extends XMLTestCase {
             fail(ex.toString());
         }
     }
+    
+    // http://sourceforge.net/support/tracker.php?aid=2007522
+    public void bugtestXPDY0002_UndefinedContextSequence_2007522() {
+
+        try {
+            String query = "<A>{B}</A>";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "<A/>",
+                    result.getResource(0).getContent().toString());
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+    
 
 
     // ======================================
