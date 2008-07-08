@@ -216,8 +216,10 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		while (next > nodeNumber) {
 			next = document.next[next];
 		}
-		if (next <= 0)
+		if (next < 0) //Is this even possible ?
 			return null;
+		if (next == 0)
+			return this.document.explicitCreation ? this.document : null;
 		return document.getNode(next);
 	}
 
