@@ -55,13 +55,18 @@
 	    	</para>
 	    </section>
 	    <section>
-	    	<title><ulink url="http://code.google.com/soc/exist/appinfo.html?csaid=69EADF1DA6525E5B">eXist eXtension to teXt Search</ulink></title>
+	    	<title><ulink url="http://code.google.com/soc/exist/appinfo.html?csaid=69EADF1DA6525E5B">eXist extension to fulltext search</ulink></title>
 	    	<para>
 	    		<orderedlist>
 		           	<listitem>Student: Akhil Kumar Meshram</listitem>
 	    	   		<listitem>Mentor: Pierrick Brihaye</listitem>
      	       		<listitem><ulink url="soc-ft.xml">Statement of Work</ulink></listitem>	    	   		
     	   		</orderedlist>
+    	   		<note><para>Akhil disappeared just after mid-term evaluation, leaving some regressions in
+    	   		the parser's code and a very incomplete work on the modularized fulltext index which was 
+    	   		breaking backward compatibility.</para>
+    	   		<para>Pierrick has fixed the incompatibility stuff in spetember/october and we hope to integrate
+    	   		Akhil's FT grammar part, which looks OK, into the new redesigned parser (under Leif-Jöran's responsability).</para></note> 
        		</para>
 	    </section>
     </section>

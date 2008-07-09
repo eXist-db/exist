@@ -50,8 +50,27 @@
     </section>
     
     <section>
-	    <title>Accepted Projects</title>
-	    <para>No projects have been accepted yet.</para>
+        <title>Accepted Projects</title>
+        <section>
+            <title><ulink url="http://code.google.com/soc/2008/exist/app.html?csaid=KxYWFA5bHTMMNhAkFAZQWi1LOxwJSVlTBnAGYEBXSVgFUnAHaksC%0A">Distributed Search for eXist</ulink></title>
+            <para>
+                <orderedlist>
+                    <listitem>Student: Sergej Rinc</listitem>
+                    <listitem>Mentor: Leig-Jöran Olsson</listitem>
+                    <listitem><!--<ulink url="soc-dsrch.xml">-->Statement of Work<!--</ulink>--></listitem>
+                </orderedlist>
+            </para>
+        </section>
+        <section>
+            <title><ulink url="http://code.google.com/soc/2008/exist/app.html?csaid=FRIKHDlQXSsENl0mEgdQXSACLTMDHgpYX28GNx5eQ14DB3UDaUpeXl8BUHAGPUtc%0A">Implement an XSLT 2.0 Processor</ulink></title>
+            <para>
+                <orderedlist>
+                    <listitem>Student: Leela Manoranjan</listitem>
+                    <listitem>Mentor: Pierrick Brihaye</listitem>
+                    <listitem><ulink url="soc-xslt.xml">Statement of Work</ulink></listitem>                  
+                </orderedlist>
+            </para>
+        </section>
     </section>
                 
     <section>
