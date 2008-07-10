@@ -105,59 +105,59 @@ public class FileLock {
      * due to IO errors. The caller may want to switch to read-only mode.
      */
     public boolean tryLock() throws ReadOnlyException {
-	int attempt = 0;
-	while (lockFile.exists()) {
-	    try {
-		read();
-	    } catch (IOException e) {
-		message("Failed to read lock file", null);
-		e.printStackTrace();
-	    }
-	    if (checkHeartbeat()) {
-		if (++attempt == 1) {
-                    // sometimes Java does not properly delete files, so we may have an old
-                    // lock file from a previous db run, which has not timed out yet. We thus
-                    // give the db a second chance and wait for HEARTBEAT + 100 milliseconds
-		    // before we check the heartbeat a second time.
-		    synchronized (this) {
-			try {
-                            message("Waiting a short time for the lock to be released...", null);
-			    wait(HEARTBEAT + 100);
-			} catch (InterruptedException e) {
-			}
-		    }
-		    try {
-			// close the open channel, so it can be read again
-			if (channel.isOpen())
-			    channel.close();
-			channel = null;
-		    } catch (IOException e) {
-		    }
-		} else
-		    // we found a valid heartbeat
-		    return false;
-	    }
-	}
-	try {
-	    if (!lockFile.createNewFile())
-		return false;
-	} catch (IOException e) {
+        int attempt = 0;
+        while (lockFile.exists()) {
+            if (++attempt > 2)
+                return false;
+            try {
+                read();
+            } catch (IOException e) {
+                message("Failed to read lock file", null);
+                e.printStackTrace();
+            }
+            // check if there's a heartbeat. if not, remove the stale .lck file and try again
+            if (checkHeartbeat()) {
+                // there seems to be a heartbeat...
+                // sometimes Java does not properly delete files, so we may have an old
+                // lock file from a previous db run, which has not timed out yet. We thus
+                // give the db a second chance and wait for HEARTBEAT + 100 milliseconds
+                // before we check the heartbeat a second time.
+                synchronized (this) {
+                    try {
+                        message("Waiting a short time for the lock to be released...", null);
+                        wait(HEARTBEAT + 100);
+                    } catch (InterruptedException e) {
+                    }
+                }
+                try {
+                    // close the open channel, so it can be read again
+                    if (channel.isOpen())
+                        channel.close();
+                    channel = null;
+                } catch (IOException e) {
+                }
+            }
+        }
+        try {
+            if (!lockFile.createNewFile())
+                return false;
+        } catch (IOException e) {
             throw new ReadOnlyException(message("Could not create lock file", e));
-	}
+        }
 
-	try {
-	    save();
-	} catch (IOException e) {
+        try {
+            save();
+        } catch (IOException e) {
             throw new ReadOnlyException(message("Caught exception while trying to write lock file", e));
-	}
+        }
 
         //Schedule the heartbeat for the file lock
-	Properties params = new Properties();
-	params.put(FileLock.class.getName(), this);
-	pool.getScheduler().createPeriodicJob(HEARTBEAT,
-		new FileLockHeartBeat(lockFile.getAbsolutePath()), -1, params);
+        Properties params = new Properties();
+        params.put(FileLock.class.getName(), this);
+        pool.getScheduler().createPeriodicJob(HEARTBEAT,
+                new FileLockHeartBeat(lockFile.getAbsolutePath()), -1, params);
 
-	return true;
+        return true;
     }
 
     /**
