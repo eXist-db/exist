@@ -63,6 +63,12 @@ Content- Length: nnn
 &lt;/entry&gt;</screen>
       </example>
 
+	<note>
+		<para>It is important to specify the correct Content-Type in the HTTP header.
+		If the content type is not application/atom+xml, the server will just
+		store the resource as a document into the existing feed collection and
+		add an entry to the feed which links to the new resource.</para>
+	</note>
       <para>The server then responds with the created entry, a location header
       to the created entry, or both.</para>
 
