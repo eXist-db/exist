@@ -77,28 +77,32 @@ public class Optimize extends Pragma {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (contextItem != null)
             contextSequence = contextItem.toSequence();
-        NodeSet originalContext = contextSequence == null ? null :
-                        contextSequence.toNodeSet(); // contextSequence will be overwritten
+        
         boolean useCached = false;
-        if (cachedContext != null && cachedContext == originalContext)
-            useCached = !originalContext.hasChanged(cachedTimestamp);
-
-        if (contextVar != null) {
-            contextSequence = contextVar.eval(contextSequence);
-        }
-        // check if all Optimizable expressions signal that they can indeed optimize
-        // in the current context
         boolean optimize = false;
-        if (useCached)
-            optimize = cachedOptimize;
-        else {
-            if (optimizables != null && optimizables.length > 0) {
-                for (int i = 0; i < optimizables.length; i++) {
-                    if (optimizables[i].canOptimize(contextSequence))
-                        optimize = true;
-                    else {
-                        optimize = false;
-                        break;
+        NodeSet originalContext = null;
+
+        if (contextSequence == null || contextSequence.isPersistentSet()) {    // don't try to optimize in-memory node sets!
+            // contextSequence will be overwritten
+            originalContext = contextSequence == null ? null : contextSequence.toNodeSet();
+            if (cachedContext != null && cachedContext == originalContext)
+                useCached = !originalContext.hasChanged(cachedTimestamp);
+            if (contextVar != null) {
+                contextSequence = contextVar.eval(contextSequence);
+            }
+            // check if all Optimizable expressions signal that they can indeed optimize
+            // in the current context
+            if (useCached)
+                optimize = cachedOptimize;
+            else {
+                if (optimizables != null && optimizables.length > 0) {
+                    for (int i = 0; i < optimizables.length; i++) {
+                        if (optimizables[i].canOptimize(contextSequence))
+                            optimize = true;
+                        else {
+                            optimize = false;
+                            break;
+                        }
                     }
                 }
             }
