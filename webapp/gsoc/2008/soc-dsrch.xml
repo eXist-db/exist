@@ -3,8 +3,8 @@
 <book>
   <bookinfo>
     <graphic fileref="logo.jpg"/>
-    <productname>XSLT Processor</productname>
-    <title>GSoC 2008 : XSLT Processor</title>
+    <productname>Distributed Search for eXist</productname>
+    <title>GSoC 2008: Distributed Search for eXist</title>
     <author>
       <firstname>Sergej</firstname>
       <surname>Rinc</surname>
