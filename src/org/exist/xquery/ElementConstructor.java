@@ -101,13 +101,13 @@ public class ElementConstructor extends NodeConstructor {
         QName qn = new QName(name, uri, "xmlns");
 
         if (name.equalsIgnoreCase("xml")) {
-            throw new XPathException("XQST0070 : can not redefine '" + qn + "'");
+            throw new XPathException(getASTNode(), "XQST0070 : can not redefine '" + qn + "'");
         }
         if (name.equalsIgnoreCase("xmlns")) {
-            throw new XPathException("XQST0070 : can not redefine '" + qn + "'");
+            throw new XPathException(getASTNode(), "XQST0070 : can not redefine '" + qn + "'");
         }
         if (name.length()!=0 && uri.trim().length()==0) {
-           throw new XPathException("XQST0085 : cannot undeclare a prefix "+name+".");
+           throw new XPathException(getASTNode(), "XQST0085 : cannot undeclare a prefix "+name+".");
         }
         if(namespaceDecls == null) {
             namespaceDecls = new QName[1];
@@ -115,7 +115,7 @@ public class ElementConstructor extends NodeConstructor {
         } else {
             for(int i = 0; i < namespaceDecls.length; i++) {
                 if (qn.equals(namespaceDecls[i]))
-                    throw new XPathException("XQST0071 : duplicate definition for '" + qn + "'");
+                    throw new XPathException(getASTNode(), "XQST0071 : duplicate definition for '" + qn + "'");
             }
             QName decls[] = new QName[namespaceDecls.length + 1];
             System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
@@ -138,7 +138,7 @@ public class ElementConstructor extends NodeConstructor {
                     // TODO: the specs are unclear here: should we throw XQST0085 or not?
                     context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
 //					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
-//		        		throw new XPathException("XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
+//		        		throw new XPathException(getASTNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
                 } else
                     context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
             }
@@ -176,7 +176,7 @@ public class ElementConstructor extends NodeConstructor {
                         // TODO: the specs are unclear here: should we throw XQST0085 or not?
                     //	context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
 //					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
-//		        		throw new XPathException("XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
+//		        		throw new XPathException(getASTNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
                     //} else
                         context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
                 }
@@ -207,7 +207,7 @@ public class ElementConstructor extends NodeConstructor {
                     attrValues = constructor.eval(contextSequence, contextItem);
                     attrQName = QName.parse(context, constructor.getQName(), "");
                     if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
-                        throw new XPathException("XQST0040 '" + attrQName.getLocalName() + "' is a duplicate attribute name");
+                        throw new XPathException(getASTNode(), "XQST0040 '" + attrQName.getLocalName() + "' is a duplicate attribute name");
                     attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
                             attrQName.getStringValue(), "CDATA", attrValues.getStringValue());
                 }
@@ -217,7 +217,7 @@ public class ElementConstructor extends NodeConstructor {
             // create the element
             Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
             if(!qnameSeq.hasOne())
-		    throw new XPathException("Type error: the node name should evaluate to a single item");
+		    throw new XPathException(getASTNode(), "Type error: the node name should evaluate to a single item");
             Item qnitem = qnameSeq.itemAt(0);
             QName qn;
             if (qnitem instanceof QNameValue) {
@@ -238,7 +238,7 @@ public class ElementConstructor extends NodeConstructor {
 
             //Not in the specs but... makes sense
             if(!XMLChar.isValidName(qn.getLocalName()))
-			throw new XPathException("XPTY0004 '" + qnitem.getStringValue() + "' is not a valid element name");
+			throw new XPathException(getASTNode(), "XPTY0004 '" + qnitem.getStringValue() + "' is not a valid element name");
 
             // add namespace declaration nodes
             int nodeNr = builder.startElement(qn, attrs);
