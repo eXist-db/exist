@@ -82,11 +82,11 @@ public class CastExpression extends AbstractExpression {
         }
 		//Should be handled by the parser
         if (requiredType == Type.ATOMIC || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
-			throw new XPathException("err:XPST0080: cannot cast to " +
+			throw new XPathException(getASTNode(), "err:XPST0080: cannot cast to " +
 					Type.getTypeName(requiredType));
         }
         if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED) {
-			throw new XPathException("err:XPST0051: cannot cast to " +
+			throw new XPathException(getASTNode(), "err:XPST0051: cannot cast to " +
 					Type.getTypeName(requiredType));
         }
 
