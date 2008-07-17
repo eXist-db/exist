@@ -1,23 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2008 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.xquery;
@@ -96,11 +95,11 @@ public class XQueryWatchDog {
     public void setMaxNodesFromOption(Option option) throws XPathException {
     	String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
-    		throw new XPathException("Option 'output-size-limit' should have exactly one parameter: the timeout value.");
+    		throw new XPathException("Option 'output-size-limit' should have exactly one parameter: the output-size-limit value.");
 		try {
 			setMaxNodes(Integer.parseInt(contents[0]));
 		} catch (NumberFormatException e) {
-			throw new XPathException("Error parsing size-limit value in option " + option.getQName().getStringValue());
+			throw new XPathException("Error parsing output-size-limit value in option " + option.getQName().getStringValue());
 		}
 		if (LOG.isDebugEnabled()) {
 			NumberFormat nf = NumberFormat.getNumberInstance();
@@ -135,11 +134,11 @@ public class XQueryWatchDog {
             if(expr == null)
                 expr = context.getRootExpression();
             NumberFormat nf = NumberFormat.getNumberInstance();
-            LOG.warn("Query exceeded predefined limit (" +  nf.format(maxNodesLimit) + ") for document fragments: " + 
+            LOG.warn("Query exceeded predefined output-size-limit (" +  nf.format(maxNodesLimit) + ") for document fragments: " + 
                     ExpressionDumper.dump(expr));
             cleanUp();
             throw new TerminatedException.SizeLimitException(expr.getASTNode(),
-                    "The constructed document fragment exceeded the predefined size limit (current: " +
+                    "The constructed document fragment exceeded the predefined output-size-limit (current: " +
                     nf.format(builder.getSize()) + "; allowed: " + nf.format(maxNodesLimit) +
                     "). The query has been killed.");
         }
