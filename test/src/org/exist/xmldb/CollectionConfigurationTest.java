@@ -1,11 +1,10 @@
 package org.exist.xmldb;
 
 import junit.framework.TestCase;
-
 import org.exist.collections.CollectionConfiguration;
 import org.exist.storage.DBBroker;
-import org.exist.xquery.Constants;
 import org.exist.test.TestConstants;
+import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -80,6 +79,13 @@ public class CollectionConfigurationTest extends TestCase {
         + "  <index>"
         + "    <create qname=\"a\" type=\"xs:integer\"/>"
         + "    <create path=\"//a\" type=\"xs:integer\"/>"
+        + "  </index>"
+        + "</collection>";
+
+    private String QNAME_CONFIG = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+        + "  <index>"
+        + "    <create qname=\"a\" type=\"xs:integer\"/>"
+        + "    <create qname=\"b\" type=\"xs:integer\"/>"
         + "  </index>"
         + "</collection>";
 
@@ -840,7 +846,31 @@ public class CollectionConfigurationTest extends TestCase {
            fail(e.getMessage());             
        }
   }   
-   
+
+    public void failTestRangeIndex2() {
+        try {
+            //Configure collection automatically
+            IndexQueryService idxConf = (IndexQueryService)
+                    testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(QNAME_CONFIG);
+
+            //... then index document
+            XMLResource doc = (XMLResource)
+                    testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+            doc.setContent(DOCUMENT_CONTENT);
+            testCollection.storeResource(doc);
+
+            XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+            // the query optimizer cannot optimize the following general comparison as
+            // the context qname is unknown. however, the available qname index should still be used.
+            ResourceSet result = service.query("for $t in /test/a where $t = 1 return $t");
+            assertEquals(1, result.getSize());
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
    public void testRangeIndexOverAttributes() { 
        ResourceSet result; 
        try {
