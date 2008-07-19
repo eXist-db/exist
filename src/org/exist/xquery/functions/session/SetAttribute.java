@@ -53,17 +53,7 @@ public class SetAttribute extends Function {
 				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
-
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("set-session-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Stores a value in the current session using the supplied attribute name.",
-			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY),
-			"Moved to session module and renamed to session:set-attribute.");
+	
 	
 	public SetAttribute(XQueryContext context) {
 		super(context, signature);

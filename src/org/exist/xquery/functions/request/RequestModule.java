@@ -62,6 +62,7 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetServerPort.signature, GetServerPort.class),
 		new FunctionDef(GetHostname.signature, GetHostname.class),
 		new FunctionDef(GetExists.signature, GetExists.class),
+		new FunctionDef(SetAttribute.signature, SetAttribute.class),
 		
 		// deprecated functions:
 		new FunctionDef(Create.deprecated, Create.class),
@@ -82,7 +83,6 @@ public class RequestModule extends AbstractInternalModule {
         new FunctionDef(GetURI.deprecated, GetURI.class),
 		new FunctionDef(GetAttributeNames.deprecated, GetAttributeNames.class),
 		new FunctionDef(SetCurrentUser.deprecated, SetCurrentUser.class),
-		new FunctionDef(SetAttribute.deprecated, SetAttribute.class),
 		new FunctionDef(StreamBinary.deprecated, StreamBinary.class),
 		new FunctionDef(FunUnEscapeURI.deprecated, FunUnEscapeURI.class)
 		
