@@ -141,7 +141,7 @@ public class FunBaseURI extends BasicFunction {
                         relativeURI = new URI(domNode.getBaseURI());
                         baseURI = new URI(context.getBaseURI() + "/");
                     } catch (URISyntaxException e) {
-                        throw new XPathException(e.getMessage(), e);
+                        throw new XPathException(getASTNode(), e.getMessage(), e);
                     }
                     if (!"".equals(relativeURI.toString())) {
                         if (relativeURI.isAbsolute()) {
@@ -168,7 +168,7 @@ public class FunBaseURI extends BasicFunction {
                         relativeURI = new URI(baseNode.getBaseURI());
                         baseURI = new URI(context.getBaseURI() + "/");
                     } catch (URISyntaxException e) {
-                        throw new XPathException(e.getMessage(), e);
+                        throw new XPathException(getASTNode(), e.getMessage(), e);
                     }
                     if (relativeURI.isAbsolute()) {
                         result = new AnyURIValue(relativeURI);

@@ -108,7 +108,7 @@ public class FunMin extends CollatingFunction {
     		while (iter.hasNext()) {
                 Item item = iter.nextItem();
                 if (item instanceof QNameValue)
-            		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(item.getType()));
+            		throw new XPathException(getASTNode(), "FORG0006: Cannot compare " + Type.getTypeName(item.getType()));
                 AtomicValue value = item.atomize();
                 //Any value of type xdt:untypedAtomic is cast to xs:double
                 if (value.getType() == Type.UNTYPED_ATOMIC) 
@@ -117,7 +117,7 @@ public class FunMin extends CollatingFunction {
                     min = value;
                 else {                	
                 	if (Type.getCommonSuperType(min.getType(), value.getType()) == Type.ATOMIC) {
-                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
+                		throw new XPathException(getASTNode(), "FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
                 				" and " + Type.getTypeName(value.getType()));
                 	}
                     //Any value of type xdt:untypedAtomic is cast to xs:double
@@ -127,7 +127,7 @@ public class FunMin extends CollatingFunction {
 	                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
 	                	//Don't mix comparisons
 	                	if (!Type.subTypeOf(min.getType(), Type.NUMBER))
-	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
+	                		throw new XPathException(getASTNode(), "FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
 	                				" and " + Type.getTypeName(value.getType()));
 	                	if (((NumericValue) value).isNaN()) {
 	                		//Type NaN correctly
@@ -144,7 +144,7 @@ public class FunMin extends CollatingFunction {
 	                //Ugly test
 	                if (value instanceof ComputableValue) {
                         if (!(min instanceof ComputableValue))
-                            throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
+                            throw new XPathException(getASTNode(), "FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
                                     " and " + Type.getTypeName(value.getType()));
 	                	//Type value correctly
 	                	value = value.promote(min);
@@ -152,7 +152,7 @@ public class FunMin extends CollatingFunction {
 	                    computableProcessing = true;
                 	} else {
 	                	if (computableProcessing)
-	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
+	                		throw new XPathException(getASTNode(), "FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
 	                				" and " + Type.getTypeName(value.getType()));
 	                	if (Collations.compare(collator, value.getStringValue(), min.getStringValue()) < 0)	               
 	                		min = value;

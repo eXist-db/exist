@@ -112,7 +112,7 @@ public class FunMax extends CollatingFunction {
     		while (iter.hasNext()) {
                 Item item = iter.nextItem();
                 if (item instanceof QNameValue)
-            		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(item.getType()));
+            		throw new XPathException(getASTNode(), "FORG0006: Cannot compare " + Type.getTypeName(item.getType()));
                 AtomicValue value = item.atomize();                 
                 //Any value of type xdt:untypedAtomic is cast to xs:double
                 if (value.getType() == Type.UNTYPED_ATOMIC) 
@@ -121,7 +121,7 @@ public class FunMax extends CollatingFunction {
                     max = value;
                 else {
                 	if (Type.getCommonSuperType(max.getType(), value.getType()) == Type.ATOMIC) {
-                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
+                		throw new XPathException(getASTNode(), "FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
                 				" and " + Type.getTypeName(value.getType()));
                 	}
                     //Any value of type xdt:untypedAtomic is cast to xs:double
@@ -131,7 +131,7 @@ public class FunMax extends CollatingFunction {
 	                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
 	                	//Don't mix comparisons
 	                	if (!Type.subTypeOf(max.getType(), Type.NUMBER))
-	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
+	                		throw new XPathException(getASTNode(), "FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
 	                				" and " + Type.getTypeName(value.getType()));
 	                	if (((NumericValue) value).isNaN()) {
 	                		//Type NaN correctly
@@ -153,7 +153,7 @@ public class FunMax extends CollatingFunction {
 	                    computableProcessing = true;
                 	} else {
 	                	if (computableProcessing)
-	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
+	                		throw new XPathException(getASTNode(), "FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
 	                				" and " + Type.getTypeName(value.getType()));	                		
 	                	if (Collations.compare(collator, value.getStringValue(), max.getStringValue()) > 0)	               
 	                		max = value;	                	

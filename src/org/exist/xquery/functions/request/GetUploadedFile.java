@@ -68,9 +68,9 @@ public class GetUploadedFile extends BasicFunction {
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException("No request object found in the current XQuery context.");
+			throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $request is not bound to an Java object.");
+			throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
 
 		// get parameters
 		String uploadParamName = args[0].getStringValue();
@@ -86,6 +86,6 @@ public class GetUploadedFile extends BasicFunction {
 				LOG.debug("Uploaded file: " + file.getAbsolutePath());
 			return new JavaObjectValue(file);
 		} else
-			throw new XPathException("Variable $request is not bound to a Request object.");
+			throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
 	}
 }

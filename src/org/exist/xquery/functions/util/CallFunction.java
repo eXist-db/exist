@@ -71,10 +71,10 @@ public class CallFunction extends Function {
             throws XPathException {
         Sequence arg0 = getArgument(0).eval(contextSequence, contextItem);
         if(arg0.getCardinality() != Cardinality.EXACTLY_ONE)
-            throw new XPathException("Expected exactly one item for first argument");
+            throw new XPathException(getASTNode(), "Expected exactly one item for first argument");
         Item item0 = arg0.itemAt(0);
         if(item0.getType() != Type.FUNCTION_REFERENCE)
-            throw new XPathException("Type error: expected function, got " + Type.getTypeName(item0.getType()));
+            throw new XPathException(getASTNode(), "Type error: expected function, got " + Type.getTypeName(item0.getType()));
         FunctionReference ref = (FunctionReference)item0;
         FunctionCall call = ref.getFunctionCall();
         

@@ -69,9 +69,9 @@ public class FunDateTime extends BasicFunction {
 		if (args[0].isEmpty() || args[1].isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
 		else if (args[0].hasMany())
-			throw new XPathException("XPTY0004: expected at most one xs:date");
+			throw new XPathException(getASTNode(), "XPTY0004: expected at most one xs:date");
 		else if (args[1].hasMany())
-			throw new XPathException("XPTY0004: expected at most one xs:time");
+			throw new XPathException(getASTNode(), "XPTY0004: expected at most one xs:time");
         else {  
         	DateValue dv = (DateValue)args[0].itemAt(0);
         	TimeValue tv = (TimeValue)args[1].itemAt(0);
@@ -79,17 +79,17 @@ public class FunDateTime extends BasicFunction {
         		//Apparently, the specs have changes in this area
         		if (!tv.getTimezone().isEmpty()) {
         			if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).compareTo(null, Constants.EQ, ((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
-    					throw new XPathException("FORG0008: operands have different timezones");
+    					throw new XPathException(getASTNode(), "FORG0008: operands have different timezones");
     				}
     			} /* else {
     				if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
-    	        		throw new XPathException("FORG0008: operands have different timezones");
+    	        		throw new XPathException(getASTNode(), "FORG0008: operands have different timezones");
     			} */
     		} else {
     			/*
     			if (!tv.getTimezone().isEmpty()) {
     				if (!((DayTimeDurationValue)tv.getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
-    					throw new XPathException("FORG0008: operands have different timezones");
+    					throw new XPathException(getASTNode(), "FORG0008: operands have different timezones");
     			}
     			*/
     		}

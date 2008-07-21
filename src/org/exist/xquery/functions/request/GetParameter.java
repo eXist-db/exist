@@ -135,7 +135,7 @@ public class GetParameter extends BasicFunction {
 			}
 		} else {
 			if( failOnError ) {
-				throw new XPathException("Variable $request is not bound to a Request object.");
+				throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
 			} else {
 				return args[1];				
 			}

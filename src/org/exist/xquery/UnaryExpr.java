@@ -60,7 +60,7 @@ public class UnaryExpr extends PathExpr {
 			contextSequence = contextItem.toSequence();
         
 		if(getLength() == 0)
-			throw new XPathException("unary expression requires an operand");
+			throw new XPathException(getASTNode(), "unary expression requires an operand");
         
         Sequence result;
 		NumericValue value = (NumericValue)getExpression(0).eval(contextSequence).convertTo(Type.NUMBER);

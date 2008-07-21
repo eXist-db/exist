@@ -226,7 +226,7 @@ public class RegexpFilter extends BasicFunction {
 				return seq;
 			}
 		} catch (PatternSyntaxException e) {
-			throw new XPathException("Invalid regular expression: " + e.getMessage(), e);
+			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
 		}
     }
 

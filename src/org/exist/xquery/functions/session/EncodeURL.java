@@ -79,9 +79,9 @@ public class EncodeURL extends BasicFunction {
 		// request object is read from global variable $response
 		Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException("No request object found in the current XQuery context.");
+			throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $response is not bound to an Java object.");
+			throw new XPathException(getASTNode(), "Variable $response is not bound to an Java object.");
 		
 		// get parameters
 		String url = args[0].getStringValue();
@@ -91,6 +91,6 @@ public class EncodeURL extends BasicFunction {
 		if(value.getObject() instanceof ResponseWrapper)
 			return new AnyURIValue(((ResponseWrapper)value.getObject()).encodeURL(url));
 		else
-			throw new XPathException("Variable $response is not bound to a Response object.");
+			throw new XPathException(getASTNode(), "Variable $response is not bound to a Response object.");
 	}
 }

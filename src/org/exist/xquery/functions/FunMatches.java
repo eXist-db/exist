@@ -438,7 +438,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 			return matcher.find();
 			
 		} catch (PatternSyntaxException e) {
-			throw new XPathException("Invalid regular expression: " + e.getMessage(), e);
+			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
 		}
     }
 

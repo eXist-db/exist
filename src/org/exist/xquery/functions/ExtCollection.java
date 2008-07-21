@@ -130,7 +130,7 @@ public class ExtCollection extends Function {
 				for (int i = 0; i < args.size(); i++) {
 					String next = (String)args.get(i);
 					XmldbURI uri = new AnyURIValue(next).toXmldbURI();
-				    Collection coll = context.getBroker().getCollection(uri);            
+				    Collection coll = context.getBroker().getCollection(uri);
 				    if(coll != null) {
 	                    if (context.inProtectedMode())
 	                        context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, docs);
@@ -141,7 +141,7 @@ public class ExtCollection extends Function {
 	    	}
         } catch (XPathException e) { //From AnyURIValue constructor
         	e.setASTNode(getASTNode());
-            throw new XPathException("FODC0002: " + e.getMessage(), e);
+            throw new XPathException(getASTNode(), "FODC0002: " + e.getMessage(), e);
         }
         // iterate through all docs and create the node set
 		NodeSet result = new NewArrayNodeSet(docs.getLength(), 1);

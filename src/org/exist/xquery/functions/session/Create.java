@@ -75,16 +75,16 @@ public class Create extends BasicFunction {
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException("No request object found in the current XQuery context.");
+			throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $request is not bound to an Java object.");
+			throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		if(value.getObject() instanceof RequestWrapper) {
 			SessionWrapper session = ((RequestWrapper)value.getObject()).getSession(true);
 			((SessionModule)context.getModule(SessionModule.NAMESPACE_URI)).declareVariable(SessionModule.SESSION_VAR, session);
 		} else
-			throw new XPathException("Variable $session is not bound to a Session object.");
+			throw new XPathException(getASTNode(), "Variable $session is not bound to a Session object.");
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	
