@@ -163,7 +163,7 @@ public class FunctionCall extends Function {
         for(int i = 0; i < getArgumentCount(); i++) {
 			try {
                 seq[i] = getArgument(i).eval(contextSequence, contextItem);
-                if (varDeps[i] != null) {
+                if (varDeps != null && varDeps[i] != null) {
                     Variable var = varDeps[i].getVariable();
                     if (var != null)
                         contextDocs[i] = var.getContextDocs();
