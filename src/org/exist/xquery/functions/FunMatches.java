@@ -41,6 +41,7 @@ import org.exist.xquery.DynamicCardinalityCheck;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.GeneralComparison;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.LocationStep;
 import org.exist.xquery.NodeTest;
@@ -110,6 +111,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     private QName contextQName = null;
     private int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
+    private GeneralComparison.IndexFlags idxflags = new GeneralComparison.IndexFlags();
 
     /**
 	 * @param context
@@ -261,9 +263,6 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 
         if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-	    if (preselectResult == null &&
-            !Type.subTypeOf(Optimize.getQNameIndexType(context, contextSequence, contextQName), Type.STRING))
-            contextQName = null;
         
         Sequence result;
         if (contextStep == null || preselectResult == null) {
@@ -315,7 +314,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             flags = parseFlags(flagsArg);
         }
         
-        Sequence result;
+        Sequence result = null;
         String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
         NodeSet nodes = input.toNodeSet();
         // get the type of a possible index
@@ -323,28 +322,49 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		if (LOG.isTraceEnabled())
     		LOG.trace("found an index of type: " + Type.getTypeName(indexType));
 		if(Type.subTypeOf(indexType, Type.STRING)) {
-		    DocumentSet docs = nodes.getDocumentSet();
-		    try {
-                NativeValueIndex index = context.getBroker().getValueIndex();
-                hasUsedIndex = true;
-                //TODO : check index' case compatibility with flags' one ? -pb 
-		    	if (context.isProfilingEnabled())
-		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using vlaue index '" + index.toString() + "'", "Regex: " + pattern);
-		    	if (LOG.isTraceEnabled())
-		    		LOG.trace("Using range index for fn:matches expression: " + pattern);
-                result = index.match(docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
-			} catch (EXistException e) {
-				throw new XPathException(getASTNode(), e.getMessage(), e);
-			}
-		} else {
-			if (LOG.isTraceEnabled())
-            	LOG.trace("fn:matches: can't use existing range index of type " + Type.getTypeName(indexType) + ". Need a string index.");
-		    result = new ExtArrayNodeSet();
-		    for(Iterator i = nodes.iterator(); i.hasNext(); ) {
-		        NodeProxy node = (NodeProxy) i.next();
-		        if (match(node.getStringValue(), pattern, flags))
-		            result.add(node);
-		    }          
+            boolean indexScan = false;
+            if (contextSequence != null) {
+                GeneralComparison.IndexFlags iflags = GeneralComparison.checkForQNameIndex(idxflags, context, contextSequence, contextQName);
+                boolean indexFound = false;
+                if (!iflags.indexOnQName()) {
+                    // if contextQName != null and no index is defined on
+                    // contextQName, we don't need to scan other QName indexes
+                    // and can just use the generic range index
+                    indexFound = contextQName != null;
+                    // set contextQName to null so the index lookup below is not
+                    // restricted to that QName
+                    contextQName = null;
+                }
+                if (!indexFound && contextQName == null) {
+                    // if there are some indexes defined on a qname,
+                    // we need to check them all
+                    if (iflags.hasIndexOnQNames())
+                        indexScan = true;
+                    // else use range index defined on path by default
+                }
+            } else
+                result = evalFallback(nodes, pattern, flags, indexType);
+
+            if (result == null) {
+                DocumentSet docs = nodes.getDocumentSet();
+                try {
+                    NativeValueIndex index = context.getBroker().getValueIndex();
+                    hasUsedIndex = true;
+                    //TODO : check index' case compatibility with flags' one ? -pb 
+                    if (context.isProfilingEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using vlaue index '" + index.toString() + "'", "Regex: " + pattern);
+                    if (LOG.isTraceEnabled())
+                        LOG.trace("Using range index for fn:matches expression: " + pattern);
+                    if (indexScan)
+                        result = index.matchAll(docs, nodes, NodeSet.ANCESTOR, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                    else
+                        result = index.match(docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                } catch (EXistException e) {
+                    throw new XPathException(getASTNode(), e.getMessage(), e);
+                }
+            }
+        } else {
+            result = evalFallback(nodes, pattern, flags, indexType);
 		}
         
         if (context.getProfiler().isEnabled()) 
@@ -354,7 +374,20 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         
     }
 
-	/**
+    private Sequence evalFallback(NodeSet nodes, String pattern, int flags, int indexType) throws XPathException {
+        Sequence result;
+        if (LOG.isTraceEnabled())
+            LOG.trace("fn:matches: can't use existing range index of type " + Type.getTypeName(indexType) + ". Need a string index.");
+        result = new ExtArrayNodeSet();
+        for(Iterator i = nodes.iterator(); i.hasNext(); ) {
+            NodeProxy node = (NodeProxy) i.next();
+            if (match(node.getStringValue(), pattern, flags))
+                result.add(node);
+        }
+        return result;
+    }
+
+    /**
 	 * Translates the regular expression from XPath2 syntax to java regex
 	 * syntax.
 	 * 

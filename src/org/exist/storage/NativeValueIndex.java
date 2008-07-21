@@ -73,6 +73,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -629,61 +630,128 @@ public class NativeValueIndex implements ContentLoadingObserver {
             lock.release(Lock.WRITE_LOCK);
         }
     }
-    
-	/** find
-	 * @param relation binary operator used for the comparison
-	 * @param value right hand comparison value */
+
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value)
-            throws TerminatedException {        
+            throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
-        final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
-        final Lock lock = dbValues.getLock();
-        for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-			try {
-				lock.acquire(Lock.READ_LOCK);	
-                final int collectionId = ((Collection) iter.next()).getId();
-                //Compute a key for the value in the collection
-                final Value searchKey, prefixKey;
-                if (qname == null) {
-                    searchKey = new SimpleValue(collectionId, value);
-                    prefixKey = new SimplePrefixValue(collectionId, value.getType());
-                } else {
-                    searchKey = new QNameValue(collectionId, qname, value,
-                            broker.getBrokerPool().getSymbols());
-                    prefixKey = new QNamePrefixValue(collectionId, qname, value.getType(),
-                            broker.getBrokerPool().getSymbols());
-                }
-                final int idxOp =  checkRelationOp(relation);
-                final IndexQuery query = new IndexQuery(idxOp, searchKey);
-                if (idxOp == IndexQuery.EQ)
-                    dbValues.query(query, cb);
-                else
-                    dbValues.query(query, prefixKey, cb);
-			} catch (EXistException e) {
-                LOG.error(e.getMessage(), e);				
-			} catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);  
-            } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-            } catch (BTreeException e) {
-                LOG.error(e.getMessage(), e);
-            } finally {
-				lock.release(Lock.READ_LOCK);
-			}
+        if (qname == null)
+            findAll(relation, docs, contextSet, axis, null, value, result);
+        else {
+            List qnames = new LinkedList();
+            qnames.add(qname);
+            return findAll(relation, docs, contextSet, axis, qnames, value, result);
         }
         return result;
     }
-    
+
+    public NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value) throws TerminatedException {
+        final NodeSet result = new NewArrayNodeSet();
+        findAll(relation, docs, contextSet, axis, getDefinedIndexes(docs), value, result);
+        findAll(relation, docs, contextSet, axis, null, value, result);
+        return result;
+    }
+
+    /** find
+	 * @param relation binary operator used for the comparison
+	 * @param value right hand comparison value */
+    private NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, List qnames,
+                            Indexable value, NodeSet result)
+            throws TerminatedException {
+        final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
+        final Lock lock = dbValues.getLock();
+        for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+            final int collectionId = ((Collection) iter.next()).getId();
+            final int idxOp = checkRelationOp(relation);
+            Value searchKey, prefixKey;
+            if (qnames == null) {
+                try {
+                    lock.acquire(Lock.READ_LOCK);
+                    searchKey = new SimpleValue(collectionId, value);
+                    prefixKey = new SimplePrefixValue(collectionId, value.getType());
+                    final IndexQuery query = new IndexQuery(idxOp, searchKey);
+                    if (idxOp == IndexQuery.EQ)
+                        dbValues.query(query, cb);
+                    else
+                        dbValues.query(query, prefixKey, cb);
+                } catch (EXistException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (BTreeException e) {
+                    LOG.error(e.getMessage(), e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
+                }
+            } else {
+                for (int i = 0; i < qnames.size(); i++) {
+                    QName qname = (QName) qnames.get(i);
+                    try {
+                        lock.acquire(Lock.READ_LOCK);
+
+                        //Compute a key for the value in the collection
+                        searchKey = new QNameValue(collectionId, qname, value,
+                                broker.getBrokerPool().getSymbols());
+                        prefixKey = new QNamePrefixValue(collectionId, qname, value.getType(),
+                                broker.getBrokerPool().getSymbols());
+
+                        final IndexQuery query = new IndexQuery(idxOp, searchKey);
+                        if (idxOp == IndexQuery.EQ)
+                            dbValues.query(query, cb);
+                        else
+                            dbValues.query(query, prefixKey, cb);
+                    } catch (EXistException e) {
+                        LOG.error(e.getMessage(), e);
+                    } catch (LockException e) {
+                        LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
+                    } catch (IOException e) {
+                        LOG.error(e.getMessage(), e);
+                    } catch (BTreeException e) {
+                        LOG.error(e.getMessage(), e);
+                    } finally {
+                        lock.release(Lock.READ_LOCK);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type)
             throws TerminatedException, EXistException {
         return match(docs, contextSet, axis, expr, qname, type, 0, true);
     }
-    
-	/** Regular expression search
+
+    public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type,
+                         int flags, boolean caseSensitiveQuery)
+            throws TerminatedException, EXistException {
+        final NodeSet result = new NewArrayNodeSet();
+        if (qname == null)
+            matchAll(docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result);
+        else {
+            List qnames = new LinkedList();
+            qnames.add(qname);
+            matchAll(docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result);
+        }
+        return result;
+    }
+
+    public NodeSet matchAll(DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags,
+                            boolean caseSensitiveQuery)
+            throws TerminatedException, EXistException {
+        final NodeSet result = new NewArrayNodeSet();
+        matchAll(docs, contextSet, axis, expr, getDefinedIndexes(docs), type, flags, caseSensitiveQuery, result);
+        matchAll(docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result);
+        return result;
+    }
+
+    /** Regular expression search
 	 * @param type  like type argument for {@link org.exist.storage.RegexMatcher} constructor
 	 * @param flags like flags argument for {@link org.exist.storage.RegexMatcher} constructor
 	 *  */
-    public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery)
+    public NodeSet matchAll(DocumentSet docs, NodeSet contextSet, int axis, String expr, List qnames, int type, int flags,
+                            boolean caseSensitiveQuery, NodeSet result)
         throws TerminatedException, EXistException {        
     	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
     	// the same sequence. Otherwise, we have to scan the whole index.
@@ -701,15 +769,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
     		}
         }
 		final TermMatcher comparator = new RegexMatcher(expr, type, flags);
-        final NodeSet result = new NewArrayNodeSet();
         final RegexCallback cb = new RegexCallback(docs, contextSet, result, comparator, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
-        for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {			
-			try {
-				lock.acquire(Lock.READ_LOCK);
-                final int collectionId = ((Collection) iter.next()).getId();
-                Value searchKey;
-                if (qname == null) {
+        for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+            final int collectionId = ((Collection) iter.next()).getId();
+            Value searchKey;
+            if (qnames == null) {
+                try {
+                    lock.acquire(Lock.READ_LOCK);
+
                     if (startTerm != null) {
                         //Compute a key for the start term in the collection
                         searchKey = new SimpleValue(collectionId, startTerm);
@@ -717,27 +785,43 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         //Compute a key for an arbitrary string in the collection
                         searchKey = new SimplePrefixValue(collectionId, Type.STRING);
                     }
-                } else {
-                    if (startTerm != null) {
-                        searchKey = new QNameValue(collectionId, qname, startTerm,
-                                broker.getBrokerPool().getSymbols());
-                    } else {
-                        LOG.debug("Searching with QName prefix");
-                        searchKey = new QNamePrefixValue(collectionId, qname, Type.STRING,
-                                broker.getBrokerPool().getSymbols());
+                    final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
+                    dbValues.query(query, cb);
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (BTreeException e) {
+                    LOG.error(e.getMessage(), e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
+                }
+            } else {
+                for (int i = 0; i < qnames.size(); i++) {
+                    QName qname = (QName) qnames.get(i);
+                    try {
+                        lock.acquire(Lock.READ_LOCK);
+                        if (startTerm != null) {
+                            searchKey = new QNameValue(collectionId, qname, startTerm,
+                                    broker.getBrokerPool().getSymbols());
+                        } else {
+                            LOG.debug("Searching with QName prefix");
+                            searchKey = new QNamePrefixValue(collectionId, qname, Type.STRING,
+                                    broker.getBrokerPool().getSymbols());
+                        }
+                        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
+                        dbValues.query(query, cb);
+                    } catch (LockException e) {
+                        LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
+                    } catch (IOException e) {
+                        LOG.error(e.getMessage(), e);
+                    } catch (BTreeException e) {
+                        LOG.error(e.getMessage(), e);
+                    } finally {
+                        lock.release(Lock.READ_LOCK);
                     }
                 }
-                final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
-                dbValues.query(query, cb);
-            } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);  
-			} catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-			} catch (BTreeException e) {
-                LOG.error(e.getMessage(), e);			
-			} finally {
-				lock.release(Lock.READ_LOCK);
-			}
+            }
         }
         return result;
     }
@@ -795,8 +879,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @return a list of ValueOccurrences
      */
     public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet, QName[] qnames, Indexable start) {
-        if (qnames == null)
-            qnames = getDefinedIndexes(docs);
+        if (qnames == null) {
+            List qnlist = getDefinedIndexes(docs);
+            qnames = new QName[qnlist.size()];
+            qnames = (QName[]) qnlist.toArray(qnames);
+        }
         final int type = start.getType();
         final boolean stringType = Type.subTypeOf(type, Type.STRING);
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type, true);
@@ -837,7 +924,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return (ValueOccurrences[]) map.values().toArray(result);
     }
 
-    protected QName[] getDefinedIndexes(DocumentSet docs) {
+    protected List getDefinedIndexes(DocumentSet docs) {
         List qnames = new ArrayList();
         for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = (Collection) i.next();
@@ -845,8 +932,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             if (idxConf != null)
                 qnames.addAll(idxConf.getIndexedQNames());
         }
-        QName[] result = new QName[qnames.size()];
-        return (QName[]) qnames.toArray(result);
+        return qnames;
     }
 
     protected int checkRelationOp(int relation) {
@@ -1219,6 +1305,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public static Indexable deserialize(byte[] data, int start, int len) throws EXistException {
             return ValueIndexFactory.deserialize(data, start + OFFSET_VALUE, len - OFFSET_VALUE);
+        }
+
+        public static byte getType(byte[] data, int start) {
+            return data[start + OFFSET_QNAME_TYPE];
         }
     }
 
