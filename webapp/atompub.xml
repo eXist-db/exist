@@ -225,7 +225,7 @@ Location: http://example.org/edit/first-post.atom
       <para>The Atom Publishing Protocol makes a distinction between a
       collection and the feed that represents it. In eXist, a similar
       distinction exists in that a collection is a set of resources and not a
-      feed. The exception is that the Atom implementation makes a one XML
+      feed. The exception is that the Atom implementation makes one XML
       document special and uses that to represent the collection as a
       feed.</para>
 
@@ -280,7 +280,7 @@ Location: http://example.org/edit/first-post.atom
       /atom/query/ and is run against the collection's feed document. This
       module is how both the Introspect and Topic modules are implemented. For
       example, if you want to generate a feed of all the feeds in all
-      subcollections, the following query could be send:</para>
+      subcollections, the following query could be sent:</para>
 
       <example>
         <title>A Feed Query</title>
