@@ -53,24 +53,7 @@ public class JettyStart {
 	
         public JettyStart() {
             // Additional checks XML libs @@@@
-    		StringBuffer xmlLibMessage = new StringBuffer();
-    		if(XmlLibraryChecker.hasValidParser(xmlLibMessage))
-    		{
-    			System.out.println(xmlLibMessage);
-    		}
-    		else
-    		{
-    			System.err.println(xmlLibMessage);
-    		}
-    		xmlLibMessage.delete(0, xmlLibMessage.length());
-    		if(XmlLibraryChecker.hasValidTransformer(xmlLibMessage))
-    		{
-    			System.out.println(xmlLibMessage);
-    		}
-    		else
-    		{
-    			System.err.println(xmlLibMessage);
-    		}
+    		XmlLibraryChecker.check();
         }
 	
 	public void  run(String[] args) {
