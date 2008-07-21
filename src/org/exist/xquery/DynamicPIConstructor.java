@@ -100,10 +100,10 @@ public class DynamicPIConstructor extends NodeConstructor {
                         Type.getTypeName(nameItem.getType()));
 
             if(!XMLChar.isValidNCName(nameSeq.getStringValue()))
-			throw new XPathException("XQDY0041 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
+			throw new XPathException(getASTNode(), "XQDY0041 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
 
             if (nameSeq.getStringValue().equalsIgnoreCase("XML"))
-throw new XPathException("XQDY0064 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
+throw new XPathException(getASTNode(), "XQDY0064 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
 
             String contentString;
             Sequence contentSeq = content.eval(contextSequence, contextItem);
@@ -124,7 +124,7 @@ throw new XPathException("XQDY0064 '" + nameSeq.getStringValue() + "' is not a v
             }
 
             if (contentString.indexOf("?>") != Constants.STRING_NOT_FOUND)
-throw new XPathException("XQDY0026 '" + contentString + "' is not a valid processing intruction content");
+throw new XPathException(getASTNode(), "XQDY0026 '" + contentString + "' is not a valid processing intruction content");
 
             int nodeNr = builder.processingInstruction(nameSeq.getStringValue(), contentString);
 

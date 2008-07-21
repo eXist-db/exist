@@ -337,7 +337,7 @@ public class Predicate extends PathExpr {
 			}
             ContextItem contextItem = currentNode.getContext();
 			if (contextItem == null) {
-				throw new XPathException("Internal evaluation error: context is missing for node " +
+				throw new XPathException(getASTNode(), "Internal evaluation error: context is missing for node " +
                         currentNode.getNodeId() + " !");
 			}
            //TODO : review to consider transverse context

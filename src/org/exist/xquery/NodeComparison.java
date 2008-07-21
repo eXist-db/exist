@@ -118,18 +118,18 @@ public class NodeComparison extends BinaryOp {
 						result = lv.after(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
 						break;
 					default:
-						throw new XPathException("Illegal argument: unknown relation");
+						throw new XPathException(getASTNode(), "Illegal argument: unknown relation");
 				}
 			}
         }
         else {
         	if (ls.isEmpty() && !rs.isEmpty()) {
         		if (!Type.subTypeOf(rs.getItemType(), Type.NODE))        	
-        			throw new XPathException("XPTY0004 : the empty sequence cant be an atomic value");
+        			throw new XPathException(getASTNode(), "XPTY0004 : the empty sequence cant be an atomic value");
         	}
         	if (!ls.isEmpty() && rs.isEmpty()) {        		
         		if (!Type.subTypeOf(ls.getItemType(), Type.NODE))        	
-        			throw new XPathException("XPTY0004 : the empty sequence cant be an atomic value");    
+        			throw new XPathException(getASTNode(), "XPTY0004 : the empty sequence cant be an atomic value");    
         	}
         	result = BooleanValue.EMPTY_SEQUENCE;
         }

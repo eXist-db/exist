@@ -201,7 +201,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (gotAtomicResult && !Type.subTypeOf(expr.returnsType(), Type.NODE)
                         //Ugly workaround to allow preceding *text* nodes.
                         && !(expr instanceof EnclosedExpr)) {
-                    throw new XPathException("XPTY0019: left operand of '/' must be a node. Got '" + 
+                    throw new XPathException(getASTNode(), "XPTY0019: left operand of '/' must be a node. Got '" + 
                             Type.getTypeName(result.getItemType()) + Cardinality.toString(result.getCardinality()) + "'");                    
                 }
 
