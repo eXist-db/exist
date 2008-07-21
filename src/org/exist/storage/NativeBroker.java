@@ -2747,17 +2747,20 @@ public class NativeBroker extends DBBroker {
         indexNode(transaction, node, currentPath, mode);
         if (listener != null) {
             switch (node.getNodeType()) {
-	    case Node.TEXT_NODE :
-		listener.characters(transaction, (TextImpl) node, currentPath);
-		break;
-	    case Node.ELEMENT_NODE :
-		listener.startElement(transaction, (ElementImpl) node, currentPath);
-		break;
-	    case Node.ATTRIBUTE_NODE :
-		listener.attribute(transaction, (AttrImpl) node, currentPath);
-		break;
-	    default :
-		LOG.debug("Unhandled node type: " + node.getNodeType());
+                case Node.TEXT_NODE :
+                    listener.characters(transaction, (TextImpl) node, currentPath);
+                    break;
+                case Node.ELEMENT_NODE :
+                    listener.startElement(transaction, (ElementImpl) node, currentPath);
+                    break;
+                case Node.ATTRIBUTE_NODE :
+                    listener.attribute(transaction, (AttrImpl) node, currentPath);
+                    break;
+                case Node.COMMENT_NODE :
+                case Node.PROCESSING_INSTRUCTION_NODE :
+                    break;
+                default :
+                    LOG.debug("Unhandled node type: " + node.getNodeType());
             }
         }
         if (node.hasChildNodes()) {
