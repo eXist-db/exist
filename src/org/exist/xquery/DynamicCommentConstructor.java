@@ -92,7 +92,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
                 }
 
                 if (buf.indexOf("--") != Constants.STRING_NOT_FOUND|| buf.toString().endsWith("-")) {
-                    throw new XPathException("XQDY0072 '" + buf.toString() + "' is not a valid comment");
+                    throw new XPathException(getASTNode(), "XQDY0072 '" + buf.toString() + "' is not a valid comment");
                 }
 
                 int nodeNr = builder.comment(buf.toString());

@@ -92,7 +92,7 @@ public class ForExpr extends BindingExpression {
 		if(positionalVariable != null) {
 			//could probably be detected by the parser
 			if (varName.equals(positionalVariable))
-				throw new XPathException("XQST0089: bound variable and positional variable have the same name");
+				throw new XPathException(getASTNode(), "XQST0089: bound variable and positional variable have the same name");
 			LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
             posVar.setSequenceType(POSITIONAL_VAR_TYPE);
             context.declareVariableBinding(posVar);
@@ -247,7 +247,7 @@ public class ForExpr extends BindingExpression {
     	//Type.EMPTY is *not* a subtype of other types ; the tests below would fail without this prior cardinality check
 		if (in.isEmpty() && sequenceType != null && 
 				!Cardinality.checkCardinality(sequenceType.getCardinality(), Cardinality.EMPTY)) {
-				throw new XPathException("XPTY0004: Invalid cardinality for variable $" + varName + 
+				throw new XPathException(getASTNode(), "XPTY0004: Invalid cardinality for variable $" + varName + 
 					". Expected " + 
 					Cardinality.getDescription(sequenceType.getCardinality()) + 
 					", got " + Cardinality.getDescription(in.getCardinality()));
@@ -352,14 +352,14 @@ public class ForExpr extends BindingExpression {
         	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
         	//only a check on empty sequence is accurate here
     		if (resultSequence.isEmpty() && !Cardinality.checkCardinality(sequenceType.getCardinality(), Cardinality.EMPTY))
-				throw new XPathException("XPTY0004: Invalid cardinality for variable $" + varName +
+				throw new XPathException(getASTNode(), "XPTY0004: Invalid cardinality for variable $" + varName +
 						". Expected " +
 						Cardinality.getDescription(sequenceType.getCardinality()) +
 						", got " + Cardinality.getDescription(Cardinality.EMPTY));
     		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
     		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {    		
 	    		if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
-					throw new XPathException("XPTY0004: Invalid type for variable $" + varName +
+					throw new XPathException(getASTNode(), "XPTY0004: Invalid type for variable $" + varName +
 							". Expected " +
 							Type.getTypeName(sequenceType.getPrimaryType()) +
 							", got " +Type.getTypeName(resultSequence.getItemType()));
