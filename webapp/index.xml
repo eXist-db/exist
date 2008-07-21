@@ -92,10 +92,13 @@
                 sourceforge.</p>
 
 
-            <p>Previous messages posted on the are archived on <a
+            <p>Previous messages posted on the mailinglists are archived on <a
                     href="http://www.nabble.com/eXist-f4072.html">nabble.com</a> and <a
                     href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">gmane.org</a>
-                provides a <a href="news://news.gmane.org/gmane.text.xml.exist"> NNTP</a> interface. </p>
+                provides a <a href="news://news.gmane.org/gmane.text.xml.exist"> NNTP</a> interface.  
+								Additionaly markmail.org provides a nice search interface to the <a 
+								href="http://exist-open.markmail.org/search/?q=">exist-open</a> and <a 
+								href="http://exist-open.markmail.org/search/?q=">exist-commits</a> mailing lists.</p>
 
             <p>The project has an chat box <b>#existdb</b> which is accessible via IRC on <a
                     href="irc://irc.freenode.net/existdb">irc.freenode.net</a> and via an AJAX based
@@ -105,7 +108,7 @@
             <p>All eXist-db sources are freely available via a SourceForge <a
                     href="http://sourceforge.net/svn/?group_id=17691">subversion</a> repository. The
                     <a href="http://www.ohloh.net/projects/252?p=eXist">source code</a> is made <a
-                    href="http://www.koders.com/info.aspx?c=ProjectInfo&amp;pid=VUM641QG5USW5EHRSLWDSDVM6G"
+                    href="http://www.koders.com/info.aspx?c=ProjectInfo&amp;pid=682GN3WEP5P26GKNXC359DMVCE"
                     >browsable</a> and is continuously <a
                     href="http://fisheye3.cenqua.com/browse/exist/">monitored</a> and <a
                     href="http://parabuild.viewtier.com:8080/parabuild/index.htm?cid=eeca&amp;view=detailed&amp;buildid=321"
