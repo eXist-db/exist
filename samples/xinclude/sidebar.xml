@@ -31,6 +31,9 @@
         <item>
             <link href="../../../facts.xml">Feature Sheet</link>
         </item>
+		<item>
+			<link href="http://en.wikibooks.org/wiki/XQuery">XQuery Wikibook</link>
+		</item>
     </group>
     <group name="Examples">
         <item>
