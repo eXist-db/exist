@@ -96,7 +96,7 @@ public class IndexKeyDocuments extends BasicFunction {
 	        	//Alternate design
 	        	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[2].itemAt(0).getStringValue()).getWorker();	        	
 	        	if (indexWorker == null)
-	        		throw new XPathException("Unknown index: " + args[2].itemAt(0).getStringValue());
+	        		throw new XPathException(getASTNode(), "Unknown index: " + args[2].itemAt(0).getStringValue());
 	        	Map hints = new HashMap();
 	        	if (indexWorker instanceof OrderedValuesIndex)
 	        		hints.put(OrderedValuesIndex.START_VALUE, args[1]);

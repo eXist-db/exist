@@ -112,7 +112,7 @@ public class FunConcat extends Function {
         }
            
 		if(getArgumentCount() < 2)
-			throw new XPathException ("concat requires at least two arguments");
+			throw new XPathException (getASTNode(), "concat requires at least two arguments");
         
 		//if(contextItem != null)
 		//	contextSequence = contextItem.toSequence();

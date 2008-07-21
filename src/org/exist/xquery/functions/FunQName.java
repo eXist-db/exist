@@ -74,7 +74,7 @@ public class FunQName extends BasicFunction {
 
         //TODO : currently useless (but for empty sequences) since the type is forced :-(
         if (!args[0].isEmpty() && args[0].getItemType() != Type.STRING)
-        	throw new XPathException("err:XPTY0004: namespace URI is of type '" + 
+        	throw new XPathException(getASTNode(), "err:XPTY0004: namespace URI is of type '" + 
         			Type.getTypeName(args[0].getItemType()) + "', 'xs:string' expected");
         String namespace;
 		if (args[0].isEmpty())
@@ -90,11 +90,11 @@ public class FunQName extends BasicFunction {
 			prefix = QName.extractPrefix(param);
 			localName = QName.extractLocalName(param);
         } catch (IllegalArgumentException e) {
-        	throw new XPathException("err:FOCA0002: invalid lexical form of either prefix or local name.");
+        	throw new XPathException(getASTNode(), "err:FOCA0002: invalid lexical form of either prefix or local name.");
 		}
 		
 		if ((prefix != null && prefix.length() > 0) && (namespace == null || namespace.length() == 0))
-        	throw new XPathException("err:FOCA0002: non-empty namespace prefix with empty namespace URI");
+        	throw new XPathException(getASTNode(), "err:FOCA0002: non-empty namespace prefix with empty namespace URI");
 		
 		QName qname = new QName(localName, namespace, prefix);
         if (prefix != null && namespace != null) {

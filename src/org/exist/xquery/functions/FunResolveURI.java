@@ -79,7 +79,7 @@ public class FunResolveURI extends Function {
 		AnyURIValue base;		
 		if (getArgumentCount() == 1) {
 			if (!context.isBaseURIDeclared())
-				throw new XPathException("err:FONS0005: base URI of the static context has not been assigned a value.");
+				throw new XPathException(getASTNode(), "err:FONS0005: base URI of the static context has not been assigned a value.");
 			base = context.getBaseURI();
 		} else {
 			try {

@@ -60,7 +60,7 @@ public class UUID extends Function {
         String uuid = UUIDGenerator.getUUID();
         
         if(uuid==null) {
-            throw new XPathException("Could not create UUID.");
+            throw new XPathException(getASTNode(), "Could not create UUID.");
         }
         
         return new StringValue(uuid);

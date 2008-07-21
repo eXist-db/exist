@@ -55,6 +55,11 @@ public class XPathException extends Exception {
 		this.message = message;
 		setASTNode(ast);
 	}
+    
+	public XPathException(XQueryAST ast, Throwable cause) {
+		super(cause);
+		setASTNode(ast);
+	}
 	
 	public int getLine() {
 		return line;

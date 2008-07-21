@@ -147,21 +147,21 @@ public class FunReplace extends FunMatches {
             	if (replace.charAt(i) == '$') {
             		try {
             			if (!(replace.charAt(i - 1) == '\\' || Character.isDigit(replace.charAt(i + 1))))
-            				throw new XPathException("err:FORX0004 The value of $replacement contains a '$' character that is not immediately followed by a digit 0-9 and not immediately preceded by a '\\'.");
+            				throw new XPathException(getASTNode(), "err:FORX0004 The value of $replacement contains a '$' character that is not immediately followed by a digit 0-9 and not immediately preceded by a '\\'.");
             		//Handle index exceptions
             		} catch (Exception e){
-            			throw new XPathException("err:FORX0004 The value of $replacement contains a '$' character that is not immediately followed by a digit 0-9 and not immediately preceded by a '\\'.");
+            			throw new XPathException(getASTNode(), "err:FORX0004 The value of $replacement contains a '$' character that is not immediately followed by a digit 0-9 and not immediately preceded by a '\\'.");
             		}
             	}
             	*/
             	if (replace.charAt(i) == '\\') {
             		try {
             			if (!(replace.charAt(i + 1) == '\\' || replace.charAt(i + 1) == '$'))
-            				throw new XPathException("err:FORX0004 The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.");
+            				throw new XPathException(getASTNode(), "err:FORX0004 The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.");
             			i++;
             		//Handle index exceptions
             		} catch (Exception e){
-            			throw new XPathException("err:FORX0004 The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.");
+            			throw new XPathException(getASTNode(), "err:FORX0004 The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.");
             		}
             	}
             	

@@ -119,7 +119,7 @@ public class IndexKeys extends BasicFunction {
         	//Alternate design
         	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[4].itemAt(0).getStringValue()).getWorker();
         	if (indexWorker == null)
-        		throw new XPathException("Unknown index: " + args[4].itemAt(0).getStringValue());
+        		throw new XPathException(getASTNode(), "Unknown index: " + args[4].itemAt(0).getStringValue());
         	Map hints = new HashMap();
         	hints.put(IndexWorker.VALUE_COUNT, new IntegerValue(max));
         	if (indexWorker instanceof OrderedValuesIndex)

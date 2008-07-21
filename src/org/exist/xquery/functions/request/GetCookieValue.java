@@ -94,6 +94,6 @@ public class GetCookieValue extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		else
-			throw new XPathException("Variable $request is not bound to a Request object.");
+			throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
 	}
 }

@@ -96,7 +96,7 @@ public class FunLast extends Function {
 	/*public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
 		Item contextItem) throws XPathException {
 			if(!Type.subTypeOf(contextItem.getType(), Type.NODE))
-				throw new XPathException("last() can only be applied to nodes");
+				throw new XPathException(getASTNode(), "last() can only be applied to nodes");
 			NodeProxy contextNode = (NodeProxy)contextItem;
 	   DocumentImpl doc = contextNode.getDoc();
 	   int level = doc.getTreeLevel(contextNode.getGID());

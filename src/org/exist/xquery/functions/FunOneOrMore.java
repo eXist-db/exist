@@ -74,7 +74,7 @@ public class FunOneOrMore extends Function {
 
 		Sequence result = getArgument(0).eval(contextSequence, contextItem);
 		if(result.isEmpty())
-			throw new XPathException("fn:one-or-more called with a sequence containing zero items");
+			throw new XPathException(getASTNode(), "fn:one-or-more called with a sequence containing zero items");
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
