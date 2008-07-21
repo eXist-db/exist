@@ -125,12 +125,20 @@ public class DefaultCacheManager implements CacheManager {
             cacheSize = DEFAULT_CACHE_SIZE;
         }
         totalMem = cacheSize * 1024 * 1024;
+        long max = Runtime.getRuntime().maxMemory();
+        long maxCache = max >= 768 * 1024 * 1024 ? max / 2 : max / 3;
+        if (totalMem > maxCache) {
+            totalMem = maxCache;
+            LOG.warn("The cacheSize=\"" + cacheSize + "\" setting in conf.xml is too large. Java has only " +
+                (max / 1024) + "k available. Cache manager will not use more than " + (totalMem / 1024) + "k " +
+                "to avoid memory issues which may lead to database corruptions.");
+        }
         int buffers = (int) (totalMem / pageSize);
         
         this.totalPageCount = buffers;
         this.maxCacheSize = (int) (totalPageCount * MAX_MEM_USE);
         NumberFormat nf = NumberFormat.getNumberInstance();
-        LOG.info("Cache settings: totalPages: " + nf.format(totalPageCount) + 
+        LOG.info("Cache settings: " + nf.format(totalMem / 1024) + "k; totalPages: " + nf.format(totalPageCount) + 
         		"; maxCacheSize: " + nf.format(maxCacheSize));
         registerMBean();
     }
