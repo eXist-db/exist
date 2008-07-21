@@ -174,15 +174,15 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 						handler.endDocument();
 					}
 				} else
-					throw new XPathException("Data should be either a node or a string");
+					throw new XPathException(getASTNode(), "Data should be either a node or a string");
 				collection.storeResource(resource);
 			}
 		} catch (XMLDBException e) {
-			throw new XPathException(
+			throw new XPathException(getASTNode(), 
 				"XMLDB reported an exception while storing document" + e,
 				e);
 		} catch (SAXException e) {
-			throw new XPathException(
+			throw new XPathException(getASTNode(), 
 				"SAX reported an exception while storing document",
 				e);
 		}
@@ -193,7 +193,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                 //TODO : use dedicated function in XmldbURI
 				return new StringValue(collection.getName() + "/" + resource.getId());
 			} catch (XMLDBException e) {
-				throw new XPathException("XMLDB reported an exception while retrieving the " +
+				throw new XPathException(getASTNode(), "XMLDB reported an exception while retrieving the " +
 						"stored document", e);
 			}
 	}

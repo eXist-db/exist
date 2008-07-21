@@ -156,7 +156,7 @@ public class GetMetadataFunction extends BasicFunction
 				}
 				catch(SAXException se)
 				{
-					throw new XPathException(se);
+					throw new XPathException(getASTNode(), se);
 				}
 				finally
 				{
@@ -166,7 +166,7 @@ public class GetMetadataFunction extends BasicFunction
 		}
 		catch(IOException ioe)
 		{
-			throw new XPathException(ioe);
+			throw new XPathException(getASTNode(), ioe);
 		}
 		
 		return Sequence.EMPTY_SEQUENCE;

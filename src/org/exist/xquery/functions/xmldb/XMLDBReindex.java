@@ -65,7 +65,7 @@ public class XMLDBReindex extends BasicFunction {
 
         // Check for DBA user
         if (!context.getUser().hasDbaRole()) {
-            throw new XPathException("Permission denied, user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
+            throw new XPathException(getASTNode(), "Permission denied, user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
         }
 
         // Get collection path

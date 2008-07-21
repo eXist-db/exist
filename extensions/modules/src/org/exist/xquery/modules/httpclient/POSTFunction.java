@@ -86,7 +86,7 @@ public class POSTFunction extends BaseHTTPClientFunction
         
         //get the persist cookies
         boolean persistCookies      = args[2].effectiveBooleanValue();
-        
+
         //serialize the node to SAX
         ByteArrayOutputStream baos  = new ByteArrayOutputStream();
         OutputStreamWriter osw      = null;
@@ -104,7 +104,7 @@ public class POSTFunction extends BaseHTTPClientFunction
         }
         catch( Exception e ) {
             e.printStackTrace();
-        } 
+        }
         //setup POST request
         PostMethod post         = new PostMethod( url );
         RequestEntity entity    = new ByteArrayRequestEntity( baos.toByteArray(), "text/xml; charset=utf-8" );
@@ -122,7 +122,7 @@ public class POSTFunction extends BaseHTTPClientFunction
 
         }
         catch( IOException ioe ) {
-            throw( new XPathException( ioe ) );
+            throw( new XPathException(getASTNode(), ioe ) );
         }
         finally {
             post.releaseConnection();

@@ -130,7 +130,7 @@ public class GetJNDIConnectionFunction extends BasicFunction {
 			// store the connection and return the uid handle of the connection
 			return new IntegerValue(SQLModule.storeConnection(context, con));
 		} catch (Exception e) {
-			throw new XPathException(e.getMessage());
+			throw new XPathException(getASTNode(), e.getMessage());
 		}
 	}
 }

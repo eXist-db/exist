@@ -105,7 +105,7 @@ public class CatchFunction extends Function {
             // this type of exception is not caught: throw again
             if(e instanceof XPathException)
                 throw (XPathException)e;
-            throw new XPathException(e);
+            throw new XPathException(getASTNode(), e);
         }
     }
 

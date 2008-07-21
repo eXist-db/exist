@@ -217,13 +217,13 @@ public class ExecuteFunction extends BasicFunction {
 			LOG.error(
 					"sql:execute() Could not serialize SQL results to XML for SQL: \""
 							+ sql + "\"", saxe);
-			throw new XPathException(
+			throw new XPathException(getASTNode(), 
 					"sql:execute() Could not serialize SQL results to XML for SQL: \""
 							+ sql + "\"", saxe);
 		} catch (SQLException sqle) {
 			LOG.error("sql:execute() Caught SQLException for SQL: \"" + sql
 					+ "\"", sqle);
-			throw new XPathException(
+			throw new XPathException(getASTNode(), 
 					"sql:execute() Caught SQLException for SQL: \"" + sql
 							+ "\"", sqle);
 		} finally {

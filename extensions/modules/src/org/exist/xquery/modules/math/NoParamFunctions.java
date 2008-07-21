@@ -92,7 +92,7 @@ public class NoParamFunctions extends BasicFunction {
             result=new DoubleValue(Math.random());
             
         } else {
-            throw new XPathException("Function "+functionName+" not found.");
+            throw new XPathException(getASTNode(), "Function "+functionName+" not found.");
         }
         
         

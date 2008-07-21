@@ -127,7 +127,7 @@ public class FunDocument extends Function {
 						String next = (String)args.get(i);
 						XmldbURI nextUri = new AnyURIValue(next).toXmldbURI();
 						if(nextUri.getCollectionPath().length() == 0) {
-							throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
+							throw new XPathException(getASTNode(), "Invalid argument to " + XMLDBModule.PREFIX + ":document() function: empty string is not allowed here.");
 						}
 	                    if(nextUri.numSegments()==1) {                     
 	                    	nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
@@ -135,14 +135,14 @@ public class FunDocument extends Function {
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(nextUri);
 						if(doc != null) {
 						    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
-							    throw new XPathException("Insufficient privileges to read resource " + next);
+							    throw new XPathException(getASTNode(), "Insufficient privileges to read resource " + next);
 							docs.add(doc);
 						}
 			        } catch (XPathException e) { //From AnyURIValue constructor
 			        	e.setASTNode(getASTNode());
 			            throw e;
 			        } catch (PermissionDeniedException e) {
-						throw new XPathException("Permission denied: unable to load document " + (String)args.get(i));
+						throw new XPathException(getASTNode(), "Permission denied: unable to load document " + (String)args.get(i));
 					}
 				}
 				cachedArgs = args;

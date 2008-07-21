@@ -91,7 +91,7 @@ public class HEADFunction extends BaseHTTPClientFunction {
             response = doRequest( context, head, persistCookies );	
         }
         catch( IOException ioe ) {
-            throw( new XPathException( ioe ) );
+            throw( new XPathException( getASTNode(), ioe ) );
         }
         finally {
             head.releaseConnection();

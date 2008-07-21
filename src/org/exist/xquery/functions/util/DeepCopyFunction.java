@@ -73,7 +73,7 @@ public class DeepCopyFunction extends BasicFunction {
             a.toSAX(context.getBroker(), receiver, props);
             
         } catch (SAXException e) {
-            throw new XPathException("Cannot Deep-copy Item $a");
+            throw new XPathException(getASTNode(), "Cannot Deep-copy Item $a");
         }
         
         builder.endDocument();

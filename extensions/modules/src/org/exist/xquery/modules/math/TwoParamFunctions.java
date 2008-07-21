@@ -98,7 +98,7 @@ public class TwoParamFunctions extends BasicFunction {
             calcValue=Math.pow(valueA.getDouble(), valueB.getDouble());
             
         } else {
-            throw new XPathException("Function "+functionName+" not found.");
+            throw new XPathException(getASTNode(), "Function "+functionName+" not found.");
         }
         result=new DoubleValue(calcValue);
         
