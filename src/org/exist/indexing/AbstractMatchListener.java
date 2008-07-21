@@ -30,13 +30,14 @@ public class AbstractMatchListener implements MatchListener {
         Receiver last = this, next = getNextInChain();
         while (next != null) {
             last = next;
-            next = getNextInChain();
+            next = ((MatchListener)next).getNextInChain();
         }
         return last;
     }
 
     public void setCurrentNode(StoredNode node) {
         this.currentNode = node;
+        getNextInChain().setCurrentNode(node);
     }
 
     protected StoredNode getCurrentNode() {
