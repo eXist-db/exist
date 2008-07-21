@@ -163,24 +163,7 @@ public class EXistServlet extends HttpServlet {
 		srvSOAP = new SOAPServer(formEncoding, containerEncoding);
 		
 		//XML lib checks....
-		StringBuffer xmlLibMessage = new StringBuffer();
-		if(XmlLibraryChecker.hasValidParser(xmlLibMessage))
-		{
-			LOG.info(xmlLibMessage);
-		}
-		else
-		{
-			LOG.warn(xmlLibMessage);
-		}
-		xmlLibMessage.delete(0, xmlLibMessage.length());
-		if(XmlLibraryChecker.hasValidTransformer(xmlLibMessage))
-		{
-			LOG.info(xmlLibMessage);
-		}
-		else
-		{
-			LOG.warn(xmlLibMessage);
-		}
+		XmlLibraryChecker.check();
 	}
 
 	/* (non-Javadoc)
