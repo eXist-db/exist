@@ -21,8 +21,6 @@
  */
 package org.exist.storage;
 
-import java.util.*;
-
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -32,6 +30,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Top class for index definitions as specified in a collection configuration
@@ -158,6 +163,14 @@ public class IndexSpec {
     	return (QNameRangeIndexSpec) qnameSpecs.get(name);
     }
 
+    public boolean hasIndexesByPath() {
+        return specs != null && specs.length > 0;
+    }
+
+    public boolean hasIndexesByQName() {
+        return qnameSpecs.size() > 0;
+    }
+    
     public List getIndexedQNames() {
         ArrayList qnames = new ArrayList(8);
         for (Iterator i = qnameSpecs.keySet().iterator(); i.hasNext(); ) {
