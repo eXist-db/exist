@@ -47,6 +47,15 @@ public class CollectionConfigurationTest extends TestCase {
     + "<d d='1'>1</d>" + "<e e='1'>1</e>" + "<f f='true'>true</f>" +" <g g='1'>1</g>" +"<h h='1'>1</h>" 
     + "<test x='1'><test x='2'></test></test></test>";
 
+    private final static String DOCUMENT_CONTENT3 =
+        "<test>" +
+        "   <a>1</a>" +
+        "   <b>1</b>" +
+        "   <c>1</c>" +
+        "   <d>x</d>" +
+        "   <e>xx</e>" +
+        "   <f>xxx</f>" +
+        "</test>";
     
     private String CONFIG1 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
         + "  <index>"
@@ -86,6 +95,28 @@ public class CollectionConfigurationTest extends TestCase {
         + "  <index>"
         + "    <create qname=\"a\" type=\"xs:integer\"/>"
         + "    <create qname=\"b\" type=\"xs:integer\"/>"
+        + "    <create path=\"/test/c\" type=\"xs:integer\"/>"
+        + "    <create qname=\"d\" type=\"xs:string\"/>"
+        + "    <create qname=\"e\" type=\"xs:string\"/>"
+        + "    <create path=\"/test/f\" type=\"xs:string\"/>"
+        + "  </index>"
+        + "</collection>";
+
+    private String QNAME_CONFIG2 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+        + "  <index>"
+        + "    <create qname=\"c\" type=\"xs:dateTime\"/>"
+        + "    <create qname=\"d\" type=\"xs:double\"/>"
+        + "    <create qname=\"e\" type=\"xs:float\"/>"
+        + "    <create qname=\"f\" type=\"xs:boolean\"/>"
+        + "    <create qname=\"g\" type=\"xs:integer\"/>"
+        + "    <create qname=\"h\" type=\"xs:string\"/>"
+        + "    <create qname=\"@c\" type=\"xs:dateTime\"/>"
+        + "    <create qname=\"@d\" type=\"xs:double\"/>"
+        + "    <create qname=\"@e\" type=\"xs:float\"/>"
+        + "    <create qname=\"@f\" type=\"xs:boolean\"/>"
+        + "    <create qname=\"@g\" type=\"xs:integer\"/>"
+        + "    <create qname=\"@h\" type=\"xs:string\"/>"
+        + "    <create qname=\"@x\" type=\"xs:integer\"/>"
         + "  </index>"
         + "</collection>";
 
@@ -840,14 +871,153 @@ public class CollectionConfigurationTest extends TestCase {
            
            result = service.query("/test[(# exist:force-index-use #) { h = '1' }]");
            assertEquals(1, result.getSize());
-       
+
+           boolean exceptionCaught = false;
+           try {
+               result = service.query("/test[(# exist:force-index-use #) { contains(d, '1') }]");
+               assertEquals(0, result.getSize());
+           } catch (XMLDBException e) {
+               exceptionCaught = true;
+           }
+           assertTrue("contains() should not use index of type xs:double", exceptionCaught);
+           exceptionCaught = false;
+           try {
+               result = service.query("/test[(# exist:force-index-use #) { matches(d, '1') }]");
+               assertEquals(0, result.getSize());
+           } catch (XMLDBException e) {
+               exceptionCaught = true;
+           }
+           assertTrue("matches() should not use index of type xs:double", exceptionCaught);
+           
+           result = service.query("/test[matches(h, '1')]");
+           assertEquals(1, result.getSize());
        } catch(Exception e) { 
       	 	e.printStackTrace();
            fail(e.getMessage());             
        }
   }   
 
-    public void failTestRangeIndex2() {
+    public void testRangeIndex2() {
+       ResourceSet result;
+       try {
+           //Configure collection automatically
+           IndexQueryService idxConf = (IndexQueryService)
+           testCollection.getService("IndexQueryService", "1.0");
+           idxConf.configureCollection(QNAME_CONFIG2);
+
+           //... then index document
+           XMLResource doc = (XMLResource)
+           testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+           doc.setContent(DOCUMENT_CONTENT2);
+           testCollection.storeResource(doc);
+
+           XPathQueryService service = (XPathQueryService)
+           testCollection.getService("XPathQueryService", "1.0");
+
+           result = service.query("util:index-key-occurrences(/test/c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
+           assertEquals(1, result.getSize());
+           assertEquals("2", result.getResource(0).getContent());
+
+           result = service.query("util:index-type(/test/c)");
+           assertEquals("xs:dateTime", result.getResource(0).getContent());
+
+           result = service.query("util:index-key-occurrences(/test/d, xs:double(1) )");
+           assertEquals(1, result.getSize());
+           assertEquals("2", result.getResource(0).getContent());
+
+           result = service.query("util:index-type(/test/d)");
+           assertEquals("xs:double", result.getResource(0).getContent());
+
+           result = service.query("util:index-key-occurrences(/test/e, xs:float(1) )");
+           assertEquals(1, result.getSize());
+           assertEquals("2", result.getResource(0).getContent());
+
+           result = service.query("util:index-type(/test/e)");
+           assertEquals("xs:float", result.getResource(0).getContent());
+
+           result = service.query("util:index-key-occurrences(/test/f, true())");
+           assertEquals(1, result.getSize());
+           assertEquals("2", result.getResource(0).getContent());
+
+           result = service.query("util:index-type(/test/f)");
+           assertEquals("xs:boolean", result.getResource(0).getContent());
+
+           result = service.query("util:index-key-occurrences(/test/g, xs:integer(1))");
+           assertEquals(1, result.getSize());
+           assertEquals("2", result.getResource(0).getContent());
+
+           result = service.query("util:index-type(/test/g)");
+           assertEquals("xs:integer", result.getResource(0).getContent());
+
+           result = service.query("util:index-key-occurrences(/test/h, '1')");
+           assertEquals(1, result.getSize());
+           assertEquals("2", result.getResource(0).getContent());
+
+           result = service.query("util:index-type(/test/h)");
+           assertEquals("xs:string", result.getResource(0).getContent());
+
+           result = service.query("(# exist:force-index-use #) { /test/c[. = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\")] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test[c = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\")] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test/d[. = xs:double(1)] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test[d = xs:double(1)] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test/e[. = xs:float(1)] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test[e = xs:float(1)] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test/f[. = true()] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test[f = true()] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test/g[. = 1] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test[g = 1] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test/h[. = '1'] }");
+           assertEquals(1, result.getSize());
+
+           result = service.query("(# exist:force-index-use #) { /test[h = '1'] }");
+           assertEquals(1, result.getSize());
+
+           boolean exceptionCaught = false;
+           try {
+               result = service.query("(# exist:force-index-use #) { /test[contains(d, '1')] }");
+               assertEquals(0, result.getSize());
+           } catch (XMLDBException e) {
+               exceptionCaught = true;
+           }
+           assertTrue("contains() should not use index of type xs:double", exceptionCaught);
+           exceptionCaught = false;
+           try {
+               result = service.query("(# exist:force-index-use #) { /test[matches(d, '1')] }");
+               assertEquals(0, result.getSize());
+           } catch (XMLDBException e) {
+               exceptionCaught = true;
+           }
+           assertTrue("matches() should not use index of type xs:double", exceptionCaught);
+
+           result = service.query("/test[matches(h, '1')]");
+           assertEquals(1, result.getSize());
+       } catch(Exception e) {
+      	 	e.printStackTrace();
+           fail(e.getMessage());
+       }
+  }
+
+    public void testRangeIndex3() {
         try {
             //Configure collection automatically
             IndexQueryService idxConf = (IndexQueryService)
@@ -857,14 +1027,77 @@ public class CollectionConfigurationTest extends TestCase {
             //... then index document
             XMLResource doc = (XMLResource)
                     testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
-            doc.setContent(DOCUMENT_CONTENT);
+            doc.setContent(DOCUMENT_CONTENT3);
             testCollection.storeResource(doc);
 
             XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
             // the query optimizer cannot optimize the following general comparison as
             // the context qname is unknown. however, the available qname index should still be used.
-            ResourceSet result = service.query("for $t in /test/a where $t = 1 return $t");
+            ResourceSet result = service.query("(# exist:force-index-use #) { for $t in /test/a where $t = 1 return $t}");
             assertEquals(1, result.getSize());
+            result = service.query("(# exist:force-index-use #) { for $t in /test/d where contains($t, 'x') return $t}");
+            assertEquals(1, result.getSize());
+            result = service.query("(# exist:force-index-use #) { for $t in /test/d where matches($t, 'x$') return $t}");
+            assertEquals(1, result.getSize());
+
+            // left operand to comparison uses nodes from different elements, both having an index defined
+            // by qname: use qname index
+            result = service.query("(# exist:force-index-use #) { for $t in /test/(a|b) where $t = 1 return $t}");
+            assertEquals(2, result.getSize());
+            result = service.query("(# exist:force-index-use #) { for $t in /test/(d|e) where contains($t, 'x') return $t}");
+            assertEquals(2, result.getSize());
+            result = service.query("(# exist:force-index-use #) { for $t in /test/(d|e) where matches($t, 'x$') return $t}");
+            assertEquals(2, result.getSize());
+
+            // left operand to comparison uses nodes from different elements with mixed indexes,
+            // some defined on qname, one defined by path: comparison needs to scan all 3 indexes.
+            result = service.query("(# exist:force-index-use #) { for $t in /test/(a|b|c) where $t = 1 return $t}");
+            assertEquals(3, result.getSize());
+            result = service.query("(# exist:force-index-use #) { for $t in /test/(d|e|f) where contains($t, 'x') return $t}");
+            assertEquals(3, result.getSize());
+            result = service.query("(# exist:force-index-use #) { for $t in /test/(d|e|f) where matches($t, 'x$') return $t}");
+            assertEquals(3, result.getSize());
+            
+            // left operand has index defined on path. other elements in the collection use indexes
+            // on qname: comparison needs to scan all index types.
+            result = service.query("(# exist:force-index-use #) { for $t in /test/c where $t = 1 return $t}");
+            assertEquals(1, result.getSize());
+
+            // simple comparison, left operand has index defined on path.
+            result = service.query("(# exist:force-index-use #) { /test[c = 1] }");
+            assertEquals(1, result.getSize());
+            result = service.query("(# exist:force-index-use #) { /test[matches(d, 'x')] }");
+            assertEquals(1, result.getSize());
+
+            // wrong index type: can't use fn:contains with an integer index
+            boolean exceptionCaught = false;
+            try {
+                result = service.query("(# exist:force-index-use #) { for $t in /test/c where contains($t, '1') return $t}");
+                assertEquals(1, result.getSize());
+            } catch (XMLDBException e) {
+                exceptionCaught = true;
+            }
+            assertTrue(exceptionCaught);
+
+            // wrong index type: can't use fn:matches with an integer index
+            exceptionCaught = false;
+            try {
+                result = service.query("(# exist:force-index-use #) { for $t in /test/c where matches($t, '1') return $t}");
+                assertEquals(1, result.getSize());
+            } catch (XMLDBException e) {
+                exceptionCaught = true;
+            }
+            assertTrue(exceptionCaught);
+            
+            // wrong index type: can't use fn:matches with an integer index
+            exceptionCaught = false;
+            try {
+                result = service.query("(# exist:force-index-use #) { /test[matches(c, '1')] }");
+                assertEquals(1, result.getSize());
+            } catch (XMLDBException e) {
+                exceptionCaught = true;
+            }
+            assertTrue(exceptionCaught);
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());

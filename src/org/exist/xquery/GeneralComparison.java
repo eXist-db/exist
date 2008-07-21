@@ -32,6 +32,7 @@ import org.exist.dom.QName;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.Indexable;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.ExpressionDumper;
@@ -102,6 +103,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     private int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
 
+    private IndexFlags idxflags = new IndexFlags();
+    
     public GeneralComparison(XQueryContext context, int relation) {
 		this(context, relation, Constants.TRUNC_NONE);
 	}
@@ -549,7 +552,30 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 	    	if (LOG.isTraceEnabled())
 	    		LOG.trace("found an index of type: " + Type.getTypeName(indexType));
 
-	    	//Get the documents from the node set
+            boolean indexScan = false;
+            if (contextSequence != null) {
+                IndexFlags iflags = checkForQNameIndex(idxflags, context, contextSequence, contextQName);
+                boolean indexFound = false;
+                if (!iflags.indexOnQName) {
+                    // if contextQName != null and no index is defined on
+                    // contextQName, we don't need to scan other QName indexes
+                    // and can just use the generic range index
+                    indexFound = contextQName != null;
+                    // set contextQName to null so the index lookup below is not
+                    // restricted to that QName
+                    contextQName = null;
+                }
+                if (!indexFound && contextQName == null) {
+                    // if there are some indexes defined on a qname,
+                    // we need to check them all
+                    if (iflags.hasIndexOnQNames)
+                        indexScan = true;
+                    // else use range index defined on path by default
+                }
+            } else
+                return nodeSetCompare(nodes, contextSequence);
+
+            //Get the documents from the node set
 			final DocumentSet docs = nodes.getDocumentSet();
 			
 	        //Holds the result
@@ -602,14 +628,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() +
 		                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
 
-                            if (!checkForQNameIndex(contextSequence)) {
-                                if (LOG.isTraceEnabled())
-                                    LOG.trace("Cannot use QName index");
-                                contextQName = null;
-                            }
-                            
-                            NodeSet ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, contextQName, (Indexable)key);
-		                    hasUsedIndex = true;
+                            NodeSet ns;
+                            if (indexScan)
+                                ns = context.getBroker().getValueIndex().findAll(relation, docs, nodes, NodeSet.ANCESTOR, (Indexable)key);
+                            else
+                                ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, contextQName, (Indexable)key);
+                            hasUsedIndex = true;
 
 		                    if (result == null)
 								result = ns;
@@ -624,15 +648,14 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
                             if (LOG.isTraceEnabled())
 			        			LOG.trace("Using range index for key: " + key.getStringValue());
-
-                            if (!checkForQNameIndex(contextSequence)) {
-                                if (LOG.isTraceEnabled())
-                                    LOG.trace("Cannot use QName index");
-                                contextQName = null;
-                            }
                             
                             try {
-								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR,
+                                NodeSet ns;
+                                if (indexScan)
+                                    ns = context.getBroker().getValueIndex().matchAll(docs, nodes, NodeSet.ANCESTOR,
+                                        getRegexp(key.getStringValue()).toString(), DBBroker.MATCH_REGEXP, 0, true);
+                                else
+                                    ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR,
                                         getRegexp(key.getStringValue()).toString(), contextQName, DBBroker.MATCH_REGEXP);
 								hasUsedIndex = true;
 
@@ -878,23 +901,26 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		this.collationArg = collationArg;
 	}
 
-    private boolean checkForQNameIndex(Sequence contextSequence) {
-        if (contextSequence == null || contextQName == null)
-            return false;
-        boolean hasQNameIndex = true;
+    public final static IndexFlags checkForQNameIndex(IndexFlags idxflags, XQueryContext context, Sequence contextSequence, QName contextQName) {
+        idxflags.reset(contextQName != null);
         for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = (Collection) i.next();
             if (collection.getURI().equalsInternal(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
-            hasQNameIndex = collection.getIndexByQNameConfiguration(context.getBroker(), contextQName) != null;
-            if (!hasQNameIndex) {
+            IndexSpec idxcfg = collection.getIndexConfiguration(context.getBroker());
+            if (idxflags.indexOnQName &&
+                    idxcfg.getIndexByQName(contextQName) == null) {
+                idxflags.indexOnQName = false;
                 if (LOG.isTraceEnabled())
                     LOG.trace("cannot use index on QName: " + contextQName + ". Collection " + collection.getURI() +
                         " does not define an index");
-                break;
             }
+            if (!idxflags.hasIndexOnQNames && idxcfg.hasIndexesByQName())
+                idxflags.hasIndexOnQNames = true;
+            if (!idxflags.hasIndexOnPaths && idxcfg.hasIndexesByPath())
+                idxflags.hasIndexOnPaths = true;
         }
-        return hasQNameIndex;
+        return idxflags;
     }
 
     /* (non-Javadoc)
@@ -913,5 +939,30 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitGeneralComparison(this);
+    }
+
+    public final static class IndexFlags {
+
+        public boolean indexOnQName = true;
+        public boolean hasIndexOnPaths = false;
+        public boolean hasIndexOnQNames = false;
+
+        public boolean indexOnQName() {
+            return indexOnQName;
+        }
+
+        public boolean hasIndexOnPaths() {
+            return hasIndexOnPaths;
+        }
+
+        public boolean hasIndexOnQNames() {
+            return hasIndexOnQNames;
+        }
+
+        public void reset(boolean indexOnQName) {
+            this.indexOnQName = indexOnQName;
+            this.hasIndexOnPaths = false;
+            this.hasIndexOnQNames = false;
+        }
     }
 }
