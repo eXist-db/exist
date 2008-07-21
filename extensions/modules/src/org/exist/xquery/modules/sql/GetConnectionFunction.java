@@ -160,27 +160,27 @@ public class GetConnectionFunction extends BasicFunction {
 			LOG.error(
 					"sql:get-connection() Illegal Access to database driver class: "
 							+ dbDriver, iae);
-			throw new XPathException(
+			throw new XPathException(getASTNode(), 
 					"sql:get-connection() Illegal Access to database driver class: "
 							+ dbDriver, iae);
 		} catch (ClassNotFoundException cnfe) {
 			LOG.error(
 					"sql:get-connection() Cannot find database driver class: "
 							+ dbDriver, cnfe);
-			throw new XPathException(
+			throw new XPathException(getASTNode(), 
 					"sql:get-connection() Cannot find database driver class: "
 							+ dbDriver, cnfe);
 		} catch (InstantiationException ie) {
 			LOG.error(
 					"sql:get-connection() Cannot instantiate database driver class: "
 							+ dbDriver, ie);
-			throw new XPathException(
+			throw new XPathException(getASTNode(), 
 					"sql:get-connection() Cannot instantiate database driver class: "
 							+ dbDriver, ie);
 		} catch (SQLException sqle) {
 			LOG.error("sql:get-connection() Cannot connect to database: "
 					+ dbURL, sqle);
-			throw new XPathException(
+			throw new XPathException(getASTNode(), 
 					"sql:get-connection() Cannot connect to database: " + dbURL,
 					sqle);
 		}

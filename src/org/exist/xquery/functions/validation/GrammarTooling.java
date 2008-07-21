@@ -122,11 +122,11 @@ public class GrammarTooling extends BasicFunction  {
             return result;
             
             
-            
+
         } else {
             // oh oh
             LOG.error("function not found error");
-            throw new XPathException("function not found");
+            throw new XPathException(getASTNode(), "function not found");
         }
 
     }

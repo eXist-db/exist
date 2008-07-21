@@ -207,7 +207,7 @@ public class OneParamFunctions extends BasicFunction {
                 calcValue=Math.toRadians(value.getDouble());
                 
             } else {
-                throw new XPathException("Function "+functionName+" not found.");
+                throw new XPathException(getASTNode(), "Function "+functionName+" not found.");
             }
             result=new DoubleValue(calcValue);
         }

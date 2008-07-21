@@ -94,9 +94,9 @@ public class SetCookie extends Function {
 		// response object is read from global variable $response
 		Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException("Response not set");
+			throw new XPathException(getASTNode(), "Response not set");
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $response is not bound to a Java object.");
+			throw new XPathException(getASTNode(), "Variable $response is not bound to a Java object.");
 		JavaObjectValue response = (JavaObjectValue)var.getValue().itemAt(0);
 		
 		//get parameters
@@ -113,7 +113,7 @@ public class SetCookie extends Function {
 			((ResponseWrapper) response.getObject()).addCookie(name, value, maxAge);
 		    }
 		} else {
-		    throw new XPathException("Type error: variable $response is not bound to a response object");
+			throw new XPathException(getASTNode(), "Type error: variable $response is not bound to a response object");
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

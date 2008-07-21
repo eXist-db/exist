@@ -173,7 +173,7 @@ public class GetScheduledJobs extends BasicFunction
 		}
 		catch(SAXException se)
 		{
-			throw(new XPathException(se));
+			throw(new XPathException(getASTNode(), se));
 		}
 	}
 }

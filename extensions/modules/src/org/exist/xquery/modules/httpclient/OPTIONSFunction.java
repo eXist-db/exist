@@ -91,7 +91,7 @@ public class OPTIONSFunction extends BaseHTTPClientFunction {
             response = doRequest( context, options, persistCookies );	
         }
         catch( IOException ioe ) {
-            throw( new XPathException( ioe ) );
+            throw( new XPathException(getASTNode(), ioe ) );
         }
         finally {
             options.releaseConnection();

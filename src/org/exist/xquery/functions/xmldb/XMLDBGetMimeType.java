@@ -90,7 +90,7 @@ public class XMLDBGetMimeType extends BasicFunction
 			}	
 			catch(Exception e)
 			{
-				throw new XPathException(e);
+				throw new XPathException(getASTNode(), e);
 			}
 			finally
 			{
