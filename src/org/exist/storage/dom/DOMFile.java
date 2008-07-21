@@ -3394,48 +3394,71 @@ public class DOMFile extends BTree implements Lockable {
 		// Transfer bytes from inputstream to db
 		final int chunkSize = fileHeader.getWorkSize();
 		byte[] buf = new byte[chunkSize];
-		int len = is.read(buf);
-		        
-		// Check if stream does contain any data
-		if (len < 1){
-		    currentPage.setPageNum(Page.NO_PAGE);
-		    currentPage.getPageHeader().setNextPage(Page.NO_PAGE);
-		    //Shouldn't we return 0 here ?
-		    return -1;
-		}
-		        
-		// Read remaining stream
-		while ( len > -1 ) {
-		    if (len == 0)
-			LOG.warn("len == 0");
-		    // If there are bytes in stream, read
-		    if (len > 0){
-			Value value = new Value(buf, 0, len);
-			Page nextPage;
-			if (len == chunkSize) {
-			    nextPage = createNewPage();
-			    currentPage.getPageHeader().setNextPage(nextPage.getPageNum());		                    
-			} else {
-			    nextPage = null;
-			    currentPage.getPageHeader().setNextPage(Page.NO_PAGE);
-			}
-		                
-			// If no data is in input stream left, don't write
+		byte[] altbuf = new byte[chunkSize];
+		byte[] currbuf=buf;
+		byte[] fullbuf=null;
+		boolean isaltbuf=false;
+		
+		int len;
+		int basebuf=0;
+		int basemax=chunkSize;
+		boolean emptyPage=true;
+		while((len=is.read(currbuf,basebuf,basemax))!=-1) {
+		    emptyPage=false;
+		    // We are going to use a buffer swapping technique
+		    if(fullbuf!=null) {
+			Value value = new Value(fullbuf, 0, chunkSize);
+			Page nextPage = createNewPage();
+			currentPage.getPageHeader().setNextPage(nextPage.getPageNum());
 			if (isTransactional && transaction != null) {
-			    long nextPageNum = (nextPage == null) ? 
-				Page.NO_PAGE :
-				nextPage.getPageNum();		                    
-			    Loggable loggable = new WriteOverflowPageLoggable(
-									      transaction, currentPage.getPageNum(),
-									      nextPageNum , value);
-			    writeToLog(loggable, currentPage);
+				long nextPageNum = nextPage.getPageNum();
+			        Loggable loggable = new WriteOverflowPageLoggable(
+						      transaction, currentPage.getPageNum(),
+						      nextPageNum , value);
+
+			        writeToLog(loggable, currentPage);
 			}
-		                
 			writeValue(currentPage, value);
 			pageCount++;
 			currentPage = nextPage;
+			fullbuf=null;
 		    }
-		    len = is.read(buf);
+		    
+		    // Let's swap the buffer
+		    basebuf+=len;
+		    if(basebuf==chunkSize) {
+		    	fullbuf=currbuf;
+			currbuf=(isaltbuf)?buf:altbuf;
+			isaltbuf=!isaltbuf;
+			basebuf=0;
+			basemax=chunkSize;
+		    } else {
+		    	basemax-=len;
+		    }
+		}
+
+		// Detecting a zero byte stream
+		if(emptyPage) {
+			currentPage.setPageNum(Page.NO_PAGE);
+			currentPage.getPageHeader().setNextPage(Page.NO_PAGE);
+		} else {
+			// Just in the limit of a page
+			if(fullbuf!=null) {
+				basebuf=chunkSize;
+				currbuf=fullbuf;
+			}
+			Value value=new Value(currbuf,0,basebuf);
+			currentPage.getPageHeader().setNextPage(Page.NO_PAGE);
+			if (isTransactional && transaction != null) {
+				long nextPageNum = Page.NO_PAGE;
+			        Loggable loggable = new WriteOverflowPageLoggable(
+						      transaction, currentPage.getPageNum(),
+						      nextPageNum , value);
+
+			        writeToLog(loggable, currentPage);
+			}
+			writeValue(currentPage, value);
+			pageCount++;
 		}
 		// TODO what if remaining length=0?
 		
