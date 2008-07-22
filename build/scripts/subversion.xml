@@ -29,7 +29,7 @@
 
     <tstamp/>
 
-    <svninfo url="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist" username="anonymous"
+    <svninfo url="https://exist.svn.sourceforge.net/svnroot/exist/branches/eXist-stable-1.2" username="anonymous"
       password="anonymous"/>
 
     <propertyfile file="VERSION.txt" comment="eXist build info (updated using svnkit)">
@@ -91,7 +91,7 @@
   -->
   <target name="svn-update" description="Update project from SubVersion archive.">
     <property name="source-root" value="."/>
-    <property name="repository.URL" value="https://exist.svn.sourceforge.net/svnroot/exist"/>
+    <property name="repository.URL" value="https://exist.svn.sourceforge.net/svnroot/exist/branches/eXist-stable-1.2"/>
     <java classname="org.tmatesoft.svn.cli.SVN"
        dir="." fork="true">
       <arg value="co"/>
