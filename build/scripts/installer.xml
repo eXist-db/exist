@@ -29,7 +29,7 @@
 
     <target depends="prepare-installer,commandline-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}.jar"/>
+        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}-rev${svn.revision}.jar"/>
         <izpack input="installer/install.xml"
             output="${inst-jar}"
             basedir="." izPackDir="${izpack.dir}"
@@ -54,7 +54,7 @@
         <delete dir="installer/temp"/>
     </target>
 
-	<target depends="snapshot-installer" name="installer-exe" description="Create .exe from installer">
+	<target depends="installer" name="installer-exe" description="Create .exe from installer">
 		<taskdef name="launch4j"
 			classname="net.sf.launch4j.ant.Launch4jTask"
 			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
