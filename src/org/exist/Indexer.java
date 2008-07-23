@@ -107,6 +107,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	
     protected boolean suppressWSmixed = false;
 
+    protected int docSize = 0;
+    
     /* used to record the number of children of an element during 
      * validation phase. later, when storing the nodes, we already
      * know the child count and don't need to update the element
@@ -119,8 +121,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
     // the current nodeFactoryInstanceCnt
     private int nodeFactoryInstanceCnt = 0;
-
-
     
     // reusable fields
     private TextImpl text = new TextImpl();
@@ -192,6 +192,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         level = 0;
         currentPath.reset();
         stack = new Stack();
+        docSize = 0;
         nsMappings.clear();
         indexListener = null;
         rootNode = null;
@@ -211,7 +212,11 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     public DocumentImpl getDocument() {
 	return document;
     }
-	
+
+    public int getDocSize() {
+        return docSize;
+    }
+    
     public void characters(char[] ch, int start, int length) {
 	if (length <= 0)
 	    return;
@@ -480,7 +485,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	    progress = new ProgressIndicator(currentLine, 100);
 	    document.setChildCount(0);
             elementCnt = 0;
-	}
+    }
+        docSize = 0;
     }
 
     public void startElement(String namespace, String name, String qname,
@@ -587,7 +593,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             }
 	    document.appendChild(node);
 	}
-
 	level++;
 
 	String attrPrefix;
@@ -643,6 +648,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		}
 	    }
 	}
+        ++docSize;
     }
 
     private void storeText() {
