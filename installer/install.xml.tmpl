@@ -114,7 +114,8 @@
                 <include name="logs/"/>
                 <exclude name="**/*.dbx"/>
                 <exclude name="**/CVS/"/>
-                <exclude name="**/*.log"/>
+                <exclude name="**/*.log*"/>
+				<exclude name="**.jbx"/>
             </fileset>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <file src="installer/icon.bmp" targetdir="$INSTALL_PATH"/>
