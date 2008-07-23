@@ -98,10 +98,8 @@ import java.util.TreeMap;
 public  class Collection extends Observable implements Comparable, Cacheable
 {    
 	public static int LENGTH_COLLECTION_ID = 4; //sizeof int
-    
-    public Collection(){
-        
-    }
+
+    public static final int POOL_PARSER_THRESHOLD = 500;
 
     private final static int SHALLOW_SIZE = 550;
 
@@ -152,6 +150,10 @@ public  class Collection extends Observable implements Comparable, Cacheable
     
     /** is this a temporary collection? */
     private boolean isTempCollection = false;
+
+    public Collection(){
+
+    }
     
     public Collection(XmldbURI path) {
         setPath(path);
@@ -913,7 +915,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 } catch (IOException e) {
                     throw new EXistException(e);
                 } finally {
-                    releaseReader(broker, reader);
+                    releaseReader(broker, info, reader);
                 }
             }
         });
@@ -948,7 +950,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 } catch (IOException e) {
                     throw new EXistException(e);
                 } finally {
-                    releaseReader(broker, reader);
+                    releaseReader(broker, info, reader);
                 }
             }
         });
@@ -1098,7 +1100,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 } catch (IOException e) {
                     throw new EXistException(e);
                 } finally {
-                    releaseReader(broker, reader);
+                    releaseReader(broker, info, reader);
                 }
             }
         });
@@ -1623,14 +1625,14 @@ public  class Collection extends Observable implements Comparable, Cacheable
         
         // Get reader from readerpool.
         XMLReader reader= broker.getBrokerPool().getParserPool().borrowXMLReader();
-        
+
         // If Collection configuration exists (try to) get validation mode
         // and setup reader with this information.
         if( colconfig!=null ) {
             int mode=colconfig.getValidationMode();
-            XMLReaderObjectFactory.setReaderValidationMode(mode, reader);  
-        } 
-        
+            XMLReaderObjectFactory.setReaderValidationMode(mode, reader);
+        }
+
         // Return configured reader.
         return reader;       
     }
@@ -1638,11 +1640,12 @@ public  class Collection extends Observable implements Comparable, Cacheable
     /**
      * Reset validation mode of reader and return reader to reader pool.
      */    
-    private void releaseReader(DBBroker broker, XMLReader reader) {
+    private void releaseReader(DBBroker broker, IndexInfo info, XMLReader reader) {
         if(userReader != null){
             return;
         }
-       
+        if (info.getIndexer().getDocSize() > POOL_PARSER_THRESHOLD)
+            return;
         // Get validation mode from static configuration
         Configuration config = broker.getConfiguration();
         String optionValue = (String) config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);
