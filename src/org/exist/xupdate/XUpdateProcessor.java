@@ -39,7 +39,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
-import org.exist.util.FastStringBuffer;
+import org.exist.util.XMLString;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
@@ -172,7 +172,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
     private List modifications = new ArrayList();
 
     /** Temporary string buffer used for collecting text chunks */
-    private FastStringBuffer charBuf = new FastStringBuffer(64);
+    private XMLString charBuf = new XMLString(64);
 
     // Environment
 
@@ -306,20 +306,20 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		// save accumulated character content
 		if (inModification && charBuf.length() > 0) {
 //            String normalized = charBuf.toString();
-			final String normalized = preserveWhitespace ? charBuf.toString() :
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			final XMLString normalized = preserveWhitespace ? charBuf :
+				charBuf.normalize(XMLString.SUPPRESS_BOTH);
 
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(charBuf.toString());
 				if (stack.isEmpty()) {
-					//LOG.debug("appending text to fragment: " + text.getData());
-					contents.add(text);
-				} else {
+                    if (!normalized.isWhitespaceOnly())
+                        contents.add(text);
+                } else {
 					Element last = (Element) stack.peek();
 					last.appendChild(text);
 				}
 			}
-			charBuf.setLength(0);
+			charBuf.reset();
 		}
 		if (namespaceURI.equals(XUPDATE_NS)) {
 			String select = null;
@@ -368,7 +368,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					throw new SAXException(
 							"creation elements are only allowed inside "
 							+ "a modification");
-				charBuf.setLength(0);
+				charBuf.reset();
 			} else
 				throw new SAXException("Unknown XUpdate element: " + qName);
 
@@ -567,18 +567,19 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void endElement(String namespaceURI, String localName, String qName)
 		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
-			final String normalized = preserveWhitespace ? charBuf.toString() :
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			final XMLString normalized = preserveWhitespace ? charBuf :
+				charBuf.normalize(XMLString.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(charBuf.toString());
 				if (stack.isEmpty()) {
-					contents.add(text);
+                    if (!normalized.isWhitespaceOnly())
+                        contents.add(text);
 				} else {
 					Element last = (Element) stack.peek();
 					last.appendChild(text);
 				}
 			}
-			charBuf.setLength(0);
+			charBuf.reset();
 		}
 		if (XUPDATE_NS.equals(namespaceURI)) {
 			if (IF.equals(localName)) {
@@ -685,19 +686,19 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void processingInstruction(String target, String data)
 		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
-			final String normalized =
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			final XMLString normalized =
+				charBuf.normalize(XMLString.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
-				Text text = doc.createTextNode(normalized);
+				Text text = doc.createTextNode(normalized.toString());
 				if (stack.isEmpty()) {
-					LOG.debug("appending text to fragment: " + text.getData());
-					contents.add(text);
+                    if (!normalized.isWhitespaceOnly())
+					    contents.add(text);
 				} else {
 					Element last = (Element) stack.peek();
 					last.appendChild(text);
 				}
 			}
-			charBuf.setLength(0);
+			charBuf.reset();
 		}
 		if (inModification) {
 			ProcessingInstruction pi =
@@ -780,19 +781,19 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	 */
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		if (inModification && charBuf.length() > 0) {
-			final String normalized =
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			final XMLString normalized =
+				charBuf.normalize(XMLString.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
-				Text text = doc.createTextNode(normalized);
+				Text text = doc.createTextNode(normalized.toString());
 				if (stack.isEmpty()) {
-					//LOG.debug("appending text to fragment: " + text.getData());
-					contents.add(text);
+                    if (!normalized.isWhitespaceOnly())
+					    contents.add(text);
 				} else {
 					Element last = (Element) stack.peek();
 					last.appendChild(text);
 				}
 			}
-			charBuf.setLength(0);
+			charBuf.reset();
 		}
 		if (inModification) {
 			Comment comment = doc.createComment(new String(ch, start, length));
@@ -856,7 +857,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		this.broker = null;
 		this.documentSet = null;
 		this.modifications.clear();
-		this.charBuf = new FastStringBuffer(64);
+		this.charBuf = new XMLString();
 		this.variables.clear();
 		this.namespaces.clear();
 		this.conditionals.clear();
