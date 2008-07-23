@@ -32,10 +32,10 @@ public class NodeTest extends XMLTestCase {
 	private static final String XML =
 		"<!-- doc starts here -->" +
         "<test xmlns:ns=\"http://foo.org\">" +
-		"	<a ns:a=\"1\" ns:b=\"m\">abc</a>" +
-		"	<b ns:a=\"2\">def</b>" +
-        "   <c>ghi</c>" +
-        "   <d>jkl</d>" +
+		"<a ns:a=\"1\" ns:b=\"m\">abc</a>" +
+		"<b ns:a=\"2\">def</b>" +
+        "<c>ghi</c>" +
+        "<d>jkl</d>" +
 		"</test>";
 	
 	private BrokerPool pool = null;

@@ -157,7 +157,7 @@
     <!-- Test set 3 : concurrent tests -->
     <target name="test-concurrent">
         <delete failonerror="false">
-            <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
+            <fileset dir="webapp/WEB-INF/data" includes="*.dbx *.log *.lck"/>
         </delete>
         <echo message="-----------------"/>
         <echo message="Concurrency tests"/>
@@ -179,6 +179,9 @@
         <echo message="--------------"/>
         <echo message="Recovery tests"/>
         <echo message="--------------"/>
+		<delete failonerror="false">
+			<fileset dir="webapp/WEB-INF/data" includes="*.dbx *.log *.lck"/>
+		</delete>
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>

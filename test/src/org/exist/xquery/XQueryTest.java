@@ -24,9 +24,12 @@ package org.exist.xquery;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.storage.DBBroker;
+import org.exist.storage.BrokerPool;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.TestUtils;
+import org.exist.Indexer;
+import org.exist.util.Configuration;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
@@ -1070,8 +1073,14 @@ public class XQueryTest extends XMLTestCase {
 		String query;
 		XMLResource resu;
 		boolean exceptionThrown;
-		String message;				
-		try {
+		String message;
+        Configuration config = null;
+        Boolean savedConfig = Boolean.FALSE;
+        try {
+            config = BrokerPool.getInstance().getConfiguration();
+            savedConfig = (Boolean) config.getProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT);
+            config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.FALSE);
+            
             Collection testCollection = getTestCollection();
             doc = testCollection.createResource(MODULE1_NAME, "BinaryResource");
 			doc.setContent(module1);	
@@ -1092,7 +1101,7 @@ public class XQueryTest extends XMLTestCase {
 				(XPathQueryService) testCollection.getService(
 					"XPathQueryService",
 					"1.0");
-			
+			service.setProperty(OutputKeys.INDENT, "yes");
 			System.out.println("testNamespace 1: ========" );
 			query = "xquery version \"1.0\";\n" 
 				+ "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n"
@@ -1187,7 +1196,7 @@ public class XQueryTest extends XMLTestCase {
                                 "        <x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>\n" +
                                 "    </rdf:Description>\n" +
                                 "</result>",
-                                ((XMLResource)result.getResource(0)).getContent());
+                                result.getResource(0).getContent());
                         
 			System.out.println("testNamespace 9: ========" );
 			query = "<result xmlns='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//Description}</result>";
@@ -1225,7 +1234,10 @@ public class XQueryTest extends XMLTestCase {
 			System.out.println("testNamespace : " + e);
 			e.printStackTrace();
 			fail(e.getMessage());
-		}			
+		} finally {
+            if (config != null)
+                config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, savedConfig);
+        }
 	}
 
 	public void testNamespaceWithTransform()
