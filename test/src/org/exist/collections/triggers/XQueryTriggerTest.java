@@ -22,8 +22,12 @@ package org.exist.collections.triggers;
 
 import static org.custommonkey.xmlunit.XMLAssert.*;
 import org.exist.TestUtils;
+import org.exist.Indexer;
+import org.exist.EXistException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.BrokerPool;
 import org.exist.util.Base64Decoder;
+import org.exist.util.Configuration;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -170,6 +174,9 @@ public class XQueryTriggerTest {
                     .getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection(TEST_COLLECTION);
             assertNotNull(testCollection);
+
+            Configuration config = BrokerPool.getInstance().getConfiguration();
+            config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.FALSE);
         } catch (ClassNotFoundException e) {
         	fail(e.getMessage());
         } catch (InstantiationException e) {
@@ -179,6 +186,9 @@ public class XQueryTriggerTest {
         } catch (XMLDBException e) {
             e.printStackTrace();
         	fail(e.getMessage());
+        } catch (EXistException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
         }
     }
 
@@ -259,8 +269,9 @@ public class XQueryTriggerTest {
 	        
 	        //TODO : consistent URI !	        
 	        result = service.query("/events/event[@id = 'trigger1']/document/test");
-	        assertEquals(1, result.getSize());	        	        
-	        assertXMLEqual(DOCUMENT_CONTENT, ((XMLResource)result.getResource(0)).getContent().toString());
+	        assertEquals(1, result.getSize());
+            System.out.println(DOCUMENT_CONTENT + "\n\n" + result.getResource(0).getContent());
+            assertXMLEqual(DOCUMENT_CONTENT, ((XMLResource)result.getResource(0)).getContent().toString());
 	        
     	} catch (Exception e) {
             e.printStackTrace();

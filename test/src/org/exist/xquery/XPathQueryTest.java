@@ -96,12 +96,12 @@ public class XPathQueryTest extends XMLTestCase {
     
     private final static String siblings =
             "<test>" +
-            "   <a> <s>A</s> <n>1</n> </a>" +
-            "   <a> <s>Z</s> <n>2</n> </a>" +
-            "   <a> <s>B</s> <n>3</n> </a>" +
-            "   <a> <s>Z</s> <n>4</n> </a>" +
-            "   <a> <s>C</s> <n>5</n> </a>" +
-            "   <a> <s>Z</s> <n>6</n> </a>" +
+            "   <a><s>A</s><n>1</n></a>" +
+            "   <a><s>Z</s><n>2</n></a>" +
+            "   <a><s>B</s><n>3</n></a>" +
+            "   <a><s>Z</s><n>4</n></a>" +
+            "   <a><s>C</s><n>5</n></a>" +
+            "   <a><s>Z</s><n>6</n></a>" +
             "</test>";
     
     private final static String ids =
@@ -1882,7 +1882,7 @@ public class XPathQueryTest extends XMLTestCase {
             String item = result.getResource(0).getContent().toString();
             assertXMLEqual("<text> </text>", item);
             item = result.getResource(1).getContent().toString();
-            assertXMLEqual("<text xml:space=\"default\"/>", item);
+            assertXMLEqual("<text xml:space=\"default\"> </text>", item);
         } catch (Exception e) {
             fail(e.getMessage());
         }

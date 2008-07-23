@@ -10,6 +10,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.exist.storage.DBBroker;
+import org.exist.storage.BrokerPool;
+import org.exist.util.Configuration;
+import org.exist.Indexer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.DocumentTraversal;
@@ -76,7 +79,9 @@ public class XUpdateTest {
 				col = mgtService.createCollection(XUPDATE_COLLECTION);
 				System.out.println("collection created.");
 			}
-		} catch (Exception e) {
+            Configuration config = BrokerPool.getInstance().getConfiguration();
+            config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.FALSE);
+        } catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
