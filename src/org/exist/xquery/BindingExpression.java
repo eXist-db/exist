@@ -287,7 +287,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	}
 	
 	protected final static void clearContext(int contextId, Sequence seq) {
-		if (!(seq instanceof VirtualNodeSet)) {
+		if (seq != null && !(seq instanceof VirtualNodeSet)) {
 			Item next;
 			for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
 				next = i.nextItem();
