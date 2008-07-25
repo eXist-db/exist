@@ -96,7 +96,9 @@
                     validation process must be registered to the database using <ulink
                         url="http://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html"
                         >OASIS catalog</ulink> files. These catalog files can be stored on disk and
-                    in the database.</para>
+                    in the database. In eXist the resolving is performed by the apache 
+                    <a href="http://xml.apache.org/commons/components/resolver/">xml-commons resolver</a>
+                library.</para>
                 <para>In the upper example the ${WEBAPP_HOME} is substituted by a
                     <emphasis>file://</emphasis> URL pointing to the 'webapp'-directory of eXist
                     (e.g. '$EXIST_HOME/webapp/') or the equivalent directory of a deployed WAR file
@@ -374,6 +376,22 @@
                             <a href="http://xerces.apache.org/xerces2-j/javadocs/api/javax/xml/validation/package-summary.html">Xerces</a>
                             (XML schema, DTD) and by <a href="http://www.oxygenxml.com/onvdl.html">oNVDL</a> - oXygen XML NVDL implementation based on Jing (RelaxNG, Schematron and Namespace-based Validation Dispatching Language)</para>
                     </listitem>
+                </itemizedlist>
+            </para>
+        </section>
+   
+        <section id="sect7">
+            <title>References</title>
+            <para>
+                <itemizedlist>
+                    <listitem>Apache <a href="http://xml.apache.org/commons/components/resolver/">xml-commons resolver</a></listitem>
+                    <listitem>OASIS <a href="http://www.oasis-open.org/committees/entity/">XML Catalog Specification</a> V1.1</listitem>
+                    <listitem>Xerces <a href="http://xerces.apache.org/xerces2-j/faq-grammars.html">caching grammars</a>.</listitem>
+                    <listitem><a href="http://www.oxygenxml.com/onvdl.html">oNVDL</a> oXygen XML NVDL implementation based on Jing</listitem>
+                    <listitem><a href="http://en.wikipedia.org/wiki/Namespace-based_Validation_Dispatching_Language">NVDL</a> (Namespace-based Validation Dispatching Language)</listitem>
+                    <listitem><a href="http://en.wikipedia.org/wiki/Schematron">Schematron</a></listitem>
+                    <listitem><a href="http://en.wikipedia.org/wiki/RELAX_NG">Relax NG</a></listitem>
+                    
                 </itemizedlist>
             </para>
         </section>
