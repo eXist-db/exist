@@ -1,24 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2006-2008 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id: EchoFunction.java 3063 2006-04-05 20:49:44Z brihaye $
+ *  $Id$
  */
 package org.exist.xquery.modules.datetime;
 
@@ -45,7 +44,7 @@ public class FormatDateFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("format-date", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns a xs:string of the xs:date in $a formatted according to the specification in $b",
+			"Returns a xs:string of the xs:date in $a formatted according to the template specification in $b as in java.text.SimpleDateFormat.",
 			new SequenceType[] { 
 				new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
