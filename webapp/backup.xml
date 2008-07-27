@@ -398,9 +398,13 @@
 
                 <synopsis>bin/run.sh org.exist.backup.ExportGUI</synopsis>
 
+				<para>If you installed the eXist distribution using the installer, a shortcut to this
+				should have been placed into the start menu, so you don't need to type above
+				command.</para>
+
                 <para>On a headless system you can use the command-line version instead:</para>
 
-                <synopsis>bin/run.sh org.exist.backup.ExportMain</synopsis>
+                <synopsis>java -jar start.jar org.exist.backup.ExportMain</synopsis>
 
                 <para>Call it with parameter <parameter>-h</parameter> to get a list of possible
                     options.</para>
