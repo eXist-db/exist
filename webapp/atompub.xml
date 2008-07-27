@@ -514,7 +514,7 @@ Content- Length: nnn
 
         <para>A query can be registered as module by adding a
         <code>{http://www.exist-db.org/Vocabulary/AtomConfiguration/2006/1/0}module</code>
-        element without the 'class' attribute specitied. The 'name' specifies
+        element without the 'class' attribute specified. The 'name' specifies
         the module name that will be used in the URL path.</para>
 
         <para>As children of the element, a
