@@ -24,7 +24,7 @@ package org.exist.storage.journal;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -413,9 +413,13 @@ public class Journal {
      * @return all journal files
      */
 	public File[] getFiles() {
-		File files[] = dir.listFiles(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return name.endsWith(LOG_FILE_SUFFIX) && !name.endsWith("_index." + LOG_FILE_SUFFIX);
+		final String suffix = '.' + LOG_FILE_SUFFIX;
+		File files[] = dir.listFiles(new FileFilter() {
+			public boolean accept(File file) {
+				if (file.isDirectory())
+					return false;
+				final String name = file.getName();
+				return name.endsWith(suffix) && !name.endsWith("_index." + suffix);
 			}
 		});
 		return files;
