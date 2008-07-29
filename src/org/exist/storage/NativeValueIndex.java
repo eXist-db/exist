@@ -384,7 +384,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         v = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getSymbols());
                     }
                     if (dbValues.append(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not append index data for key '" +  key + "'");
+                        LOG.warn("Could not append index data for key '" +  key + "'");
                         //TODO : throw exception ?
                     }
                 } catch (EXistException e) {
