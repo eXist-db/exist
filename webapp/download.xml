@@ -56,23 +56,23 @@
                     </tr>
                     <tr>
                         <td>
-                            <ulink url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.4-rev8047.jar"
-                                >eXist-setup-1.2.4-rev8047.jar</ulink>
+                            <ulink url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.4-rev8071.jar"
+                                >eXist-setup-1.2.4-rev8071.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                            eXist-1.2.4-rev8047.jar</code></td>
+                            eXist-1.2.4-rev8071.jar</code></td>
                     </tr>
                     <tr>
                         <td>
-                            <ulink url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.4-rev8047.exe"
-                                >eXist-setup-1.2.4-rev8047.exe</ulink>
+                            <ulink url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.4-rev8071.exe"
+                                >eXist-setup-1.2.4-rev8071.exe</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
                         <td>
-                            <ulink url="http://prdownloads.sourceforge.net/exist/eXist-1.2.4-rev8047.war"
-                                >eXist-1.2.4-rev8047.war</ulink>
+                            <ulink url="http://prdownloads.sourceforge.net/exist/eXist-1.2.4-rev8071.war"
+                                >eXist-1.2.4-rev8071.war</ulink>
                         </td>
                         <td>Web application archive, ready to be installed into an existing
                             servlet-engine like Tomcat or Jetty. </td>
