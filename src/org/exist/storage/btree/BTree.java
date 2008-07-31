@@ -1226,7 +1226,7 @@ public class BTree extends Paged {
 //                Loggable log = new UpdatePageLoggable(transaction, fileId, page.getPageNum(), prefix, keys, nKeys, ptrs, nPtrs);
 //                writeToLog(log, this);
 //            }
-            
+
 			boolean split = recalculateDataLen() > fileHeader.getWorkSize();
 
 			if (split)
@@ -1261,7 +1261,7 @@ public class BTree extends Paged {
                     System.arraycopy(ptrs, leftPtrs.length, rightPtrs, 0, rightPtrs.length);
 
                     separator = keys[leftVals.length];
-                    if (prefix != null) {
+                    if (prefix != null && prefix.getLength() > 0) {
                         byte[] t = new byte[prefix.getLength() + separator.getLength()];
                         System.arraycopy(prefix.data(), prefix.start(), t, 0, prefix.getLength());
                         System.arraycopy(separator.data(), separator.start(), t, prefix.getLength(), separator.getLength());
@@ -2111,6 +2111,8 @@ public class BTree extends Paged {
 		}
 
         private void growPrefix() {
+            if (nKeys == 0)
+                return;
             if (nKeys == 1) {
                 prefix = keys[0];
                 keys[0] = Value.EMPTY_VALUE;
