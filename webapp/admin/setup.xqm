@@ -97,6 +97,10 @@ declare function setup:importFromURLs() as element()+
                 $includeMondial := request:get-parameter("mondial", ()),
  				$includeLocal := request:get-parameter("local", ()) return
                 (
+					if($includeLocal) then
+					( setup:importLocal()
+					)
+					else (),
                     if($includeXmlad) then
                     (
                         setup:create-collection("/db", "xmlad"),
@@ -106,11 +110,7 @@ declare function setup:importFromURLs() as element()+
                     (
                         setup:create-collection("/db", "mondial"),
                         setup:load-URL("/db/mondial", xs:anyURI("http://www.dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml"), "mondial.xml")
-                    )else (),
-					if($includeLocal) then
-					( setup:importLocal()
-					)
-					else ()
+                    )else ()
                 )
             }
             </ul>
