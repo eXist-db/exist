@@ -1129,7 +1129,7 @@ public class RESTServer {
 					serializer.setStylesheet(resource, stylesheet);
 				}
 				serializer.setProperties(outputProperties);
-				serializer.prepareStylesheets(resource);
+                serializer.prepareStylesheets(resource);
 
 				if (asMimeType != null) { // was a mime-type specified?
 					response.setContentType(asMimeType + "; charset="
@@ -1150,10 +1150,10 @@ public class RESTServer {
 					}
 				}
 				if (asMimeType.equals(MimeType.HTML_TYPE.getName())) {
-					serializer.setProperty("method", "xhtml");
-					serializer.setProperty("media-type", "text/html");
-					serializer.setProperty("ident", "yes");
-					serializer.setProperty("omit-xml-declaration", "no");
+					outputProperties.setProperty("method", "xhtml");
+					outputProperties.setProperty("media-type", "text/html");
+					outputProperties.setProperty("ident", "yes");
+					outputProperties.setProperty("omit-xml-declaration", "no");
 				}
 
 				OutputStreamWriter writer = new OutputStreamWriter(response
