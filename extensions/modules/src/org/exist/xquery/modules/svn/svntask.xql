@@ -56,5 +56,5 @@ declare function svnu:update() {
         )
 };
 
-xdb:login($svnu:collection, "admin", $svnu:PASS),
+xdb:login($svnu:collection, "admin", $svnu:adminPasswd),
 svnu:update()
