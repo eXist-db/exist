@@ -582,7 +582,9 @@ include.index.spatial = false
                             <para>Elements are specified by their <emphasis>qname</emphasis></para>
                         </listitem>
                         <listitem>
-                            <para>Attributes are specified by <option>@[ATTRIBUTE]</option></para>
+                            <para>Attributes are specified by <option>@attributeName</option>, so
+							if the attribute is called "attrib1", one uses <option>@attrib1</option>
+							in the index specification.</para>
                         </listitem>
                         <listitem>
                             <para>Child nodes are selected using the forward-slash
@@ -616,13 +618,22 @@ include.index.spatial = false
 
                     <para>We thus had to introduce an alternative configuration method which is not
                         context-dependant. To keep things simple, we decided to define the index on
-                        the <emphasis>qname</emphasis> of the node alone and to ignore the context altogether:</para>
+                        the <emphasis>qname</emphasis> of the element or attribute alone and to 
+						ignore the context altogether:</para>
 
                     <synopsis><![CDATA[<create qname="title" type="xs:string"/>]]></synopsis>
 
                     <para>This results in an index being created on every <sgmltag>title</sgmltag>
                         element found in the document node tree. Section titles will be indexed as
-                        well as chapter or book titles. This may result in a considerably larger
+                        well as chapter or book titles. Indexes on attributes are defined as above 
+						by prepending "@" to the attribute's name, e.g.:</para>
+
+					<synopsis><![CDATA[<create qname="@type" type="xs:string"/>]]></synopsis>
+
+					<para>defines an index on all attributes named "type", but not on elements
+						with the same name.</para>
+						
+					<para>Defining indexes on qnames may result in a considerably larger
                         index, but it also allows the query engine to apply all available
                         optimization techniques, which can improve query times by an order of
                         magnitude. As so often, there's a trade-off between performance and storage
