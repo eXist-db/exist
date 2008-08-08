@@ -9,6 +9,7 @@
     
     <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
 	<uri name="http://www.w3.org/2001/XMLSchema" uri="entities/XMLSchema.xsd"/>
+	<uri name="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" uri="entities/xhtml1-strict.xsd"/>
 
     <uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" />
 </catalog>
