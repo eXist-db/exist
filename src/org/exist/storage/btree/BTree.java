@@ -174,7 +174,7 @@ public class BTree extends Paged {
     
     protected BTree(BrokerPool pool, byte fileId, boolean transactional, DefaultCacheManager cacheManager, double growthThreshold)
 	throws DBException {
-		super();
+		super(pool);
 		this.pool = pool;
         this.cacheManager = cacheManager;
         this.buffers = cacheManager.getDefaultInitialSize();
@@ -2283,31 +2283,10 @@ public class BTree extends Paged {
 	////////////////////////////////////////////////////////////////////
 
     /**
-     * @see org.exist.storage.btree.Paged#createFileHeader()
+     * @see org.exist.storage.btree.Paged#createFileHeader(int pageSize)
      */
-	public FileHeader createFileHeader() {
-		return new BTreeFileHeader(PAGE_SIZE);
-	}
-
-    /**
-     * @see org.exist.storage.btree.Paged#createFileHeader(boolean)
-     */
-	public FileHeader createFileHeader(boolean read) throws IOException {
-		return new BTreeFileHeader(read);
-	}
-
-    /**
-     * @see org.exist.storage.btree.Paged#createFileHeader(long)
-     */
-	public FileHeader createFileHeader(long pageCount) {
-		return new BTreeFileHeader(pageCount, PAGE_SIZE);
-	}
-
-    /**
-     * @see org.exist.storage.btree.Paged#createFileHeader(long, int)
-     */
-	public FileHeader createFileHeader(long pageCount, int pageSize) {
-		return new BTreeFileHeader(pageCount, pageSize);
+	public FileHeader createFileHeader(int pageSize) {
+		return new BTreeFileHeader(pageSize);
 	}
 
     /**
@@ -2372,7 +2351,7 @@ public class BTree extends Paged {
 		}
 
 		public BTreeFileHeader(int pageSize) {
-			super(pageSize);
+			super(1024, pageSize);
 		}
 
 		public BTreeFileHeader(boolean read) throws IOException {

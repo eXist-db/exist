@@ -665,8 +665,8 @@ public class Configuration implements ErrorHandler
         String pageSize = con.getAttribute(NativeBroker.PAGE_SIZE_ATTRIBUTE);
         if (pageSize != null) {
             try {
-                config.put(NativeBroker.PROPERTY_PAGE_SIZE, new Integer(pageSize));
-                LOG.debug(NativeBroker.PROPERTY_PAGE_SIZE + ": " + config.get(NativeBroker.PROPERTY_PAGE_SIZE));
+                config.put(BrokerPool.PROPERTY_PAGE_SIZE, new Integer(pageSize));
+                LOG.debug(BrokerPool.PROPERTY_PAGE_SIZE + ": " + config.get(BrokerPool.PROPERTY_PAGE_SIZE));
             } catch (NumberFormatException nfe) {
                 LOG.warn(nfe);
             }

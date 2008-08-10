@@ -382,7 +382,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * 
      */
     public int getContentLength() {
-	int length = getMetadata().getPageCount() * broker.getPageSize();
+	int length = getMetadata().getPageCount() * broker.getBrokerPool().getPageSize();
 	return (length<0) ? 0 : length;
     }
     

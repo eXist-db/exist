@@ -1208,8 +1208,8 @@ public class DOMFile extends BTree implements Lockable {
 	    return false;
     }
 
-    public FileHeader createFileHeader() {
-	return new BTreeFileHeader(1024, PAGE_SIZE);
+    public FileHeader createFileHeader(int pageSize) {
+	return new BTreeFileHeader(1024, pageSize);
     }
 
     protected void unlinkPages(Page page) throws IOException {

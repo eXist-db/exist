@@ -132,8 +132,7 @@ public class NativeBroker extends DBBroker {
 
     public static final String PAGE_SIZE_ATTRIBUTE = "pageSize";
     public static final String INDEX_DEPTH_ATTRIBUTE = "index-depth"; 
-    
-    public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
+
     public static final String PROPERTY_INDEX_DEPTH = "indexer.index-depth";
     
     private static final byte[] ALL_STORAGE_FILES = {
@@ -146,7 +145,6 @@ public class NativeBroker extends DBBroker {
     private static final String DATABASE_IS_READ_ONLY = "database is read-only";
     
     public static final String DEFAULT_DATA_DIR = "data";
-    public static final int DEFAULT_PAGE_SIZE = 4096;
     public static final int DEFAULT_INDEX_DEPTH = 1;
     public static final int DEFAULT_MIN_MEMORY = 5000000;
     public static final long TEMP_FRAGMENT_TIMEOUT = 60000;
@@ -181,7 +179,6 @@ public class NativeBroker extends DBBroker {
     protected int nodesCount = 0;
 
     protected String dataDir;
-    protected int pageSize;
 	
     protected byte prepend;
 	
@@ -208,11 +205,6 @@ public class NativeBroker extends DBBroker {
         dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		if (dataDir == null)
             dataDir = DEFAULT_DATA_DIR;
-
-        pageSize = config.getInteger(PROPERTY_PAGE_SIZE);
-		if (pageSize < 0)
-			pageSize = DEFAULT_PAGE_SIZE;
-        Paged.setPageSize(pageSize);
 
         defaultIndexDepth = config.getInteger(PROPERTY_INDEX_DEPTH);
 		if (defaultIndexDepth < 0)
@@ -433,11 +425,7 @@ public class NativeBroker extends DBBroker {
 
     public boolean isReadOnly() {
         return readOnly;
-    } 
-    
-    public int getPageSize() {
-        return pageSize;
-    }    
+    }
     
     public DOMFile getDOMFile() {
         return domDb;
