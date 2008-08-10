@@ -34,7 +34,6 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
@@ -43,7 +42,6 @@ import org.exist.indexing.IndexManager;
 import org.exist.numbering.DLNFactory;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.scheduler.Scheduler;
-import org.exist.scheduler.SystemTaskJob;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -58,7 +56,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.SingleInstanceConfiguration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
@@ -325,7 +322,10 @@ public class BrokerPool {
     public final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;    
 	//TODO : move this default setting to org.exist.collections.CollectionCache ? 
 	public final int DEFAULT_COLLECTION_BUFFER_SIZE = 128;
-	
+
+    public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
+    public static final int DEFAULT_PAGE_SIZE = 4096;
+    
     /**
      * <code>true</code> if the database instance is able to handle transactions. 
      */    
@@ -393,6 +393,8 @@ public class BrokerPool {
     //TODO : for now, this member is used for recovery management
     private boolean isReadOnly;    
 
+    private int pageSize;
+    
     private FileLock dataLock;
     
     /**
@@ -560,7 +562,10 @@ public class BrokerPool {
         }
 		LOG.info("database instance '" + instanceName + "' is enabled for transactions : " + this.transactionsEnabled);
 
-		
+		pageSize = conf.getInteger(PROPERTY_PAGE_SIZE);
+		if (pageSize < 0)
+			pageSize = DEFAULT_PAGE_SIZE;
+
 /* TODO: start -adam- remove OLD SystemTask initialization */
 		
 		//How ugly : needs refactoring...
@@ -849,6 +854,10 @@ public class BrokerPool {
 
     public long getReservedMem() {
         return reservedMem - cacheManager.getSizeInBytes();
+    }
+
+    public int getPageSize() {
+        return pageSize;
     }
     
     /**
