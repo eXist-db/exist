@@ -104,6 +104,8 @@
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
                 <exclude name="**/*.dbx"/>
                 <exclude name="**/*.log*"/>
+                <exclude name="**/*.lck*"/>
+				<exclude name="**/journal/*"/>
                 <exclude name="api/**"/>
                 <!--exclude name="xqts/**"/-->
                 <exclude name="**/CVS/"/>
@@ -115,7 +117,8 @@
                 <exclude name="**/*.dbx"/>
                 <exclude name="**/CVS/"/>
                 <exclude name="**/*.log*"/>
-				<exclude name="**.jbx"/>
+                <exclude name="**/*.lck*"/>
+				<exclude name="**/journal/*"/>
             </fileset>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <file src="installer/icon.bmp" targetdir="$INSTALL_PATH"/>
@@ -211,6 +214,9 @@
                 <exclude name="**/CVS/"/>
                 <exclude name=".*"/>
             </fileset>
+			<fileset targetdir="$INSTALL_PATH/test/classes" dir="test/classes">
+				<exclude name="**/*"/>
+			</fileset>
             <fileset targetdir="$INSTALL_PATH/tools/izpack/src" dir="tools/izpack/src">
                 <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
