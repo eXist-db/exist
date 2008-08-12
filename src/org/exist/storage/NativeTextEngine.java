@@ -191,7 +191,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	        TextToken token;
 	        while (null != (token = tokenizer.nextToken())) {
 	            if (token.length() > MAX_TOKEN_LENGTH) {
-	            	LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
+//	            	LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
 	                continue;
 	            } 
 	            if (stoplist.contains(token)) {
@@ -239,7 +239,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	            tokenizer.setText(t);
 	            while (null != (token = tokenizer.nextToken())) {
 	                if (token.length() > MAX_TOKEN_LENGTH) {
-	                	LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
+//	                	LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
 	                    continue;
 	                } 
 	                if (stoplist.contains(token)) {
@@ -958,6 +958,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     Map.Entry entry = (Map.Entry) i.next();
                     Object token = entry.getKey();
                     OccurrenceList occurences = (OccurrenceList) entry.getValue();
+                    if (occurences == null)
+                        continue; // may happen if the index is in an invalid state due to earlier errors
                     //Don't forget this one
                     occurences.sort();
                     os.clear();
