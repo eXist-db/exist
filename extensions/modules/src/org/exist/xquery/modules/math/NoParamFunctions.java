@@ -67,6 +67,10 @@ public class NoParamFunctions extends BasicFunction {
         super(context, signature);
     }
     
+	public int getDependencies() {
+		return Dependency.NO_DEPENDENCY;
+	}  
+    
         /* (non-Javadoc)
          * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
          */
