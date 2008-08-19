@@ -73,7 +73,9 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 	    public static int WITHIN = 6;
 	    public static int CONTAINS = 7;
 	    public static int OVERLAPS = 8;
-    }	
+    }
+    
+    protected int max_docs_in_context_to_refine_query = 10;    
     
     public AbstractGMLJDBCIndex() {    	
     }  
@@ -88,6 +90,10 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
         	throw new DatabaseConfigurationException(e.getMessage()); 
         }
     }
+    
+    public int getMaxDocsInContextToRefineQuery() {
+    	return max_docs_in_context_to_refine_query;
+    }    
 
     public void open() throws DatabaseConfigurationException {
         //Nothing particular to do : the connection will be opened on request      
