@@ -3,16 +3,27 @@ package org.exist.storage;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.ValueOccurrences;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Item;
+import org.exist.security.xacml.AccessContext;
 import org.junit.After;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 
@@ -35,9 +46,13 @@ public class LargeValuesTest {
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" +
     	"		<fulltext default=\"none\">" +
     	"		</fulltext>" +
-        "       <create qname=\"key\" type=\"xs:string\"/>" +
+        "       <create qname=\"@id\" type=\"xs:string\"/>" +
         "	</index>" +
     	"</collection>";
+
+    private static final int KEY_COUNT = 5000;
+
+    private static final int KEY_LENGTH = 5000;
 
     @Test
     public void storeAndRecover() {
@@ -57,9 +72,11 @@ public class LargeValuesTest {
 
         Random r = new Random();
         writer.write("<test>");
-        for (int i = 0; i < 5000; i++) {
-            writer.write("<key>");
-            int keySize = r.nextInt(5000);
+        for (int i = 0; i < KEY_COUNT; i++) {
+            writer.write("<key id=\"");
+            int keySize = r.nextInt(KEY_LENGTH);
+            if (keySize == 0)
+                keySize = 1;
             for (int j = 0; j < keySize; j++) {
                 char ch;
                 do {
@@ -67,7 +84,7 @@ public class LargeValuesTest {
                 } while (ch < 0x41);
                 writer.write(ch);
             }
-            writer.write("</key>");
+            writer.write("\"/>");
         }
         writer.write("</test>");
         writer.close();
@@ -131,7 +148,7 @@ public class LargeValuesTest {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead2() ...\n");
+        	System.out.println("restart() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
@@ -144,7 +161,22 @@ public class LargeValuesTest {
             assertNotNull(doc);
             Serializer serializer = broker.getSerializer();
             serializer.reset();
-            String out = serializer.serialize(doc);
+            File tempFile = File.createTempFile("eXist", ".xml");
+            Writer writer = new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8");
+            serializer.serialize(doc, writer);
+
+            XQuery xquery = broker.getXQueryService();
+            DocumentSet docs = broker.getAllXMLResources(new DocumentSet());
+            Sequence result = xquery.execute("//key/@id/string()", docs.toNodeSet(), AccessContext.TEST);
+            assertEquals(KEY_COUNT, result.getItemCount());
+            for (SequenceIterator i = result.iterate(); i.hasNext();) {
+                Item item = i.nextItem();
+                String s = item.getStringValue();
+                assertTrue(s.length() > 0);
+                if (s.length() == 0)
+                    break;
+                System.out.println(s);
+            }
         } catch (Exception e) {
             e.printStackTrace();
 	        fail(e.getMessage());
