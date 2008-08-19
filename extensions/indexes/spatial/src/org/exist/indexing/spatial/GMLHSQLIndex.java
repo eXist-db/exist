@@ -64,6 +64,18 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
         		LOG.error("Invalid value for 'connectionTimeout'", e);
         	}
         }	    	
+        
+        param = ((Element)config).getAttribute("max_docs_in_context_to_refine_query");
+        if (param != null) {
+        	try {
+        		max_docs_in_context_to_refine_query = Integer.parseInt(param);
+        	} catch (NumberFormatException e) {
+        		LOG.error("Invalid value for 'max_docs_in_context_to_refine_query', using default:" + max_docs_in_context_to_refine_query, e);
+        	}
+        }
+        
+        if (LOG.isDebugEnabled()) 
+        	LOG.debug("max_docs_in_context_to_refine_query = " + max_docs_in_context_to_refine_query);
     }
     
     public IndexWorker getWorker(DBBroker broker) {

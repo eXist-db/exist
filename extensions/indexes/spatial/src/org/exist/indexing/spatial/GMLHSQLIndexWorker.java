@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -224,6 +225,31 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     protected NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException {
     	String extraSelection = null;
     	String bboxConstraint = null;    	
+    	
+    	//TODO : generate it in AbstractGMLJDBCIndexWorker
+    	String docConstraint = "";
+    	boolean refine_query_on_doc = false;
+    	if (contextSet != null) {
+        	if(contextSet.getDocumentSet().getDocumentCount() <= index.getMaxDocsInContextToRefineQuery()) {
+        		refine_query_on_doc = true;
+        		DocumentImpl doc;
+        		Iterator it = contextSet.getDocumentSet().getDocumentIterator();
+        		doc  = (DocumentImpl)it.next();
+        		docConstraint = "(DOCUMENT_URI = '" + doc.getURI().toString() + "')";
+        		while(it.hasNext()) {
+        			doc  = (DocumentImpl)it.next();
+        			docConstraint = docConstraint + " OR (DOCUMENT_URI = '" + doc.getURI().toString() + "')";
+        		}
+            	if (LOG.isDebugEnabled()) {
+            		LOG.debug("Refine query on documents is enabled.");        		
+            	}
+        	} else {
+            	if (LOG.isDebugEnabled()) {
+            		LOG.debug("Refine query on documents is disabled.");
+            	}        		
+        	}
+    	}   	
+
         switch (spatialOp) {
         	//BBoxes are equal
         	case SpatialOperator.EQUALS:
@@ -259,7 +285,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         PreparedStatement ps = conn.prepareStatement(
     		"SELECT EPSG4326_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + (extraSelection == null ? "" : extraSelection) +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		(bboxConstraint == null ? "" : " WHERE " + bboxConstraint) + ";"
+    		(bboxConstraint == null ? (refine_query_on_doc ? " WHERE " + docConstraint : "") : " WHERE "  
+    				+ (refine_query_on_doc ? "  (" + docConstraint + ") AND " : "")) + bboxConstraint + ";"
     	);
         if (bboxConstraint != null) {
 	        ps.setDouble(1, EPSG4326_geometry.getEnvelopeInternal().getMinX());
@@ -283,7 +310,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         			continue;
         		}        		
         		//contextSet == null should be use to scan the whole index
-        		if (contextSet == null || contextSet.getDocumentSet().contains(doc.getDocId())) {
+        		if (contextSet == null || refine_query_on_doc || contextSet.getDocumentSet().contains(doc.getDocId())) {
 	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
 	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);		
 	        		//Node is in the context : check if it is accurate
@@ -424,9 +451,29 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     }
     
     protected Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn) throws SQLException {
+    	//TODO : generate it in AbstractGMLJDBCIndexWorker
+    	String docConstraint = "";
+    	boolean refine_query_on_doc = false;
+    	if (contextSet != null) {
+        	if(contextSet.getDocumentSet().getDocumentCount() <= index.getMaxDocsInContextToRefineQuery()) {
+        		DocumentImpl doc;
+        		Iterator it = contextSet.getDocumentSet().getDocumentIterator();
+        		doc  = (DocumentImpl)it.next();
+        		docConstraint = "(DOCUMENT_URI = '" + doc.getURI().toString() + "')";
+        		while(it.hasNext()) {
+        			doc  = (DocumentImpl)it.next();
+        			docConstraint = docConstraint + " OR (DOCUMENT_URI = '" + doc.getURI().toString() + "')";
+        		}
+        	}
+    	}
+    	
+    	if (LOG.isDebugEnabled()) {
+    		LOG.debug("Refine query on documents is " + (refine_query_on_doc ? "enabled." : "disabled."));
+    	}
+    	
         PreparedStatement ps = conn.prepareStatement(
         	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
-    		" FROM " + GMLHSQLIndex.TABLE_NAME 
+    		" FROM " + GMLHSQLIndex.TABLE_NAME + (refine_query_on_doc ? " WHERE " + docConstraint : "")
     	);
     	ResultSet rs = null;    	
     	try {
@@ -443,7 +490,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         			//Ignore since the broker has no right on the document
         			continue;
         		}        
-        		if (contextSet.getDocumentSet().contains(doc.getDocId())) {
+        		if (contextSet == null || refine_query_on_doc || contextSet.getDocumentSet().contains(doc.getDocId())) {
 	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
 	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
 	        		//Node is in the context : check if it is accurate
@@ -512,9 +559,33 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     }      
     
     protected ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException {
+    	//TODO : generate it in AbstractGMLJDBCIndexWorker
+    	String docConstraint = "";
+    	boolean refine_query_on_doc = false;
+    	if (contextSet != null) {
+        	if(contextSet.getDocumentSet().getDocumentCount() <= index.getMaxDocsInContextToRefineQuery()) {
+        		DocumentImpl doc;
+        		Iterator it = contextSet.getDocumentSet().getDocumentIterator();
+        		doc  = (DocumentImpl)it.next();
+        		docConstraint = "(DOCUMENT_URI = '" + doc.getURI().toString() + "')";
+        		while(it.hasNext()) {
+        			doc  = (DocumentImpl)it.next();
+        			docConstraint = docConstraint + " OR (DOCUMENT_URI = '" + doc.getURI().toString() + "')";
+        		}
+            	if (LOG.isDebugEnabled()) {
+            		LOG.debug("Refine query on documents is enabled.");
+            	}
+        	} else {
+            	if (LOG.isDebugEnabled()) {
+            		LOG.debug("Refine query on documents is disabled.");
+            	}        		
+        	}
+    	}
+    	
+    	
         PreparedStatement ps = conn.prepareStatement(
     		"SELECT " + propertyName + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + 
-    		" FROM " + GMLHSQLIndex.TABLE_NAME
+    		" FROM " + GMLHSQLIndex.TABLE_NAME + (refine_query_on_doc ? " WHERE " + docConstraint : "")
     	);
     	ResultSet rs = null;    	
     	try {
