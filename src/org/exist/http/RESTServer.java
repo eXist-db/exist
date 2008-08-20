@@ -97,6 +97,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
@@ -311,7 +312,7 @@ public class RESTServer {
 		}
 		// Process the request
 		DocumentImpl resource = null;
-		XmldbURI pathUri = XmldbURI.create(path);
+		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( path ) );
 		try {
 			// check if path leads to an XQuery resource
 			String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
