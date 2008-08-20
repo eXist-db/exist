@@ -285,8 +285,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         PreparedStatement ps = conn.prepareStatement(
     		"SELECT EPSG4326_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + (extraSelection == null ? "" : extraSelection) +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		(bboxConstraint == null ? (refine_query_on_doc ? " WHERE " + docConstraint : "") : " WHERE "  
-    				+ (refine_query_on_doc ? "  (" + docConstraint + ") AND " : "")) + bboxConstraint + ";"
+    		(bboxConstraint == null ? 
+    			(refine_query_on_doc ? " WHERE " + docConstraint : "") : 
+    			" WHERE " +	(refine_query_on_doc ? "(" + docConstraint + ") AND " :	"") + bboxConstraint) + ";"
     	);
         if (bboxConstraint != null) {
 	        ps.setDouble(1, EPSG4326_geometry.getEnvelopeInternal().getMinX());
