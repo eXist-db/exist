@@ -82,7 +82,11 @@ public class ConsistencyCheckTask implements SystemTask {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Errors found: " + errors.size());
                 doBackup = true;
-                paused = true;
+                if (fatalErrorsFound(errors)) {
+                    if (LOG.isDebugEnabled())
+                        LOG.debug("Fatal errors were found: pausing the consistency check task.");
+                    paused = true;
+                }
             }
             AgentFactory.getInstance().updateErrors(broker.getBrokerPool(), errors, start);
             if (doBackup) {
@@ -95,6 +99,20 @@ public class ConsistencyCheckTask implements SystemTask {
         } finally {
             report.close();
         }
+    }
+
+    private boolean fatalErrorsFound(List errors) {
+        for (int i = 0; i < errors.size(); i++) {
+            ErrorReport error = (ErrorReport) errors.get(i);
+            switch (error.getErrcode()) {
+                // the following errors are considered fatal: export the db and stop the task
+                case ErrorReport.CHILD_COLLECTION :
+                case ErrorReport.RESOURCE_ACCESS_FAILED :
+                    return true;
+            }
+        }
+        // no fatal errors
+        return false;
     }
 
     private PrintWriter openLog() throws EXistException {
