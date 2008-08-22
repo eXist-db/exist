@@ -21,12 +21,6 @@
  */
 package org.exist.http.webdav.methods;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
@@ -38,6 +32,11 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author wolf
@@ -84,11 +83,11 @@ public class Head extends AbstractWebDAVMethod {
 		} catch (PermissionDeniedException e) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
 		} finally {
-			if(collection != null)
+            pool.release(broker);
+            if(collection != null)
 				collection.release(Lock.READ_LOCK);
 			if(resource != null)
 				resource.getUpdateLock().release(Lock.READ_LOCK);
-			pool.release(broker);
 		}
 	}
 }
