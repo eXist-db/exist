@@ -21,17 +21,6 @@
  */
 package org.exist.http.webdav.methods;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -52,6 +41,16 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.StringValue;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Implements the WebDAV PUT method.
@@ -121,7 +120,7 @@ public class Put extends AbstractWebDAVMethod {
                 mime = MimeType.BINARY_TYPE;
             }
             
-            
+
             LOG.debug("Storing document " + pathUri + "; content-type='" + contentType+"'");
             
             DocumentImpl doc = null;
@@ -199,9 +198,9 @@ public class Put extends AbstractWebDAVMethod {
             return;
             
         } finally {
+            pool.release(broker);
             if(collectionLocked && collection != null)
                 collection.release(Lock.READ_LOCK);
-            pool.release(broker);
             tempFile.delete();
         }
         response.setStatus(HttpServletResponse.SC_CREATED);
