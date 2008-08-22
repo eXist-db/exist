@@ -42,14 +42,25 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
+import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.ReadOnlyException;
+import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.Vector;
 /**
  * This class controls all available instances of the database.
  * Use it to configure, start and stop database instances. 
@@ -1072,7 +1083,7 @@ public class BrokerPool {
 	 */
     //TODO : rename as getBroker ? getInstance (when refactored) ?
 	public DBBroker get(User user) throws EXistException {
-		if (!isInstanceConfigured())			
+		if (!isInstanceConfigured())		
 			throw new EXistException("database instance '" + instanceName + "' is not available");
 		
 		//Try to get an active broker
@@ -1115,7 +1126,7 @@ public class BrokerPool {
 						}
 					}
 			}
-			broker = (DBBroker) inactiveBrokers.pop();			
+			broker = (DBBroker) inactiveBrokers.pop();
 			//activate the broker
 			activeBrokers.put(Thread.currentThread(), broker);
 			broker.incReferenceCount();
@@ -1126,7 +1137,7 @@ public class BrokerPool {
 			return broker;
 		}
 	}
-	
+
 	/**
 	 * Releases a broker for the database instance. If it is no more used, make if invactive.
 	 * If there are pending system maintenance tasks,
@@ -1146,10 +1157,16 @@ public class BrokerPool {
 		if(broker.getReferenceCount() > 0) {
 			//it is still in use and thus can't be marked as inactive
 			return;  
-		}		
-		//Broker is no more used : inactivate it
+		}
+        //Broker is no more used : inactivate it
 		synchronized (this) {
-		    activeBrokers.remove(Thread.currentThread());
+            for (int i = 0; i < inactiveBrokers.size(); i++) {
+                if (broker == inactiveBrokers.get(i)) {
+                    LOG.error("Broker is already in the inactive list!!!");
+                    return;
+                }
+            }
+            activeBrokers.remove(Thread.currentThread());
 			inactiveBrokers.push(broker);
 			//If the database is now idle, do some useful stuff
 			if(activeBrokers.size() == 0) {
