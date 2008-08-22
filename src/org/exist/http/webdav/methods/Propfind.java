@@ -21,34 +21,6 @@
  */
 package org.exist.http.webdav.methods;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
@@ -73,6 +45,33 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Implements the WebDAV PROPFIND method.
@@ -152,126 +151,124 @@ public class Propfind extends AbstractWebDAVMethod {
         DocumentImpl resource = null;
         try {
             broker = pool.get(user);
-            synchronized (pool.getCollectionsCache()) {
-                // open the collection or resource specified in the path
-                collection = broker.openCollection(path, Lock.READ_LOCK);
+            // open the collection or resource specified in the path
+            collection = broker.openCollection(path, Lock.READ_LOCK);
+            if(collection == null) {
+                ///TODO : use dedicated function in XmldbURI
+                // no collection found: check for a resource
+                XmldbURI docUri = path.lastSegment();
+                XmldbURI collUri = path.removeLastSegment();
+                collection = broker.openCollection(collUri, Lock.READ_LOCK);
                 if(collection == null) {
-                    ///TODO : use dedicated function in XmldbURI
-                    // no collection found: check for a resource
-                	XmldbURI docUri = path.lastSegment();
-                	XmldbURI collUri = path.removeLastSegment();
-                    collection = broker.openCollection(collUri, Lock.READ_LOCK);
-                    if(collection == null) {
-                        LOG.debug("No resource or collection found for path: " + path);
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
-                        return;
-                    }
-                    resource = collection.getDocumentWithLock(broker, docUri, Lock.READ_LOCK);
-                    if(resource == null) {
-                        LOG.debug("No resource found for path: " + path);
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
-                        return;
-                    }
-                }
-                if(!collection.getPermissions().validate(user, Permission.READ)) {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    LOG.debug("No resource or collection found for path: " + path);
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
                     return;
                 }
-                //TODO : release collection lock here ?
-                //Take care however : collection is still used below
-                
-                // parse the request contents
-                DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-                docFactory.setNamespaceAware(true);
-                DocumentBuilder docBuilder;
-                try {
-                    docBuilder = docFactory.newDocumentBuilder();
-                } catch (ParserConfigurationException e1) {
-                    throw new ServletException(WebDAVUtil.XML_CONFIGURATION_ERR, e1);
+                resource = collection.getDocumentWithLock(broker, docUri, Lock.READ_LOCK);
+                if(resource == null) {
+                    LOG.debug("No resource found for path: " + path);
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
+                    return;
                 }
-                Document doc = WebDAVUtil.parseRequestContent(request, response, docBuilder);
-                
-                int type = FIND_ALL_PROPERTIES;
-                DAVProperties searchedProperties = new DAVProperties();
-                
+            }
+            if(!collection.getPermissions().validate(user, Permission.READ)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+            //TODO : release collection lock here ?
+            //Take care however : collection is still used below
+
+            // parse the request contents
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            docFactory.setNamespaceAware(true);
+            DocumentBuilder docBuilder;
+            try {
+                docBuilder = docFactory.newDocumentBuilder();
+            } catch (ParserConfigurationException e1) {
+                throw new ServletException(WebDAVUtil.XML_CONFIGURATION_ERR, e1);
+            }
+            Document doc = WebDAVUtil.parseRequestContent(request, response, docBuilder);
+
+            int type = FIND_ALL_PROPERTIES;
+            DAVProperties searchedProperties = new DAVProperties();
+
 //                LOG.debug("input:\n"+xmlToString(doc));
-                
-                if(doc != null) {
-                    Element propfind = doc.getDocumentElement();
-                    if(!(propfind.getLocalName().equals("propfind") &&
-                            propfind.getNamespaceURI().equals(WebDAV.DAV_NS))) {
-                        LOG.debug(WebDAVUtil.UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                                WebDAVUtil.UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
-                        return;
-                    }
-                    
-                    NodeList childNodes = propfind.getChildNodes();
-                    for(int i = 0; i < childNodes.getLength(); i++) {
-                        Node currentNode = childNodes.item(i);
-                        if(currentNode.getNodeType() == Node.ELEMENT_NODE) {
-                            if(currentNode.getNamespaceURI().equals(WebDAV.DAV_NS)) {
-                                if(currentNode.getLocalName().equals("prop")) {
-                                    type = FIND_BY_PROPERTY;
-                                    getPropertyNames(currentNode, searchedProperties);
-                                }
-                                if(currentNode.getLocalName().equals("allprop"))
-                                    type = FIND_ALL_PROPERTIES;
-                                if(currentNode.getLocalName().equals("propname"))
-                                    type = FIND_PROPERTY_NAMES;
-                            } else {
-                                // Found an unknown element: return with 400 Bad Request
-                                LOG.debug("Unexpected child: " + currentNode.getNodeName());
-                                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                                        WebDAVUtil.UNEXPECTED_ELEMENT_ERR + currentNode.getNodeName());
-                                return;
+
+            if(doc != null) {
+                Element propfind = doc.getDocumentElement();
+                if(!(propfind.getLocalName().equals("propfind") &&
+                        propfind.getNamespaceURI().equals(WebDAV.DAV_NS))) {
+                    LOG.debug(WebDAVUtil.UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                            WebDAVUtil.UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
+                    return;
+                }
+
+                NodeList childNodes = propfind.getChildNodes();
+                for(int i = 0; i < childNodes.getLength(); i++) {
+                    Node currentNode = childNodes.item(i);
+                    if(currentNode.getNodeType() == Node.ELEMENT_NODE) {
+                        if(currentNode.getNamespaceURI().equals(WebDAV.DAV_NS)) {
+                            if(currentNode.getLocalName().equals("prop")) {
+                                type = FIND_BY_PROPERTY;
+                                getPropertyNames(currentNode, searchedProperties);
                             }
+                            if(currentNode.getLocalName().equals("allprop"))
+                                type = FIND_ALL_PROPERTIES;
+                            if(currentNode.getLocalName().equals("propname"))
+                                type = FIND_PROPERTY_NAMES;
+                        } else {
+                            // Found an unknown element: return with 400 Bad Request
+                            LOG.debug("Unexpected child: " + currentNode.getNodeName());
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                                    WebDAVUtil.UNEXPECTED_ELEMENT_ERR + currentNode.getNodeName());
+                            return;
                         }
                     }
                 }
-                
-                // write response
-                String servletPath = getServletPath(request);
-                int depth = getDepth(request);
-                StringWriter os = new StringWriter();
-                SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                try {
-                    serializer.setOutput(os, WebDAV.OUTPUT_PROPERTIES);
-                    AttributesImpl attrs = new AttributesImpl();
-                    serializer.startDocument();
-                    serializer.startPrefixMapping(PREFIX, WebDAV.DAV_NS);
-                    serializer.startElement(WebDAV.DAV_NS, "multistatus", "D:multistatus", attrs);
-                    
-                    if(type == FIND_ALL_PROPERTIES || type == FIND_BY_PROPERTY) {
-                        if(resource != null)
-                            writeResourceProperties(user, searchedProperties, type, collection, resource, serializer, servletPath);
-                        else
-                            writeCollectionProperties(user, broker, searchedProperties, type, collection, serializer, servletPath, depth, 0);
-                    } else if(type == FIND_PROPERTY_NAMES)
-                        writePropertyNames(collection, resource, serializer, servletPath);
-                    
-                    serializer.endElement(WebDAV.DAV_NS, "multistatus", "D:multistatus");
-                    serializer.endPrefixMapping(PREFIX);
-                    serializer.endDocument();
-                } catch (SAXException e) {
-                    throw new ServletException("Exception while writing multistatus response: " + e.getMessage(), e);
-                } finally {
-                    SerializerPool.getInstance().returnObject(serializer);
-                }
-                String content = os.toString();
-//                LOG.debug("response:\n" + content);
-                writeResponse(response, content);
             }
+
+            // write response
+            String servletPath = getServletPath(request);
+            int depth = getDepth(request);
+            StringWriter os = new StringWriter();
+            SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+            try {
+                serializer.setOutput(os, WebDAV.OUTPUT_PROPERTIES);
+                AttributesImpl attrs = new AttributesImpl();
+                serializer.startDocument();
+                serializer.startPrefixMapping(PREFIX, WebDAV.DAV_NS);
+                serializer.startElement(WebDAV.DAV_NS, "multistatus", "D:multistatus", attrs);
+
+                if(type == FIND_ALL_PROPERTIES || type == FIND_BY_PROPERTY) {
+                    if(resource != null)
+                        writeResourceProperties(user, searchedProperties, type, collection, resource, serializer, servletPath);
+                    else
+                        writeCollectionProperties(user, broker, searchedProperties, type, collection, serializer, servletPath, depth, 0);
+                } else if(type == FIND_PROPERTY_NAMES)
+                    writePropertyNames(collection, resource, serializer, servletPath);
+
+                serializer.endElement(WebDAV.DAV_NS, "multistatus", "D:multistatus");
+                serializer.endPrefixMapping(PREFIX);
+                serializer.endDocument();
+            } catch (SAXException e) {
+                throw new ServletException("Exception while writing multistatus response: " + e.getMessage(), e);
+            } finally {
+                SerializerPool.getInstance().returnObject(serializer);
+            }
+            String content = os.toString();
+//                LOG.debug("response:\n" + content);
+            writeResponse(response, content);
         } catch (EXistException e) {
             throw new ServletException(e.getMessage(), e);
         } catch (LockException e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
+            pool.release(broker);
             if(resource != null)
                 resource.getUpdateLock().release(Lock.READ_LOCK);
             if(collection != null)
                 collection.release(Lock.READ_LOCK);
-            pool.release(broker);
         }
     }
     
