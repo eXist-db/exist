@@ -309,19 +309,7 @@ public class BFile extends BTree {
         }
     }
 
-    public FileHeader createFileHeader() {
-        return new BFileHeader(PAGE_SIZE);
-    }
-
-    public FileHeader createFileHeader(boolean read) throws IOException {
-        return new BFileHeader(PAGE_SIZE);
-    }
-
-    public FileHeader createFileHeader(long pageCount) {
-        return new BFileHeader(PAGE_SIZE);
-    }
-
-    public FileHeader createFileHeader(long pageCount, int pageSize) {
+    public FileHeader createFileHeader(int pageSize) {
         return new BFileHeader(pageSize);
     }
 
@@ -1460,7 +1448,7 @@ public class BFile extends BTree {
         public final static int MAX_FREE_LIST_LEN = 128;
 
         public BFileHeader(int pageSize) {
-            super();
+            super(pageSize);
         }
 
         public void addFreeSpace(FreeSpace freeSpace) {

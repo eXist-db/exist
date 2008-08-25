@@ -73,6 +73,7 @@ package org.exist.storage.btree;
  */
 
 import org.apache.log4j.Logger;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
@@ -133,22 +134,17 @@ public abstract class Paged {
 	private byte[] tempPageData = null;
 	private byte[] tempHeaderData = null;
 	
-	public Paged() {
-		fileHeader = createFileHeader();
+	public Paged(BrokerPool pool) {
+        fileHeader = createFileHeader(pool.getPageSize());
 		tempPageData = new byte[fileHeader.pageSize];
 		tempHeaderData = new byte[fileHeader.pageHeaderSize];
-	}
-
-	public Paged(File file) throws DBException {
-		this();
-		setFile(file);
-	}
+    }
 
 	public abstract short getFileVersion();
 	
 	public final static void setPageSize(int pageSize) {
-		PAGE_SIZE = pageSize;
-	}
+        PAGE_SIZE = pageSize;
+    }
 
 	public final static int getPageSize() {
 		return PAGE_SIZE;
@@ -176,7 +172,7 @@ public abstract class Paged {
 	public boolean create() throws DBException {
 		try {
 			fileHeader.write();
-			return true;
+            return true;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new DBException(0, "Error creating " + file.getName());
@@ -189,36 +185,7 @@ public abstract class Paged {
 	 *
 	 *@return    a new FileHeader
 	 */
-	public abstract FileHeader createFileHeader();
-
-	/**
-	 *  createFileHeader must be implemented by a Paged implementation in order
-	 *  to create an appropriate subclass instance of a FileHeader.
-	 *
-	 *@param  read          If true, reads the FileHeader from disk
-	 *@return               a new FileHeader
-	 *@throws  IOException  if an exception occurs
-	 */
-	public abstract FileHeader createFileHeader(boolean read) throws IOException;
-
-	/**
-	 *  createFileHeader must be implemented by a Paged implementation in order
-	 *  to create an appropriate subclass instance of a FileHeader.
-	 *
-	 *@param  pageCount  The number of pages to allocate for primary storage
-	 *@return            a new FileHeader
-	 */
-	public abstract FileHeader createFileHeader(long pageCount);
-
-	/**
-	 *  createFileHeader must be implemented by a Paged implementation in order
-	 *  to create an appropriate subclass instance of a FileHeader.
-	 *
-	 *@param  pageCount  The number of pages to allocate for primary storage
-	 *@param  pageSize   The size of a Page (should be a multiple of a FS block)
-	 *@return            a new FileHeader
-	 */
-	public abstract FileHeader createFileHeader(long pageCount, int pageSize);
+	public abstract FileHeader createFileHeader(int pageSize);
 
 	/**
 	 *  createPageHeader must be implemented by a Paged implementation in order
@@ -373,7 +340,7 @@ public abstract class Paged {
 		try {
 			if (exists()) {
 				fileHeader.read();
-				if(fileHeader.getVersion() != expectedVersion)
+                if(fileHeader.getVersion() != expectedVersion)
 					throw new DBException("Database file " +
 							getFile().getName() + " has a storage format incompatible with this " +
 							"version of eXist. Please do a backup/restore of your data first.");
@@ -536,7 +503,7 @@ public abstract class Paged {
 		if (data.length != hdr.dataLen) {
 			//TODO : where to get this 64 from ?
 			if (hdr.dataLen != getPageSize() - 64)
-				LOG.warn("ouch");
+				LOG.warn("ouch: " + fileHeader.workSize + " != " + data.length);
 			hdr.dataLen = data.length;
 		}
 		page.write(data);

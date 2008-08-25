@@ -118,9 +118,9 @@ public class DefaultCacheManager implements CacheManager {
     public DefaultCacheManager(BrokerPool pool) {
         this.instanceName = pool.getId();
         int cacheSize;
-        if ((pageSize = pool.getConfiguration().getInteger(NativeBroker.PROPERTY_PAGE_SIZE)) < 0)
+        if ((pageSize = pool.getConfiguration().getInteger(BrokerPool.PROPERTY_PAGE_SIZE)) < 0)
         	//TODO : should we share the page size with the native broker ?
-            pageSize = NativeBroker.DEFAULT_PAGE_SIZE;
+            pageSize = BrokerPool.DEFAULT_PAGE_SIZE;
         if ((cacheSize = pool.getConfiguration().getInteger(PROPERTY_CACHE_SIZE)) < 0) {
             cacheSize = DEFAULT_CACHE_SIZE;
         }
