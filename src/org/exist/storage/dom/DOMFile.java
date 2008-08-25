@@ -2182,23 +2182,23 @@ public class DOMFile extends BTree implements Lockable {
 	    break;
 	}
 	case Node.ATTRIBUTE_NODE:
-	    if (isTopNode) {
-                final int start = readOffset - StoredNode.LENGTH_SIGNATURE_LENGTH;
-                final byte idSizeType = (byte) (data[start] & 0x3);
-		final boolean hasNamespace = (data[start] & 0x10) == 0x10;
-                final int dlnLen = ByteConversion.byteToShort(data, readOffset);
-                readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-                final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
-                readOffset += nodeIdLen;
-                readOffset += Signatures.getLength(idSizeType); 
-                if (hasNamespace) {
-		    readOffset += AttrImpl.LENGTH_NS_ID; // skip namespace id
-		    final short prefixLen = ByteConversion.byteToShort(data, readOffset);
-		    readOffset += AttrImpl.LENGTH_PREFIX_LENGTH; 
-		    readOffset += prefixLen; // skip prefix
-		}
-                os.write(rec.getPage().data, readOffset, realLen - (readOffset - start));
-	    }
+        if (isTopNode) {
+            final int start = readOffset - StoredNode.LENGTH_SIGNATURE_LENGTH;
+            final byte idSizeType = (byte) (data[start] & 0x3);
+            final boolean hasNamespace = (data[start] & 0x10) == 0x10;
+            final int dlnLen = ByteConversion.byteToShort(data, readOffset);
+            readOffset += NodeId.LENGTH_NODE_ID_UNITS;
+            final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+            readOffset += nodeIdLen;
+            readOffset += Signatures.getLength(idSizeType);
+            if (hasNamespace) {
+                readOffset += AttrImpl.LENGTH_NS_ID; // skip namespace id
+                final short prefixLen = ByteConversion.byteToShort(data, readOffset);
+                readOffset += AttrImpl.LENGTH_PREFIX_LENGTH;
+                readOffset += prefixLen; // skip prefix
+            }
+            os.write(data, readOffset, realLen - (readOffset - start));
+        }
 	    break;
     case Node.COMMENT_NODE:
         if (isTopNode) {
