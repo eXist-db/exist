@@ -21,25 +21,7 @@
  */
 package org.exist.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.log4j.Logger;
-
 import org.exist.Indexer;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.journal.JournalManager;
@@ -70,18 +52,31 @@ import org.exist.xquery.FunctionFactory;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 import org.exist.xslt.TransformerFactoryAllocator;
-
 import org.quartz.SimpleTrigger;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class Configuration implements ErrorHandler
 {
@@ -707,8 +702,8 @@ public class Configuration implements ErrorHandler
         String pageSize = con.getAttribute(NativeBroker.PAGE_SIZE_ATTRIBUTE);
         if (pageSize != null) {
             try {
-                config.put(NativeBroker.PROPERTY_PAGE_SIZE, new Integer(pageSize));
-                LOG.debug(NativeBroker.PROPERTY_PAGE_SIZE + ": " + config.get(NativeBroker.PROPERTY_PAGE_SIZE));
+                config.put(BrokerPool.PROPERTY_PAGE_SIZE, new Integer(pageSize));
+                LOG.debug(BrokerPool.PROPERTY_PAGE_SIZE + ": " + config.get(BrokerPool.PROPERTY_PAGE_SIZE));
             } catch (NumberFormatException nfe) {
                 LOG.warn(nfe);
             }

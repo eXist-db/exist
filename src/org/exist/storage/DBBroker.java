@@ -749,8 +749,6 @@ public abstract class DBBroker extends Observable {
 	public void decReferenceCount() {
 		--referenceCount;
 	}
-	
-	public abstract int getPageSize();
 
 	public abstract IndexSpec getIndexConfiguration();
 

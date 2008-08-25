@@ -323,7 +323,10 @@ public class BrokerPool {
     public final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;    
 	//TODO : move this default setting to org.exist.collections.CollectionCache ? 
 	public final int DEFAULT_COLLECTION_BUFFER_SIZE = 128;
-	
+
+    public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
+    public static final int DEFAULT_PAGE_SIZE = 4096;
+    
     /**
      * <code>true</code> if the database instance is able to handle transactions. 
      */    
@@ -391,6 +394,8 @@ public class BrokerPool {
     //TODO : for now, this member is used for recovery management
     private boolean isReadOnly;    
 
+    private int pageSize;
+    
     private FileLock dataLock;
     
     /**
@@ -560,7 +565,10 @@ public class BrokerPool {
         }
 		LOG.info("database instance '" + instanceName + "' is enabled for transactions : " + this.transactionsEnabled);
 
-		
+		pageSize = conf.getInteger(PROPERTY_PAGE_SIZE);
+		if (pageSize < 0)
+			pageSize = DEFAULT_PAGE_SIZE;
+
 /* TODO: start -adam- remove OLD SystemTask initialization */
 		
 		//How ugly : needs refactoring...
@@ -852,6 +860,10 @@ public class BrokerPool {
 
     public long getReservedMem() {
         return reservedMem - cacheManager.getSizeInBytes();
+    }
+
+    public int getPageSize() {
+        return pageSize;
     }
     
     /**
