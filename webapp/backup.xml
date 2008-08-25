@@ -178,6 +178,11 @@
                 <note>
                     <para>Currently, the restore tool can not directly read from a zipped backup.
                         You have to extract it before restoring.</para>
+
+					<para>If you experience any issues with bad characters in collection names,
+						use the standard Java <filename>jar</filename> tool to unpack the zip.
+						Contrary to other zip tools, this utility handles character encodings
+						correctly.</para>
                 </note>
                 <para>If you are using the Admin Client, do the following:</para>
                 <procedure>
