@@ -929,17 +929,6 @@ public class BTree extends Paged {
             }
             return currentDataLen;
 		}
-		
-        /**
-         * Decrements the raw data size of this node by the space
-         * required for storing removedValue.
-         * 
-         * @param removedValue
-         * @return The new data length
-         */
-        private int decrementDataLen(Value removedValue) {
-            return recalculateDataLen();
-        }
         
 		/**
 		 * Add the raw data size required to store the value to the internal
@@ -1343,7 +1332,6 @@ public class BTree extends Paged {
                     writeToLog(log, rNode);
                 }
                 rNode.recalculateDataLen();
-                cache.add(rNode);
 
                 parent.prefix = separator;
                 parent.setValues(new Value[] { Value.EMPTY_VALUE });
@@ -1364,6 +1352,7 @@ public class BTree extends Paged {
                     LOG.debug(getFile().getName() + " right node requires second split: " + rNode.getDataLen());
                     rNode.split(transaction);
                 }
+                cache.add(rNode);
             } else {
                 final BTreeNode rNode = createBTreeNode(transaction, ph.getStatus(), parent, false);
                 
@@ -1390,13 +1379,14 @@ public class BTree extends Paged {
                                     rNode.nKeys, rightPtrs, rightPtrs.length);
                     writeToLog(log, rNode);
                 }
+                
                 rNode.recalculateDataLen();
-                cache.add(rNode);
-                parent.promoteValue(transaction, separator, rNode);
                 if(rNode.mustSplit()) {
                     LOG.debug(getFile().getName() + " right node requires second split: " + rNode.getDataLen());
                     rNode.split(transaction);
                 }
+                cache.add(rNode);
+                parent.promoteValue(transaction, separator, rNode);
             }
             cache.add(this);
             if(mustSplit()) {
@@ -1904,10 +1894,10 @@ public class BTree extends Paged {
                                     
 									if (callback != null)
 										callback.indexInfo(keys[leftIdx], ptrs[leftIdx]);
-                                    decrementDataLen(keys[leftIdx]);
                                     removeKey(leftIdx);
                                     removePointer(leftIdx);
-								}
+                                    recalculateDataLen();
+                                }
 								break;
 							case IndexQuery.NEQ :
 								for (int i = 0; i < nPtrs; i++)
@@ -1921,10 +1911,10 @@ public class BTree extends Paged {
                                         
 										if (callback != null)
 											callback.indexInfo(keys[i], ptrs[i]);
-                                        decrementDataLen(keys[i]);
                                         removeKey(i);
                                         removePointer(i);
-									}
+                                        recalculateDataLen();
+                                    }
 								break;
 							case IndexQuery.BWX :
 							case IndexQuery.NBWX :
@@ -1947,10 +1937,10 @@ public class BTree extends Paged {
                                             
 											if (callback != null)
 												callback.indexInfo(keys[i], ptrs[i]);
-                                            decrementDataLen(keys[i]);
                                             removeKey(i);
                                             removePointer(i);
-											--i;
+                                            recalculateDataLen();
+                                            --i;
 										}
 									}
 								break;
@@ -1971,9 +1961,9 @@ public class BTree extends Paged {
 
                                         if (callback != null)
                                             callback.indexInfo(keys[i], ptrs[i]);
-                                        decrementDataLen(keys[i]);
                                         removeKey(i);
                                         removePointer(i);
+                                        recalculateDataLen();
                                         --i;
                                     }
                                 }
@@ -1997,10 +1987,10 @@ public class BTree extends Paged {
                                             
 											if (callback != null)
 												callback.indexInfo(keys[i], ptrs[i]);
-                                            decrementDataLen(keys[i]);
                                             removeKey(i);
                                             removePointer(i);
-											--i;
+                                            recalculateDataLen();
+                                            --i;
 										}
 								break;
 							case IndexQuery.LT :
@@ -2019,10 +2009,10 @@ public class BTree extends Paged {
                                             
 											if (callback != null)
 												callback.indexInfo(keys[i], ptrs[i]);
-                                            decrementDataLen(keys[i]);
                                             removeKey(i);
                                             removePointer(i);
-											--i;
+                                            recalculateDataLen();
+                                            --i;
 										}
 								break;
 							case IndexQuery.GT :
@@ -2041,10 +2031,10 @@ public class BTree extends Paged {
                                             
 											if (callback != null)
 												callback.indexInfo(keys[i], ptrs[i]);
-                                            decrementDataLen(keys[i]);
                                             removeKey(i);
                                             removePointer(i);
-											--i;
+                                            recalculateDataLen();
+                                            --i;
 										} else if (query.getOperator() == IndexQuery.TRUNC_RIGHT)
 											break;
 									}
@@ -2063,10 +2053,10 @@ public class BTree extends Paged {
                                         
 										if (callback != null)
 											callback.indexInfo(keys[i], ptrs[i]);
-                                        decrementDataLen(keys[i]);
                                         removeKey(i);
                                         removePointer(i);
-										--i;
+                                        recalculateDataLen();
+                                        --i;
 									}
 
 								break;
@@ -2090,10 +2080,10 @@ public class BTree extends Paged {
                             
 							if (callback != null)
 								callback.indexInfo(keys[i], ptrs[i]);
-                            decrementDataLen(keys[i]);
                             removeKey(i);
                             removePointer(i);
-							--i;
+                            recalculateDataLen();
+                            --i;
 						}
 						break;
 					case LEAF :
@@ -2109,10 +2099,10 @@ public class BTree extends Paged {
                                 
 								if (callback != null)
 									callback.indexInfo(keys[i], ptrs[i]);
-                                decrementDataLen(keys[i]);
                                 removeKey(i);
                                 removePointer(i);
-								--i;
+                                recalculateDataLen();
+                                --i;
 							}
 						break;
 					default :
