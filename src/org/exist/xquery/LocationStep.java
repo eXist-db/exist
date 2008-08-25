@@ -473,10 +473,8 @@ public class LocationStep extends Step {
         }
         if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            //TODO : currentDocs can not be null here
-            //TODO : currentSet can not be null here
-            if (!optimized && (currentSet == null || currentDocs == null
-                || !(docs.equalDocs(currentDocs)))) {
+            if (currentSet == null || currentDocs == null ||
+                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -560,10 +558,8 @@ public class LocationStep extends Step {
         } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
-            //TODO : currentDocs can not be null here
-            //TODO : currentSet can not be null here
-            if (!optimized && (currentSet == null || currentDocs == null
-                || !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+            if (currentSet == null || currentDocs == null ||
+                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -618,10 +614,8 @@ public class LocationStep extends Step {
         } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
-            //TODO : currentDocs can not be null here
-            //TODO : currentSet can not be null here
-            if (!optimized && (currentSet == null || currentDocs == null
-                || !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+            if (currentSet == null || currentDocs == null ||
+                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -919,10 +913,8 @@ public class LocationStep extends Step {
             return result;
         } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            //TODO : currentDocs can not be null here
-            //TODO : currentSet can not be null here
-            if (!optimized && (currentSet == null || currentDocs == null
-                || !(docs.equalDocs(currentDocs)))) {
+            if (currentSet == null || currentDocs == null ||
+                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
@@ -990,10 +982,8 @@ public class LocationStep extends Step {
             return result;
         } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            //TODO : currentDocs can not be null here
-            //TODO : currentSet can not be null here
-            if (!optimized && (currentSet == null || currentDocs == null
-                || !(docs.equalDocs(currentDocs)))) {
+            if (currentSet == null || currentDocs == null ||
+                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
