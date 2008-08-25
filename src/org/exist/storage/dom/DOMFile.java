@@ -2084,10 +2084,10 @@ public class DOMFile extends BTree implements Lockable {
             return value;
         } catch (BTreeException e) {
             LOG.warn("btree error while reading node value", e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.warn("io error while reading node value", e);
         }
-        return null;
+        return "";
     }
 
     /**
