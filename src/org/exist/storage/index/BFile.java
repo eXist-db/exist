@@ -2571,7 +2571,12 @@ public class BFile extends BTree {
         	final int dlen = ph.getDataLength();
 		    for(short pos = 0; pos < dlen; ) {
 		    	short tid = ByteConversion.byteToShort(data, pos);
-		    	if(tid >= offsets.length) {
+                if (tid < 0) {
+                    LOG.error("Invalid tid found: " + tid + "; ignoring rest of page ...");
+                    ph.setDataLength(pos);
+                    return;
+                }
+                if(tid >= offsets.length) {
 		    		LOG.error("Problematic tid found: " + tid + "; trying to recover ...");
 		    		short[] t = new short[tid + 1];
 		    		Arrays.fill(t, (short)-1);
