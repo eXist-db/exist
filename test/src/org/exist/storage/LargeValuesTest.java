@@ -2,28 +2,23 @@ package org.exist.storage;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
-import org.exist.util.ValueOccurrences;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
-import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Item;
-import org.exist.security.xacml.AccessContext;
 import org.junit.After;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 
@@ -166,8 +161,8 @@ public class LargeValuesTest {
             serializer.serialize(doc, writer);
 
             XQuery xquery = broker.getXQueryService();
-            DocumentSet docs = broker.getAllXMLResources(new DocumentSet());
-            Sequence result = xquery.execute("//key/@id/string()", docs.toNodeSet(), AccessContext.TEST);
+            DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
+            Sequence result = xquery.execute("//key/@id/string()", docs.docsToNodeSet(), AccessContext.TEST);
             assertEquals(KEY_COUNT, result.getItemCount());
             for (SequenceIterator i = result.iterate(); i.hasNext();) {
                 Item item = i.nextItem();
