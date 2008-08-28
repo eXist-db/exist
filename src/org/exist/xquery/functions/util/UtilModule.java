@@ -22,13 +22,13 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.util.Arrays;
-
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.system.GetVersion;
+
+import java.util.Arrays;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -44,7 +44,9 @@ public class UtilModule extends AbstractInternalModule {
 		new FunctionDef(BuiltinFunctions.signatures[1], BuiltinFunctions.class),
 		new FunctionDef(ModuleInfo.moduleDescriptionSig, ModuleInfo.class),
 		new FunctionDef(ModuleInfo.registeredModulesSig, ModuleInfo.class),
-		new FunctionDef(DescribeFunction.signature, DescribeFunction.class),
+        new FunctionDef(Expand.signatures[0], Expand.class),
+        new FunctionDef(Expand.signatures[1], Expand.class),
+        new FunctionDef(DescribeFunction.signature, DescribeFunction.class),
 		new FunctionDef(FunDoctype.signature, FunDoctype.class),
 		new FunctionDef(Eval.signatures[0], Eval.class),
 		new FunctionDef(Eval.signatures[1], Eval.class),
