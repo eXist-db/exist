@@ -21,21 +21,12 @@
 */
 package org.exist.storage.serializers;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
@@ -58,7 +49,25 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * A filter that listens for XInclude elements in the stream
@@ -94,6 +103,8 @@ public class XIncludeFilter implements Receiver {
     private Receiver receiver;
     private Serializer serializer;
     private DocumentImpl document = null;
+    private XQueryContext context = null;
+    
     private HashMap namespaces = new HashMap(10);
 
     private boolean inFallback = false;
@@ -118,12 +129,16 @@ public class XIncludeFilter implements Receiver {
 	}
 
 	public void setDocument(DocumentImpl doc) {
-		document = doc;
-        inFallback = false;
-        error = null;
+		this.document = doc;
+        this.inFallback = false;
+        this.error = null;
     }
 
-	/* (non-Javadoc)
+    public void setXQueryContext(XQueryContext context) {
+        this.context = context;
+    }
+    
+    /* (non-Javadoc)
 	 * @see org.exist.util.serializer.Receiver#characters(java.lang.CharSequence)
 	 */
 	public void characters(CharSequence seq) throws SAXException {
@@ -245,7 +260,6 @@ public class XIncludeFilter implements Receiver {
 
         //The following comments are the basis for possible external documents
         XmldbURI docUri = null;
-        //URI externalUri = null;
         try {
             docUri = XmldbURI.xmldbUriFor(href);
             /*
@@ -255,93 +269,113 @@ public class XIncludeFilter implements Receiver {
                */
         } catch (URISyntaxException e) {
             //could be an external URI!
-            /*
-               try {
-                   externalUri = new URI(href);
-               } catch (URISyntaxException ee) {
-               */
-            throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+e.getMessage());
-            //}
         }
 
         // parse the href attribute
         LOG.debug("found href=\"" + href + "\"");
         //String xpointer = null;
         //String docName = href;
-        String fragment = docUri.getFragment();
-        if (!(fragment == null || fragment.length() == 0))
-            throw new SAXException("Fragment identifiers must not be used in an xinclude href attribute. To specify an " +
-                    "xpointer, use the xpointer attribute.");
 
-//        if(xpointer!=null) {
-//            try {
-//                xpointer = XMLUtil.decodeAttrMarkup(URLDecoder.decode(xpointer, "UTF-8"));
-//            } catch (UnsupportedEncodingException e) {
-//            	LOG.warn(e);
-//            }
-//            // remove the fragment part from the URI for further processing
-//            URI u = docUri.getURI();
-//            try {
-//                u = new URI(u.getScheme(), u.getUserInfo(), u.getHost(), u.getPort(), u.getPath(), u.getQuery(), null);
-//                docUri = XmldbURI.xmldbUriFor(u);
-//            } catch (URISyntaxException e) {
-//                throw new IllegalArgumentException("Stylesheet URI could not be parsed: " + e.getMessage());
-//            }
-//        }
-
-        // extract possible parameters in the URI
         Map params = null;
-        String paramStr = docUri.getQuery();
-        if (paramStr != null) {
-            params = processParameters(paramStr);
-            // strip query part
-            docUri = XmldbURI.create(docUri.getRawCollectionPath());
-        }
-
-        // if docName has no collection specified, assume
-        // current collection
-
-        // Patch 1520454 start
-        if (!docUri.isAbsolute()) {
-            String base = document.getCollection().getURI() + "/";
-            String child = "./" + docUri.toString();
-
-            URI baseUri = URI.create(base);
-            URI childUri = URI.create(child);
-
-            URI uri = baseUri.resolve(childUri);
-            docUri = XmldbURI.create(uri);
-        }
-        // Patch 1520454 end
-
-        // retrieve the document
         DocumentImpl doc = null;
-        try {
-            doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
-            if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
-                throw new ResourceError("Permission denied to read xincluded resource");
-        } catch (PermissionDeniedException e) {
-            LOG.warn("permission denied", e);
-            throw new ResourceError("Permission denied to read xincluded resource", e);
+        org.exist.memtree.DocumentImpl memtreeDoc = null;
+        boolean xqueryDoc = false;
+        
+        if (docUri != null) {
+            String fragment = docUri.getFragment();
+            if (!(fragment == null || fragment.length() == 0))
+                throw new SAXException("Fragment identifiers must not be used in an xinclude href attribute. To specify an " +
+                        "xpointer, use the xpointer attribute.");
+
+            // extract possible parameters in the URI
+            params = null;
+            String paramStr = docUri.getQuery();
+            if (paramStr != null) {
+                params = processParameters(paramStr);
+                // strip query part
+                docUri = XmldbURI.create(docUri.getRawCollectionPath());
+            }
+
+            // if docName has no collection specified, assume
+            // current collection
+
+            // Patch 1520454 start
+            if (!docUri.isAbsolute() && document != null) {
+                String base = document.getCollection().getURI() + "/";
+                String child = "./" + docUri.toString();
+
+                URI baseUri = URI.create(base);
+                URI childUri = URI.create(child);
+
+                URI uri = baseUri.resolve(childUri);
+                docUri = XmldbURI.create(uri);
+            }
+            // Patch 1520454 end
+
+            // retrieve the document
+            doc = null;
+            try {
+                doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
+                if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
+                    throw new ResourceError("Permission denied to read xincluded resource");
+            } catch (PermissionDeniedException e) {
+                LOG.warn("permission denied", e);
+                throw new ResourceError("Permission denied to read xincluded resource", e);
+            }
+
+            /* Check if the document is a stored XQuery */
+            if (doc != null && doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                xqueryDoc = "application/xquery".equals(doc.getMetadata().getMimeType());
+            }
         }
+        // The document could not be found: check if it points to an external resource
+        if (docUri == null || (doc == null && !docUri.isAbsolute())) {
+            try {
+                URI externalUri = new URI(href);
+                String scheme = externalUri.getScheme();
+                // If the URI uses the file: scheme (or no scheme is specified),
+                // we have to check if it is a relative path, and if yes, try to
+                // interpret it relative to the moduleLoadPath property of the current
+                // XQuery context.
+                if ((scheme == null || scheme.equals("file")) && context != null) {
+                    String path = externalUri.getSchemeSpecificPart();
+                    File f = new File(path);
+                    if (!f.isAbsolute()) {
+                        f = new File(context.getModuleLoadPath() + '/' + path);
+                        externalUri = f.toURI();
+                    }
+                }
+                memtreeDoc = parseExternal(externalUri);
+            } catch (IOException e) {
+                throw new ResourceError("XInclude: failed to read document at URI: " + href +
+                    ": " + e.getMessage(), e);
+            } catch (PermissionDeniedException e) {
+                throw new ResourceError("XInclude: failed to read document at URI: " + href +
+                    ": " + e.getMessage(), e);
+            } catch (ParserConfigurationException e) {
+                throw new ResourceError("XInclude: failed to read document at URI: " + href +
+                    ": " + e.getMessage(), e);
+            } catch (URISyntaxException e) {
+                throw new ResourceError("XInclude: failed to read document at URI: " + href +
+                    ": " + e.getMessage(), e);
+            }
+        }
+
         /* if document has not been found and xpointer is
                * null, throw an exception. If xpointer != null
                * we retry below and interpret docName as
                * a collection.
                */
-        if (doc == null && xpointer == null)
+        if (doc == null && memtreeDoc == null && xpointer == null)
             throw new ResourceError("document " + docUri + " not found");
 
-        /* Check if the document is a stored XQuery */
-        boolean xqueryDoc = false;
-        if (doc != null && doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-            xqueryDoc = "application/xquery".equals(doc.getMetadata().getMimeType());
-        }
-
-        if (xpointer == null && !xqueryDoc)
+        if (xpointer == null && !xqueryDoc) {
             // no xpointer found - just serialize the doc
-            serializer.serializeToReceiver(doc, false);
-        else {
+            if (memtreeDoc == null)
+                serializer.serializeToReceiver(doc, false);
+            else
+                serializer.serializeToReceiver(memtreeDoc, false);
+        } else {
             // process the xpointer or the stored XQuery
             try {
                 Source source;
@@ -371,7 +405,7 @@ public class XIncludeFilter implements Receiver {
                 if (xpointer != null) {
                     if(doc != null)
                         context.setStaticallyKnownDocuments(new XmldbURI[] { doc.getURI() } );
-                    else
+                    else if (docUri != null)
                         context.setStaticallyKnownDocuments(new XmldbURI[] { docUri });
                 }
 
@@ -391,7 +425,10 @@ public class XIncludeFilter implements Receiver {
                     }
                 }
                 LOG.info("xpointer query: " + ExpressionDumper.dump((Expression) compiled));
-                Sequence seq = xquery.execute(compiled, null);
+                Sequence contextSeq = null;
+                if (memtreeDoc != null)
+                    contextSeq = memtreeDoc;
+                Sequence seq = xquery.execute(compiled, contextSeq);
 
                 if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
                     if (LOG.isDebugEnabled())
@@ -420,7 +457,39 @@ public class XIncludeFilter implements Receiver {
         serializer.createContainerElements = createContainerElements;
     }
 
-	/**
+    private org.exist.memtree.DocumentImpl parseExternal(URI externalUri) throws IOException, ResourceError, PermissionDeniedException, ParserConfigurationException, SAXException {
+        URLConnection con = externalUri.toURL().openConnection();
+        if(con instanceof HttpURLConnection)
+        {
+            HttpURLConnection httpConnection = (HttpURLConnection)con;
+            if(httpConnection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND)
+            {
+                // Special case: '404'
+                throw new ResourceError("XInclude: no document found at URI: " + externalUri.toString());
+            }
+            else if(httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK)
+            {
+                //TODO : return another type
+                throw new PermissionDeniedException("Server returned code " + httpConnection.getResponseCode());
+            }
+        }
+
+        // we use eXist's in-memory DOM implementation
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        InputSource src = new InputSource(con.getInputStream());
+        SAXParser parser = factory.newSAXParser();
+        XMLReader reader = parser.getXMLReader();
+        SAXAdapter adapter = new SAXAdapter();
+        reader.setContentHandler(adapter);
+        reader.parse(src);
+        org.exist.memtree.DocumentImpl doc =
+                (org.exist.memtree.DocumentImpl)adapter.getDocument();
+        doc.setDocumentURI(externalUri.toString());
+        return doc;
+    }
+
+    /**
 	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
 	 */
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {

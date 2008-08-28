@@ -45,6 +45,7 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -356,7 +357,11 @@ public abstract class Serializer implements XMLReader {
 		xinclude.setDocument(doc);
 	}
 
-	public void parse(String systemId) throws IOException, SAXException {
+    protected void setXQueryContext(XQueryContext context) {
+        xinclude.setXQueryContext(context);
+    }
+    
+    public void parse(String systemId) throws IOException, SAXException {
 		try {
 			// try to load document from eXist
 			//TODO: this systemId came from exist, so should be an unchecked create, right?
@@ -869,8 +874,10 @@ public abstract class Serializer implements XMLReader {
 	protected void serializeToReceiver(org.exist.memtree.NodeImpl n, boolean generateDocEvents)
 	throws SAXException {
 		if (generateDocEvents)
-			receiver.startDocument();	
-		n.streamTo(this, receiver);
+			receiver.startDocument();
+        setDocument(null);
+        setXQueryContext(n.getDocument().getContext());
+        n.streamTo(this, receiver);
 		if (generateDocEvents)
 			receiver.endDocument();
 	}

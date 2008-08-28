@@ -1331,7 +1331,10 @@ public class DocumentImpl extends NodeImpl implements Document {
 		this.context = context;
 	}
 	
-
+    public XQueryContext getContext() {
+        return context;
+    }
+    
     /** ? @see org.w3c.dom.Node#getBaseURI()
      */
     public String getBaseURI() {

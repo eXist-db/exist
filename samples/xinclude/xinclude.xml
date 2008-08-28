@@ -210,5 +210,45 @@ declare variable $var2 external;</synopsis>
                 <xi:include href="testvars.xq?var1=Hello&amp;var2=World"/>
             </synopsis>
         </section>
+
+		<section>
+			<title>Including resources from external URIs or the file system</title>
+
+			<para>Beginning with version 1.3, if the URI in the href attribute specifies 
+			a known scheme (like http: or file:), eXist will try to load it as an external 
+			resource. For example:</para>
+
+			<synopsis language="xml">&lt;xi:include href="http://localhost:8080/exist/rest/db/xinclude/disclaimer.xml"/&gt;</synopsis>
+
+			<para>Should load "disclaimer.xml" via HTTP (assuming that the URL is correct
+			and you are using the default eXist setup):</para>
+
+			<synopsis language="xml">
+				<xi:include href="http://localhost:8080/exist/rest/db/xinclude/disclaimer.xml"/>
+			</synopsis>
+
+			<para>If no scheme is specified, the XInclude processor will first try to load
+			the referenced document from the database (relative to the current collection),
+			and if that fails: from the file system.</para>
+
+			<para>If the document that contains the xinclude has been constructed in an XQuery,
+			relative file system paths will be resolved relative to the main XQuery module 
+			source file.</para>
+
+			<para>You can also use XPointers on external resources:</para>
+			
+			<synopsis language="xml">
+				&lt;xi:include href="http://localhost:8080/exist/rest/db/xinclude/disclaimer.xml"
+					xpointer="xpointer(//comment:comment)xmlns(comment=http://test.org)"/&gt;
+			</synopsis>
+
+			<para>again, the output of this is shown below:</para>
+
+			<synopsis language="xml">
+				<xi:include href="http://localhost:8080/exist/rest/db/xinclude/disclaimer.xml"
+					xpointer="xpointer(//comment:comment)xmlns(comment=http://test.org)"/>
+			</synopsis>
+
+		</section>
     </chapter>
 </book>
