@@ -333,11 +333,11 @@ public class XIncludeFilter implements Receiver {
             try {
                 URI externalUri = new URI(href);
                 String scheme = externalUri.getScheme();
-                // If the URI uses the file: scheme (or no scheme is specified),
+                // If the URI has no scheme is specified,
                 // we have to check if it is a relative path, and if yes, try to
                 // interpret it relative to the moduleLoadPath property of the current
                 // XQuery context.
-                if ((scheme == null || scheme.equals("file")) && context != null) {
+                if (scheme == null && context != null) {
                     String path = externalUri.getSchemeSpecificPart();
                     File f = new File(path);
                     if (!f.isAbsolute()) {
