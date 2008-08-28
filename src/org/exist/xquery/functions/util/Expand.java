@@ -1,3 +1,25 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *  $Id$
+ */
 package org.exist.xquery.functions.util;
 
 import org.exist.dom.QName;
@@ -18,16 +40,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
-import javax.xml.transform.OutputKeys;
 import java.util.Properties;
 
-/**
- * Created by IntelliJ IDEA.
- * User: wolf
- * Date: Jul 2, 2008
- * Time: 9:41:24 PM
- * To change this template use File | Settings | File Templates.
- */
 public class Expand extends BasicFunction {
 
     public final static FunctionSignature signatures[] = {
@@ -98,18 +112,4 @@ public class Expand extends BasicFunction {
         }
     }
 
-    private Properties parseSerializationOptions(SequenceIterator siSerializeParams) throws XPathException
-    {
-    	//parse serialization options
-        Properties outputProperties = new Properties();
-        outputProperties.setProperty(OutputKeys.INDENT, "yes");
-        outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        while(siSerializeParams.hasNext())
-        {
-            String opt[] = Option.parseKeyValuePair(siSerializeParams.nextItem().getStringValue());
-            outputProperties.setProperty(opt[0], opt[1]);
-        }
-
-        return outputProperties;
-    }
 }
