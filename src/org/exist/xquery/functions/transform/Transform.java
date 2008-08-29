@@ -60,6 +60,8 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.serializers.XIncludeFilter;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -78,6 +80,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.TransformerFactoryAllocator;
+import org.exist.util.serializer.ReceiverToSAX;
+import org.exist.util.serializer.Receiver;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -183,6 +187,8 @@ public class Transform extends BasicFunction {
             }
         } else
             context.checkOptions(serializeOptions);
+        boolean expandXIncludes =
+                serializeOptions.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes");
 
         TransformerHandler handler = createHandler(stylesheetItem, options);
         if (isCalledAs("transform"))
@@ -192,14 +198,22 @@ public class Transform extends BasicFunction {
             ValueSequence seq = new ValueSequence();
     		context.pushDocumentContext();
     		MemTreeBuilder builder = context.getDocumentBuilder();
-    		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-    		SAXResult result = new SAXResult(receiver);
-    		result.setLexicalHandler(receiver);		//preserve comments etc... from xslt output
+    		DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder);
+    		SAXResult result = new SAXResult(builderReceiver);
+    		result.setLexicalHandler(builderReceiver);		//preserve comments etc... from xslt output
     		handler.setResult(result);
-    		try {
-    			handler.startDocument();
-    			inputNode.toSAX(context.getBroker(), handler, serializeOptions);
-    			handler.endDocument();
+            Receiver receiver = new ReceiverToSAX(handler);
+            Serializer serializer = context.getBroker().getSerializer();
+            serializer.reset();
+            try {
+                serializer.setProperties(serializeOptions);
+                if (expandXIncludes) {
+                    XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
+                    xinclude.setXQueryContext(context);
+                    receiver = xinclude;
+                }
+                serializer.setReceiver(receiver);
+    			serializer.toSAX((NodeValue)inputNode);
     		} catch (SAXException e) {
     			throw new XPathException(getASTNode(), "SAX exception while transforming node: " + e.getMessage(), e);
     		}
@@ -249,15 +263,25 @@ public class Transform extends BasicFunction {
                 OutputStream os = new BufferedOutputStream(response.getOutputStream());
                 StreamResult result = new StreamResult(os);
                 handler.setResult(result);
-                handler.startDocument();
-                inputNode.toSAX(context.getBroker(), handler, serializeOptions);
-                handler.endDocument();
+                Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+                Receiver receiver = new ReceiverToSAX(handler);
+                try {
+                    serializer.setProperties(serializeOptions);
+                    if (expandXIncludes) {
+                        XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
+                        xinclude.setXQueryContext(context);
+                        receiver = xinclude;
+                    }
+                    serializer.setReceiver(receiver);
+                    serializer.toSAX((NodeValue)inputNode);
+                } catch (SAXException e) {
+                    throw new XPathException(getASTNode(), "SAX exception while transforming node: " + e.getMessage(), e);
+                }
                 os.close();
                 
                 //commit the response
                 response.flushBuffer();
-            } catch (SAXException e) {
-                throw new XPathException(getASTNode(), "SAX exception while transforming node: " + e.getMessage(), e);
             } catch (IOException e) {
                 throw new XPathException(getASTNode(), "IO exception while transforming node: " + e.getMessage(), e);
             }
