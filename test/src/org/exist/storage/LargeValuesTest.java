@@ -45,7 +45,7 @@ public class LargeValuesTest {
         "	</index>" +
     	"</collection>";
 
-    private static final int KEY_COUNT = 5000;
+    private static final int KEY_COUNT = 1000;
 
     private static final int KEY_LENGTH = 5000;
 
@@ -170,7 +170,6 @@ public class LargeValuesTest {
                 assertTrue(s.length() > 0);
                 if (s.length() == 0)
                     break;
-                System.out.println(s);
             }
         } catch (Exception e) {
             e.printStackTrace();
