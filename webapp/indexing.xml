@@ -8,6 +8,7 @@
         <orgname>The eXist Project</orgname>
     </bookinfo>
     <ci:include src="sidebar.xml"/>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Configuring Database Indexes</title>
         <section>
