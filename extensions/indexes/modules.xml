@@ -9,7 +9,11 @@
         <!-- NGram index. This index has no dependencies on other libraries
             except eXist and will be added to exist-modules.jar -->
         <index name="ngram" dir="ngram" antfile="build.xml"/>
+
+		<index name="lucene" dir="lucene" antfile="build.xml"/>
+
         <!-- spatial index that operates on geometries in the "http://www.opengis.net/gml" namespace -->
         <index name="spatial" dir="spatial" antfile="build.xml"/>
+
     </indexes>
 </build>

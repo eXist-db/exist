@@ -66,7 +66,7 @@
 
     <target name="compile-tests" depends="compile">
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
-            destdir="${classes}" encoding="UTF-8"
+            destdir="${test.classes}" encoding="UTF-8"
             optimize="${build.optimize}" srcdir="${test.src}"
             source="1.5" target="1.5">
             <classpath>
