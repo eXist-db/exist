@@ -813,7 +813,7 @@
             
             <map:match pattern="**.xml">
                 <map:generate src="{1}.xml"/>
-                <map:transform type="cinclude"/>
+                <map:transform type="xinclude"/>
                 <map:transform src="stylesheets/db2html.xsl">
                 	<parameter name="path" value="{1}.xml"/>
                 </map:transform>

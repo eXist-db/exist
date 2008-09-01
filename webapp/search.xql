@@ -216,7 +216,7 @@ as element()* {
 	Print the hierarchical context of a hit.
 :)
 declare function dq:print-headings($section as element(section)*, $docXPath as xs:string) {
-	$section/ancestor::chapter/title/text(),
+	$section/ancestor::chapter/title//text(),
 	for $s at $p in $section/ancestor-or-self::section
 	let $nodeId := util:node-id($s)
 	let $uri := concat(
@@ -224,7 +224,7 @@ declare function dq:print-headings($section as element(section)*, $docXPath as x
 		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
 	)
 	return
-		(" > ", <a href="{$uri}">{$s/title/text()}</a>)
+		(" > ", <a href="{$uri}">{$s/title//text()}</a>)
 };
 
 (:~

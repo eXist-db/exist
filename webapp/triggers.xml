@@ -7,7 +7,7 @@
         <title>Configuring Database Triggers</title>
         <orgname>The eXist Project</orgname>
     </bookinfo>
-    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter id="configuring-db-triggers">
         <title>Configuring Database Triggers</title>
 	<para>This document has been reviewed for eXist 1.2.</para>

@@ -36,8 +36,9 @@ ul li, ol li {
 }
 
 a:hover {
-    border-bottom: solid 1px gray;
+    border-bottom: 1px solid gray;
 }
+
 a, a:visited {
     color: #0000AA;
     font-weight: bold;
@@ -47,6 +48,7 @@ a, a:visited {
     border-top: solid 1px #DEDEDE;
 }
 #page-head {
+	position: relative;
     margin: 25px 50px 5px 50px;
     height: 185px;
 }
@@ -81,6 +83,18 @@ a, a:visited {
 }
 #menu li a {
     color: #666666;
+}
+
+#quicksearch {
+	position: absolute;
+	top: 92px;
+	right: 0px;
+	padding: 7px;
+}
+
+#quicksearch input {
+	color: #666666;
+	background-color: #F6F6F6;
 }
 
 @media print {
@@ -338,6 +352,9 @@ select.choose {
     margin-top: 10px;
     background-color: #E1DD68;
 }
+.hi {
+	background-color: #FFFF00;
+}
 .reference {
     margin-top: 30px;
     text-align: center;
@@ -361,6 +378,17 @@ select.choose {
     padding-right: 10px;
     text-align: right;
 }
+
+.float-right {
+    float: right;
+    margin-left: 1em;
+}
+
+.float-left {
+    float: left;
+    margin-right: 1em;
+}
+
 .filename, .option {
     font-family: "Bitstream Vera Sans Mono", Courier, monospace;
 }
@@ -564,4 +592,21 @@ th {
 td.doclink {
     width: 25%;
     background-color: #F6F6F6;
+}
+
+#download {
+    display: block;
+    width: 212px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1.5em;
+}
+
+#download:hover {
+    border: 0;
+}
+
+#download img {
+    border: 0;
+    text-align: center;
 }

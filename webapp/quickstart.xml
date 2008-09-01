@@ -10,8 +10,7 @@
         </author>
     </bookinfo>
 
-    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
-
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Quick Start Guide</title>
         <section id="sect1">

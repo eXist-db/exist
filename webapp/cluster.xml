@@ -3,7 +3,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5CR2//EN"
 "http://www.docbook.org/xml/4.5CR2/docbookx.dtd" >
 
-<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+<book>
 	<bookinfo>
 		<graphic fileref="logo.jpg"/>
 		<productname>Open Source Native XML Database</productname>
@@ -13,7 +13,7 @@
 			<surname>Group</surname>
 		</author>
 	</bookinfo>
-	<ci:include src="sidebar.xml"/>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
 	<chapter>
 		<title>Cluster Configuration Environment</title>
 		<section>

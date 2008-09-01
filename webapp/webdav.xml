@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+<book>
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
@@ -15,7 +15,7 @@
             </affiliation>
         </author>
     </bookinfo>
-    <ci:include src="sidebar.xml"/>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter id="webdav">
         <title>WebDAV</title>
 
