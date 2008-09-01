@@ -257,6 +257,7 @@
     	
         <replace dir="${build.docs.src}" summary="true"
             includes="sidebar.xml">
+            <replacefilter token="http://demo.exist-db.org/webstart/exist.jnlp" value="http://demo.exist-db.org:8080/webstart/exist.jnlp"/>
             <replacefilter token="index.xml" value="${host}/index.html"/>
 			<replacefilter token="download.xml" value="${host}/download.html"/>
             <replacefilter token="extensions.xml" value="${host}/extensions.html"/>
@@ -277,6 +278,7 @@
             <include name="apps/sidebar.xml"/>
             <include name="library/sidebar.xml"/>
             <include name="xquery/sidebar.xml"/>
+            <replacefilter token="http://demo.exist-db.org/webstart/exist.jnlp" value="http://demo.exist-db.org:8080/webstart/exist.jnlp"/>
             <replacefilter token="../index.xml" value="${host}/index.html"/>
             <replacefilter token="../extensions.xml" value="${host}/extensions.html"/>
             <replacefilter token="../roadmap.xml" value="${host}/roadmap.html"/>
