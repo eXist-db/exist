@@ -16,8 +16,6 @@
         </author>
     </bookinfo>
     <xi:include href="sidebar.xml"/>
-    <!-- Cocoon include for the website docs -->
-    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
     <chapter>
         <title>XInclude Examples</title>
 

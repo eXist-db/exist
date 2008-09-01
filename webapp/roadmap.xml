@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <roadmap>
-    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <title>eXist: Current State, Features and Roadmap</title>
     <comment>Due to size restrictions, longer remarks on some of the listed topics are available in
         separate documents. This is indicated with a reference.</comment>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
+	<search href="../search.xql"/>
     <toolbar>
         <link href="../index.xml">Home</link>
         <link href="../download.xml">Download</link>

@@ -48,6 +48,7 @@ a, a:visited {
     border-top: solid 1px #DEDEDE;
 }
 #page-head {
+	position: relative;
     margin: 25px 50px 5px 50px;
     height: 185px;
 }
@@ -82,6 +83,18 @@ a, a:visited {
 }
 #menu li a {
     color: #666666;
+}
+
+#quicksearch {
+	position: absolute;
+	top: 92px;
+	right: 0px;
+	padding: 7px;
+}
+
+#quicksearch input {
+	color: #666666;
+	background-color: #F6F6F6;
 }
 
 @media print {
