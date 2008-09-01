@@ -96,6 +96,8 @@
             <replacefilter token="mods/" value="${demo.host}/mods/"/>
             <replacefilter token="xquery/xquery.xq" value="${demo.host}/xquery/xquery.xq"/>
             <replacefilter token="sandbox/sandbox.xql" value="${demo.host}/sandbox/sandbox.xql"/>
+            <replacefilter token="search.xql" value="${demo.host}/search.xql"/>
+            <replacefilter token="docs.xql" value="${demo.host}/docs.xql"/>
             <replacefilter token='url="xmldb/db/' value='url="${demo.host}/xmldb/db/'/>
             <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
             <replacefilter token='="admin/admin.xql' value='="${demo.host}/admin/admin.xql'/>
