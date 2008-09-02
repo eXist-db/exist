@@ -53,7 +53,7 @@
                 <div id="page-head">
                     <img src="logo.jpg" title="eXist"/>
 					<div id="quicksearch">
-						<form action="{../sidebar:sidebar/sidebar:search/@href}" method="GET">
+						<form action="{sidebar:sidebar/sidebar:search/@href}" method="GET">
 							<input type="text" size="20" name="q"/>
 							<input type="submit" value="Search"/>
 						</form>
