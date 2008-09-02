@@ -523,7 +523,7 @@
     </target>
 
     <target name="wrapper" depends="jar">
-        <ant antfile="build.xml" dir="tools/wrapper"/>
+        <ant antfile="build.xml" dir="tools/wrapper" inheritall="false"/>
     </target>
 
     <target name="extension-modules" depends="jar">
