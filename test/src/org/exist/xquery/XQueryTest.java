@@ -64,6 +64,7 @@ public class XQueryTest extends XMLTestCase {
     private static final String MODULE5_NAME = "module5.xqm";
     private static final String MODULE6_NAME = "module6.xqm";
     private static final String MODULE7_NAME = "module7.xqm";
+    private static final String MODULE8_NAME = "module8.xqm";
     private static final String FATHER_MODULE_NAME = "father.xqm";
     private static final String CHILD1_MODULE_NAME = "child1.xqm";
     private static final String CHILD2_MODULE_NAME = "child2.xqm";
@@ -89,6 +90,13 @@ public class XQueryTest extends XMLTestCase {
             "declare namespace xhtml=\"http://www.w3.org/1999/xhtml\";\n" +
             "declare function foo:link() { <a href='#'>Link</a> };" +
             "declare function foo:copy($node) { element { node-name($node) } { $node/text() } };";
+    private final static String module8 =
+            "module namespace dr = \"double-root2\"; \n"
+            +"declare function dr:documentIn() as document-node() { \n"
+            +" let $doc :=  <root> <contents/> </root> \n"
+            +" return document { $doc } \n" 
+            +"};";
+    
     private final static String fatherModule =
             "module namespace foo=\"foo\";\n" + "import module namespace foo1=\"foo1\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "import module namespace foo2=\"foo2\" at \"" + URI + "/test/" + CHILD2_MODULE_NAME + "\";\n" + "declare variable $foo:bar { \"bar\" };\n " + "declare variable $foo:bar1 { $foo1:bar };\n" + "declare variable $foo:bar2 { $foo2:bar };\n";
     private final static String child1Module =
@@ -1347,6 +1355,34 @@ public class XQueryTest extends XMLTestCase {
             System.out.println("testModulesAndNS result: " + result.getResource(0).getContent().toString());
             assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a>Link</a></div>",
                     result.getResource(0).getContent().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
+    public void bugtestDoubleDocNode_2078755() {
+        try {
+            Collection testCollection = getTestCollection();
+            Resource doc = testCollection.createResource(MODULE8_NAME, "BinaryResource");
+            doc.setContent(module8);
+            ((EXistResource) doc).setMimeType("application/xquery");
+            testCollection.storeResource(doc);
+
+            XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            service.setProperty(OutputKeys.INDENT, "no");
+            String query = "import module namespace dr = \"double-root2\" at \"" + URI + "/test/" + MODULE8_NAME + "\";\n"
+                    +"let $doc1 := dr:documentIn() \n"
+                    +"let $count1 := count($doc1/element()) \n"
+                    +"let $doc2 := dr:documentIn() \n"
+                    +"let $count2 := count($doc2/element()) \n"
+                    +"return ($count1, $count2) \n";
+ 
+            ResourceSet result = service.query(query);
+            assertEquals(2, result.getSize());
+            assertEquals("1", result.getResource(0).getContent().toString());
+            assertEquals("1", result.getResource(1).getContent().toString());
+            
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
