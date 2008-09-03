@@ -10,7 +10,8 @@ public class LuceneModule extends AbstractInternalModule {
     public static final String PREFIX = "ft";
 
     public static final FunctionDef[] functions = {
-        new FunctionDef(Query.signature, Query.class)
+        new FunctionDef(Query.signature, Query.class),
+        new FunctionDef(Score.signature, Score.class)
     };
 
     public LuceneModule() {
@@ -29,3 +30,4 @@ public class LuceneModule extends AbstractInternalModule {
         return "Extension functions for NGram search.";
     }
 }
+

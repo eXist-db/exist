@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -28,6 +29,7 @@ public class LuceneIndex extends AbstractIndex {
     protected Analyzer analyzer;
 
     protected IndexWriter cachedWriter = null;
+    protected IndexReader cachedReader = null;
     protected IndexSearcher cachedSearcher = null;
 
     public LuceneIndex() {
@@ -95,6 +97,30 @@ public class LuceneIndex extends AbstractIndex {
     }
 
     protected void releaseWriter(IndexWriter writer) {
+        try {
+            cachedWriter.close();
+        } catch (IOException e) {
+            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+        } finally {
+            cachedWriter = null;
+        }
+    }
+
+    protected IndexReader getReader() throws IOException {
+        if (cachedReader != null)
+            return cachedReader;
+        cachedReader = IndexReader.open(directory);
+        return cachedReader;
+    }
+
+    protected void releaseReader(IndexReader reader) {
+        try {
+            cachedReader.close();
+        } catch (IOException e) {
+            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+        } finally {
+            cachedReader = null;
+        }
     }
 
     protected IndexSearcher getSearcher() throws IOException {
@@ -105,5 +131,12 @@ public class LuceneIndex extends AbstractIndex {
     }
 
     protected void releaseSearcher(IndexSearcher searcher) {
+        try {
+            cachedSearcher.close();
+        } catch (IOException e) {
+            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+        } finally {
+            cachedSearcher = null;
+        }
     }
 }

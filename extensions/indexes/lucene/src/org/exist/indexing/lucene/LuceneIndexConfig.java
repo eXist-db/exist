@@ -35,3 +35,4 @@ public class LuceneIndexConfig {
         return qname;
     }
 }
+
