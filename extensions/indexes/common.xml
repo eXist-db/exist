@@ -3,7 +3,7 @@
     <property name="top.dir" value="../../.."/>
 	<property name="lib.extensions" value="lib/extensions"/>
     <property name="src" value="src"/>
-    <property name="classes" value="classes"/>
+    <property name="module.classes" value="classes"/>
     <property name="test" value="test"/>
     <property name="test.classes" value="${test}/classes"/>
     <property name="test.src" value="${test}/src"/>
@@ -43,21 +43,21 @@
     	<pathelement path="${top.dir}/test/classes"/>
     	<pathelement path="../ngram/classes"/>
     	<pathelement path="../spatial/classes"/>
-        <pathelement path="${classes}"/>
+        <pathelement path="${module.classes}"/>
     </path>
 
     <target name="prepare">
         <echo message="Building index module: ${module}"/>
-        <echo message="Building into ${classes}"/>
+        <echo message="Building into ${module.classes}"/>
         <echo message="------------------------------------"/>
-        <mkdir dir="${classes}"/>
+        <mkdir dir="${module.classes}"/>
         <mkdir dir="${test.classes}"/>
     </target>
 
     <target name="compile" depends="prepare">
         <javac debug="${build.debug}" deprecation="${build.deprecation}" optimize="${build.optimize}"
             encoding="UTF-8"
-            srcdir="${src}" destdir="${classes}" source="1.4" target="1.4">
+            srcdir="${src}" destdir="${module.classes}" source="1.4" target="1.4">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -83,7 +83,7 @@
     </target>
 
     <target name="clean">
-        <delete dir="${classes}" failonerror="false"/>
+        <delete dir="${module.classes}" failonerror="false"/>
         <delete dir="${test.classes}" failonerror="false"/>
     </target>
     

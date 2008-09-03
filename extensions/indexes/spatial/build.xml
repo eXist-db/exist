@@ -52,7 +52,7 @@
 	</target>
 
 	<target name="jar" depends="prepare-libs, compile">
-        <jar destfile="${top.dir}/${lib.extensions}/exist-spatial-module.jar" basedir="${classes}">    
+        <jar destfile="${top.dir}/${lib.extensions}/exist-spatial-module.jar" basedir="${module.classes}">    
 	        <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
@@ -92,7 +92,7 @@
     </target>
     
     <target name="clean">
-        <delete dir="${classes}" failonerror="false"/>
+        <delete dir="${module.classes}" failonerror="false"/>
         <delete dir="${test.classes}" failonerror="false"/>
         <delete file="${top.dir}/${lib.extensions}/exist-spatial-module.jar"/> 
     </target>
