@@ -3,7 +3,7 @@
     <import file="../common.xml"/>
 
 	<target name="jar" depends="compile">
-        <jar destfile="${top.dir}/${lib.extensions}/exist-lucene-module.jar" basedir="${classes}">   
+        <jar destfile="${top.dir}/${lib.extensions}/exist-lucene-module.jar" basedir="${module.classes}">   
 	        <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
@@ -15,7 +15,7 @@
 	
     <target name="clean">
         <delete file="${top.dir}/${lib.extensions}/exist-lucene-module.jar"/>
-        <delete dir="${classes}" failonerror="false"/>
+        <delete dir="${module.classes}" failonerror="false"/>
         <delete dir="${test.classes}" failonerror="false"/>
     </target>
     
@@ -33,3 +33,4 @@
         </junit>
     </target>
 </project>
+
