@@ -43,10 +43,10 @@
     <condition property="libs.available.xslfo">
 		<and>
 			<available file="${top.dir}/${lib.user}/fop.jar"/>
-			<available file="${top.dir}/${lib.user}/batik-all-1.6.jar"/>
-			<available file="${top.dir}/${lib.user}/xmlgraphics-commons-1.2.jar"/>
-			<available file="${top.dir}/${lib.user}/avalon-framework-api-4.2.0.jar"/>
-			<available file="${top.dir}/${lib.user}/avalon-framework-impl-4.2.0.jar"/>
+			<available file="${top.dir}/${lib.user}/batik-all-1.7.jar"/>
+			<available file="${top.dir}/${lib.user}/xmlgraphics-commons-1.3.1.jar"/>
+			<available file="${top.dir}/${lib.user}/avalon-framework-api-4.3.jar"/>
+			<available file="${top.dir}/${lib.user}/avalon-framework-impl-4.3.jar"/>
 	    </and>
 	</condition>
 	
@@ -57,27 +57,37 @@
 	    <echo message="------------------------------------------------------"/>
 
 		<!-- Apache FOP -->
-		<get src="${include.module.xslfo.url}" dest="fop-0.94-bin-jdk1.4.zip" verbose="true" usetimestamp="true" />
-		<unzip src="fop-0.94-bin-jdk1.4.zip" dest="${top.dir}/${lib.user}">
+		<get src="${include.module.xslfo.url}" dest="fop-0.95-bin.zip" verbose="true" usetimestamp="true" />
+		<unzip src="fop-0.95-bin.zip" dest="${top.dir}/${lib.user}">
 			<patternset>
-				<include name="fop-0.94/build/fop.jar"/>
-				<include name="fop-0.94/lib/batik-all-1.6.jar"/>
-				<include name="fop-0.94/lib/xmlgraphics-commons-1.2.jar"/>
+				<include name="fop-0.95/build/fop.jar"/>
+				<include name="fop-0.95/lib/batik-all-1.7.jar"/>
+				<include name="fop-0.95/lib/xmlgraphics-commons-1.3.1.jar"/>
 			</patternset>
 			<mapper type="flatten"/>
 		</unzip>
-		<delete file="fop-0.94-bin-jdk1.4.zip"/>
+		<delete file="fop-0.95-bin.zip"/>
 		
-		<!-- Avalon -->
-		<get src="${include.module.xslfo.avalon.url}" dest="avalon-framework-4.2.0.zip" verbose="true" usetimestamp="true" />
-		<unzip src="avalon-framework-4.2.0.zip" dest="${top.dir}/${lib.user}">
+		<!-- Avalon API -->
+		<get src="${include.module.xslfo.avalon.api.url}" dest="avalon-framework-api-4.3.zip" verbose="true" usetimestamp="true" />
+		<unzip src="avalon-framework-api-4.3.zip" dest="${top.dir}/${lib.user}">
 			<patternset>
-				<include name="avalon-framework/jars/avalon-framework-api-4.2.0.jar"/>
-				<include name="avalon-framework/jars/avalon-framework-impl-4.2.0.jar"/>
+				<include name="avalon-framework-api-4.3/avalon-framework-api-4.3.jar"/>
 			</patternset>
 			<mapper type="flatten"/>
 		</unzip>
-		<delete file="avalon-framework-4.2.0.zip"/>
+		<delete file="avalon-framework-api-4.3.zip"/>
+		
+		<!-- Avalon Impl -->
+		<get src="${include.module.xslfo.avalon.impl.url}" dest="avalon-framework-impl-4.3.zip" verbose="true" usetimestamp="true" />
+		<unzip src="avalon-framework-impl-4.3.zip" dest="${top.dir}/${lib.user}">
+			<patternset>
+				<include name="avalon-framework-impl-4.3/avalon-framework-impl-4.3.jar"/>
+			</patternset>
+			<mapper type="flatten"/>
+		</unzip>
+		<delete file="avalon-framework-impl-4.3.zip"/>
+		
 	</target>
     
     <!-- Special targets for simpleql module -->
@@ -141,7 +151,7 @@
 		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" 
-        	source="1.4">
+        	source="1.5">
 			<!-- jmv target="1.4" -->
             <classpath>
             	<path refid="classpath.core"/>
