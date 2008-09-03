@@ -492,6 +492,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private void setScore(float score) {
             this.score = score;
         }
+
+        public boolean equals(Object other) {
+            if(!(other instanceof LuceneMatch))
+                return false;
+            return query == ((LuceneMatch)other).query;
+        }
+
+        public boolean matchEquals(Match other) {
+            return equals(other);
+        }
     }
 }
 

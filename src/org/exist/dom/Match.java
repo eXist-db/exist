@@ -201,9 +201,10 @@ public abstract class Match implements Comparable {
 	public boolean equals(Object other) {
 		if(!(other instanceof Match))
 			return false;
-        return ((Match)other).matchTerm.equals(matchTerm) &&
-            ((Match)other).nodeId.equals(nodeId);
-	}
+        Match om = (Match) other;
+        return om.matchTerm != null && om.matchTerm.equals(matchTerm) &&
+                om.nodeId.equals(nodeId);
+    }
 
     public boolean matchEquals(Match other) {
         if (this == other)
