@@ -1,7 +1,15 @@
-This module relies on the presence of Apache FOP and as such you will need to add the following jar files to your EXIST_HOME/lib/user folder -
+This module relies on the presence of Apache FOP and as such you will need to have the following jar files in your EXIST_HOME/lib/user folder:
 
-fop.jar
-batik-all-1.6.jar
-xmlgraphics-commons-1.2.jar
+	fop.jar
+	batik-all-1.7.jar
+	xmlgraphics-commons-1.3.1.jar
+	avalon-framework-api-4.3.jar
+	avalon-framework-impl-4.3.jar
 
-This has been tested with Apache FOP 0.9.4, and the jar files are available from http://mirror.public-internet.co.uk/apache/xmlgraphics/fop/fop-0.94-bin-jdk1.4.zip
+If you set:
+
+	include.module.xslfo = true
+
+in EXIST_HOME/extensions/modules/local.build.properties, then the above jars will be downloaded automatically for you by the eXist build process, if they are not already present.
+
+This has been tested with Apache FOP 0.9.5
