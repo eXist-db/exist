@@ -1096,11 +1096,11 @@ public class ElementImpl extends NamedNode implements Element {
         //May help getReindexRoot() to make some useful things
         getBroker().getIndexController().setDocument(ownerDocument);
         StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
-        getBroker().getIndexController().setMode(StreamListener.STORE);
         if (reindexRoot == null) {
+            getBroker().getIndexController().setMode(StreamListener.STORE);
             listener = getBroker().getIndexController().getStreamListener();
         } else {        	
-            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
         }
         StoredNode following = (StoredNode) refChild;
         StoredNode previous = (StoredNode) following.getPreviousSibling();
@@ -1137,11 +1137,11 @@ public class ElementImpl extends NamedNode implements Element {
         //May help getReindexRoot() to make some useful things
         getBroker().getIndexController().setDocument(ownerDocument);
         StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
-        getBroker().getIndexController().setMode(StreamListener.STORE);
-        if (reindexRoot == null) {        	
+        if (reindexRoot == null) {
+            getBroker().getIndexController().setMode(StreamListener.STORE);
             listener = getBroker().getIndexController().getStreamListener();
         } else {
-            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
         }
         StoredNode previous = (StoredNode) refChild;
         StoredNode following = (StoredNode) previous.getNextSibling();
@@ -1416,7 +1416,7 @@ public class ElementImpl extends NamedNode implements Element {
         listener = getBroker().getIndexController().getStreamListener();
         Node newNode = appendChild(transaction, oldNode.nodeId, new NodeImplRef(previous), getPath(), newChild, listener);
         // reindex if required
-        final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
+        final DocumentImpl owner = (DocumentImpl) getOwnerDocument();
         getBroker().storeXMLResource(transaction, owner);
         getBroker().updateNode(transaction, this, false);
         getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
