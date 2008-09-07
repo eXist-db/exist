@@ -68,7 +68,9 @@
                 <orderedlist>
                     <listitem>Student: Leela Manoranjan</listitem>
                     <listitem>Mentor: Pierrick Brihaye</listitem>
-                    <listitem><ulink url="soc-xslt.xml">Statement of Work</ulink></listitem>                  
+                    <listitem><ulink url="soc-xslt.xml">Statement of Work</ulink></listitem>
+                    <note><para>Leela disappeared just before mid-term evaluation without having provided a single line of code. Communication
+                    with the mentor and the development team was also nearly inexistant.</para></note>                                      
                 </orderedlist>
             </para>
         </section>
