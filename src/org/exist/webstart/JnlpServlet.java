@@ -22,6 +22,7 @@
 
 package org.exist.webstart;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -42,12 +43,19 @@ public class JnlpServlet extends HttpServlet {
     private JnlpHelper jh=null;
     
     /**
-     * Initialize servlet.
+     * Initialize servlet.cd
      */
     public void init() {
         logger.info("Initializing JNLP servlet");
         
-        jh = new JnlpHelper();
+        String realPath = getServletContext().getRealPath("/");
+        if(realPath==null){
+            logger.error("getServletContext().getRealPath() did not return a "+
+                    "value. Webstart is not available.");
+        }
+        File contextRoot=new File( realPath );
+ 
+        jh = new JnlpHelper(contextRoot);
         jf = new JnlpJarFiles(jh);
         
     }

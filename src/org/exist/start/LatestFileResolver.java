@@ -87,7 +87,11 @@ public class LatestFileResolver {
                 return matches.find();
             }
         });
-        if (jars.length > 0) {
+        
+        if(jars==null){
+            System.err.println("ERROR: No jars found in "+containerDir.getAbsolutePath());
+            
+        } else if (jars.length > 0) {
             String actualFileName = jars[0].getAbsolutePath();
             if (_debug) {
                 System.err.println(
