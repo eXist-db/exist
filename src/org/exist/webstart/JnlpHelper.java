@@ -25,8 +25,6 @@ package org.exist.webstart;
 import java.io.File;
 
 import org.apache.log4j.Logger;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.SingleInstanceConfiguration;
 
 /**
  *  Helper class for webstart.
@@ -35,39 +33,51 @@ import org.exist.util.SingleInstanceConfiguration;
  */
 public class JnlpHelper {
     
+    private final static String LIB_CORE  ="../lib/core";
+    private final static String LIB_EXIST ="..";
+    private final static String LIB_WEBINF="WEB-INF/lib/";
+    
     private static Logger logger = Logger.getLogger(JnlpHelper.class);
-    private File existHome = ConfigurationHelper.getExistHome();
     
     private File coreJarsFolder=null;
     private File existJarFolder=null;
-    private File webappFolder=null;
+    private File webappsFolder=null;
+    
+    
+    private boolean isInWarFile(File existHome){
+            
+        if( new File(existHome, LIB_CORE).isDirectory() ) {
+            return false;
+        }
+        return true;
+    }
     
     /** Creates a new instance of JnlpHelper */
-    public JnlpHelper() {
+    public JnlpHelper(File contextRoot) {
         
         // Setup path based on installation (in jetty, container)
-        if(SingleInstanceConfiguration.isInWarFile()){
-            // all files mixed in existHome/lib/
-            logger.debug("eXist is running in container (.war).");
-            coreJarsFolder= new File(existHome, "lib/");
-            existJarFolder= new File(existHome, "lib/");
+        if(isInWarFile(contextRoot)){
+            // all files mixed in contextRoot/WEB-INF/lib
+            logger.debug("eXist is running in servlet container (.war).");
+            coreJarsFolder= new File(contextRoot, LIB_WEBINF);
+            existJarFolder= coreJarsFolder;
+            webappsFolder=contextRoot;
             
         } else {
-            // all files located in existHome/lib/core/
+            //files located in contextRoot/lib/core and contextRoot
             logger.debug("eXist is running private jetty server.");
-            coreJarsFolder= new File(existHome, "lib/core");
-            existJarFolder= existHome;
+            coreJarsFolder= new File(contextRoot, LIB_CORE);
+            existJarFolder= new File(contextRoot, LIB_EXIST);;
+            webappsFolder=contextRoot;
         }
-        
-        webappFolder=SingleInstanceConfiguration.getWebappHome();
         
         logger.debug("CORE jars location="+coreJarsFolder.getAbsolutePath());
         logger.debug("EXIST jars location="+existJarFolder.getAbsolutePath());
-        logger.debug("WEBAPP location="+webappFolder.getAbsolutePath());
+        logger.debug("WEBAPP location="+webappsFolder.getAbsolutePath());
     }
     
     public File getWebappFolder(){
-        return webappFolder;
+        return webappsFolder;
     }
     
     public File getCoreJarsFolder(){
