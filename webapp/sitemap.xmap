@@ -707,7 +707,7 @@
             </map:match>
 
             <map:match pattern="">
-                <map:redirect-to uri="/exist/index.xml"/>
+                <map:redirect-to uri="index.xml"/>
             </map:match>
             
             <!-- *********** All Cluster information *************** -->
