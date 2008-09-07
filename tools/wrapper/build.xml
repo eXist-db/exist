@@ -13,7 +13,8 @@
 	<property name="logs" value="./logs"/>
 	<property name="work" value="./work"/>
 	<property name="server.dir" value="../.."/>
-	
+    <property name="jetty.dir" value="${server.dir}/tools/jetty"/>
+
     <property name="build.compiler" value="modern"/>
     
     <path id="classpath.wrapper">
