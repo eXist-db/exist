@@ -21,6 +21,8 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.w3c.dom.Element;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.FilterChain;
@@ -35,9 +37,8 @@ public abstract class URLRewrite {
     protected String uri;
     protected String target;
 
-    protected URLRewrite(String uri, String target) {
+    protected URLRewrite(Element config, String uri) {
         this.uri = uri;
-        this.target = target;
     }
 
     public void setTarget(String target) {
@@ -46,4 +47,17 @@ public abstract class URLRewrite {
 
     public abstract void doRewrite(HttpServletRequest request, HttpServletResponse response,
                                    FilterChain chain) throws ServletException, IOException;
+
+    protected static String normalizePath(String path) {
+        StringBuffer sb = new StringBuffer(path.length());
+        for (int i = 0; i < path.length(); i++) {
+            char c = path.charAt(i);
+            if (c == '/') {
+                if (i == 0 || path.charAt(i - 1) != '/')
+                    sb.append(c);
+            } else
+                sb.append(c);
+        }
+        return sb.toString();
+    }
 }
