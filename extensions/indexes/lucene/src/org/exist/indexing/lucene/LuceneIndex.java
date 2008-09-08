@@ -29,9 +29,14 @@ public class LuceneIndex extends AbstractIndex {
     protected Analyzer analyzer;
 
     protected IndexWriter cachedWriter = null;
+    protected int writerUseCount = 0;
     protected IndexReader cachedReader = null;
+    protected int readerUseCount = 0;
+    protected IndexReader cachedWritingReader = null;
+    protected int writingReaderUseCount = 0;
     protected IndexSearcher cachedSearcher = null;
-
+    protected int searcherUseCount = 0;
+    
     public LuceneIndex() {
     }
 
@@ -52,11 +57,15 @@ public class LuceneIndex extends AbstractIndex {
                     dir.getAbsolutePath());
         } else
             dir.mkdirs();
+        IndexWriter writer = null;
         try {
             directory = FSDirectory.getDirectory(dir);
+            writer = getWriter();
         } catch (IOException e) {
             throw new DatabaseConfigurationException("Exception while reading lucene index directory: " +
                 e.getMessage(), e);
+        } finally {
+            releaseWriter(writer);
         }
     }
 
@@ -89,58 +98,157 @@ public class LuceneIndex extends AbstractIndex {
         return analyzer;
     }
     
-    protected IndexWriter getWriter() throws IOException {
-        if (cachedWriter != null)
-            return cachedWriter;
-        cachedWriter = new IndexWriter(directory, true, analyzer);
+    protected synchronized IndexWriter getWriter() throws IOException {
+        while (writingReaderUseCount > 0) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+            }
+        }
+        if (cachedWriter != null) {
+            writerUseCount++;
+        } else {
+            cachedWriter = new IndexWriter(directory, true, analyzer);
+            writerUseCount = 1;
+        }
+        notifyAll();
         return cachedWriter;
     }
 
-    protected void releaseWriter(IndexWriter writer) {
+    protected synchronized void releaseWriter(IndexWriter writer) {
+        if (writer == null)
+            return;
         if (writer != cachedWriter)
             throw new IllegalStateException("IndexWriter was not obtained from getWriter().");
-        try {
-            cachedWriter.close();
-        } catch (IOException e) {
-            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-        } finally {
-            cachedWriter = null;
+        
+        writerUseCount--;
+        if (writerUseCount == 0) {
+            try {
+                cachedWriter.close();
+            } catch (IOException e) {
+                LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+            } finally {
+                cachedWriter = null;
+            }
         }
+        notifyAll();
+
+        waitForReadersAndReopen();
     }
 
-    protected IndexReader getReader() throws IOException {
-        if (cachedReader != null)
-            return cachedReader;
-        cachedReader = IndexReader.open(directory);
+    protected synchronized IndexReader getReader() throws IOException {
+        if (cachedReader != null) {
+            readerUseCount++;
+        } else {
+            cachedReader = IndexReader.open(directory);
+            readerUseCount = 1;
+        }
         return cachedReader;
     }
 
-    protected void releaseReader(IndexReader reader) {
+    protected synchronized void releaseReader(IndexReader reader) {
+        if (reader == null)
+            return;
         if (reader != cachedReader)
             throw new IllegalStateException("IndexReader was not obtained from getReader().");
-        try {
-            cachedReader.close();
-        } catch (IOException e) {
-            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-        } finally {
-            cachedReader = null;
-        }
+        readerUseCount--;
+        notifyAll();
+//        try {
+//            cachedReader.close();
+//        } catch (IOException e) {
+//            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+//        } finally {
+//            cachedReader = null;
+//        }
     }
 
-    protected IndexSearcher getSearcher() throws IOException {
+    protected synchronized IndexReader getWritingReader() throws IOException {
+        while (writerUseCount > 0) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+            }
+        }
+        if (cachedWritingReader != null) {
+            writingReaderUseCount++;
+        } else {
+            cachedWritingReader = IndexReader.open(directory);
+            writingReaderUseCount = 1;
+        }
+        notifyAll();
+        return cachedWritingReader;
+    }
+
+    protected synchronized void releaseWritingReader(IndexReader reader) {
+        if (reader == null)
+            return;
+        if (reader != cachedWritingReader)
+            throw new IllegalStateException("IndexReader was not obtained from getWritingReader().");
+        writingReaderUseCount--;
+        if (writingReaderUseCount == 0) {
+            try {
+                cachedWritingReader.close();
+            } catch (IOException e) {
+                LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+            } finally {
+                cachedWritingReader = null;
+            }
+        }
+        notifyAll();
+
+        waitForReadersAndReopen();
+    }
+
+    private void waitForReadersAndReopen() {
+        while (readerUseCount > 0 || searcherUseCount > 0) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+            }
+        }
+        reopenReaders();
+    }
+
+    private void reopenReaders() {
+        if (cachedReader == null)
+            return;
+        IndexReader oldReader = cachedReader;
+        try {
+            cachedReader = cachedReader.reopen();
+            if (oldReader != cachedReader) {
+                oldReader.close();
+            }
+        } catch (IOException e) {
+            LOG.warn("Exception while refreshing lucene index: " + e.getMessage(), e);
+        }
         if (cachedSearcher != null)
-            return cachedSearcher;
-        cachedSearcher = new IndexSearcher(directory);
+            cachedSearcher = new IndexSearcher(cachedReader);
+    }
+
+    protected synchronized IndexSearcher getSearcher() throws IOException {
+        if (cachedSearcher != null) {
+            searcherUseCount++;
+        } else {
+            cachedSearcher = new IndexSearcher(getReader());
+            readerUseCount--;
+            searcherUseCount = 1;
+        }
         return cachedSearcher;
     }
 
-    protected void releaseSearcher(IndexSearcher searcher) {
-        try {
-            cachedSearcher.close();
-        } catch (IOException e) {
-            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-        } finally {
-            cachedSearcher = null;
-        }
+    protected synchronized void releaseSearcher(IndexSearcher searcher) {
+        if (searcher == null)
+            return;
+        if (searcher != cachedSearcher)
+            throw new IllegalStateException("IndexSearcher was not obtained from getWritingReader().");
+        searcherUseCount--;
+        notifyAll();
+//        try {
+//            cachedSearcher.close();
+//        } catch (IOException e) {
+//            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+//        } finally {
+//            cachedSearcher = null;
+//        }
     }
 }
