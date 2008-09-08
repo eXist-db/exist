@@ -82,7 +82,7 @@
             <replacefilter token="xmlprague06.xml" value="xmlprague06.html"/>
 			
             <!--
-            <replacefilter token="soc-ft.xml" value="soc-ft.html"/>
+			<replacefilter token="soc-ft.xml" value="soc-ft.html"/>
 			<replacefilter token="soc-xqj.xml" value="soc-xqj.html"/>
 			-->
 			
@@ -109,9 +109,12 @@
             <replacefilter token="apps/applications.xml" value="${demo.host}/apps/applications.xml"/>
             <replacefilter token="webstart/exist.jnlp" value="${demo.host}:8080/webstart/exist.jnlp"/>
             	
-            <replacefilter token="gsoc/2007/summer.xml" value="${demo.host}/gsoc/2007/summer.xml"/>
-           	<replacefilter token="gsoc/2007/soc-xqj.xml" value="${demo.host}/gsoc/2007/soc-xqj.xml"/>
-            <replacefilter token="gsoc/2008/soc-ft.xml" value="${demo.host}/gsoc/2007/soc-ft.xml"/>
+            <replacefilter token="gsoc/2007/summer.xml" value="${demo.host}/gsoc/2007/summer.html"/>
+           	<replacefilter token="gsoc/2007/soc-xqj.xml" value="${demo.host}/gsoc/2007/soc-xqj.html"/>
+            <replacefilter token="gsoc/2007/soc-ft.xml" value="${demo.host}/gsoc/2007/soc-ft.html"/>
+            <replacefilter token="gsoc/2008/summer.xml" value="${demo.host}/gsoc/2008/summer.html"/>
+           	<replacefilter token="gsoc/2008/soc-xslt.xml" value="${demo.host}/gsoc/2008/soc-xslt.html"/>
+            <replacefilter token="gsoc/2008/soc-dsrch.xml" value="${demo.host}/gsoc/2008/soc-dsrch.html"/>
         </replace>
     </target>
 
@@ -153,8 +156,10 @@
                 <uri type="append" src="extensions.xml"/>
                 <uri type="append" src="gsoc/2007/summer.xml"/>
                 <uri type="append" src="gsoc/2007/soc-ft.xml"/>
-	 <uri type="append" src="gsoc/2007/soc-xqj.xml"/>
+				<uri type="append" src="gsoc/2007/soc-xqj.xml"/>
                 <uri type="append" src="gsoc/2008/summer.xml"/>
+				<uri type="append" src="gsoc/2008/soc-xslt.xml"/>
+				<uri type="append" src="gsoc/2008/soc-dsrch.xml"/>				
             </uris>
         </cocoon>
 
@@ -217,7 +222,7 @@
         <echo message="Renaming files ..."/>
         <move todir="${build.docs.html}">
             <fileset dir="${build.docs.html}">
-                <include name="*.xml"/>
+                <include name="**/*.xml"/>
             </fileset>
             <mapper type="glob" from="*.xml" to="*.html"/>
         </move>
@@ -270,8 +275,13 @@
             <!--replacefilter token="#mailing" value="${host}/index.html#mailing"/-->
             <replacefilter token="api/index.html" value="${host}/api/index.html"/>
             <replacefilter token="gsoc/2007/summer.xml" value="${host}/gsoc/2007/summer.html"/>
+           	<replacefilter token="gsoc/2007/soc-xqj.xml" value="${host}/gsoc/2007/soc-xqj.html"/>
+            <replacefilter token="gsoc/2007/soc-ft.xml" value="${host}/gsoc/2007/soc-ft.html"/>
             <replacefilter token="gsoc/2008/summer.xml" value="${host}/gsoc/2008/summer.html"/>
-        </replace>
+           	<replacefilter token="gsoc/2008/soc-xslt.xml" value="${host}/gsoc/2008/soc-xslt.html"/>
+            <replacefilter token="gsoc/2008/soc-dsrch.xml" value="${host}/gsoc/2008/soc-dsrch.html"/>
+			
+		</replace>
 
         <replace dir="${build.docs.src}" summary="true">
             <include name="acronyms/sidebar.xml"/>
@@ -338,7 +348,7 @@
             <replacefilter token="xmlprague06.xml" value="${host}/xmlprague06.html"/>
 			
             <!--
-            <replacefilter token="soc-ft.xml" value="soc-ft.html"/>
+			<replacefilter token="soc-ft.xml" value="soc-ft.html"/>
 			<replacefilter token="soc-xqj.xml" value="soc-xqj.html"/>
 			-->
 			
