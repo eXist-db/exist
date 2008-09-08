@@ -50,10 +50,10 @@ import java.util.ArrayList;
 
 public class LuceneIndexTest {
 
-    private static String XUPDATE_START =
+    protected static String XUPDATE_START =
         "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">";
 
-    private static String XUPDATE_END =
+    protected static String XUPDATE_END =
         "</xu:modifications>";
     
     private static String XML1 =

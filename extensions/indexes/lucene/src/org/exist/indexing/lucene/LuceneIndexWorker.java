@@ -75,9 +75,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private Map config;
     private Stack contentStack = null;
     private Set nodesToRemove = null;
+    private List nodesToWrite = null;
+    private int cachedNodesSize = 0;
 
-    private IndexWriter writer = null;
-    
+    private int maxCachedNodesSize = 4096 * 1024;
+
     public LuceneIndexWorker(LuceneIndex parent) {
         this.index = parent;
     }
@@ -128,24 +130,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public void flush() {
-        try {
-            switch (mode) {
-                case StreamListener.STORE:
-                    if (writer != null) {
-                        writer.flush();
-                        index.releaseWriter(writer);
-                    }
-                    writer = null;
-                    break;
-                case StreamListener.REMOVE_ALL_NODES:
-                    removeDocument(currentDoc.getDocId());
-                    break;
-                case StreamListener.REMOVE_SOME_NODES:
-                    removeNodes();
-                    break;
-            }
-        } catch (IOException e) {
-            LOG.warn("Caught an exception while flushing lucene index: " + e.getMessage(), e);
+        switch (mode) {
+            case StreamListener.STORE:
+                write();
+                break;
+            case StreamListener.REMOVE_ALL_NODES:
+                removeDocument(currentDoc.getDocId());
+                break;
+            case StreamListener.REMOVE_SOME_NODES:
+                removeNodes();
+                break;
         }
     }
 
@@ -165,17 +159,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public void setMode(int mode) {
         this.mode = mode;
-        try {
-            switch (mode) {
-                case StreamListener.STORE:
-                    writer = index.getWriter();
-                    break;
-                case StreamListener.REMOVE_SOME_NODES:
-                    nodesToRemove = new TreeSet();
-                    break;
-            }
-        } catch (IOException e) {
-            LOG.warn("Caught exception while preparing lucene index: " + e.getMessage(), e);
+        switch (mode) {
+            case StreamListener.STORE:
+                if (nodesToWrite == null)
+                    nodesToWrite = new ArrayList();
+                else
+                    nodesToWrite.clear();
+                cachedNodesSize = 0;
+                break;
+            case StreamListener.REMOVE_SOME_NODES:
+                nodesToRemove = new TreeSet();
+                break;
         }
     }
 
@@ -227,13 +221,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     protected void removeDocument(int docId) {
         IndexReader reader = null;
         try {
-            reader = index.getReader();
+            reader = index.getWritingReader();
             Term dt = new Term("docId", Integer.toString(docId));
             reader.deleteDocuments(dt);
+            reader.flush();
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
-            index.releaseReader(reader);
+            index.releaseWritingReader(reader);
         }
     }
 
@@ -242,7 +237,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.debug("Removing collection " + collection.getURI());
         IndexReader reader = null;
         try {
-            reader = index.getReader();
+            reader = index.getWritingReader();
             for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = (DocumentImpl) i.next();
                 Term dt = new Term("docId", Integer.toString(doc.getDocId()));
@@ -255,7 +250,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
-            index.releaseReader(reader);
+            index.releaseWritingReader(reader);
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Collection removed.");
@@ -271,7 +266,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return;
         IndexReader reader = null;
         try {
-            reader = index.getReader();
+            reader = index.getWritingReader();
             Term dt = new Term("docId", Integer.toString(currentDoc.getDocId()));
             TermDocs docsEnum = reader.termDocs(dt);
             while (docsEnum.next()) {
@@ -286,7 +281,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         } catch (IOException e) {
             LOG.warn("Error while deleting lucene index entries: " + e.getMessage(), e);
         } finally {
-            index.releaseReader(reader);
+            index.releaseWritingReader(reader);
         }
     }
 
@@ -504,27 +499,57 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param content
      */
     protected void indexText(NodeId nodeId, QName qname, CharSequence content) {
-        if (writer == null)
+        PendingDoc pending = new PendingDoc(nodeId, content, qname);
+        nodesToWrite.add(pending);
+        cachedNodesSize += content.length();
+        if (cachedNodesSize > maxCachedNodesSize)
+            write();
+    }
+
+    private static class PendingDoc {
+        NodeId nodeId;
+        CharSequence text;
+        QName qname;
+
+        private PendingDoc(NodeId nodeId, CharSequence text, QName qname) {
+            this.nodeId = nodeId;
+            this.text = text;
+            this.qname = qname;
+        }
+    }
+    
+    private void write() {
+        if (nodesToWrite == null || nodesToWrite.size() == 0)
             return;
-        Document doc = new Document();
-
-        // store the node id
-        int nodeIdLen = nodeId.size();
-        byte[] data = new byte[nodeIdLen + 2];
-        ByteConversion.shortToByte((short) nodeId.units(), data, 0);
-        nodeId.serialize(data, 2);
-
-        String contentField = encodeQName(qname);
-
-        doc.add(new Field("docId", Integer.toString(currentDoc.getDocId()),
-                Field.Store.COMPRESS,  Field.Index.UN_TOKENIZED));
-        doc.add(new Field("nodeId", data, Field.Store.YES));
-        doc.add(new Field(contentField, content.toString(), Field.Store.NO, Field.Index.TOKENIZED));
-
+        IndexWriter writer = null;
         try {
-            writer.addDocument(doc);
+            writer = index.getWriter();
+            for (int i = 0; i < nodesToWrite.size(); i++) {
+                PendingDoc pending = (PendingDoc) nodesToWrite.get(i);
+
+                Document doc = new Document();
+
+                // store the node id
+                int nodeIdLen = pending.nodeId.size();
+                byte[] data = new byte[nodeIdLen + 2];
+                ByteConversion.shortToByte((short) pending.nodeId.units(), data, 0);
+                pending.nodeId.serialize(data, 2);
+
+                String contentField = encodeQName(pending.qname);
+
+                doc.add(new Field("docId", Integer.toString(currentDoc.getDocId()),
+                        Field.Store.COMPRESS,  Field.Index.UN_TOKENIZED));
+                doc.add(new Field("nodeId", data, Field.Store.YES));
+                doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.TOKENIZED));
+
+                writer.addDocument(doc);
+            }
         } catch (IOException e) {
             LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
+        } finally {
+            index.releaseWriter(writer);
+            nodesToWrite = new ArrayList();
+            cachedNodesSize = 0;
         }
     }
 
