@@ -97,6 +97,8 @@ public class LuceneIndex extends AbstractIndex {
     }
 
     protected void releaseWriter(IndexWriter writer) {
+        if (writer != cachedWriter)
+            throw new IllegalStateException("IndexWriter was not obtained from getWriter().");
         try {
             cachedWriter.close();
         } catch (IOException e) {
@@ -114,6 +116,8 @@ public class LuceneIndex extends AbstractIndex {
     }
 
     protected void releaseReader(IndexReader reader) {
+        if (reader != cachedReader)
+            throw new IllegalStateException("IndexReader was not obtained from getReader().");
         try {
             cachedReader.close();
         } catch (IOException e) {

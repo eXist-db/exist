@@ -3,11 +3,10 @@ package org.exist.indexing.lucene;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.TermFreqVector;
-import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
@@ -18,22 +17,22 @@ import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
+import org.exist.dom.Match;
 import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
-import org.exist.dom.Match;
+import org.exist.dom.TextImpl;
+import org.exist.dom.AttrImpl;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
-import org.exist.indexing.StreamListener;
 import org.exist.indexing.OrderedValuesIndex;
 import org.exist.indexing.QNamedKeysIndex;
-import org.exist.indexing.ngram.NGramIndex;
+import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -50,17 +49,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
 
+    private final static String CONFIG_ROOT = "lucene";
     private final static String INDEX_ELEMENT = "text";
     private static final String QNAME_ATTR = "qname";
     
@@ -72,6 +74,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     
     private Map config;
     private Stack contentStack = null;
+    private Set nodesToRemove = null;
 
     private IndexWriter writer = null;
     
@@ -92,20 +95,36 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         LOG.debug("Configuring lucene index");
         // We use a map to store the QNames to be indexed
         Map map = new TreeMap();
+        parseConfig(configNodes, namespaces, map);
+        return map;
+    }
+
+    /**
+     * Parse a configuration entry. The main configuration entries for this index
+     * are the &lt;text&gt; elements. They may be enclosed by a &lt;lucene&gt; element.
+     * 
+     * @param configNodes
+     * @param namespaces
+     * @param map
+     * @throws DatabaseConfigurationException
+     */
+    private void parseConfig(NodeList configNodes, Map namespaces, Map map) throws DatabaseConfigurationException {
         Node node;
         for(int i = 0; i < configNodes.getLength(); i++) {
             node = configNodes.item(i);
-            if(node.getNodeType() == Node.ELEMENT_NODE &&
-                    INDEX_ELEMENT.equals(node.getLocalName())) {
-                String qname = ((Element)node).getAttribute(QNAME_ATTR);
-                if (qname == null || qname.length() == 0)
-                    throw new DatabaseConfigurationException("Configuration error: element " + node.getNodeName() +
-	                		" must have an attribute " + QNAME_ATTR);
-                LuceneIndexConfig config = new LuceneIndexConfig(namespaces, qname);
-                map.put(config.getQName(), config);
+            if(node.getNodeType() == Node.ELEMENT_NODE) {
+                if (CONFIG_ROOT.equals(node.getLocalName()))
+                    parseConfig(node.getChildNodes(), namespaces, map);
+                else if (INDEX_ELEMENT.equals(node.getLocalName())) {
+                    String qname = ((Element)node).getAttribute(QNAME_ATTR);
+                    if (qname == null || qname.length() == 0)
+                        throw new DatabaseConfigurationException("Configuration error: element " + node.getNodeName() +
+                                " must have an attribute " + QNAME_ATTR);
+                    LuceneIndexConfig config = new LuceneIndexConfig(namespaces, qname);
+                    map.put(config.getQName(), config);
+                }
             }
         }
-        return map;
     }
 
     public void flush() {
@@ -120,6 +139,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     break;
                 case StreamListener.REMOVE_ALL_NODES:
                     removeDocument(currentDoc.getDocId());
+                    break;
+                case StreamListener.REMOVE_SOME_NODES:
+                    removeNodes();
                     break;
             }
         } catch (IOException e) {
@@ -148,6 +170,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 case StreamListener.STORE:
                     writer = index.getWriter();
                     break;
+                case StreamListener.REMOVE_SOME_NODES:
+                    nodesToRemove = new TreeSet();
+                    break;
             }
         } catch (IOException e) {
             LOG.warn("Caught exception while preparing lucene index: " + e.getMessage(), e);
@@ -163,7 +188,30 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        if (node.getNodeType() == Node.ATTRIBUTE_NODE)
+            return null;
+        if (config == null)
+            return null;
+        boolean reindexRequired = false;
+        int len = node.getNodeType() == Node.ELEMENT_NODE && !includeSelf ? path.length() - 1 : path.length();
+        for (int i = 0; i < len; i++) {
+            QName qn = path.getComponent(i);
+            if (config.get(qn) != null) {
+                reindexRequired = true;
+                break;
+            }
+        }
+        if (reindexRequired) {
+            StoredNode topMost = null;
+            StoredNode currentNode = node;
+            while (currentNode != null) {
+                if (config.get(currentNode.getQName()) != null)
+                    topMost = currentNode;
+                currentNode = currentNode.getParentStoredNode();
+            }
+            return topMost;
+        }
+        return null;
     }
 
     private StreamListener listener = new LuceneStreamListener();
@@ -183,7 +231,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Term dt = new Term("docId", Integer.toString(docId));
             reader.deleteDocuments(dt);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseReader(reader);
         }
@@ -198,10 +246,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = (DocumentImpl) i.next();
                 Term dt = new Term("docId", Integer.toString(doc.getDocId()));
-                reader.deleteDocuments(dt);
+                TermDocs td = reader.termDocs(dt);
+                while (td.next()) {
+                    reader.deleteDocument(td.doc());
+                }
             }
+            reader.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseReader(reader);
         }
@@ -209,6 +261,53 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.debug("Collection removed.");
     }
 
+    /**
+     * Remove specific nodes from the index. This method is used for node updates
+     * and called from flush() if the worker is in {@link StreamListener#REMOVE_SOME_NODES}
+     * mode.
+     */
+    protected void removeNodes() {
+        if (nodesToRemove == null)
+            return;
+        IndexReader reader = null;
+        try {
+            reader = index.getReader();
+            Term dt = new Term("docId", Integer.toString(currentDoc.getDocId()));
+            TermDocs docsEnum = reader.termDocs(dt);
+            while (docsEnum.next()) {
+                Document doc = reader.document(docsEnum.doc());
+                NodeId nodeId = readNodeId(doc);
+                if (nodesToRemove.contains(nodeId)) {
+                    reader.deleteDocument(docsEnum.doc());
+                }
+            }
+            nodesToRemove = null;
+            reader.flush();
+        } catch (IOException e) {
+            LOG.warn("Error while deleting lucene index entries: " + e.getMessage(), e);
+        } finally {
+            index.releaseReader(reader);
+        }
+    }
+
+    /**
+     * Query the index. Returns a node set containing all matching nodes. Each node
+     * in the node set has a {@link org.exist.indexing.lucene.LuceneIndexWorker.LuceneMatch}
+     * element attached, which stores the score and a link to the query which generated it.
+     *
+     * @param context current XQuery context
+     * @param contextId current context id, identify to track the position inside nested XPath predicates
+     * @param docs query will be restricted to documents in this set
+     * @param contextSet if specified, returned nodes will be descendants of the nodes in this set
+     * @param qnames query will be restricted to nodes with the qualified names given here
+     * @param queryStr a lucene query string
+     * @param axis which node is returned: the node in which a match was found or the corresponding ancestor
+     *  from the contextSet
+     * @return node set containing all matching nodes
+     * 
+     * @throws IOException
+     * @throws ParseException
+     */
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
         List qnames, String queryStr, int axis)
         throws IOException, ParseException {
@@ -329,48 +428,52 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String field = encodeQName(qname);
                 TermEnum terms;
                 if (start == null)
-                    terms = reader.terms();
+                    terms = reader.terms(new Term(field, ""));
                 else
                     terms = reader.terms(new Term(field, start.toString()));
                 if (terms == null)
                     continue;
                 Term term;
-                while((term = terms.term()) != null) {
-                    if (term.field().equals(field)) {
+                do {
+                    term = terms.term();
+                    if (term != null && term.field().equals(field)) {
+                        boolean include = true;
                         if (end != null) {
                             if (term.text().compareTo(start.toString()) > 0)
-                                break;
-                        } else if (!term.text().startsWith(start.toString()))
-                            break;
-                        TermDocs docsEnum = reader.termDocs(term);
-                        while (docsEnum.next()) {
-                            Document doc = reader.document(docsEnum.doc());
-                            Field fDocId = doc.getField("docId");
-                            int docId = Integer.parseInt(fDocId.stringValue());
-                            DocumentImpl storedDocument = docs.getDoc(docId);
-                            if (storedDocument == null)
-                                continue;
+                                include = false;
+                        } else if (start != null && !term.text().startsWith(start.toString()))
+                            include = false;
+                        if (include) {
+                            TermDocs docsEnum = reader.termDocs(term);
+                            while (docsEnum.next()) {
+                                if (reader.isDeleted(docsEnum.doc()))
+                                    continue;
+                                Document doc = reader.document(docsEnum.doc());
+                                Field fDocId = doc.getField("docId");
+                                int docId = Integer.parseInt(fDocId.stringValue());
+                                DocumentImpl storedDocument = docs.getDoc(docId);
+                                if (storedDocument == null)
+                                    continue;
 
-                            boolean include = true;
-                            if (contextSet != null) {
-                                NodeId nodeId = readNodeId(doc);
-                                NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
-                                include = (parentNode != null);
-                            }
-                            if (include) {
-                                Occurrences oc = (Occurrences) map.get(term);
-                                if (oc == null) {
-                                    oc = new Occurrences(term.text());
-                                    map.put(term, oc);
+                                if (contextSet != null) {
+                                    NodeId nodeId = readNodeId(doc);
+                                    NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
+                                    include = (parentNode != null);
                                 }
-                                oc.addDocument(storedDocument);
-                                oc.addOccurrences(docsEnum.freq());
+                                if (include) {
+                                    Occurrences oc = (Occurrences) map.get(term);
+                                    if (oc == null) {
+                                        oc = new Occurrences(term.text());
+                                        map.put(term, oc);
+                                    }
+                                    oc.addDocument(storedDocument);
+                                    oc.addOccurrences(docsEnum.freq());
+                                }
                             }
+                            docsEnum.close();
                         }
-                        docsEnum.close();
                     }
-                    terms.next();
-                }
+                } while (terms.next());
                 terms.close();
             }
         } catch (IOException e) {
@@ -382,7 +485,25 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return (Occurrences[]) map.values().toArray(occur);
     }
 
-    protected void indexText(NodeId nodeId, QName qname, XMLString content) {
+    /**
+     * Adds the passed character sequence to the lucene index. We
+     * create one lucene document per XML node, using 2 fields to identify
+     * the node:
+     *
+     * <ul>
+     *  <li>docId: eXist-internal document id of the node, stored as string.</li>
+     *  <li>nodeId: the id of the node, stored in binary compressed form.</li>
+     * </ul>
+     *
+     * The text is indexed into a field whose name encodes the qualified name of
+     * the node. The qualified name is stored as a hex sequence pointing into the
+     * global symbol table.
+     *
+     * @param nodeId
+     * @param qname
+     * @param content
+     */
+    protected void indexText(NodeId nodeId, QName qname, CharSequence content) {
         if (writer == null)
             return;
         Document doc = new Document();
@@ -418,7 +539,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private class LuceneStreamListener extends AbstractStreamListener {
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
-            if (mode != REMOVE_ALL_NODES && config != null && config.get(element.getQName()) != null) {
+            if (mode == STORE && config != null && config.get(element.getQName()) != null) {
                 if (contentStack == null) contentStack = new Stack();
                 XMLString contentBuf = new XMLString();
                 contentStack.push(contentBuf);
@@ -428,10 +549,25 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (mode != REMOVE_ALL_NODES && config != null && config.get(element.getQName()) != null) {
-                XMLString content = (XMLString) contentStack.pop();
-                indexText(element.getNodeId(), element.getQName(), content);
+                if (mode == REMOVE_SOME_NODES) {
+                    nodesToRemove.add(element.getNodeId());
+                } else {
+                    XMLString content = (XMLString) contentStack.pop();
+                    indexText(element.getNodeId(), element.getQName(), content);
+                }
             }
             super.endElement(transaction, element, path);
+        }
+
+        public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
+            if (mode != REMOVE_ALL_NODES && config != null && config.get(attrib.getQName()) != null) {
+                if (mode == REMOVE_SOME_NODES) {
+                    nodesToRemove.add(attrib.getNodeId());
+                } else {
+                    indexText(attrib.getNodeId(), attrib.getQName(), attrib.getValue());
+                }
+            }
+            super.attribute(transaction, attrib, path);
         }
 
         public void characters(Txn transaction, TextImpl text, NodePath path) {
@@ -449,6 +585,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
+    /**
+     * Match class containing the score of a match and a reference to
+     * the query that generated it.
+     */
     public class LuceneMatch extends Match {
 
         private float score = 0.0f;
