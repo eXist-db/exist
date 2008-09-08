@@ -12,14 +12,13 @@ let $log := util:log("DEBUG", ("$uri=", $uri, " $servlet=", $servlet, " $context
 return
     (: Issue a redirect if parameter $logout is set :)
     if ($logout) then
-        <exist:dispatch redirect="{$context}/index.xml">
+        <exist:dispatch>
+            <exist:redirect url="{$context}/index.xml"/>
             <exist:cache-control cache="yes"/>
         </exist:dispatch>
     else
-        <exist:ignore>
-            <exist:cache-control cache="yes"/>
-        </exist:ignore>
-        (: <exist:dispatch path="/redirector/index.xql">
+        <exist:dispatch>
+            <exist:forward url="/redirector/index.xql"/>
             <exist:add-parameter name="dummy" value="Param added by dispatch.xql"/>
             <exist:add-parameter name="extra-path" value="{$extraPath}"/>
-        </exist:dispatch> :)
+        </exist:dispatch>

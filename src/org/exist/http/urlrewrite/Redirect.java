@@ -21,6 +21,8 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.w3c.dom.Element;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.FilterChain;
@@ -29,8 +31,12 @@ import java.io.IOException;
 
 public class Redirect extends URLRewrite {
 
-    public Redirect(String uri, String target) {
-        super(uri, target);
+    public Redirect(Element config, String uri) throws ServletException {
+        super(config, uri);
+        String redirectTo = config.getAttribute("url");
+        if (redirectTo.length() == 0)
+            throw new ServletException("<exist:redirect> needs an attribute 'url'.");
+        setTarget(URLRewrite.normalizePath(redirectTo));
     }
 
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {

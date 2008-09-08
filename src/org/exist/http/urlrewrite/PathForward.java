@@ -21,17 +21,36 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.w3c.dom.Element;
+
 import javax.servlet.RequestDispatcher;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 public class PathForward extends Forward {
 
-    public PathForward(String uri, String target) {
-        super(uri, target);
+    private FilterConfig filterConfig;
+    private String servletName = null;
+
+    public PathForward(FilterConfig filterConfig, Element config, String uri) throws ServletException {
+        super(config, uri);
+        this.filterConfig = filterConfig;
+        servletName = config.getAttribute("servlet");
+        String url = config.getAttribute("url");
+        if (servletName != null && servletName.length() == 0)
+            servletName = null;
+        if (servletName == null) {
+            if (url == null || url.length() == 0)
+                throw new ServletException("<exist:forward> needs either an attribute 'url' or 'servlet'.");
+            setTarget(URLRewrite.normalizePath(url));
+        }
     }
 
     protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
-        return request.getRequestDispatcher(target);
+        if (servletName != null)
+            return filterConfig.getServletContext().getNamedDispatcher(servletName);
+        else
+            return request.getRequestDispatcher(target);
     }
 }

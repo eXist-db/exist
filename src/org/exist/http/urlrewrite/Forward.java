@@ -21,6 +21,8 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.w3c.dom.Element;
+
 import javax.servlet.RequestDispatcher;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -30,8 +32,8 @@ import java.io.IOException;
 
 public abstract class Forward extends URLRewrite {
 
-    protected Forward(String uri, String target) {
-        super(uri, target);
+    protected Forward(Element config, String uri) {
+        super(config, uri);
     }
 
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {

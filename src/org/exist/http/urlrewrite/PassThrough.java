@@ -21,6 +21,8 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.w3c.dom.Element;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.FilterChain;
@@ -30,7 +32,11 @@ import java.io.IOException;
 public class PassThrough extends URLRewrite {
 
     public PassThrough(String uri) {
-        super(uri, null);
+        super(null, uri);
+    }
+    
+    public PassThrough(Element config, String uri) {
+        super(config, uri);
     }
 
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
