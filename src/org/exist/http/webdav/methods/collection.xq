@@ -9,6 +9,9 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 declare namespace f="urn:my-functions";
 
+declare variable $uri external;
+declare variable $collection external;
+
 declare variable $f:months {
 	("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
 	"Nov", "Dec")
@@ -16,7 +19,7 @@ declare variable $f:months {
 
 declare function f:format-date($date as xs:dateTime) as xs:string {
 	string-join((
-		xs:string(item-at($f:months, month-from-date($date))),
+		xs:string($f:months[month-from-date($date)]),
 		xs:string(day-from-date($date)),
 		xs:string(year-from-date($date))), " ")
 };
