@@ -20,10 +20,6 @@
         </div>
     </xsl:template>
     
-    <xsl:template match="text()">
-        <xsl:value-of select="."/>
-    </xsl:template>
-    
     <xsl:template match="processing-instruction()">
         <dd>
             <font color="darkred">&lt;?<xsl:value-of select="."/>?&gt;</font>
