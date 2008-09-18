@@ -151,11 +151,6 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 		return (Element)document.getNode(document.attrParent[nodeNumber]);
 	}
 
-    public void selectAttributes(NodeTest test, Sequence result) throws XPathException {
-        if (test.matches(this))
-            result.add(this);
-    }
-
     public void selectDescendantAttributes(NodeTest test, Sequence result) throws XPathException {
         if (test.matches(this))
             result.add(this);
