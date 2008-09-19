@@ -4,6 +4,8 @@ import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -96,7 +98,8 @@ public class InMemoryNodeSet extends ValueSequence {
         InMemoryNodeSet nodes = new InMemoryNodeSet();
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
-            if (test.matches(node))
+            if ((test.getType() == Type.NODE && node.getNodeType() == Node.ATTRIBUTE_NODE) ||
+                test.matches(node))
                 nodes.add(node);
         }
         return nodes;

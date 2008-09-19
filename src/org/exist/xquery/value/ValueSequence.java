@@ -521,7 +521,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         ValueSequence nodes = new ValueSequence(true);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
-            if (test.matches(node))
+            if ((test.getType() == Type.NODE && node.getNodeType() == Node.ATTRIBUTE_NODE) ||
+                    test.matches(node))
                 nodes.add(node);
         }
         return nodes;
