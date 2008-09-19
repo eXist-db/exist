@@ -354,7 +354,7 @@ public class LocationStep extends Step {
             // Certainly not exhaustive
             case Constants.ANCESTOR_SELF_AXIS:
             case Constants.PARENT_AXIS:
-            case Constants.SELF_AXIS:
+//            case Constants.SELF_AXIS:
                 if (nodeTestType == null)
                     nodeTestType = new Integer(test.getType());
                 if (nodeTestType.intValue() != Type.NODE
