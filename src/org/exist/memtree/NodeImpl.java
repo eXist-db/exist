@@ -234,7 +234,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		if(!(obj instanceof NodeImpl))
 			return false;
 		NodeImpl o = (NodeImpl) obj;
-        return document == o.document && nodeNumber == o.nodeNumber;
+        return document == o.document && nodeNumber == o.nodeNumber &&
+            getNodeType() == o.getNodeType();
 	}
 
 	/* (non-Javadoc)
@@ -244,7 +245,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
 			return false;
         NodeImpl o = (NodeImpl) other;
-        return document == o.document && nodeNumber == o.nodeNumber;
+        return document == o.document && nodeNumber == o.nodeNumber &&
+            getNodeType() == o.getNodeType();
 	}
 
 	/* (non-Javadoc)
@@ -270,7 +272,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 			return Constants.INFERIOR;
 		NodeImpl n = (NodeImpl)other;
 		if(n.document == document) {
-			if (nodeNumber == n.nodeNumber)
+			if (nodeNumber == n.nodeNumber && getNodeType() == n.getNodeType())
 				return Constants.EQUAL;
 			else if (nodeNumber < n.nodeNumber)
 				return Constants.INFERIOR;
