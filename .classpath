@@ -74,9 +74,9 @@
 	<classpathentry kind="lib" path="lib/optional/axis-ant.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-schema.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-io-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-io-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
@@ -84,7 +84,7 @@
 	<classpathentry kind="lib" path="thirdparty/tomcat5/server/lib/catalina-5.0.28.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/junit-4.4.jar"/>
-	<classpathentry kind="lib" path="tools/ant/lib/xmlunit-1.1.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/xmlunit-1.2.jar"/>
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/org.mortbay.jetty.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
