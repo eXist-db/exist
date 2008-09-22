@@ -2593,11 +2593,17 @@ public class XQueryContext {
                         clazz + " is not an instance of org.exist.xquery.Module.");
             }
             return mClass;
+            
         } catch (ClassNotFoundException e) {
             // Note: can't throw an exception here since this would create
             // problems with test cases and jar dependencies
             LOG.warn("Configuration problem: failed to load class for module " +
                     uri + "; class: " + clazz + "; message: " + e.getMessage());
+            
+        } catch (NoClassDefFoundError e){
+            LOG.warn("Module " + uri + " could not be initialized due to a missing " +
+                    "dependancy (NoClassDefFoundError): " + e.getMessage());
+            
         }
         return null;
     }
