@@ -184,8 +184,12 @@ public class ModuleContext extends XQueryContext {
 	public MemTreeBuilder getDocumentBuilder() {
 		return parentContext.getDocumentBuilder();
 	}
-	
-	/* (non-Javadoc)
+
+    public MemTreeBuilder getDocumentBuilder(boolean explicitCreation) {
+        return parentContext.getDocumentBuilder(explicitCreation);
+    }
+    
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#pushDocumentContext()
 	 */
 	public void pushDocumentContext() {
