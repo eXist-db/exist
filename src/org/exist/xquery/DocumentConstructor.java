@@ -73,9 +73,12 @@ public class DocumentConstructor extends NodeConstructor {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
+
+        context.pushDocumentContext();
         
         Sequence contentSeq = content.eval(contextSequence, contextItem);
-        
+
+        context.popDocumentContext();
         context.pushDocumentContext();
         
         MemTreeBuilder builder = context.getDocumentBuilder(true);
@@ -179,7 +182,7 @@ public class DocumentConstructor extends NodeConstructor {
         
         NodeImpl node =  builder.getDocument();
         
-        if (context.getProfiler().isEnabled())           
+        if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", node);
         
         return node;
