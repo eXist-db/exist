@@ -30,6 +30,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.QNameValue;
 import org.w3c.dom.DOMException;
 
 /**
@@ -103,7 +105,12 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             if(!nameSeq.hasOne())
             throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
 
-            QName qn = QName.parse(context, nameSeq.getStringValue(), null);
+            Item qnItem = nameSeq.itemAt(0);
+            QName qn;
+            if (qnItem.getType() == Type.QNAME)
+                qn = ((QNameValue) qnItem).getQName();
+            else
+                qn = QName.parse(context, nameSeq.getStringValue(), null);
 
             //Not in the specs but... makes sense
             if(!XMLChar.isValidName(qn.getLocalName()))
