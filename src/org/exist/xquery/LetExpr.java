@@ -178,7 +178,7 @@ public class LetExpr extends BindingExpression {
                 }
 
                 // Check if we can speed up the processing of the "order by" clause.
-                fastOrderBy = checkOrderSpecs(in);
+                fastOrderBy = in.isPersistentSet() && checkOrderSpecs(in);
 
                 //  PreorderedValueSequence applies the order specs to all items
                 // in one single processing step
