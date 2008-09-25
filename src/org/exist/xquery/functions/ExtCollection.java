@@ -222,21 +222,11 @@ public class ExtCollection extends Function {
         if (listener == null) {
             listener = new UpdateListener() {
                 public void documentUpdated(DocumentImpl document, int event) {
-                    if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
-                        // clear all
-                        cachedDocs = null;
-                        cached = null;
-                        cachedArgs = null;
-                    } else {
-                        if (cachedDocs != null
-                                && cachedDocs.contains(document.getDocId())) {
-                            cachedDocs = null;
-                            cached = null;
-                            cachedArgs = null;
-                        }
-                    }
+                    // clear all
+                    cachedDocs = null;
+                    cached = null;
+                    cachedArgs = null;
                 }
-
 
                 public void unsubscribe() {
                     ExtCollection.this.listener = null;
