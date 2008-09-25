@@ -1048,17 +1048,9 @@ public class LocationStep extends Step {
             listener = new UpdateListener() {
                     public void documentUpdated(DocumentImpl document, int event) {
                         cached = null;
-                        if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
-                            // clear all
-                            currentDocs = null;
-                            currentSet = null;
-                        } else {
-                            if (currentDocs != null
-                                && currentDocs.contains(document.getDocId())) {
-                                currentDocs = null;
-                                currentSet = null;
-                            }
-                        }
+                        // clear all
+                        currentDocs = null;
+                        currentSet = null;
                     }
 
                     public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
