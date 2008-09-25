@@ -128,16 +128,9 @@ public class FunDoc extends Function {
         if (listener == null) {
             listener = new UpdateListener() {
                 public void documentUpdated(DocumentImpl document, int event) {
-                    if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
-                        // clear all
-                        cachedPath = null;
-                        cached = null;
-                    } else {
-                        if (cachedPath != null && (document == null || cachedPath.equals(document.getURI()))) {
-                            cached = null;
-                            cachedPath = null;
-                        }
-                    }
+                    // clear all
+                    cachedPath = null;
+                    cached = null;
                 }
 
                 public void unsubscribe() {

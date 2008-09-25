@@ -206,19 +206,10 @@ public class FunDocument extends Function {
         if (listener == null) {
             listener = new UpdateListener() {
                 public void documentUpdated(DocumentImpl document, int event) {
-                    if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
-                        // clear all
-                        cachedArgs = null;
-                        cached = null;
-                        cachedDocs = null;
-                    } else {
-                        if (cachedDocs != null
-                                && cachedDocs.contains(document.getDocId())) {
-                            cachedDocs = null;
-                            cached = null;
-                            cachedArgs = null;
-                        }
-                    }
+                    // clear all
+                    cachedArgs = null;
+                    cached = null;
+                    cachedDocs = null;
                 }
 
                 public void unsubscribe() {
