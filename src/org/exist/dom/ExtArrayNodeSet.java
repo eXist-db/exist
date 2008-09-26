@@ -104,6 +104,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements ExtNodeSet {
      */
     public ExtArrayNodeSet(int initialDocsCount, int initialArraySize) {
         initalSize = initialArraySize;
+        if (initialDocsCount == 0)
+            initialDocsCount = 1;
         documentIds = new int[initialDocsCount];
         parts = new Part[initialDocsCount];
         Arrays.fill(documentIds, 0);
@@ -164,11 +166,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements ExtNodeSet {
 
     private void insertPart(int docId, Part part, int idx) {
         if (partCount == parts.length) {
-            int ndocs[] = new int[documentIds.length * 2];
+            int nsize = parts.length == 0 ? 1 : parts.length * 2;
+            int ndocs[] = new int[nsize];
             System.arraycopy(documentIds, 0, ndocs, 0, documentIds.length);
             Arrays.fill(documentIds, -1);
 
-            Part nparts[] = new Part[parts.length * 2];
+            Part nparts[] = new Part[nsize];
             System.arraycopy(parts, 0, nparts, 0, parts.length);
 
             documentIds = ndocs;
