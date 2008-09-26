@@ -105,6 +105,14 @@ public class DoubleValue extends NumericValue {
 	public boolean isZero() {
 		return Double.compare(Math.abs(value), 0.0) == Constants.EQUAL;	
 	}
+    
+    public boolean isNegative() {
+        return (Double.compare(value, 0.0) < Constants.EQUAL);
+    }
+
+    public boolean isPositive() {
+        return (Double.compare(value, 0.0) > Constants.EQUAL);
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
@@ -301,18 +309,31 @@ public class DoubleValue extends NumericValue {
 			//Positive or negative zero divided by positive or negative zero returns NaN.
 			if (this.isZero() && ((NumericValue)other).isZero())
 				return NaN;
+            
 			//A negative number divided by positive zero returns -INF.
-			if (this.compareTo(ZERO) != Constants.SUPERIOR  && ((NumericValue)other).isZero() && ((NumericValue)other).compareTo(ZERO) != Constants.INFERIOR)
+			if (this.isNegative()  && 
+                    ((NumericValue)other).isZero() && ((NumericValue)other).isPositive())
 				return NEGATIVE_INFINITY;
-			//Division by negative zero returns -INF and INF, respectively. 
-			if (((NumericValue)other).isZero() && ((NumericValue)other).compareTo(ZERO) != Constants.SUPERIOR)
+            
+			//A negative number divided by positive zero returns -INF.
+			if (this.isNegative()  && 
+                    ((NumericValue)other).isZero() && ((NumericValue)other).isNegative())
+				return POSITIVE_INFINITY;        
+            
+			//Division of Positive by negative zero returns -INF and INF, respectively. 
+			if (this.isPositive()  && 
+                    ((NumericValue)other).isZero() && ((NumericValue)other).isNegative())
 				return NEGATIVE_INFINITY;
-			if (((NumericValue)other).isZero() && ((NumericValue)other).compareTo(ZERO) != Constants.INFERIOR)
+            
+			if (this.isPositive()  &&
+                    ((NumericValue)other).isZero() && ((NumericValue)other).isPositive())
 				return POSITIVE_INFINITY;
+            
 			//Also, INF or -INF divided by INF or -INF returns NaN.
 			if (this.isInfinite() && ((NumericValue)other).isInfinite())
 				return NaN;
 		}		
+        
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
 			return new DoubleValue(value / ((DoubleValue) other).value);
 		else

@@ -204,6 +204,14 @@ public class DecimalValue extends NumericValue {
 		return value.signum() == 0;
 		//return value.compareTo(ZERO_BIGDECIMAL) == Constants.EQUAL;
 	}
+    
+    public boolean isNegative() {
+        return value.signum()<0;
+    }
+
+    public boolean isPositive() {
+        return value.signum()>0;
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#negate()

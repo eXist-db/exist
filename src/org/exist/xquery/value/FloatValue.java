@@ -37,6 +37,8 @@ public class FloatValue extends NumericValue {
     // and e is an integer between -149 and 104, inclusive.
     // In addition also -INF, +INF and NaN.
 	public final static FloatValue NaN = new FloatValue(Float.NaN);
+	public final static FloatValue POSITIVE_INFINITY = new FloatValue(Float.POSITIVE_INFINITY);
+	public final static FloatValue NEGATIVE_INFINITY = new FloatValue(Float.NEGATIVE_INFINITY);
 	public final static FloatValue ZERO = new FloatValue(0.0E0f);
 
 	protected float value;
@@ -115,6 +117,14 @@ public class FloatValue extends NumericValue {
 	public boolean isZero() {
 		return Float.compare(value, 0f) == Constants.EQUAL;	
 	}
+    
+    public boolean isNegative() {
+        return (Float.compare(value, 0f) < Constants.EQUAL);
+    }
+
+    public boolean isPositive() {
+        return (Float.compare(value, 0f) > Constants.EQUAL);
+    }
 
 	public boolean hasFractionalPart() {
 		if (isNaN())
@@ -268,14 +278,26 @@ public class FloatValue extends NumericValue {
 			//Positive or negative zero divided by positive or negative zero returns NaN.
 			if (this.isZero() && ((NumericValue)other).isZero())
 				return NaN;
+            
 			//A negative number divided by positive zero returns -INF.
-			if (this.compareTo(ZERO) != Constants.SUPERIOR  && ((NumericValue)other).isZero() && ((NumericValue)other).compareTo(ZERO) != Constants.INFERIOR)
-				return new FloatValue(Float.NEGATIVE_INFINITY);
-			//Division by negative zero returns -INF and INF, respectively. 
-			if (((NumericValue)other).isZero() && ((NumericValue)other).compareTo(ZERO) != Constants.SUPERIOR)
-				return new FloatValue(Float.NEGATIVE_INFINITY);
-			if (((NumericValue)other).isZero() && ((NumericValue)other).compareTo(ZERO) != Constants.INFERIOR)
-				return new FloatValue(Float.POSITIVE_INFINITY);
+			if (this.isNegative()  && 
+                    ((NumericValue)other).isZero() && ((NumericValue)other).isPositive())
+				return NEGATIVE_INFINITY;
+            
+			//A negative number divided by positive zero returns -INF.
+			if (this.isNegative()  && 
+                    ((NumericValue)other).isZero() && ((NumericValue)other).isNegative())
+				return POSITIVE_INFINITY;        
+            
+			//Division of Positive by negative zero returns -INF and INF, respectively. 
+			if (this.isPositive()  && 
+                    ((NumericValue)other).isZero() && ((NumericValue)other).isNegative())
+				return NEGATIVE_INFINITY;
+            
+			if (this.isPositive()  &&
+                    ((NumericValue)other).isZero() && ((NumericValue)other).isPositive())
+				return POSITIVE_INFINITY;
+            
 			//Also, INF or -INF divided by INF or -INF returns NaN.
 			if (this.isInfinite() && ((NumericValue)other).isInfinite())
 				return NaN;

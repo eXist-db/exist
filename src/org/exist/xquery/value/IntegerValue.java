@@ -231,6 +231,14 @@ public class IntegerValue extends NumericValue {
 		return value.signum() == 0;
 		//return value.compareTo(ZERO_BIGINTEGER) == Constants.EQUAL;
 	};	
+    
+    public boolean isNegative() {
+        return value.signum()<0;
+    }
+
+    public boolean isPositive() {
+        return value.signum()>0;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#convertTo(int)

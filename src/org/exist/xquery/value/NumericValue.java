@@ -30,6 +30,10 @@ public abstract class NumericValue extends ComputableValue {
 	public abstract boolean isInfinite();
 
 	public abstract boolean isZero();
+    
+    public abstract boolean isNegative();
+    
+    public abstract boolean isPositive();
 	
 	public boolean effectiveBooleanValue() throws XPathException {
 		//If its operand is a singleton value of any numeric type or derived from a numeric type, 
