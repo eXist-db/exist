@@ -2892,7 +2892,40 @@ public class XQueryTest extends XMLTestCase {
         }
     }
     
- 
+    // http://sourceforge.net/support/tracker.php?aid=1816496
+    public void testDivYieldsWrongInf_1816496() {
+
+        try {
+            String query = "xs:double(2) div xs:double(0)";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "INF",
+                    result.getResource(0).getContent().toString());
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+        try {
+            String query = "xs:float(2) div xs:float(0)";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "INF",
+                    result.getResource(0).getContent().toString());
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
 
 
     // ======================================
