@@ -2896,14 +2896,33 @@ public class XQueryTest extends XMLTestCase {
     public void testDivYieldsWrongInf_1816496() {
 
         try {
-            String query = "xs:double(2) div xs:double(0)";
+            String query = "let $negativeZero := xs:double(-1.0e-1024) let $positiveZero := xs:double(1.0e-1024) "
+                    +"return ("
+                    +"(xs:double(1)  div xs:double(0)),   (xs:double(1)  div $positiveZero),  (xs:double(1)  div $negativeZero), "
+                    +"(xs:double(-1) div xs:double(0)),   (xs:double(-1) div $positiveZero),  (xs:double(-1) div $negativeZero), "
+                    +"($negativeZero div $positiveZero),  ($positiveZero div $negativeZero), "
+                    +"(xs:double(0) div $positiveZero),   (xs:double(0) div $negativeZero),  "
+                    +"(xs:double(0) div xs:double(0))  "
+                    +")";
 
             XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
 
-            assertEquals(1, result.getSize());
-            assertEquals(query, "INF",
-                    result.getResource(0).getContent().toString());
+            assertEquals(11, result.getSize());
+            
+            assertEquals(query, "INF", result.getResource(0).getContent().toString());
+            assertEquals(query, "INF", result.getResource(1).getContent().toString());
+            assertEquals(query, "-INF", result.getResource(2).getContent().toString());
+            
+            assertEquals(query, "-INF", result.getResource(3).getContent().toString());
+            assertEquals(query, "-INF", result.getResource(4).getContent().toString());
+            assertEquals(query, "INF", result.getResource(5).getContent().toString());
+            
+            assertEquals(query, "NaN", result.getResource(6).getContent().toString());
+            assertEquals(query, "NaN", result.getResource(7).getContent().toString());
+            assertEquals(query, "NaN", result.getResource(8).getContent().toString());
+            assertEquals(query, "NaN", result.getResource(9).getContent().toString());
+            assertEquals(query, "NaN", result.getResource(10).getContent().toString());
 
         } catch (XMLDBException ex) {
             ex.printStackTrace();
