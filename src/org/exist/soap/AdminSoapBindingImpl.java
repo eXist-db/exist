@@ -896,7 +896,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             broker = pool.get(user);
 // TODO check XML/Binary resource
 //            doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
-            doc = (DocumentImpl) broker.getXMLResource(path, Lock.WRITE_LOCK);
+            doc = broker.getXMLResource(path, Lock.WRITE_LOCK);
             if (doc == null) {
                 throw new EXistException("Resource "
                         + path + " not found");

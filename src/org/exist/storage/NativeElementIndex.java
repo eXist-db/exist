@@ -20,15 +20,6 @@
  */
 package org.exist.storage;
 
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -36,15 +27,14 @@ import org.exist.dom.AttrImpl;
 import org.exist.dom.ByDocumentIterator;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.ExtNodeSet;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.dom.TextImpl;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.ExtNodeSet;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
@@ -74,6 +64,15 @@ import org.exist.xquery.NodeSelector;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
+
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /** The indexing occurs in this class. That is, during the loading of a document
  * into the database, the process of associating a long gid with each element,
@@ -837,7 +836,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         else
             collections = new ArrayList();
         collections.add(collection);
-        final SymbolTable symbols = broker.getSymbols();
+        final SymbolTable symbols = broker.getBrokerPool().getSymbols();
         final TreeMap map = new TreeMap();        
         final Lock lock = dbNodes.getLock();
         for (Iterator i = collections.iterator(); i.hasNext();) {
@@ -906,7 +905,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 
     //TODO : note that this is *not* this.doc -pb
     public void consistencyCheck(DocumentImpl document) throws EXistException {
-        final SymbolTable symbols = broker.getSymbols();
+        final SymbolTable symbols = broker.getBrokerPool().getSymbols();
         final int collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
@@ -996,7 +995,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         } if (type == ElementValue.ATTRIBUTE_IDREFS) {
             return new ElementValue(type, collectionId, qname.getLocalName());
         } else {
-            final SymbolTable symbols = broker.getSymbols();
+            final SymbolTable symbols = broker.getBrokerPool().getSymbols();
             short sym = symbols.getSymbol(qname.getLocalName());
             //TODO : should we truncate the key ?
             //TODO : beware of the polysemy for getPrefix == null

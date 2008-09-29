@@ -103,7 +103,7 @@ public class CDATASectionImpl extends CharacterDataImpl implements CDATASection 
     	pos += LENGTH_SIGNATURE_LENGTH;
         int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);        
+        NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);        
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
         CDATASectionImpl cdata = new CDATASectionImpl(dln);

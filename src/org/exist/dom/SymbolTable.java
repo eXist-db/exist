@@ -49,7 +49,7 @@ import org.w3c.dom.Node;
  * the db does not store node QNames in clear text. Instead, it uses the numeric ids
  * maintained here.
  * 
- * The global SymbolTable singleton can be retrieved from {@link org.exist.storage.DBBroker#getSymbols()}.
+ * The global SymbolTable singleton can be retrieved from {@link org.exist.storage.BrokerPool#getSymbols()}.
  * It is saved into the database file "symbols.dbx".
  * 
  * @author wolf

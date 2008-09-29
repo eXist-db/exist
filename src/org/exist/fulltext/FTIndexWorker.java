@@ -47,6 +47,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private NativeTextEngine engine;
     private FTIndex index;
+    private DBBroker broker;
     private DocumentImpl document;
     private FulltextIndexSpec config;
     private int mode = StreamListener.UNKNOWN;
@@ -56,6 +57,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     
     public FTIndexWorker(FTIndex index, DBBroker broker) throws DatabaseConfigurationException {
         this.index = index;
+        this.broker = broker;
         try {
             this.engine = new NativeTextEngine(broker, index.getBFile(), broker.getConfiguration());
         } catch (DBException e) {
@@ -87,7 +89,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void setDocument(DocumentImpl doc, int newMode) {
         document = doc;
         mode = newMode;
-        IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
+        IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null)
             config = indexConf.getFulltextIndexSpec();
         engine.setDocument(document);
@@ -110,7 +112,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
             return null;
-        IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(node.getDocument().getBroker());
+        IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
             FulltextIndexSpec config = indexConf.getFulltextIndexSpec();
             if (config == null)

@@ -34,6 +34,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.dom.SymbolTable;
 import org.exist.management.AgentFactory;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
@@ -419,6 +420,11 @@ public class BrokerPool {
     private IndexManager indexManager;
 
     /**
+     * Global symbol table used to encode element and attribute qnames.
+     */
+    private SymbolTable symbols;
+    
+    /**
 	 * Cache synchronization on the database instance.
 	 */
 	private long majorSyncPeriod = DEFAULT_SYNCH_PERIOD;		//the period after which a major sync should occur		
@@ -720,8 +726,10 @@ public class BrokerPool {
         }
 
         indexManager = new IndexManager(this, conf);
-        
-        
+
+        symbols = new SymbolTable(this, conf.getProperty(BrokerPool.PROPERTY_DATA_DIR).toString(), conf);
+        isReadOnly = isReadOnly || !symbols.getFile().canWrite();
+
         //TODO : replace the following code by get()/release() statements ?
         // WM: I would rather tend to keep this broker reserved as a system broker.
         // create a first broker to initialize the security manager
@@ -957,7 +965,11 @@ public class BrokerPool {
     public Scheduler getScheduler() {
     	return scheduler;
     }
-	
+
+    public SymbolTable getSymbols() {
+        return symbols;
+    }
+    
     public NotificationService getNotificationService() {
     	return notificationService;
     }
@@ -1088,7 +1100,7 @@ public class BrokerPool {
 	public DBBroker get(User user) throws EXistException {
 		if (!isInstanceConfigured())		
 			throw new EXistException("database instance '" + instanceName + "' is not available");
-		
+
 		//Try to get an active broker
 		DBBroker broker = (DBBroker)activeBrokers.get(Thread.currentThread());
 		//Use it...
@@ -1106,7 +1118,7 @@ public class BrokerPool {
 		}
 		//No active broker : get one ASAP
 		synchronized(this) {
-            while (serviceModeUser != null && !user.equals(serviceModeUser)) {
+            while (serviceModeUser != null && user != null && !user.equals(serviceModeUser)) {
                 try {
                     LOG.debug("Db instance is in service mode. Waiting for db to become available again ...");
                     wait();
@@ -1133,7 +1145,8 @@ public class BrokerPool {
 			//activate the broker
 			activeBrokers.put(Thread.currentThread(), broker);
 			broker.incReferenceCount();
-            broker.setUser(user);
+            if (user != null)
+                broker.setUser(user);
             //Inform the other threads that we have a new-comer
             // TODO: do they really need to be informed here???????
             this.notifyAll();

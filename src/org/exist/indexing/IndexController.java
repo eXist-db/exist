@@ -223,10 +223,10 @@ public class IndexController {
     public void reindex(Txn transaction, StoredNode reindexRoot, int mode) {
         if (reindexRoot == null)
             return;
-        reindexRoot = reindexRoot.getDocument().getBroker().objectWith(new NodeProxy(reindexRoot.getDocument(), reindexRoot.getNodeId()));
+        reindexRoot = broker.objectWith(new NodeProxy(reindexRoot.getDocument(), reindexRoot.getNodeId()));
         setDocument(reindexRoot.getDocument(), mode);
         getStreamListener();
-        IndexUtils.scanNode(transaction, reindexRoot, listener);
+        IndexUtils.scanNode(broker, transaction, reindexRoot, listener);
         flush();
     }
     

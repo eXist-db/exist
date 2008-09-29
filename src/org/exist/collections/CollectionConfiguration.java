@@ -104,9 +104,6 @@ public class CollectionConfiguration {
      * @throws CollectionConfigurationException
      */
     protected void read(DBBroker broker, Document doc, boolean checkOnly, XmldbURI srcCollectionURI, XmldbURI docName) throws CollectionConfigurationException {
-        if (doc instanceof DocumentImpl)
-            ((DocumentImpl)doc).setBroker(broker);
-        
         if (!checkOnly) {
             this.docName = docName;
             this.srcCollectionURI = srcCollectionURI;

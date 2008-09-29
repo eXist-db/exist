@@ -175,7 +175,6 @@ public class LargeValuesTest {
                 assertTrue(s.length() > 0);
                 if (s.length() == 0)
                     break;
-                System.out.println(s);
             }
         } catch (Exception e) {
             e.printStackTrace();

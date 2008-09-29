@@ -304,7 +304,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if (node == null)
             return;
         StreamListener listener = new ValueIndexStreamListener();
-        IndexUtils.scanNode(null, node, listener);
+        IndexUtils.scanNode(broker, null, node, listener);
     }
 
     public void storeText(TextImpl node, NodePath currentPath, int indexingHint) {
@@ -381,7 +381,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         v = new SimpleValue(collectionId, (Indexable) key);
                     else {
                         QNameKey qnk = (QNameKey) key;
-                        v = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getSymbols());
+                        v = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols());
                     }
                     if (dbValues.append(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.warn("Could not append index data for key '" +  key + "'");
@@ -433,7 +433,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         searchKey = new SimpleValue(collectionId, (Indexable) key);
                     else {
                         QNameKey qnk = (QNameKey) key;
-                        searchKey = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getSymbols());
+                        searchKey = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols());
                     }
                     Value value = dbValues.get(searchKey);
                     //Does the value already has data in the index ?
@@ -572,7 +572,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         v = new SimpleValue(collectionId, (Indexable) key);
                     else {
                         QNameKey qnk = (QNameKey) key;
-                        v = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getSymbols());
+                        v = new QNameValue(collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols());
                     }
                     Value value = dbValues.get(v);
                     if (value == null)
@@ -689,9 +689,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
                         //Compute a key for the value in the collection
                         searchKey = new QNameValue(collectionId, qname, value,
-                                broker.getSymbols());
+                                broker.getBrokerPool().getSymbols());
                         prefixKey = new QNamePrefixValue(collectionId, qname, value.getType(),
-                                broker.getSymbols());
+                                broker.getBrokerPool().getSymbols());
 
                         final IndexQuery query = new IndexQuery(idxOp, searchKey);
                         if (idxOp == IndexQuery.EQ)
@@ -800,11 +800,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         lock.acquire(Lock.READ_LOCK);
                         if (startTerm != null) {
                             searchKey = new QNameValue(collectionId, qname, startTerm,
-                                    broker.getSymbols());
+                                    broker.getBrokerPool().getSymbols());
                         } else {
                             LOG.debug("Searching with QName prefix");
                             searchKey = new QNamePrefixValue(collectionId, qname, Type.STRING,
-                                    broker.getSymbols());
+                                    broker.getBrokerPool().getSymbols());
                         }
                         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);
                         dbValues.query(query, cb);
@@ -892,12 +892,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     final  int collectionId = ((Collection) i.next()).getId();
                     //Compute a key for the start value in the collection
                     if (stringType) {
-                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getSymbols());
+                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getBrokerPool().getSymbols());
                         IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
                         dbValues.query(query, cb);
                     } else {
-                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getSymbols());
-                        final Value prefixKey = new QNamePrefixValue(collectionId, qnames[j], start.getType(), broker.getSymbols());
+                        final Value startKey = new QNameValue(collectionId, qnames[j], start, broker.getBrokerPool().getSymbols());
+                        final Value prefixKey = new QNamePrefixValue(collectionId, qnames[j], start.getType(), broker.getBrokerPool().getSymbols());
                         final IndexQuery query = new IndexQuery(IndexQuery.GEQ, startKey);
                         dbValues.query(query, prefixKey, cb);
                     }

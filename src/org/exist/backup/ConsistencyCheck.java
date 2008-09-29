@@ -185,10 +185,10 @@ public class ConsistencyCheck {
      * @return null if the document is consistent, an error report otherwise.
      */
     public org.exist.backup.ErrorReport checkXMLTree(DocumentImpl doc) {
-        DOMFile domDb = ((NativeBroker)doc.getBroker()).getDOMFile();
+        DOMFile domDb = ((NativeBroker)broker).getDOMFile();
         try {
             ElementImpl root = (ElementImpl) doc.getDocumentElement();
-            EmbeddedXMLStreamReader reader = doc.getBroker().getXMLStreamReader(root, true);
+            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, true);
             NodeId nodeId;
             boolean attribsAllowed = false;
             int expectedAttribs = 0;
@@ -309,9 +309,9 @@ public class ConsistencyCheck {
                 VariableByteInput istream = store.getAsStream(pointer);
                 DocumentImpl doc = null;
                 if (type == DocumentImpl.BINARY_FILE)
-                    doc = new BinaryDocument(broker);
+                    doc = new BinaryDocument(broker.getBrokerPool());
                 else
-                    doc = new DocumentImpl(broker);
+                    doc = new DocumentImpl(broker.getBrokerPool());
                 doc.read(istream);
                 docCount++;
                 if (checkDocs) {
