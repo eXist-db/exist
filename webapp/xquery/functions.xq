@@ -143,6 +143,8 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
             <productname>Open Source Native XML Database</productname>
             <title>XQuery Function Documentation</title>
             <link rel="stylesheet" type="text/css" href="styles/fundocs.css"/>
+            <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
+			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
             <script type="text/javascript" src="../scripts/yui/utilities.js"/>
             <script type="text/javascript" src="scripts/fundocs.js"/>
         </bookinfo>
@@ -232,6 +234,8 @@ $query as xs:string?) as element() {
             <head>
                 <title>XQuery Function Documentation</title>
                 <link rel="stylesheet" type="text/css" href="styles/fundocs.css"/>
+                <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
+				<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
             </head>
             <body class="f-print">
                 <h1>XQuery Function Documentation</h1>

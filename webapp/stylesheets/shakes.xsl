@@ -8,7 +8,11 @@
 <xsl:template match="PLAY/TITLE"><h1><xsl:apply-templates/></h1></xsl:template>
 
 <xsl:template match="PLAY"><html>
-	<head><title><xsl:value-of select="TITLE"/></title></head>
+	<head>
+		<title><xsl:value-of select="TITLE"/></title>
+		<link rel="shortcut icon" href="resources/exist_icon_16x16.ico"/>
+		<link rel="icon" href="resources/exist_icon_16x16.png" type="image/png"/>
+	</head>
 	<body>
 		<xsl:apply-templates select="TITLE"/>
 		<xsl:apply-templates select="PLAYSUBT"/>

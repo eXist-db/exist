@@ -38,6 +38,8 @@
                     <xsl:value-of select="header/title"/>
                 </title>
                 <link rel="stylesheet" type="text/css" href="{$css}"/>
+            	<link rel="shortcut icon" href="resources/exist_icon_16x16.ico"/>
+            	<link rel="icon" href="resources/exist_icon_16x16.png" type="image/png"/>
                 <xsl:if test="header/style">
                     <xsl:copy-of select="header/style"/>
                 </xsl:if>

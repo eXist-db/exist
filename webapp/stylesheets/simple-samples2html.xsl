@@ -7,7 +7,8 @@
   <html>
    <head>
     <title>Apache Cocoon 2.0.2</title>
-    <link rel="SHORTCUT ICON" href="favicon.ico"/>
+   	<link rel="shortcut icon" href="resources/exist_icon_16x16.ico"/>
+   	<link rel="icon" href="resources/exist_icon_16x16.png" type="image/png"/>
    </head>
    <body bgcolor="#ffffff" link="#0086b2" vlink="#00698c" alink="#743e75">
     <table border="0" cellspacing="2" cellpadding="2" align="center" width="100%">

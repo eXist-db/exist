@@ -62,7 +62,8 @@
 		          	color: #FFFFFF;
 		          }
 		        </style>
-	
+	      		<link rel="shortcut icon" href="resources/exist_icon_16x16.ico"/>
+	      		<link rel="icon" href="resources/exist_icon_16x16.png" type="image/png"/>
 				<title><xsl:value-of select="@title"/></title>
 			</head>
 	

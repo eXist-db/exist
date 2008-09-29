@@ -141,6 +141,8 @@ declare function sandbox:display-page() as element() {
             <title>XQuery Sandbox</title>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <link type="text/css" href="styles/sandbox.css" rel="stylesheet"/>
+            <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
+			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
             <script language="Javascript" type="text/javascript" src="scripts/prototype.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/scriptaculous.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/behaviour.js"/>

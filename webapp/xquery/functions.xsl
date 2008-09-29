@@ -7,6 +7,8 @@
 			<head>
 				<title>XQuery Available Functions</title>
 				<link rel="stylesheet" type="text/css" href="styles/functions.css"/>
+				<link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
+				<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
                 <style>
                     body {
                         margin: 45px 70px;

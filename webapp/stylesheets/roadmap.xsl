@@ -6,6 +6,8 @@
             <head>
                 <title>Roadmap</title>
                 <link rel="stylesheet" type="text/css" href="styles/roadmap.css"/>
+            	<link rel="shortcut icon" href="resources/exist_icon_16x16.ico"/>
+            	<link rel="icon" href="resources/exist_icon_16x16.png" type="image/png"/>
                 <script type="text/javascript" src="styles/niftycube.js"/>
                 <script type="text/javascript">
                     window.onload = function() {

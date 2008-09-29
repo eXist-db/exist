@@ -10,6 +10,8 @@
   <xsl:template match="changes">
     <html>
       <head>
+      	<link rel="shortcut icon" href="resources/exist_icon_16x16.ico"/>
+      	<link rel="icon" href="resources/exist_icon_16x16.png" type="image/png"/>
         <style type="text/css">
           body {
           font-family: sans-serif;
