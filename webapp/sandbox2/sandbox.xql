@@ -143,6 +143,8 @@ declare function sandbox:display-page() as element() {
             <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.3.1/build/datatable/assets/skins/sam/datatable.css"/>
             <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.3.1/build/menu/assets/skins/sam/menu.css"/>
             <link type="text/css" href="styles/sandbox.css" rel="stylesheet"/>
+            <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
+			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
             <script src="http://yui.yahooapis.com/2.3.1/build/yahoo/yahoo-min.js"></script>
             <script src="http://yui.yahooapis.com/2.3.1/build/dom/dom-min.js"></script>
             <script src="http://yui.yahooapis.com/2.3.1/build/event/event-min.js"></script>

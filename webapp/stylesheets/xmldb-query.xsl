@@ -16,6 +16,8 @@
         <html>
             <head>
                 <title><xsl:value-of select="@query"/></title>
+            	<link rel="shortcut icon" href="resources/exist_icon_16x16.ico"/>
+            	<link rel="icon" href="resources/exist_icon_16x16.png" type="image/png"/>
                 <style type="text/css">
                     th {
                         font-family: Arial, Helvetica, sans-serif;

@@ -13,6 +13,8 @@
                     <xsl:value-of select="(bookinfo|articleinfo)/title/text()"/>
                 </title>
                 <link type="text/css" href="{$pathToWebapp}styles/SyntaxHighlighter.css" rel="stylesheet"/>
+            	<link rel="shortcut icon" href="{$pathToWebapp}resources/exist_icon_16x16.ico"/>
+            	<link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png" type="image/png"/>
                 <xsl:variable name="styleref" select="(bookinfo|articleinfo)/style/@href"/>
                 <xsl:choose>
                     <xsl:when test="$styleref">
@@ -22,7 +24,7 @@
                         <link rel="stylesheet" type="text/css" href="{$pathToWebapp}styles/default-style.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
-                <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
+                <xsl:copy-of select="(bookinfo|articleinfo)/link"/>	
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
                 <script type="text/javascript" src="{$pathToWebapp}styles/niftycube.js"/>
                 <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/sh-min.js"/>
