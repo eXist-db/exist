@@ -115,14 +115,15 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private char[] buf = new char[1024];
     private int currentChar = 0;
     private DocumentImpl currentDoc = null;
-
+    private DBBroker broker;
     private IndexController controller;
     private Map ngrams = new TreeMap();
     private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
     private NGramMatchListener matchListener = null;
 
-    public NGramIndexWorker(org.exist.indexing.ngram.NGramIndex index) {
+    public NGramIndexWorker(DBBroker broker, org.exist.indexing.ngram.NGramIndex index) {
+        this.broker = broker;
         this.index = index;
         Arrays.fill(buf, ' ');
     }
@@ -218,7 +219,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 lock.acquire(Lock.WRITE_LOCK);
 
                 NGramQNameKey value = new NGramQNameKey(currentDoc.getCollection().getId(), key.qname,
-                        currentDoc.getBroker().getSymbols(), key.term);
+                        broker.getBrokerPool().getSymbols(), key.term);
                 index.db.append(value, data);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for file " + index.db.getFile().getName(), e);
@@ -249,7 +250,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 lock.acquire(Lock.WRITE_LOCK);
 
                 NGramQNameKey value = new NGramQNameKey(currentDoc.getCollection().getId(), key.qname,
-                        currentDoc.getBroker().getSymbols(), key.term);
+                        broker.getBrokerPool().getSymbols(), key.term);
                 boolean changed = false;
                 os.clear();
                 VariableByteInput is = index.db.getAsStream(value);
@@ -377,7 +378,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final int collectionId = ((org.exist.collections.Collection) iter.next()).getId();
             for (int i = 0; i < qnames.size(); i++) {
                 QName qname = (QName) qnames.get(i);
-                NGramQNameKey key = new NGramQNameKey(collectionId, qname, context.getBroker().getSymbols(), query);
+                NGramQNameKey key = new NGramQNameKey(collectionId, qname, context.getBroker().getBrokerPool().getSymbols(), query);
                 final Lock lock = index.db.getLock();
                 try {
                     lock.acquire(Lock.READ_LOCK);
@@ -449,13 +450,13 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else if (end == null) {
                     Value startRef = new NGramQNameKey(collectionId, (QName)qnames.get(q),
-                    		context.getBroker().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
+                    		context.getBroker().getBrokerPool().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else {
                     Value startRef = new NGramQNameKey(collectionId, (QName)qnames.get(q), 
-                    	context.getBroker().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
+                    	context.getBroker().getBrokerPool().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
                     Value endRef = new NGramQNameKey(collectionId, (QName)qnames.get(q), 
-                    		context.getBroker().getSymbols(), ((StringValue)end).getStringValue().toLowerCase());
+                    		context.getBroker().getBrokerPool().getSymbols(), ((StringValue)end).getStringValue().toLowerCase());
                     query = new IndexQuery(IndexQuery.BW, startRef, endRef);
                 }
                 try {
@@ -513,7 +514,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
             return null;
-        IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(node.getDocument().getBroker());
+        IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
             Map config = (Map) indexConf.getCustomIndexSpec(NGramIndex.ID);
             if (config == null)
@@ -639,7 +640,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     	currentDoc = document;
         //config = null;
         contentStack = null;
-        IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
+        IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null)
             config = (Map) indexConf.getCustomIndexSpec(org.exist.indexing.ngram.NGramIndex.ID);
         mode = newMode;

@@ -278,7 +278,7 @@ public class Node extends Item {
 		DBBroker broker = null;
 		try {
 			broker = db.acquireBroker();
-			Integer fragmentationLimit = (Integer) broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+			Integer fragmentationLimit = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
 			if (fragmentationLimit == null) fragmentationLimit = Integer.valueOf(0);
 			DocumentImpl doc = ((NodeProxy) item).getDocument();
 			if (doc.getMetadata().getSplitCount() > fragmentationLimit) broker.defragXMLResource(tx.tx, doc);

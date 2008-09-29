@@ -40,6 +40,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
+import org.exist.EXistException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -665,19 +666,27 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @return a <code>String</code> value
      */
     public String getNodeValue() {
-        if (isDocument()) {
-            Element e = doc.getDocumentElement();
-            if (e instanceof NodeProxy) {
-		return doc.getBroker().getNodeValue(new StoredNode((NodeProxy)e), false);
-            } else if (e != null) {
-		return doc.getBroker().getNodeValue((ElementImpl)e, false);
-            } else
-            	// probably a binary resource
-            	return "";
-        } else {
-            return doc.getBroker().getNodeValue(new StoredNode(this), false);
+        DBBroker broker = null;
+        try {
+            broker = doc.getBrokerPool().get(null);
+            if (isDocument()) {
+                Element e = doc.getDocumentElement();
+                if (e instanceof NodeProxy) {
+                    return broker.getNodeValue(new StoredNode((NodeProxy)e), false);
+                } else if (e != null) {
+                    return broker.getNodeValue((ElementImpl)e, false);
+                } else
+                    // probably a binary resource
+                    return "";
+            } else {
+                return broker.getNodeValue(new StoredNode(this), false);
+            }
+        } catch (EXistException e) {
+        } finally {
+            doc.getBrokerPool().release(broker);
         }
-    }     
+        return "";
+    }
 
     /**
      * The method <code>getNodeValueSeparated</code>
@@ -685,21 +694,29 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @return a <code>String</code> value
      */
     public String getNodeValueSeparated() {
-        return doc.getBroker().getNodeValue(new StoredNode(this), true);
-    }    
+        DBBroker broker = null;
+        try {
+            broker = doc.getBrokerPool().get(null);
+            return broker.getNodeValue(new StoredNode(this), true);
+        } catch (EXistException e) {
+        } finally {
+            doc.getBrokerPool().release(broker);
+        }
+        return "";
+    }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#getStringValue()
      */
     public String getStringValue() {
-	return getNodeValue();
+	    return getNodeValue();
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#convertTo(int)
      */
     public AtomicValue convertTo(int requiredType) throws XPathException {
-	return new StringValue(getNodeValue()).convertTo(requiredType);
+	    return new StringValue(getNodeValue()).convertTo(requiredType);
     }
 
     /* (non-Javadoc)

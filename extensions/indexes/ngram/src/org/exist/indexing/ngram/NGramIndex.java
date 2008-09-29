@@ -97,7 +97,7 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
 
     public IndexWorker getWorker(DBBroker broker) {
     	//TODO : ensure singleton ? a pool ?    	
-        return new NGramIndexWorker(this);
+        return new NGramIndexWorker(broker, this);
     }
 
     public int getN() {
