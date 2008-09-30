@@ -69,6 +69,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private LuceneIndex index;
     private IndexController controller;
 
+    private LuceneMatchListener matchListener = null;
+    
     private DocumentImpl currentDoc = null;
     private int mode = 0;
     
@@ -215,7 +217,22 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        boolean needToFilter = false;
+        Match nextMatch = proxy.getMatches();
+        while (nextMatch != null) {
+            if (nextMatch.getIndexId() == LuceneIndex.ID) {
+                needToFilter = true;
+                break;
+            }
+            nextMatch = nextMatch.getNextMatch();
+        }
+        if (!needToFilter)
+            return null;
+        if (matchListener == null)
+            matchListener = new LuceneMatchListener(index, broker, proxy);
+        else
+            matchListener.reset(broker, proxy);
+        return matchListener;
     }
 
     protected void removeDocument(int docId) {
