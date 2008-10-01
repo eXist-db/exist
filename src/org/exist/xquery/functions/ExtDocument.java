@@ -110,21 +110,24 @@ public class ExtDocument extends Function {
         boolean lockOnLoad = context.lockDocumentsOnLoad();
         boolean cacheIsValid = false;
 	    if (getArgumentCount() == 0) {
-	        if(cached != null) {
-	            result = cached;
-	            docs = cachedDocs;
-	        } else {
+            // TODO: disabled cache for now as it may cause concurrency issues
+            // better use compile-time inspection and maybe a pragma to mark those
+            // sections in the query that can be safely cached
+//	        if(cached != null) {
+//	            result = cached;
+//	            docs = cachedDocs;
+//	        } else {
 		        docs = new DocumentSet();
 		        context.getBroker().getAllXMLResources(docs);
-	        }
+//	        }
 	    } else {
 		    List args = getParameterValues(contextSequence, contextItem);
-			if(cachedArgs != null)
-			    cacheIsValid = compareArguments(cachedArgs, args);
-			if(cacheIsValid) {
-			    result = cached;
-			    docs = cachedDocs;
-			} else {
+//			if(cachedArgs != null)
+//			    cacheIsValid = compareArguments(cachedArgs, args);
+//			if(cacheIsValid) {
+//			    result = cached;
+//			    docs = cachedDocs;
+//			} else {
 				docs = new DocumentSet();
 				for(int i = 0; i < args.size(); i++) {
 					try {
@@ -150,7 +153,7 @@ public class ExtDocument extends Function {
 					}
 				}
 				cachedArgs = args;
-			}
+//			}
 	    }
 	    try {
             if(!cacheIsValid)
