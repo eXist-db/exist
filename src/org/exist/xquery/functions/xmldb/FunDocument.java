@@ -106,13 +106,16 @@ public class FunDocument extends Function {
         boolean lockOnLoad = context.lockDocumentsOnLoad();
         boolean cacheIsValid = false;
 	    if (getArgumentCount() == 0) {
-	        if(cached != null) {
-	            result = cached;
-	            docs = cachedDocs;
-	        } else {
+            // TODO: disabled cache for now as it may cause concurrency issues
+            // better use compile-time inspection and maybe a pragma to mark those
+            // sections in the query that can be safely cached
+//	        if(cached != null) {
+//	            result = cached;
+//	            docs = cachedDocs;
+//	        } else {
 		        docs = new DocumentSet();
 		        context.getBroker().getAllXMLResources(docs);
-	        }
+//	        }
 	    } else {
 		    List args = getParameterValues(contextSequence, contextItem);
 			if(cachedArgs != null)

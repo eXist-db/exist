@@ -81,7 +81,6 @@ public class ExtCollection extends Function {
 	private List cachedArgs = null;
 
 	private Sequence cached = null;
-	private DocumentSet cachedDocs = null;
 	private UpdateListener listener = null;
 	
 	/**
@@ -110,16 +109,19 @@ public class ExtCollection extends Function {
         }       
 
         List args = getParameterValues(contextSequence, contextItem);
-		boolean cacheIsValid = false;
-		if(cachedArgs != null)
-		    cacheIsValid = compareArguments(cachedArgs, args);
-		if(cacheIsValid) {
-		    // if the expression occurs in a nested context, we might have cached the
-            // document set
-            if (context.getProfiler().isEnabled())
-                context.getProfiler().end(this, "fn:collection: loading documents", cached);                 
-		    return cached;
-        }
+        // TODO: disabled cache for now as it may cause concurrency issues
+        // better use compile-time inspection and maybe a pragma to mark those
+        // sections in the query that can be safely cached
+//		boolean cacheIsValid = false;
+//		if(cachedArgs != null)
+//		    cacheIsValid = compareArguments(cachedArgs, args);
+//		if(cacheIsValid) {
+//		    // if the expression occurs in a nested context, we might have cached the
+//            // document set
+//            if (context.getProfiler().isEnabled())
+//                context.getProfiler().end(this, "fn:collection: loading documents", cached);
+//		    return cached;
+//        }
         
 		// build the document set
 		DocumentSet docs = new DocumentSet(521);
@@ -166,7 +168,6 @@ public class ExtCollection extends Function {
 		}
 		cached = result;
 		cachedArgs = args;
-        cachedDocs = docs;
         registerUpdateListener();
 
         if (context.getProfiler().isEnabled())
@@ -211,7 +212,6 @@ public class ExtCollection extends Function {
             listener = new UpdateListener() {
                 public void documentUpdated(DocumentImpl document, int event) {
                     // clear all
-                    cachedDocs = null;
                     cached = null;
                     cachedArgs = null;
                 }
@@ -237,7 +237,6 @@ public class ExtCollection extends Function {
      */
     public void resetState(boolean postOptimization) {
         cached = null;
-        cachedDocs = null;
         cachedArgs = null;
     }
 }
