@@ -70,12 +70,19 @@ public class LuceneIndexTest {
             "   <item id='3'><description>Cabinet</description>\n<condition>bad</condition></item>" +
             "</test>";
 
+    private static String XML3 =
+            "<section>" +
+            "   <head>TITLE IN UPPERCASE LETTERS</head>" +
+            "   <p>UPPERCASE PARAGRAPH</p>" +
+            "</section>";
+
     private static String COLLECTION_CONFIG1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
     	"		<fulltext default=\"none\">" +
         "		</fulltext>" +
         "       <lucene>" +
+        "           <analyzer class=\"org.apache.lucene.analysis.SimpleAnalyzer\"/>" +
         "           <text qname=\"p\"/>" +
         "           <text qname=\"head\"/>" +
         "           <text qname=\"@rend\"/>" +
@@ -102,6 +109,19 @@ public class LuceneIndexTest {
         "       </lucene>" +
         "	</index>" +
     	"</collection>";
+
+    private static String COLLECTION_CONFIG3 =
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+        "	<index>" +
+        "		<fulltext default=\"none\">" +
+        "		</fulltext>" +
+        "       <lucene>" +
+        "           <analyzer id=\"whitespace\" class=\"org.apache.lucene.analysis.WhitespaceAnalyzer\"/>" +
+        "           <text qname=\"head\" analyzer=\"whitespace\"/>" +
+        "           <text qname=\"p\"/>" +
+        "       </lucene>" +
+        "	</index>" +
+        "</collection>";
 
     private static BrokerPool pool;
     private static Collection root;
@@ -139,6 +159,38 @@ public class LuceneIndexTest {
             assertEquals(1, seq.getItemCount());
 
             System.out.println("Test PASSED.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
+    public void analyzers() {
+        DocumentSet docs = configureAndStore(COLLECTION_CONFIG3, XML3, "test.xml");
+        DBBroker broker = null;
+        try {
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+
+            checkIndex(docs, broker, new QName[] { new QName("head", "") }, "TITLE", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "uppercase", 1);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq = xquery.execute("/section[ft:query(p, 'UPPERCASE')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/section[ft:query(head, 'TITLE')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/section[ft:query(head, 'title')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

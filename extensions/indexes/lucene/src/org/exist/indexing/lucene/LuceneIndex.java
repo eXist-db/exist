@@ -2,7 +2,7 @@ package org.exist.indexing.lucene;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
@@ -15,6 +15,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class LuceneIndex extends AbstractIndex {
     public final static String ID = LuceneIndex.class.getName();
 
     protected Directory directory;
-    protected Analyzer analyzer;
+    protected Analyzer defaultAnalyzer;
 
     protected IndexWriter cachedWriter = null;
     protected int writerUseCount = 0;
@@ -44,7 +45,17 @@ public class LuceneIndex extends AbstractIndex {
         super.configure(pool, dataDir, config);
         if (LOG.isDebugEnabled())
             LOG.debug("Configuring Lucene index");
-        analyzer = new SimpleAnalyzer();
+
+        NodeList nl = config.getElementsByTagName("analyzer");
+        if (nl.getLength() > 0) {
+            Element node = (Element) nl.item(0);
+            defaultAnalyzer = AnalyzerConfig.configureAnalyzer(node);
+        }
+
+        if (defaultAnalyzer == null)
+            defaultAnalyzer = new StandardAnalyzer();
+        if (LOG.isDebugEnabled())
+            LOG.debug("Using default analyzer: " + defaultAnalyzer.getClass().getName());
     }
 
     public void open() throws DatabaseConfigurationException {
@@ -83,7 +94,16 @@ public class LuceneIndex extends AbstractIndex {
     }
 
     public void remove() throws DBException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        close();
+        try {
+            String[] files = directory.list();
+            for (int i = 0; i < files.length; i++) {
+                String file = files[i];
+                directory.deleteFile(file);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public IndexWorker getWorker(DBBroker broker) {
@@ -94,8 +114,8 @@ public class LuceneIndex extends AbstractIndex {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    protected Analyzer getAnalyzer() {
-        return analyzer;
+    protected Analyzer getDefaultAnalyzer() {
+        return defaultAnalyzer;
     }
     
     protected synchronized IndexWriter getWriter() throws IOException {
@@ -108,7 +128,7 @@ public class LuceneIndex extends AbstractIndex {
         if (cachedWriter != null) {
             writerUseCount++;
         } else {
-            cachedWriter = new IndexWriter(directory, true, analyzer);
+            cachedWriter = new IndexWriter(directory, true, defaultAnalyzer);
             writerUseCount = 1;
         }
         notifyAll();

@@ -13,6 +13,7 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.analysis.Analyzer;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -44,7 +45,6 @@ import org.exist.util.Occurrences;
 import org.exist.util.XMLString;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -62,10 +62,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
 
-    private final static String CONFIG_ROOT = "lucene";
-    private final static String INDEX_ELEMENT = "text";
-    private static final String QNAME_ATTR = "qname";
-    
+
     private LuceneIndex index;
     private IndexController controller;
 
@@ -74,7 +71,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private DocumentImpl currentDoc = null;
     private int mode = 0;
     
-    private Map config;
+    private LuceneConfig config;
     private Stack contentStack = null;
     private Set nodesToRemove = null;
     private List nodesToWrite = null;
@@ -97,39 +94,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         LOG.debug("Configuring lucene index");
-        // We use a map to store the QNames to be indexed
-        Map map = new TreeMap();
-        parseConfig(configNodes, namespaces, map);
-        return map;
+        config = new LuceneConfig(configNodes, namespaces);
+        return config;
     }
 
-    /**
-     * Parse a configuration entry. The main configuration entries for this index
-     * are the &lt;text&gt; elements. They may be enclosed by a &lt;lucene&gt; element.
-     * 
-     * @param configNodes
-     * @param namespaces
-     * @param map
-     * @throws DatabaseConfigurationException
-     */
-    private void parseConfig(NodeList configNodes, Map namespaces, Map map) throws DatabaseConfigurationException {
-        Node node;
-        for(int i = 0; i < configNodes.getLength(); i++) {
-            node = configNodes.item(i);
-            if(node.getNodeType() == Node.ELEMENT_NODE) {
-                if (CONFIG_ROOT.equals(node.getLocalName()))
-                    parseConfig(node.getChildNodes(), namespaces, map);
-                else if (INDEX_ELEMENT.equals(node.getLocalName())) {
-                    String qname = ((Element)node).getAttribute(QNAME_ATTR);
-                    if (qname == null || qname.length() == 0)
-                        throw new DatabaseConfigurationException("Configuration error: element " + node.getNodeName() +
-                                " must have an attribute " + QNAME_ATTR);
-                    LuceneIndexConfig config = new LuceneIndexConfig(namespaces, qname);
-                    map.put(config.getQName(), config);
-                }
-            }
-        }
-    }
 
     public void flush() {
         switch (mode) {
@@ -155,7 +123,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         contentStack = null;
         IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
         if (indexConf != null)
-            config = (Map) indexConf.getCustomIndexSpec(LuceneIndex.ID);
+            config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
         mode = newMode;
     }
 
@@ -192,7 +160,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         int len = node.getNodeType() == Node.ELEMENT_NODE && !includeSelf ? path.length() - 1 : path.length();
         for (int i = 0; i < len; i++) {
             QName qn = path.getComponent(i);
-            if (config.get(qn) != null) {
+            if (config.matches(qn)) {
                 reindexRequired = true;
                 break;
             }
@@ -201,7 +169,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             StoredNode topMost = null;
             StoredNode currentNode = node;
             while (currentNode != null) {
-                if (config.get(currentNode.getQName()) != null)
+                if (config.matches(currentNode.getQName()))
                     topMost = currentNode;
                 currentNode = currentNode.getParentStoredNode();
             }
@@ -333,7 +301,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (int i = 0; i < qnames.size(); i++) {
                 QName qname = (QName) qnames.get(i);
                 String field = encodeQName(qname);
-                QueryParser parser = new QueryParser(field, index.getAnalyzer());
+                Analyzer analyzer = getAnalyzer(qname, context.getBroker(), docs);
+                LOG.debug("Using analyzer: " + analyzer.getClass().getName());
+                QueryParser parser = new QueryParser(field, analyzer);
                 Query query = parser.parse(queryStr);
                 Hits hits = searcher.search(query);
                 if (LOG.isDebugEnabled())
@@ -408,16 +378,29 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Collection collection = (Collection) i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
-                Map config = (Map) idxConf.getCustomIndexSpec(LuceneIndex.ID);
+                LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
                 if (config != null) {
-                    for (Iterator ci = config.keySet().iterator(); ci.hasNext();) {
-                        QName qn = (QName) ci.next();
-                        indexes.add(qn);
-                    }
+                    config.getDefinedIndexes(indexes);
                 }
             }
         }
         return indexes;
+    }
+
+    private Analyzer getAnalyzer(QName qname, DBBroker broker, DocumentSet docs) {
+        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = (Collection) i.next();
+            IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            if (idxConf != null) {
+                LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
+                if (config != null) {
+                    Analyzer analyzer = config.getAnalyzer(qname);
+                    if (analyzer != null)
+                        return analyzer;
+                }
+            }
+        }
+        return index.getDefaultAnalyzer();
     }
 
     public boolean checkIndex(DBBroker broker) {
@@ -554,12 +537,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
                 String contentField = encodeQName(pending.qname);
 
+                Analyzer analyzer = config.getAnalyzer(pending.qname);
+
                 doc.add(new Field("docId", Integer.toString(currentDoc.getDocId()),
                         Field.Store.COMPRESS,  Field.Index.UN_TOKENIZED));
                 doc.add(new Field("nodeId", data, Field.Store.YES));
                 doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.TOKENIZED));
 
-                writer.addDocument(doc);
+                if (analyzer == null)
+                    writer.addDocument(doc);
+                else
+                    writer.addDocument(doc, analyzer);
             }
         } catch (IOException e) {
             LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
@@ -581,7 +569,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private class LuceneStreamListener extends AbstractStreamListener {
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
-            if (mode == STORE && config != null && config.get(element.getQName()) != null) {
+            if (mode == STORE && config != null && config.matches(element.getQName())) {
                 if (contentStack == null) contentStack = new Stack();
                 XMLString contentBuf = new XMLString();
                 contentStack.push(contentBuf);
@@ -590,7 +578,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
-            if (mode != REMOVE_ALL_NODES && config != null && config.get(element.getQName()) != null) {
+            if (mode != REMOVE_ALL_NODES && config != null && config.matches(element.getQName())) {
                 if (mode == REMOVE_SOME_NODES) {
                     nodesToRemove.add(element.getNodeId());
                 } else {
@@ -602,7 +590,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
-            if (mode != REMOVE_ALL_NODES && config != null && config.get(attrib.getQName()) != null) {
+            if (mode != REMOVE_ALL_NODES && config != null && config.matches(attrib.getQName())) {
                 if (mode == REMOVE_SOME_NODES) {
                     nodesToRemove.add(attrib.getNodeId());
                 } else {

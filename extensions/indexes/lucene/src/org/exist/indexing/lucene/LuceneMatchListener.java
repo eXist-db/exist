@@ -180,7 +180,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
         // Use Lucene's analyzer to tokenize the text and find matching query terms
-        TokenStream stream = index.getAnalyzer().tokenStream(null, new StringReader(buf.toString()));
+        TokenStream stream = index.getDefaultAnalyzer().tokenStream(null, new StringReader(buf.toString()));
         Token token;
         try {
 
