@@ -3,14 +3,24 @@ package org.exist.indexing.lucene;
 import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
 import org.exist.util.DatabaseConfigurationException;
+import org.w3c.dom.Element;
 
 import java.util.Map;
 
 public class LuceneIndexConfig {
 
-    private QName qname;
+    private static final String QNAME_ATTR = "qname";
+    private final static String ANALYZER_ID_ATTR = "analyzer";
 
-    public LuceneIndexConfig(Map namespaces, String name) throws DatabaseConfigurationException {
+    private QName qname;
+    private String analyzerId = null;
+
+    public LuceneIndexConfig(Element config, Map namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
+        String name = config.getAttribute(QNAME_ATTR);
+        if (name == null || name.length() == 0)
+            throw new DatabaseConfigurationException("Configuration error: element " + config.getNodeName() +
+                    " must have an attribute " + QNAME_ATTR);
+
         boolean isAttribute = false;
         if (name.startsWith("@")) {
             isAttribute = true;
@@ -29,10 +39,21 @@ public class LuceneIndexConfig {
         qname = new QName(localName, namespaceURI, prefix);
         if (isAttribute)
             qname.setNameType(ElementValue.ATTRIBUTE);
+
+        String id = config.getAttribute(ANALYZER_ID_ATTR);
+        if (id != null && id.length() > 0) {
+            if (analyzers.getAnalyzerById(id) == null)
+                throw new DatabaseConfigurationException("No analyzer configured for id " + id);
+            analyzerId = id;
+        }
     }
 
     public QName getQName() {
         return qname;
+    }
+
+    public String getAnalyzerId() {
+        return analyzerId;
     }
 }
 
