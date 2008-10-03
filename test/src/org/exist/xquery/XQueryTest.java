@@ -2945,6 +2945,69 @@ public class XQueryTest extends XMLTestCase {
         }
         
     }
+    
+    // http://sourceforge.net/support/tracker.php?aid=1841635
+    public void bugtestResolveBaseURI_1841635() {
+        String xmldoc = "<Root><Node1><Node2><Node3></Node3></Node2></Node1></Root>";
+
+       XPathQueryService service = null;
+        
+        try {
+            service = storeXMLStringAndGetQueryService("baseuri.xml", xmldoc);
+            
+            String query="document('/db/test/baseuri.xml')/Root/Node1/base-uri()";
+            
+           
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals("/db/test/baseuri.xml", result.getResource(0).getContent().toString());
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+        
+        try {
+            String query="document('/db/test/baseuri.xml')/Root/Node1/base-uri()";
+
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals("/db/test/baseuri.xml", result.getResource(0).getContent().toString());
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+        
+        try {
+            String query="document('/db/test/baseuri.xml')/Root/Node1/Node2/base-uri()";
+
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals("/db/test/baseuri.xml", result.getResource(0).getContent().toString());
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+        
+        try {
+            String query="document('/db/test/baseuri.xml')/Root/Node1/Node2/Node3/base-uri()";
+
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals("/db/test/baseuri.xml", result.getResource(0).getContent().toString());
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+        
+    }
 
 
     // ======================================
