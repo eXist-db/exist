@@ -238,6 +238,10 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			{
 				// If a form POST , and not a document POST
 				String contentType = request.getContentType().toLowerCase();
+                int semicolon = contentType.indexOf(';');
+                if (semicolon>0) {
+                    contentType = contentType.substring(0,semicolon).trim();
+                }
 				if( contentType.equals("application/x-www-form-urlencoded")
 						&& request.getHeader("ContentType") == null )
 				{
