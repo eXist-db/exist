@@ -141,10 +141,13 @@ public class LuceneMatchListener extends AbstractMatchListener {
                         throw new SAXException("start offset out of bounds");
                     super.characters(s.substring(pos, offset.startOffset));
                 }
+                int end = offset.endOffset;
+                if (end > s.length())
+                    end = s.length();
                 super.startElement(MATCH_ELEMENT, null);
-                super.characters(s.substring(offset.startOffset, offset.endOffset));
+                super.characters(s.substring(offset.startOffset, end));
                 super.endElement(MATCH_ELEMENT);
-                pos = offset.endOffset;
+                pos = end;
                 offset = offset.next;
             }
             if (pos < seq.length())

@@ -13,6 +13,7 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
@@ -302,56 +303,80 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 QName qname = (QName) qnames.get(i);
                 String field = encodeQName(qname);
                 Analyzer analyzer = getAnalyzer(qname, context.getBroker(), docs);
-                LOG.debug("Using analyzer: " + analyzer.getClass().getName());
                 QueryParser parser = new QueryParser(field, analyzer);
                 Query query = parser.parse(queryStr);
-                Hits hits = searcher.search(query);
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Found " + hits.length());
-                for (int j = 0; j < hits.length(); j++) {
-                    Document doc = hits.doc(j);
-                    Field fDocId = doc.getField("docId");
-                    int docId = Integer.parseInt(fDocId.stringValue());
-                    DocumentImpl storedDocument = docs.getDoc(docId);
-                    if (storedDocument == null)
-                        continue;
-                    NodeId nodeId = readNodeId(doc);
-                    NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
-                    // if a context set is specified, we can directly check if the
-                    // matching node is a descendant of one of the nodes
-                    // in the context set.
-                    if (contextSet != null) {
-                        int sizeHint = contextSet.getSizeHint(storedDocument);
-                        if (returnAncestor) {
-                            NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                            if (parentNode != null) {
-                                LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
-                                match.setScore(hits.score(j));
-                                parentNode.addMatch(match);
-                                resultSet.add(parentNode, sizeHint);
-                                if (Expression.NO_CONTEXT_ID != contextId) {
-                                    parentNode.deepCopyContext(storedNode, contextId);
-                                } else
-                                    parentNode.copyContext(storedNode);
-                            }
-                        } else {
-                            LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
-                            match.setScore(hits.score(j));
-                            storedNode.addMatch(match);
-                            resultSet.add(storedNode, sizeHint);
-                        }
-                    } else {
-                        LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
-                        match.setScore(hits.score(j));
-                        storedNode.addMatch(match);
-                        resultSet.add(storedNode);
-                    }
-                }
+                searcher.search(query, new LuceneHitCollector(searcher, contextId, docs, contextSet, resultSet, returnAncestor, query));
             }
         } finally {
             index.releaseSearcher(searcher);
         }
         return resultSet;
+    }
+
+    private class LuceneHitCollector extends HitCollector {
+
+        private IndexSearcher searcher;
+        private int contextId;
+        private DocumentSet docs;
+        private NodeSet contextSet;
+        private NodeSet resultSet;
+        private boolean returnAncestor;
+        private Query query;
+
+        private LuceneHitCollector(IndexSearcher searcher, int contextId, DocumentSet docs, NodeSet contextSet, NodeSet resultSet,
+                                   boolean returnAncestor, Query query) {
+            this.searcher = searcher;
+            this.contextId = contextId;
+            this.docs = docs;
+            this.contextSet = contextSet;
+            this.resultSet = resultSet;
+            this.returnAncestor = returnAncestor;
+            this.query = query;
+        }
+
+        public void collect(int i, float score) {
+            try {
+                Document doc = searcher.doc(i);
+                Field fDocId = doc.getField("docId");
+                int docId = Integer.parseInt(fDocId.stringValue());
+                DocumentImpl storedDocument = docs.getDoc(docId);
+                if (storedDocument == null)
+                    return;
+                NodeId nodeId = readNodeId(doc);
+                NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+                // if a context set is specified, we can directly check if the
+                // matching node is a descendant of one of the nodes
+                // in the context set.
+                if (contextSet != null) {
+                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                    if (returnAncestor) {
+                        NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                        if (parentNode != null) {
+                            LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
+                            match.setScore(score);
+                            parentNode.addMatch(match);
+                            resultSet.add(parentNode, sizeHint);
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                parentNode.deepCopyContext(storedNode, contextId);
+                            } else
+                                parentNode.copyContext(storedNode);
+                        }
+                    } else {
+                        LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
+                        match.setScore(score);
+                        storedNode.addMatch(match);
+                        resultSet.add(storedNode, sizeHint);
+                    }
+                } else {
+                    LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
+                    match.setScore(score);
+                    storedNode.addMatch(match);
+                    resultSet.add(storedNode);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private NodeId readNodeId(Document doc) {
