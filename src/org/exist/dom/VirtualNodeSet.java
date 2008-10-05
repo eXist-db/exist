@@ -290,6 +290,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
      */
     public NodeProxy parentWithChild(NodeProxy proxy, boolean restrictToDirectParent, boolean includeSelf,
                                      int level) {
+        if (realSet != null && realSetIsComplete)
+            return realSet.parentWithChild(proxy, restrictToDirectParent, includeSelf, level);
+
         NodeProxy first = getFirstParent(proxy, null, includeSelf, restrictToDirectParent, 0);
         if (first != null)
             //TODO : should we set an empty cardinality here ?
@@ -307,7 +310,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeProxy</code> value
      */
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean restrictToDirectParent, boolean includeSelf) {
-    	NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, includeSelf, restrictToDirectParent, 0);
+        if (realSet != null && realSetIsComplete)
+            return realSet.parentWithChild(doc, nodeId, restrictToDirectParent, includeSelf);
+        
+        NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, includeSelf, restrictToDirectParent, 0);
         if (first != null)
             //TODO : should we set an empty cardinality here ?
             addInternal(first);
