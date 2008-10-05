@@ -293,7 +293,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         List qnames, String queryStr, int axis)
         throws IOException, ParseException {
         if (qnames == null || qnames.isEmpty())
-            qnames = getDefinedIndexes(context.getBroker(), docs);
+            qnames = getDefinedIndexes();
         NodeSet resultSet = new NewArrayNodeSet();
         boolean returnAncestor = axis == NodeSet.ANCESTOR;
         IndexSearcher searcher = null;
@@ -393,21 +393,23 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * Check index configurations for all collection in the given DocumentSet and return
      * a list of QNames, which have indexes defined on them.
      *
-     * @param broker
-     * @param docs
-     * @return
+     * @return List of QName objects on which indexes are defined
      */
-    private List getDefinedIndexes(DBBroker broker, DocumentSet docs) {
+    private List getDefinedIndexes() {
         List indexes = new ArrayList(20);
-        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
-            IndexSpec idxConf = collection.getIndexConfiguration(broker);
-            if (idxConf != null) {
-                LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
-                if (config != null) {
-                    config.getDefinedIndexes(indexes);
-                }
+        IndexReader reader = null;
+        try {
+            reader = index.getReader();
+            java.util.Collection fields = reader.getFieldNames(IndexReader.FieldOption.INDEXED);
+            for (Iterator i = fields.iterator(); i.hasNext(); ) {
+                String field = (String) i.next();
+                if (!"docId".equals(field))
+                    indexes.add(decodeQName(field));
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            index.releaseReader(reader);
         }
         return indexes;
     }
@@ -435,7 +437,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
         List qnames = hints == null ? null : (List)hints.get(QNAMES_KEY);
         if (qnames == null || qnames.isEmpty())
-            qnames = getDefinedIndexes(context.getBroker(), docs);
+            qnames = getDefinedIndexes();
         //Expects a StringValue
     	Object start = hints == null ? null : hints.get(START_VALUE);
         Object end = hints == null ? null : hints.get(END_VALUE);
@@ -589,6 +591,19 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         short localNameId = symbols.getSymbol(qname.getLocalName());
         long nameId = qname.getNameType() | (((int) namespaceId) & 0xFFFF) << 16 | (((long) localNameId) & 0xFFFFFFFFL) << 32;
         return Long.toHexString(nameId);
+    }
+
+    private QName decodeQName(String s) {
+        SymbolTable symbols = index.getBrokerPool().getSymbols();
+        long l = Long.parseLong(s, 16);
+        short namespaceId = (short) ((l >>> 16) & 0xFFFFL);
+        short localNameId = (short) ((l >>> 32) & 0xFFFFL);
+        byte type = (byte) (l & 0xFFL);
+        String namespaceURI = symbols.getNamespace(namespaceId);
+        String localName = symbols.getName(localNameId);
+        QName qname = new QName(localName, namespaceURI, "");
+        qname.setNameType(type);
+        return qname;
     }
 
     private class LuceneStreamListener extends AbstractStreamListener {
