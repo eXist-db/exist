@@ -1309,9 +1309,18 @@ public class SOAPServer
          */
         private byte[] getXQWSData(DBBroker broker, BinaryDocument docXQWS)
         {
-        	byte[] data = broker.getBinaryResource(docXQWS);
-        	
-        	return data;
+           try {
+               InputStream is = broker.getBinaryResource(docXQWS);
+               byte [] data = new byte[(int)broker.getBinaryResourceSize(docXQWS)];
+               is.read(data);
+               is.close();
+
+                   return data;
+           } catch (IOException ex) {
+              // TODO: where should this go?
+              ex.printStackTrace();
+           }
+           return null;
         }
         
         /**

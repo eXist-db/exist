@@ -23,6 +23,7 @@ package org.exist.storage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.FileInputStream;
 
 import junit.framework.TestCase;
@@ -106,7 +107,11 @@ public class RecoverBinaryTest extends TestCase {
         	assertNotNull(broker);
             BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
-            String data = new String(broker.getBinaryResource(binDoc));
+            InputStream is = broker.getBinaryResource(binDoc);
+            byte [] bdata = new byte[(int)broker.getBinaryResourceSize(binDoc)];
+            is.read(bdata);
+            is.close();
+            String data = new String(bdata);
             assertNotNull(data);
             System.out.println(data);
 		} catch (Exception e) {            

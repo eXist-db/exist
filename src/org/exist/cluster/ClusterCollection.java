@@ -165,7 +165,11 @@ public final class ClusterCollection extends Collection {
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
 			XmldbURI name, byte[] data, String mimeType) throws EXistException,
             PermissionDeniedException, LockException, TriggerException {
+       try {
         return collection.addBinaryResource(transaction, broker, name, data, mimeType);
+       } catch (IOException ex) {
+          throw new EXistException("Cannot add binary due to I/O error.",ex);
+       }
     }
 
     public Lock getLock() {

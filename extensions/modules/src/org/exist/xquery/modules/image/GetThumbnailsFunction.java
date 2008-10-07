@@ -2,6 +2,7 @@ package org.exist.xquery.modules.image;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -213,11 +214,10 @@ public class GetThumbnailsFunction extends BasicFunction {
 						binImage = (BinaryDocument) docImage;
 
 						// get a byte array representing the image
-						imgData = dbbroker.getBinaryResource(binImage);
 
 						try {
-							image = ImageIO.read(new ByteArrayInputStream(
-									imgData));
+                                                   InputStream is = dbbroker.getBinaryResource(binImage);
+							image = ImageIO.read(is);
 						} catch (IOException ioe) {
 							throw new XPathException(getASTNode(),ioe.getMessage());
 						}

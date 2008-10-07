@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.compression;
 
+import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
@@ -210,9 +211,13 @@ public class TarFunction extends BasicFunction {
 			tos.write(strDoc.getBytes());
 		} else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary file
-			byte[] data = context.getBroker().getBinaryResource(
-					(BinaryDocument) doc);
-			tos.write(data);
+                        InputStream is = context.getBroker().getBinaryResource((BinaryDocument)doc);
+			byte[] data = new byte[16384];
+                        int len = 0;
+                        while ((len=is.read(data,0,data.length))>0) {
+			   tos.write(data,0,len);
+                        }
+                        is.close();
 		}
 
 		// close the entry in the Tar

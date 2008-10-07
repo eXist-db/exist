@@ -21,6 +21,7 @@
  */
 package org.exist.source;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,18 +109,22 @@ public class DBSource extends AbstractSource {
      * @see org.exist.source.Source#getReader()
      */
     public Reader getReader() throws IOException {
-        byte[] data = broker.getBinaryResource(doc);
-        ByteArrayInputStream is = new ByteArrayInputStream(data);
-        checkEncoding(is);
-        is.reset();
-        return new InputStreamReader(is, encoding);
+        InputStream is = broker.getBinaryResource(doc);
+        BufferedInputStream bis = new BufferedInputStream(is);
+        bis.mark(64);
+        checkEncoding(bis);
+        bis.reset();
+        return new InputStreamReader(bis, encoding);
     }
 
     /* (non-Javadoc)
      * @see org.exist.source.Source#getContent()
      */
     public String getContent() throws IOException {
-        byte[] data = broker.getBinaryResource(doc);
+        InputStream raw = broker.getBinaryResource(doc);
+        byte [] data = new byte[(int)broker.getBinaryResourceSize(doc)];
+        raw.read(data);
+        raw.close();
         ByteArrayInputStream is = new ByteArrayInputStream(data);
         checkEncoding(is);
         return new String(data, encoding);

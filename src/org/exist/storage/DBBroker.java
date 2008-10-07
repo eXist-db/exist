@@ -523,7 +523,8 @@ public abstract class DBBroker extends Observable {
 	 *            the document binary data
 	 */
 	public abstract void storeBinaryResource(Txn transaction,
-			BinaryDocument blob, byte[] data);
+			BinaryDocument blob, byte[] data)
+           throws IOException;
 
 	/**
 	 * Stores the given data under the given binary resource descriptor
@@ -535,7 +536,8 @@ public abstract class DBBroker extends Observable {
 	 *            the document binary data as input stream
 	 */
 	public abstract void storeBinaryResource(Txn transaction,
-			BinaryDocument blob, InputStream is);
+			BinaryDocument blob, InputStream is)
+           throws IOException;
 
 	public abstract void getCollectionResources(Collection collection);
 
@@ -547,11 +549,21 @@ public abstract class DBBroker extends Observable {
 	 *            the binary document descriptor
 	 * @return the document binary data
 	 */
-	public abstract byte[] getBinaryResource(BinaryDocument blob);
+        /*
+	public abstract byte[] getBinaryResource(BinaryDocument blob)
+           throws IOException;
+         */
 
 	public abstract void readBinaryResource(final BinaryDocument blob,
-			final OutputStream os);
+			final OutputStream os)
+           throws IOException;
 
+	public abstract InputStream getBinaryResource(final BinaryDocument blob)
+           throws IOException;
+        
+	public abstract long getBinaryResourceSize(final BinaryDocument blob)
+           throws IOException;
+        
 	public abstract void getResourceMetadata(DocumentImpl doc);
 
 	/**
@@ -563,7 +575,7 @@ public abstract class DBBroker extends Observable {
 	 *             if you don't have the right to do this
 	 */
 	public abstract void removeBinaryResource(Txn transaction,
-			BinaryDocument blob) throws PermissionDeniedException;
+			BinaryDocument blob) throws PermissionDeniedException,IOException;
 
 	/**
 	 * Move a collection and all its subcollections to another collection and

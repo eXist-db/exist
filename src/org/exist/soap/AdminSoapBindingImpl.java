@@ -1,4 +1,12 @@
 package org.exist.soap;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.net.URISyntaxException;
+import java.rmi.RemoteException;
+import java.util.Iterator;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -449,7 +457,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                         + " is not a binary resource");
             if(!doc.getPermissions().validate(session.getUser(), Permission.READ))
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
-            return broker.getBinaryResource( (BinaryDocument) doc );
+            InputStream is = broker.getBinaryResource((BinaryDocument) doc);
+            byte [] data = new byte[(int)broker.getBinaryResourceSize((BinaryDocument) doc)];
+            is.read(data);
+            is.close();
+            return data;
         } catch (Exception ex) {
             throw new RemoteException(ex.getMessage());
         } finally {
