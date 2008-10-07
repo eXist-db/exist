@@ -22,6 +22,7 @@
 
 package org.exist.storage;
 
+import java.io.InputStream;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
@@ -127,7 +128,10 @@ public class ResourceTest extends TestCase {
             if(binDoc == null){
                 fail("Binary document '" + docPath + " does not exist.");
             } else {
-                data = broker.getBinaryResource(binDoc);
+               InputStream is = broker.getBinaryResource(binDoc);
+               data = new byte[(int)broker.getBinaryResourceSize(binDoc)];
+               is.read(data);
+               is.close();
                 binDoc.getUpdateLock().release(Lock.READ_LOCK);
             }
             
@@ -181,7 +185,10 @@ public class ResourceTest extends TestCase {
             if(binDoc == null){
                 fail("Binary document '" + docPath + " does not exist.");
             } else {
-                data = broker.getBinaryResource(binDoc);
+               InputStream is = broker.getBinaryResource(binDoc);
+               data = new byte[(int)broker.getBinaryResourceSize(binDoc)];
+               is.read(data);
+               is.close();
                 binDoc.getUpdateLock().release(Lock.READ_LOCK);
             }
             

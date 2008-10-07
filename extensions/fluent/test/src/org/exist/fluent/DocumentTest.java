@@ -36,6 +36,16 @@ public class DocumentTest extends DatabaseTestCase {
 		assertEquals("helloworld", original.contentsAsString());
 		assertEquals("helloworld", copy.contentsAsString());
 	}
+    
+	@Test public void copy2() {
+		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
+		Document original = c1.documents().load(Name.create("original.xml"), Source.xml("<original/>"));
+		Document copy = original.copy(c2, Name.keepCreate());
+		assertEquals(1, c1.documents().size());
+		assertEquals(1, c2.documents().size());
+		assertEquals("<original/>", original.contentsAsString());
+		assertEquals("<original/>", copy.contentsAsString());
+	}
 
 	@Test public void move1() {
 		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
@@ -45,6 +55,16 @@ public class DocumentTest extends DatabaseTestCase {
 		assertEquals(1, c2.documents().size());
 		assertEquals("/c2/original", doc.path());
 		assertEquals("helloworld", doc.contentsAsString());
+	}
+    
+	@Test public void move2() {
+		Folder c1 = db.createFolder("/c1"), c2 = db.createFolder("/c2");
+		Document doc = c1.documents().load(Name.create("original.xml"), Source.xml("<original/>"));
+		doc.move(c2, Name.keepCreate());
+		assertEquals(0, c1.documents().size());
+		assertEquals(1, c2.documents().size());
+		assertEquals("/c2/original.xml", doc.path());
+		assertEquals("<original/>", doc.contentsAsString());
 	}
 
 }

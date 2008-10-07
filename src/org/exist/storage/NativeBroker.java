@@ -92,12 +92,17 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.io.OutputStream;
+import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Observer;
 import java.util.Stack;
+import org.exist.storage.journal.Journal;
+import org.exist.storage.journal.LogEntryTypes;
+import org.exist.storage.journal.Loggable;
 import java.util.StringTokenizer;
 
 /**
@@ -121,6 +126,16 @@ import java.util.StringTokenizer;
  */
 public class NativeBroker extends DBBroker {
 	
+    public final static byte LOG_RENAME_BINARY = 0x40;
+    public final static byte LOG_CREATE_BINARY = 0x41;
+    public final static byte LOG_UPDATE_BINARY = 0x42;
+    
+    static {
+       LogEntryTypes.addEntryType(LOG_RENAME_BINARY, RenameBinaryLoggable.class);
+       LogEntryTypes.addEntryType(LOG_CREATE_BINARY, CreateBinaryLoggable.class);
+       LogEntryTypes.addEntryType(LOG_UPDATE_BINARY, UpdateBinaryLoggable.class);
+    }
+    
     public static final byte PREPEND_DB_ALWAYS = 0;
     public static final byte PREPEND_DB_NEVER = 1;
     public static final byte PREPEND_DB_AS_NEEDED = 2;
@@ -178,6 +193,9 @@ public class NativeBroker extends DBBroker {
     protected int nodesCount = 0;
 
     protected String dataDir;
+    protected File fsDir;
+    protected File fsBackupDir;
+    protected int pageSize;
 	
     protected byte prepend;
 	
@@ -186,10 +204,13 @@ public class NativeBroker extends DBBroker {
     private NodeProcessor nodeProcessor = new NodeProcessor();
 
     private EmbeddedXMLStreamReader streamReader = null;
+    
+    protected Journal logManager;
 
     /** initialize database; read configuration, etc. */
     public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
     	super(pool, config);
+        this.logManager = pool.getTransactionManager().getJournal();
     	LOG.debug("Initializing broker " + hashCode());
         
         String prependDB = (String) config.getProperty("db-connection.prepend-db");
@@ -204,6 +225,20 @@ public class NativeBroker extends DBBroker {
         dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		if (dataDir == null)
             dataDir = DEFAULT_DATA_DIR;
+        
+        fsDir = new File(new File(dataDir),"fs");
+        if (!fsDir.exists()) {
+           if (!fsDir.mkdir()) {
+              throw new EXistException("Cannot make collection filesystem directory: "+fsDir);
+           }
+        }
+        fsBackupDir = new File(new File(dataDir),"fs.journal");
+        if (!fsBackupDir.exists()) {
+           if (!fsBackupDir.mkdir()) {
+              throw new EXistException("Cannot make collection filesystem directory: "+fsBackupDir);
+           }
+        }
+        
 
         defaultIndexDepth = config.getInteger(PROPERTY_INDEX_DEPTH);
 		if (defaultIndexDepth < 0)
@@ -773,8 +808,13 @@ public class NativeBroker extends DBBroker {
                     BinaryDocument newDoc = new BinaryDocument(this, destCollection, child.getFileURI());
                     newDoc.copyOf(child);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
+                    /*
                     byte[] data = getBinaryResource((BinaryDocument) child);
                     storeBinaryResource(transaction, newDoc, data);
+                     */
+                    InputStream is = getBinaryResource((BinaryDocument)child);
+                    storeBinaryResource(transaction,newDoc,is);
+                    is.close();
                     storeXMLResource(transaction, newDoc);
                     destCollection.addDocument(transaction, this, newDoc);
                 }
@@ -822,6 +862,9 @@ public class NativeBroker extends DBBroker {
         if(!destination.getPermissions().validate(user, Permission.WRITE))
             throw new PermissionDeniedException("Insufficient privileges on target collection " +
 						destination.getURI());
+        
+        File sourceDir = getCollectionFile(fsDir,collection.getURI(),false);
+        File targetDir = getCollectionFile(fsDir,destination.getURI(),false);
         // check if another collection with the same name exists at the destination
         Collection old = openCollection(destination.getURI().append(newName), Lock.WRITE_LOCK);
         if(old != null) {
@@ -881,6 +924,18 @@ public class NativeBroker extends DBBroker {
                 }
             }
         }
+        if (sourceDir.exists()) {
+           if (sourceDir.renameTo(targetDir)) {
+              Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
+              try {
+                 logManager.writeToLog(loggable);
+              } catch (TransactionException e) {
+                  LOG.warn(e.getMessage(), e);
+              }
+           } else {
+              LOG.fatal("Cannot move "+sourceDir+" to "+targetDir);
+           }
+        }
     }    
     
     private void canRemoveCollection(Collection collection) throws PermissionDeniedException {
@@ -921,6 +976,8 @@ public class NativeBroker extends DBBroker {
         
         long start = System.currentTimeMillis();
         final CollectionCache collectionsCache = pool.getCollectionsCache();
+        File sourceDir = getCollectionFile(fsDir,collection.getURI(),false);
+        File targetDir = getCollectionFile(fsBackupDir,transaction,collection.getURI(),true);
         
         synchronized(collectionsCache)
         {
@@ -1102,6 +1159,20 @@ public class NativeBroker extends DBBroker {
                 freeResourceId(transaction, doc.getDocId());
             }
             
+            if (sourceDir.exists()) {
+               targetDir.getParentFile().mkdirs();
+               if (sourceDir.renameTo(targetDir)) {
+                 Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
+                 try {
+                    logManager.writeToLog(loggable);
+                 } catch (TransactionException e) {
+                     LOG.warn(e.getMessage(), e);
+                 }
+                  
+               } else {
+                  LOG.fatal("Cannot rename "+sourceDir+" to "+targetDir);
+               }
+            }
             if(LOG.isDebugEnabled())
                 LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
             
@@ -1524,34 +1595,113 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data) {
-    	if (data.length == 0) {
-	    blob.setPage(Page.NO_PAGE);
-	    return;
-    	}
-        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-            public Object start() throws ReadOnlyException {
-                LOG.debug("Storing binary resource " + blob.getFileURI());
-                blob.setPage(domDb.addBinary(transaction, blob, data));
-                return null;
-            }
-        }
-	    .run();
+    private File getCollectionFile(File dir,XmldbURI uri,boolean create)
+       throws IOException
+    {
+       return getCollectionFile(dir,null,uri,create);
+    }
+    
+    private File getCollectionFile(File dir,Txn transaction,XmldbURI uri,boolean create)
+       throws IOException
+    {
+       if (transaction!=null) {
+          dir = new File(dir,"txn."+transaction.getId());
+          if (create && !dir.exists()) {
+             if (!dir.mkdir()) {
+                throw new IOException("Cannot make transaction filesystem directory: "+dir);
+             }
+          }
+       }
+       XmldbURI [] segments = uri.getPathSegments();
+       File binFile = dir;
+       int last = segments.length-1;
+       for (int i=0; i<segments.length; i++) {
+          binFile = new File(binFile,segments[i].toString());
+          if (create && i!=last && !binFile.exists()) {
+             if (!binFile.mkdir()) {
+                throw new IOException("Cannot make collection filesystem directory: "+binFile);
+             }
+          }
+       }
+       return binFile;
+    }
+    
+    public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data) 
+      throws IOException
+    {
+       blob.setPage(Page.NO_PAGE);
+       File binFile = getCollectionFile(fsDir,blob.getURI(),true);
+       File backupFile = null;
+       boolean exists = binFile.exists();
+       if (exists) {
+          backupFile = getCollectionFile(fsBackupDir,transaction,blob.getURI(),true);
+          if (!binFile.renameTo(backupFile)) {
+             throw new IOException("Cannot backup binary resource for journal to "+backupFile);
+          }
+       }
+       
+       OutputStream os = new FileOutputStream(binFile);
+       os.write(data,0,data.length);
+       os.close();
+       
+       if (exists) {
+          Loggable loggable = new UpdateBinaryLoggable(this,transaction,binFile,backupFile);
+          try {
+             logManager.writeToLog(loggable);
+          } catch (TransactionException e) {
+             LOG.warn(e.getMessage(), e);
+          }
+       } else {
+          Loggable loggable = new CreateBinaryLoggable(this,transaction,binFile);
+          try {
+             logManager.writeToLog(loggable);
+          } catch (TransactionException e) {
+             LOG.warn(e.getMessage(), e);
+          }
+       }
+       
     }    
     
-    public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final InputStream is) {
-    	if (is == null) {
-	    blob.setPage(Page.NO_PAGE);
-	    return;
-    	}
-        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-            public Object start() throws ReadOnlyException {
-                LOG.debug("Storing binary resource as a stream " + blob.getFileURI());
-                blob.setPage(domDb.addBinary(transaction, blob, is));
-                return null;
-            }
-        }
-	    .run();
+    public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final InputStream is) 
+       throws IOException
+    {
+       blob.setPage(Page.NO_PAGE);
+       File binFile = getCollectionFile(fsDir,blob.getURI(),true);
+       
+       File backupFile = null;
+       boolean exists = binFile.exists();
+       if (exists) {
+          backupFile = getCollectionFile(fsBackupDir,transaction,blob.getURI(),true);
+          if (!binFile.renameTo(backupFile)) {
+             throw new IOException("Cannot backup binary resource for journal to "+backupFile);
+          }
+       }
+       
+       byte [] buffer = new byte[4096];
+       OutputStream os = new FileOutputStream(binFile);
+       int len;
+       while ((len = is.read(buffer))>=0) {
+          if (len>0) {
+             os.write(buffer,0,len);
+          }
+       }
+       os.close();
+       
+       if (exists) {
+          Loggable loggable = new UpdateBinaryLoggable(this,transaction,binFile,backupFile);
+          try {
+             logManager.writeToLog(loggable);
+          } catch (TransactionException e) {
+             LOG.warn(e.getMessage(), e);
+          }
+       } else {
+          Loggable loggable = new CreateBinaryLoggable(this,transaction,binFile);
+          try {
+             logManager.writeToLog(loggable);
+          } catch (TransactionException e) {
+             LOG.warn(e.getMessage(), e);
+          }
+       }
     }  
     
     
@@ -1584,6 +1734,14 @@ public class NativeBroker extends DBBroker {
             return null;
         }
         
+       if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+           BinaryDocument bin = (BinaryDocument)doc;
+           try {
+              bin.setContentLength((int)getBinaryResourceSize(bin));
+           } catch (IOException ex) {
+              LOG.fatal("Cannot get content size for "+bin.getURI(),ex);
+           }
+       }
 	//      if (!doc.getPermissions().validate(user, Permission.READ))
 	//          throw new PermissionDeniedException("not allowed to read document");
         
@@ -1619,6 +1777,14 @@ public class NativeBroker extends DBBroker {
 	    //      if (!doc.getPermissions().validate(user, Permission.READ))
 	    //          throw new PermissionDeniedException("not allowed to read document");
             
+             if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                 BinaryDocument bin = (BinaryDocument)doc;
+                 try {
+                    bin.setContentLength((int)getBinaryResourceSize(bin));
+                 } catch (IOException ex) {
+                    LOG.fatal("Cannot get content size for "+bin.getURI(),ex);
+                 }
+             }
             return doc;
         } catch (LockException e) {
             LOG.warn("Could not acquire lock on document " + fileName, e);
@@ -1631,7 +1797,10 @@ public class NativeBroker extends DBBroker {
         return null;
     }    
     
-    public byte[] getBinaryResource(final BinaryDocument blob) {
+    /*
+    public byte[] getBinaryResource(final BinaryDocument blob) 
+       throws IOException
+    {
     	if (blob.getPage() == Page.NO_PAGE)
     		return new byte[0];
         byte[] data = (byte[]) new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -1641,9 +1810,16 @@ public class NativeBroker extends DBBroker {
 	    }
 	    .run();
         return data;
+       ByteArrayOutputStream os = new ByteArrayOutputStream();
+       readBinaryResource(blob,os);
+       return os.toByteArray();
     }
+     */
     
-    public void readBinaryResource(final BinaryDocument blob, final OutputStream os) {
+    public void readBinaryResource(final BinaryDocument blob, final OutputStream os) 
+      throws IOException
+    {
+       /*
     	if (blob.getPage() == Page.NO_PAGE)
     		return;
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -1652,6 +1828,37 @@ public class NativeBroker extends DBBroker {
                 return null;
             }
         }.run();
+        */
+       InputStream is = getBinaryResource(blob);
+       byte [] buffer = new byte[4096];
+       int len;
+       while ((len=is.read(buffer))>=0) {
+          os.write(buffer,0,len);
+       }
+       is.close();
+    }
+    
+    public long getBinaryResourceSize(final BinaryDocument blob) 
+      throws IOException
+    {
+       File binFile = getCollectionFile(fsDir,blob.getURI(),false);
+       return binFile.length();
+    }
+    public InputStream getBinaryResource(final BinaryDocument blob) 
+      throws IOException
+    {
+       /*
+    	if (blob.getPage() == Page.NO_PAGE)
+    		return;
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                domDb.readBinary(blob.getPage(), os);
+                return null;
+            }
+        }.run();
+        */
+       File binFile = getCollectionFile(fsDir,blob.getURI(),false);
+       return new FileInputStream(binFile);
     }
     
     //TODO : consider a better cooperation with Collection -pb
@@ -1821,8 +2028,8 @@ public class NativeBroker extends DBBroker {
 							destination.getURI());
             }
             if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
-                byte[] data = getBinaryResource((BinaryDocument) doc); 
-                destination.addBinaryResource(transaction, this, newName, data, doc.getMetadata().getMimeType());
+                InputStream is = getBinaryResource((BinaryDocument) doc); 
+                destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
             } else {
             	//TODO : put a lock on newDoc ?
                 DocumentImpl newDoc = new DocumentImpl(this, destination, newName);
@@ -1835,6 +2042,8 @@ public class NativeBroker extends DBBroker {
             }
 	    //          saveCollection(destination);
         } catch (EXistException e) {
+            LOG.warn("An error occurred while copying resource", e);
+        } catch (IOException e) {
             LOG.warn("An error occurred while copying resource", e);
         } catch (TriggerException e) {
             throw new PermissionDeniedException(e.getMessage());
@@ -1862,6 +2071,10 @@ public class NativeBroker extends DBBroker {
     /** move Resource to another collection, with possible rename */
     public void moveXMLResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName)
 	throws PermissionDeniedException, LockException, IOException {
+        
+        /* Copy reference to original document */
+        File originalDocument = getCollectionFile(fsDir,doc.getURI(),true);
+        
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         
@@ -1907,7 +2120,8 @@ public class NativeBroker extends DBBroker {
                 if (!destination.getPermissions().validate(user, Permission.WRITE))
                     throw new PermissionDeniedException("Insufficient privileges on target collection " +
 							destination.getURI());
-                
+
+            
             boolean renameOnly = collection.getId() == destination.getId();
             collection.unlinkDocument(doc);
             removeResourceMetadata(transaction, doc);
@@ -1927,7 +2141,26 @@ public class NativeBroker extends DBBroker {
                 }
             } else {
                 // binary resource
-                destination.addDocument(transaction, this, doc);
+                destination.addDocument(transaction, this, doc);             
+                
+                File colDir = getCollectionFile(fsDir,destination.getURI(),true);
+                File binFile = new File(colDir,newName.lastSegment().toString());
+                File sourceFile = getCollectionFile(fsDir,doc.getURI(),false);
+                
+                /* Create required directories */
+                binFile.getParentFile().mkdirs();
+                
+                /* Rename original file to new location */
+                if (originalDocument.renameTo(binFile)) {
+                   Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceFile,binFile);
+                   try {
+                      logManager.writeToLog(loggable);
+                   } catch (TransactionException e) {
+                      LOG.warn(e.getMessage(), e);
+                   }
+                } else {
+                   LOG.fatal("Cannot rename "+sourceFile+" to "+binFile+" for journaling of binary resource move.");
+                }
             }
             storeXMLResource(transaction, doc);
             saveCollection(transaction, destination);
@@ -2004,10 +2237,25 @@ public class NativeBroker extends DBBroker {
     }
 
     public void removeBinaryResource(final Txn transaction, final BinaryDocument blob)
-	throws PermissionDeniedException {
+	throws PermissionDeniedException,IOException
+    {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         LOG.info("removing binary resource " + blob.getDocId() + "...");
+        File binFile = getCollectionFile(fsDir,blob.getURI(),false);
+        if (binFile.exists()) {
+           File binBackupFile = getCollectionFile(fsBackupDir,transaction,blob.getURI(),true);
+           Loggable loggable = new RenameBinaryLoggable(this,transaction,binFile,binBackupFile);
+           if (!binFile.renameTo(binBackupFile)) {
+              throw new IOException("Cannot move file "+binFile+" for delete journal to "+binBackupFile);
+           }
+           try {
+              logManager.writeToLog(loggable);
+           } catch (TransactionException e) {
+               LOG.warn(e.getMessage(), e);
+           }
+        }
+        /*
         if (blob.getPage() != Page.NO_PAGE) {
 		    new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 				public Object start() throws ReadOnlyException {
@@ -2017,6 +2265,7 @@ public class NativeBroker extends DBBroker {
 		    }
 	        .run();
         }
+         */
         removeResourceMetadata(transaction, blob);
     }
 

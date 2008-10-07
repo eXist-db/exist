@@ -802,9 +802,16 @@ public class RpcConnection extends Thread {
                     result.put("offset", new Integer(firstChunk.length));
                     
                 } else {
-                    byte[] data = broker.getBinaryResource((BinaryDocument)doc);
-                    result.put("data", data);
-                    result.put("offset", new Integer(0));
+                    try {
+                        InputStream is = broker.getBinaryResource((BinaryDocument)doc);
+                        byte[] data = new byte[(int)broker.getBinaryResourceSize((BinaryDocument)doc)];
+                        is.read(data);
+                        is.close();
+                        result.put("data", data);
+                        result.put("offset", new Integer(0));
+                    } catch (IOException ex) {
+                       throw new EXistException("I/O error while reading resource.",ex);
+                    }
                 }
                 return result;
             }
@@ -904,7 +911,15 @@ public class RpcConnection extends Thread {
                         + " is not a binary resource");
             if(!doc.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
-            return broker.getBinaryResource((BinaryDocument) doc);
+            try {
+                InputStream is = broker.getBinaryResource((BinaryDocument)doc);
+                byte[] data = new byte[(int)broker.getBinaryResourceSize((BinaryDocument)doc)];
+                is.read(data);
+                is.close();
+                return data;
+            } catch (IOException ex) {
+               throw new EXistException("I/O error while reading resource.",ex);
+            }
 		} finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.READ_LOCK);

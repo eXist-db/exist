@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 
 import org.exist.dom.BinaryDocument;
@@ -82,7 +84,10 @@ public class BinaryDoc extends BasicFunction {
                 return defaultReturn;
             if (isCalledAs("binary-doc")) {
                 BinaryDocument bin = (BinaryDocument) doc;
-                byte[] data = context.getBroker().getBinaryResource(bin);
+                InputStream is = context.getBroker().getBinaryResource(bin);
+                byte[] data = new byte[(int)context.getBroker().getBinaryResourceSize(bin)];
+                is.read(data);
+                is.close();
                 return new Base64Binary(data);
             } else
                 return BooleanValue.TRUE;
@@ -90,6 +95,8 @@ public class BinaryDoc extends BasicFunction {
             throw new XPathException(getASTNode(), "Invalid resource uri",e);
         } catch (PermissionDeniedException e) {
             throw new XPathException(getASTNode(), path + ": permission denied to read resource");
+        } catch (IOException e) {
+            throw new XPathException(getASTNode(), path + ": I/O error while reading resource",e);
         } finally {
             if (doc != null)
                 doc.getUpdateLock().release(Lock.READ_LOCK);

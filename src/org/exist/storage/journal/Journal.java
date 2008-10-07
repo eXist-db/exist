@@ -22,6 +22,7 @@
 package org.exist.storage.journal;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileFilter;
@@ -37,6 +38,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TransactionException;
+import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
 
@@ -143,9 +145,12 @@ public class Journal {
     /** if set to true, a sync will be triggered on the log file after every commit */
     private boolean syncOnCommit = true;
     
+    private File fsJournalDir;
+    
     public Journal(BrokerPool pool, File directory) throws EXistException {
         this.dir = directory;
         this.pool = pool;
+        this.fsJournalDir = new File(directory,"fs.journal");
         // we use a 1 megabyte buffer:
         currentBuffer = ByteBuffer.allocateDirect(1024 * 1024);
         
@@ -329,6 +334,7 @@ public class Journal {
 			    }
 			    rt.start();
 			}
+                        clearBackupFiles();
 		} catch (IOException e) {
 			LOG.warn("IOException while writing checkpoint", e);
 		}
@@ -341,6 +347,18 @@ public class Journal {
      */
     public void setCurrentFileNum(int fileNum) {
         currentFile = fileNum;
+    }
+    
+    public void clearBackupFiles() {
+       fsJournalDir.listFiles(new FileFilter() {
+          public boolean accept(File file) {
+             LOG.info("Checkpoint deleting "+file);
+             if (!FileUtils.delete(file)) {
+                LOG.fatal("Cannot delete file "+file+" from backup journal.");
+             }
+             return false;
+          }
+       });
     }
     
     /**

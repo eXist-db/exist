@@ -865,7 +865,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
             if (trigger != null)
                 trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), doc);
             
-            broker.removeBinaryResource(transaction, (BinaryDocument) doc);
+            try {
+               broker.removeBinaryResource(transaction, (BinaryDocument) doc);
+            } catch (IOException ex) {
+               throw new PermissionDeniedException("Cannot delete file.");
+            }
             documents.remove(doc.getFileURI().getRawCollectionPath());
             
             if (trigger != null) {
@@ -1361,14 +1365,14 @@ public  class Collection extends Observable implements Comparable, Cacheable
     // Blob
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
                 XmldbURI docUri, byte[] data, String mimeType)
-            throws EXistException, PermissionDeniedException, LockException, TriggerException {
+            throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, data, mimeType, null, null);
     }
     
     // Blob
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
     		XmldbURI docUri, byte[] data, String mimeType, Date created, Date modified)
-            throws EXistException, PermissionDeniedException, LockException, TriggerException {
+            throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, 
                                 new ByteArrayInputStream(data), mimeType, data.length, created, modified);
     }
@@ -1376,14 +1380,14 @@ public  class Collection extends Observable implements Comparable, Cacheable
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
     		XmldbURI docUri, InputStream is, String mimeType, int size)
-            throws EXistException, PermissionDeniedException, LockException, TriggerException {
+            throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, is, mimeType, size, null, null);
     }
     
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
     		XmldbURI docUri, InputStream is, String mimeType, int size, Date created, Date modified)
-            throws EXistException, PermissionDeniedException, LockException, TriggerException {
+            throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
     	
         if (broker.isReadOnly())
             throw new PermissionDeniedException("Database is read-only");
@@ -1400,6 +1404,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        checkPermissions(transaction, broker, oldDoc);
 	        DocumentTrigger trigger = null;
 	        int event = 0;
+/*
 	        if (triggersEnabled) {
 	            CollectionConfiguration config = getConfiguration(broker);
 	            if (config != null) {
@@ -1414,6 +1419,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	                }
 	            }
 	        }
+*/
 	        
 	        manageDocumentInformation(broker, oldDoc, blob );
 	        DocumentMetadata metadata = blob.getMetadata();
@@ -1438,8 +1444,24 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        addDocument(transaction, broker, blob);
 	        
 	        broker.storeXMLResource(transaction, blob);
+	        if (triggersEnabled) {
+	            CollectionConfiguration config = getConfiguration(broker);
+	            if (config != null) {
+	                event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
+                    try {
+                        trigger = (DocumentTrigger) config.newTrigger(event, broker, this);
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                    }
+                    if (trigger != null) {
+	                    trigger.prepare(event, broker, transaction, blob.getURI(), blob);
+	                }
+	            }
+	        }
 	        
-	        broker.closeDocument();
+	        
+                // This is no longer needed as the dom.dbx isn't used
+	        //broker.closeDocument();
 	        
 	        if (trigger != null) {
 	            trigger.finish(event, broker, transaction, blob.getURI(), blob);

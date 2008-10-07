@@ -1,6 +1,7 @@
 package org.exist.collections.triggers;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -219,7 +220,10 @@ public class XQueryTrigger extends FilteringTrigger
         	{
         		//binary document
         		BinaryDocument bin = (BinaryDocument)existingDocument;
-                byte[] data = context.getBroker().getBinaryResource(bin);
+                        InputStream is = broker.getBinaryResource(bin);
+                        byte [] data = new byte[(int)broker.getBinaryResourceSize(bin)];
+                        is.read(data);
+                        is.close();
         		
                 context.declareVariable(bindingPrefix + "document", new Base64Binary(data));
         	}
@@ -302,7 +306,10 @@ public class XQueryTrigger extends FilteringTrigger
         	{
         		//Binary document
         		BinaryDocument bin = (BinaryDocument)document;
-                byte[] data = context.getBroker().getBinaryResource(bin);
+                        InputStream is = broker.getBinaryResource(bin);
+                        byte [] data = new byte[(int)broker.getBinaryResourceSize(bin)];
+                        is.read(data);
+                        is.close();
                 
                 context.declareVariable(bindingPrefix + "document", new Base64Binary(data));
         	}	

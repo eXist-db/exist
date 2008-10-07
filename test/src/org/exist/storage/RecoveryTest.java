@@ -21,6 +21,7 @@
  */
 package org.exist.storage;
 
+import java.io.InputStream;
 import java.io.File;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -218,7 +219,11 @@ public class RecoveryTest extends TestCase {
             
             BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
-            data = new String(broker.getBinaryResource(binDoc));
+            InputStream is = broker.getBinaryResource(binDoc);
+            byte [] bdata = new byte[(int)broker.getBinaryResourceSize(binDoc)];
+            is.read(bdata);
+            is.close();
+            data = new String(bdata);
             assertNotNull(data);
             System.out.println(data);
             
@@ -241,8 +246,10 @@ public class RecoveryTest extends TestCase {
             
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
-	    } catch (Exception e) {            
+	    } catch (Exception e) {         
+               if (transact!=null) {
 	    	transact.abort(transaction);
+               }
 	        fail(e.getMessage());
 	        e.printStackTrace();
         } finally {

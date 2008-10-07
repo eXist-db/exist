@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.compression;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.zip.ZipEntry;
@@ -210,9 +211,14 @@ public class ZipFunction extends BasicFunction {
 			zos.write(strDoc.getBytes());
 		} else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary file
-			byte[] data = context.getBroker().getBinaryResource(
+			InputStream is = context.getBroker().getBinaryResource(
 					(BinaryDocument) doc);
-			zos.write(data);
+                        byte [] data = new byte[16384];
+                        int len;
+                        while ((len=is.read(data))>0) {
+			   zos.write(data,0,len);
+                        }
+                        is.close();
 		}
 
 		// close the entry in the Zip

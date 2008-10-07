@@ -156,6 +156,7 @@ public class RecoveryManager {
 		}
         logManager.setCurrentFileNum(lastNum);
 		logManager.switchFiles();
+                logManager.clearBackupFiles();
         return recoveryRun;
 	}
 

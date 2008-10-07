@@ -322,8 +322,14 @@ public class Document extends NamedResource {
 	public String contentsAsString() {
 		DBBroker broker = db.acquireBroker();
 		try {
-			return new String(broker.getBinaryResource((BinaryDocument) doc), db.defaultCharacterEncoding);
+			InputStream is = broker.getBinaryResource((BinaryDocument) doc);
+			byte [] data = new byte[(int)broker.getBinaryResourceSize((BinaryDocument) doc)];
+			is.read(data);
+			is.close();
+			return new String(data, db.defaultCharacterEncoding);
 		} catch (UnsupportedEncodingException e) {
+			throw new DatabaseException(e);
+		} catch (IOException e) {
 			throw new DatabaseException(e);
 		} finally {
 			db.releaseBroker(broker);
