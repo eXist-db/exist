@@ -76,6 +76,9 @@ public class LuceneIndexTest {
             "   <p>UPPERCASE PARAGRAPH</p>" +
             "</section>";
 
+    private static String XML4 =
+            "<test><a>A X</a><b><c>B X</c> C</b></test>";
+
     private static String COLLECTION_CONFIG1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
@@ -83,7 +86,7 @@ public class LuceneIndexTest {
         "		</fulltext>" +
         "       <lucene>" +
         "           <analyzer class=\"org.apache.lucene.analysis.SimpleAnalyzer\"/>" +
-        "           <text qname=\"p\"/>" +
+        "           <text match=\"/section/p\"/>" +
         "           <text qname=\"head\"/>" +
         "           <text qname=\"@rend\"/>" +
         "           <text qname=\"hi\"/>" +
@@ -103,7 +106,7 @@ public class LuceneIndexTest {
         "		</fulltext>" +
         "       <lucene>" +
         "           <text qname=\"item\"/>" +
-        "           <text qname=\"description\"/>" +
+        "           <text match=\"//description\"/>" +
         "           <text qname=\"condition\"/>" +
         "           <text qname=\"@attr\"/>" +
         "       </lucene>" +
@@ -117,12 +120,23 @@ public class LuceneIndexTest {
         "		</fulltext>" +
         "       <lucene>" +
         "           <analyzer id=\"whitespace\" class=\"org.apache.lucene.analysis.WhitespaceAnalyzer\"/>" +
-        "           <text qname=\"head\" analyzer=\"whitespace\"/>" +
-        "           <text qname=\"p\"/>" +
+        "           <text match=\"/section/head\" analyzer=\"whitespace\"/>" +
+        "           <text match=\"//p\"/>" +
         "       </lucene>" +
         "	</index>" +
         "</collection>";
 
+    private static String COLLECTION_CONFIG4 =
+            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "	<index>" +
+            "		<fulltext default=\"none\">" +
+            "		</fulltext>" +
+            "       <lucene>" +
+            "           <text match=\"/test/a\"/>" +
+            "           <text match=\"/test/b/*\"/>" +
+            "       </lucene>" +
+            "	</index>" +
+            "</collection>";
     private static BrokerPool pool;
     private static Collection root;
     private Boolean savedConfig;
@@ -158,7 +172,50 @@ public class LuceneIndexTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
+            seq = xquery.execute("/section[ft:query(hi, 'just')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute("/section[ft:query(p/*, 'just')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/section[ft:query(head/*, 'just')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
             System.out.println("Test PASSED.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
+    public void configuration() {
+        DocumentSet docs = configureAndStore(COLLECTION_CONFIG4, XML4, "test.xml");
+        DBBroker broker = null;
+        try {
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+
+            checkIndex(docs, broker, new QName[] { new QName("a", "") }, "x", 1);
+            checkIndex(docs, broker, new QName[] { new QName("c", "") }, "x", 1);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq = xquery.execute("/test[ft:query(a, 'x')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/test[ft:query(.//c, 'x')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/test[ft:query(b, 'x')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -413,28 +470,6 @@ public class LuceneIndexTest {
             assertNotNull(modifications);
             modifications[0].process(transaction);
             proc.reset();
-
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, null, 2);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 3);
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, "cabinet", 0);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, "cabinet", 0);
-            checkIndex(docs, broker, new QName[] { new QName("condition", "") }, "bad", 1);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, "bad", 1);
-
-            proc.setBroker(broker);
-            proc.setDocumentSet(docs);
-            xupdate =
-                    XUPDATE_START +
-                    "   <xu:remove select=\"//item[@id='1']/@attr\"/>" +
-                    XUPDATE_END;
-            modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-            assertNotNull(modifications);
-            modifications[0].process(transaction);
-            proc.reset();
-
-            QName qnattr[] = { new QName("attr", "", "") };
-            qnattr[0].setNameType(ElementValue.ATTRIBUTE);
-            checkIndex(docs, broker, qnattr, null, 0);
 
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
