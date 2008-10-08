@@ -2,6 +2,8 @@ package org.exist.indexing.lucene;
 
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.dom.QName;
+import org.exist.storage.ElementValue;
+import org.exist.storage.NodePath;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -19,6 +21,7 @@ public class LuceneConfig {
     private final static String ANALYZER_ELEMENT = "analyzer";
 
     private Map qnames = new TreeMap();
+    private LuceneIndexConfig paths[] = null;
 
     private AnalyzerConfig analyzers = new AnalyzerConfig();
 
@@ -26,12 +29,54 @@ public class LuceneConfig {
         parseConfig(configNodes, namespaces);
     }
 
-    public boolean matches(QName qname) {
-        return qnames.get(qname) != null;
+    public boolean matches(NodePath path) {
+        QName qn = path.getComponent(path.length() - 1);
+        if (qnames.containsKey(qn))
+            return true;
+        if (paths != null) {
+            for (int i = 0; i < paths.length; i++) {
+                if (paths[i].match(path))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public LuceneIndexConfig getConfig(NodePath path) {
+        QName qn = path.getComponent(path.length() - 1);
+        LuceneIndexConfig config = (LuceneIndexConfig) qnames.get(qn);
+        if (config == null && paths != null) {
+            for (int i = 0; i < paths.length; i++) {
+                if (paths[i].match(path))
+                    return paths[i];
+            }
+        }
+        return null;
     }
 
     public Analyzer getAnalyzer(QName qname) {
         LuceneIndexConfig config = (LuceneIndexConfig) qnames.get(qname);
+        if (config == null) {
+            for (int i = 0; i < paths.length; i++) {
+                LuceneIndexConfig path = paths[i];
+                if (path.getQName().compareTo(qname) == 0) {
+                    config = path;
+                    break;
+                }
+            }
+        }
+        if (config != null) {
+            String id = config.getAnalyzerId();
+            if (id != null)
+                return analyzers.getAnalyzerById(config.getAnalyzerId());
+        }
+        return analyzers.getDefaultAnalyzer();
+    }
+
+    public Analyzer getAnalyzer(NodePath nodePath) {
+        if (nodePath.length() == 0)
+            throw new RuntimeException();
+        LuceneIndexConfig config = getConfig(nodePath);
         if (config != null) {
             String id = config.getAnalyzerId();
             if (id != null)
@@ -65,10 +110,24 @@ public class LuceneConfig {
                 else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {
                     analyzers.addAnalyzer((Element) node);
                 } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
-                    LuceneIndexConfig config = new LuceneIndexConfig((Element) node, namespaces, analyzers);
-                    qnames.put(config.getQName(), config);
+                    Element elem = (Element) node;
+                    LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers);
+                    if (config.getNodePath() == null)
+                        qnames.put(config.getQName(), config);
+                    else {
+                        if (paths == null) {
+                            paths = new LuceneIndexConfig[1];
+                            paths[0] = config;
+                        } else {
+                            LuceneIndexConfig np[] = new LuceneIndexConfig[paths.length + 1];
+                            System.arraycopy(paths, 0, np, 0, paths.length);
+                            np[paths.length] = config;
+                            paths = np;
+                        }
+                    }
                 }
             }
         }
     }
+
 }

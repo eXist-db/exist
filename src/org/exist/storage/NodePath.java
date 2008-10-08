@@ -37,8 +37,9 @@ public class NodePath {
     private final static Logger LOG = Logger.getLogger(NodePath.class);
     
     /**
-     * (Illegal) QName used as a marker for arbitrary path steps.
+     * (Illegal) QNames used as a marker for arbitrary path steps.
      */
+    public final static QName SKIP = new QName("//", "");
     public final static QName WILDCARD = new QName("*", "");
     
     private QName[] components = new QName[5];
@@ -113,12 +114,12 @@ public class NodePath {
                     return true;
                 return j == other.pos ? true : false;
             }
-            if(components[i] == WILDCARD) {
+            if(components[i] == SKIP) {
                 ++i;
                 skip = true;
             }
-            if(other.components[j].compareTo(components[i]) == 0 && (j + 1 == other.pos || other.components[j + 1].compareTo(components[i]) != 0)) {
-           // if(other.components[j].compareTo(components[i]) == 0) {
+            if((components[i] == WILDCARD || other.components[j].compareTo(components[i]) == 0) &&
+                    (j + 1 == other.pos || other.components[j + 1].compareTo(components[i]) != 0)) {
                 ++i;
                 skip = false;
             } else if(skip) {
@@ -133,7 +134,7 @@ public class NodePath {
         }
         return false;
     }
-    
+
     public void reset() {
         for(int i = 0;  i < pos; i++)
             components[i] = null;
@@ -181,13 +182,18 @@ public class NodePath {
         while (pos < path.length()) {
             char ch = path.charAt(pos);
             switch (ch) {
+            case '*':
+                addComponent(WILDCARD);
+                token.setLength(0);
+                pos++;
+                break;
             case '/':
                 String next = token.toString();
                 token.setLength(0);
                 if (next.length() > 0)
                     addComponent(namespaces, next);
                 if (path.charAt(++pos ) == '/')
-                    addComponent(WILDCARD);
+                    addComponent(SKIP);
                 break;
 
             default:
