@@ -36,13 +36,13 @@ public class RenameBinaryLoggable extends AbstractLoggable {
       this.broker = broker;
       this.original = original;
       this.backup = backup;
-      System.out.println("Rename binary created "+original+" -> "+backup);
+      LOG.debug("Rename binary created "+original+" -> "+backup);
    }
    
    public RenameBinaryLoggable(DBBroker broker,long transactionId) {
       super(NativeBroker.LOG_RENAME_BINARY,transactionId);
       this.broker = broker;
-      System.out.println("Rename binary created ...");
+      LOG.debug("Rename binary created ...");
    }
    
    /* (non-Javadoc)
@@ -71,7 +71,7 @@ public class RenameBinaryLoggable extends AbstractLoggable {
        data = new byte[size];
        in.get(data);
        backup = new File(new String(data));
-       System.out.println("Rename binary read: "+original+" -> "+backup);
+       LOG.debug("Rename binary read: "+original+" -> "+backup);
     }
 
     /* (non-Javadoc)
@@ -85,7 +85,7 @@ public class RenameBinaryLoggable extends AbstractLoggable {
     }
     
     public void undo() throws LogException {
-       System.out.println("Undo rename: "+original);
+       LOG.debug("Undo rename: "+original);
        if (!backup.renameTo(original)) {
           throw new LogException("Cannot move original "+original+" to backup file "+backup);
        }
