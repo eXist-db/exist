@@ -26,22 +26,21 @@ public class CreateBinaryLoggable extends AbstractLoggable {
    
    DBBroker broker;
    File original;
+   
    /**
     * Creates a new instance of RenameBinaryLoggable
     */
    public CreateBinaryLoggable(DBBroker broker,Txn txn,File original)
    {
       super(NativeBroker.LOG_CREATE_BINARY,txn.getId());
-      System.out.println("CreateBinaryLoggable created");
-      System.out.flush();
+      LOG.debug("CreateBinaryLoggable created");
       this.broker = broker;
       this.original = original;
    }
    
    public CreateBinaryLoggable(DBBroker broker,long transactionId) {
       super(NativeBroker.LOG_CREATE_BINARY,transactionId);
-      System.out.println("CreateBinaryLoggable created");
-      System.out.flush();
+      LOG.debug("CreateBinaryLoggable created");
       this.broker = broker;
    }
    
