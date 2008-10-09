@@ -2,6 +2,24 @@
 
 rem $Id$
 
+rem Slurp the command line arguments. This loop allows for an unlimited number
+rem of arguments (up to the command line limit, anyway).
+
+set CMD_LINE_ARGS=%1
+if ""%1""=="""" goto doneStart
+shift
+:setupArgs
+if ""%1""=="""" goto doneStart
+set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
+shift
+goto setupArgs
+
+rem This label provides a place for the argument list loop to break out
+rem and for NT handling to skip to.
+
+:doneStart
+
+
 if not "%JAVA_HOME%" == "" goto gotJavaHome
 echo Java environment not found. Please set
 echo your JAVA_HOME environment variable to
@@ -26,6 +44,6 @@ goto :eof
 set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
 set JAVA_OPTS="-Xms16000k -Xmx128000k -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 
-"%JAVA_HOME%\bin\java" "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" cluster %1
+"%JAVA_HOME%\bin\java" "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" cluster %CMD_LINE_ARGS%
 :eof
 
