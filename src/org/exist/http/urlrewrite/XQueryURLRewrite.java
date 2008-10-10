@@ -284,7 +284,7 @@ public class XQueryURLRewrite implements Filter {
                     urlCache.put(request.getRequestURI(), rewrite);
                 }
             }
-
+            LOG.debug("REQUEST: " + request.getClass().getName());
             if (rewrite == null)
                 throw new ServletException("No URL rewrite rule found! Giving up.");
             rewrite.doRewrite(request, response, filterChain);
@@ -379,7 +379,7 @@ public class XQueryURLRewrite implements Filter {
     private void declareVariables(XQueryContext context,
 			HttpServletRequest request, HttpServletResponse response)
 			throws XPathException {
-		HttpRequestWrapper reqw = new HttpRequestWrapper(request, "UTF-8", "UTF-8");
+		HttpRequestWrapper reqw = new HttpRequestWrapper(request, "UTF-8", "UTF-8", false);
 		HttpResponseWrapper respw = new HttpResponseWrapper(response);
 		// context.declareNamespace(RequestModule.PREFIX,
 		// RequestModule.NAMESPACE_URI);
