@@ -163,4 +163,9 @@ public class XQueryWatchDog {
         startTime = System.currentTimeMillis();
         terminate = false;
     }
+    
+    public boolean isTerminating()
+    {
+    	return( terminate );
+    }
 }
