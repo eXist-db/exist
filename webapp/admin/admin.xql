@@ -14,6 +14,7 @@ declare namespace xdb = "http://exist-db.org/xquery/xmldb";
 import module namespace status = "http://exist-db.org/xquery/admin-interface/status" at "status.xqm";
 import module namespace browse = "http://exist-db.org/xquery/admin-interface/browse" at "browse.xqm";
 import module namespace users = "http://exist-db.org/xquery/admin-interface/users" at "users.xqm";
+import module namespace xqueries = "http://exist-db.org/xquery/admin-interface/xqueries" at "xqueries.xqm";
 import module namespace shut = "http://exist-db.org/xquery/admin-interface/shutdown" at "shutdown.xqm";
 import module namespace setup = "http://exist-db.org/xquery/admin-interface/setup" at "setup.xqm";
 
@@ -45,6 +46,10 @@ declare function admin:panel() as element()
         else if($panel eq "users") then
         (
             users:main()
+        )
+         else if($panel eq "xqueries") then
+        (
+            xqueries:main()
         )
         else if($panel eq "shutdown") then
         (
@@ -152,6 +157,7 @@ return
                         <li><a href="{session:encode-url(request:get-uri())}?panel=status">System Status</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=browse">Browse Collections</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=users">Manage Users</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=xqueries">View Running XQueries</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples Setup</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=shutdown">Shutdown</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>
