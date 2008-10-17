@@ -54,7 +54,7 @@ public class LuceneIndexConfig {
     protected QName parseQName(Element config, Map namespaces) throws DatabaseConfigurationException {
         String name = config.getAttribute(QNAME_ATTR);
         if (name == null || name.length() == 0)
-            throw new DatabaseConfigurationException("Configuration error: element " + config.getNodeName() +
+            throw new DatabaseConfigurationException("Lucene index configuration error: element " + config.getNodeName() +
                     " must have an attribute " + QNAME_ATTR);
 
         boolean isAttribute = false;
@@ -62,20 +62,24 @@ public class LuceneIndexConfig {
             isAttribute = true;
             name = name.substring(1);
         }
-        String prefix = QName.extractPrefix(name);
-        String localName = QName.extractLocalName(name);
-        String namespaceURI = "";
-        if (prefix != null) {
-            namespaceURI = (String) namespaces.get(prefix);
-            if(namespaceURI == null) {
-                throw new DatabaseConfigurationException("No namespace defined for prefix: " + prefix +
-                        " in index definition");
+        try {
+            String prefix = QName.extractPrefix(name);
+            String localName = QName.extractLocalName(name);
+            String namespaceURI = "";
+            if (prefix != null) {
+                namespaceURI = (String) namespaces.get(prefix);
+                if(namespaceURI == null) {
+                    throw new DatabaseConfigurationException("No namespace defined for prefix: " + prefix +
+                            " in index definition");
+                }
             }
+            QName qname = new QName(localName, namespaceURI, prefix);
+            if (isAttribute)
+                qname.setNameType(ElementValue.ATTRIBUTE);
+            return qname;
+        } catch (IllegalArgumentException e) {
+            throw new DatabaseConfigurationException("Lucene index configuration error: " + e.getMessage(), e);
         }
-        QName qname = new QName(localName, namespaceURI, prefix);
-        if (isAttribute)
-            qname.setNameType(ElementValue.ATTRIBUTE);
-        return qname;
     }
 
     public boolean match(NodePath other) {
