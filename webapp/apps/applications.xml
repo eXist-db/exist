@@ -2,6 +2,29 @@
     xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:html="http://www.w3.org/1999/xhtml">
 
     <application>
+         <dc:creator>Puttoo Limited</dc:creator>
+         <creator-site>http://www.puttoo.com</creator-site>
+         <dc:identifier>http://app.puttoo.com/</dc:identifier>
+         <dc:rights>Commercial, All Rights Reserved</dc:rights>
+         <dc:title>Puttoo</dc:title>
+         <dc:subject>Web Forms</dc:subject>
+         <dc:subject>Business Processes</dc:subject>
+         <dc:subject>Data Model</dc:subject>
+         <dc:description>Configurable data modeler and online form generation web site.</dc:description>
+         <dc:publisher>Puttoo Limited</dc:publisher>
+         <dc:format>Web Application</dc:format>
+        
+        
+        <production-site>http://app.puttoo.com/exist/puttoo/pages/userportal.html</production-site>
+        <status>production</status>
+        <feature-used>XQuery</feature-used>
+        <feature-used>Jetty</feature-used>
+        <database size="7Mb" documents="600" updates="frequent" security='registration required to create forms, public access to view and fill in forms.' />
+        <dev-notes>Javascript application with an XQuery back-end</dev-notes>
+        <submitter>bucks@puttoo.com</submitter>
+    </application>
+
+    <application>
         <dc:creator>IT Innovation Centre</dc:creator>
         <creator-site>http://www.gria.org/</creator-site>
         <dc:identifier>http://www.gria.org/</dc:identifier>
@@ -83,31 +106,6 @@
         <database size="1Gb" documents="13" updates="daily" security="read for all"/>
         <dev-notes/>
         <submitter>Beniamino Larocca</submitter>
-    </application>
-
-    <application>
-        <dc:creator>Jean-Marc Vanel</dc:creator>
-        <creator-site>http://jmvanel.free.fr/</creator-site>
-        <dc:identifier>http://wwbota.free.fr/</dc:identifier>
-        <dc:rights>GPL</dc:rights>
-        <dc:title>Botanical Database</dc:title>
-        <dc:subject>biology</dc:subject>
-        <dc:subject>taxonomy</dc:subject>
-        <dc:subject>botany</dc:subject>
-        <dc:description> Search engine for Flora of China descriptions. Aims at being a
-            computer-aided identification tool for specimens. </dc:description>
-        <dc:publisher>Worldwide Botanical Knowledge</dc:publisher>
-        <dc:format> eXist distribution add-on: Cocoon sub-sitemap </dc:format>
-
-        <dev-site>http://wwbota.free.fr/</dev-site>
-        <production-site> http://jmvanel.free.fr/protea.html </production-site>
-        <status>production</status>
-        <feature-used>XQuery</feature-used>
-        <feature-used>Cocoon</feature-used>
-        <database size="30Mb" documents="1" updates="rare" security="read for all"/>
-        <dev-notes> XSP pages, XSLT styles, java classes interpreting user input and generating
-            XQuery </dev-notes>
-        <submitter/>
     </application>
 
     <application>
@@ -194,48 +192,27 @@
             serving static XHTML content </dev-notes>
         <submitter>Keith Campbell</submitter>
     </application>
-    <application>
-        <dc:creator>Bruno PINAUD</dc:creator>
-        <dc:creator>Pascale Kuntz</dc:creator>
-        <dc:rights>GPL</dc:rights>
-        <dc:title>GVSR : Graph Drawing software References</dc:title>
-        <dc:subject>directory</dc:subject>
-        <dc:subject>search engine</dc:subject>
-        <dc:subject>Graph Drawing software</dc:subject>
-        <dc:description> A web directory to help a user finding a graph drawing software adapted to
-            her/his problem. </dc:description>
-        <production-site>http://hulk.knowesia.fr/GVSR2/</production-site>
+	<application>
+         <dc:creator>Bruno Pinaud</dc:creator>
+	 <dc:creator>Pascale Kuntz</dc:creator>
+         <creator-site>http://www.polytech.univ-nantes.fr/GVSR/index.jsp</creator-site>
+	 <dc:identifier>http://www.polytech.univ-nantes.fr/GVSR/index.jsp</dc:identifier>
+         
+         <dc:title>GVSR : Graph Visualization Software References</dc:title>
+	 <dc:subject>Computer Science</dc:subject>
+         <dc:subject>Graph Drawing software</dc:subject>
+         <dc:subject>search engine</dc:subject>
+	 <dc:description> A web directory to help a user to find a graph drawing software adapted to her/his problem. See http://dx.doi.org/10.1007/978-3-540-70904-6_42 for more information.
+         </dc:description>
+        
+        
+        
         <status>production</status>
         <feature-used>XQuery</feature-used>
-        <database size="4Mb" documents="60" updates="rare" security="read for all"/>
-        <dev-notes> JSP under Tomcat, XQUERY-based search engine, XUPDATE, binary data (pictures)
-            saved in XML files</dev-notes>
-        <submitter/>
+         <database size="10Mb" documents="70" updates="as often as possible" security='read for all' />
+	<dev-notes> JSP under Tomcat, XQUERY-based search engine, XUPDATE, binary data (pictures) saved in XML files </dev-notes>
+        <submitter />
     </application>
-    <application>
-        <dc:creator>Arnis Vuskans (ampatspell)</dc:creator>
-        <dc:rights>GPL</dc:rights>
-        <dc:title>XML Powered Assessment System: &lt;sic/&gt;</dc:title>
-        <dc:subject>assessment</dc:subject>
-        <dc:subject>evaluation</dc:subject>
-        <dc:description> Web based generic data capture and evaluation tool. The system allows to
-            define a master data dictionary represented as a tree, multiple user input forms based
-            on the dictionary, and multiple evaluation algorithms calculating "results". The results
-            represent, for example, certification categories or total score based on the data
-            entered. They will be used for certification data capture, evaluation and automatic
-            assignment of categories (stars) for rural tourist accommodations in Latvia. </dc:description>
-        <dc:format>war</dc:format>
-        <dev-site>http://adm.celotajs.lv/prj/sic</dev-site>
-        <status>alpha</status>
-        <feature-used>XQuery</feature-used>
-        <feature-used>XQuery update extensions</feature-used>
-        <third-party-feature-used>Jetty</third-party-feature-used>
-        <third-party-feature-used> Orbeon PresentationServer </third-party-feature-used>
-        <database updates="frequent"/>
-        <dev-notes> Orbeon PresentationServer based application backed by eXist native xml database </dev-notes>
-        <submitter>ampatspell@gmail.com</submitter>
-    </application>
-
     <application>
         <dc:title>TELOTA - Project Of The Month</dc:title>
         <dc:description>Initiative to inspirit the electronic life of the academy. Every month the
@@ -431,25 +408,6 @@
     <database size="80Mb" documents="289" updates="frequent" security="read for all"/>
     <dev-notes>PHP application using REST interface with eXist.  Display pages and RSS feeds via XSL transformation of METS XML Data</dev-notes>
   </application>
-
-    <application>
-         <dc:creator>Evgeny Gazdovsky</dc:creator>
-         <creator-site>http://licsoft.ru</creator-site>
-         <dc:identifier>http://rosavtotorg.ru</dc:identifier>
-         <dc:title>New and used car classifieds in Russia</dc:title>
-         <dc:subject>auto</dc:subject>
-         <dc:subject>classifieds</dc:subject>
-         <dc:description> New and used cars for sale in Russia. Auto classifieds and  news.</dc:description>
-         <dc:publisher> Evgeny Gazdovsky </dc:publisher>
-         <dc:format>eXist distribution add-on: Cocoon sub-sitemap</dc:format>
-
-        <status>alpha</status>
-        <feature-used>XQuery</feature-used>
-        <feature-used>Cocoon</feature-used>
-        <database size="~1Gb" documents="~150000" updates="every second" security='read for all' />
-        <dev-notes> XSLT styles, java classes, medium-sized xml meta documents, heavy queries </dev-notes>
-        <submitter />
-    </application>
 
 	<application>
         <dc:creator>Jeff Wallman</dc:creator>
