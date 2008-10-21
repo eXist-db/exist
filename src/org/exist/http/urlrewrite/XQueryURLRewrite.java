@@ -346,6 +346,8 @@ public class XQueryURLRewrite implements Filter {
     private Sequence runQuery(DBBroker broker, HttpServletRequest request, HttpServletResponse response) throws ServletException, XPathException {
         // Try to find the XQuery
         String qpath = config.getServletContext().getRealPath(query);
+		if (qpath == null)
+			qpath = query;
         File f = new File(qpath);
         if (!(f.canRead() && f.isFile()))
             throw new ServletException("Cannot read XQuery source from " + f.getAbsolutePath());
