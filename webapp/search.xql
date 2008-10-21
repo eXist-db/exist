@@ -2,6 +2,7 @@ xquery version "1.0";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
+import module namespace kwic="http://exist-db.org/xquery/kwic" at "kwic.xql";
 
 declare namespace dq="http://exist-db.org/xquery/documentation";
 
@@ -26,6 +27,10 @@ declare variable $dq:config :=
 				<create qname="title"/>
 				<create qname="para"/>
             </fulltext>
+			<lucene>
+				<text qname="title"/>
+				<text qname="para"/>
+			</lucene>
         </index>
     </collection>;
 
@@ -63,142 +68,6 @@ declare function dq:setup($adminPass as xs:string) {
 };
 
 (:~
-	Retrieve the following and preceding text chunks for a given match.
-
-	@param $match the text node containing the match
-	@param $mode the selection mode: either "previous" or "following"
-:)
-declare function dq:get-context($match as element(exist:match), $mode as xs:string) as node()* {
-	let $sibs := 
-		if ($mode eq 'previous') then 
-			$match/preceding::text()
-		else
-			$match/text()/following::text()
-	for $sib in $sibs
-	return
-		if ($sib/parent::exist:match) then
-			<span class="hi">{$sib}</span>
-		else
-			$sib
-};
-
-(:~
-	Like fn:substring, but takes a node argument. If the node is an element,
-	a new element is created with the same node-name as the old one and the
-	shortened text content.
-:)
-declare function dq:substring($node as node(), $start as xs:int, $count as xs:int) as item()? {
-	let $str := substring($node, $start, $count)
-	return
-		if ($node instance of element()) then
-			element { node-name($node) } { $str }
-		else
-			$str
-};
-
-(:~
-	Generate the left-hand context of the match. Returns a sequence of nodes
-	and strings, whose total string length is less than or equal to $max characters.
-
-	Note: this function calls itself recursively until $nodes is empty or
-	the returned sequence has the desired total string length.
-:)
-declare function dq:truncate-previous($nodes as node()*, $truncated as item()*, 
-	$max as xs:int, $chars as xs:int) {
-	if ($nodes) then
-		let $next := $nodes[last()]
-		return
-			if ($chars + string-length($next) gt $max) then
-				let $remaining := $max - $chars
-				return
-					("...", dq:substring($next, string-length($next) - $remaining, $remaining), $truncated)
-			else
-				dq:truncate-previous(subsequence($nodes, 1, count($nodes) - 1), ($next, $truncated),
-					$max, $chars + string-length($next))
-	else
-		$truncated
-};
-
-(:~
-	Generate the right-hand context of the match. Returns a sequence of nodes
-	and strings, whose total string length is less than or equal to $max characters.
-	
-	Note: this function calls itself recursively until $nodes is empty or
-	the returned sequence has the desired total string length.
-:)
-declare function dq:truncate-following($nodes as node()*, $truncated as item()*, 
-	$max as xs:int, $chars as xs:int) {
-	if ($nodes) then
-		let $next := $nodes[1]
-		return
-			if ($chars + string-length($next) gt $max) then
-				let $remaining := $max - $chars
-				return
-					($truncated, dq:substring($next, 1, $remaining), "...")
-			else
-				dq:truncate-following(subsequence($nodes, 2), ($truncated, $next),
-					$max, $chars + string-length($next))
-	else
-		$truncated
-};
-
-(:~
-	Computes the total string length of the nodes in the argument sequence
-:)
-declare function dq:string-length($nodes as item()*) as xs:int {
-	if (exists($nodes)) then
-		sum(for $n in $nodes return string-length($n))
-	else
-		0
-};
-
-(:~
-	Print a summary of the match in $node. Output a predefined amount of text to
-	the left and the right of the match.
-
-	@param $root the root element containing the match. This is the original element
-		   stored in the database.
-	@param $node the exist:match element to process.
-	@param $mode display type: either "summary" or "kwic"
-	@param $docXPath the xpath expression that generated the match.
-:)
-declare function dq:print-summary($root as node(), $node as element(exist:match), 
-	$mode as xs:string, $docXPath as xs:string) as element() {
-	let $chars := if ($mode eq "summary") then $dq:CHARS_SUMMARY else $dq:CHARS_KWIC
-	let $prev := dq:get-context($node, 'previous')
-	let $prevTrunc := dq:truncate-previous($prev, (), $chars, 0)
-	let $remain := 
-		if ($mode eq "summary") then 
-			$chars * 2 - dq:string-length($prevTrunc)
-		else
-			$chars
-	let $following := dq:get-context($node, 'following')
-	let $followingTrunc := dq:truncate-following($following, (), $remain, 0)
-	let $nodeId := util:node-id($root)
-	let $uri := concat(
-		"docs.xql?path=", document-uri(root($root)), "&amp;q=",
-		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
-	)
-	return
-		if ($mode eq "summary") then
-			<p class="summary">
-				<a href="{$uri}">
-					<span class="previous">{$prevTrunc}</span>
-					<span class="hi" style="font-weight: bold">
-					{ $node/text() }
-					</span>
-					<span class="following">{$followingTrunc}</span>
-				</a>
-			</p>
-		else
-			<tr>
-				<td class="previous">{$prevTrunc}</td>
-				<td class="hi">{$node/text()}</td>
-				<td class="following">{$followingTrunc}</td>
-			</tr>
-};
-
-(:~
 	Display the hits: this function first calls util:expand() to get an in-memory
 	copy of each hit with full-text matches tagged with &lt;exist:match&gt;. It
 	then calls dq:print-summary for each exist:match element.
@@ -206,10 +75,17 @@ declare function dq:print-summary($root as node(), $node as element(exist:match)
 declare function dq:print($hits as element()+, $docXPath as xs:string, $mode as xs:string)
 as element()* {
 	for $hit in $hits
-	let $expanded := util:expand($hit)
-	for $match in $expanded//exist:match[1]
+	let $nodeId := util:node-id($hit)
+	let $uri := concat(
+		"docs.xql?path=", document-uri(root($hit)), "&amp;q=",
+		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
+	)
+	let $config :=
+		<config xmlns="" width="{if ($mode eq 'summary') then $dq:CHARS_SUMMARY else $dq:CHARS_KWIC}"
+			table="{if ($mode eq 'summary') then 'no' else 'yes'}"
+			link="{$uri}"/>
 	return
-		dq:print-summary($hit, $match, $mode, $docXPath)
+		kwic:summarize($hit, $config) 
 };
 
 (:~
@@ -224,7 +100,7 @@ declare function dq:print-headings($section as element(section)*, $docXPath as x
 		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
 	)
 	return
-		(" > ", <a href="{$uri}">{$s/title//text()}</a>)
+		(" > ", <a xmlns="http://www.w3.org/1999/xhtml" href="{$uri}">{$s/title//text()}</a>)
 };
 
 (:~
@@ -234,7 +110,7 @@ declare function dq:print-results($hits as element()*, $docXPath as xs:string) {
 	let $mode := request:get-parameter("view", "summary")
 	let $sections := $hits/ancestor::section[1]
 	return
-		<div id="f-results">
+		<div xmlns="http://www.w3.org/1999/xhtml" id="f-results">
 			<p id="f-results-heading">Found: {count($hits)} in {count($sections)} sections.</p>
 			{
 				if ($mode eq 'summary') then
@@ -243,7 +119,7 @@ declare function dq:print-results($hits as element()*, $docXPath as xs:string) {
 					return
 						<div class="section">
 							<div class="headings">{ dq:print-headings($section, $docXPath) }</div>
-						{ dq:print($hitsInSect, $docXPath, $mode) }
+							{ dq:print($hitsInSect, $docXPath, $mode) }
 						</div>
 				else
 					<table class="kwic">
