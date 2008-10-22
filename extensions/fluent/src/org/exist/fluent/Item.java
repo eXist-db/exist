@@ -82,6 +82,15 @@ public class Item extends Resource {
 	}
 	
 	/**
+	 * Return the type of this item, e.g. element() or xs:string.
+	 *
+	 * @return the type of this item
+	 */
+	public String type() {
+		return Type.getTypeName(item.getType());
+	}
+	
+	/**
 	 * Return whether this item really exists.  Examples of items that don't exist even though they have an object
 	 * representing them include virtual placeholders returned for an optional query that didn't select an item, and
 	 * items that were deleted from the database after being selected.
