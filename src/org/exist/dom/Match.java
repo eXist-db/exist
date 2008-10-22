@@ -73,7 +73,7 @@ public abstract class Match implements Comparable {
     }
 
     private int context;
-    private NodeId nodeId;
+    protected NodeId nodeId;
     private String matchTerm;
     
     private int[] offsets;
