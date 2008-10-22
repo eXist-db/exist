@@ -716,7 +716,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         public boolean equals(Object other) {
             if(!(other instanceof LuceneMatch))
                 return false;
-            return query == ((LuceneMatch)other).query;
+            LuceneMatch o = (LuceneMatch) other;
+            return (nodeId == o.nodeId || nodeId.equals(o.nodeId))  &&
+                query == ((LuceneMatch)other).query;
         }
 
         public boolean matchEquals(Match other) {
