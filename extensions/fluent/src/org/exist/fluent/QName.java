@@ -10,7 +10,7 @@ import org.w3c.dom.Document;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-public class QName extends javax.xml.namespace.QName {
+public class QName extends javax.xml.namespace.QName implements Comparable<QName> {
 	
 	private final String tag;
 	
@@ -30,7 +30,11 @@ public class QName extends javax.xml.namespace.QName {
 			tag = prefix + ":" + localName;
 		}
 	}
-	
+		
+	@Override public int compareTo(QName o) {
+		return toString().compareTo(o.toString());
+	}
+
 	/**
 	 * Return whether this qualified name is actually qualified by a namespace or not.
 	 *

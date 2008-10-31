@@ -29,7 +29,7 @@ public class QueryService implements Cloneable {
 	protected DocumentSet docs;
 	protected Sequence base;
 	protected AnyURIValue baseUri;
-	private Map<String, Object> bindings = new HashMap<String, Object>();
+	private Map<QName, Object> bindings = new HashMap<QName, Object>();
 	private boolean presub;
 
 	/**
@@ -101,6 +101,17 @@ public class QueryService implements Cloneable {
 		if (variableName == null) throw new NullPointerException("null variable name");
 		if (variableName.startsWith("$")) variableName = variableName.substring(1);
 		if (variableName.length() == 0) throw new IllegalArgumentException("empty variable name");
+		return let(QName.parse(variableName, namespaceBindings, ""), value);
+	}
+	
+	/**
+	 * Bind a variable to the given value within all query expression evaluated subsequently.
+	 *
+	 * @param variableName the qualified name of the variable to bind
+	 * @param value the value the variable should take
+	 * @return this service, to chain calls
+	 */
+	public QueryService let(QName variableName, Object value) {
 		bindings.put(variableName, value);
 		return this;
 	}
@@ -154,16 +165,16 @@ public class QueryService implements Cloneable {
 	 * @param varBindingsOverride the variable bindings to clone, or <code>null</code> to clone from the original
 	 * @return a clone of this query service with bindings optionally overridden
 	 */
-	public QueryService clone(NamespaceMap nsBindingsOverride, Map<String, ?> varBindingsOverride) {
+	public QueryService clone(NamespaceMap nsBindingsOverride, Map<QName, ?> varBindingsOverride) {
 		try {
 			QueryService that = (QueryService) super.clone();
 			that.namespaceBindings = nsBindingsOverride != null
 					? nsBindingsOverride.clone() : that.namespaceBindings.clone();
 			if (varBindingsOverride == null) {
-				that.bindings = new HashMap<String, Object>(that.bindings);
+				that.bindings = new HashMap<QName, Object>(that.bindings);
 			} else {
-				that.bindings = new HashMap<String, Object>();
-				for (Map.Entry<String, ?> entry : varBindingsOverride.entrySet()) {
+				that.bindings = new HashMap<QName, Object>();
+				for (Map.Entry<QName, ?> entry : varBindingsOverride.entrySet()) {
 					that.let(entry.getKey(), entry.getValue());
 				}
 			}
@@ -242,8 +253,10 @@ public class QueryService implements Cloneable {
 		context.setBackwardsCompatibility(false);
 		context.setStaticallyKnownDocuments(docs);
 		context.setBaseURI(baseUri == null ? new AnyURIValue("/db") : baseUri);
-		for (Map.Entry<String,Object> entry : bindings.entrySet()) {
-			context.declareVariable(entry.getKey(), convertValue(entry.getValue()));
+		for (Map.Entry<QName, Object> entry : bindings.entrySet()) {
+			context.declareVariable(
+					new org.exist.dom.QName(entry.getKey().getLocalPart(), entry.getKey().getNamespaceURI(), entry.getKey().getPrefix()),
+					convertValue(entry.getValue()));
 		}
 		if (params != null) for (int i = 0; i < params.length; i++) {
 			context.declareVariable("_"+(i+1), convertValue(params[i]));
@@ -372,8 +385,6 @@ public class QueryService implements Cloneable {
 		return executeQuery(query, EXISTS, params).get(0).booleanValue();
 	}
 	
-	private static final Pattern VAR_NOT_BOUND_PATTERN = Pattern.compile("^XPDY0002 : variable '*(\\$\\S+)' is not set\\..*");
-	
 	/**
 	 * Statically analyze a query for various properties.
 	 *
@@ -384,7 +395,8 @@ public class QueryService implements Cloneable {
 	public QueryAnalysis analyze(String query, Object... params) {
 		if (presub) query = presub(query, params);
 		
-		Collection<String> requiredVariables = new ArrayList<String>();
+		final Collection<QName> requiredVariables = new TreeSet<QName>();
+		final Collection<QName> requiredFunctions = new TreeSet<QName>();
 		DBBroker broker = null;
 		try {
 			broker = db.acquireBroker();
@@ -392,19 +404,30 @@ public class QueryService implements Cloneable {
 			Map<String, String> combinedMap = namespaceBindings.getCombinedMap();
 			org.exist.source.Source source = new NamespacedStringSource(query, combinedMap);
 			XQuery xquery = broker.getXQueryService();
-			XQueryContext context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
-			buildXQueryContext(context, params, combinedMap);
-			while(true) {
-				try {
-					return new QueryAnalysis(xquery.compile(context, source), Collections.unmodifiableCollection(requiredVariables));
-				} catch (XPathException e) {
-					Matcher matcher = VAR_NOT_BOUND_PATTERN.matcher(e.getMessage());
-					if (!matcher.matches()) throw e;
-					String varName = matcher.group(1);
-					context.declareVariable(varName.substring(1), null);
-					requiredVariables.add(varName);
+			final XQueryContext context = new XQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP) {
+				@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {
+					Variable var = super.resolveVariable(qname);
+					if (var == null) {
+						requiredVariables.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
+						var = new Variable(qname);
+					}
+					return var;
 				}
-			}
+				@Override public UserDefinedFunction resolveFunction(org.exist.dom.QName qname, int argCount) throws XPathException {
+					UserDefinedFunction func = super.resolveFunction(qname, argCount);
+					if (func == null) {
+						requiredFunctions.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
+						func = new UserDefinedFunction(this, new FunctionSignature(qname, null, new SequenceType(Type.ITEM, org.exist.xquery.Cardinality.ZERO_OR_MORE), true));
+						func.setFunctionBody(new SequenceConstructor(this));
+					}
+					return func;
+				}
+			};
+			buildXQueryContext(context, params, combinedMap);
+			return new QueryAnalysis(
+					xquery.compile(context, source),
+					Collections.unmodifiableCollection(requiredVariables),
+					Collections.unmodifiableCollection(requiredFunctions));
 		} catch (XPathException e) {
 			LOG.warn("query compilation failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));
 			throw new DatabaseException("failed to compile query", e);
@@ -420,11 +443,13 @@ public class QueryService implements Cloneable {
 	 */
 	public static class QueryAnalysis {
 		private final CompiledXQuery query;
-		private final Collection<String> requiredVariables;
+		private final Collection<QName> requiredVariables;
+		private final Collection<QName> requiredFunctions;
 		
-		private QueryAnalysis(CompiledXQuery query, Collection<String> requiredVariables) {
+		private QueryAnalysis(CompiledXQuery query, Collection<QName> requiredVariables, Collection<QName> requiredFunctions) {
 			this.query = query;
 			this.requiredVariables = requiredVariables;
+			this.requiredFunctions = requiredFunctions;
 		}
 		
 		/**
@@ -471,12 +496,22 @@ public class QueryService implements Cloneable {
 		/**
 		 * Return a list of variables that are required to be defined by this query, excluding any
 		 * positional variables that were provided to the {@link QueryService#analyze(String, Object[]) analyze}
-		 * method.  The variable names will include the leading '$'.
+		 * method.  The variable names will not include the leading '$'.
 		 * 
 		 * @return a list of variables required by this query
 		 */
-		public Collection<String> requiredVariables() {
+		public Collection<QName> requiredVariables() {
 			return requiredVariables;
+		}
+		
+		/**
+		 * Return a list of functions that are required to be defined by this query, beyond the
+		 * standard XPath/XQuery ones.
+		 *
+		 * @return a list of functions required by this query
+		 */
+		public Collection<QName> requiredFunctions() {
+			return requiredFunctions;
 		}
 	}
 }

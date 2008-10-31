@@ -1451,7 +1451,10 @@ public class XQueryContext {
 	 * or the variable QName references an unknown namespace-prefix. 
 	 */
 	public Variable declareVariable(String qname, Object value) throws XPathException {
-		QName qn = QName.parse(this, qname, null);
+		return declareVariable(QName.parse(this, qname, null), value);
+	}
+	
+	public Variable declareVariable(QName qn, Object value) throws XPathException {
 		Variable var;
 		Module module = getModule(qn.getNamespaceURI());
 		if(module != null) {
