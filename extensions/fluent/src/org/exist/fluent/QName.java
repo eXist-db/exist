@@ -31,7 +31,7 @@ public class QName extends javax.xml.namespace.QName implements Comparable<QName
 		}
 	}
 		
-	@Override public int compareTo(QName o) {
+	public int compareTo(QName o) {
 		return toString().compareTo(o.toString());
 	}
 
