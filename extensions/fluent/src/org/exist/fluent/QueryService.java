@@ -163,6 +163,8 @@ public class QueryService implements Cloneable {
 		String moduleNamespace = matcher.group(1);
 		// TODO: should do URILiteral processing here to replace entity and character references and normalize
 		// whitespace, but since it seems that eXist doesn't do it either (bug?) there's no reason to rush.
+		Document prevModule = moduleMap.get(moduleNamespace);
+		if (prevModule != null && !prevModule.equals(module)) throw new DatabaseException("module " + moduleNamespace + " already bound to " + prevModule + ", can't rebind to " + module);
 		moduleMap.put(moduleNamespace, module);
 		return this;
 	}
@@ -245,19 +247,15 @@ public class QueryService implements Cloneable {
 		try {
 			broker = db.acquireBroker();
 			prepareContext(broker);
-			Map<String, String> combinedMap = namespaceBindings.getCombinedMap();
-			for (Map.Entry<String, Document> entry : moduleMap.entrySet()) {
-				combinedMap.put("<module> " + entry.getKey(), entry.getValue().path());
-			}
-			org.exist.source.Source source = new StringSourceWithMapKey(query, combinedMap);
-			XQuery xquery = broker.getXQueryService();
-			XQueryPool pool = xquery.getXQueryPool();
+			final org.exist.source.Source source = buildQuerySource(query, params);
+			final XQuery xquery = broker.getXQueryService();
+			final XQueryPool pool = xquery.getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
 			try {
 				XQueryContext context = compiledQuery == null
 						? xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP)
 						: compiledQuery.getContext();
-				buildXQueryContext(context, params, combinedMap);
+				buildXQueryContext(context, params);
 				if (compiledQuery == null) compiledQuery = xquery.compile(context, source);
 				return new ItemList(xquery.execute(wrap(compiledQuery, wrapperFactory, context), base), namespaceBindings.extend(), db);
 			} finally {
@@ -281,9 +279,22 @@ public class QueryService implements Cloneable {
 		wrapper.setSource(expr.getSource());
 		return wrapper;
 	}
+	
+	private org.exist.source.Source buildQuerySource(String query, Object[] params) {
+		Map<String, String> combinedMap = namespaceBindings.getCombinedMap();
+		for (Map.Entry<String, Document> entry : moduleMap.entrySet()) {
+			combinedMap.put("<module> " + entry.getKey(), entry.getValue().path());
+		}
+		for (Map.Entry<QName, Object> entry : bindings.entrySet()) {
+			combinedMap.put("<var> " + entry.getKey(), null);	// don't care about values, as long as the same vars are bound
+		}
+		combinedMap.put("<posvars> " + params.length, null);
+		// TODO: should include statically known documents and baseURI too?
+		return new StringSourceWithMapKey(query, combinedMap);
+	}
 
-	private void buildXQueryContext(XQueryContext context, Object[] params, Map<String, String> combinedNamespaceMap) throws XPathException {
-		context.declareNamespaces(combinedNamespaceMap);
+	private void buildXQueryContext(XQueryContext context, Object[] params) throws XPathException {
+		context.declareNamespaces(namespaceBindings.getCombinedMap());
 		context.setBackwardsCompatibility(false);
 		context.setStaticallyKnownDocuments(docs);
 		context.setBaseURI(baseUri == null ? new AnyURIValue("/db") : baseUri);
@@ -438,8 +449,6 @@ public class QueryService implements Cloneable {
 		try {
 			broker = db.acquireBroker();
 			prepareContext(broker);
-			Map<String, String> combinedMap = namespaceBindings.getCombinedMap();
-			org.exist.source.Source source = new StringSourceWithMapKey(query, combinedMap);
 			XQuery xquery = broker.getXQueryService();
 			final XQueryContext context = new XQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP) {
 				@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {
@@ -460,9 +469,10 @@ public class QueryService implements Cloneable {
 					return func;
 				}
 			};
-			buildXQueryContext(context, params, combinedMap);
+			buildXQueryContext(context, params);
 			return new QueryAnalysis(
-					xquery.compile(context, source),
+					// No need to keep track of composite key here, since we're not going to cache the compilation result.
+					xquery.compile(context, new StringSource(query)),
 					Collections.unmodifiableCollection(requiredVariables),
 					Collections.unmodifiableCollection(requiredFunctions));
 		} catch (XPathException e) {
