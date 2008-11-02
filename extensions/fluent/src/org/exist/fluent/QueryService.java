@@ -25,6 +25,7 @@ public class QueryService implements Cloneable {
 	private static final Logger LOG = Logger.getLogger(QueryService.class);
 	
 	private NamespaceMap namespaceBindings;
+	private Map<String, Document> moduleMap = new TreeMap<String, Document>();
 	private final Database db;
 	protected DocumentSet docs;
 	protected Sequence base;
@@ -69,6 +70,7 @@ public class QueryService implements Cloneable {
 		@Override public QueryService let(String var, Object value) {return this;}
 		@Override public QueryService namespace(String key, String uri) {return this;}
 		@Override public NamespaceMap namespaceBindings() {throw new UnsupportedOperationException("NULL query service");}
+		@Override public QueryService importModule(Document module) {return this;}
 		@Override public Item single(String query, Object... params) {throw new DatabaseException("expected 1 result item, got 0 (NULL query)");} 
 	};
 	
@@ -136,6 +138,34 @@ public class QueryService implements Cloneable {
 	public NamespaceMap namespaceBindings() {
 		return namespaceBindings;
 	}
+
+	final Pattern MODULE_DECLARATION_DQUOTE = Pattern.compile("\\A\\s*module\\s+namespace\\s+[\\p{Alpha}_][\\w.-]*\\s*=\\s*\"(([^\"]*(\"\")?)*)\"\\s*;");
+	final Pattern MODULE_DECLARATION_SQUOTE = Pattern.compile("\\A\\s*module\\s+namespace\\s+[\\p{Alpha}_][\\w.-]*\\s*=\\s*'(([^']*('')?)*)'\\s*;");
+
+	/**
+	 * Import an XQuery library module from the given document.  The namespace and preferred
+	 * prefix of the module are extracted from the module itself.  The MIME type of the document
+	 * is set to "application/xquery" as a side-effect.
+	 *
+	 * @param module the non-XML document that holds the library module's source
+	 * @return this service, to chain calls
+	 * @throws DatabaseException if the module is an XML document, or the module declaration
+	 * 		cannot be found at the top of the document
+	 */
+	public QueryService importModule(Document module) {
+		if (module instanceof XMLDocument) throw new DatabaseException("module cannot be an XML document: " + module);
+		Matcher matcher = MODULE_DECLARATION_DQUOTE.matcher(module.contentsAsString());
+		if (!matcher.find()) {
+			matcher = MODULE_DECLARATION_SQUOTE.matcher(module.contentsAsString());
+			if (!matcher.find()) throw new DatabaseException("couldn't find a module declaration at the top of " + module);
+		}
+		module.metadata().setMimeType("application/xquery");
+		String moduleNamespace = matcher.group(1);
+		// TODO: should do URILiteral processing here to replace entity and character references and normalize
+		// whitespace, but since it seems that eXist doesn't do it either (bug?) there's no reason to rush.
+		moduleMap.put(moduleNamespace, module);
+		return this;
+	}
 	
 	/**
 	 * Pre-substitute variables of the form '$n' where n is an integer in all query expressions
@@ -178,6 +208,7 @@ public class QueryService implements Cloneable {
 					that.let(entry.getKey(), entry.getValue());
 				}
 			}
+			that.moduleMap = new TreeMap<String, Document>(moduleMap);
 			return that;
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException("unexpected exception", e);
@@ -215,7 +246,10 @@ public class QueryService implements Cloneable {
 			broker = db.acquireBroker();
 			prepareContext(broker);
 			Map<String, String> combinedMap = namespaceBindings.getCombinedMap();
-			org.exist.source.Source source = new NamespacedStringSource(query, combinedMap);
+			for (Map.Entry<String, Document> entry : moduleMap.entrySet()) {
+				combinedMap.put("<module> " + entry.getKey(), entry.getValue().path());
+			}
+			org.exist.source.Source source = new StringSourceWithMapKey(query, combinedMap);
 			XQuery xquery = broker.getXQueryService();
 			XQueryPool pool = xquery.getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
@@ -253,6 +287,9 @@ public class QueryService implements Cloneable {
 		context.setBackwardsCompatibility(false);
 		context.setStaticallyKnownDocuments(docs);
 		context.setBaseURI(baseUri == null ? new AnyURIValue("/db") : baseUri);
+		for (Map.Entry<String, Document> entry : moduleMap.entrySet()) {
+			context.importModule(entry.getKey(), null, "xmldb:exist:///db" + entry.getValue().path());
+		}
 		for (Map.Entry<QName, Object> entry : bindings.entrySet()) {
 			context.declareVariable(
 					new org.exist.dom.QName(entry.getKey().getLocalPart(), entry.getKey().getNamespaceURI(), entry.getKey().getPrefix()),
@@ -402,7 +439,7 @@ public class QueryService implements Cloneable {
 			broker = db.acquireBroker();
 			prepareContext(broker);
 			Map<String, String> combinedMap = namespaceBindings.getCombinedMap();
-			org.exist.source.Source source = new NamespacedStringSource(query, combinedMap);
+			org.exist.source.Source source = new StringSourceWithMapKey(query, combinedMap);
 			XQuery xquery = broker.getXQueryService();
 			final XQueryContext context = new XQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP) {
 				@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {

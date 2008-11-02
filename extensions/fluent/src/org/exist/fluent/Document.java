@@ -144,6 +144,13 @@ public class Document extends NamedResource {
 		 * @return this document's MIME type
 		 */
 		public String mimeType() {return docMetadata.getMimeType();}
+		
+		/**
+		 * Set the MIME type of this document.
+		 *
+		 * @param mimeType this document's desired MIME type
+		 */
+		public void setMimeType(String mimeType) {docMetadata.setMimeType(mimeType);}
 	}
 
 	protected DocumentImpl doc;
