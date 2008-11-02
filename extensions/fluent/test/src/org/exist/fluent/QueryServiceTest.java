@@ -20,6 +20,38 @@ public class QueryServiceTest extends DatabaseTestCase {
 		assertEquals("foo", f.query().let("$a", "foo").single("$a").value());
 	}
 	
+	@Test public void importModule1() {
+		Folder f = db.getFolder("/");
+		Document doc = f.documents().load(Name.create("module1"), Source.blob(
+				"module namespace ex = 'http://example.com';\n" +
+				"declare function ex:foo() { 'foo' };\n"
+		));
+		assertEquals("foo", f.query().importModule(doc).single("ex:foo()").value());
+	}
+	
+	@Test public void importModule2() {
+		Folder f = db.createFolder("/top/next");
+		Document doc = f.documents().load(Name.create("module1"), Source.blob(
+				"\n\nmodule  namespace  _123=\"http://example.com?a=1-2&amp;b=4\" ;\n" +
+				"declare function _123:foo() { 'foo' };\n"
+		));
+		assertEquals("foo", f.query().importModule(doc).single("_123:foo()").value());
+	}
+	
+	@Test public void importModule3() {
+		Folder f = db.getFolder("/");
+		Document doc1 = f.documents().load(Name.create("module1"), Source.blob(
+				"module namespace ex = 'http://example.com';\n" +
+				"declare function ex:foo() { 'foo' };\n"
+		));
+		Document doc2 = f.documents().load(Name.create("module2"), Source.blob(
+				"module namespace ex = 'http://example.com';\n" +
+				"declare function ex:foo() { 'bar' };\n"
+		));
+		assertEquals("foo", f.query().importModule(doc1).single("ex:foo()").value());
+		assertEquals("bar", f.query().importModule(doc2).single("ex:foo()").value());
+	}
+	
 	@Test public void analyze1() {
 		QueryService.QueryAnalysis qa = db.getFolder("/").query().analyze("zero-or-one(//blah)");
 		assertEquals(QueryService.QueryAnalysis.Cardinality.ZERO_OR_ONE, qa.cardinality());

@@ -32,7 +32,7 @@ public class QName extends javax.xml.namespace.QName implements Comparable<QName
 	}
 		
 	public int compareTo(QName o) {
-		return toString().compareTo(o.toString());
+		return 2 * getNamespaceURI().compareTo(o.getNamespaceURI()) + getLocalPart().compareTo(o.getLocalPart());
 	}
 
 	/**

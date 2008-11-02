@@ -77,7 +77,7 @@ public class XACMLSource
 			String type = (source instanceof ClassLoaderSource) ? XACMLConstants.CLASSLOADER_SOURCE_TYPE : XACMLConstants.URL_SOURCE_TYPE; 
 			return new XACMLSource(type, key);
 		}
-		if(source instanceof StringSource || source instanceof NamespacedStringSource)
+		if(source instanceof StringSource || source instanceof StringSourceWithMapKey)
 			return new XACMLSource(XACMLConstants.STRING_SOURCE_TYPE, XACMLConstants.STRING_SOURCE_TYPE);
 		if(source instanceof CocoonSource)
 		{

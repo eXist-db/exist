@@ -7,12 +7,12 @@ import org.exist.storage.DBBroker;
 
 /**
  * A simple source object wrapping a single query string, but associating it with a specific
- * set of namespace bindings.  This prevents two textually equal queries with different
- * namespaces from getting aliased in the query pool.
+ * map (e.g., of namespace bindings).  This prevents two textually equal queries with different
+ * maps from getting aliased in the query pool.
  * 
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-public class NamespacedStringSource extends AbstractSource {
+public class StringSourceWithMapKey extends AbstractSource {
 	private final Map<String, String> map;
 
 	/**
@@ -23,9 +23,9 @@ public class NamespacedStringSource extends AbstractSource {
 	 * @param content the content of the query
 	 * @param namespaceMap the map of prefixes to namespace URIs
 	 */
-	public NamespacedStringSource(String content, Map<String, String> namespaceMap) {
-		map = namespaceMap;
-		map.put("<query>", content);
+	public StringSourceWithMapKey(String content, Map<String, String> map) {
+		this.map = map;
+		this.map.put("<query>", content);
 	}
 
 	public Object getKey() {return map;}
