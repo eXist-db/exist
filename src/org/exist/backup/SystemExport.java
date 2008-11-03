@@ -419,7 +419,7 @@ public class SystemExport {
             NamespaceSupport nsSupport = new NamespaceSupport();
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                reader = doc.getBroker().getXMLStreamReader((StoredNode) children.item(i), false);
+                reader = broker.getXMLStreamReader((StoredNode) children.item(i), false);
                 while (reader.hasNext()) {
                     int status = reader.next();
                     switch (status) {
@@ -552,9 +552,9 @@ public class SystemExport {
                     VariableByteInput istream = store.getAsStream(pointer);
                     DocumentImpl doc = null;
                     if (type == DocumentImpl.BINARY_FILE)
-                        doc = new BinaryDocument(broker);
+                        doc = new BinaryDocument(broker.getBrokerPool());
                     else
-                        doc = new DocumentImpl(broker);
+                        doc = new DocumentImpl(broker.getBrokerPool());
                     doc.read(istream);
                     reportError("Found an orphaned document: " + doc.getFileURI().toString(), null);
                     exportDocument(output, serializer, 0, 0, doc);

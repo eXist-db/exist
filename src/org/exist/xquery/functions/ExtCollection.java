@@ -165,7 +165,6 @@ public class ExtCollection extends Function {
             try {
                 if (!context.inProtectedMode() && !dlock.hasLock()) {
                     dlock.acquire(Lock.READ_LOCK);
-                    doc.setBroker(context.getBroker());
                     lockAcquired = true;
                 }
                 result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));

@@ -1,7 +1,5 @@
 package org.exist.dom;
 
-import java.io.UnsupportedEncodingException;
-
 import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
@@ -10,6 +8,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
+
+import java.io.UnsupportedEncodingException;
 
 public class CommentImpl extends CharacterDataImpl implements Comment {
 
@@ -79,7 +79,7 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
     	pos += LENGTH_SIGNATURE_LENGTH;
         int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
         String cdata;

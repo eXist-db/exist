@@ -21,10 +21,12 @@
  */
 package org.exist.dom;
 
+import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
 import org.exist.storage.RangeIndexSpec;
@@ -159,7 +161,7 @@ public class ElementImpl extends NamedNode implements Element {
              throw new RuntimeException("nodeId = null for element: " +
                  getQName().getStringValue());
         try {
-            final SymbolTable symbols = getBroker().getBrokerPool().getSymbols();
+            final SymbolTable symbols = ownerDocument.getBrokerPool().getSymbols();
             byte[] prefixData = null;
             // serialize namespace prefixes declared in this element
             if (declaresNamespacePrefixes()) {
@@ -243,7 +245,7 @@ public class ElementImpl extends NamedNode implements Element {
         pos += LENGTH_ELEMENT_CHILD_COUNT;
         int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         pos += dln.size();
         short attributes = ByteConversion.byteToShort(data, pos);
         pos += LENGTH_ATTRIBUTES_COUNT;
@@ -260,10 +262,10 @@ public class ElementImpl extends NamedNode implements Element {
                 prefix = UTF8.decode(data, pos, prefixLen).toString();
             pos += prefixLen;
         }
-        String name = doc.getSymbols().getName(id);
+        String name = doc.getBrokerPool().getSymbols().getName(id);
         String namespace = "";
         if (nsId != 0)
-            namespace = doc.getSymbols().getNamespace(nsId);
+            namespace = doc.getBrokerPool().getSymbols().getNamespace(nsId);
         
         ElementImpl node;
         if (pooled)
@@ -272,7 +274,7 @@ public class ElementImpl extends NamedNode implements Element {
         else
             node = new ElementImpl();
         node.setNodeId(dln);
-        node.nodeName = doc.getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
+        node.nodeName = doc.getBrokerPool().getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
         node.children = children;
         node.attributes = attributes;
         node.isDirty = isDirty;
@@ -288,7 +290,7 @@ public class ElementImpl extends NamedNode implements Element {
                 for (int i = 0; i < prefixCount; i++) {
                     prefix = in.readUTF();
                     nsId = in.readShort();                    
-                    node.addNamespaceMapping(prefix, doc.getSymbols().getNamespace(nsId));
+                    node.addNamespaceMapping(prefix, doc.getBrokerPool().getSymbols().getNamespace(nsId));
                 }
             }
             catch (IOException e) {
@@ -321,10 +323,10 @@ public class ElementImpl extends NamedNode implements Element {
                 prefix = UTF8.decode(data, offset, prefixLen).toString();
             offset += prefixLen;
         }
-        String name = document.getSymbols().getName(id);
+        String name = document.getBrokerPool().getSymbols().getName(id);
         String namespace = "";
         if (nsId != 0)
-            namespace = document.getSymbols().getNamespace(nsId);
+            namespace = document.getBrokerPool().getSymbols().getNamespace(nsId);
         return new QName(name, namespace, prefix == null ? "" : prefix);
     }
 
@@ -358,7 +360,7 @@ public class ElementImpl extends NamedNode implements Element {
                 for (int i = 0; i < prefixCount; i++) {
                     prefix = in.readUTF();
                     nsId = in.readShort();
-                    namespaces.add(new String[] { prefix, document.getSymbols().getNamespace(nsId) });
+                    namespaces.add(new String[] { prefix, document.getBrokerPool().getSymbols().getNamespace(nsId) });
                 }
             }
             catch (IOException e) {
@@ -402,17 +404,21 @@ public class ElementImpl extends NamedNode implements Element {
      * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
      */
     public Node appendChild(Node child) throws DOMException {
-        TransactionManager transact = getBroker().getBrokerPool().getTransactionManager();
+        TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
         NodeListImpl nl = new NodeListImpl();
         nl.add(child);
+        DBBroker broker = null;
         try {
+            broker = ownerDocument.getBrokerPool().get(null);
             appendChildren(transaction, nl, 0);
-            getBroker().storeXMLResource(transaction, (DocumentImpl) getOwnerDocument());
+            broker.storeXMLResource(transaction, (DocumentImpl) getOwnerDocument());
             return getLastChild();
         } catch (Exception e) {
             transact.abort(transaction);
             throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
     }
 
@@ -448,41 +454,49 @@ public class ElementImpl extends NamedNode implements Element {
         nodes = checkForAttributes(transaction, nodes);
         if (nodes == null || nodes.getLength() == 0)
             return;
-        NodePath path = getPath();
-        StreamListener listener = null;
-        //May help getReindexRoot() to make some useful things
-        getBroker().getIndexController().setDocument(ownerDocument);
-        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path);
-        getBroker().getIndexController().setMode(StreamListener.STORE);
-        if (reindexRoot == null) {        	
-            listener = getBroker().getIndexController().getStreamListener();
-        } else {
-            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
-        }
-
-        if (children == 0) {
-            // no children: append a new child
-            appendChildren(transaction, nodeId.newChild(), null, new NodeImplRef(this), path, nodes, listener);
-        } else {
-            if (child == 1) {
-                Node firstChild = getFirstChild();
-                insertBefore(transaction, nodes, firstChild);
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            NodePath path = getPath();
+            StreamListener listener = null;
+            //May help getReindexRoot() to make some useful things
+            broker.getIndexController().setDocument(ownerDocument);
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path);
+            broker.getIndexController().setMode(StreamListener.STORE);
+            if (reindexRoot == null) {
+                listener = broker.getIndexController().getStreamListener();
+            } else {
+                broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
             }
-            else {
-                if (child > 1 && child <= children) {
-                    NodeList cl = getChildNodes();
-                    StoredNode last = (StoredNode) cl.item(child - 2);
-                    insertAfter(transaction, nodes, last);
-                } else {
-                    StoredNode last = (StoredNode) getLastChild();
-                    appendChildren(transaction, last.getNodeId().nextSibling(), null,
-                            new NodeImplRef(getLastNode(last)), path, nodes, listener);
+
+            if (children == 0) {
+                // no children: append a new child
+                appendChildren(transaction, nodeId.newChild(), null, new NodeImplRef(this), path, nodes, listener);
+            } else {
+                if (child == 1) {
+                    Node firstChild = getFirstChild();
+                    insertBefore(transaction, nodes, firstChild);
+                }
+                else {
+                    if (child > 1 && child <= children) {
+                        NodeList cl = getChildNodes();
+                        StoredNode last = (StoredNode) cl.item(child - 2);
+                        insertAfter(transaction, nodes, last);
+                    } else {
+                        StoredNode last = (StoredNode) getLastChild();
+                        appendChildren(transaction, last.getNodeId().nextSibling(), null,
+                                new NodeImplRef(getLastNode(last)), path, nodes, listener);
+                    }
                 }
             }
+            broker.updateNode(transaction, this, false);
+            broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            broker.flush();
+        } catch (EXistException e) {
+            LOG.warn("Exception while appending child node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
-        getBroker().updateNode(transaction, this, false);
-        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
-        getBroker().flush();
     }
 
     /**
@@ -513,130 +527,139 @@ public class ElementImpl extends NamedNode implements Element {
             //TODO : same test as above ? -pb
             throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node");
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        switch (child.getNodeType()) {
-    		case Node.DOCUMENT_FRAGMENT_NODE :
-    		    appendChildren(transaction, newNodeId, null, last, lastPath, child.getChildNodes(), listener);
-    		    return null;    // TODO: implement document fragments so we can return all newly appended children
-            case Node.ELEMENT_NODE :
-                // create new element
-                final ElementImpl elem =
-                    new ElementImpl(
-                        new QName(child.getLocalName() == null ? child.getNodeName() : child.getLocalName(),
-                        child.getNamespaceURI(),
-                        child.getPrefix())
-                    );
-                elem.setNodeId(newNodeId);
-                elem.setOwnerDocument(owner);
-                final NodeListImpl ch = new NodeListImpl();
-                final NamedNodeMap attribs = child.getAttributes();
-                int numActualAttribs = 0;
-                for (int i = 0; i < attribs.getLength(); i++) {
-                    Attr attr = (Attr) attribs.item(i);
-                    if (!attr.getNodeName().startsWith("xmlns")) {
-                        ch.add(attr);
-                        numActualAttribs++;
-                    } else {
-                        String xmlnsDecl = attr.getNodeName();
-                        String prefix = xmlnsDecl.length()==5 ? "" : xmlnsDecl.substring(6);
-                        elem.addNamespaceMapping(prefix,attr.getNodeValue());
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            switch (child.getNodeType()) {
+                case Node.DOCUMENT_FRAGMENT_NODE :
+                    appendChildren(transaction, newNodeId, null, last, lastPath, child.getChildNodes(), listener);
+                    return null;    // TODO: implement document fragments so we can return all newly appended children
+                case Node.ELEMENT_NODE :
+                    // create new element
+                    final ElementImpl elem =
+                        new ElementImpl(
+                            new QName(child.getLocalName() == null ? child.getNodeName() : child.getLocalName(),
+                            child.getNamespaceURI(),
+                            child.getPrefix())
+                        );
+                    elem.setNodeId(newNodeId);
+                    elem.setOwnerDocument(owner);
+                    final NodeListImpl ch = new NodeListImpl();
+                    final NamedNodeMap attribs = child.getAttributes();
+                    int numActualAttribs = 0;
+                    for (int i = 0; i < attribs.getLength(); i++) {
+                        Attr attr = (Attr) attribs.item(i);
+                        if (!attr.getNodeName().startsWith("xmlns")) {
+                            ch.add(attr);
+                            numActualAttribs++;
+                        } else {
+                            String xmlnsDecl = attr.getNodeName();
+                            String prefix = xmlnsDecl.length()==5 ? "" : xmlnsDecl.substring(6);
+                            elem.addNamespaceMapping(prefix,attr.getNodeValue());
+                        }
                     }
-                }
-				NodeList cl = child.getChildNodes();
-				for (int i = 0; i < cl.getLength(); i++) {
-					Node n = cl.item(i);
-					if (n.getNodeType() != Node.ATTRIBUTE_NODE)
-						ch.add(n);
-				}
-                elem.setChildCount(ch.getLength());
-                if (numActualAttribs != (short) numActualAttribs)
-               	 throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "too many attributes");
-                elem.setAttributes((short) numActualAttribs);
-                lastPath.addComponent(elem.getQName());
-                // insert the node
-                getBroker().insertNodeAfter(transaction, last.getNode(), elem);
+                    NodeList cl = child.getChildNodes();
+                    for (int i = 0; i < cl.getLength(); i++) {
+                        Node n = cl.item(i);
+                        if (n.getNodeType() != Node.ATTRIBUTE_NODE)
+                            ch.add(n);
+                    }
+                    elem.setChildCount(ch.getLength());
+                    if (numActualAttribs != (short) numActualAttribs)
+                        throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "too many attributes");
+                    elem.setAttributes((short) numActualAttribs);
+                    lastPath.addComponent(elem.getQName());
+                    // insert the node
+                    broker.insertNodeAfter(transaction, last.getNode(), elem);
                 
-                getBroker().indexNode(transaction, elem, lastPath);
-                getBroker().getIndexController().indexNode(transaction, elem, lastPath, listener);
-                //getBroker().getIndexController().startElement(transaction, elem, lastPath, listener);
+                    broker.indexNode(transaction, elem, lastPath);
+                    broker.getIndexController().indexNode(transaction, elem, lastPath, listener);
+                    //getBroker().getIndexController().startElement(transaction, elem, lastPath, listener);
 
-                elem.setChildCount(0);                
-                last.setNode(elem);
-                //process child nodes
-                elem.appendChildren(transaction, newNodeId.newChild(), null, last, lastPath, ch, listener);
+                    elem.setChildCount(0);
+                    last.setNode(elem);
+                    //process child nodes
+                    elem.appendChildren(transaction, newNodeId.newChild(), null, last, lastPath, ch, listener);
 
-                getBroker().endElement(elem, lastPath, null);
-                getBroker().getIndexController().endElement(transaction, elem, lastPath, listener);
-                lastPath.removeLastComponent();
-                return elem;
-            case Node.TEXT_NODE :
-                final TextImpl text = new TextImpl(newNodeId, ((Text) child).getData());
-                text.setOwnerDocument(owner);
-                // insert the node
-                getBroker().insertNodeAfter(transaction, last.getNode(), text);
-                getBroker().indexNode(transaction, text, lastPath);
-                getBroker().getIndexController().indexNode(transaction, text, lastPath, listener);
-                //getBroker().getIndexController().characters(transaction, text, lastPath, listener);
-                last.setNode(text);
-                return text;
-            case Node.CDATA_SECTION_NODE :
-                final CDATASectionImpl cdata = new CDATASectionImpl(newNodeId, ((CDATASection) child).getData());
-                cdata.setOwnerDocument(owner);
-                // insert the node
-                getBroker().insertNodeAfter(transaction, last.getNode(), cdata);
-                getBroker().indexNode(transaction, cdata, lastPath);
-                last.setNode(cdata);
-                return cdata;
-            case Node.ATTRIBUTE_NODE:
-                Attr attr = (Attr) child;
-                String ns = attr.getNamespaceURI();
-                String prefix = (Namespaces.XML_NS.equals(ns) ? "xml" : attr.getPrefix());
-                String name = attr.getLocalName();
-                if (name == null) name = attr.getName();
-                QName attrName = new QName(name, ns, prefix);
-                final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
-                attrib.setNodeId(newNodeId);
-                attrib.setOwnerDocument(owner);
-                if (ns != null && attrName.compareTo(Namespaces.XML_ID_QNAME) == Constants.EQUAL) {
-                    // an xml:id attribute. Normalize the attribute and set its type to ID
-                    attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
-                    attrib.setType(AttrImpl.ID);
-                } else
-                    attrName.setNameType(ElementValue.ATTRIBUTE);
-                getBroker().insertNodeAfter(transaction, last.getNode(), attrib);
+                    broker.endElement(elem, lastPath, null);
+                    broker.getIndexController().endElement(transaction, elem, lastPath, listener);
+                    lastPath.removeLastComponent();
+                    return elem;
+                case Node.TEXT_NODE :
+                    final TextImpl text = new TextImpl(newNodeId, ((Text) child).getData());
+                    text.setOwnerDocument(owner);
+                    // insert the node
+                    broker.insertNodeAfter(transaction, last.getNode(), text);
+                    broker.indexNode(transaction, text, lastPath);
+                    broker.getIndexController().indexNode(transaction, text, lastPath, listener);
+                    //getBroker().getIndexController().characters(transaction, text, lastPath, listener);
+                    last.setNode(text);
+                    return text;
+                case Node.CDATA_SECTION_NODE :
+                    final CDATASectionImpl cdata = new CDATASectionImpl(newNodeId, ((CDATASection) child).getData());
+                    cdata.setOwnerDocument(owner);
+                    // insert the node
+                    broker.insertNodeAfter(transaction, last.getNode(), cdata);
+                    broker.indexNode(transaction, cdata, lastPath);
+                    last.setNode(cdata);
+                    return cdata;
+                case Node.ATTRIBUTE_NODE:
+                    Attr attr = (Attr) child;
+                    String ns = attr.getNamespaceURI();
+                    String prefix = (Namespaces.XML_NS.equals(ns) ? "xml" : attr.getPrefix());
+                    String name = attr.getLocalName();
+                    if (name == null) name = attr.getName();
+                    QName attrName = new QName(name, ns, prefix);
+                    final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
+                    attrib.setNodeId(newNodeId);
+                    attrib.setOwnerDocument(owner);
+                    if (ns != null && attrName.compareTo(Namespaces.XML_ID_QNAME) == Constants.EQUAL) {
+                        // an xml:id attribute. Normalize the attribute and set its type to ID
+                        attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
+                        attrib.setType(AttrImpl.ID);
+                    } else
+                        attrName.setNameType(ElementValue.ATTRIBUTE);
+                    broker.insertNodeAfter(transaction, last.getNode(), attrib);
                 
-                getBroker().indexNode(transaction, attrib, lastPath);
-                getBroker().getIndexController().indexNode(transaction, attrib, lastPath, listener);
-                //getBroker().getIndexController().attribute(transaction, attrib, lastPath, listener);
+                    broker.indexNode(transaction, attrib, lastPath);
+                    broker.getIndexController().indexNode(transaction, attrib, lastPath, listener);
+                    //getBroker().getIndexController().attribute(transaction, attrib, lastPath, listener);
 
-                last.setNode(attrib);
-                return attrib;
-            case Node.COMMENT_NODE:
-                final CommentImpl comment = new CommentImpl(((Comment) child).getData());
-                comment.setNodeId(newNodeId);
-                comment.setOwnerDocument(owner);
-                // insert the node
-                getBroker().insertNodeAfter(transaction, last.getNode(), comment);
-                getBroker().indexNode(transaction, comment, lastPath);
-                last.setNode(comment);
-                return comment;
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                final ProcessingInstructionImpl pi =
-                    new ProcessingInstructionImpl(newNodeId,
-                            ((ProcessingInstruction) child).getTarget(),
-                            ((ProcessingInstruction) child).getData());
-                pi.setOwnerDocument(owner);
-                //          insert the node
-                getBroker().insertNodeAfter(transaction, last.getNode(), pi);
-                getBroker().indexNode(transaction, pi, lastPath);
-                last.setNode(pi);
-                return pi;
-            default :
-                throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
-                    "unknown node type: "
-                    + child.getNodeType()
-                    + " "
-                    + child.getNodeName());
+                    last.setNode(attrib);
+                    return attrib;
+                case Node.COMMENT_NODE:
+                    final CommentImpl comment = new CommentImpl(((Comment) child).getData());
+                    comment.setNodeId(newNodeId);
+                    comment.setOwnerDocument(owner);
+                    // insert the node
+                    broker.insertNodeAfter(transaction, last.getNode(), comment);
+                    broker.indexNode(transaction, comment, lastPath);
+                    last.setNode(comment);
+                    return comment;
+                case Node.PROCESSING_INSTRUCTION_NODE:
+                    final ProcessingInstructionImpl pi =
+                        new ProcessingInstructionImpl(newNodeId,
+                                ((ProcessingInstruction) child).getTarget(),
+                                ((ProcessingInstruction) child).getData());
+                    pi.setOwnerDocument(owner);
+                    //          insert the node
+                    broker.insertNodeAfter(transaction, last.getNode(), pi);
+                    broker.indexNode(transaction, pi, lastPath);
+                    last.setNode(pi);
+                    return pi;
+                default :
+                    throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+                        "unknown node type: "
+                        + child.getNodeType()
+                        + " "
+                        + child.getNodeName());
+            }
+        } catch (EXistException e) {
+            LOG.warn("Exception while appending node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
+        return null;
     }
 
     public short getAttributesCount() {
@@ -688,14 +711,22 @@ public class ElementImpl extends NamedNode implements Element {
     public NamedNodeMap getAttributes() {
         NamedNodeMapImpl map = new NamedNodeMapImpl();
         if (getAttributesCount() > 0) {
-            final Iterator iterator = getBroker().getNodeIterator(this);
-            iterator.next();
-            final int ccount = getChildCount();
-            for (int i = 0; i < ccount; i++) {
-                StoredNode next = (StoredNode) iterator.next();
-                if (next.getNodeType() != Node.ATTRIBUTE_NODE)
-                	break;
-                map.setNamedItem(next);
+            DBBroker broker = null;
+            try {
+                broker = ownerDocument.getBrokerPool().get(null);
+                final Iterator iterator = broker.getNodeIterator(this);
+                iterator.next();
+                final int ccount = getChildCount();
+                for (int i = 0; i < ccount; i++) {
+                    StoredNode next = (StoredNode) iterator.next();
+                    if (next.getNodeType() != Node.ATTRIBUTE_NODE)
+                        break;
+                    map.setNamedItem(next);
+                }
+            } catch (EXistException e) {
+                LOG.warn("Exception while retrieving attributes: " + e.getMessage());
+            } finally {
+                ownerDocument.getBrokerPool().release(broker);
             }
         }
         if(declaresNamespacePrefixes()) {
@@ -712,9 +743,18 @@ public class ElementImpl extends NamedNode implements Element {
     }
     
     private AttrImpl findAttribute(String qname) {
-        final Iterator iterator = getBroker().getNodeIterator(this);
-        iterator.next();
-        return findAttribute(qname, iterator, this);
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            final Iterator iterator = broker.getNodeIterator(this);
+            iterator.next();
+            return findAttribute(qname, iterator, this);
+        } catch (EXistException e) {
+            LOG.warn("Exception while retrieving attributes: " + e.getMessage());
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
+        }
+        return null;
     }
 
     private AttrImpl findAttribute(String qname, Iterator iterator, StoredNode current) {
@@ -731,9 +771,18 @@ public class ElementImpl extends NamedNode implements Element {
     }
     
     private AttrImpl findAttribute(QName qname) {
-        final Iterator iterator = getBroker().getNodeIterator(this);
-        iterator.next();
-        return findAttribute(qname, iterator, this);
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            final Iterator iterator = broker.getNodeIterator(this);
+            iterator.next();
+            return findAttribute(qname, iterator, this);
+        } catch (EXistException e) {
+            LOG.warn("Exception while retrieving attributes: " + e.getMessage());
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
+        }
+        return null;
     }
 
     private AttrImpl findAttribute(QName qname, Iterator iterator, StoredNode current) {
@@ -784,8 +833,10 @@ public class ElementImpl extends NamedNode implements Element {
 
     public NodeList getChildNodes() {
         final NodeListImpl childList = new NodeListImpl(1);
+        DBBroker broker = null;
         try {
-            for (EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(this, true); reader.hasNext(); ) {
+            broker = ownerDocument.getBrokerPool().get(null);
+            for (EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true); reader.hasNext(); ) {
                 int status = reader.next();
                 if (status != XMLStreamReader.END_ELEMENT) {
                     if (((NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId))
@@ -796,6 +847,10 @@ public class ElementImpl extends NamedNode implements Element {
             LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
         } catch (XMLStreamException e) {
             LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        } catch (EXistException e) {
+            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
 //        accept(new NodeVisitor() {
 //            public boolean visit(StoredNode node) {
@@ -812,7 +867,7 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public NodeList getElementsByTagName(String tagName) {
         QName qname = new QName(tagName, "", null);
-        return (NodeSet)((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
+        return ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
     }
 
     /**
@@ -820,7 +875,7 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
         QName qname = new QName(localName, namespaceURI, null);
-        return (NodeSet)((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
+        return ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
     }
 
     /**
@@ -829,13 +884,21 @@ public class ElementImpl extends NamedNode implements Element {
     public Node getFirstChild() {
         if (!hasChildNodes() || getChildCount() == getAttributesCount())
             return null;
-        final Iterator iterator = getBroker().getNodeIterator(this);
-        iterator.next();
-        StoredNode next;
-        for (int i = 0; i < getChildCount(); i++) {
-        	next = (StoredNode) iterator.next();
-            if (next.getNodeType() != Node.ATTRIBUTE_NODE)
-            	return next;
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            final Iterator iterator = broker.getNodeIterator(this);
+            iterator.next();
+            StoredNode next;
+            for (int i = 0; i < getChildCount(); i++) {
+                next = (StoredNode) iterator.next();
+                if (next.getNodeType() != Node.ATTRIBUTE_NODE)
+                    return next;
+            }
+        } catch (EXistException e) {
+            LOG.warn("Exception while retrieving child node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
         return null;
     }
@@ -846,7 +909,7 @@ public class ElementImpl extends NamedNode implements Element {
         Node node = null;
         if (!isDirty) {
             NodeId child = nodeId.getChild(children);
-            node = getBroker().objectWith(ownerDocument, child);
+            node = ownerDocument.getNode(new NodeProxy(ownerDocument, child));
         }
         if (node == null) {
             NodeList cl = getChildNodes();
@@ -895,8 +958,16 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public String getNodeValue() /*throws DOMException*/ {
     	//TODO : parametrize the boolea value ?
-    	return getBroker().getNodeValue(this, false);
-        //throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getNodeValue() not implemented on class " + getClass().getName());
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            return broker.getNodeValue(this, false);
+        } catch (EXistException e) {
+            LOG.warn("Exception while reading node value: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
+        }
+        return "";
     }
 
     /**
@@ -942,7 +1013,7 @@ public class ElementImpl extends NamedNode implements Element {
         String ns;
         for (Iterator i = namespaceMappings.values().iterator(); i.hasNext();) {
             ns = (String) i.next();
-            getBroker().getBrokerPool().getSymbols().getNSSymbol(ns);
+            ownerDocument.getBrokerPool().getSymbols().getNSSymbol(ns);
         }
     }
 
@@ -1066,17 +1137,25 @@ public class ElementImpl extends NamedNode implements Element {
         NodeListImpl nl = new NodeListImpl();
         nl.add(newChild);
         
-        TransactionManager transact = getBroker().getBrokerPool().getTransactionManager();
+        TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
+        DBBroker broker = null;
         try {
+            broker = ownerDocument.getBrokerPool().get(null);
             insertBefore(transaction, nl, refChild);
-            getBroker().storeXMLResource(transaction, (DocumentImpl) getOwnerDocument());
+            broker.storeXMLResource(transaction, (DocumentImpl) getOwnerDocument());
             transact.commit(transaction);
             return refChild.getPreviousSibling();
         } catch(TransactionException e) {
             transact.abort(transaction);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, e.getMessage());
+        } catch (EXistException e) {
+            transact.abort(transaction);
+            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
+        return null;
     }
 
     /**
@@ -1091,33 +1170,41 @@ public class ElementImpl extends NamedNode implements Element {
         }
         if (!(refChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
-        NodePath path = getPath();
-        StreamListener listener = null;
-        //May help getReindexRoot() to make some useful things
-        getBroker().getIndexController().setDocument(ownerDocument);
-        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
-        if (reindexRoot == null) {
-            getBroker().getIndexController().setMode(StreamListener.STORE);
-            listener = getBroker().getIndexController().getStreamListener();
-        } else {        	
-            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            NodePath path = getPath();
+            StreamListener listener = null;
+            //May help getReindexRoot() to make some useful things
+            broker.getIndexController().setDocument(ownerDocument);
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true);
+            broker.getIndexController().setMode(StreamListener.STORE);
+            if (reindexRoot == null) {
+                listener = broker.getIndexController().getStreamListener();
+            } else {
+                broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            }
+            StoredNode following = (StoredNode) refChild;
+            StoredNode previous = (StoredNode) following.getPreviousSibling();
+            if (previous == null) {
+                // there's no sibling node before the new node
+                NodeId newId = following.getNodeId().insertBefore();
+                appendChildren(transaction, newId, following.getNodeId(), new NodeImplRef(this), path, nodes, listener);
+            } else {
+                // insert the new node between the preceding and following sibling
+                NodeId newId = previous.getNodeId().insertNode(following.getNodeId());
+                appendChildren(transaction, newId, following.getNodeId(), new NodeImplRef(getLastNode(previous)),
+                        path, nodes, listener);
+            }
+            setDirty(true);
+            broker.updateNode(transaction, this, true);
+            broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            broker.flush();
+        } catch (EXistException e) {
+            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
-        StoredNode following = (StoredNode) refChild;
-        StoredNode previous = (StoredNode) following.getPreviousSibling();
-        if (previous == null) {
-            // there's no sibling node before the new node
-            NodeId newId = following.getNodeId().insertBefore();
-            appendChildren(transaction, newId, following.getNodeId(), new NodeImplRef(this), path, nodes, listener);
-        } else {
-            // insert the new node between the preceding and following sibling
-            NodeId newId = previous.getNodeId().insertNode(following.getNodeId());
-            appendChildren(transaction, newId, following.getNodeId(), new NodeImplRef(getLastNode(previous)), 
-                    path, nodes, listener);
-        }
-        setDirty(true);
-        getBroker().updateNode(transaction, this, true);
-        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
-        getBroker().flush();
     }
 
     /**
@@ -1132,26 +1219,34 @@ public class ElementImpl extends NamedNode implements Element {
         }
         if (!(refChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type: ");
-        NodePath path = getPath();
-        StreamListener listener = null;
-        //May help getReindexRoot() to make some useful things
-        getBroker().getIndexController().setDocument(ownerDocument);
-        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
-        if (reindexRoot == null) {
-            getBroker().getIndexController().setMode(StreamListener.STORE);
-            listener = getBroker().getIndexController().getStreamListener();
-        } else {
-            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            NodePath path = getPath();
+            StreamListener listener = null;
+            //May help getReindexRoot() to make some useful things
+            broker.getIndexController().setDocument(ownerDocument);
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true);
+            broker.getIndexController().setMode(StreamListener.STORE);
+            if (reindexRoot == null) {
+                listener = broker.getIndexController().getStreamListener();
+            } else {
+                broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            }
+            StoredNode previous = (StoredNode) refChild;
+            StoredNode following = (StoredNode) previous.getNextSibling();
+            NodeId followingId = following == null ? null : following.getNodeId();
+            NodeId newNodeId = previous.getNodeId().insertNode(followingId);
+            appendChildren(transaction, newNodeId, followingId, new NodeImplRef(getLastNode(previous)), path, nodes, listener);
+            setDirty(true);
+            broker.updateNode(transaction, this, true);
+            broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            broker.flush();
+        } catch (EXistException e) {
+            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
-        StoredNode previous = (StoredNode) refChild;
-        StoredNode following = (StoredNode) previous.getNextSibling();
-        NodeId followingId = following == null ? null : following.getNodeId();
-        NodeId newNodeId = previous.getNodeId().insertNode(followingId);
-        appendChildren(transaction, newNodeId, followingId, new NodeImplRef(getLastNode(previous)), path, nodes, listener);
-        setDirty(true);
-        getBroker().updateNode(transaction, this, true);
-        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
-        getBroker().flush();
     }
 
     /**
@@ -1167,46 +1262,54 @@ public class ElementImpl extends NamedNode implements Element {
         NodeList nodes = getChildNodes();
 
         StreamListener listener = null;
+        DBBroker broker = null;
         //May help getReindexRoot() to make some useful things
-        getBroker().getIndexController().setDocument(ownerDocument);
-        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
-    	getBroker().getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
-        if (reindexRoot == null) {
-            listener = getBroker().getIndexController().getStreamListener();
-        } else {
-            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
-        }
-        // TODO: fix once range index has been moved to new architecture
-        StoredNode valueReindexRoot = getBroker().getValueIndex().getReindexRoot(this, path);
-        getBroker().getValueIndex().reindex(valueReindexRoot);
-        
-        StoredNode last = this;
-        int i = nodes.getLength();
-        for (; i > 0; i--) {
-        	StoredNode child = (StoredNode) nodes.item(i - 1);
-            if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
-                last = child;
-                break;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            broker.getIndexController().setDocument(ownerDocument);
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true);
+            broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
+            if (reindexRoot == null) {
+                listener = broker.getIndexController().getStreamListener();
+            } else {
+                broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
             }
-            if (child.getNodeType() == Node.ELEMENT_NODE)
-                path.addComponent(child.getQName());
+            // TODO: fix once range index has been moved to new architecture
+            StoredNode valueReindexRoot = broker.getValueIndex().getReindexRoot(this, path);
+            broker.getValueIndex().reindex(valueReindexRoot);
+        
+            StoredNode last = this;
+            int i = nodes.getLength();
+            for (; i > 0; i--) {
+                StoredNode child = (StoredNode) nodes.item(i - 1);
+                if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
+                    last = child;
+                    break;
+                }
+                if (child.getNodeType() == Node.ELEMENT_NODE)
+                    path.addComponent(child.getQName());
 
-            getBroker().removeAllNodes(transaction, child, path, listener);
-            if (child.getNodeType() == Node.ELEMENT_NODE)
-                path.removeLastComponent();
+                broker.removeAllNodes(transaction, child, path, listener);
+                if (child.getNodeType() == Node.ELEMENT_NODE)
+                    path.removeLastComponent();
+            }
+            broker.getIndexController().flush();
+            broker.getIndexController().setMode(StreamListener.STORE);
+            broker.getIndexController().getStreamListener();
+            broker.endRemove(transaction);
+            children = i;
+            NodeId newNodeId = last == this ? nodeId.newChild() : last.nodeId.nextSibling();
+            // append new content
+            appendChildren(transaction, newNodeId, null, new NodeImplRef(last), path, newContent, listener);
+            broker.updateNode(transaction, this, false);
+            broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            broker.getValueIndex().reindex(valueReindexRoot);
+            broker.flush();
+        } catch (EXistException e) {
+            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
-        getBroker().getIndexController().flush();
-        getBroker().getIndexController().setMode(StreamListener.STORE);
-        getBroker().getIndexController().getStreamListener();
-        getBroker().endRemove(transaction);
-        children = i;
-        NodeId newNodeId = last == this ? nodeId.newChild() : last.nodeId.nextSibling();
-        // append new content
-        appendChildren(transaction, newNodeId, null, new NodeImplRef(last), path, newContent, listener);
-        getBroker().updateNode(transaction, this, false);
-        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
-        getBroker().getValueIndex().reindex(valueReindexRoot);
-        getBroker().flush();
     }
 
     /**
@@ -1243,34 +1346,42 @@ public class ElementImpl extends NamedNode implements Element {
         final NodePath currentPath = getPath();
         final NodePath oldPath = oldNode.getPath(currentPath);
 
-        //May help getReindexRoot() to make some useful things
-        getBroker().getIndexController().setDocument(ownerDocument);
-        // check if the change affects any ancestor nodes, which then need to be reindexed later
-        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(oldNode, oldPath);
-        // Remove indexes
-        if (reindexRoot == null)
-            reindexRoot = oldNode;
-        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
-        // TODO: fix once range index has been moved to new architecture
-        StoredNode valueReindexRoot = getBroker().getValueIndex().getReindexRoot(this, oldPath);
-        getBroker().getValueIndex().reindex(valueReindexRoot);
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            //May help getReindexRoot() to make some useful things
+            broker.getIndexController().setDocument(ownerDocument);
+            // check if the change affects any ancestor nodes, which then need to be reindexed later
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath);
+            // Remove indexes
+            if (reindexRoot == null)
+                reindexRoot = oldNode;
+            broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
+            // TODO: fix once range index has been moved to new architecture
+            StoredNode valueReindexRoot = broker.getValueIndex().getReindexRoot(this, oldPath);
+            broker.getValueIndex().reindex(valueReindexRoot);
 
-        // Remove the actual node data
-        getBroker().removeNode(transaction, oldNode, oldPath, null);
-        getBroker().endRemove(transaction);
+            // Remove the actual node data
+            broker.removeNode(transaction, oldNode, oldPath, null);
+            broker.endRemove(transaction);
         
-        newNode.nodeId = oldNode.nodeId;
-        // Reinsert the new node data
-        getBroker().insertNodeAfter(transaction, previousNode, newNode);
-        final NodePath path = newNode.getPath(currentPath);
-        getBroker().indexNode(transaction, newNode, path);
-		if (newNode.getNodeType() == Node.ELEMENT_NODE)
-            getBroker().endElement(newNode, path, null);
-        getBroker().updateNode(transaction, this, true);
-        // Recreate indexes on ancestor nodes
-        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
-        getBroker().getValueIndex().reindex(valueReindexRoot);
-        getBroker().flush();
+            newNode.nodeId = oldNode.nodeId;
+            // Reinsert the new node data
+            broker.insertNodeAfter(transaction, previousNode, newNode);
+            final NodePath path = newNode.getPath(currentPath);
+            broker.indexNode(transaction, newNode, path);
+            if (newNode.getNodeType() == Node.ELEMENT_NODE)
+            broker.endElement(newNode, path, null);
+            broker.updateNode(transaction, this, true);
+            // Recreate indexes on ancestor nodes
+            broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            broker.getValueIndex().reindex(valueReindexRoot);
+            broker.flush();
+        } catch (EXistException e) {
+            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
+        }
         return newNode;
     }
     
@@ -1286,29 +1397,39 @@ public class ElementImpl extends NamedNode implements Element {
                     "node is not a child of this element");
         NodePath oldPath = oldNode.getPath();
         StreamListener listener = null;
-        //May help getReindexRoot() to make some useful things
-        getBroker().getIndexController().setDocument(ownerDocument);
-        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(oldNode, oldPath);
-        getBroker().getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
-        if (reindexRoot == null) {        	
-            listener = getBroker().getIndexController().getStreamListener();
-        } else {
-            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
+        DBBroker broker = null;
+        try {
+            //May help getReindexRoot() to make some useful things
+            broker = ownerDocument.getBrokerPool().get(null);
+            broker.getIndexController().setDocument(ownerDocument);
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath);
+            broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
+            if (reindexRoot == null) {
+                listener = broker.getIndexController().getStreamListener();
+            } else {
+                broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
+            }
+            broker.removeAllNodes(transaction, oldNode, oldPath, listener);
+            --children;
+            if (oldChild.getNodeType() == Node.ATTRIBUTE_NODE)
+                --attributes;
+            broker.endRemove(transaction);
+            setDirty(true);
+            broker.updateNode(transaction, this, false);
+            broker.flush();
+            broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+        } catch (EXistException e) {
+            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
-        getBroker().removeAllNodes(transaction, oldNode, oldPath, listener);
-        --children;
-        if (oldChild.getNodeType() == Node.ATTRIBUTE_NODE)
-            --attributes;
-        getBroker().endRemove(transaction);
-        setDirty(true);
-        getBroker().updateNode(transaction, this, false);
-        getBroker().flush();
-        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         return oldNode;
     }
 	
 	public void removeAppendAttributes(Txn transaction, NodeList removeList, NodeList appendList) {
+        DBBroker broker = null;
 		try {
+            broker = ownerDocument.getBrokerPool().get(null);
 			if (removeList != null) {
 				try {
 					for (int i=0; i<removeList.getLength(); i++) {
@@ -1321,18 +1442,18 @@ public class ElementImpl extends NamedNode implements Element {
 									" is not a child of element " + nodeId);
                         final NodePath oldPath = old.getPath();
                         // remove old custom indexes
-                        getBroker().getIndexController().reindex(transaction, old, StreamListener.REMOVE_SOME_NODES);
-                        getBroker().removeNode(transaction, old, oldPath, null);
+                        broker.getIndexController().reindex(transaction, old, StreamListener.REMOVE_SOME_NODES);
+                        broker.removeNode(transaction, old, oldPath, null);
 						children--;
 						attributes--;
 					}
 				} finally {
-					getBroker().endRemove(transaction);
+					broker.endRemove(transaction);
 				}
 			}
             NodePath path = getPath();
-            getBroker().getIndexController().setDocument(ownerDocument, StreamListener.STORE);
-            StreamListener listener = getBroker().getIndexController().getStreamListener();
+            broker.getIndexController().setDocument(ownerDocument, StreamListener.STORE);
+            StreamListener listener = broker.getIndexController().getStreamListener();
             if (children == 0) {
 			   appendChildren(transaction, nodeId.newChild(), null,
 					   new NodeImplRef(this), path, appendList, listener);
@@ -1352,9 +1473,12 @@ public class ElementImpl extends NamedNode implements Element {
                 setDirty(true);
             }
 			attributes += appendList.getLength();
+        } catch (EXistException e) {
+            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            getBroker().updateNode(transaction, this, true);
-            getBroker().flush();
+            broker.updateNode(transaction, this, true);
+            broker.flush();
+            ownerDocument.getBrokerPool().release(broker);
 		}
 	}
 
@@ -1400,27 +1524,36 @@ public class ElementImpl extends NamedNode implements Element {
         NodePath oldPath = oldNode.getPath();
         StreamListener listener = null;
         //May help getReindexRoot() to make some useful things
-        getBroker().getIndexController().setDocument(ownerDocument);
-        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(oldNode, oldPath);
-    	getBroker().getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
-        if (reindexRoot == null) {
-            listener = getBroker().getIndexController().getStreamListener();
-        } else {
-            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
-        }
+        Node newNode = null;
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            broker.getIndexController().setDocument(ownerDocument);
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath);
+            broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
+            if (reindexRoot == null) {
+                listener = broker.getIndexController().getStreamListener();
+            } else {
+                broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
+            }
 
-        getBroker().removeAllNodes(transaction, oldNode, oldPath, listener);
-        getBroker().endRemove(transaction);
-        getBroker().flush();
-        getBroker().getIndexController().setMode(StreamListener.STORE);
-        listener = getBroker().getIndexController().getStreamListener();
-        Node newNode = appendChild(transaction, oldNode.nodeId, new NodeImplRef(previous), getPath(), newChild, listener);
-        // reindex if required
-        final DocumentImpl owner = (DocumentImpl) getOwnerDocument();
-        getBroker().storeXMLResource(transaction, owner);
-        getBroker().updateNode(transaction, this, false);
-        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
-        getBroker().flush();
+            broker.removeAllNodes(transaction, oldNode, oldPath, listener);
+            broker.endRemove(transaction);
+            broker.flush();
+            broker.getIndexController().setMode(StreamListener.STORE);
+            listener = broker.getIndexController().getStreamListener();
+            newNode = appendChild(transaction, oldNode.nodeId, new NodeImplRef(previous), getPath(), newChild, listener);
+            // reindex if required
+            final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
+            broker.storeXMLResource(transaction, owner);
+            broker.updateNode(transaction, this, false);
+            broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+            broker.flush();
+        } catch (EXistException e) {
+            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
+        }
 
         //return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
         return newNode; //returning the newNode is more sensible than returning the oldNode

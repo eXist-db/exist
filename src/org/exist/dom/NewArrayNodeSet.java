@@ -1220,7 +1220,6 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                 dlock.acquire(Lock.WRITE_LOCK);
             else
                 dlock.acquire(Lock.READ_LOCK);
-            d.setBroker(broker);
         }
     }
 

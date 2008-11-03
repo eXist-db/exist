@@ -1,12 +1,10 @@
 package org.exist.storage.dom;
 
-import java.io.IOException;
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
+import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
@@ -15,6 +13,9 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
+
+import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * Class NodeIterator is used to iterate over nodes in the DOM storage.
@@ -36,23 +37,16 @@ public final class NodeIterator implements Iterator {
 	private DOMFile.DOMPage p = null;
 	private long page;
 	private long startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
-	private Object lockKey;
+	private DBBroker broker;
 	private boolean useNodePool = false;
 
-	public NodeIterator(Object lock, DOMFile db, StoredNode node, boolean poolable) 
+	public NodeIterator(DBBroker broker, DOMFile db, StoredNode node, boolean poolable)
 			throws BTreeException, IOException {
 		this.db = db;
 		this.doc = (DocumentImpl)node.getOwnerDocument();
 		this.useNodePool = poolable;
 		this.node = node;
-		lockKey = (lock == null ? this : lock);
-	}
-
-	public NodeIterator(Object lock, DOMFile db, DocumentImpl doc, long address) {
-		this.db = db;
-		this.doc = doc;
-		this.startAddress = address;
-		lockKey = (lock == null ? this : lock);
+		this.broker = broker;
 	}
 	
 	/**
@@ -79,7 +73,7 @@ public final class NodeIterator implements Iterator {
 				LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
 				return false;
 			}
-			db.setOwnerObject(lockKey);
+			db.setOwnerObject(broker);
 			if(gotoNextPosition()) {
 				db.getPageBuffer().add(p);
 				final DOMFile.DOMFilePageHeader ph = p.getPageHeader();
@@ -112,7 +106,7 @@ public final class NodeIterator implements Iterator {
 				LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
 				return null;
 			}
-			db.setOwnerObject(lockKey);
+			db.setOwnerObject(broker);
 			StoredNode nextNode = null;
 			if(gotoNextPosition()) {
 				long backLink = 0;
@@ -225,7 +219,7 @@ public final class NodeIterator implements Iterator {
             if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                 rec = db.findRecord(node.getInternalAddress());
             if (rec == null) {
-    			long addr = db.findValue(lockKey, new NodeProxy(node));
+    			long addr = db.findValue(broker, new NodeProxy(node));
     			if (addr == BTree.KEY_NOT_FOUND)
     				return false;
     			rec = db.findRecord(addr);

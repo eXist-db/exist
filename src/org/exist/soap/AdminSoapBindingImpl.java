@@ -1,18 +1,15 @@
 package org.exist.soap;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.net.URISyntaxException;
-import java.rmi.RemoteException;
-import java.util.Iterator;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.*;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -37,6 +34,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
@@ -905,7 +903,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             broker = pool.get(user);
 // TODO check XML/Binary resource
 //            doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
-            doc = (DocumentImpl) broker.getXMLResource(path, Lock.WRITE_LOCK);
+            doc = broker.getXMLResource(path, Lock.WRITE_LOCK);
             if (doc == null) {
                 throw new EXistException("Resource "
                         + path + " not found");

@@ -231,8 +231,9 @@ public abstract class Modification extends AbstractExpression
 	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {
 		DBBroker broker = context.getBroker();
         int fragmentationLimit = -1;
-        if (broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR) != null)
-        	fragmentationLimit = ((Integer)broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)).intValue();	
+        Object property = broker.getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+        if (property != null)
+	        fragmentationLimit = ((Integer)property).intValue();
 	    for(Iterator i = docs.getDocumentIterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
 	        if(next.getMetadata().getSplitCount() > fragmentationLimit)
@@ -264,13 +265,13 @@ public abstract class Modification extends AbstractExpression
 		}
 
 		//prepare the trigger
-		CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
+		CollectionConfiguration config = doc.getCollection().getConfiguration(context.getBroker());
         DocumentTrigger trigger = null;
         if(config != null)
         {
         	//get the UPDATE_DOCUMENT_EVENT trigger
             try {
-                trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), doc.getCollection());
+                trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, context.getBroker(), doc.getCollection());
             } catch (CollectionConfigurationException e) {
                 LOG.debug("An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e);
             }
@@ -280,7 +281,7 @@ public abstract class Modification extends AbstractExpression
 	            try
 	            {
 	            	//fire trigger prepare
-	            	trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc.getURI(), doc);
+	            	trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, context.getBroker(), transaction, doc.getURI(), doc);
 	            }
 	            catch(TriggerException te)
 	            {
@@ -315,7 +316,7 @@ public abstract class Modification extends AbstractExpression
             {
                 try
                 {
-                    trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc.getURI(), doc);
+                    trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, context.getBroker(), transaction, doc.getURI(), doc);
                 }
                 catch(Exception e)
                 {

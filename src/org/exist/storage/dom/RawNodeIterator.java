@@ -21,11 +21,10 @@
  */
 package org.exist.storage.dom;
 
-import java.io.IOException;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
+import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeException;
@@ -35,6 +34,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
+
+import java.io.IOException;
 
 /**
  * An iterator that walks through the raw node data items in a document. The class
@@ -51,20 +52,20 @@ public class RawNodeIterator {
 	private short lastTID = ItemId.UNKNOWN_ID;
 	private DOMFile.DOMPage p = null;
 	private long page;
-	private Object lockKey;
+	private DBBroker broker;
 
     /**
      * Construct the iterator. The iterator will be positioned before the specified
      * start node.
      *
-     * @param lockKey the owner object used to acquire a lock on the underlying data file (usually a DBBroker)
+     * @param broker the owner object used to acquire a lock on the underlying data file (usually a DBBroker)
      * @param db the underlying data file
      * @param node the start node where the iterator will be positioned.
      * @throws IOException
      */
-    public RawNodeIterator(Object lockKey, DOMFile db, StoredNode node) throws IOException {
+    public RawNodeIterator(DBBroker broker, DOMFile db, StoredNode node) throws IOException {
         this.db = db;
-		this.lockKey = (lockKey == null ? this : lockKey);
+		this.broker = broker;
         seek(node);
     }
 
@@ -72,14 +73,14 @@ public class RawNodeIterator {
      * Construct the iterator. The iterator will be positioned before the specified
      * start node.
      *
-     * @param lockKey the owner object used to acquire a lock on the underlying data file (usually a DBBroker)
+     * @param broker the owner object used to acquire a lock on the underlying data file (usually a DBBroker)
      * @param db the underlying data file
      * @param proxy the start node where the iterator will be positioned.
      * @throws IOException
      */
-    public RawNodeIterator(Object lockKey, DOMFile db, NodeProxy proxy) throws IOException {
+    public RawNodeIterator(DBBroker broker, DOMFile db, NodeProxy proxy) throws IOException {
         this.db = db;
-		this.lockKey = (lockKey == null ? this : lockKey);
+		this.broker = broker;
         seek(proxy);
     }
 
@@ -98,7 +99,7 @@ public class RawNodeIterator {
                 rec = db.findRecord(node.getInternalAddress());
             if (rec == null) {
                 try {
-                    long addr = db.findValue(lockKey, new NodeProxy(node));
+                    long addr = db.findValue(broker, new NodeProxy(node));
                     if (addr == BTree.KEY_NOT_FOUND)
                         throw new IOException("Node not found.");
                     rec = db.findRecord(addr);
@@ -132,7 +133,7 @@ public class RawNodeIterator {
                 rec = db.findRecord(proxy.getInternalAddress());
             if (rec == null) {
                 try {
-                    long addr = db.findValue(lockKey, proxy);
+                    long addr = db.findValue(broker, proxy);
                     if (addr == BTree.KEY_NOT_FOUND)
                         throw new IOException("Node not found.");
                     rec = db.findRecord(addr);
@@ -165,7 +166,7 @@ public class RawNodeIterator {
 				LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
 				return null;
 			}
-			db.setOwnerObject(lockKey);
+			db.setOwnerObject(broker);
             long backLink = 0;
             do {
                 DOMFile.DOMFilePageHeader ph = p.getPageHeader();

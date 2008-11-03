@@ -20,10 +20,6 @@
  */
 package org.exist.collections;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.dom.DocumentImpl;
@@ -37,7 +33,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.helpers.XMLReaderFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 public class CollectionConfiguration {
 
@@ -104,9 +103,6 @@ public class CollectionConfiguration {
      * @throws CollectionConfigurationException
      */
     protected void read(DBBroker broker, Document doc, boolean checkOnly, XmldbURI srcCollectionURI, XmldbURI docName) throws CollectionConfigurationException {
-        if (doc instanceof DocumentImpl)
-            ((DocumentImpl)doc).setBroker(broker);
-        
         if (!checkOnly) {
             this.docName = docName;
             this.srcCollectionURI = srcCollectionURI;

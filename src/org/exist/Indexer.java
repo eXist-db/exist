@@ -624,7 +624,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		p = attrQName.indexOf(':');
 		attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
         final AttrImpl attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
-		attr.setNodeName(document.getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix));
+		attr.setNodeName(broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix));
 		attr.setValue(attributes.getValue(i));
 		attr.setOwnerDocument(document);
 		if (attributes.getType(i).equals(ATTR_ID_TYPE)) {

@@ -1157,7 +1157,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         boolean oldDocLocked = false;
         try {
             getLock().acquire(Lock.WRITE_LOCK);   
-            DocumentImpl document = new DocumentImpl(broker, this, docUri);
+            DocumentImpl document = new DocumentImpl(broker.getBrokerPool(), this, docUri);
             
             oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
             if (oldDoc == null) {
@@ -1392,7 +1392,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         if (broker.isReadOnly())
             throw new PermissionDeniedException("Database is read-only");
         
-        BinaryDocument blob = new BinaryDocument(broker, this, docUri);
+        BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, docUri);
         
         //TODO : move later, i.e. after the collection lock is acquired ?
         DocumentImpl oldDoc = getDocument(broker, docUri);

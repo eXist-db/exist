@@ -822,7 +822,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                 dlock.acquire(Lock.WRITE_LOCK);
             else
                 dlock.acquire(Lock.READ_LOCK);
-            d.setBroker(broker);
         }
     }
 
