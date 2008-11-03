@@ -465,6 +465,9 @@
         <!-- valuable data? -->
         <delete dir="${src.webapp}/WEB-INF/data/backup"/>
         <delete dir="${src.webapp}/WEB-INF/data/journal"/>
+        <delete dir="${src.webapp}/WEB-INF/data/fs"/>
+        <delete dir="${src.webapp}/WEB-INF/data/fs.journal"/>
+		<delete dir="${src.webapp}/WEB-INF/data/lucene"/>
         <delete>
             <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*"
                 excludes=".DO_NOT_DELETE"/>
