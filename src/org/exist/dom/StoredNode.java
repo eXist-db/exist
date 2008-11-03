@@ -21,6 +21,7 @@
  */
 package org.exist.dom;
 
+import org.exist.EXistException;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -185,14 +186,6 @@ public class StoredNode extends NodeImpl implements Visitable {
         return ((StoredNode)obj).nodeId.equals(nodeId);
 	}
 
-	/**
-	 * Return the broker instance used to create this node.
-	 * 
-	 */
-	public DBBroker getBroker() {
-		return ownerDocument.getBroker();
-	}
-
     /**
      * The method <code>setNodeId</code>
      *
@@ -298,8 +291,10 @@ public class StoredNode extends NodeImpl implements Visitable {
         StoredNode parent = getParentStoredNode();
         if (parent == null) return null;
         if (parent.isDirty()) {
+            DBBroker broker = null;
             try {
-                EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(parent, true);
+                broker = ownerDocument.getBrokerPool().get(null);
+                EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 int level = nodeId.getTreeLevel();
                 StoredNode last = null;
                 while (reader.hasNext()) {
@@ -315,6 +310,10 @@ public class StoredNode extends NodeImpl implements Visitable {
                 LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
             } catch (XMLStreamException e) {
                 LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            } catch (EXistException e) {
+                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            } finally {
+                ownerDocument.getBrokerPool().release(broker);
             }
             return null;
         } else {
@@ -338,8 +337,10 @@ public class StoredNode extends NodeImpl implements Visitable {
         final StoredNode parent = getParentStoredNode();
         if (parent == null) return null;
         if (parent.isDirty()) {
+            DBBroker broker = null;
             try {
-                final EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(parent, true);
+                broker = ownerDocument.getBrokerPool().get(null);
+                final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
                 while (reader.hasNext()) {
                     int status = reader.next();
@@ -353,6 +354,10 @@ public class StoredNode extends NodeImpl implements Visitable {
                 LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
             } catch (XMLStreamException e) {
                 LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            } catch (EXistException e) {
+                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            } finally {
+                ownerDocument.getBrokerPool().release(broker);
             }
             return null;
         } else {
@@ -373,8 +378,10 @@ public class StoredNode extends NodeImpl implements Visitable {
     protected StoredNode getLastNode(StoredNode node) {
         if (!node.hasChildNodes())
             return node;
+        DBBroker broker = null;
         try {
-            EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(node, true);
+            broker = ownerDocument.getBrokerPool().get(null);
+            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(node, true);
             while (reader.hasNext()) {
                 reader.next();
             }
@@ -383,6 +390,10 @@ public class StoredNode extends NodeImpl implements Visitable {
             LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
         } catch (XMLStreamException e) {
             LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        } catch (EXistException e) {
+            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
         }
         return null;
 //        final Iterator iterator = getBroker().getNodeIterator(node);
@@ -445,9 +456,18 @@ public class StoredNode extends NodeImpl implements Visitable {
     }
     
     public boolean accept(NodeVisitor visitor) {
-        final Iterator iterator = getBroker().getNodeIterator(this);
-        iterator.next();
-        return accept(iterator, visitor);
+        DBBroker broker = null;
+        try {
+            broker = ownerDocument.getBrokerPool().get(null);
+            final Iterator iterator = broker.getNodeIterator(this);
+            iterator.next();
+            return accept(iterator, visitor);
+        } catch (EXistException e) {
+            LOG.warn("Exception while reading node: " + e.getMessage(), e);
+        } finally {
+            ownerDocument.getBrokerPool().release(broker);
+        }
+        return false;
     }
     
     public boolean accept(Iterator iterator, NodeVisitor visitor) {

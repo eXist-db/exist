@@ -66,6 +66,9 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.journal.Journal;
+import org.exist.storage.journal.LogEntryTypes;
+import org.exist.storage.journal.Loggable;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
@@ -90,19 +93,16 @@ import org.w3c.dom.NodeList;
 import javax.xml.stream.XMLStreamException;
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Observer;
 import java.util.Stack;
-import org.exist.storage.journal.Journal;
-import org.exist.storage.journal.LogEntryTypes;
-import org.exist.storage.journal.Loggable;
 import java.util.StringTokenizer;
 
 /**
@@ -175,8 +175,7 @@ public class NativeBroker extends DBBroker {
     /** the database files */
     protected CollectionStore collectionsDb;
     protected DOMFile domDb;
-    protected File symbolsFile;
-    
+
     /** the index processors */	
     protected NativeElementIndex elementIndex;
     protected NativeValueIndex valueIndex;
@@ -798,14 +797,14 @@ public class NativeBroker extends DBBroker {
                 LOG.debug("Copying resource: '" + child.getURI() + "'");
                 if (child.getResourceType() == DocumentImpl.XML_FILE) {
                 	//TODO : put a lock on newDoc ?
-                    DocumentImpl newDoc = new DocumentImpl(this, destCollection, child.getFileURI());
+                    DocumentImpl newDoc = new DocumentImpl(pool, destCollection, child.getFileURI());
                     newDoc.copyOf(child);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
                     copyXMLResource(transaction, child, newDoc);
                     storeXMLResource(transaction, newDoc);
                     destCollection.addDocument(transaction, this, newDoc);
                 } else {
-                    BinaryDocument newDoc = new BinaryDocument(this, destCollection, child.getFileURI());
+                    BinaryDocument newDoc = new BinaryDocument(pool, destCollection, child.getFileURI());
                     newDoc.copyOf(child);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
                     /*
@@ -1468,7 +1467,7 @@ public class NativeBroker extends DBBroker {
                 created = true;
             }
             //create a temporary document
-			DocumentImpl targetDoc = new DocumentImpl(this, temp, docName);
+			DocumentImpl targetDoc = new DocumentImpl(pool, temp, docName);
 			targetDoc.setPermissions(0771);
 			long now = System.currentTimeMillis();
 			DocumentMetadata metadata = new DocumentMetadata();
@@ -2032,7 +2031,7 @@ public class NativeBroker extends DBBroker {
                 destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
             } else {
             	//TODO : put a lock on newDoc ?
-                DocumentImpl newDoc = new DocumentImpl(this, destination, newName);
+                DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
                 newDoc.setPermissions(doc.getPermissions()); 
@@ -2476,7 +2475,7 @@ public class NativeBroker extends DBBroker {
 		.run();
             
             // create a copy of the old doc to copy the nodes into it
-            DocumentImpl tempDoc = new DocumentImpl(this, doc.getCollection(), doc.getFileURI());
+            DocumentImpl tempDoc = new DocumentImpl(pool, doc.getCollection(), doc.getFileURI());
             tempDoc.copyOf(doc);
             tempDoc.setDocId(doc.getDocId());
             
@@ -2531,8 +2530,9 @@ public class NativeBroker extends DBBroker {
      * called if xupdate.consistency-checks is true in configuration */ 
     public void checkXMLResourceConsistency(DocumentImpl doc) throws EXistException {
         boolean xupdateConsistencyChecks = false;
-        if (customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS) != null)
-	    xupdateConsistencyChecks = ((Boolean)customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS)).booleanValue();
+        Object property = pool.getConfiguration().getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS);
+        if (property != null)
+	        xupdateConsistencyChecks = ((Boolean) property).booleanValue();
         if(xupdateConsistencyChecks) {
             LOG.debug("Checking document " + doc.getFileURI());
             checkXMLResourceTree(doc);
@@ -2545,8 +2545,9 @@ public class NativeBroker extends DBBroker {
     public void checkXMLResourceTree(final DocumentImpl doc) {
         LOG.debug("Checking DOM tree for document " + doc.getFileURI());
         boolean xupdateConsistencyChecks = false;
-        if (customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS) != null)
-	    xupdateConsistencyChecks = ((Boolean)customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS)).booleanValue();
+        Object property = pool.getConfiguration().getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS);
+        if (property != null)
+	        xupdateConsistencyChecks = ((Boolean) property).booleanValue();
         if(xupdateConsistencyChecks) {
             new DOMTransaction(this, domDb, Lock.READ_LOCK) {
                 public Object start() throws ReadOnlyException {
@@ -3007,7 +3008,7 @@ public class NativeBroker extends DBBroker {
     public String getNodeValue(final StoredNode node, final boolean addWhitespace) {
 	return (String) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 		public Object start() {
-		    return domDb.getNodeValue(node, addWhitespace);
+		    return domDb.getNodeValue(NativeBroker.this, node, addWhitespace);
 		}
 	    }
 	    .run();
@@ -3016,7 +3017,7 @@ public class NativeBroker extends DBBroker {
     public StoredNode objectWith(final Document doc, final NodeId nodeId) {    
 	return (StoredNode) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 		public Object start() {
-		    Value val = domDb.get(new NodeProxy((DocumentImpl) doc, nodeId));
+		    Value val = domDb.get(NativeBroker.this, new NodeProxy((DocumentImpl) doc, nodeId));
 		    if (val == null) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Node " + nodeId + " not found");
@@ -3441,9 +3442,9 @@ public class NativeBroker extends DBBroker {
                 VariableByteInput istream = collectionsDb.getAsStream(pointer);
                 DocumentImpl doc = null;
                 if (type == DocumentImpl.BINARY_FILE)
-                    doc = new BinaryDocument(NativeBroker.this, collection);
+                    doc = new BinaryDocument(pool, collection);
                 else
-                    doc = new DocumentImpl(NativeBroker.this, collection);
+                    doc = new DocumentImpl(pool, collection);
                 doc.read(istream);
                 collection.addDocument(null, NativeBroker.this, doc);
             } catch (EOFException e) {

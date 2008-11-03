@@ -115,13 +115,13 @@ public class IndexStatisticsWorker implements IndexWorker {
         index.updateStats(perDocGuide);
     }
 
-    private void updateDocument(DocumentImpl doc) {
+    private void updateDocument(DBBroker broker, DocumentImpl doc) {
         ElementImpl root = (ElementImpl) doc.getDocumentElement();
         try {
             NodePath path = new NodePath();
             Stack stack = new Stack();
             QName qname;
-            EmbeddedXMLStreamReader reader = doc.getBroker().getXMLStreamReader(root, false);
+            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
             while (reader.hasNext()) {
                 int status = reader.next();
                 switch (status) {
@@ -204,9 +204,9 @@ public class IndexStatisticsWorker implements IndexWorker {
                 VariableByteInput istream = store.getAsStream(pointer);
                 DocumentImpl doc = null;
                 if (type == DocumentImpl.XML_FILE) {
-                    doc = new DocumentImpl(broker);
+                    doc = new DocumentImpl(broker.getBrokerPool());
                     doc.read(istream);
-                    updateDocument(doc);
+                    updateDocument(broker, doc);
                 }
             } catch (Exception e) {
                 IndexStatistics.LOG.warn("An error occurred while regenerating index statistics: " + e.getMessage(), e);

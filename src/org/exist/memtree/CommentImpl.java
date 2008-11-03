@@ -39,7 +39,11 @@ public class CommentImpl extends NodeImpl implements Comment {
 	public CommentImpl(DocumentImpl doc, int nodeNumber) {
 		super(doc, nodeNumber);
 	}
-    
+
+    public boolean hasChildNodes() {
+       return false;
+    }
+
     public Node getFirstChild() {
         return null;
     }

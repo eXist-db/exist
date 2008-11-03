@@ -32,6 +32,7 @@ import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.CacheManager;
+import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.Signatures;
 import org.exist.storage.StorageAddress;
@@ -1145,7 +1146,7 @@ public class DOMFile extends BTree implements Lockable {
 							    } catch (UnsupportedEncodingException e) {
 								LOG.error("can't decode prefix string");
 							    }		
-							    final String NsURI = ((NativeBroker)owner).getBrokerPool().getSymbols().getNamespace(NSId);					                	
+							    final String NsURI = ((NativeBroker)owner).getBrokerPool().getSymbols().getNamespace(NSId);
 							    buf.append(prefix + "{" + NsURI + "}");
 							}		                
 							final ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -1268,7 +1269,6 @@ public class DOMFile extends BTree implements Lockable {
      * ancestor is found, it is traversed to locate the specified descendant
      * node.
      *
-     * @param lockObject
      * @param node
      * @return The node's adress or <code>KEY_NOT_FOUND</code> if the node can not be found.
      * @throws IOException
@@ -1314,7 +1314,7 @@ public class DOMFile extends BTree implements Lockable {
     //			return p;
     //	}
 
-    protected long findValue(Object lockObject, NodeProxy node) throws IOException,
+    protected long findValue(DBBroker broker, NodeProxy node) throws IOException,
 								       BTreeException {
 	if (!lock.hasLock())
 	    LOG.warn("the file doesn't own a lock");
@@ -1343,7 +1343,7 @@ public class DOMFile extends BTree implements Lockable {
 
             try {
                 final NodeProxy parent = new NodeProxy(doc, id, parentPointer);
-                final EmbeddedXMLStreamReader cursor = doc.getBroker().getXMLStreamReader(parent, true);
+                final EmbeddedXMLStreamReader cursor = broker.getXMLStreamReader(parent, true);
                 while(cursor.hasNext()) {
                     int status = cursor.next();
                     if (status != XMLStreamReader.END_ELEMENT) {
@@ -1469,11 +1469,11 @@ public class DOMFile extends BTree implements Lockable {
      *                     Description of the Parameter
      * @return Description of the Return Value
      */
-    public Value get(NodeProxy node) {
+    public Value get(DBBroker broker, NodeProxy node) {
 	if (!lock.hasLock())
 	    LOG.warn("the file doesn't own a lock");		
 	try {
-	    final long p = findValue(owner, node);
+	    final long p = findValue(broker, node);
 	    if (p == KEY_NOT_FOUND) {
 		    return null;
 	    }
@@ -2047,7 +2047,7 @@ public class DOMFile extends BTree implements Lockable {
      * @param node
      * @return string value of the specified node
      */
-    public String getNodeValue(StoredNode node, boolean addWhitespace) {
+    public String getNodeValue(DBBroker broker, StoredNode node, boolean addWhitespace) {
         if (!lock.hasLock())
             LOG.warn("the file doesn't own a lock");
         try {
@@ -2059,7 +2059,7 @@ public class DOMFile extends BTree implements Lockable {
             if (rec == null) {
                 // fallback to a btree lookup if the node could not be found
                 // by its storage address
-                address = findValue(this, new NodeProxy(node));
+                address = findValue(broker, new NodeProxy(node));
                 if (address == BTree.KEY_NOT_FOUND) {
                     LOG.warn("node value not found : " + node);
                     return null;
@@ -2070,7 +2070,7 @@ public class DOMFile extends BTree implements Lockable {
             // we collect the string values in binary format and append to a ByteArrayOutputStream
             final ByteArrayOutputStream os = new ByteArrayOutputStream();
             // now traverse the tree
-            getNodeValue((DocumentImpl)node.getOwnerDocument(), os, rec, true, addWhitespace);
+            getNodeValue(broker.getBrokerPool(), (DocumentImpl)node.getOwnerDocument(), os, rec, true, addWhitespace);
             final byte[] data = os.toByteArray();
             String value;
             try {
@@ -2094,7 +2094,7 @@ public class DOMFile extends BTree implements Lockable {
      * Recursive method to retrieve the string values of the root node
      * and all its descendants.
      */
-    private void getNodeValue(DocumentImpl doc, ByteArrayOutputStream os, RecordPos rec,
+    private void getNodeValue(BrokerPool pool, DocumentImpl doc, ByteArrayOutputStream os, RecordPos rec,
 			      boolean isTopNode, boolean addWhitespace) {
         if (!lock.hasLock())
             LOG.warn("the file doesn't own a lock");
@@ -2156,7 +2156,7 @@ public class DOMFile extends BTree implements Lockable {
 	    readOffset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
 	    final int dlnLen = ByteConversion.byteToShort(data, readOffset);
 	    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-	    final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+	    final int nodeIdLen = pool.getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
 	    readOffset += nodeIdLen;
 	    final short attributes = ByteConversion.byteToShort(data, readOffset);
 	    //Ignore the following NS data which are of no use
@@ -2166,7 +2166,7 @@ public class DOMFile extends BTree implements Lockable {
 	    for (int i = 0; i < children; i++) {
 
 		//recursive call : we ignore attributes children
-		getNodeValue(doc, os, rec, false, addWhitespace);
+		getNodeValue(pool, doc, os, rec, false, addWhitespace);
 		if (extraWhitespace)
 		    os.write((byte) ' ');
 	    }
@@ -2176,7 +2176,7 @@ public class DOMFile extends BTree implements Lockable {
     case Node.CDATA_SECTION_NODE: {
 	    final int dlnLen = ByteConversion.byteToShort(data, readOffset);
 	    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-	    final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+	    final int nodeIdLen = pool.getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
 	    readOffset += nodeIdLen;
 	    os.write(data, readOffset, realLen - (StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen));
 	    break;
@@ -2188,7 +2188,7 @@ public class DOMFile extends BTree implements Lockable {
             final boolean hasNamespace = (data[start] & 0x10) == 0x10;
             final int dlnLen = ByteConversion.byteToShort(data, readOffset);
             readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-            final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+            final int nodeIdLen = pool.getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
             readOffset += nodeIdLen;
             readOffset += Signatures.getLength(idSizeType);
             if (hasNamespace) {
@@ -2204,7 +2204,7 @@ public class DOMFile extends BTree implements Lockable {
         if (isTopNode) {
             final int dlnLen = ByteConversion.byteToShort(data, readOffset);
             readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-            final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+            final int nodeIdLen = pool.getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
             readOffset += nodeIdLen;
             os.write(data, readOffset, realLen - (StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen));
         }

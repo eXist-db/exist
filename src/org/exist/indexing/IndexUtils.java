@@ -1,22 +1,23 @@
 package org.exist.indexing;
 
-import java.util.Iterator;
-
 import org.exist.dom.AttrImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
+import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
 
 /**
  * Various utility methods to be used by Index implementations.
  */
 public class IndexUtils {
 
-    public static void scanNode(Txn transaction, StoredNode node, StreamListener listener) {
-        Iterator iterator = node.getDocument().getBroker().getNodeIterator(node);
+    public static void scanNode(DBBroker broker, Txn transaction, StoredNode node, StreamListener listener) {
+        Iterator iterator = broker.getNodeIterator(node);
         iterator.next();
         NodePath path = node.getPath();
         scanNode(transaction, iterator, node, listener, path);

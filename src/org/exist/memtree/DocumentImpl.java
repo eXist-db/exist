@@ -1222,8 +1222,12 @@ public class DocumentImpl extends NodeImpl implements Document {
         }
         return count;
     }
-    
-	public String getLocalName() {		
+
+    public boolean hasChildNodes() {
+        return getChildCount() > 0;
+    }
+
+    public String getLocalName() {
         return "";
 	}   
 	

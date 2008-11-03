@@ -46,11 +46,11 @@ import org.w3c.dom.Node;
  */
 public class OrderedValueSequence extends AbstractSequence {
 
-	private OrderSpec orderSpecs[];
+    private OrderSpec orderSpecs[];
 	private Entry[] items = null;
 	private int count = 0;
 	private int state = 0;
-    
+
     // used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
     
@@ -187,7 +187,7 @@ public class OrderedValueSequence extends AbstractSequence {
                         DocumentImpl expandedDoc = doc.expandRefs(null);
                         org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
                         if (newDoc != null) {
-                            NodeId rootId = newDoc.getBroker().getBrokerPool().getNodeFactory().createInstance();
+                            NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
                             for (int j = i; j < count; j++) {
                                 v = (NodeValue) items[j].item;
                                 if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {

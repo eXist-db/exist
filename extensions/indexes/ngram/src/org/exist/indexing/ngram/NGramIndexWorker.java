@@ -114,14 +114,15 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private char[] buf = new char[1024];
     private int currentChar = 0;
     private DocumentImpl currentDoc = null;
-
+    private DBBroker broker;
     private IndexController controller;
     private Map ngrams = new TreeMap();
     private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
     private NGramMatchListener matchListener = null;
 
-    public NGramIndexWorker(org.exist.indexing.ngram.NGramIndex index) {
+    public NGramIndexWorker(DBBroker broker, org.exist.indexing.ngram.NGramIndex index) {
+        this.broker = broker;
         this.index = index;
         Arrays.fill(buf, ' ');
     }
@@ -453,7 +454,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 } else {
                     Value startRef = new NGramQNameKey(collectionId, (QName)qnames.get(q), 
                     	index.getBrokerPool().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
-                    Value endRef = new NGramQNameKey(collectionId, (QName)qnames.get(q), 
+                    Value endRef = new NGramQNameKey(collectionId, (QName)qnames.get(q),
                     		index.getBrokerPool().getSymbols(), ((StringValue)end).getStringValue().toLowerCase());
                     query = new IndexQuery(IndexQuery.BW, startRef, endRef);
                 }
@@ -512,7 +513,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
             return null;
-        IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(node.getDocument().getBroker());
+        IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
             Map config = (Map) indexConf.getCustomIndexSpec(NGramIndex.ID);
             if (config == null)
@@ -639,7 +640,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     	currentDoc = document;
         //config = null;
         contentStack = null;
-        IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
+        IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null)
             config = (Map) indexConf.getCustomIndexSpec(org.exist.indexing.ngram.NGramIndex.ID);
         mode = newMode;

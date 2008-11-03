@@ -305,7 +305,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if (node == null)
             return;
         StreamListener listener = new ValueIndexStreamListener();
-        IndexUtils.scanNode(null, node, listener);
+        IndexUtils.scanNode(broker, null, node, listener);
     }
 
     public void storeText(TextImpl node, NodePath currentPath, int indexingHint) {

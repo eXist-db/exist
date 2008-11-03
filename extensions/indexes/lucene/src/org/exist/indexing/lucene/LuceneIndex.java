@@ -107,7 +107,7 @@ public class LuceneIndex extends AbstractIndex {
     }
 
     public IndexWorker getWorker(DBBroker broker) {
-        return new LuceneIndexWorker(this);
+        return new LuceneIndexWorker(this, broker);
     }
 
     public boolean checkIndex(DBBroker broker) {

@@ -139,8 +139,6 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
                 lock.acquire(Lock.WRITE_LOCK);
                 put(doc.getDocId(), doc);
-                // we now have a lock on the doc, change its broker
-                doc.setBroker(broker);
                 lockMap.add(doc);
             }
         }
@@ -301,7 +299,6 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
                 dlock.acquire(Lock.WRITE_LOCK);
             else
                 dlock.acquire(Lock.READ_LOCK);
-            d.setBroker(broker);
         }
 	}
 	

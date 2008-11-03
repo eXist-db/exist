@@ -1,17 +1,44 @@
 package org.exist.fluent;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.security.xacml.AccessContext;
-import org.exist.source.*;
-import org.exist.storage.*;
-import org.exist.xquery.*;
-import org.exist.xquery.functions.*;
-import org.exist.xquery.value.*;
+import org.exist.source.StringSource;
+import org.exist.source.StringSourceWithMapKey;
+import org.exist.storage.DBBroker;
+import org.exist.storage.XQueryPool;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Expression;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.PathExpr;
+import org.exist.xquery.SequenceConstructor;
+import org.exist.xquery.UserDefinedFunction;
+import org.exist.xquery.Variable;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.FunExactlyOne;
+import org.exist.xquery.functions.FunExists;
+import org.exist.xquery.functions.FunZeroOrOne;
+import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Provides facilities for performing queries on a database.  It cannot
@@ -303,7 +330,7 @@ public class QueryService implements Cloneable {
 		}
 		for (Map.Entry<QName, Object> entry : bindings.entrySet()) {
 			context.declareVariable(
-					new org.exist.dom.QName(entry.getKey().getLocalPart(), entry.getKey().getNamespaceURI(), entry.getKey().getPrefix()),
+					entry.getKey().toString(),
 					convertValue(entry.getValue()));
 		}
 		if (params != null) for (int i = 0; i < params.length; i++) {

@@ -1,19 +1,29 @@
 package org.exist.fluent;
 
-import java.io.IOException;
-import java.util.*;
-
-import javax.xml.datatype.*;
-
-import org.exist.collections.*;
-import org.exist.collections.triggers.*;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
-import org.exist.dom.*;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.*;
-import org.w3c.dom.*;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.NodeList;
+
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Date;
 
 /**
  * A node in the database.  Nodes are most often contained in XML documents, but can also
@@ -345,30 +355,40 @@ public class Node extends Item {
 	private DocumentTrigger fireTriggerBefore(Transaction tx) throws TriggerException {
 		if (!(item instanceof NodeProxy)) return null;
 		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
-		CollectionConfiguration config = docimpl.getCollection().getConfiguration(docimpl.getBroker());
-		if (config == null) return null;
+        DBBroker broker = null;
 		try {
-			DocumentTrigger trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, docimpl.getBroker(), docimpl.getCollection());
+            broker = db.acquireBroker();
+            CollectionConfiguration config = docimpl.getCollection().getConfiguration(broker);
+            if (config == null) return null;
+			DocumentTrigger trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, docimpl.getCollection());
 			if (trigger == null) return null;
-			trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, docimpl.getBroker(), tx.tx, docimpl.getURI(), docimpl);
+			trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, broker, tx.tx, docimpl.getURI(), docimpl);
 			return trigger;
 		} catch (CollectionConfigurationException e) {
 			throw new DatabaseException(e);
-		}
+		} finally {
+            db.releaseBroker(broker);
+        }
 	}
 	
 	private void fireTriggerAfter(Transaction tx, DocumentTrigger trigger) {
 		if (trigger == null) return;
-		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
-		trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, docimpl.getBroker(), tx.tx, docimpl.getURI(), docimpl);		
-	}
+        DBBroker broker = null;
+        try {
+            broker = db.acquireBroker();
+            DocumentImpl docimpl = ((NodeProxy) item).getDocument();
+            trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, broker, tx.tx, docimpl.getURI(), docimpl);
+        } finally {
+            db.releaseBroker(broker);
+        }
+    }
 
 	private void defrag(Transaction tx) {
 		if (!(item instanceof NodeProxy)) return;
 		DBBroker broker = null;
 		try {
 			broker = db.acquireBroker();
-			Integer fragmentationLimit = (Integer) broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+			Integer fragmentationLimit = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
 			if (fragmentationLimit == null) fragmentationLimit = Integer.valueOf(0);
 			DocumentImpl doc = ((NodeProxy) item).getDocument();
 			if (doc.getMetadata().getSplitCount() > fragmentationLimit) broker.defragXMLResource(tx.tx, doc);

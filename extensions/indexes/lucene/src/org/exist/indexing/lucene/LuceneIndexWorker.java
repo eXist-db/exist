@@ -68,7 +68,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private IndexController controller;
 
     private LuceneMatchListener matchListener = null;
-    
+
+    private DBBroker broker;
+
     private DocumentImpl currentDoc = null;
     private int mode = 0;
     
@@ -80,8 +82,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private int maxCachedNodesSize = 4096 * 1024;
 
-    public LuceneIndexWorker(LuceneIndex parent) {
+    public LuceneIndexWorker(LuceneIndex parent, DBBroker broker) {
         this.index = parent;
+        this.broker = broker;
     }
 
     public String getIndexId() {
@@ -122,7 +125,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         currentDoc = document;
         //config = null;
         contentStack = null;
-        IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
+        IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null)
             config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
         mode = newMode;

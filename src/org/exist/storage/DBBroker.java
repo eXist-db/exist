@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -116,22 +115,11 @@ public abstract class DBBroker extends Observable {
 
     protected IndexController indexController;
 
-    //TODO : use a property object
-	public HashMap customProperties = new HashMap();
-
     public DBBroker(BrokerPool pool, Configuration config) throws EXistException {
 		this.config = config;
 		Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
 		if (temp != null)
 			caseSensitive = temp.booleanValue();
-
-		//Copy specific properties
-		//TODO : think about an automatic copy
-		customProperties.put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR,
-				new Integer(config.getInteger(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)));
-		temp = (Boolean) config.getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS);
-		if (temp != null)
-			customProperties.put(PROPERTY_XUPDATE_CONSISTENCY_CHECKS, new Boolean(temp.booleanValue()));
 
 		this.pool = pool;
 		xqueryService = new XQuery(this);

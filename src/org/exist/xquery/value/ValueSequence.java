@@ -232,7 +232,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                     DocumentImpl expandedDoc = doc.expandRefs(null);
                     org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
                     if (newDoc != null) {
-                        NodeId rootId = newDoc.getBroker().getBrokerPool().getNodeFactory().createInstance();
+                        NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
                         for (int j = i; j <= size; j++) {
                             v = (NodeValue) values[j];
                             if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {

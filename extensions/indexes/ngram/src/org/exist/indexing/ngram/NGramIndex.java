@@ -22,6 +22,7 @@
 package org.exist.indexing.ngram;
 
 import org.apache.log4j.Logger;
+import org.exist.backup.RawDataBackup;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.RawBackupSupport;
@@ -30,7 +31,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BFile;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.backup.RawDataBackup;
 import org.w3c.dom.Element;
 
 import java.io.File;
@@ -97,7 +97,7 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
 
     public IndexWorker getWorker(DBBroker broker) {
     	//TODO : ensure singleton ? a pool ?    	
-        return new NGramIndexWorker(this);
+        return new NGramIndexWorker(broker, this);
     }
 
     public int getN() {
