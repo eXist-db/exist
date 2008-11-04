@@ -38,6 +38,26 @@
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
     <option name="DEPLOY_AFTER_MAKE" value="0" />
+    <excludeFromCompile>
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/xquery/modules/spatial/FunGeometricProperties.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/xquery/modules/spatial/FunGeometricProperties.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndexWorker.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/AbstractGMLJDBCIndexWorker.java" />
+      <file url="file://$PROJECT_DIR$/tools/izpack/src/org/exist/izpack/CommandLineInstaller.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/xquery/modules/spatial/FunGMLProducers.java" />
+      <file url="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/svn/SVNLog.java" />
+      <file url="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/xslfo/RenderFunction.java" />
+      <file url="file://$PROJECT_DIR$/tools/XFormsFilter/src/uk/gov/devonline/www/xforms/XFormsFilter.java" />
+      <file url="file://$PROJECT_DIR$/tools/izpack/src/org/exist/izpack/PasswordValidator.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/xquery/modules/spatial/FunSpatialSearch.java" />
+      <file url="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/xslfo/XSLFOModule.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/xquery/modules/spatial/SpatialModule.java" />
+      <file url="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/svn/SVNModule.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/AbstractGMLJDBCIndex.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndex.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/org/exist/indexing/spatial/GMLIndexTest.java" />
+      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/org/exist/indexing/spatial/AllIndexTests.java" />
+    </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
       <entry name=".+\.(gif|png|jpeg|jpg)" />
@@ -52,6 +72,7 @@
       <entry name="?*.html" />
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
+      <entry name="?*.config" />
     </wildcardResourcePatterns>
   </component>
   <component name="DependenciesAnalyzeManager">
@@ -261,7 +282,7 @@
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
-    <output url="file://$PROJECT_DIR$/build/classes" />
+    <output url="file://$PROJECT_DIR$/build/intellij" />
   </component>
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
@@ -296,6 +317,7 @@
         </entry>
       </map>
     </option>
+    <option name="myVersion" value="123" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
@@ -325,10 +347,6 @@
     <library name="core">
       <CLASSES>
         <root url="file://$PROJECT_DIR$/lib/core" />
-        <root url="jar://$PROJECT_DIR$/exist.jar!/" />
-        <root url="jar://$PROJECT_DIR$/exist-fluent.jar!/" />
-        <root url="jar://$PROJECT_DIR$/start.jar!/" />
-        <root url="jar://$PROJECT_DIR$/exist-optional.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -391,6 +409,13 @@
       <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/lib/extensions" recursive="false" />
+    </library>
+    <library name="main">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/build/classes" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
     </library>
   </component>
 </project>
