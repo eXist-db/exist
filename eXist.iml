@@ -306,9 +306,9 @@
       <sourceFolder url="file://$MODULE_DIR$/tools/XFormsFilter/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tools/ircbot/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tools/izpack/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tools/jmx/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tools/requestlog/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tools/wrapper/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/test/temp" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -333,6 +333,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="main" level="project" />
     <orderEntryProperties />
   </component>
 </module>
