@@ -69,9 +69,12 @@ public class RootNode extends Step {
         DocumentSet ds = context.getStaticallyKnownDocuments();
         if (ds == null || ds.getDocumentCount() == 0) return Sequence.EMPTY_SEQUENCE;
         
-        // if the expression occurs in a nested context, we might have cached the
-        // document set
-        if (cachedDocs != null && cachedDocs.equalDocs(ds)) return cached;
+//        // if the expression occurs in a nested context, we might have cached the
+//        // document set
+//        // TODO: disabled cache for now as it may cause concurrency issues
+//        // better use compile-time inspection and maybe a pragma to mark those
+//        // sections in the query that can be safely cached
+//        if (cachedDocs != null && cachedDocs.equalDocs(ds)) return cached;
         
         // check if the loaded documents should remain locked
         NodeSet result = new NewArrayNodeSet(2);

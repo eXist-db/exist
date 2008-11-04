@@ -94,10 +94,13 @@ public class FunDoc extends Function {
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		String path = arg.itemAt(0).getStringValue();
+            // TODO: disabled cache for now as it may cause concurrency issues
+            // better use compile-time inspection and maybe a pragma to mark those
+            // sections in the query that can be safely cached.
     		// check if we can return a cached sequence
-    		if (cached != null && path.equals(cachedPath)) {
-    			return cached;
-    		}
+//    		if (cached != null && path.equals(cachedPath)) {
+//    			return cached;
+//    		}
     		
     		try {
     			result = DocUtils.getDocument(this.context, path);

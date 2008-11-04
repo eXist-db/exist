@@ -255,23 +255,26 @@ public class LocationStep extends Step {
          * result nodeset is *really* null result = NodeSet.EMPTY_SET; //Try to
          * return cached results else
          */
-        if (cached != null && cached.isValid(contextSequence, contextItem)) {
-	    
-            // WARNING : commented since predicates are *also* applied below !
-            // -pb
-            /*
-             * if (predicates.size() > 0) { applyPredicate(contextSequence,
-             * cached.getResult()); } else {
-             */
-            result = cached.getResult();
-            if (context.getProfiler().isEnabled()) {
-            	LOG.debug("Using cached results");
-            }
-            context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                                          "Using cached results", result);
-
-            // }
-        } else if (needsComputation()) {
+        // TODO: disabled cache for now as it may cause concurrency issues
+        // better use compile-time inspection and maybe a pragma to mark those
+        // sections in the query that can be safely cached
+//        if (cached != null && cached.isValid(contextSequence, contextItem)) {
+//
+//            // WARNING : commented since predicates are *also* applied below !
+//            // -pb
+//            /*
+//             * if (predicates.size() > 0) { applyPredicate(contextSequence,
+//             * cached.getResult()); } else {
+//             */
+//            result = cached.getResult();
+//            if (context.getProfiler().isEnabled()) {
+//            	LOG.debug("Using cached results");
+//            }
+//            context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+//                                          "Using cached results", result);
+//
+//            // }
+        if (needsComputation()) {
             if (contextSequence == null)
                 throw new XPathException(getASTNode(), "XPDY0002 : undefined context sequence for '" + this.toString() + "'");
             switch (axis) {
@@ -473,26 +476,31 @@ public class LocationStep extends Step {
         }
         if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null ||
-                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
-                ElementIndex index = context.getBroker().getElementIndex();
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                                                  "OPTIMIZATION",
-                                                  "Using structural index '" + index.toString() + "'");
-                // TODO : why a null selector here ? We have one below !
-                currentSet = index.findElementsByTagName(ElementValue.ATTRIBUTE, 
-                		docs, test.getName(), null);
-                currentDocs = docs;
-                registerUpdateListener();
-            }
-            switch (axis) {
-                case Constants.ATTRIBUTE_AXIS:
-                    return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, contextId);
-                case Constants.DESCENDANT_ATTRIBUTE_AXIS:
-                    return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, contextId);
-                default:
-                    throw new IllegalArgumentException("Unsupported axis specified");
+            synchronized (context) {
+                if (currentSet == null || currentDocs == null ||
+                        (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                    ElementIndex index = context.getBroker().getElementIndex();
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                                                      "OPTIMIZATION",
+                                                      "Using structural index '" + index.toString() + "'");
+                    // TODO : why a null selector here ? We have one below !
+                    currentSet = index.findElementsByTagName(
+                                                             ElementValue.ATTRIBUTE, docs, test.getName(), null);
+                    currentDocs = docs;
+                    registerUpdateListener();
+                }
+                switch (axis) {
+                    case Constants.ATTRIBUTE_AXIS:
+                        return currentSet.selectParentChild(contextSet,
+                                                            NodeSet.DESCENDANT, contextId);
+                    case Constants.DESCENDANT_ATTRIBUTE_AXIS:
+                        return currentSet.selectAncestorDescendant(contextSet,
+                                                                   NodeSet.DESCENDANT, false, contextId);
+                    default:
+                        throw new IllegalArgumentException(
+                                                           "Unsupported axis specified");
+                }
             }
         } else {
         	DocumentSet docs = getDocumentSet(contextSet);
@@ -557,20 +565,23 @@ public class LocationStep extends Step {
             return result;
         } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            // TODO : understand why this one is different from the other ones
-            if (currentSet == null || currentDocs == null ||
-                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
-                ElementIndex index = context.getBroker().getElementIndex();
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                                                  "OPTIMIZATION",
-                                                  "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                                                         docs, test.getName(), null);
-                currentDocs = docs;
-                registerUpdateListener();
+            synchronized (context) {
+                // TODO : understand why this one is different from the other ones
+                if (currentSet == null || currentDocs == null ||
+                        (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                    ElementIndex index = context.getBroker().getElementIndex();
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                                                      "OPTIMIZATION",
+                                                      "Using structural index '" + index.toString() + "'");
+                    currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
+                                                             docs, test.getName(), null);
+                    currentDocs = docs;
+                    registerUpdateListener();
+                }
+                return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT,
+                                                    contextId);
             }
-            return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, contextId);
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             ElementIndex index = context.getBroker().getElementIndex();
@@ -613,28 +624,32 @@ public class LocationStep extends Step {
             return vset;
         } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            // TODO : understand why this one is different from the other ones
-            if (currentSet == null || currentDocs == null ||
-                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
-                ElementIndex index = context.getBroker().getElementIndex();
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                                                  "OPTIMIZATION",
-                                                  "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                                                         docs, test.getName(), null);
-                currentDocs = docs;
-                registerUpdateListener();
-            }
-            switch (axis) {
-                case Constants.DESCENDANT_SELF_AXIS:
-                    return currentSet.selectAncestorDescendant(contextSet, 
-                    		NodeSet.DESCENDANT, true, contextId);
-                case Constants.DESCENDANT_AXIS:
-                    return currentSet.selectAncestorDescendant(contextSet, 
-                    		NodeSet.DESCENDANT, false, contextId);
-                default:
-                    throw new IllegalArgumentException("Unsupported axis specified");
+            synchronized (context) {
+// TODO : understand why this one is different from the other ones
+                if (currentSet == null || currentDocs == null ||
+                        (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                    ElementIndex index = context.getBroker().getElementIndex();
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                                                      "OPTIMIZATION",
+                                                      "Using structural index '" + index.toString() + "'");
+                    currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
+                                                             docs, test.getName(), null);
+                    currentDocs = docs;
+                    registerUpdateListener();
+                }
+                switch (axis) {
+                    case Constants.DESCENDANT_SELF_AXIS:
+                        NodeSet tempSet = currentSet.selectAncestorDescendant(contextSet,
+                                                                              NodeSet.DESCENDANT, true, contextId);
+                        return tempSet;
+                    case Constants.DESCENDANT_AXIS:
+                        return currentSet.selectAncestorDescendant(contextSet,
+                                                                   NodeSet.DESCENDANT, false, contextId);
+                    default:
+                        throw new IllegalArgumentException(
+                                                           "Unsupported axis specified");
+                }
             }
         } else {
             DocumentSet docs = contextSet.getDocumentSet();
@@ -704,25 +719,28 @@ public class LocationStep extends Step {
         } else {
         	//TODO : no test on preloaded data ?
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null
-                || !(docs.equalDocs(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                                                  "OPTIMIZATION",
-                                                  "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                                                         docs, test.getName(), null);
-                currentDocs = docs;
-                registerUpdateListener();
-            }
-            switch (axis) {
-                case Constants.PRECEDING_SIBLING_AXIS:
-                    return currentSet.selectPrecedingSiblings(contextSet, contextId);
-                case Constants.FOLLOWING_SIBLING_AXIS:
-                    return currentSet.selectFollowingSiblings(contextSet, contextId);
-                default:
-                    throw new IllegalArgumentException("Unsupported axis specified");
+            synchronized (context) {
+                if (currentSet == null || currentDocs == null
+                    || !(docs.equalDocs(currentDocs))) {
+                    ElementIndex index = context.getBroker().getElementIndex();
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                                                      "OPTIMIZATION",
+                                                      "Using structural index '" + index.toString() + "'");
+                    currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
+                                                             docs, test.getName(), null);
+                    currentDocs = docs;
+                    registerUpdateListener();
+                }
+                switch (axis) {
+                    case Constants.PRECEDING_SIBLING_AXIS:
+                        return currentSet.selectPrecedingSiblings(contextSet, contextId);
+                    case Constants.FOLLOWING_SIBLING_AXIS:
+                        return currentSet.selectFollowingSiblings(contextSet, contextId);
+                    default:
+                        throw new IllegalArgumentException(
+                                                           "Unsupported axis specified");
+                }
             }
         }
     }
@@ -791,19 +809,21 @@ public class LocationStep extends Step {
         } else {
         	//TODO : no test on preloaded data ?
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null
-                || !(docs.equalDocs(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                                                  "OPTIMIZATION",
-                                                  "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, 
-                		docs, test.getName(), null);
-                currentDocs = docs;
-                registerUpdateListener();
+            synchronized (context) {
+                if (currentSet == null || currentDocs == null
+                    || !(docs.equalDocs(currentDocs))) {
+                    ElementIndex index = context.getBroker().getElementIndex();
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                                                      "OPTIMIZATION",
+                                                      "Using structural index '" + index.toString() + "'");
+                    currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
+                                                             docs, test.getName(), null);
+                    currentDocs = docs;
+                    registerUpdateListener();
+                }
+                return currentSet.selectPreceding(contextSet);
             }
-            return currentSet.selectPreceding(contextSet);
         }
     }
 
@@ -834,19 +854,21 @@ public class LocationStep extends Step {
         } else {
         	//TODO : no test on preloaded data ?
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null
-                || !(docs.equalDocs(currentDocs))) {
-                ElementIndex index = context.getBroker().getElementIndex();
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                                                  "OPTIMIZATION",
-                                                  "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, 
-                		docs, test.getName(), null);
-                currentDocs = docs;
-                registerUpdateListener();
+            synchronized (context) {
+                if (currentSet == null || currentDocs == null
+                    || !(docs.equalDocs(currentDocs))) {
+                    ElementIndex index = context.getBroker().getElementIndex();
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                                                      "OPTIMIZATION",
+                                                      "Using structural index '" + index.toString() + "'");
+                    currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
+                                                             docs, test.getName(), null);
+                    currentDocs = docs;
+                    registerUpdateListener();
+                }
+                return currentSet.selectFollowing(contextSet);
             }
-            return currentSet.selectFollowing(contextSet);
         }
     }
 
@@ -913,25 +935,30 @@ public class LocationStep extends Step {
             return result;
         } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null ||
-                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
-                ElementIndex index = context.getBroker().getElementIndex();
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                                                  "OPTIMIZATION",
-                                                  "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, 
-                		docs, test.getName(), null);
-                currentDocs = docs;
-                registerUpdateListener();
-            }
-            switch (axis) {
-                case Constants.ANCESTOR_SELF_AXIS:
-                    return currentSet.selectAncestors(contextSet, true, contextId);
-                case Constants.ANCESTOR_AXIS:
-                    return currentSet.selectAncestors(contextSet, false, contextId);
-                default:
-                    throw new IllegalArgumentException("Unsupported axis specified");
+            synchronized (context) {
+                if (currentSet == null || currentDocs == null ||
+                        (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                    ElementIndex index = context.getBroker().getElementIndex();
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                                                      "OPTIMIZATION",
+                                                      "Using structural index '" + index.toString() + "'");
+                    currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
+                                                             docs, test.getName(), null);
+                    currentDocs = docs;
+                    registerUpdateListener();
+                }
+                switch (axis) {
+                    case Constants.ANCESTOR_SELF_AXIS:
+                        return currentSet.selectAncestors(contextSet, true,
+                                                          contextId);
+                    case Constants.ANCESTOR_AXIS:
+                        return currentSet.selectAncestors(contextSet, false,
+                                                          contextId);
+                    default:
+                        throw new IllegalArgumentException(
+                                                           "Unsupported axis specified");
+                }
             }
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
@@ -982,19 +1009,21 @@ public class LocationStep extends Step {
             return result;
         } else if (hasPreloadedData()) {
             DocumentSet docs = getDocumentSet(contextSet);
-            if (currentSet == null || currentDocs == null ||
-                    (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
-                ElementIndex index = context.getBroker().getElementIndex();
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                                                  "OPTIMIZATION",
-                                                  "Using structural index '" + index.toString() + "'");
-                currentSet = index.findElementsByTagName(ElementValue.ELEMENT, 
-                		docs, test.getName(), null);
-                currentDocs = docs;
-                registerUpdateListener();
+            synchronized (context) {
+                if (currentSet == null || currentDocs == null ||
+                        (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                    ElementIndex index = context.getBroker().getElementIndex();
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                                                      "OPTIMIZATION",
+                                                      "Using structural index '" + index.toString() + "'");
+                    currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
+                                                             docs, test.getName(), null);
+                    currentDocs = docs;
+                    registerUpdateListener();
+                }
+                return contextSet.selectParentChild(currentSet, NodeSet.ANCESTOR);
             }
-            return contextSet.selectParentChild(currentSet, NodeSet.ANCESTOR); 
         } else {
         	DocumentSet docs = getDocumentSet(contextSet);
             ElementIndex index = context.getBroker().getElementIndex();            
@@ -1047,10 +1076,20 @@ public class LocationStep extends Step {
         if (listener == null) {
             listener = new UpdateListener() {
                     public void documentUpdated(DocumentImpl document, int event) {
-                        cached = null;
-                        // clear all
-                        currentDocs = null;
-                        currentSet = null;
+                        synchronized (context) {
+                            cached = null;
+                            if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
+                                // clear all
+                                currentDocs = null;
+                                currentSet = null;
+                            } else {
+                                if (currentDocs != null
+                                        && currentDocs.contains(document.getDocId())) {
+                                    currentDocs = null;
+                                    currentSet = null;
+                                }
+                            }
+                        }
                     }
 
                     public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
