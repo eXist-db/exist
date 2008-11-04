@@ -26,6 +26,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        NodePathTest.class,
         RemoveCollectionTest.class,
         ReindexTest.class,
         ShutdownTest.class,
