@@ -1,4 +1,4 @@
-﻿﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <test xmlns="http://exist.sourceforge.net/NS/exist">
     <configuration>
         <connection id="con" user="admin" password="" base="xmldb:exist://embedded-eXist-server"/>
@@ -90,6 +90,12 @@
                             <include path="//head"/>
                             <include path="//cell"/>
                         </fulltext>
+						<lucene>
+							<text qname="p"/>
+							<text qname="l"/>
+							<text qname="head"/>
+							<text qname="cell"/>
+						</lucene>
                     </index>
                 </collection>
             </store>
@@ -170,6 +176,64 @@
                 <xquery collection="/db/jgoethe" query="//div3[p &amp;= 'liebe sinnlich*']"/>
                 <xquery collection="/db/jgoethe" query="//((#exist:optimize#) { div3[p &amp;= 'liebe sinnlich*'] })"/>
             </sequence>
+            <sequence repeat="10">
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[ft:query(., 'liebe')]"/>
+                <xquery collection="/db/jgoethe"><![CDATA[
+                    let $t := "liebe"
+                    return
+                            //((#exist:optimize#) { p[ft:query(., $t)] }) |
+                            //((#exist:optimize#) { l[ft:query(., $t)] }) |
+                            //((#exist:optimize#) { head[ft:query(., $t)] }) |
+                            //((#exist:optimize#) { cell[ft:query(., $t)] })
+                ]]></xquery>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[ft:query(., 'liebe sinnlichkeit')]"/>
+                <xquery collection="/db/jgoethe"><![CDATA[
+                    let $t := "liebe sinnlichkeit"
+                    return
+                            //((#exist:optimize#) { p[ft:query(., $t)] }) |
+                            //((#exist:optimize#) { l[ft:query(., $t)] }) |
+                            //((#exist:optimize#) { head[ft:query(., $t)] }) |
+                            //((#exist:optimize#) { cell[ft:query(., $t)] })
+                ]]></xquery>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[ft:query(., 'sinnlich*')]"/>
+                <xquery collection="/db/jgoethe"><![CDATA[
+                    let $t := "sinnlich*"
+                    return
+                            //((#exist:optimize#) { p[ft:query(., $t)] }) |
+                            //((#exist:optimize#) { l[ft:query(., $t)] }) |
+                            //((#exist:optimize#) { head[ft:query(., $t)] }) |
+                            //((#exist:optimize#) { cell[ft:query(., $t)] })
+                ]]></xquery>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[ft:query(., 'liebe sinnlich*')]"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[ft:query(., 'schmerz* herz')]"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[ft:query(., 'himmel hölle')]"/>
+                
+                <xquery collection="/db/jgoethe" query="/TEI.2//p[ft:query(., 'liebe')]"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//p[ft:query(., 'liebe sinnlichkeit')]"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//p[ft:query(., 'liebe sinnlich*')]"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//p[ft:query(., 'schmerz* herz')]"/>
+                
+                <xquery collection="/db/jgoethe" query="/TEI.2//div3[ft:query(p, 'schmerz* herz')]/head"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//div3[ft:query(p, 'liebe sinnlich*')]/head"/>
+                
+                <xquery collection="/db/jgoethe" query="//div3[ft:query(head, 'götz von berlichingen')]"/>
+                <xquery collection="/db/jgoethe" query="//*[ft:query(head, 'götz von berlichingen')]"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//div3[ft:query(head, 'götz von berlichingen')]"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//*[ft:query(head, 'götz von berlichingen')]"/>
+                
+                <xquery collection="/db/jgoethe" query="//div3[ft:query(head, 'berlichingen')][ft:query(p, 'volck?')]"/>
+                
+                <xquery collection="/db/jgoethe" query="//div3[ft:query(head, 'faust')]//p[ft:query(., 'todt')]"/>
+                <xquery collection="/db/jgoethe" query="//*[ft:query(head, 'faust')]//p[ft:query(., 'todt')]"/>
+                <xquery collection="/db/jgoethe" query="//div3[ft:query(head, 'faust')]//p[ft:query(., 'todt')]"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//div3[ft:query(head, 'faust')]//p[ft:query(., 'todt')]"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//*[ft:query(head, 'faust')]//p[ft:query(., 'todt')]"/>
+                <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[ft:query(head, 'faust')]//p[ft:query(., 'todt')]"/>
+                <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[ft:query(head, 'faust')]//p[ft:query(., 'tod*')]"/>
+                
+                <xquery collection="/db/jgoethe" query="//div3[ft:query(p, 'liebe')]"/>
+                <xquery collection="/db/jgoethe" query="//div3[ft:query(p, 'liebe sinnlich*')]"/>
+            </sequence>
         </thread>
         <tear-down connection="con">
             <!--remove-collection parent="/db" collection="jgoethe" description="remove /db/jgoethe"/-->
@@ -194,6 +258,11 @@
 
                         <ngram qname="title"/>
                         <ngram qname="author"/>
+
+						<lucene>
+							<text qname="title"/>
+							<text match="/dblp//author"/>
+						</lucene>
                     </index>
                 </collection>
             </store>
@@ -247,6 +316,21 @@
                 <xquery collection="/db/library" query="//inproceedings[ngram:contains(title, 'xquery')]"/>
                 <xquery collection="/db/library" query="//*[ngram:contains(title, 'xquery')]"/>
                 <xquery collection="/db/library" query="//*[ngram:contains(title, 'xml')][year = 2005]"/>
+            </sequence>
+            <sequence repeat="15" description="Lucene index" optimize="yes">
+                <xquery collection="/db/library" query="//*[ft:query(author, 'Bjarne')]"/>
+                <xquery collection="/db/library" query="//inproceedings[ft:query(author, 'bjarne')]"/>
+                <xquery collection="/db/library" query="//inproceedings[ngram:starts-with(author, 'bjarne')]"/>
+                <xquery collection="/db/library" query="//*[ft:query(author, 'erich')]"/>
+                <xquery collection="/db/library" query="//book[ft:query(author, 'erich')]"/>
+                <xquery collection="/db/library" query="//book[ft:query(author, 'kernighan')]"/>
+                <xquery collection="/db/library" query="//book[ft:query(author, '&quot;brian w. kernighan&quot;')]"/>
+                <xquery collection="/db/library" query="//*[ft:query(author, '&quot;brian w. kernighan&quot;')]"/>
+                <xquery collection="/db/library" query="//inproceedings[ft:query(title, 'xml')]"/>
+                <xquery collection="/db/library" query="//*[ft:query(title, 'xml')]"/>
+                <xquery collection="/db/library" query="//inproceedings[ft:query(title, 'xquery')]"/>
+                <xquery collection="/db/library" query="//*[ft:query(title, 'xquery')]"/>
+                <xquery collection="/db/library" query="//*[ft:query(title, 'xml')][year = 2005]"/>
             </sequence>
         </thread>
     </group>
