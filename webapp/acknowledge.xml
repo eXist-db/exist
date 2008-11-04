@@ -93,6 +93,15 @@
                     </a>
                 </td>
             </tr>
+           <tr>
+                <td class="description">Viewtier's <a href="http://www.viewtier.com/products/parabuild/index.htm">Parabuild</a>
+                    ensures that new changes do not break the eXist codebase by hosting Continuous Integration system for eXist.</td>
+                <td align="center">
+                    <a href="http://www.viewtier.com/products/parabuild/">
+                        <img border="0" src="resources/parabuild.png"/>
+                    </a>
+                </td>
+            </tr>
         </table>
     </chapter>
 </book>
