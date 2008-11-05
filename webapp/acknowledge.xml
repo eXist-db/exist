@@ -31,87 +31,100 @@
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Acknowledgements</title>
-        
-        <para>We would like to thank the following organizations and corporations for 
-        supporting and sponsoring the development of eXist:</para>
-        
-        <table cellspacing="0" cellpadding="15">
-            <tr>
-                <td class="description">
-                    The new indexing engine featured in eXist, for Versions 1.1 and all
-                    subsequent releases, is made possible through the agency of the
-                    <a href="http://tapor.uvic.ca/home.php">University of Victoria</a>
-                    node of the Canadian TAPoR consortium, who have
-                    made it available for general use.
-                </td>
-                <td align="center" style="font-size: 4em; font-family: Garamond, Helvetica, 'Arial Black', serif; color: #660000; font-weight: bold;">
-                    TAPoR
-                </td>
-            </tr>
-            <tr>
-                <td class="description"><a href="http://www.trapezenetworks.com">Trapeze Networks</a>, 
-                    headquartered in Pleasanton, Calif., has continuously sponsored improvements 
-                    and new features since 2004 and helped to advance development by testing and deploying 
-                    eXist in a production environment.</td>
-                <td align="center">
-                    <a href="http://www.trapezenetworks.com">
-                        <img border="0" src="resources/trapeze.gif"/>
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td class="description">Major parts of the XQuery implementation were motivated and 
-                    sponsored by the project: <em>"Exemplarische Internet-Edition der Werke des 
-                    jungen Goethe und Jakob Michael Reinhold Lenz'"</em>, funded by the
-                    <a href="http://www.fritz-thyssen-stiftung.de/">Fritz-Thyssen Stiftung</a>. Project lead: Prof. Dr. Karl Eibl 
-                    (Institut für Deutsche Philologie, Ludwig- Maximilians- Universität München), 
-                    Prof. Dr. Fotis Jannidis (Institut für Sprach- und Literaturwissenschaft, 
-                    TU Darmstadt).
-                </td>
-                <td align="center">
-                    <a href="http://www.fritz-thyssen-stiftung.de">
-                        <img border="0" src="resources/thyssen.png"/>
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td class="description">The eXist Wiki, the demo server and other vital parts of our project
-                    infrastructure are kindly hosted by <a href="http://www.csw.co.uk/">CSW Group Ltd.</a>
-                    in the UK.</td>
-                <td align="center">
-                    <a href="http://www.csw.co.uk/">
-                        <img border="0" src="resources/cswgroup.gif"/>
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td class="description">The <a href="http://www.devonline.gov.uk">Devon Portal Project</a> sponsored development of various 
-                bug fixes and donated the mail, context and sql extension modules. The Devon Portal is a partnership of Local Authorities in Devon, UK.</td>
-                <td align="center">
-                    <a href="http://www.devonline.gov.uk/">
-                        <img border="0" src="resources/devonline.png"/>
-                    </a>
-                </td>
-            </tr>
-           <tr>
-                <td class="description">Viewtier's <a href="http://www.viewtier.com/products/parabuild/index.htm">Parabuild</a>
-                    ensures that new changes do not break the eXist codebase by hosting Continuous Integration system for eXist.</td>
-                <td align="center">
-                    <a href="http://www.viewtier.com/products/parabuild/">
-                        <img border="0" src="resources/parabuild.png"/>
-                    </a>
-                </td>
-            </tr>
-           <tr>
-                <td class="description">XML and non-XML resources of an eXist database can be edited and processed with XSLT
-                    and XQuery seamlessly in <a href="http://www.oxygenxml.com">&lt;oXygen/> XML Editor/Author</a> both through
-                    an eXist connection and through WebDAV in an integrated environment.</td>
-                <td align="center">
-                    <a href="http://www.oxygenxml.com">
-                        <img border="0" src="resources/oxygenxml.jpg"/>
-                    </a>
-                </td>
-            </tr>
-        </table>
+
+        <section>
+            <title>Supporters</title>
+            
+            <para>We would like to thank the following organizations and corporations for supporting
+                and sponsoring the development of eXist:</para>
+
+            <table cellspacing="0" cellpadding="15">
+                <tr>
+                    <td class="description"> The new indexing engine featured in eXist, for Versions
+                        1.1 and all subsequent releases, is made possible through the agency of the
+                            <a href="http://tapor.uvic.ca/home.php">University of Victoria</a> node
+                        of the Canadian TAPoR consortium, who have made it available for general
+                        use. </td>
+                    <td align="center"
+                        style="font-size: 4em; font-family: Garamond, Helvetica, 'Arial Black', serif; color: #660000; font-weight: bold;"
+                        > TAPoR </td>
+                </tr>
+                <tr>
+                    <td class="description"><a href="http://www.trapezenetworks.com">Trapeze
+                            Networks</a>, headquartered in Pleasanton, Calif., has continuously
+                        sponsored improvements and new features since 2004 and helped to advance
+                        development by testing and deploying eXist in a production environment.</td>
+                    <td align="center">
+                        <a href="http://www.trapezenetworks.com">
+                            <img border="0" src="resources/trapeze.gif"/>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="description">Major parts of the XQuery implementation were motivated
+                        and sponsored by the project: <em>"Exemplarische Internet-Edition der Werke
+                            des jungen Goethe und Jakob Michael Reinhold Lenz'"</em>, funded by the
+                            <a href="http://www.fritz-thyssen-stiftung.de/">Fritz-Thyssen
+                            Stiftung</a>. Project lead: Prof. Dr. Karl Eibl (Institut für Deutsche
+                        Philologie, Ludwig- Maximilians- Universität München), Prof. Dr. Fotis
+                        Jannidis (Institut für Sprach- und Literaturwissenschaft, TU Darmstadt). </td>
+                    <td align="center">
+                        <a href="http://www.fritz-thyssen-stiftung.de">
+                            <img border="0" src="resources/thyssen.png"/>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="description">The eXist Wiki, the demo server and other vital parts of
+                        our project infrastructure are kindly hosted by <a
+                            href="http://www.csw.co.uk/">CSW Group Ltd.</a> in the UK.</td>
+                    <td align="center">
+                        <a href="http://www.csw.co.uk/">
+                            <img border="0" src="resources/cswgroup.gif"/>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="description">The <a href="http://www.devonline.gov.uk">Devon Portal
+                            Project</a> sponsored development of various bug fixes and donated the
+                        mail, context and sql extension modules. The Devon Portal is a partnership
+                        of Local Authorities in Devon, UK.</td>
+                    <td align="center">
+                        <a href="http://www.devonline.gov.uk/">
+                            <img border="0" src="resources/devonline.png"/>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        <section>
+            <title>Tools We Use in Development</title>
+            <table>
+                <tr>
+                    <td class="description">Viewtier's <a
+                            href="http://www.viewtier.com/products/parabuild/index.htm"
+                            >Parabuild</a> ensures that new changes do not break the eXist codebase
+                        by hosting Continuous Integration system for eXist.</td>
+                    <td align="center">
+                        <a href="http://www.viewtier.com/products/parabuild/">
+                            <img border="0" src="resources/parabuild.png"/>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="description">XML and non-XML resources of an eXist database can be
+                        edited and processed with XSLT and XQuery seamlessly in <a
+                            href="http://www.oxygenxml.com">&lt;oXygen/> XML Editor/Author</a>
+                        both through an eXist connection and through WebDAV in an integrated
+                        environment.</td>
+                    <td align="center">
+                        <a href="http://www.oxygenxml.com">
+                            <img border="0" src="resources/oxygenxml.jpg"/>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+        </section>
     </chapter>
 </book>
