@@ -102,6 +102,16 @@
                     </a>
                 </td>
             </tr>
+           <tr>
+                <td class="description">XML and non-XML resources of an eXist database can be edited and processed with XSLT
+                    and XQuery seamlessly in <a href="http://www.oxygenxml.com">&lt;oXygen/> XML Editor/Author</a> both through
+                    an eXist connection and through WebDAV in an integrated environment.</td>
+                <td align="center">
+                    <a href="http://www.oxygenxml.com">
+                        <img border="0" src="resources/oxygenxml.jpg"/>
+                    </a>
+                </td>
+            </tr>
         </table>
     </chapter>
 </book>
