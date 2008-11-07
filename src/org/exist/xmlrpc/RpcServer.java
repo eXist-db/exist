@@ -73,7 +73,9 @@ public class RpcServer implements RpcAPI {
     public RpcServer(Configuration conf, String databaseid) throws EXistException {
         databaseid = (databaseid != null && !"".equals(databaseid)) ? databaseid
                 : BrokerPool.DEFAULT_INSTANCE_NAME;
-        pool = new ConnectionPool(MIN_CONNECT, MAX_CONNECT, conf, databaseid);
+        Integer minConnections = (Integer) conf.getProperty(BrokerPool.PROPERTY_MIN_CONNECTIONS);
+        Integer maxConnections = (Integer) conf.getProperty(BrokerPool.PROPERTY_MAX_CONNECTIONS);
+        pool = new ConnectionPool(minConnections.intValue(), maxConnections.intValue(), conf, databaseid);
     }
 
     public boolean createCollection(User user, String name) throws EXistException,
