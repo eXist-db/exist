@@ -730,8 +730,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
         realize();
         return realSet.getLength();
     }
-	
-    
+
+    public int getItemType() {
+        realize();
+        return realSet.getItemType();
+    }
+
     /**
      * The method <code>getItemCount</code>
      *
