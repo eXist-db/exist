@@ -241,7 +241,13 @@ public class Optimize extends Pragma {
     public void after(XQueryContext context, Expression expression) throws XPathException {
     }
 
-    private void addOptimizable(Optimizable optimizable) {
+    private void addOptimizable(Optimizable optimizable) {int axis = optimizable.getOptimizeAxis();
+        if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
+                axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
+                axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
+            // reverse axes cannot be optimized
+            return;
+        }
         if (optimizables == null) {
             optimizables = new Optimizable[1];
             optimizables[0] = optimizable;
