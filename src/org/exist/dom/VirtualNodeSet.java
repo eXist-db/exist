@@ -605,6 +605,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
      */
     public void setSelfIsContext() {
         useSelfAsContext = true;
+        if (realSet != null && realSetIsComplete) {
+            for (Iterator i = realSet.iterator(); i.hasNext();) {
+                NodeProxy p = (NodeProxy) i.next();
+                p.addContextNode(contextId, p);
+            }
+        }
     }
 
     /**
