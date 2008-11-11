@@ -401,8 +401,8 @@ public class LocationStep extends Step {
                 if (Expression.NO_CONTEXT_ID != contextId) {
                     if (contextSet instanceof VirtualNodeSet) {
                         ((VirtualNodeSet) contextSet).setInPredicate(true);
-                        ((VirtualNodeSet) contextSet).setSelfIsContext();
                         ((VirtualNodeSet) contextSet).setContextId(contextId);
+                        ((VirtualNodeSet) contextSet).setSelfIsContext();
                     } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
                         NodeProxy p;
                         for (Iterator i = contextSet.iterator(); i.hasNext();) {
