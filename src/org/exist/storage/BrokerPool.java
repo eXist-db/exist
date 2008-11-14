@@ -1112,7 +1112,9 @@ public class BrokerPool {
 		if(broker != null) {
 			//increase its number of uses
 			broker.incReferenceCount();
-			return broker;
+            if (user != null)
+                broker.setUser(user);
+            return broker;
 			//TODO : share the code with what is below (including notifyAll) ?
             // WM: notifyAll is not necessary if we don't have to wait for a broker.
 		}
