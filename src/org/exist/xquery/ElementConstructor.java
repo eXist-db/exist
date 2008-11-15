@@ -109,6 +109,10 @@ public class ElementConstructor extends NodeConstructor {
         if (name.length()!=0 && uri.trim().length()==0) {
            throw new XPathException(getASTNode(), "XQST0085 : cannot undeclare a prefix "+name+".");
         }
+        addNamespaceDecl(qn);
+	}
+
+    private void addNamespaceDecl(QName qn) throws XPathException {
         if(namespaceDecls == null) {
             namespaceDecls = new QName[1];
             namespaceDecls[0] = qn;
@@ -119,15 +123,15 @@ public class ElementConstructor extends NodeConstructor {
             }
             QName decls[] = new QName[namespaceDecls.length + 1];
             System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
-            decls[namespaceDecls.length] = qn;          
+            decls[namespaceDecls.length] = qn;
             namespaceDecls = decls;
         }
         //context.inScopeNamespaces.put(qn.getLocalName(), qn.getNamespaceURI());
-	}
-	
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
-     */
+    * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
+    */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
         context.pushInScopeNamespaces();
@@ -240,6 +244,15 @@ public class ElementConstructor extends NodeConstructor {
             if(!XMLChar.isValidName(qn.getLocalName()))
 			throw new XPathException(getASTNode(), "XPTY0004 '" + qnitem.getStringValue() + "' is not a valid element name");
 
+            if (qn.needsNamespaceDecl()) {
+                if (context.getInScopePrefix(qn.getNamespaceURI()) == null) {
+                    String prefix = qn.getPrefix();
+                    if (prefix == null || prefix.length() == 0)
+                        prefix = "";
+                    context.declareInScopeNamespace(prefix, qn.getNamespaceURI());
+                    addNamespaceDecl(new QName(prefix, qn.getNamespaceURI(), "xmlns"));
+                }
+            }
             // add namespace declaration nodes
             int nodeNr = builder.startElement(qn, attrs);
             if(namespaceDecls != null) {
@@ -249,7 +262,7 @@ public class ElementConstructor extends NodeConstructor {
             }
             // process element contents
             if(content != null) {
-content.eval(contextSequence, contextItem);
+                content.eval(contextSequence, contextItem);
             }
             builder.endElement();
             NodeImpl node = builder.getDocument().getNode(nodeNr);
