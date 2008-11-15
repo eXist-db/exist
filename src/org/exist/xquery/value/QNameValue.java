@@ -92,14 +92,17 @@ public class QNameValue extends AtomicValue {
 		//TODO : previous approach was to resolve the qname when needed. We now try to keep the original qname
 		String prefix = qname.getPrefix();
 		//Not clear what to work with here...
-	    if((prefix == null || "".equals(prefix)) && qname.needsNamespaceDecl()) {
-	    	prefix = context.getPrefixForURI(qname.getNamespaceURI());
-			if (prefix != null)
-				qname.setPrefix(prefix);
-				//throw new XPathException(
-				//	"namespace " + qname.getNamespaceURI() + " is not defined");
-			
-	    }
+        // WM: Changing the prefix is problematic (e.g. if a module
+        // defines different prefixes than the main module). We should
+        // keep the current in-scope prefix.
+//	    if((prefix == null || "".equals(prefix)) && qname.needsNamespaceDecl()) {
+//	    	prefix = context.getPrefixForURI(qname.getNamespaceURI());
+//			if (prefix != null)
+//				qname.setPrefix(prefix);
+//				//throw new XPathException(
+//				//	"namespace " + qname.getNamespaceURI() + " is not defined");
+//
+//	    }
 	    //TODO : check that the prefix matches the URI in the current context ?
 		if (prefix != null && prefix.length() > 0)
 			return prefix + ':' + qname.getLocalName();
