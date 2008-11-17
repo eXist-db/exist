@@ -27,10 +27,11 @@
     <!-- Extra jUnit properties -->
     <property name="junit.reports.dat" value="${junit.reports}/junit/data"/>
     <property name="junit.reports.html" value="${junit.reports}/junit/html"/>
+    <property name="junit.reports.temp" value="${junit.reports}/temp"/>
 
     <target name="test-compile" unless="java14-only" >
         <mkdir dir="${junit.reports}/classes"/>
-       <javac debug="${build.debug}" deprecation="${build.deprecation}"
+        <javac debug="${build.debug}" deprecation="${build.deprecation}"
             destdir="${junit.reports}/classes" encoding="UTF-8"
             optimize="${build.optimize}" srcdir="${junit.reports}/src"
             source="1.5" target="1.5">
@@ -60,6 +61,7 @@
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx,*.log"/>
         </delete>
 
+        <delete dir="${junit.reports.temp}"/>
         <delete dir="${junit.reports.dat}"/>
         <delete dir="${junit.reports.html}"/>
 
