@@ -12,47 +12,7 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace ngram="http://exist-db.org/xquery/ngram" at
     "java:org.exist.xquery.modules.ngram.NGramModule";
 
-(:~
-    Collection configuration for the function docs. We use an ngram
-    index for fast substring searches.
-:)
-declare variable $xqdoc:config :=
-    <collection xmlns="http://exist-db.org/collection-config/1.0">
-        <index xmlns:xqdoc="http://www.xqdoc.org/1.0">
-            <fulltext default="none" attributes="no">
-            </fulltext>
-            <ngram qname="xqdoc:name"/>
-            <ngram qname="xqdoc:description"/>
-        </index>
-    </collection>;
-
-(:~
-    Before the function document can be searched, it needs to be extracted
-    from the Java files. We use util:extract-docs() to generate one XQDoc
-    document for each module and store it into /db/xqdocs.
-:)
-declare function xqdoc:setup($adminPass as xs:string) {
-    if (empty(//xqdoc:module)) then
-        let $setuser := xdb:login("/db", "admin", $adminPass)
-        let $confCol := (
-            xdb:create-collection("/db/system/config", "db"),
-            xdb:create-collection("/db/system/config/db", "xqdocs")
-        )
-        let $confStored := xdb:store("/db/system/config/db/xqdocs", "collection.xconf", $xqdoc:config)
-        let $output := (
-            xdb:create-collection("/db", "xqdocs"),
-            xdb:chmod-collection("/db/xqdocs", 508)
-        )
-        for $moduleURI in util:registered-modules()
-        let $moduleDocs := util:extract-docs($moduleURI)
-        let $docName := concat(util:md5($moduleURI), ".xml")
-        return (
-            xdb:store("/db/xqdocs", $docName, $moduleDocs, "text/xml"),
-            xdb:chmod-resource("/db/xqdocs", $docName, 508)
-        )
-    else
-        ()
-};
+import module namespace setup="http://exist-db.org/xquery/docs/setup" at "../docsetup.xql";
 
 (:~
     Execute a query or list all functions in a given module.
@@ -266,7 +226,7 @@ let $askPass :=
         let $generate := request:get-parameter("generate", ())
         return
             if ($generate) then
-                let $dummy := xqdoc:setup($adminPass)
+                let $dummy := setup:setup($adminPass)
                 return false()
             else
                 true()

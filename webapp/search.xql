@@ -4,6 +4,8 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 import module namespace kwic="http://exist-db.org/xquery/kwic" at "kwic.xql";
 
+import module namespace setup="http://exist-db.org/xquery/docs/setup" at "docsetup.xql";
+
 declare namespace dq="http://exist-db.org/xquery/documentation";
 
 declare option exist:serialize "method=xhtml media-type=text/html expand-xincludes=yes";
@@ -16,67 +18,19 @@ declare variable $dq:FIELDS :=
 		<field>para</field>
 	</fields>;
 
-(:~
-    Collection configuration for the function docs. We use an ngram
-    index for fast substring searches.
-:)
-declare variable $dq:config :=
-    <collection xmlns="http://exist-db.org/collection-config/1.0">
-        <index>
-            <fulltext default="none" attributes="no">
-				<create qname="title"/>
-				<create qname="para"/>
-            </fulltext>
-			<lucene>
-				<text qname="title"/>
-				<text qname="para"/>
-			</lucene>
-        </index>
-    </collection>;
-
 declare variable $dq:CHARS_SUMMARY := 120;
 declare variable $dq:CHARS_KWIC := 40;
 
 (:~
-	Setup function: store the documentation into the db.
-:)
-declare function dq:setup($adminPass as xs:string) {
-    if (empty(doc(concat($dq:COLLECTION, "/download.xml")))) then
-        let $setuser := xdb:login("/db", "admin", $adminPass)
-        let $confCol := (
-            xdb:create-collection("/db/system/config", "db"),
-            xdb:create-collection("/db/system/config/db", $dq:COLLECTION)
-        )
-        let $confStored := 
-			xdb:store(concat("/db/system/config/db/", $dq:COLLECTION), 
-				"collection.xconf", $dq:config)
-        let $output := (
-            xdb:create-collection("/db", $dq:COLLECTION),
-            xdb:chmod-collection(concat("/db/", $dq:COLLECTION), 508)
-        )
-		let $home := system:get-exist-home()
-    	let $dir := if (doc-available(concat("file:///", $home, "/webapp/download.xml"))) then
-            concat($home, "/webapp")
-        else if(ends-with($home, "WEB-INF")) then
-            substring-before($home, "WEB-INF")
-        else
-            concat($home)
-        return 
-			xdb:store-files-from-pattern(concat("/db/", $dq:COLLECTION), $dir, "*.xml", "text/xml")
-    else
-        ()
-};
-
-(:~
-	Display the hits: this function first calls util:expand() to get an in-memory
-	copy of each hit with full-text matches tagged with &lt;exist:match&gt;. It
-	then calls dq:print-summary for each exist:match element.
+	Display the hits: this function iterates through all hits and calls
+	kwic:summarize to print out a summary of each match.
 :)
 declare function dq:print($hits as element()+, $docXPath as xs:string, $mode as xs:string)
 as element()* {
 	for $hit in $hits
 	let $nodeId := util:node-id($hit)
 	let $uri := concat(
+		(: util:document-name(root($hit)), "?q=", :)
 		"docs.xql?path=", document-uri(root($hit)), "&amp;q=",
 		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
 	)
@@ -97,10 +51,11 @@ declare function dq:print-headings($section as element(section)*, $docXPath as x
 	let $nodeId := util:node-id($s)
 	let $uri := concat(
 		"docs.xql?path=", document-uri(root($s)), "&amp;q=",
+		(: util:document-name(root($s)), "?q=", :)
 		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
 	)
 	return
-		(" > ", <a xmlns="http://www.w3.org/1999/xhtml" href="{$uri}">{$s/title//text()}</a>)
+		(" > ", <a href="{$uri}">{$s/title//text()}</a>)
 };
 
 (:~
@@ -110,7 +65,7 @@ declare function dq:print-results($hits as element()*, $docXPath as xs:string) {
 	let $mode := request:get-parameter("view", "summary")
 	let $sections := $hits/ancestor::section[1]
 	return
-		<div xmlns="http://www.w3.org/1999/xhtml" id="f-results">
+		<div id="f-results">
 			<p id="f-results-heading">Found: {count($hits)} in {count($sections)} sections.</p>
 			{
 				if ($mode eq 'summary') then
@@ -254,12 +209,13 @@ let $askPass :=
         let $generate := request:get-parameter("generate", ())
         return
             if ($generate) then
-                let $dummy := dq:setup($adminPass)
+                let $dummy := setup:setup($adminPass)
                 return false()
             else
                 true()
     else
         false()
 return
+	(: dq:get-page((), $askPass) :)
 	transform:transform(dq:get-page((), $askPass), 
 		"stylesheets/db2html.xsl", (), "expand-xincludes=yes")
