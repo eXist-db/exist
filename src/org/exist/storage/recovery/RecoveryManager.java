@@ -55,10 +55,12 @@ public class RecoveryManager {
      */
 	private Journal logManager;
 	private DBBroker broker;
-    
-	public RecoveryManager(DBBroker broker, Journal log) {
+    private boolean restartOnError;
+
+	public RecoveryManager(DBBroker broker, Journal log, boolean restartOnError) {
         this.broker = broker;
 		this.logManager = log;
+        this.restartOnError = restartOnError;
 	}
 	
 	/**
@@ -97,12 +99,13 @@ public class RecoveryManager {
                     	}
                     }
                 } catch (LogException e) {
-                    LOG.debug("Reading last journal log entry failed: " + e.getMessage() + ". Will scan the log...");
+                    LOG.info("Reading last journal log entry failed: " + e.getMessage() + ". Will scan the log...");
                     // if an exception occurs at this point, the journal file is probably incomplete,
                     // which indicates a db crash
                     checkpointFound = false;
                 }
     			if (!checkpointFound) {
+                    LOG.info("Scanning journal...");
     				reader.position(1);
     				Long2ObjectHashMap txnsStarted = new Long2ObjectHashMap();
 	    			Checkpoint lastCheckpoint = null;
@@ -136,7 +139,7 @@ public class RecoveryManager {
 	    			// we need a recovery.
 	    			if ((lastCheckpoint == null || lastCheckpoint.getLsn() != lastLsn) &&
 	    					txnsStarted.size() > 0) {
-	    				LOG.debug("Found dirty transactions: " + txnsStarted.size());
+	    				LOG.info("Dirty transactions: " + txnsStarted.size());
 	    				// starting recovery: reposition the log reader to the last checkpoint
 						if (lastCheckpoint == null)
 						    reader.position(1);
@@ -145,8 +148,17 @@ public class RecoveryManager {
 						    next = reader.nextEntry();
 						}
 	                    recoveryRun = true;
-	                    doRecovery(last, reader, lastLsn);
-	                } else if (LOG.isDebugEnabled())
+                        try {
+                            doRecovery(txnsStarted.size(), last, reader, lastLsn);
+                        } catch (LogException e) {
+                            // if restartOnError == true, we try to bring up the database even if there
+                            // are errors. Otherwise, an exception is thrown, which will stop the db initialization
+                            if (restartOnError)
+                                LOG.error("Errors during recovery. Database will start up, but corruptions are likely.");
+                            else
+                                throw e;
+                        }
+                    } else if (LOG.isDebugEnabled())
 	    				LOG.debug("Database is in clean state.");
     			}
     			cleanDirectory(files);
@@ -166,72 +178,93 @@ public class RecoveryManager {
      * @param lastLsn
      * @throws LogException
      */
-    private void doRecovery(File last, JournalReader reader, long lastLsn) throws LogException {
-        if (LOG.isDebugEnabled())
-            LOG.debug("Running recovery ...");
+    private void doRecovery(int txnCount, File last, JournalReader reader, long lastLsn) throws LogException {
+        if (LOG.isInfoEnabled())
+            LOG.info("Running recovery ...");
         logManager.setInRecovery(true);
-        
-        // map to track running transactions
-        Long2ObjectHashMap runningTxns = new Long2ObjectHashMap();
-        
-        // ------- REDO ---------
-        if (LOG.isDebugEnabled())
-            LOG.debug("First pass: redoing operations");
-		ProgressBar progress = new ProgressBar("Redo ", last.length());
-        Loggable next;
-        while ((next = reader.nextEntry()) != null) {
-            SanityCheck.ASSERT(next.getLogType() != LogEntryTypes.CHECKPOINT,
-                    "Found a checkpoint during recovery run! This should not ever happen.");
-            if (next.getLogType() == LogEntryTypes.TXN_START) {
-                // new transaction starts: add it to the transactions table
-                runningTxns.put(next.getTransactionId(), next);
-            } else if (next.getLogType() == LogEntryTypes.TXN_COMMIT) {
-                // transaction committed: remove it from the transactions table
-                runningTxns.remove(next.getTransactionId());
-            } else if (next.getLogType() == LogEntryTypes.TXN_ABORT) {
-            	// transaction aborted: remove it from the transactions table
-            	runningTxns.remove(next.getTransactionId());
+
+        try {
+            // map to track running transactions
+            Long2ObjectHashMap runningTxns = new Long2ObjectHashMap();
+
+            // ------- REDO ---------
+            if (LOG.isInfoEnabled())
+                LOG.info("First pass: redoing " + txnCount + " transactions...");
+            ProgressBar progress = new ProgressBar("Redo ", last.length());
+            Loggable next = null;
+            int redoCnt = 0;
+            try {
+                while ((next = reader.nextEntry()) != null) {
+                    SanityCheck.ASSERT(next.getLogType() != LogEntryTypes.CHECKPOINT,
+                            "Found a checkpoint during recovery run! This should not ever happen.");
+                    if (next.getLogType() == LogEntryTypes.TXN_START) {
+                        // new transaction starts: add it to the transactions table
+                        runningTxns.put(next.getTransactionId(), next);
+                    } else if (next.getLogType() == LogEntryTypes.TXN_COMMIT) {
+                        // transaction committed: remove it from the transactions table
+                        runningTxns.remove(next.getTransactionId());
+                        redoCnt++;
+                    } else if (next.getLogType() == LogEntryTypes.TXN_ABORT) {
+                        // transaction aborted: remove it from the transactions table
+                        runningTxns.remove(next.getTransactionId());
+                    }
+        //            LOG.debug("Redo: " + next.dump());
+                    // redo the log entry
+                    next.redo();
+                    progress.set(Lsn.getOffset(next.getLsn()));
+                    if (next.getLsn() == lastLsn)
+                        break; // last readable entry reached. Stop here.
+                }
+            } catch (Exception e) {
+                LOG.warn("Exception caught while redoing transactions. Aborting recovery.", e);
+                if (next != null)
+                    LOG.warn("Log entry that caused the exception: " + next.dump());
+                throw new LogException("Recovery aborted");
+            } finally {
+                LOG.info("Redo processed " + redoCnt + " out of " + txnCount + " transactions.");
             }
-//            LOG.debug("Redo: " + next.dump());
-            // redo the log entry
-            next.redo();
-			progress.set(Lsn.getOffset(next.getLsn()));
-            if (next.getLsn() == lastLsn)
-                break; // last readable entry reached. Stop here.
+
+            // ------- UNDO ---------
+            if (LOG.isInfoEnabled())
+                LOG.info("Second pass: undoing dirty transactions. Uncommitted transactions: " +
+                        runningTxns.size());
+            // see if there are uncommitted transactions pending
+            if (runningTxns.size() > 0) {
+                // do a reverse scan of the log, undoing all uncommitted transactions
+                try {
+                    while((next = reader.previousEntry()) != null) {
+                        if (next.getLogType() == LogEntryTypes.TXN_START) {
+                            if (runningTxns.get(next.getTransactionId()) != null) {
+                                runningTxns.remove(next.getTransactionId());
+                                if (runningTxns.size() == 0)
+                                    // all dirty transactions undone
+                                    break;
+                            }
+                        } else if (next.getLogType() == LogEntryTypes.TXN_COMMIT) {
+                            // ignore already committed transaction
+                        } else if (next.getLogType() == LogEntryTypes.CHECKPOINT) {
+                            // found last checkpoint: undo is completed
+                            break;
+                        }
+
+                        // undo the log entry if it belongs to an uncommitted transaction
+                        if (runningTxns.get(next.getTransactionId()) != null) {
+    //					LOG.debug("Undo: " + next.dump());
+                            next.undo();
+                        }
+                    }
+                } catch (Exception e) {
+                    LOG.warn("Exception caught while undoing dirty transactions. Remaining transactions " +
+                            "to be undone: " + runningTxns.size(), e);
+                    if (next != null)
+                        LOG.warn("Log entry that caused the exception: " + next.dump());
+                    throw new LogException("Recovery aborted");
+                }
+            }
+        } finally {
+            broker.sync(Sync.MAJOR_SYNC);
+            logManager.setInRecovery(false);
         }
-        
-        // ------- UNDO ---------
-        if (LOG.isDebugEnabled())
-            LOG.debug("Second pass: undoing dirty transactions. Uncommitted transactions: " +
-                    runningTxns.size());
-        // see if there are uncommitted transactions pending
-        if (runningTxns.size() > 0) {
-            // do a reverse scan of the log, undoing all uncommitted transactions
-			while((next = reader.previousEntry()) != null) {
-				if (next.getLogType() == LogEntryTypes.TXN_START) {
-					if (runningTxns.get(next.getTransactionId()) != null) {
-						runningTxns.remove(next.getTransactionId());
-						if (runningTxns.size() == 0)
-							// all dirty transactions undone
-							break;
-					}
-				} else if (next.getLogType() == LogEntryTypes.TXN_COMMIT) {
-					// ignore already committed transaction
-				} else if (next.getLogType() == LogEntryTypes.CHECKPOINT) {
-					// found last checkpoint: undo is completed
-					break;
-				}
-				
-				// undo the log entry if it belongs to an uncommitted transaction
-				if (runningTxns.get(next.getTransactionId()) != null) {
-//					LOG.debug("Undo: " + next.dump());
-					next.undo();
-				}
-			}
-        }
-        broker.sync(Sync.MAJOR_SYNC);
-        
-        logManager.setInRecovery(false);
     }
     
 	private void cleanDirectory(File[] files) {

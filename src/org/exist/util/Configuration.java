@@ -60,6 +60,7 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
+import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
@@ -827,6 +828,14 @@ public class Configuration implements ErrorHandler
                 throw new DatabaseConfigurationException("size attribute in recovery section needs to be a number");
             }
         }
+
+        option = recovery.getAttribute(TransactionManager.RECOVERY_FORCE_RESTART_ATTRIBUTE);
+        value = false;
+        if (option != null) {
+            value = option.equals("yes");
+        }
+        setProperty(TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART, new Boolean(value));
+        LOG.debug(TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get(TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART));
     }
     
     private void configurePermissions(Element defaultPermission) throws DatabaseConfigurationException {
