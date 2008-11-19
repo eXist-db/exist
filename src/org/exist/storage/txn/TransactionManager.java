@@ -48,7 +48,9 @@ public class TransactionManager {
 	
 	public final static String RECOVERY_GROUP_COMMIT_ATTRIBUTE = "group-commit";
 	public final static String PROPERTY_RECOVERY_GROUP_COMMIT = "db-connection.recovery.group-commit";
-	
+    public final static String RECOVERY_FORCE_RESTART_ATTRIBUTE = "force-restart";
+    public final static String PROPERTY_RECOVERY_FORCE_RESTART = "db-connection.recovery.force-restart";
+
     /**
      * Logger for this class
      */
@@ -61,7 +63,9 @@ public class TransactionManager {
     private boolean enabled;
     
     private boolean groupCommit = false;
-    
+
+    private boolean forceRestart = false;
+
     /**
      * Initialize the transaction manager using the specified data directory.
      * 
@@ -77,6 +81,12 @@ public class TransactionManager {
             groupCommit = groupOpt.booleanValue();
             if (LOG.isDebugEnabled())
                 LOG.debug("GroupCommits = " + groupCommit);
+        }
+        Boolean restartOpt = (Boolean) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_FORCE_RESTART);
+        if (restartOpt != null) {
+            forceRestart = restartOpt.booleanValue();
+            if (LOG.isDebugEnabled())
+                LOG.debug("ForceRestart = " + forceRestart);
         }
     }
     
@@ -97,7 +107,7 @@ public class TransactionManager {
      * @throws EXistException
      */
 	public boolean runRecovery(DBBroker broker) throws EXistException {
-		RecoveryManager recovery = new RecoveryManager(broker, journal);
+		RecoveryManager recovery = new RecoveryManager(broker, journal, forceRestart);
 		return recovery.recover();
 	}
 	

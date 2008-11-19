@@ -211,9 +211,20 @@
                 XP; not necessary on Linux). However, group-comit="yes"
                 will increase the risk of an already committed 
                 operation being rolled back after a database crash.
+
+			- force-restart:
+				Try to restart the db even if crash recovery failed. This is
+				dangerous because there might be corruptions inside the
+				data files. The transaction log will be cleared, all locks removed
+				and the db reindexed.
+				
+				Set this option to "yes" if you need to make sure that the db is
+				online, even after a fatal crash. Errors encountered during recovery 
+				are written to the log files. Scan the log files to see if any problems
+				occurred.
         -->
         <recovery enabled="yes" group-commit="no" journal-dir="webapp/WEB-INF/data" size="100M"
-            sync-on-commit="no"/>
+            sync-on-commit="no" force-restart="yes"/>
 
         <!-- 
             The <security> element in the <db-connection> node is used to select
