@@ -1262,11 +1262,9 @@ throws PermissionDeniedException, EXistException, XPathException
 	// logical operator: or
 	#(
 		"or"
-		{
-			PathExpr left= new PathExpr(context);
-			PathExpr right= new PathExpr(context);
-		}
+		{ PathExpr left= new PathExpr(context);	}
 		step=expr [left]
+		{ PathExpr right= new PathExpr(context); } 
 		step=expr [right]
 	)
 	{

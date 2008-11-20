@@ -1475,6 +1475,8 @@ reservedKeywords returns [String name]
 	|
 	"for" { name= "for"; }
 	|
+	"where" { name= "where"; }
+	|
 	"in" { name = "in"; }
 	|
 	"let" { name= "let"; }
