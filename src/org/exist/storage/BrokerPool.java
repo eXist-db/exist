@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -90,6 +91,7 @@ public class BrokerPool {
 	public static final String DATA_DIR_ATTRIBUTE = "files";
 	//TODO : move elsewhere ?
 	public final static String RECOVERY_ENABLED_ATTRIBUTE = "enabled";
+    public final static String RECOVERY_POST_RECOVERY_CHECK = "consistency-check";
 	//TODO : move elsewhere ?
 	public final static String COLLECTION_CACHE_SIZE_ATTRIBUTE = "collectionCacheSize";
 	public final static String MIN_CONNECTIONS_ATTRIBUTE = "min";
@@ -109,6 +111,7 @@ public class BrokerPool {
 	public final static String DEFAULT_SECURITY_CLASS = "org.exist.security.XMLSecurityManager";
 	public final static String PROPERTY_SECURITY_CLASS = "db-connection.security.class";
 	public final static String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
+    public final static String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
 	public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
 	
 	//TODO : inline the class ? or... make it configurable ?
@@ -796,6 +799,14 @@ public class BrokerPool {
                 broker.repair();
             } catch (PermissionDeniedException e) {
                 LOG.warn("Error during recovery: " + e.getMessage(), e);
+            }
+            if (((Boolean)conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
+                ConsistencyCheckTask task = new ConsistencyCheckTask();
+                Properties props = new Properties();
+                props.setProperty("backup", "no");
+                props.setProperty("output", "sanity");
+                task.configure(conf, props);
+                task.execute(broker);
             }
         }
 
