@@ -603,6 +603,8 @@ public class BTree extends Paged {
     
     protected void redoInsertValue(InsertValueLoggable loggable) throws LogException {
         BTreeNode node = getBTreeNode(loggable.pageNum);
+        if (loggable.pageNum == 3138)
+            LOG.debug("3138");
         if (requiresRedo(loggable, node.page)) {
             node.insertKey(loggable.key, loggable.idx);
             node.insertPointer(loggable.pointer, loggable.pointerIdx);

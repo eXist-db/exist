@@ -222,9 +222,20 @@
 				online, even after a fatal crash. Errors encountered during recovery 
 				are written to the log files. Scan the log files to see if any problems
 				occurred.
+
+			- consistency-check:
+				If set to "yes", a consistency check will be run on the database
+				if an error was detected during crash recovery. This option requires
+				force-restart to be set to "yes", otherwise it has no effect.
+
+				The consistency check outputs a report to the directory {files}/sanity
+				and if inconsistencies are found in the db, it writes an emergency
+				backup to the same directory.
         -->
-        <recovery enabled="yes" group-commit="no" journal-dir="webapp/WEB-INF/data" size="100M"
-            sync-on-commit="no" force-restart="yes"/>
+        <recovery enabled="yes" group-commit="no" 
+			journal-dir="webapp/WEB-INF/data" size="100M"
+            sync-on-commit="no" force-restart="no"
+			consistency-check="yes"/>
 
         <!-- 
             The <security> element in the <db-connection> node is used to select
