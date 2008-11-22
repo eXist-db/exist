@@ -159,18 +159,18 @@ public class LargeValuesTest {
             File tempFile = File.createTempFile("eXist", ".xml");
             Writer writer = new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8");
             serializer.serialize(doc, writer);
-
-            XQuery xquery = broker.getXQueryService();
-            DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
-            Sequence result = xquery.execute("//key/@id/string()", docs.docsToNodeSet(), AccessContext.TEST);
-            assertEquals(KEY_COUNT, result.getItemCount());
-            for (SequenceIterator i = result.iterate(); i.hasNext();) {
-                Item item = i.nextItem();
-                String s = item.getStringValue();
-                assertTrue(s.length() > 0);
-                if (s.length() == 0)
-                    break;
-            }
+            tempFile.delete();
+//            XQuery xquery = broker.getXQueryService();
+//            DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
+//            Sequence result = xquery.execute("//key/@id/string()", docs.docsToNodeSet(), AccessContext.TEST);
+//            assertEquals(KEY_COUNT, result.getItemCount());
+//            for (SequenceIterator i = result.iterate(); i.hasNext();) {
+//                Item item = i.nextItem();
+//                String s = item.getStringValue();
+//                assertTrue(s.length() > 0);
+//                if (s.length() == 0)
+//                    break;
+//            }
         } catch (Exception e) {
             e.printStackTrace();
 	        fail(e.getMessage());
