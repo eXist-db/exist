@@ -24,7 +24,7 @@ package org.exist.xquery.functions.util;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -39,34 +39,48 @@ import org.exist.xquery.value.Type;
  * 
  * @author wolf
  */
-public class MD5 extends Function {
-
-	public final static FunctionSignature signature =
+public class MD5 extends BasicFunction 
+{
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("md5", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			new QName( "md5", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
 			"Generates an MD5 key from a string.",
 			new SequenceType[] {
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
 				},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ) ),
+	
+		new FunctionSignature(
+			new QName( "md5", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
+			"Generates an MD5 key from a string. $b specifies whether to return result Base64 encoded",
+			new SequenceType[] {
+				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
+				new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE )
+				},
+			new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ) )
+		};
 
-	public MD5(XQueryContext context) {
-		super(context, signature);
+	public MD5( XQueryContext context , FunctionSignature signature ) 
+	{
+		super( context, signature );
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		String arg =
-			getArgument(0)
-				.eval(contextSequence, contextItem)
-				.getStringValue();
-		String md = org.exist.security.MD5.md(arg,false);
-		return new StringValue(md);
+	public Sequence eval( Sequence[] args, Sequence contextSequence  ) throws XPathException 
+	{
+		boolean base64 = false;
+		
+		String arg = args[0].itemAt( 0 ).getStringValue();
+		
+		if( args.length > 1 ) {	
+			base64 = args[1].effectiveBooleanValue();
+		}
+		
+		String md = org.exist.security.MD5.md( arg, base64 );
+		
+		return( new StringValue( md ) );
 	}
 
 }
