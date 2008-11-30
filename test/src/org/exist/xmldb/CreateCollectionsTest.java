@@ -77,7 +77,6 @@ public class CreateCollectionsTest extends TestCase {
 			}
 
 			Collection parentCollection = root.getParentCollection();
-			assertEquals("xmldb:exist://" + DBBroker.ROOT_COLLECTION, ((org.exist.xmldb.CollectionImpl)root).getURI().toString());
 			System.out.println("root parentCollection: " + parentCollection);
 			assertNull("root collection has no parent", parentCollection);
 
@@ -88,7 +87,6 @@ public class CreateCollectionsTest extends TestCase {
 			assertNotNull(service);
 			Collection testCollection = service.createCollection("test");
 			assertNotNull(testCollection);
-			assertEquals("xmldb:exist://" + DBBroker.ROOT_COLLECTION + "/test", ((org.exist.xmldb.CollectionImpl)testCollection).getURI().toString());
 			int ccc = testCollection.getChildCollectionCount();
 			assertTrue(
 				"Collection just created: ChildCollectionCount==0",
