@@ -21,19 +21,25 @@
 package org.exist.xmlrpc;
 
 import java.net.BindException;
+import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
 
 import javax.xml.transform.OutputKeys;
 
 import junit.textui.TestRunner;
 
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.apache.xmlrpc.XmlRpcException;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.StandaloneServer;
-import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.TestConstants;
 import org.exist.xmldb.XmldbURI;
@@ -80,7 +86,19 @@ public class XmlRpcTest extends XMLTestCase {
 		//Don't worry about closing the server : the shutdown hook will do the job
 		initServer();		
 	}
-	
+
+    protected void tearDown() {
+        XmlRpcClient xmlrpc = getClient();
+        try {
+            List params = new ArrayList(1);
+            params.add(TARGET_COLLECTION.toString());
+            Boolean b = (Boolean) xmlrpc.execute("removeCollection", params);
+        } catch (XmlRpcException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
 	private void initServer() {
 		try {
 			if (server == null) {
@@ -108,12 +126,89 @@ public class XmlRpcTest extends XMLTestCase {
 					}
 				}
 			}
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
+            e.printStackTrace();
 	        fail(e.getMessage());  
 	    }
-	}	
-	
-	public void testStore() {
+    }
+
+	public void testStoreAndRetrieve() {
+		try {
+			System.out.println("Creating collection " + TARGET_COLLECTION);
+			XmlRpcClient xmlrpc = getClient();
+			Vector params = new Vector();
+			params.addElement(TARGET_COLLECTION.toString());
+			Boolean result = (Boolean)xmlrpc.execute("createCollection", params);
+			assertTrue(result.booleanValue());
+
+			System.out.println("Storing document " + XML_DATA);
+			params.clear();
+			params.addElement(XML_DATA);
+			params.addElement(TARGET_RESOURCE.toString());
+			params.addElement(new Integer(1));
+
+			result = (Boolean)xmlrpc.execute("parse", params);
+			assertTrue(result.booleanValue());
+
+			System.out.println("Documents stored.");
+
+            HashMap options = new HashMap();
+            params.clear();
+            params.addElement(TARGET_RESOURCE.toString());
+            params.addElement(options);
+
+			byte[] data = (byte[]) xmlrpc.execute( "getDocument", params );
+			System.out.println( new String(data, "UTF-8") );
+            assertNotNull(data);
+
+            params.clear();
+            params.addElement(TARGET_RESOURCE.toString());
+            params.addElement("UTF-8");
+            params.addElement(0);
+
+            data = (byte[]) xmlrpc.execute( "getDocument", params );
+            System.out.println( new String(data, "UTF-8") );
+            assertNotNull(data);
+
+            params.clear();
+            params.addElement(TARGET_RESOURCE.toString());
+            params.addElement(0);
+            String sdata = (String) xmlrpc.execute( "getDocumentAsString", params );
+            System.out.println(sdata);
+            assertNotNull(data);
+
+            params.clear();
+            params.addElement(TARGET_RESOURCE.toString());
+            params.addElement(options);
+            HashMap table = (HashMap) xmlrpc.execute("getDocumentData", params);
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            int offset = ((Integer)table.get("offset")).intValue();
+            data = (byte[])table.get("data");
+            os.write(data);
+            while(offset > 0) {
+                params.clear();
+                params.add(table.get("handle"));
+                params.add(new Integer(offset));
+                table = (HashMap) xmlrpc.execute("getNextChunk", params);
+                offset = ((Integer)table.get("offset")).intValue();
+                data = (byte[])table.get("data");
+                os.write(data);
+            }
+            data = os.toByteArray();
+            assertTrue(data.length > 0);
+            System.out.println(new String(data, "UTF-8"));
+
+            params.clear();
+            params.addElement(TARGET_RESOURCE.toString());
+            Boolean b = (Boolean) xmlrpc.execute( "hasDocument", params );
+            assertTrue(b.booleanValue());
+	    } catch (Exception e) {
+            e.printStackTrace();
+	        fail(e.getMessage());
+	    }
+	}
+
+	private void storeData() {
 		try {
 			System.out.println("Creating collection " + TARGET_COLLECTION);
 			XmlRpcClient xmlrpc = getClient();
@@ -137,12 +232,55 @@ public class XmlRpcTest extends XMLTestCase {
 			assertTrue(result.booleanValue());
 			
 			System.out.println("Documents stored.");
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
+            e.printStackTrace();
 	        fail(e.getMessage());  
 	    }			
 	}
-	
+
+    public void testRemoveCollection() {
+        storeData();
+        XmlRpcClient xmlrpc = getClient();
+        try {
+            List params = new ArrayList(1);
+            params.add(TARGET_COLLECTION.toString());
+            Boolean b = (Boolean) xmlrpc.execute("hasCollection", params);
+            assertTrue(b.booleanValue());
+
+            b = (Boolean) xmlrpc.execute("removeCollection", params);
+            assertTrue(b.booleanValue());
+
+            b = (Boolean) xmlrpc.execute("hasCollection", params);
+            assertFalse(b.booleanValue());
+        } catch (XmlRpcException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
+    public void testRemoveDoc() {
+        storeData();
+        XmlRpcClient xmlrpc = getClient();
+        try {
+            List params = new ArrayList(1);
+            params.add(TARGET_RESOURCE.toString());
+            Boolean b = (Boolean) xmlrpc.execute("hasDocument", params);
+
+            assertTrue(b.booleanValue());
+
+            b = (Boolean) xmlrpc.execute("remove", params);
+            assertTrue(b.booleanValue());
+
+            b = (Boolean) xmlrpc.execute("hasDocument", params);
+            assertFalse(b.booleanValue());
+        } catch (XmlRpcException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
 	public void testRetrieveDoc() {
+        storeData();
 		System.out.println("Retrieving document " + TARGET_RESOURCE);
 		Hashtable options = new Hashtable();
         options.put("indent", "yes");
@@ -170,6 +308,7 @@ public class XmlRpcTest extends XMLTestCase {
 	}
 	
 	public void testCharEncoding() {
+        storeData();
 		try {
 			System.out.println("Testing charsets returned by query");
 			Vector params = new Vector();
@@ -177,22 +316,23 @@ public class XmlRpcTest extends XMLTestCase {
 			params.addElement(query.getBytes("UTF-8"));
 			params.addElement(new Hashtable());
 			XmlRpcClient xmlrpc = getClient();
-	        Hashtable result = (Hashtable) xmlrpc.execute( "queryP", params );
-	        Vector resources = (Vector)result.get("results");
+	        HashMap result = (HashMap) xmlrpc.execute( "queryP", params );
+	        Object[] resources = (Object[]) result.get("results");
 	        //TODO : check the number of resources before !
-	        assertEquals(resources.size(), 2);
-	        String value = (String)resources.elementAt(0);
+	        assertEquals(resources.length, 2);
+	        String value = (String)resources[0];
 	        assertEquals(value, "\u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF");
 	        System.out.println("Result1: " + value);
-	        value = (String)resources.elementAt(1);
+	        value = (String)resources[1];
 	        assertEquals(value, "\uC5F4\uB2E8\uACC4");
 	        System.out.println("Result2: " + value);
 	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }	        
+	        fail(e.getMessage());
+        }
 	}
 	
 	public void testQuery() {
+        storeData();
 		try {
 			Vector params = new Vector();
 			String query = 
@@ -212,8 +352,9 @@ public class XmlRpcTest extends XMLTestCase {
 	}	
 	
 	public void testQueryWithStylesheet() {
+        storeData();
 		try {
-			Hashtable options = new Hashtable();
+			HashMap options = new HashMap();
 			options.put(EXistOutputKeys.STYLESHEET, "test.xsl");
 			options.put(EXistOutputKeys.STYLESHEET_PARAM + ".testparam", "Test");
 			options.put(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -243,6 +384,7 @@ public class XmlRpcTest extends XMLTestCase {
 	}
 	
 	public void testExecuteQuery() {
+        storeData();
 		try {
 			Vector params = new Vector();
 			String query = "distinct-values(//para)";
@@ -278,6 +420,7 @@ public class XmlRpcTest extends XMLTestCase {
 	}
 	
 	public void testCollectionWithAccentsAndSpaces() {
+        storeData();
 		try {
 			System.out.println("Creating collection with accents and spaces in name ...");
 			Vector params = new Vector();
@@ -297,12 +440,12 @@ public class XmlRpcTest extends XMLTestCase {
 			params.clear();
 			params.addElement(SPECIAL_COLLECTION.removeLastSegment().toString());
 	
-			Hashtable collection = (Hashtable) xmlrpc.execute("describeCollection", params);
-			Vector collections = (Vector) collection.get("collections");
+			HashMap collection = (HashMap) xmlrpc.execute("describeCollection", params);
+			Object[] collections = (Object[]) collection.get("collections");
 			boolean foundMatch=false;
 			String targetCollectionName = SPECIAL_COLLECTION.lastSegment().toString();
-			for (int i = 0; i < collections.size(); i++) {
-				String childName = (String) collections.elementAt(i);
+			for (int i = 0; i < collections.length; i++) {
+				String childName = (String) collections[i];
 				System.out.println("Child collection: " + childName);
 				if(childName.equals(targetCollectionName)) {
 					foundMatch=true;
@@ -312,7 +455,7 @@ public class XmlRpcTest extends XMLTestCase {
 			assertTrue("added collection not found", foundMatch);
 			
 			System.out.println("Retrieving document '" + SPECIAL_RESOURCE.toString() + "'");
-			Hashtable options = new Hashtable();
+			HashMap options = new HashMap();
 	        options.put("indent", "yes");
 	        options.put("encoding", "UTF-8");
 	        options.put("expand-xincludes", "yes");
@@ -331,16 +474,19 @@ public class XmlRpcTest extends XMLTestCase {
 	}
 	
 	protected XmlRpcClient getClient() {
-		try {
-			XmlRpc.setEncoding("UTF-8");
-			XmlRpcClient xmlrpc = new XmlRpcClient(URI);
-			xmlrpc.setBasicAuthentication("admin", "");
-			return xmlrpc;
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }
-	    return null;
-	}
+        try {
+            XmlRpcClient client = new XmlRpcClient();
+            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setEnabledForExtensions(true);
+            config.setServerURL(new URL(URI));
+            config.setBasicUserName("admin");
+            config.setBasicPassword("");
+            client.setConfig(config);
+            return client;
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
 
 	public static void main(String[] args) {
 		TestRunner.run(XmlRpcTest.class);

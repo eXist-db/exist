@@ -5,9 +5,9 @@ import junit.textui.TestRunner;
 import org.exist.StandaloneServer;
 import org.exist.xmldb.XmldbURI;
 import org.mortbay.util.MultiException;
-import org.apache.xmlrpc.XmlRpcClient;
-import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.log4j.BasicConfigurator;
 
 import java.util.Iterator;
@@ -17,6 +17,7 @@ import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.MalformedURLException;
 import java.io.*;
 
 /**
@@ -205,17 +206,20 @@ public class MoveResourceTest extends TestCase {
 		initServer();
 	}
 
-    protected XmlRpcClient getClient() {
-		try {
-			XmlRpc.setEncoding("UTF-8");
-			XmlRpcClient xmlrpc = new XmlRpcClient(URI);
-			xmlrpc.setBasicAuthentication("admin", "");
-			return xmlrpc;
-	    } catch (Exception e) {
-	        fail(e.getMessage());
-	    }
-	    return null;
-	}
+    protected static XmlRpcClient getClient() {
+        try {
+            XmlRpcClient client = new XmlRpcClient();
+            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setEnabledForExtensions(true);
+            config.setServerURL(new URL(URI));
+            config.setBasicUserName("admin");
+            config.setBasicPassword("");
+            client.setConfig(config);
+            return client;
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
 
     private void initServer() {
 		try {

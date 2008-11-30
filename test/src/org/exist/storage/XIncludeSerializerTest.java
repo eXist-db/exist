@@ -30,11 +30,12 @@ import java.io.InputStreamReader;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.Vector;
 
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.custommonkey.xmlunit.Diff;
 import org.exist.StandaloneServer;
 import org.exist.storage.serializers.XIncludeFilter;
@@ -411,21 +412,21 @@ public class XIncludeSerializerTest {
         return null;
 
     }//httpurlconnection
-       
-	protected static XmlRpcClient getClient() {
 
-		try {
-			XmlRpc.setEncoding("UTF-8");
-			XmlRpcClient xmlrpc = new XmlRpcClient(XMLRPC_URI);
-			xmlrpc.setBasicAuthentication("admin", "");
-			return xmlrpc;
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }
-	    return null;
-
-	}//xmlrpcclient
-
+    protected static XmlRpcClient getClient() {
+        try {
+            XmlRpcClient client = new XmlRpcClient();
+            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setEnabledForExtensions(true);
+            config.setServerURL(new URL(XMLRPC_URI));
+            config.setBasicUserName("admin");
+            config.setBasicPassword("");
+            client.setConfig(config);
+            return client;
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
    
    // @TODO create reader for xml 
  
