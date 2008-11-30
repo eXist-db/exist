@@ -30,6 +30,11 @@ import org.exist.EXistException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 
+/**
+ * Factory creates a new handler for each XMLRPC request. For eXist, the handler is implemented
+ * by class {@link org.exist.xmlrpc.RpcConnection}. The factory is needed to make sure that each
+ * RpcConnection is properly initialized.
+ */
 public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFactory.RequestProcessorFactory {
 
     private final static Logger LOG = Logger.getLogger(XmldbRequestProcessorFactory.class);
@@ -54,6 +59,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     }
 
     public Object getRequestProcessor(XmlRpcRequest pRequest) throws XmlRpcException {
+        checkResultSets();
         XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) pRequest.getConfig();
         User user = authenticate(config.getBasicUserName(), config.getBasicPassword());
         return new RpcConnection(this, user);
@@ -81,8 +87,11 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
         return brokerPool;
     }
 
-    private void checkResultSets() {
-        resultSets.checkTimestamps();
+    protected void checkResultSets() {
+        if (System.currentTimeMillis() - lastCheck > CHECK_INTERVAL) {
+            resultSets.checkTimestamps();
+            lastCheck = System.currentTimeMillis();
+        }
     }
 
     public synchronized void shutdown() {

@@ -29,8 +29,32 @@ import org.apache.xmlrpc.server.XmlRpcNoSuchHandlerException;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.XmlRpcHandler;
 import org.exist.EXistException;
+import org.exist.http.Descriptor;
+import org.exist.http.servlets.HttpServletRequestWrapper;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class RpcServlet extends XmlRpcServlet {
+
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        // Request logger
+
+        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        if( descriptor.allowRequestLogging() ) {
+            // Wrap HttpServletRequest, because both request Logger and xmlrpc
+            // need the request InputStream, which is consumed when read.
+            request =
+                new HttpServletRequestWrapper(request, /*formEncoding*/ "utf-8" );
+            descriptor.doLogRequestInReplayLog(request);
+        }
+
+        super.doPost(request, response);
+    }
 
     protected XmlRpcHandlerMapping newXmlRpcHandlerMapping() throws XmlRpcException {
         DefaultHandlerMapping mapping = new DefaultHandlerMapping();
