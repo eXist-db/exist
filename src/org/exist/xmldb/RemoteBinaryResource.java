@@ -116,10 +116,8 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 			data = (byte[])parent.getClient().execute("getBinaryResource", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
-		return data;
+        return data;
 	}
 
 	protected InputStream getStreamContent() {

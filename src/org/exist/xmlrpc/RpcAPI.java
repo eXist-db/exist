@@ -22,10 +22,13 @@
 package org.exist.xmlrpc;
 import java.io.IOException;
 import java.util.Date;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Vector;
+import java.util.List;
+import java.net.URISyntaxException;
 
 import org.exist.EXistException;
+import org.exist.util.LockException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.xquery.XPathException;
@@ -54,7 +57,7 @@ public interface RpcAPI {
 	 * 
 	 * @return true if the shutdown succeeded, false otherwise
 	 */
-	public boolean shutdown(User user) throws PermissionDeniedException;
+	public boolean shutdown() throws PermissionDeniedException;
 
 	/**
 	 * Shut down the database after the specified delay (in milliseconds).
@@ -62,15 +65,15 @@ public interface RpcAPI {
 	 * @return true if the shutdown succeeded, false otherwise
 	 * @throws PermissionDeniedException
 	 */
-	public boolean shutdown(User user, long delay) throws PermissionDeniedException;
+	public boolean shutdown(long delay) throws PermissionDeniedException;
 	
-	public boolean sync(User user);
+	public boolean sync();
 	
 	/**
 	 * Returns true if XACML is enabled for the current database instance
 	 * @return if XACML is enabled
 	 */
-	public boolean isXACMLEnabled(User user);
+	public boolean isXACMLEnabled();
 
 	/**
 	 *  Retrieve document by name. XML content is indented if prettyPrint is set
@@ -83,11 +86,9 @@ public interface RpcAPI {
 	 *@param  name                           the document's name.
 	 *@param  prettyPrint                    pretty print XML if >0.
 	 *@param  encoding                       character encoding to use.
-	 *@param  user
-	 *@return   Document data as binary array. 
-	 *@deprecated Use {@link #getDocument(User, String, Hashtable)} instead.
+	 *@return   Document data as binary array.
 	 */
-	byte[] getDocument(User user, String name, String encoding, int prettyPrint)
+	byte[] getDocument(String name, String encoding, int prettyPrint)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -101,11 +102,9 @@ public interface RpcAPI {
 	 *@param  name                           the document's name.
 	 *@param  prettyPrint                    pretty print XML if >0.
 	 *@param  encoding                       character encoding to use.
-	 *@param  user                           Description of the Parameter
 	 *@return                                The document value
-	 *@deprecated Use {@link #getDocument(User, String, Hashtable)} instead.
 	 */
-	byte[] getDocument(User user, String name, String encoding, int prettyPrint, String stylesheet)
+	byte[] getDocument(String name, String encoding, int prettyPrint, String stylesheet)
 		throws EXistException, PermissionDeniedException;
 	
      /**
@@ -117,92 +116,87 @@ public interface RpcAPI {
 	 * the value of key {@link javax.xml.transform.OutputKeys#ENCODING}.
 	 *
 	 *@param  name                           the document's name.
-	 *@param  parameters                      Hashtable of parameters.
+	 *@param  parameters                      HashMap of parameters.
 	 *@return                                The document value
 	 */		
-	byte[] getDocument(User user, String name, Hashtable parameters)
+	byte[] getDocument(String name, HashMap parameters)
 			throws EXistException, PermissionDeniedException;	
 		
 
-	String getDocumentAsString(User user, String name, int prettyPrint)
+	String getDocumentAsString(String name, int prettyPrint)
 			throws EXistException, PermissionDeniedException;
 			
-	String getDocumentAsString(User user, String name, int prettyPrint, String stylesheet)
+	String getDocumentAsString(String name, int prettyPrint, String stylesheet)
 		throws EXistException, PermissionDeniedException;
 	
-	String getDocumentAsString(User user, String name, Hashtable parameters)
+	String getDocumentAsString(String name, HashMap parameters)
 		throws EXistException, PermissionDeniedException;
 	
 	/**
 	 * Retrieve the specified document, but limit the number of bytes transmitted
 	 * to avoid memory shortage on the server.
 	 * 
-	 * @param user
 	 * @param name
 	 * @param parameters
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
-	Hashtable getDocumentData(User user, String name, Hashtable parameters)
+	HashMap getDocumentData(String name, HashMap parameters)
 	throws EXistException, PermissionDeniedException;
 	
-	Hashtable getNextChunk(User user, String handle, int offset) 
+	HashMap getNextChunk(String handle, int offset)
     throws EXistException, PermissionDeniedException;
 	
-	byte[] getBinaryResource(User user, String name)
-		throws EXistException, PermissionDeniedException;
+	byte[] getBinaryResource(String name)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 	
 	/**
 	 *  Does the document identified by <code>name</code> exist in the
 	 *  repository?
 	 *
 	 *@param  name                           Description of the Parameter
-	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	boolean hasDocument(User user, String name) throws EXistException, PermissionDeniedException;
+	boolean hasDocument(String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/**
 	 *  Does the Collection identified by <code>name</code> exist in the
 	 *  repository?
 	 *
 	 *@param  name                           Description of the Parameter
-	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	boolean hasCollection(User user, String name) throws EXistException, PermissionDeniedException;
+	boolean hasCollection(String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/**
 	 *  Get a list of all documents contained in the database.
 	 *
-	 *@param  user
 	 *@return  list of document paths
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	Vector getDocumentListing(User user) throws EXistException, PermissionDeniedException;
+	Vector getDocumentListing() throws EXistException, PermissionDeniedException;
 
 	/**
 	 *  Get a list of all documents contained in the collection.
 	 *
 	 *@param  collection                     the collection to use.
-	 *@param  user                           Description of the Parameter
 	 *@return                                list of document paths
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	Vector getDocumentListing(User user, String collection)
-		throws EXistException, PermissionDeniedException;
+	Vector getDocumentListing(String collection)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	Hashtable listDocumentPermissions(User user, String name)
-		throws EXistException, PermissionDeniedException;
+	HashMap listDocumentPermissions(String name)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	Hashtable listCollectionPermissions(User user, String name)
-		throws EXistException, PermissionDeniedException;
+	HashMap listCollectionPermissions(String name)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/**
 	 *  Describe a collection: returns a struct with the  following fields:
@@ -239,32 +233,30 @@ public interface RpcAPI {
 	 *	</pre>
 	 *
 	 *@param  rootCollection                 Description of the Parameter
-	 *@param  user                           Description of the Parameter
 	 *@return                                The collectionDesc value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	Hashtable getCollectionDesc(User user, String rootCollection)
+	HashMap getCollectionDesc(String rootCollection)
 		throws EXistException, PermissionDeniedException;
 
-	Hashtable describeCollection(User user, String collectionName)
+	HashMap describeCollection(String collectionName)
 		throws EXistException, PermissionDeniedException;
 	
-	Hashtable describeResource(User user, String resourceName)
+	HashMap describeResource(String resourceName)
 		throws EXistException, PermissionDeniedException;
 	
 	/**
 	 * Returns the number of resources in the collection identified by
 	 * collectionName.
 	 * 
-	 * @param user 
 	 * @param collectionName
 	 * @return Number of resources
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
-	int getResourceCount(User user, String collectionName)
-		throws EXistException, PermissionDeniedException;
+	int getResourceCount(String collectionName)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 	
 	/**
 	 *  Retrieve a single node from a document. The node is identified by it's
@@ -272,12 +264,11 @@ public interface RpcAPI {
 	 *
 	 *@param  doc                            the document containing the node
 	 *@param  id                             the node's internal id
-	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	byte[] retrieve(User user, String doc, String id)
+	byte[] retrieve(String doc, String id)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -286,27 +277,26 @@ public interface RpcAPI {
 	 *
 	 *@param  doc                            the document containing the node
 	 *@param  id                             the node's internal id
-	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	byte[] retrieve(User user, String doc, String id, Hashtable parameters)
+	byte[] retrieve(String doc, String id, HashMap parameters)
 		throws EXistException, PermissionDeniedException;
 
-	String retrieveAsString(User user, String doc, String id, Hashtable parameters)
-		throws EXistException, PermissionDeniedException;
+	String retrieveAsString(String doc, String id, HashMap parameters)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	public byte[] retrieveAll(User user, int resultId, Hashtable parameters) 
+	public byte[] retrieveAll(int resultId, HashMap parameters)
 	throws EXistException, PermissionDeniedException;
 	
-   Hashtable compile(User user, byte[] xquery, Hashtable parameters) throws Exception;
+   HashMap compile(byte[] xquery, HashMap parameters) throws Exception;
    
-	Hashtable queryP(User user, byte[] xpath, Hashtable parameters)
+	HashMap queryP(byte[] xpath, HashMap parameters)
 		throws EXistException, PermissionDeniedException;
 
-	Hashtable queryP(User user, byte[] xpath, String docName, String s_id, Hashtable parameters)
-		throws EXistException, PermissionDeniedException;
+	HashMap queryP(byte[] xpath, String docName, String s_id, HashMap parameters)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
 	
 	/**
 	 *  execute XPath query and return howmany nodes from the result set,
@@ -317,7 +307,6 @@ public interface RpcAPI {
 	 *      return.
 	 *@param  start                          item in the result set to start
 	 *      with.
-	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
@@ -325,11 +314,11 @@ public interface RpcAPI {
 	 *      executeQuery() instead
 	 */
 	byte[] query(
-		User user,
+
 		byte[] xquery,
 		int howmany,
 		int start,
-		Hashtable parameters)
+		HashMap parameters)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -393,14 +382,13 @@ public interface RpcAPI {
 	 *  doctype entry has this structure: doctypeName (string), hits (int)
 	 *
 	 *@param  xquery                         Description of the Parameter
-	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 *@deprecated                           use Vector query() or int
 	 *      executeQuery() instead
 	 */
-	Hashtable querySummary(User user, String xquery)
+	HashMap querySummary(String xquery)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -408,15 +396,14 @@ public interface RpcAPI {
 	 * compiling the query. The query is read from the query cache
 	 * if it has already been run before.
 	 * 
-	 * @param user
 	 * @param query
 	 * @throws EXistException
 	 */
-	public String printDiagnostics(User user, String query, Hashtable parameters) 
+	public String printDiagnostics(String query, HashMap parameters)
 	throws EXistException, PermissionDeniedException;
 	
-	String createResourceId(User user, String collection)
-		throws EXistException, PermissionDeniedException;
+	String createResourceId(String collection)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 	
 	/**
 	 *  Parse an XML document and store it into the database. The document will
@@ -431,8 +418,8 @@ public interface RpcAPI {
 	 *@exception  EXistException
 	 *@exception  PermissionDeniedException
 	 */
-	boolean parse(User user, byte[] xmlData, String docName)
-		throws EXistException, PermissionDeniedException;
+	boolean parse(byte[] xmlData, String docName)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/**
 	 *  Parse an XML document and store it into the database. The document will
@@ -448,39 +435,37 @@ public interface RpcAPI {
 	 *@exception  EXistException
 	 *@exception  PermissionDeniedException
 	 */
-	boolean parse(User user, byte[] xmlData, String docName, int overwrite)
-	throws EXistException, PermissionDeniedException;
+	boolean parse(byte[] xmlData, String docName, int overwrite)
+	throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	boolean parse(User user, byte[] xmlData, String docName, int overwrite, Date created, Date modified)
-	throws EXistException, PermissionDeniedException;
+	boolean parse(byte[] xmlData, String docName, int overwrite, Date created, Date modified)
+	throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	boolean parse(User user, String xml, String docName, int overwrite)
-		throws EXistException, PermissionDeniedException;
+	boolean parse(String xml, String docName, int overwrite)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	boolean parse(User user, String xml, String docName)
-		throws EXistException, PermissionDeniedException;
+	boolean parse(String xml, String docName)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/**
 	 * An alternative to parse() for larger XML documents. The document
 	 * is first uploaded chunk by chunk using upload(), then parseLocal() is
 	 * called to actually store the uploaded file.
 	 * 
-	 * @param user
 	 * @param chunk the current chunk
 	 * @param length total length of the file 
 	 * @return the name of the file to which the chunk has been appended.
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
-	String upload(User user, byte[] chunk, int length)
-		throws EXistException, PermissionDeniedException;
+	String upload(byte[] chunk, int length)
+            throws EXistException, PermissionDeniedException, IOException;
 
 	/**
 	 * An alternative to parse() for larger XML documents. The document
 	 * is first uploaded chunk by chunk using upload(), then parseLocal() is
 	 * called to actually store the uploaded file.
 	 * 
-	 * @param user
 	 * @param chunk the current chunk
 	 * @param file the name of the file to which the chunk will be appended. This
 	 * should be the file name returned by the first call to upload.
@@ -489,84 +474,78 @@ public interface RpcAPI {
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
-	String upload(User user, String file, byte[] chunk, int length)
-		throws EXistException, PermissionDeniedException;
+	String upload(String file, byte[] chunk, int length)
+            throws EXistException, PermissionDeniedException, IOException;
 
-	String uploadCompressed(User user, byte[] data, int length)
-		throws EXistException, PermissionDeniedException;
+	String uploadCompressed(byte[] data, int length)
+            throws EXistException, PermissionDeniedException, IOException;
 	
-	String uploadCompressed(User user, String file, byte[] data, int length)
-    	throws EXistException, PermissionDeniedException;
+	String uploadCompressed(String file, byte[] data, int length)
+            throws EXistException, PermissionDeniedException, IOException;
 	
 	/**
 	 * Parse a file previously uploaded with upload.
 	 * 
 	 * The temporary file will be removed.
 	 * 
-	 * @param user
 	 * @param localFile
 	 * @throws EXistException
 	 * @throws IOException
 	 */
-	public boolean parseLocal(User user, String localFile, String docName, boolean replace, String mimeType)
-		throws EXistException, PermissionDeniedException, SAXException;
+	public boolean parseLocal(String localFile, String docName, boolean replace, String mimeType)
+            throws EXistException, PermissionDeniedException, SAXException, URISyntaxException;
 
-	public boolean parseLocal(User user, String localFile, String docName, boolean replace, String mimeType, Date created, Date modified)
-	throws EXistException, PermissionDeniedException, SAXException;
+	public boolean parseLocal(String localFile, String docName, boolean replace, String mimeType, Date created, Date modified)
+            throws EXistException, PermissionDeniedException, SAXException, URISyntaxException;
 	
 	/**
 	 * Store data as a binary resource.
 	 * 
-	 * @param user
 	 * @param data the data to be stored
 	 * @param docName the path to the new document
 	 * @param replace if true, an old document with the same path will be overwritten
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
-	public boolean storeBinary(User user, byte[] data, String docName, String mimeType, boolean replace)
-	throws EXistException, PermissionDeniedException;
+	public boolean storeBinary(byte[] data, String docName, String mimeType, boolean replace)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
 	
-	public boolean storeBinary(User user, byte[] data, String docName, String mimeType, boolean replace, Date created, Date modified)
-	throws EXistException, PermissionDeniedException;
+	public boolean storeBinary(byte[] data, String docName, String mimeType, boolean replace, Date created, Date modified)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
 	
 	/**
 	 *  Remove a document from the database.
 	 *
-	 *@param  docName path to the document to be removed
-	 *@param  user                           
-	 *@return                                true on success.
-	 *@exception  EXistException             
+	 * @param  docName path to the document to be removed
+	 *@exception  EXistException
 	 *@exception  PermissionDeniedException  
 	 */
-	boolean remove(User user, String docName) throws EXistException, PermissionDeniedException;
+	boolean remove(String docName) throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/**
 	 *  Remove an entire collection from the database.
 	 *
 	 *@param  name path to the collection to be removed.
-	 *@param  user
-	 *@exception  EXistException             
+	 *@exception  EXistException
 	 *@exception  PermissionDeniedException 
 	 */
-	boolean removeCollection(User user, String name)
-		throws EXistException, PermissionDeniedException;
+	boolean removeCollection(String name)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/** 
 	 * Create a new collection on the database.
 	 * 
-	 * @param user User
 	 * @param name the path to the new collection.
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
-	boolean createCollection(User user, String name)
+	boolean createCollection(String name)
 		throws EXistException, PermissionDeniedException;
 	
-	boolean createCollection(User user, String name, Date created)
+	boolean createCollection(String name, Date created)
 	throws EXistException, PermissionDeniedException;
 
-	boolean configureCollection(User user, String collection, String configuration)
+	boolean configureCollection(String collection, String configuration)
 		throws EXistException, PermissionDeniedException;
 	
 	/**
@@ -574,27 +553,26 @@ public interface RpcAPI {
 	 *  returned reference may be used later to get a summary of results or
 	 *  retrieve the actual hits.
 	 *
-     * @param  user                           Description of the Parameter
      * @param  xpath                          Description of the Parameter
      * @param  encoding                       Description of the Parameter
-     * @param parameters a <code>Hashtable</code> value
+     * @param parameters a <code>HashMap</code> value
      * @return                                Description of the Return Value
      * @exception  EXistException             Description of the Exception
      * @exception  PermissionDeniedException  Description of the Exception
      */
-    int executeQuery(User user, byte[] xpath, String encoding, Hashtable parameters)
+    int executeQuery(byte[] xpath, String encoding, HashMap parameters)
 		throws EXistException, PermissionDeniedException;
 
-	int executeQuery(User user, byte[] xpath, Hashtable parameters) throws EXistException, PermissionDeniedException;
+	int executeQuery(byte[] xpath, HashMap parameters) throws EXistException, PermissionDeniedException;
 
-	int executeQuery(User user, String xpath, Hashtable parameters) throws EXistException, PermissionDeniedException;
+	int executeQuery(String xpath, HashMap parameters) throws EXistException, PermissionDeniedException;
 
 	/**
 	 *  Execute XPath/Xquery from path file (stored inside eXist)
 	 *  returned reference may be used later to get a summary of results or
 	 *  retrieve the actual hits.
 	 */
-	Hashtable execute(User user,String path, Hashtable parameters)
+	HashMap execute(String path, HashMap parameters)
 	throws EXistException, PermissionDeniedException;
 	
 	/**
@@ -658,28 +636,26 @@ public interface RpcAPI {
 	 *  doctype entry has this structure: doctypeName (string), hits (int)
 	 *
 	 *@param  resultId                       Description of the Parameter
-	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	Hashtable querySummary(User user, int resultId)
+	HashMap querySummary(int resultId)
 		throws EXistException, PermissionDeniedException, XPathException;
 
-	Hashtable getPermissions(User user, String resource)
-		throws EXistException, PermissionDeniedException;
+	HashMap getPermissions(String resource)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/**
 	 *  Get the number of hits in the result set identified by it's
 	 *  result-set-id.
 	 *
 	 *@param  resultId                       Description of the Parameter
-	 *@param  user                           Description of the Parameter
 	 *@return                                The hits value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	int getHits(User user, int resultId) throws EXistException, PermissionDeniedException;
+	int getHits(int resultId) throws EXistException, PermissionDeniedException;
 
 	/**
 	 *  Retrieve a single result from the result-set identified by resultId. The
@@ -687,128 +663,127 @@ public interface RpcAPI {
 	 *
 	 *@param  resultId                       Description of the Parameter
 	 *@param  num                            Description of the Parameter
-	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	byte[] retrieve(User user, int resultId, int num, Hashtable parameters)
+	byte[] retrieve(int resultId, int num, HashMap parameters)
 		throws EXistException, PermissionDeniedException;
 
-	boolean setUser(User user, String name, String passwd, String digestPassword,Vector groups, String home)
+	boolean setUser(String name, String passwd, String digestPassword,Vector groups, String home)
 		throws EXistException, PermissionDeniedException;
 
-	boolean setUser(User user, String name, String passwd, String digestPassword,Vector groups)
+	boolean setUser(String name, String passwd, String digestPassword,Vector groups)
 		throws EXistException, PermissionDeniedException;
 
-	boolean setPermissions(User user, String resource, String permissions)
-		throws EXistException, PermissionDeniedException;
+	boolean setPermissions(String resource, String permissions)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	boolean setPermissions(User user, String resource, int permissions)
-		throws EXistException, PermissionDeniedException;
+	boolean setPermissions(String resource, int permissions)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	boolean setPermissions(
-		User user,
+
 		String resource,
 		String owner,
 		String ownerGroup,
 		String permissions)
-		throws EXistException, PermissionDeniedException;
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	boolean setPermissions(
-		User user,
+
 		String resource,
 		String owner,
 		String ownerGroup,
 		int permissions)
-		throws EXistException, PermissionDeniedException;
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	public boolean lockResource(User user, String path, String userName) 
-	throws EXistException, PermissionDeniedException;
+	public boolean lockResource(String path, String userName)
+	throws EXistException, PermissionDeniedException, URISyntaxException;
 	
-	public boolean unlockResource(User user, String path) 
-	throws EXistException, PermissionDeniedException;
+	public boolean unlockResource(String path)
+	throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	public String hasUserLock(User user, String path)
-	throws EXistException, PermissionDeniedException;
+	public String hasUserLock(String path)
+	throws EXistException, PermissionDeniedException, URISyntaxException;
 	
-	Hashtable getUser(User user, String name) throws EXistException, PermissionDeniedException;
+	HashMap getUser(String name) throws EXistException, PermissionDeniedException;
 
-	Vector getUsers(User user) throws EXistException, PermissionDeniedException;
+	Vector getUsers() throws EXistException, PermissionDeniedException;
 
-	boolean removeUser(User user, String name) throws EXistException, PermissionDeniedException;
+	boolean removeUser(String name) throws EXistException, PermissionDeniedException;
 
-	Vector getGroups(User user) throws EXistException, PermissionDeniedException;
+	Vector getGroups() throws EXistException, PermissionDeniedException;
 
-	Vector getIndexedElements(User user, String collectionName, boolean inclusive)
-		throws EXistException, PermissionDeniedException;
+	Vector getIndexedElements(String collectionName, boolean inclusive)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	Vector scanIndexTerms(
-		User user,
+
 		String collectionName,
 		String start,
 		String end,
 		boolean inclusive)
-		throws PermissionDeniedException, EXistException;
+		throws PermissionDeniedException, EXistException, URISyntaxException;
 
-	Vector scanIndexTerms(User user, String xpath,
+	Vector scanIndexTerms(String xpath,
 			String start, String end)
 			throws PermissionDeniedException, EXistException, XPathException;
 	
-	boolean releaseQueryResult(User user, int handle);
+	void releaseQueryResult(int handle);
 
-	int xupdate(User user, String collectionName, byte[] xupdate)
-		throws PermissionDeniedException, EXistException, SAXException;
+	int xupdate(String collectionName, byte[] xupdate)
+            throws PermissionDeniedException, EXistException, SAXException, XPathException, LockException;
 	
-	int xupdateResource(User user, String resource, byte[] xupdate)
+	int xupdateResource(String resource, byte[] xupdate)
 		throws PermissionDeniedException, EXistException, SAXException;
 
-	int xupdateResource(User user, String resource, byte[] xupdate, String encoding)
-		throws PermissionDeniedException, EXistException, SAXException;
+	int xupdateResource(String resource, byte[] xupdate, String encoding)
+            throws PermissionDeniedException, EXistException, SAXException, XPathException, LockException, URISyntaxException;
 
 		
-	Date getCreationDate(User user, String collectionName)
-		throws PermissionDeniedException, EXistException;
+	Date getCreationDate(String collectionName)
+		throws PermissionDeniedException, EXistException, URISyntaxException;
 	
-	Vector getTimestamps(User user, String documentName)
-		throws PermissionDeniedException, EXistException;
+	Vector getTimestamps(String documentName)
+		throws PermissionDeniedException, EXistException, URISyntaxException;
 		
-	boolean copyCollection(User user, String name, String namedest)
+	boolean copyCollection(String name, String namedest)
 	    throws PermissionDeniedException, EXistException;
 
-	Vector getDocumentChunk(User user, String name, Hashtable parameters)
+	List getDocumentChunk(String name, HashMap parameters)
 	throws EXistException, PermissionDeniedException, IOException;
 	
-	byte[] getDocumentChunk(User user, String name, int start, int stop)
+	byte[] getDocumentChunk(String name, int start, int stop)
 	throws EXistException, PermissionDeniedException, IOException;
 	
-	boolean moveCollection(User user, String collectionPath, String destinationPath, String newName) 
+	boolean moveCollection(String collectionPath, String destinationPath, String newName)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+	
+	boolean moveResource(String docPath, String destinationPath, String newName)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+	
+	boolean copyCollection(String collectionPath, String destinationPath, String newName)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+	
+	boolean copyResource(String docPath, String destinationPath, String newName)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+	
+	void reindexCollection(String name)
+	throws EXistException, PermissionDeniedException, URISyntaxException;
+	
+	void backup(String userbackup, String password, String destcollection, String collection)
 	throws EXistException, PermissionDeniedException;
 	
-	boolean moveResource(User user, String docPath, String destinationPath, String newName) 
-	throws EXistException, PermissionDeniedException;
-	
-	boolean copyCollection(User user, String collectionPath, String destinationPath, String newName) 
-	throws EXistException, PermissionDeniedException;
-	
-	boolean copyResource(User user, String docPath, String destinationPath, String newName) 
-	throws EXistException, PermissionDeniedException;
-	
-	boolean reindexCollection(User user, String name)
-	throws EXistException, PermissionDeniedException;
-	
-	boolean backup(User user, String userbackup, String password, String destcollection, String collection)
-	throws EXistException, PermissionDeniedException;
-	
-	boolean dataBackup(User user, String dest) throws PermissionDeniedException;
+	boolean dataBackup(String dest) throws PermissionDeniedException;
     
     /// DWES
-    boolean isValid(User user, String name)	throws EXistException, PermissionDeniedException;
+    boolean isValid(String name)	throws EXistException, PermissionDeniedException, URISyntaxException;
     
-    Vector getDocType(User user, String documentName)
-	throws PermissionDeniedException, EXistException;
+    Vector getDocType(String documentName)
+	throws PermissionDeniedException, EXistException, URISyntaxException;
     
-    boolean setDocType(User user, String documentName, String doctypename, String publicid, String systemid)
-	throws EXistException, PermissionDeniedException;
+    boolean setDocType(String documentName, String doctypename, String publicid, String systemid)
+	throws EXistException, PermissionDeniedException, URISyntaxException;
 }
 
