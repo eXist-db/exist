@@ -25,10 +25,13 @@ package org.exist.protocolhandler.xmlrpc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
+import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.io.ExistIOException;
 import org.exist.util.MimeTable;
@@ -62,13 +65,18 @@ public class XmlrpcUpload {
         LOG.debug("Begin document upload");
         try {
             // Setup xmlrpc client
-            XmlRpc.setEncoding("UTF-8");
-            XmlRpcClient xmlrpc = new XmlRpcClient( xmldbURL.getXmlRpcURL() );
-            
-            if(xmldbURL.hasUserInfo()){
-                xmlrpc.setBasicAuthentication(xmldbURL.getUsername(), xmldbURL.getPassword());
+            XmlRpcClient client = new XmlRpcClient();
+            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setEncoding("UTF-8");
+            config.setEnabledForExtensions(true);
+            config.setServerURL(new URL(xmldbURL.getXmlRpcURL()));
+
+            if(xmldbURL.hasUserInfo()) {
+                config.setBasicUserName(xmldbURL.getUsername());
+                config.setBasicPassword(xmldbURL.getPassword());
             }
-            
+            client.setConfig(config);
+
             String contentType=MimeType.BINARY_TYPE.getName();
             MimeType mime
                     = MimeTable.getInstance().getContentTypeFor(xmldbURL.getDocumentName());
@@ -77,7 +85,7 @@ public class XmlrpcUpload {
             }
             
             // Initialize xmlrpc parameters
-            Vector params = new Vector();
+            List params = new ArrayList(5);
             String handle=null;
             
             // Copy data from inputstream to database
@@ -86,20 +94,20 @@ public class XmlrpcUpload {
             while ((len = is.read(buf)) > 0) {
                 params.clear();
                 if(handle!=null){
-                    params.addElement(handle);
+                    params.add(handle);
                 }
-                params.addElement(buf);
-                params.addElement(new Integer(len));
-                handle = (String)xmlrpc.execute("upload", params);
+                params.add(buf);
+                params.add(new Integer(len));
+                handle = (String)client.execute("upload", params);
             }
             
             // All data transported, now parse data on server
             params.clear();
-            params.addElement(handle);
-            params.addElement(xmldbURL.getCollectionPath() );
-            params.addElement(Boolean.valueOf(true));
-            params.addElement(contentType);
-            Boolean result =(Boolean)xmlrpc.execute("parseLocal", params); 
+            params.add(handle);
+            params.add(xmldbURL.getCollectionPath() );
+            params.add(Boolean.valueOf(true));
+            params.add(contentType);
+            Boolean result =(Boolean)client.execute("parseLocal", params);
             
             // Check XMLRPC result
             if(result.booleanValue()){

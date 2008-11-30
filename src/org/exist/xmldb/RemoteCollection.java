@@ -23,23 +23,8 @@
  */
 package org.exist.xmldb;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Vector;
-
-import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.util.Compressor;
@@ -51,6 +36,21 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * A remote implementation of the Collection interface. This
@@ -103,25 +103,21 @@ public class RemoteCollection implements CollectionImpl {
 
 	public void close() throws XMLDBException {
 		try {
-			rpcClient.execute("sync", new Vector());
+			rpcClient.execute("sync", new ArrayList());
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
 		}
-	}
+    }
 
 	public String createId() throws XMLDBException {
-	    Vector params = new Vector(1);
-	    params.addElement(getPath());
+        List params = new ArrayList(1);
+	    params.add(getPath());
 	    try {
 			return (String)rpcClient.execute("createResourceId", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
 		}
-	}
+    }
 
 	public Resource createResource(String id, String type) throws XMLDBException {
 		XmldbURI newId;
@@ -227,16 +223,14 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public int getResourceCount() throws XMLDBException {
-	    Vector params = new Vector(1);
-	    params.addElement(getPath());
+        List params = new ArrayList(1);
+        params.add(getPath());
 	    try {
 			return ((Integer)rpcClient.execute("getResourceCount", params)).intValue();
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
 		}
-	}
+    }
 
 	public Service getService(String name, String version) throws XMLDBException {
 		if (name.equals("XPathQueryService"))
@@ -310,18 +304,17 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public String[] listResources() throws XMLDBException {
-	    Vector params = new Vector();
-		params.addElement(getPath());
+        List params = new ArrayList(1);
+		params.add(getPath());
 		try {
-			Vector vec = (Vector)rpcClient.execute("getDocumentListing", params);
-			String[] resources = new String[vec.size()];
-			return (String[])vec.toArray(resources);
+			Object[] r = (Object[]) rpcClient.execute("getDocumentListing", params);
+            String[] resources = new String[r.length];
+            System.arraycopy(r, 0, resources, 0, r.length);
+            return resources;
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "An IO error occurred: " + ioe.getMessage(), ioe);
 		}
-	}
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.CollectionImpl#getResources()
@@ -331,23 +324,21 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public Resource getResource(String name) throws XMLDBException {
-	    Vector params = new Vector();
+        List params = new ArrayList(1);
 		XmldbURI docUri;
 		try {
 			docUri = XmldbURI.xmldbUriFor(name);
 		} catch(URISyntaxException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
-		params.addElement(getPathURI().append(docUri).toString());
-		Hashtable hash;
+		params.add(getPathURI().append(docUri).toString());
+		HashMap hash;
 		try {
-			hash = (Hashtable) rpcClient.execute("describeResource", params);
+			hash = (HashMap) rpcClient.execute("describeResource", params);
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "An IO error occurred: " + ioe.getMessage(), ioe);
 		}
-		String docName = (String) hash.get("name");
+        String docName = (String) hash.get("name");
 		if(docName == null)
 			return null;	// resource does not exist!
 		
@@ -387,25 +378,23 @@ public class RemoteCollection implements CollectionImpl {
 
 	private void readCollection() throws XMLDBException {
 		childCollections = new HashMap();
-		Vector params = new Vector();
-		params.addElement(getPath());
+        List params = new ArrayList(1);
+        params.add(getPath());
 
-		Hashtable collection;
+		HashMap collection;
 		try {
-			collection = (Hashtable) rpcClient.execute("describeCollection", params);
+			collection = (HashMap) rpcClient.execute("describeCollection", params);
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "An IO error occurred: " + ioe.getMessage(), ioe);
 		}
-		Vector collections = (Vector) collection.get("collections");
+        Object[] collections = (Object[]) collection.get("collections");
 		permissions = PermissionFactory.getPermission(
 				(String) collection.get("owner"),
 				(String) collection.get("group"),
 				((Integer) collection.get("permissions")).intValue());
 		String childName;
-		for (int i = 0; i < collections.size(); i++) {
-			childName = (String) collections.elementAt(i);
+		for (int i = 0; i < collections.length; i++) {
+			childName = (String) collections[i];
 			try {
                 //TODO: Should this use the checked version instead?
 				RemoteCollection child =
@@ -435,9 +424,9 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void removeResource(Resource res) throws XMLDBException {
-		Vector params = new Vector();
+        List params = new ArrayList(1);
 		try {
-			params.addElement(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
+			params.add(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
 		} catch(URISyntaxException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
@@ -446,22 +435,18 @@ public class RemoteCollection implements CollectionImpl {
 			rpcClient.execute("remove", params);
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
-	}
+    }
 
 	public Date getCreationTime() throws XMLDBException {
-		Vector params = new Vector(1);
-		params.addElement(getPath());
+        List params = new ArrayList(1);
+		params.add(getPath());
 		try {
 			return (Date) rpcClient.execute("getCreationDate", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
 		}
-	}
+    }
 
 	public void setProperty(String property, String value) throws XMLDBException {
 		if(properties == null)
@@ -517,18 +502,18 @@ public class RemoteCollection implements CollectionImpl {
 
 	private void store(RemoteXMLResource res) throws XMLDBException {
 		byte[] data = res.getData();
-		Vector params = new Vector();
-		params.addElement(data);
+        List params = new ArrayList(1);
+		params.add(data);
 		try {
-			params.addElement(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
+			params.add(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
 		} catch(URISyntaxException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
-		params.addElement(new Integer(1));
+		params.add(new Integer(1));
 
 		if (res.dateCreated != null) {
-		params.addElement(res.dateCreated );
-		params.addElement(res.dateModified );
+		params.add(res.dateCreated );
+		params.add(res.dateModified );
 		}
 
 		try {
@@ -538,27 +523,25 @@ public class RemoteCollection implements CollectionImpl {
 				ErrorCodes.INVALID_RESOURCE,
 				xre == null ? "unknown error" : xre.getMessage(),
 				xre);
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
-	}
+    }
 
 	private void store(RemoteBinaryResource res) throws XMLDBException {
 		byte[] data = (byte[])res.getContent();
-		Vector params = new Vector();
-		params.addElement(data);
+        List params = new ArrayList(1);
+		params.add(data);
 		try {
-			params.addElement(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
+			params.add(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
 		} catch(URISyntaxException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
-        params.addElement(res.getMimeType());
-		params.addElement(Boolean.TRUE);
+        params.add(res.getMimeType());
+		params.add(Boolean.TRUE);
 
 
-		if ((Date)res.dateCreated != null) {
-			params.addElement((Date)res.dateCreated );
-			params.addElement((Date)res.dateModified );
+		if (res.dateCreated != null) {
+			params.add((Date)res.dateCreated );
+			params.add((Date)res.dateModified );
 			}
 
 		try {
@@ -573,10 +556,8 @@ public class RemoteCollection implements CollectionImpl {
 					ErrorCodes.UNKNOWN_ERROR,
 					xre == null ? "unknown error" : xre.getMessage(),
 					xre);
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
-	}
+    }
 
 	private void uploadAndStore(Resource res) throws XMLDBException {
 		InputStream is=null;
@@ -608,29 +589,29 @@ public class RemoteCollection implements CollectionImpl {
 		try {
 			int len;
 			String fileName = null;
-			Vector params;
+			List params;
 			byte[] compressed;
 			while ((len = is.read(chunk)) > -1) {
 			    compressed = Compressor.compress(chunk, len);
-				params = new Vector();
+				params = new ArrayList(3);
 				if (fileName != null)
-					params.addElement(fileName);
-				params.addElement(compressed);
-				params.addElement(new Integer(len));
+					params.add(fileName);
+				params.add(compressed);
+				params.add(new Integer(len));
 				fileName = (String) rpcClient.execute("uploadCompressed", params);
 			}
-			params = new Vector();
-			params.addElement(fileName);
+			params = new ArrayList(6);
+			params.add(fileName);
 			try {
-				params.addElement(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
+				params.add(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
 			} catch(URISyntaxException e) {
 				throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 			}
-			params.addElement(Boolean.TRUE);
-            params.addElement(((RemoteXMLResource)res).getMimeType());
+			params.add(Boolean.TRUE);
+            params.add(((RemoteXMLResource)res).getMimeType());
 			if ( ((RemoteXMLResource)res).dateCreated  != null ) {
-				params.addElement( ((RemoteXMLResource)res).dateCreated );
-				params.addElement( ((RemoteXMLResource)res).dateModified );
+				params.add( ((RemoteXMLResource)res).dateCreated );
+				params.add( ((RemoteXMLResource)res).dateModified );
 				}
 
 			rpcClient.execute("parseLocal", params);
@@ -653,26 +634,6 @@ public class RemoteCollection implements CollectionImpl {
      */
     public boolean isRemoteCollection() throws XMLDBException {
         return true;
-    }
-
-    //You probably will have to call this method from this cast :
-    //((org.exist.xmldb.CollectionImpl)collection).getURI()
-    public XmldbURI getURI() {
-    	StringBuffer accessor = new StringBuffer(XmldbURI.XMLDB_URI_PREFIX);
-    	//TODO : get the name from client
-    	accessor.append("exist");
-    	accessor.append("://");
-    	accessor.append(rpcClient.getURL().getHost());
-    	if (rpcClient.getURL().getPort() != -1)
-    		accessor.append(":").append(rpcClient.getURL().getPort());
-    	accessor.append(rpcClient.getURL().getPath());
-    	try {
-    		//TODO : cache it when constructed
-    		return XmldbURI.create(accessor.toString(), getPath());
-    	} catch (XMLDBException e) {
-    		//TODO : should never happen
-    		return null;
-    	}
     }
 }
 

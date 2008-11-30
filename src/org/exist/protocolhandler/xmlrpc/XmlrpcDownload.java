@@ -26,10 +26,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.io.ExistIOException;
 
@@ -54,14 +55,19 @@ public class XmlrpcDownload {
     public void stream(XmldbURL xmldbURL, OutputStream os) throws IOException {
         LOG.debug("Begin document download");
         try {
+            XmlRpcClient client = new XmlRpcClient();
+            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setEncoding("UTF-8");
+            config.setEnabledForExtensions(true);
+            config.setServerURL(new URL(xmldbURL.getXmlRpcURL()));
+
             // Setup client client
-            XmlRpc.setEncoding("UTF-8");
-            XmlRpcClient client = new XmlRpcClient( xmldbURL.getXmlRpcURL() );
-            
-            if(xmldbURL.hasUserInfo()){
-                client.setBasicAuthentication(xmldbURL.getUsername(), xmldbURL.getPassword());
+            if(xmldbURL.hasUserInfo()) {
+                config.setBasicUserName(xmldbURL.getUsername());
+                config.setBasicPassword(xmldbURL.getPassword());
             }
-            
+            client.setConfig(config);
+
             // Setup xml serializer
             Hashtable options = new Hashtable();
             options.put("indent", "no");
