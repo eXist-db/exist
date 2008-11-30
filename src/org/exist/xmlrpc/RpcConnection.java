@@ -2345,7 +2345,6 @@ public class RpcConnection implements RpcAPI {
         queryResult.result = resultSeq;
         queryResult.queryTime = (System.currentTimeMillis() - startTime);
         int id = factory.resultSets.add(queryResult);
-        System.out.println("Factory: " + factory.hashCode());
         ret.put("id", new Integer(id));
         ret.put("results", result);
         return ret;
@@ -2683,7 +2682,6 @@ public class RpcConnection implements RpcAPI {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
-            System.out.println("Factory: " + factory.hashCode());
             QueryResult qr = factory.resultSets.get(resultId);
             if (qr == null)
                 throw new EXistException("result set unknown or timed out");
