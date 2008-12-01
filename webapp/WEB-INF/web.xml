@@ -31,16 +31,20 @@
 
         <load-on-startup>1</load-on-startup>
     </servlet>
-    
-	
+
+
     <!--
-        RpcServlet provides XML-RPC access to eXist 
+        RpcServlet provides XML-RPC access to eXist
     -->
     <servlet>
         <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
         <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
+        <init-param>
+          <param-name>enabledForExtensions</param-name>
+          <param-value>true</param-value>
+        </init-param>
     </servlet>
-  
+
     <!-- 
         DatabaseAdminServlet: this servlet can be used to ensure that
         eXist is running in the background. Just set the start-parameter 
