@@ -44,7 +44,9 @@ public class JnlpJarFiles {
     // Use %latest% token in place of a version string.
     private String jars[] = new String[]{
         "xmldb",
-        "xmlrpc-%latest%-patched",
+        "xmlrpc-common-%latest%",
+        "xmlrpc-client-%latest%",
+        "ws-commons-util-%latest%",
         "commons-pool-%latest%",
         "excalibur-cli-%latest%",
         "jEdit-syntax",
