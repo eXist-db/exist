@@ -50,10 +50,8 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 			return mods.intValue();
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
-	}
+    }
 
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.modules.XUpdateQueryService#updateResource(java.lang.String, java.lang.String)
@@ -77,10 +75,8 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 			return mods.intValue();
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
-	}
+    }
 
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.base.Service#getName()

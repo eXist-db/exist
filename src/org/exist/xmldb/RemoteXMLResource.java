@@ -21,26 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Properties;
-import java.util.Vector;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
-
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.Namespaces;
@@ -68,6 +48,26 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
 public class RemoteXMLResource implements XMLResource, EXistResource {
 	
@@ -139,20 +139,20 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
         Properties properties = parent.getProperties();
         byte[] data = null;
         if (id == null) {
-            Vector params = new Vector();
-            params.addElement(path.toString());
-            params.addElement(properties);
+            List params = new ArrayList(1);
+            params.add(path.toString());
+            params.add(properties);
             try {
-                Hashtable table = (Hashtable) parent.getClient().execute("getDocumentData", params);
+                HashMap table = (HashMap) parent.getClient().execute("getDocumentData", params);
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 int offset = ((Integer)table.get("offset")).intValue();
                 data = (byte[])table.get("data");
                 os.write(data);
                 while(offset > 0) {
                     params.clear();
-                    params.addElement(table.get("handle"));
-                    params.addElement(new Integer(offset));
-                    table = (Hashtable) parent.getClient().execute("getNextChunk", params);
+                    params.add(table.get("handle"));
+                    params.add(new Integer(offset));
+                    table = (HashMap) parent.getClient().execute("getNextChunk", params);
                     offset = ((Integer)table.get("offset")).intValue();
                     data = (byte[])table.get("data");
                     os.write(data);
@@ -164,16 +164,14 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
             }
         } else {
-            Vector params = new Vector();
-            params.addElement(new Integer(handle));
-            params.addElement(new Integer(pos));
-            params.addElement(properties);
+            List params = new ArrayList(1);
+            params.add(new Integer(handle));
+            params.add(new Integer(pos));
+            params.add(properties);
             try {
                 data = (byte[]) parent.getClient().execute("retrieve", params);
             } catch (XmlRpcException xre) {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-            } catch (IOException ioe) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
             }
         }
         
@@ -444,44 +442,40 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
     public  DocumentType getDocType() throws XMLDBException {
     	DocumentType result = null;
-    	Vector params = new Vector(1);
-    	Vector request = null;
-    	params.addElement(path.toString());
+        List params = new ArrayList(1);
+    	Object[] request = null;
+    	params.add(path.toString());
     	try {
     		
-    		request = (Vector) parent.getClient().execute("getDocType", params);
+    		request = (Object[]) parent.getClient().execute("getDocType", params);
     		
-    		if (!((String)request.get(0)).equals("")) {
-    			result = new DocumentTypeImpl((String)request.get(0),(String)request.get(1),(String)request.get(2) );
+    		if (!request[0].equals("")) {
+    			result = new DocumentTypeImpl((String)request[0],(String)request[1],(String)request[2]);
     		}
     		
     	    return result;
     	    
     	} catch (XmlRpcException e) {
     	    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-    	} catch (IOException e) {
-    	    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
     	}
-        }
+    }
     
     public void setDocType(DocumentType doctype) throws XMLDBException {
     	if (doctype != null ) {
-    		Vector params = new Vector(4);
-    		params.addElement(path.toString());
-    		params.addElement(doctype.getName());
-    		params.addElement(doctype.getPublicId() == null ? "" : doctype.getPublicId());
-    		params.addElement(doctype.getSystemId() == null ? "" : doctype.getSystemId());
+            List params = new ArrayList(4);
+    		params.add(path.toString());
+    		params.add(doctype.getName());
+    		params.add(doctype.getPublicId() == null ? "" : doctype.getPublicId());
+    		params.add(doctype.getSystemId() == null ? "" : doctype.getSystemId());
     		
     		try {
     		    parent.getClient().execute("setDocType", params);
     		} catch (XmlRpcException e) {
     		    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-    		} catch (IOException e) {
-    		    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
     		}
-    		
 
-    	}
+
+        }
 		
 }
 

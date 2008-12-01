@@ -21,11 +21,12 @@
  */
 package org.exist.examples.xmlrpc;
 
-import java.util.Hashtable;
 import java.util.Vector;
+import java.util.HashMap;
+import java.net.URL;
 
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
 /**
  *  Retrieve a document from the database using XMLRPC.
@@ -48,9 +49,14 @@ public class Retrieve {
         if ( args.length < 1 ) {
             usage();
         }
-        XmlRpc.setEncoding("UTF-8");
-        XmlRpcClient xmlrpc = new XmlRpcClient( uri );
-        Hashtable options = new Hashtable();
+        XmlRpcClient client = new XmlRpcClient();
+        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+        config.setServerURL(new URL(uri));
+        config.setBasicUserName("guest");
+        config.setBasicPassword("guest");
+        client.setConfig(config);
+
+        HashMap options = new HashMap();
         options.put("indent", "yes");
         options.put("encoding", "UTF-8");
         options.put("expand-xincludes", "yes");
@@ -60,7 +66,7 @@ public class Retrieve {
         params.addElement( args[0] ); 
         params.addElement( options );
         String xml = (String)
-            xmlrpc.execute( "getDocumentAsString", params );
+            client.execute( "getDocumentAsString", params );
         System.out.println( xml );
     }
 }

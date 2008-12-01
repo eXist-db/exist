@@ -87,6 +87,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.HashMap;
 
 /**
  * Serializer base class, used to serialize a document or document fragment 
@@ -232,7 +233,7 @@ public abstract class Serializer implements XMLReader {
 		}
 	}
 
-	public void setProperties(Hashtable table) 
+	public void setProperties(HashMap table)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 		if(table == null)
 			return;

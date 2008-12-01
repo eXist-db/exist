@@ -28,7 +28,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
@@ -95,16 +96,14 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	public Object getContent() throws XMLDBException {
 		if(data != null)
 			return data;
-		Vector params = new Vector();
-		params.addElement(path.toString());
+		List params = new ArrayList();
+		params.add(path.toString());
 		try {
 			data = (byte[])parent.getClient().execute("getBinaryResource", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
-		return data;
+        return data;
 	}
 
 	/* (non-Javadoc)

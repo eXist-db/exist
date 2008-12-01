@@ -22,17 +22,17 @@
 
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.Vector;
-
-import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.w3c.dom.Document;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 public class RemoteCollectionManagementService implements CollectionManagementServiceImpl {
@@ -63,13 +63,13 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     
     public Collection createCollection( XmldbURI collName, Date created ) throws XMLDBException {
         if (parent != null)
-        	collName = parent.getPathURI().resolveCollectionPath(collName);        
+        	collName = parent.getPathURI().resolveCollectionPath(collName);
 
-        Vector params = new Vector();
-        params.addElement( collName.toString() );
+        List params = new ArrayList(2);
+        params.add( collName.toString() );
         
         if (created != null) {
-    		params.addElement( created );			
+    		params.add( created );
     		}
         
         try {
@@ -78,10 +78,6 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage(),
-                ioe );
         }
         RemoteCollection collection =
             new RemoteCollection( client, (RemoteCollection) parent, collName );
@@ -125,20 +121,16 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     
     public void removeCollection( XmldbURI collName ) throws XMLDBException {
         if (parent != null)
-        	collName = parent.getPathURI().resolveCollectionPath(collName);        
+        	collName = parent.getPathURI().resolveCollectionPath(collName);
 
-        Vector params = new Vector();
-        params.addElement( collName.toString() );
+        List params = new ArrayList(1);
+        params.add( collName.toString() );
         try {
             client.execute( "removeCollection", params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage(),
-                ioe);
         }
         parent.removeChildCollection( collName );
     }
@@ -170,22 +162,18 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         if(newName == null) {
             newName = collectionPath.lastSegment();
         }
-        Vector params = new Vector();
-        params.addElement( collectionPath.toString() );
-        params.addElement( destinationPath.toString() );
-        params.addElement( newName.toString() );
+       List params = new ArrayList(1);
+        params.add( collectionPath.toString() );
+        params.add( destinationPath.toString() );
+        params.add( newName.toString() );
         try {
             client.execute( "moveCollection", params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage(),
-                ioe);
         }
-    }
+   }
 
     public void moveResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
@@ -206,20 +194,16 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             newName = resourcePath.lastSegment();
         }
 
-        Vector params = new Vector();
-        params.addElement( resourcePath.toString() );
-        params.addElement( destinationPath.toString() );
-        params.addElement( newName.toString() );
+        List params = new ArrayList(1);
+        params.add( resourcePath.toString() );
+        params.add( destinationPath.toString() );
+        params.add( newName.toString() );
         try {
             client.execute( "moveResource", params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage(),
-                ioe);
         }
     }
 
@@ -243,22 +227,18 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             newName = collectionPath.lastSegment();
         }
 
-        Vector params = new Vector();
-        params.addElement( collectionPath.toString() );
-        params.addElement( destinationPath.toString() );
-        params.addElement( newName.toString() );
+        List params = new ArrayList(1);
+        params.add( collectionPath.toString() );
+        params.add( destinationPath.toString() );
+        params.add( newName.toString() );
         try {
             client.execute( "copyCollection", params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage(),
-                ioe);
         }
-	}
+    }
 	
     public void copyResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
@@ -279,20 +259,16 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         if(newName == null) {
             newName = resourcePath.lastSegment();
         }
-        Vector params = new Vector();
-        params.addElement( resourcePath.toString() );
-        params.addElement( destinationPath.toString() );
-        params.addElement( newName.toString() );
+        List params = new ArrayList(1);
+        params.add( resourcePath.toString() );
+        params.add( destinationPath.toString() );
+        params.add( newName.toString() );
         try {
             client.execute( "copyResource", params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage(),
-                ioe);
         }
     }
 }

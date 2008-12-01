@@ -21,17 +21,17 @@
  */
 package org.exist.validation.service;
 
-import java.io.IOException;
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
-import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.validation.Validator;
 import org.exist.xmldb.RemoteCollection;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  XML validation service for eXist database.
@@ -72,12 +72,12 @@ public class RemoteValidationService implements ValidationService {
         logger.info("Validating resource '" + documentPath + "'");
         boolean documentIsValid = false;
 //        documentPath = remoteCollection.getPathURI().resolveCollectionPath(documentPath);
-        
-        Vector params = new Vector();
-        params.addElement( documentPath );
+
+        List params = new ArrayList(1);
+        params.add( documentPath );
         
         if(grammarPath!=null){
-            params.addElement( grammarPath );
+            params.add( grammarPath );
         }
         
         try {
@@ -85,10 +85,8 @@ public class RemoteValidationService implements ValidationService {
             documentIsValid= result.booleanValue();
         } catch (XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-        } catch (IOException ioe) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         }
-        
+
         return documentIsValid;
     }
     

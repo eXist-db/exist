@@ -26,11 +26,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Vector;
 
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -60,10 +61,13 @@ public class StoreChunked {
             InputStream fis = new FileInputStream(filename);
             
             // Setup xmlrpc client
-            XmlRpc.setEncoding("UTF-8");
-            XmlRpcClient xmlrpc = new XmlRpcClient(url);
-            xmlrpc.setBasicAuthentication("guest", "guest");
-            
+            XmlRpcClient client = new XmlRpcClient();
+            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setServerURL(new URL(url));
+            config.setBasicUserName("guest");
+            config.setBasicPassword("guest");
+            client.setConfig(config);
+
             // Initialize xmlrpc parameters
             Vector params = new Vector();
             String handle=null;
@@ -78,7 +82,7 @@ public class StoreChunked {
                 }
                 params.addElement(buf);
                 params.addElement(new Integer(len));
-                handle = (String)xmlrpc.execute("upload", params);
+                handle = (String)client.execute("upload", params);
             }
             fis.close();
             
@@ -88,7 +92,7 @@ public class StoreChunked {
             params.addElement(path);
             params.addElement(new Boolean(true));
             params.addElement("image/png");
-            Boolean result =(Boolean)xmlrpc.execute("parseLocal", params); // exceptions
+            Boolean result =(Boolean)client.execute("parseLocal", params); // exceptions
             
             // Check result
             if(result.booleanValue())

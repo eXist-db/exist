@@ -46,8 +46,6 @@ public interface CollectionImpl extends Collection {
 	
 	public void storeResource(Resource res, Date a, Date b) throws XMLDBException;
 	
-	public XmldbURI getURI();
-	
 	public XmldbURI getPathURI();
 	
 	
