@@ -155,7 +155,7 @@ public class XPathQueryTest extends XMLTestCase {
             "<test><xpointer/></test>";
     
     private static String uri = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
-    
+
     public static void setURI(String collectionURI) {
         uri = collectionURI;
     }
