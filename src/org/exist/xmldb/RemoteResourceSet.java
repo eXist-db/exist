@@ -1,11 +1,11 @@
 
 package org.exist.xmldb;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.Properties;
-import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.xml.transform.OutputKeys;
 
@@ -21,30 +21,31 @@ public class RemoteResourceSet implements ResourceSet {
 
     protected RemoteCollection collection;
     protected int handle = -1;
-    protected Vector resources;
+    protected List resources;
     protected Properties outputProperties;
     
     private static Logger LOG = Logger.getLogger(RemoteResourceSet.class.getName());
 
-    public RemoteResourceSet( RemoteCollection col, Properties properties, Vector resources, int handle ) {
+    public RemoteResourceSet( RemoteCollection col, Properties properties, Object[] resources, int handle ) {
         this.handle = handle;
-        this.resources = resources;
+        this.resources = new ArrayList(resources.length);
+        for (int i = 0; i < resources.length; i++) {
+            this.resources.add(resources[i]);
+        }
         this.collection = col;
         this.outputProperties = properties;
     }
 
     public void addResource( Resource resource ) {
-        resources.addElement( resource );
+        resources.add( resource );
     }
 
     public void clear() throws XMLDBException {
-        Vector params = new Vector();
-    	params.addElement(new Integer(handle));
+        List params = new ArrayList(1);
+    	params.add(new Integer(handle));
         try {
             collection.getClient().execute("releaseQueryResult", params);
         } catch (XmlRpcException e) {
-            System.err.println("Failed to release query result on server: " + e.getMessage());
-        } catch (IOException e) {
             System.err.println("Failed to release query result on server: " + e.getMessage());
         }
         resources.clear();
@@ -60,9 +61,9 @@ public class RemoteResourceSet implements ResourceSet {
 
 
     public Resource getMembersAsResource() throws XMLDBException {
-    	Vector params = new Vector();
-    	params.addElement(new Integer(handle));
-    	params.addElement(outputProperties);
+        List params = new ArrayList(2);
+    	params.add(new Integer(handle));
+    	params.add(outputProperties);
     	try {
 			byte[] data = (byte[]) collection.getClient().execute("retrieveAll", params);
 			String content;
@@ -79,8 +80,6 @@ public class RemoteResourceSet implements ResourceSet {
 	        return res;
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
     }
 
@@ -88,11 +87,11 @@ public class RemoteResourceSet implements ResourceSet {
         if ( pos >= resources.size() )
             return null;
         // node or value?
-        if ( resources.elementAt( (int) pos ) instanceof Vector ) {            
+        if ( resources.get( (int) pos ) instanceof Object[] ) {
             // node
-            Vector v = (Vector) resources.elementAt( (int) pos );
-            String doc = (String) v.elementAt( 0 );
-            String s_id = (String) v.elementAt( 1 );
+            Object[] v = (Object[]) resources.get( (int) pos );
+            String doc = (String) v[0];
+            String s_id = (String) v[1];
             XmldbURI docUri;
             try {
             	docUri = XmldbURI.xmldbUriFor(doc);
@@ -107,13 +106,13 @@ public class RemoteResourceSet implements ResourceSet {
                 	(int)pos, docUri, s_id );
             res.setProperties(outputProperties);
             return res;
-        } else if ( resources.elementAt( (int) pos ) instanceof Resource )
-            return (Resource) resources.elementAt( (int) pos );
+        } else if ( resources.get( (int) pos ) instanceof Resource )
+            return (Resource) resources.get( (int) pos );
         else {
             // value
             RemoteXMLResource res = new RemoteXMLResource( collection, handle, (int)pos, 
             	XmldbURI.create(Long.toString( pos )), null );
-            res.setContent( resources.elementAt( (int) pos ) );
+            res.setContent( resources.get( (int) pos ) );
             res.setProperties(outputProperties);
             return res;
         }
@@ -124,7 +123,7 @@ public class RemoteResourceSet implements ResourceSet {
     }
 
     public void removeResource( long pos ) throws XMLDBException {
-        resources.removeElementAt( (int) pos );
+        resources.get( (int) pos );
     }
 
     class NewResourceIterator implements ResourceIterator {

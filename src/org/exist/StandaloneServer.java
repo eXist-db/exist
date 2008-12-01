@@ -47,7 +47,6 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.log4j.Logger;
-import org.apache.xmlrpc.XmlRpc;
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
@@ -161,7 +160,6 @@ public class StandaloneServer {
                     printHelp();
                     return;
                 case DEBUG_OPT :
-                    XmlRpc.setDebug(true);
                     break;
                 case HTTP_PORT_OPT :
                     Properties httpListener = (Properties)listeners.get("http");
@@ -228,7 +226,6 @@ public class StandaloneServer {
      * Configures a minimal Jetty webserver (no webapplication support,
      * no file system access) and registers the WebDAV and REST servlets.
      * 
-     * @param httpPort
      * @throws UnknownHostException
      * @throws IllegalArgumentException
      * @throws MultiException

@@ -33,6 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.Enumeration;
@@ -599,7 +600,10 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	 */
 	public ServletInputStream getInputStream() throws IOException
 	{
-        return request.getInputStream();
+        if (contentBodyRecorded())
+            return new CachingServletInputStream();
+        else
+            return request.getInputStream();
     }
 
 //	public InputStream getStringBufferInputStream() throws IOException {
@@ -751,7 +755,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 
 	public BufferedReader getReader() throws IOException
 	{
-		return request.getReader();
+        if (contentBodyRecorded())
+            return new BufferedReader(new InputStreamReader(getContentBodyInputStream(),
+                    request.getCharacterEncoding()));
+        else
+		    return request.getReader();
 	}
 
 	/**
@@ -923,4 +931,31 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			&& contentBody.length > 0;
 	}
 
+    private class CachingServletInputStream extends ServletInputStream {
+
+        private ByteArrayInputStream istream;
+
+        public CachingServletInputStream() {
+            if (contentBody == null)
+                istream = new ByteArrayInputStream(new byte[0]);
+            else
+                istream = new ByteArrayInputStream(contentBody);
+        }
+        
+        public int read() throws IOException {
+           return istream.read();
+        }
+
+        public int read(byte b[]) throws IOException {
+            return istream.read(b);
+        }
+
+        public int read(byte b[], int off, int len) throws IOException {
+            return istream.read(b, off, len);
+        }
+
+        public int available() throws IOException {
+            return istream.available();
+        }
+    }
 }

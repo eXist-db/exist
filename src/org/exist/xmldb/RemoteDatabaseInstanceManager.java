@@ -1,13 +1,13 @@
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.util.Vector;
-
-import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
@@ -31,31 +31,24 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 	 * @see org.exist.xmldb.DatabaseInstanceManager#shutdown()
 	 */
 	public void shutdown(long delay) throws XMLDBException {
-		Vector params = new Vector();
+        List params = new ArrayList(1);
 		if(delay > 0)
-			params.addElement(new Long(delay));
+			params.add(new Long(delay));
 		try {
 			client.execute("shutdown", params);
 		} catch(XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
 				"shutdown failed",
 				e);
-		} catch(IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
-							"shutdown failed",
-							e);
-		}		
-	}
+		}
+    }
 
     public boolean enterServiceMode() throws XMLDBException {
 		try {
-			client.execute("enterServiceMode", new Vector());
+			client.execute("enterServiceMode", new ArrayList(1));
 		} catch(XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"Failed to switch db to service mode: " + e.getMessage(), e);
-		} catch(IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-                "Failed to switch db to service mode: " + e.getMessage(), e);
 		}
         return true;
     }
@@ -63,13 +56,10 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
     public void exitServiceMode() throws XMLDBException {
         try {
-			client.execute("exitServiceMode", new Vector());
+			client.execute("exitServiceMode", new ArrayList(1));
 		} catch(XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"Failed to switch db to service mode: " + e.getMessage(), e);
-		} catch(IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-                "Failed to switch db to service mode: " + e.getMessage(), e);
 		}
     }
 
@@ -120,7 +110,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
 	public boolean isXACMLEnabled() throws XMLDBException {
 
-		Vector params = new Vector();
+        List params = new ArrayList(1);
 		try {
 			Object result = client.execute("isXACMLEnabled", params);
 			if(result instanceof Boolean)
@@ -131,11 +121,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
 				"Error determining if XACML is enabled: " + e.getMessage(),
 				e);
-		} catch(IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
-				"Error determining if XACML is enabled: " + e.getMessage(),
-				e);
 		}
-	}
+    }
 
 }

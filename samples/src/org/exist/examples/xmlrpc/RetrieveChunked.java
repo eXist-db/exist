@@ -22,17 +22,18 @@
 
 package org.exist.examples.xmlrpc;
 
+import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.exist.xmldb.XmldbURI;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
-
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
-import org.apache.xmlrpc.XmlRpcException;
-
-import org.exist.xmldb.XmldbURI;
 
 /**
  *  Example code for demonstrating XMLRPC methods getDocumentData
@@ -61,10 +62,13 @@ public class RetrieveChunked {
         
         try {
             // Setup xmlrpc client
-            XmlRpc.setEncoding("UTF-8");
-            XmlRpcClient xmlrpc = new XmlRpcClient(url);
-            xmlrpc.setBasicAuthentication("guest", "guest");
-            
+            XmlRpcClient client = new XmlRpcClient();
+            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setServerURL(new URL(url));
+            config.setBasicUserName("guest");
+            config.setBasicPassword("guest");
+            client.setConfig(config);
+
             // Setup xml serializer
             Hashtable options = new Hashtable();
             options.put("indent", "no");
@@ -79,7 +83,7 @@ public class RetrieveChunked {
             FileOutputStream fos = new FileOutputStream(filename);
             
             // Shoot first method write data
-            Hashtable ht = (Hashtable) xmlrpc.execute("getDocumentData", params);
+            HashMap ht = (HashMap) client.execute("getDocumentData", params);
             int offset = ((Integer)ht.get("offset")).intValue();
             byte[]data= (byte[]) ht.get("data");
             String handle = (String) ht.get("handle");
@@ -93,7 +97,7 @@ public class RetrieveChunked {
                 params.addElement(new Integer(offset));
                 
                 // Get and write next chunk
-                ht = (Hashtable) xmlrpc.execute("getNextChunk", params);
+                ht = (HashMap) client.execute("getNextChunk", params);
                 data= (byte[]) ht.get("data");
                 offset = ((Integer)ht.get("offset")).intValue();
                 fos.write(data);

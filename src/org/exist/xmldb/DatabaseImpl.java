@@ -22,8 +22,8 @@
 package org.exist.xmldb;
 
 import org.apache.log4j.Logger;
-import org.apache.xmlrpc.XmlRpc;
-import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.EXistException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -83,11 +83,6 @@ public class DatabaseImpl implements Database {
   protected int mode = UNKNOWN_CONNECTION;
 
   public DatabaseImpl() {
-    try {
-            //TODO : make this configurable
-            XmlRpc.setEncoding( "UTF-8" );
-        } catch ( Exception e ) {
-    }
     	String initdb = System.getProperty( "exist.initdb" );
     	if(initdb != null)
     		autoCreate = initdb.equalsIgnoreCase("true");
@@ -286,14 +281,19 @@ public class DatabaseImpl implements Database {
    * @throws XMLDBException
    */
   private XmlRpcClient getRpcClient(String user, String password, URL url) throws XMLDBException {
-    String key = user + "@" + url.toString();
-        XmlRpcClient client = (XmlRpcClient) rpcClients.get(key);
-    if (client == null) {
-      client = new XmlRpcClient(url);
-      rpcClients.put(key, client);
-    }
-    client.setBasicAuthentication(user, password);
-    return client;
+      String key = user + "@" + url.toString();
+      XmlRpcClient client = (XmlRpcClient) rpcClients.get(key);
+      XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+      config.setEnabledForExtensions(true);
+      config.setServerURL(url);
+      config.setBasicUserName(user);
+      config.setBasicPassword(password);
+      if (client == null) {
+          client = new XmlRpcClient();
+          rpcClients.put(key, client);
+      }
+      client.setConfig(config);
+      return client;
   }
 
   /**

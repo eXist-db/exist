@@ -22,8 +22,12 @@
 package org.exist.examples.xmlrpc;
 
 import org.apache.xmlrpc.*;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+
 import java.util.Vector;
 import java.io.*;
+import java.net.URL;
 
 /**
  * Store a document to the database using XML-RPC.
@@ -44,10 +48,13 @@ public class Store {
 			usage();
 		String docName = (args.length == 2) ? args[1] : args[0];
 
-		XmlRpc.setEncoding("UTF-8");
-		XmlRpcClient xmlrpc = new XmlRpcClient(uri);
-		xmlrpc.setBasicAuthentication("admin", "");
-		
+        XmlRpcClient client = new XmlRpcClient();
+        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+        config.setServerURL(new URL(uri));
+        config.setBasicUserName("admin");
+        config.setBasicPassword("");
+        client.setConfig(config);
+
 		// read the file into a string
 		BufferedReader f = new BufferedReader(new FileReader(args[0]));
 		String line;
@@ -63,7 +70,7 @@ public class Store {
 		params.addElement(new Integer(0));
 
 		// execute the call
-		Boolean result = (Boolean)xmlrpc.execute("parse", params);
+		Boolean result = (Boolean)client.execute("parse", params);
 
 		// check result
 		if(result.booleanValue())
