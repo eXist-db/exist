@@ -23,7 +23,6 @@ package org.exist.xmldb;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,15 +86,15 @@ public class RemoteIndexQueryService implements IndexQueryService {
             List params = new ArrayList(1);
 			params.add(parent.getPath());
 			params.add(Boolean.valueOf(inclusive));
-			Vector result = (Vector) rpcClient.execute("getIndexedElements", params);
-			Occurrences occurrences[] = new Occurrences[result.size()];
-			Vector row;
+			Object[] result = (Object[]) rpcClient.execute("getIndexedElements", params);
+			Occurrences occurrences[] = new Occurrences[result.length];
+			Object[] row;
 			for (int i = 0; i < occurrences.length; i++) {
-				row = (Vector) result.elementAt(i);
-				QName qname = new QName((String)row.elementAt(0), (String)row.elementAt(1),
-						(String)row.elementAt(2));
+				row = (Object[]) result[i];
+				QName qname = new QName((String)row[0], (String)row[1],
+						(String)row[2]);
 				occurrences[i] = new Occurrences(qname);
-				occurrences[i].addOccurrences(((Integer) row.elementAt(3)).intValue());
+				occurrences[i].addOccurrences(((Integer) row[3]).intValue());
 			}
 			return occurrences;
 		} catch (XmlRpcException e) {
@@ -117,13 +116,13 @@ public class RemoteIndexQueryService implements IndexQueryService {
 			params.add(start);
 			params.add(end);
 			params.add(Boolean.valueOf(inclusive));
-			Vector result = (Vector) rpcClient.execute("scanIndexTerms", params);
-			Occurrences occurrences[] = new Occurrences[result.size()];
-			Vector row;
+			Object[] result = (Object[]) rpcClient.execute("scanIndexTerms", params);
+			Occurrences occurrences[] = new Occurrences[result.length];
+			Object[] row;
 			for (int i = 0; i < occurrences.length; i++) {
-				row = (Vector) result.elementAt(i);
-				occurrences[i] = new Occurrences((String) row.elementAt(0));
-				occurrences[i].addOccurrences(((Integer) row.elementAt(1)).intValue());
+				row = (Object[]) result[i];
+				occurrences[i] = new Occurrences((String) row[0]);
+				occurrences[i].addOccurrences(((Integer) row[1]).intValue());
 			}
 			return occurrences;
 		} catch (XmlRpcException e) {
@@ -143,13 +142,13 @@ public class RemoteIndexQueryService implements IndexQueryService {
 			params.add(xpath);
 			params.add(start);
 			params.add(end);
-			Vector result = (Vector) rpcClient.execute("scanIndexTerms", params);
-			Occurrences occurrences[] = new Occurrences[result.size()];
-			Vector row;
+			Object[] result = (Object[]) rpcClient.execute("scanIndexTerms", params);
+			Occurrences occurrences[] = new Occurrences[result.length];
+			Object[] row;
 			for (int i = 0; i < occurrences.length; i++) {
-				row = (Vector) result.elementAt(i);
-				occurrences[i] = new Occurrences((String) row.elementAt(0));
-				occurrences[i].addOccurrences(((Integer) row.elementAt(1)).intValue());
+				row = (Object[]) result[i];
+				occurrences[i] = new Occurrences((String) row[0]);
+				occurrences[i].addOccurrences(((Integer) row[1]).intValue());
 			}
 			return occurrences;
 		} catch (XmlRpcException e) {

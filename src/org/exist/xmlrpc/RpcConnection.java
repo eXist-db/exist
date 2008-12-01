@@ -4127,23 +4127,22 @@ public class RpcConnection implements RpcAPI {
             parametri.put(OutputKeys.ENCODING, "UTF-8");
 
             HashMap lista = getCollectionDesc(name);
-            Vector collezioni = (Vector) lista.get("collections");
-            Vector documents = (Vector) lista.get("documents");
+            Object[] collezioni = (Object[]) lista.get("collections");
+            Object[] documents = (Object[]) lista.get("documents");
 
             //ricrea le directory
-            Iterator collezioniItr = collezioni.iterator();
             String nome;
-            while (collezioniItr.hasNext()) {
-                nome = collezioniItr.next().toString();
+            for (int i = 0; i < collezioni.length; i++) {
+                nome = collezioni[i].toString();
                 createCollection(namedest + "/" + nome);
                 copyCollection(name + "/" + nome, namedest + "/" + nome);
             }
 
             //Copy i file
             HashMap hash;
-            int p, dsize = documents.size();
+            int p, dsize = documents.length;
             for (int i = 0; i < dsize; i++) {
-                hash = (HashMap) documents.elementAt(i);
+                hash = (HashMap) documents[i];
                 nome = (String) hash.get("name");
                 //TODO : use dedicated function in XmldbURI
                 if ((p = nome.lastIndexOf("/")) != Constants.STRING_NOT_FOUND)
