@@ -105,7 +105,7 @@ public abstract class DBBroker extends Observable {
 
     protected BrokerPool pool;
 
-    protected User user = null;
+    private User user = null;
 
     protected XQuery xqueryService;
 
