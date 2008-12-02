@@ -1183,7 +1183,16 @@ public class BrokerPool {
                     return;
                 }
             }
-            activeBrokers.remove(Thread.currentThread());
+         if (activeBrokers.remove(Thread.currentThread())==null) {
+             LOG.error("release() has been called from the wrong thread for broker "+broker.getId());
+             // Cleanup the state of activeBrokers
+             for (Object t : activeBrokers.keySet()) {
+                if (activeBrokers.get(t)==broker) {
+                     activeBrokers.remove(t);
+                     break;
+                }
+             }
+         }
 			inactiveBrokers.push(broker);
 			//If the database is now idle, do some useful stuff
 			if(activeBrokers.size() == 0) {
@@ -1326,9 +1335,10 @@ public class BrokerPool {
                 // No other brokers are running at this time, so there's no risk.
 				//TODO : use get() then release the broker ?
                 // No, might lead to a deadlock.
-				DBBroker broker = (DBBroker) inactiveBrokers.peek();
+				DBBroker broker = (DBBroker) inactiveBrokers.pop();
 				//Do the synchonization job
 				sync(broker, syncEvent);
+            inactiveBrokers.push(broker);
 				syncRequired = false;
 			} else {
 				//Put the synchonization job into the queue
