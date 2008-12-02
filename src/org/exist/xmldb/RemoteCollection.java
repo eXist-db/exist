@@ -459,7 +459,10 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void storeResource(Resource res, Date a, Date b) throws XMLDBException {
-		Object content = res.getContent();
+		Object content = (res instanceof ExtendedResource)?
+				((ExtendedResource)res).getExtendedContent():
+				res.getContent();
+		
 		if (content instanceof File || content instanceof InputSource) {
 			long fileLength=-1;
 			if(content instanceof File) {
@@ -486,17 +489,15 @@ public class RemoteCollection implements CollectionImpl {
 			} else {
 				uploadAndStore(res);
 			}
-		} else if(res.getResourceType().equals("BinaryResource"))
-		{
+		} else if(res.getResourceType().equals("BinaryResource")) {
 			((RemoteBinaryResource)res).dateCreated =a;
-	        ((RemoteBinaryResource)res).dateModified =b;
+			((RemoteBinaryResource)res).dateModified =b;
 			store((RemoteBinaryResource)res);
-		}
-		else {
+		} else {
 			((RemoteXMLResource)res).dateCreated =a;
 		    ((RemoteXMLResource)res).dateModified =b;
 			store((RemoteXMLResource)res);
-	}
+		}
 	}
 
 
@@ -512,8 +513,8 @@ public class RemoteCollection implements CollectionImpl {
 		params.add(new Integer(1));
 
 		if (res.dateCreated != null) {
-		params.add(res.dateCreated );
-		params.add(res.dateModified );
+			params.add(res.dateCreated );
+			params.add(res.dateModified );
 		}
 
 		try {
@@ -542,7 +543,7 @@ public class RemoteCollection implements CollectionImpl {
 		if (res.dateCreated != null) {
 			params.add((Date)res.dateCreated );
 			params.add((Date)res.dateModified );
-			}
+		}
 
 		try {
 			rpcClient.execute("storeBinary", params);
@@ -608,12 +609,15 @@ public class RemoteCollection implements CollectionImpl {
 				throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 			}
 			params.add(Boolean.TRUE);
-            params.add(((RemoteXMLResource)res).getMimeType());
-			if ( ((RemoteXMLResource)res).dateCreated  != null ) {
-				params.add( ((RemoteXMLResource)res).dateCreated );
-				params.add( ((RemoteXMLResource)res).dateModified );
+			if(res instanceof EXistResource) {
+				EXistResource rxres=(EXistResource)res;
+				params.add(rxres.getMimeType());
+				if(rxres.getCreationTime() != null) {
+					params.add(rxres.getCreationTime());
+					params.add(rxres.getLastModificationTime());
 				}
-
+			}
+			
 			rpcClient.execute("parseLocal", params);
 		} catch (IOException e) {
 			throw new XMLDBException(

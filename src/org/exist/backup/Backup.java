@@ -30,6 +30,7 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.ExtendedResource;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.URIUtils;
@@ -272,8 +273,7 @@ public class Backup {
 
                 os = output.newEntry(encode(URIUtils.urlDecodeUtf8(resources[i])));
                 if(resource.getResourceType().equals("BinaryResource")) {
-                    byte[] bdata = (byte[])resource.getContent();
-                    os.write(bdata);
+                    ((ExtendedResource)resource).getContentIntoAStream(os);
                 } else {
                     try {
                         writer =

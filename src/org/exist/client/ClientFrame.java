@@ -43,6 +43,7 @@ import java.awt.event.WindowFocusListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -105,6 +106,7 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.ExtendedResource;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
@@ -420,7 +422,7 @@ public class ClientFrame extends JFrame
         });
 		fileMenu.add(item);
         
-        item = new JMenuItem("Export a resource to file ...", KeyEvent.VK_E);
+        item = new JMenuItem(Messages.getString("ClientFrame.47"), KeyEvent.VK_E);
         item.setAccelerator(KeyStroke.getKeyStroke("control E"));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -1250,9 +1252,7 @@ public class ClientFrame extends JFrame
                             .getResource(desc.getName().toString());
                     os = new FileOutputStream(file);
                     if (resource.getResourceType().equals("BinaryResource")) {
-                        byte[] bdata = (byte[]) resource.getContent();
-                        os.write(bdata);
-                        os.close();
+                        ((ExtendedResource)resource).getContentIntoAStream(os);
                     } else {
 
                         writer = new BufferedWriter(new OutputStreamWriter(os,
