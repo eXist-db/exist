@@ -1097,28 +1097,31 @@ public class BrokerPool {
 	 */
     //TODO : rename as getBroker ? getInstance (when refactored) ?
 	public DBBroker get(User user) throws EXistException {
-		if (!isInstanceConfigured())		
+		if (!isInstanceConfigured()) {		
 			throw new EXistException("database instance '" + instanceName + "' is not available");
-
-		//Try to get an active broker
-		DBBroker broker = (DBBroker)activeBrokers.get(Thread.currentThread());
-		//Use it...
-		//TOUNDERSTAND (pb) : why not pop a broker from the inactive ones rather than maintaining reference counters ?
-        // WM: a thread may call this more than once in the sequence of operations, i.e. calls to get/release can
-        // be nested. Returning a new broker every time would lead to a deadlock condition if two threads have
-        // to wait for a broker to become available. We thus use reference counts and return
-        // the same broker instance for each thread.
-		if(broker != null) {
-			//increase its number of uses
-			broker.incReferenceCount();
-            if (user != null)
-                broker.setUser(user);
-            return broker;
-			//TODO : share the code with what is below (including notifyAll) ?
-            // WM: notifyAll is not necessary if we don't have to wait for a broker.
 		}
-		//No active broker : get one ASAP
+		
 		synchronized(this) {
+			//Try to get an active broker
+			DBBroker broker = (DBBroker)activeBrokers.get(Thread.currentThread());
+			//Use it...
+			//TOUNDERSTAND (pb) : why not pop a broker from the inactive ones rather than maintaining reference counters ?
+	        // WM: a thread may call this more than once in the sequence of operations, i.e. calls to get/release can
+	        // be nested. Returning a new broker every time would lead to a deadlock condition if two threads have
+	        // to wait for a broker to become available. We thus use reference counts and return
+	        // the same broker instance for each thread.
+			if(broker != null) {
+				//increase its number of uses
+				broker.incReferenceCount();
+	            if (user != null)
+	                broker.setUser(user);
+	            return broker;
+				//TODO : share the code with what is below (including notifyAll) ?
+	            // WM: notifyAll is not necessary if we don't have to wait for a broker.
+			}
+			
+			//No active broker : get one ASAP
+		
             while (serviceModeUser != null && user != null && !user.equals(serviceModeUser)) {
                 try {
                     LOG.debug("Db instance is in service mode. Waiting for db to become available again ...");
@@ -1168,31 +1171,35 @@ public class BrokerPool {
         // might be null as release() is often called within a finally block
 		if (broker == null)
 			return;
-		//TOUNDERSTAND (pb) : why maintain reference counters rather than pushing the brokers to the stack ?
-		//TODO : first check that the broker is active ! If not, return immediately.
-		broker.decReferenceCount();
-		if(broker.getReferenceCount() > 0) {
-			//it is still in use and thus can't be marked as inactive
-			return;  
-		}
-        //Broker is no more used : inactivate it
+		
 		synchronized (this) {
+			//TOUNDERSTAND (pb) : why maintain reference counters rather than pushing the brokers to the stack ?
+			//TODO : first check that the broker is active ! If not, return immediately.
+			broker.decReferenceCount();
+			if(broker.getReferenceCount() > 0) {
+				//it is still in use and thus can't be marked as inactive
+				return;  
+			}
+			
+	        //Broker is no more used : inactivate it
+		
             for (int i = 0; i < inactiveBrokers.size(); i++) {
                 if (broker == inactiveBrokers.get(i)) {
                     LOG.error("Broker is already in the inactive list!!!");
                     return;
                 }
             }
-         if (activeBrokers.remove(Thread.currentThread())==null) {
-             LOG.error("release() has been called from the wrong thread for broker "+broker.getId());
-             // Cleanup the state of activeBrokers
-             for (Object t : activeBrokers.keySet()) {
-                if (activeBrokers.get(t)==broker) {
-                     activeBrokers.remove(t);
-                     break;
-                }
-             }
-         }
+			
+	        if (activeBrokers.remove(Thread.currentThread())==null) {
+	             LOG.error("release() has been called from the wrong thread for broker "+broker.getId());
+	             // Cleanup the state of activeBrokers
+	             for (Object t : activeBrokers.keySet()) {
+	                if (activeBrokers.get(t)==broker) {
+	                     activeBrokers.remove(t);
+	                     break;
+	                }
+	             }
+	         }
 			inactiveBrokers.push(broker);
 			//If the database is now idle, do some useful stuff
 			if(activeBrokers.size() == 0) {
