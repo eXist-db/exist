@@ -22,6 +22,7 @@
 package org.exist.client;
 
 import java.awt.Dimension;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.EOFException;
@@ -36,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PushbackInputStream;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
@@ -100,6 +102,7 @@ import org.exist.validation.service.ValidationService;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.ExtendedResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XPathQueryServiceImpl;
@@ -1325,21 +1328,21 @@ public class InteractiveClient {
                 } else {
                     long start1 = System.currentTimeMillis();
                     mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
-                    if(mimeType == null)
+                    if(mimeType == null) {
                         messageln("File " + files[i].getName() + " has an unknown " +
                                 "suffix. Cannot determine file type.");
-                    else {
-                        message("storing document " + files[i].getName() + " (" + i
-                                + " of " + files.length + ") " + "...");
-                        document = collection.createResource(URIUtils.urlEncodeUtf8(files[i]
-                                .getName()), mimeType.getXMLDBType());
-                        document.setContent(files[i]);
-                        ((EXistResource)document).setMimeType(mimeType.getName());
-                        collection.storeResource(document);
-                        ++filesCount;
-                        messageln(" " + files[i].length() + " bytes in "
-                                + (System.currentTimeMillis() - start1) + "ms.");
+			mimeType = MimeType.BINARY_TYPE;
                     }
+                    message("storing document " + files[i].getName() + " (" + i
+                    	    + " of " + files.length + ") " + "...");
+                    document = collection.createResource(URIUtils.urlEncodeUtf8(files[i]
+                    	    .getName()), mimeType.getXMLDBType());
+                    document.setContent(files[i]);
+                    ((EXistResource)document).setMimeType(mimeType.getName());
+                    collection.storeResource(document);
+                    ++filesCount;
+                    messageln(" " + files[i].length() + " bytes in "
+                    	    + (System.currentTimeMillis() - start1) + "ms.");
                 }
             } catch (URISyntaxException e) {
                 messageln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
@@ -1458,20 +1461,20 @@ public class InteractiveClient {
                     	}
                     }
                     mimeType = MimeTable.getInstance().getContentTypeFor(localName);
-                    if(mimeType == null)
+                    if(mimeType == null) {
                         messageln("File " + compressedName + " has an unknown " +
                                 "suffix. Cannot determine file type.");
-                    else {
-                        message("storing document " + compressedName + " (" + i
-                                + " of " + files.length + ") " + "...");
-                        document = collection.createResource(URIUtils.urlEncodeUtf8(compressedName), mimeType.getXMLDBType());
-                        document.setContent(isCompressed?new GZIPInputSource(files[i]):files[i]);
-                        ((EXistResource)document).setMimeType(mimeType.getName());
-                        collection.storeResource(document);
-                        ++filesCount;
-                        messageln(" " + files[i].length() + (isCompressed?" compressed":"") + " bytes in "
-                                + (System.currentTimeMillis() - start1) + "ms.");
-                    }
+                    	mimeType = MimeType.BINARY_TYPE;
+		    }
+                    message("storing document " + compressedName + " (" + i
+                    	    + " of " + files.length + ") " + "...");
+                    document = collection.createResource(URIUtils.urlEncodeUtf8(compressedName), mimeType.getXMLDBType());
+                    document.setContent(isCompressed?new GZIPInputSource(files[i]):files[i]);
+                    ((EXistResource)document).setMimeType(mimeType.getName());
+                    collection.storeResource(document);
+                    ++filesCount;
+                    messageln(" " + files[i].length() + (isCompressed?" compressed":"") + " bytes in "
+                    	    + (System.currentTimeMillis() - start1) + "ms.");
                 }
             } catch (URISyntaxException e) {
                 messageln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
@@ -1765,9 +1768,9 @@ public class InteractiveClient {
                 upload.showMessage(file.getAbsolutePath() +
                         " - unknown suffix. No matching mime-type found in : " + 
                         MimeTable.getInstance().getSrc());
-                return;
+                
                 // if some one prefers to store it as binary by default, but dangerous
-                // if (mimeType == null) mimeType = MimeType.BINARY_TYPE;
+                mimeType = MimeType.BINARY_TYPE;
             }
             try {
                 Resource res = collection.createResource(
@@ -2142,11 +2145,13 @@ public class InteractiveClient {
                         else
                             System.out.println(res.getContent().toString());
                     } else {
-                        if (cOpt.optionOutputFile != null)
-                            writeOutputFile(cOpt.optionOutputFile, res.getContent());
-                        else
-                            System.out.println(new String((byte[]) res
-                                    .getContent()));
+                        if (cOpt.optionOutputFile != null) {
+                        	((ExtendedResource)res).getContentIntoAFile(new File(cOpt.optionOutputFile));
+                        	((ExtendedResource)res).freeLocalResources();
+                        } else {
+                        	((ExtendedResource)res).getContentIntoAStream(System.out);
+                        	System.out.println();
+                        }
                     }
                 }
             } catch (XMLDBException e) {
@@ -2215,13 +2220,29 @@ public class InteractiveClient {
                     if (maxResults <= 0)
                         maxResults = (int) result.getSize();
                     if (cOpt.optionOutputFile == null) {
-                        for (int i = 0; i < maxResults && i < result.getSize(); i++)
-                            System.out.println((result.getResource(i)).getContent());
+                        for (int i = 0; i < maxResults && i < result.getSize(); i++) {
+                        	Resource res=result.getResource(i);
+                        	if(res instanceof ExtendedResource) {
+                        		((ExtendedResource)res).getContentIntoAStream(System.out);
+                        	} else {
+                        		System.out.println(res.getContent());
+                        	}
+                        }
                     } else {
-                        FileWriter writer = new FileWriter(cOpt.optionOutputFile, false);
-                        for (int i = 0; i < maxResults && i < result.getSize(); i++)
-                            writer.write((result.getResource(i)).getContent().toString());
-                        writer.close();
+                    	FileOutputStream fos=new FileOutputStream(cOpt.optionOutputFile);
+                    	BufferedOutputStream bos=new BufferedOutputStream(fos);
+                    	PrintStream ps=new PrintStream(bos);
+                        for (int i = 0; i < maxResults && i < result.getSize(); i++) {
+                        	Resource res=result.getResource(i);
+                        	if(res instanceof ExtendedResource) {
+                        		((ExtendedResource)res).getContentIntoAStream(ps);
+                        	} else {
+                        		ps.print(res.getContent().toString());
+                        	}
+                        }
+                        ps.close();
+                        bos.close();
+                        fos.close();
                     }
                 } catch (XMLDBException e) {
                     System.err.println("XMLDBException during query: "

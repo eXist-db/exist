@@ -147,6 +147,9 @@ public interface RpcAPI {
 	HashMap getNextChunk(String handle, int offset)
     throws EXistException, PermissionDeniedException;
 	
+	HashMap getNextExtendedChunk(String handle, String offset)
+    throws EXistException, PermissionDeniedException;
+	
 	byte[] getBinaryResource(String name)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 	

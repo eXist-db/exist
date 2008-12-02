@@ -48,6 +48,7 @@ import org.apache.excalibur.source.impl.validity.TimeStampValidity;
 import org.apache.excalibur.xml.sax.XMLizable;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.ExtendedResource;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -591,14 +592,8 @@ public class XMLDBSource extends AbstractLogEnabled
         try {
             setup();
             // Check if it's binary
-            if (resource instanceof BinaryResource) {
-                Object obj = resource.getContent();
-                if (obj == null) obj = new byte[0];
-                if (obj instanceof byte[]) {
-                    return new ByteArrayInputStream((byte[])obj);
-                } else {
-                    throw new SourceException("Binary resource has returned a " + obj.getClass() + " for " + getURI());
-                }
+            if (resource instanceof ExtendedResource) {
+            	return ((ExtendedResource)resource).getStreamContent();
             } else {
                 // Serialize SAX result
                 TransformerFactory tf = TransformerFactory.newInstance();

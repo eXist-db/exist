@@ -1676,7 +1676,7 @@ public class NativeBroker extends DBBroker {
           }
        }
        
-       byte [] buffer = new byte[4096];
+       byte [] buffer = new byte[65536];
        OutputStream os = new FileOutputStream(binFile);
        int len;
        while ((len = is.read(buffer))>=0) {
@@ -1829,7 +1829,7 @@ public class NativeBroker extends DBBroker {
         }.run();
         */
        InputStream is = getBinaryResource(blob);
-       byte [] buffer = new byte[4096];
+       byte [] buffer = new byte[65536];
        int len;
        while ((len=is.read(buffer))>=0) {
           os.write(buffer,0,len);

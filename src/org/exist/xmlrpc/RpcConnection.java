@@ -844,7 +844,8 @@ public class RpcConnection implements RpcAPI {
                 Serializer serializer = broker.getSerializer();
                 serializer.setProperties(parameters);
                 HashMap result = new HashMap();
-                if(doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
+                // A tweak for very large XML resources
+                if(doc.getContentLength()<0 || doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
                     File tempFile = File.createTempFile("eXistRPCC", ".xml");
                     tempFile.deleteOnExit();
                     LOG.debug("Writing to temporary file: " + tempFile.getName());
@@ -858,6 +859,7 @@ public class RpcConnection implements RpcAPI {
                     result.put("data", firstChunk);
                     result.put("handle", tempFile.getAbsolutePath());
                     result.put("offset", new Integer(firstChunk.length));
+                    result.put("supports-long-offset", new Boolean(true));
                 } else {
                     String xml = serializer.serialize(doc);
                     result.put("data", xml.getBytes(encoding));
@@ -866,7 +868,8 @@ public class RpcConnection implements RpcAPI {
                 return result;
             } else {
                 HashMap result = new HashMap();
-                if(doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
+                // A tweak for very large binary resources
+                if(doc.getContentLength()<0 || doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
                     File tempFile = File.createTempFile("eXistRPCC", ".bin");
                     tempFile.deleteOnExit();
                     LOG.debug("Writing to temporary file: " + tempFile.getName());
@@ -878,12 +881,18 @@ public class RpcConnection implements RpcAPI {
                     result.put("data", firstChunk);
                     result.put("handle", tempFile.getAbsolutePath());
                     result.put("offset", new Integer(firstChunk.length));
-                    
+                    result.put("supports-long-offset", new Boolean(true));
                 } else {
                     try {
                         InputStream is = broker.getBinaryResource((BinaryDocument)doc);
-                        byte[] data = new byte[(int)broker.getBinaryResourceSize((BinaryDocument)doc)];
-                        is.read(data);
+                        int datasize=(int)broker.getBinaryResourceSize((BinaryDocument)doc);
+                        byte[] data = new byte[datasize];
+                        int datapos=0;
+                        int dataread=0;
+                        while(datasize>0 && (dataread=is.read(data, datapos, datasize))!=-1) {
+                        	datapos+=dataread;
+                        	datasize-=dataread;
+                        }
                         is.close();
                         result.put("data", data);
                         result.put("offset", new Integer(0));
@@ -921,16 +930,16 @@ public class RpcConnection implements RpcAPI {
             if(offset <= 0 || offset > file.length())
                 throw new EXistException("No more data available");
             byte[] chunk = getChunk(file, offset);
-            int nextChunk = offset + chunk.length;
+            long nextChunk = offset + chunk.length;
 
             HashMap result = new HashMap();
             result.put("data", chunk);
             result.put("handle", handle);
-            if(nextChunk == file.length()) {
+            if(nextChunk > (long)Integer.MAX_VALUE || nextChunk == file.length()) {
                 file.delete();
                 result.put("offset", new Integer(0));
             } else
-                result.put("offset", new Integer(nextChunk));
+                result.put("offset", new Integer((int)nextChunk));
             return result;
         } catch (Exception e) {
             handleException(e);
@@ -939,20 +948,54 @@ public class RpcConnection implements RpcAPI {
     }
     
     /**
+     * The method <code>getNextExtendedChunk</code>
+     *
+     * @param handle a <code>String</code> value
+     * @param offset a <code>String</code> value
+     * @return a <code>HashMap</code> value
+     * @exception Exception if an error occurs
+     */
+	public HashMap getNextExtendedChunk(String handle, String offset) throws EXistException, PermissionDeniedException {
+        try {
+            File file = new File(handle);
+            if(!(file.isFile() && file.canRead()))
+                throw new EXistException("Invalid handle specified");
+            long longOffset=new Long(offset).longValue();
+            if(longOffset > file.length())
+                throw new EXistException("No more data available");
+            byte[] chunk = getChunk(file, longOffset);
+            long nextChunk = longOffset + chunk.length;
+
+            HashMap result = new HashMap();
+            result.put("data", chunk);
+            result.put("handle", handle);
+            if(nextChunk == file.length()) {
+                file.delete();
+                result.put("offset", Long.toString(0));
+            } else
+                result.put("offset", Long.toString(nextChunk));
+            return result;
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        }
+	}
+	
+	/**
      * The method <code>getChunk</code>
      *
      * @param file a <code>File</code> value
-     * @param offset an <code>int</code> value
+     * @param offset a <code>long</code> value
      * @return a <code>byte[]</code> value
      * @exception IOException if an error occurs
      */
-    private byte[] getChunk(File file, int offset) throws IOException {
+    private byte[] getChunk(File file, long offset) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(file, "r");
-        raf.seek((long)offset);
-        int remaining = (int)(raf.length() - offset);
+        raf.seek(offset);
+        long remaining = raf.length() - offset;
         if(remaining > MAX_DOWNLOAD_CHUNK_SIZE)
             remaining = MAX_DOWNLOAD_CHUNK_SIZE;
-        byte[] data = new byte[remaining];
+        byte[] data = new byte[(int)remaining];
         raf.readFully(data);
         raf.close();
         return data;
