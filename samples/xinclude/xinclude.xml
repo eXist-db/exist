@@ -10,7 +10,7 @@
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific">
-                    <email>meier@ifs.tu-darmstadt.de</email>
+                    <email>wolfgang@exist-db.org</email>
                 </address>
             </affiliation>
         </author>
@@ -224,7 +224,10 @@ declare variable $var2 external;</synopsis>
 			and you are using the default eXist setup):</para>
 
 			<synopsis language="xml">
-				<xi:include href="http://localhost:8080/exist/rest/db/xinclude/disclaimer.xml"/>
+				<xi:include href="http://demo.exist-db.org/rest/db/xinclude/disclaimer.xml">
+                	<xi:fallback><p>Included url not found! Example assumes eXist is running at
+					http://localhost:8080/exist/</p></xi:fallback>
+				</xi:include>
 			</synopsis>
 
 			<para>If no scheme is specified, the XInclude processor will first try to load
@@ -245,8 +248,11 @@ declare variable $var2 external;</synopsis>
 			<para>again, the output of this is shown below:</para>
 
 			<synopsis language="xml">
-				<xi:include href="http://localhost:8080/exist/rest/db/xinclude/disclaimer.xml"
-					xpointer="xpointer(//comment:comment)xmlns(comment=http://test.org)"/>
+				<xi:include href="http://demo.exist-db.org/rest/db/xinclude/disclaimer.xml"
+					xpointer="xpointer(//comment:comment)xmlns(comment=http://test.org)">
+					<xi:fallback><p>Included URL not found! Example assumes eXist is running at
+					http://localhost:8080/exist/</p></xi:fallback>
+				</xi:include>
 			</synopsis>
 
 		</section>
