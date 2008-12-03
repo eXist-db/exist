@@ -2,6 +2,7 @@ package org.exist.xmlrpc;
 
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.Option;
 import org.exist.xquery.value.Sequence;
 
 /**
@@ -14,7 +15,7 @@ public class QueryResult {
 	
 	protected long queryTime = 0;
 	protected Sequence result;
-	protected XQueryContext context;
+    protected Option serialization = null;
 	protected long timestamp = 0;
 	
 	// set upon failure
@@ -25,7 +26,7 @@ public class QueryResult {
 	}
 	
 	public QueryResult(XQueryContext context, Sequence result, long queryTime) {
-		this.context = context;
+        this.serialization = context.getOption(Option.SERIALIZE_QNAME);
 		this.result = result;
 		this.queryTime = queryTime;
 		this.timestamp = System.currentTimeMillis();
@@ -41,13 +42,6 @@ public class QueryResult {
 	
 	public XPathException getException() {
 		return exception;
-	}
-	
-	/**
-	 * @return Returns the context.
-	 */
-	public XQueryContext getContext() {
-		return context;
 	}
 	
 	/**
