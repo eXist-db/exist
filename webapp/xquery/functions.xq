@@ -14,6 +14,7 @@ import module namespace ngram="http://exist-db.org/xquery/ngram" at
 
 import module namespace setup="http://exist-db.org/xquery/docs/setup" at "../docsetup.xql";
 
+declare option exist:serialize "media-type=text/xml";
 (:~
     Execute a query or list all functions in a given module.
 :)
@@ -83,7 +84,7 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
                     </div>
                 </div>
     
-        return ( $hideshowButtons, $return )
+        return <div class="query-result">{ $hideshowButtons, $return }</div>
     else
         ()
 };

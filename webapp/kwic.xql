@@ -117,7 +117,7 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 	let $followingTrunc := kwic:truncate-following($following, (), $remain, 0)
 	return
 		if (not($table)) then
-			<p xmlns="http://www.w3.org/1999/xhtml"> 
+			<p>
 				<span class="previous">{$prevTrunc}</span>
 				{
 					if ($config/@link) then
@@ -128,7 +128,7 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 				<span class="following">{$followingTrunc}</span>
 			</p>
 		else
-			<tr xmlns="http://www.w3.org/1999/xhtml">
+			<tr>
 				<td class="previous">{$prevTrunc}</td>
 				<td class="hi">
 				{

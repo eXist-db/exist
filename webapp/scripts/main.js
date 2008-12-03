@@ -1,4 +1,5 @@
 YAHOO.util.Event.onDOMReady(function () {
+	Nifty("div.querybox", "transparent");
     Nifty("h1.chaptertitle", "transparent");
     Nifty("div.note", "transparent");
     Nifty("div.example", "transparent");

@@ -8,7 +8,7 @@
     xmlns:dc="http://purl.org/dc/elements/1.1/"
     xmlns:html="http://www.w3.org/1999/xhtml"
     version="1.0">
-    
+
     <xsl:template match="a:applications">
         <book xmlns:xi="http://www.w3.org/2001/XInclude">
             
@@ -114,6 +114,14 @@
                 <xsl:apply-templates select="a:dev-notes"/>
             </table>
         </section>
+    </xsl:template>
+    
+    <xsl:template match="dc:title">
+        <xsl:apply-templates/>
+    </xsl:template>
+    
+    <xsl:template match="dc:description">
+        <xsl:apply-templates/>
     </xsl:template>
     
     <xsl:template match="dc:creator">

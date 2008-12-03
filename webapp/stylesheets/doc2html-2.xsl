@@ -10,6 +10,8 @@
   <!-- used by multi-form pages -->
     <xsl:param name="page"/>
 
+    <xsl:output method="html" media-type="text/html"/>
+
     <xsl:variable name="showpage">
     <!-- ist Parameter $page gesetzt? -->
         <xsl:choose>
