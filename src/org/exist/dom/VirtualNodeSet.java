@@ -738,8 +738,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
     }
 
     public int getItemType() {
-        realize();
-        return realSet.getItemType();
+        if (realSet != null && realSetIsComplete)
+            return realSet.getItemType();
+        return Type.NODE;
     }
 
     /**
