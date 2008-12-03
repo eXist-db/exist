@@ -138,7 +138,13 @@
             
             - wait-before-shutdown:
                 defines how long the database instance will wait for running
-                operations to complete before it forces a shutdown.
+                operations to complete before it forces a shutdown. Forcing
+				a shutdown may leave the db in an unclean state and may
+				trigger a recovery run on restart.
+
+				Setting wait-before-shutdown="-1" means that the server will
+				wait for all threads to return, no matter how long it takes.
+				No thread will be killed.
         -->
         <pool max="20" min="1" sync-period="120000" wait-before-shutdown="120000"/>
 

@@ -442,16 +442,18 @@ public class Journal {
 	 * 
 	 * @param txnId
 	 */
-    public void shutdown(long txnId) {
+    public void shutdown(long txnId, boolean checkpoint) {
         if (currentBuffer == null)
             return; // the db has probably shut down already
         if (!BrokerPool.FORCE_CORRUPTION) {
-	    	try {
-				writeToLog(new Checkpoint(txnId));
-			} catch (TransactionException e) {
-				LOG.error("An error occurred while closing the journal file: " + e.getMessage(), e);
-			}
-			flushBuffer();
+            if (checkpoint) {
+                try {
+                    writeToLog(new Checkpoint(txnId));
+                } catch (TransactionException e) {
+                    LOG.error("An error occurred while closing the journal file: " + e.getMessage(), e);
+                }
+            }
+            flushBuffer();
     	}
         fileLock.release();
         syncThread.shutdown();
