@@ -55,8 +55,7 @@ declare function a:do-query() as element()
     <style href="styles/acronyms.css"/>
   </bookinfo>
     
-    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
-
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
 		<title>XML Acronym Demystifier Example</title>
 

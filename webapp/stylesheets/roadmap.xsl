@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:sidebar="http://exist-db.org/NS/sidebar" version="1.0">
+    <xsl:output method="html" media-type="text/html"/>
     <xsl:template match="roadmap">
         <html>
             <head>

@@ -29,6 +29,11 @@
  color: black;
  font-size: 1em;
  }
+ 
+ .update {
+     font-weight: bold;
+ }
+ 
  .Highest {
  background-color: #FF6A65;
  color: black;

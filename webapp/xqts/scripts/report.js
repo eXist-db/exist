@@ -194,7 +194,7 @@ function runTest(collection, group) {
 			failure: requestFailed
 		}
 		YAHOO.util.Connect.asyncRequest('POST', 'xqts.xql', callback, params);
-		timer = setTimeout('reportProgress()', 1000);
+		timer = setTimeout('reportProgress()', 5000);
 	}
 }
 
@@ -246,7 +246,7 @@ function displayProgress(request) {
 	progressBar.move(done);
 	
 	if (timer)
-		timer = setTimeout('reportProgress()', 1000);
+		timer = setTimeout('reportProgress()', 5000);
 }
 
 function requestFailed(request) {

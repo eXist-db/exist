@@ -10,12 +10,14 @@
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific">
-                    <email>meier@ifs.tu-darmstadt.de</email>
+                    <email>wolfgang@exist-db.org</email>
                 </address>
             </affiliation>
         </author>
     </bookinfo>
     <xi:include href="sidebar.xml"/>
+    <!-- Cocoon include for the website docs -->
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
     <chapter>
         <title>XInclude Examples</title>
 
@@ -117,7 +119,9 @@
             <para>The result of the XInclude will be displayed below:</para>
 
             <synopsis language="xml">
-                <xi:include href="disclaimer.xml" xpointer="statement"/>
+                <xi:include href="disclaimer.xml" xpointer="statement">
+					<xi:fallback><p>disclaimer.xml not found.</p></xi:fallback>
+				</xi:include>
             </synopsis>
         </section>
         <section>
@@ -155,7 +159,9 @@
             <synopsis language="xml">&lt;xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/&gt;</synopsis>
 
             <synopsis language="xml">
-				<xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/>
+				<xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)">
+					<xi:fallback><p>disclaimer.xml not found.</p></xi:fallback>
+				</xi:include>
 			</synopsis>
         </section>
         <section>
@@ -172,7 +178,9 @@
             <para>Calls a query without parameters. The result is shown below:</para>
 
             <synopsis language="xml">
-                <xi:include href="display-collection.xq"/>
+                <xi:include href="display-collection.xq">
+					<xi:fallback><p>display-collection.xq not found.</p></xi:fallback>
+				</xi:include>
             </synopsis>
 
             <para>The XInclude processor declares two variables in the XQuery's static context:</para>
@@ -205,8 +213,56 @@ declare variable $var2 external;</synopsis>
             <para>The result of the call is included below:</para>
 
             <synopsis language="xml">
-                <xi:include href="testvars.xq?var1=Hello&amp;var2=World"/>
+                <xi:include href="testvars.xq?var1=Hello&amp;var2=World">
+					<xi:fallback><p>testvars.xq not found.</p></xi:fallback>
+				</xi:include>
             </synopsis>
         </section>
+
+		<section>
+			<title>Including resources from external URIs or the file system</title>
+
+			<para>Beginning with version 1.3, if the URI in the href attribute specifies 
+			a known scheme (like http: or file:), eXist will try to load it as an external 
+			resource. For example:</para>
+
+			<synopsis language="xml">&lt;xi:include href="http://localhost:8080/exist/rest/db/xinclude/disclaimer.xml"/&gt;</synopsis>
+
+			<para>Should load "disclaimer.xml" via HTTP (assuming that the URL is correct
+			and you are using the default eXist setup):</para>
+
+			<synopsis language="xml">
+				<xi:include href="http://demo.exist-db.org/rest/db/xinclude/disclaimer.xml">
+                	<xi:fallback><p>Included url not found! Example assumes eXist is running at
+					http://localhost:8080/exist/</p></xi:fallback>
+				</xi:include>
+			</synopsis>
+
+			<para>If no scheme is specified, the XInclude processor will first try to load
+			the referenced document from the database (relative to the current collection),
+			and if that fails: from the file system.</para>
+
+			<para>If the document that contains the xinclude has been constructed in an XQuery,
+			relative file system paths will be resolved relative to the main XQuery module 
+			source file.</para>
+
+			<para>You can also use XPointers on external resources:</para>
+			
+			<synopsis language="xml">
+				&lt;xi:include href="http://localhost:8080/exist/rest/db/xinclude/disclaimer.xml"
+					xpointer="xpointer(//comment:comment)xmlns(comment=http://test.org)"/&gt;
+			</synopsis>
+
+			<para>again, the output of this is shown below:</para>
+
+			<synopsis language="xml">
+				<xi:include href="http://demo.exist-db.org/rest/db/xinclude/disclaimer.xml"
+					xpointer="xpointer(//comment:comment)xmlns(comment=http://test.org)">
+					<xi:fallback><p>Included URL not found! Example assumes eXist is running at
+					http://localhost:8080/exist/</p></xi:fallback>
+				</xi:include>
+			</synopsis>
+
+		</section>
     </chapter>
 </book>
