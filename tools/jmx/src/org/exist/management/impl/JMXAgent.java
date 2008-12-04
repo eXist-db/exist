@@ -157,8 +157,8 @@ public class JMXAgent implements Agent {
         try {
             ObjectName name = new ObjectName("org.exist.management." + instance.getId() + ".tasks:type=SanityReport");
             SanityReport report = (SanityReport) beanInstances.get(name);
-            if (report != null)
-                report.updateErrors(errorList, startTime);
+			if (report != null)
+            	report.updateErrors(errorList, startTime);
         } catch (MalformedObjectNameException e) {
             LOG.warn("Problem calling mbean: " + e.getMessage(), e);
         }
