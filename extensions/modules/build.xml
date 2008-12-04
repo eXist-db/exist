@@ -38,6 +38,10 @@
     <condition property="include.module.svn.config">
         <istrue value="${include.module.svn}"/>
     </condition>
+    
+    <condition property="include.module.jndi.config">
+        <istrue value="${include.module.jndi}"/>
+    </condition>
 
     <!-- Special targets for XSLFO module -->
     <condition property="libs.available.xslfo">
@@ -164,6 +168,7 @@
             <exclude name="org/exist/xquery/modules/image/**" unless="include.module.image.config"/>
             <exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
             <exclude name="org/exist/xquery/modules/svn/**" unless="include.module.svn.config"/>
+            <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
         </javac>
 	</target>
 	
