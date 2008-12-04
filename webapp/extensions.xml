@@ -83,9 +83,9 @@
         
     <section id="module_file">
       <title>File Module</title>
-      <para>Provides additional operations on files.  WARNING: Enabling this extension module could result in possible security issues, since it allows writing to the filesystem by xqueries!</para>                    
+      <para>Provides additional operations on files and directories.  WARNING: Enabling this extension module could result in possible security issues, since it allows writing to the filesystem by xqueries!</para>                    
       <para>
-    <command>Creator:</command>&#160;<dc:creator>Andrzej Taramina</dc:creator>
+    <command>Creator:</command>&#160;<dc:creator>Andrzej Taramina, Chaeron Corporation</dc:creator>
     <command>Licence:</command>&#160;LGPL
     <command>Status:</command>&#160;production
       </para>
@@ -122,6 +122,24 @@
       <para>
 	<command>Class:</command>&#160;org.exist.xquery.modules.image.ImageModule
 	<command>Namespace:</command>&#160;http://exist-db.org/xquery/image
+      </para>
+    </section>
+        
+    <section id="module_jndi">
+      <title>JNDI Directory Module</title>
+      <para>
+        This extension module allows you to access and manipulate JNDI-based directories, such as LDAP, using XQuery functions.
+        It can be very useful if you want to integration and LDAP directory into an eXist/XQuery based application.</para>   
+      <para>To compile it, set the parameter include.module.jndi = true in $EXIST_HOME/extensions/modules/build.properties file.</para>  
+      <para>Then, to enable it, edit the appropriate module entry in conf.xml</para>   
+      <para>
+    <command>Creator:</command>&#160;<dc:creator>Andrzej Taramina, Chaeron Corporation</dc:creator>
+    <command>Licence:</command>&#160;LGPL
+    <command>Status:</command>&#160;production
+      </para>
+      <para>
+    <command>Class:</command>&#160;org.exist.xquery.modules.jndi.JNDIModule
+    <command>Namespace:</command>&#160;http://exist-db.org/xquery/jndi
       </para>
     </section>
     
