@@ -98,11 +98,11 @@
                 provides a <a href="news://news.gmane.org/gmane.text.xml.exist"> NNTP</a> interface.  
 								Additionaly markmail.org provides a nice search interface to the <a 
 								href="http://exist-open.markmail.org/search/?q=">exist-open</a> and <a 
-								href="http://exist-open.markmail.org/search/?q=">exist-commits</a> mailing lists.</p>
+								href="http://exist-commits.markmail.org/search/?q=">exist-commits</a> mailing lists.</p>
 
             <p>The project has an chat box <b>#existdb</b> which is accessible via IRC on <a
                     href="irc://irc.freenode.net/existdb">irc.freenode.net</a> and via an AJAX based
-                    <a href="http://irc.exist-db.org">web interface</a>. The channel is open for
+                    <a href="http://www.mibbit.com/chat/?server=irc.freenode.net&amp;channel=%23existdb">web interface</a>. The channel is open for
                 general discussions on eXist and related subjects.</p>
 
             <p>All eXist-db sources are freely available via a SourceForge <a
