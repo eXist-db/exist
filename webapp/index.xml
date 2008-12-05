@@ -102,7 +102,7 @@
 
             <p>The project has an chat box <b>#existdb</b> which is accessible via IRC on <a
                     href="irc://irc.freenode.net/existdb">irc.freenode.net</a> and via an AJAX based
-                    <a href="http://www.mibbit.com/chat/?server=irc.freenode.net&amp;channel=%23existdb">web interface</a>. The channel is open for
+                    <a href="http://widget.mibbit.com/?settings=9188fc6af271f2053efc3ef097e14ac4&amp;server=irc.freenode.net&amp;channel=%23existdb&amp;noServerNotices=true&amp;noServerMotd=true&amp;autoConnect=true">web interface</a>. The channel is open for
                 general discussions on eXist and related subjects.</p>
 
             <p>All eXist-db sources are freely available via a SourceForge <a
