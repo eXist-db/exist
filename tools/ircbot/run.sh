@@ -2,7 +2,7 @@
 # $Id$
 
 if [ -z "${EXIST}" ]; then
-    EXIST="/home/existdb/exist-db.org/eXist/";
+    EXIST="../..";
 fi
 
 
