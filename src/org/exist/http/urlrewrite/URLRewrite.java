@@ -22,12 +22,17 @@
 package org.exist.http.urlrewrite;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.exist.Namespaces;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Base class for all rewritten URLs.
@@ -36,17 +41,63 @@ public abstract class URLRewrite {
 
     protected String uri;
     protected String target;
+    protected Map attributes = null;
+    protected Map parameters = null;
+    protected Map headers = null;
 
     protected URLRewrite(Element config, String uri) {
         this.uri = uri;
+        // Check for add-parameter elements etc.
+        if (config.hasChildNodes()) {
+            Node node = config.getFirstChild();
+            while (node != null) {
+                if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
+                    Element elem = (Element) node;
+                    if ("add-parameter".equals(elem.getLocalName())) {
+                        addParameter(elem.getAttribute("name"), elem.getAttribute("value"));
+                    } else if ("set-attribute".equals(elem.getLocalName())) {
+                        setAttribute(elem.getAttribute("name"), elem.getAttribute("value"));
+                    }
+                }
+                node = node.getNextSibling();
+            }
+        }
     }
 
+    private void addParameter(String name, String value) {
+        if (parameters == null)
+            parameters = new HashMap();
+        parameters.put(name, value);
+    }
+
+    private void setAttribute(String name, String value) {
+        if (attributes == null)
+            attributes = new HashMap();
+        attributes.put(name, value);
+    }
+
+    
     public void setTarget(String target) {
         this.target = target;
     }
 
     public abstract void doRewrite(HttpServletRequest request, HttpServletResponse response,
                                    FilterChain chain) throws ServletException, IOException;
+
+    public void prepareRequest(XQueryURLRewrite.RequestWrapper request) {
+        if (parameters != null) {
+            for (Iterator iterator = parameters.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                request.addParameter(entry.getKey().toString(), (String) entry.getValue());
+            }
+        }
+        if (attributes != null) {
+            for (Iterator iterator = attributes.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                request.setAttribute(entry.getKey().toString(), entry.getValue());
+            }
+        }
+    }
 
     protected static String normalizePath(String path) {
         StringBuffer sb = new StringBuffer(path.length());

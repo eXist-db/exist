@@ -359,7 +359,8 @@ public abstract class Serializer implements XMLReader {
 	}
 
     protected void setXQueryContext(XQueryContext context) {
-        xinclude.setXQueryContext(context);
+        if (context != null)
+            xinclude.setModuleLoadPath(context.getModuleLoadPath());
     }
     
     public void parse(String systemId) throws IOException, SAXException {

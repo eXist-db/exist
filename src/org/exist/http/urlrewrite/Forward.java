@@ -37,7 +37,10 @@ public abstract class Forward extends URLRewrite {
     }
 
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        getRequestDispatcher(request).forward(request, response);
+        RequestDispatcher dispatcher = getRequestDispatcher(request);
+        if (dispatcher == null)
+            throw new ServletException("Failed to initialize request dispatcher to forward request to " + uri);
+        dispatcher.forward(request, response);
     }
 
     protected abstract RequestDispatcher getRequestDispatcher(HttpServletRequest request);
