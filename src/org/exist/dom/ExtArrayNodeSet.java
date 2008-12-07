@@ -334,7 +334,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
      */
-    public SequenceIterator unorderedIterator() {
+    public SequenceIterator unorderedIterator() throws XPathException {
         if (!isSorted()) {
             sort();
         }
@@ -596,7 +596,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.xquery.value.AbstractSequence#setSelfAsContext()
      */
-    public void setSelfAsContext(int contextId) {
+    public void setSelfAsContext(int contextId)  throws XPathException {
         for (int i = 0; i < partCount; i++) {
             parts[i].setSelfAsContext(contextId);
         }

@@ -303,7 +303,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      *
      * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
      */
-    public SequenceIterator unorderedIterator() {
+    public SequenceIterator unorderedIterator() throws XPathException {
         if (!isSorted()) {
             sort();
         }
@@ -803,7 +803,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      *
      * @see org.exist.xquery.value.AbstractSequence#setSelfAsContext()
      */
-    public void setSelfAsContext(int contextId) {
+    public void setSelfAsContext(int contextId) throws XPathException {
         for (int i = 0; i < size; i++) {
             nodes[i].addContextNode(contextId, nodes[i]);
         }

@@ -81,7 +81,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#unorderedIterator()
      */
-    public abstract SequenceIterator unorderedIterator();
+    public abstract SequenceIterator unorderedIterator() throws XPathException;
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getItemType()
@@ -659,7 +659,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return hasMixedContent;
     }
 
-    public void clearContext(int contextId) {
+    public void clearContext(int contextId) throws XPathException {
         NodeProxy p;
         for (Iterator i = iterator(); i.hasNext(); ) {
             p = (NodeProxy) i.next();

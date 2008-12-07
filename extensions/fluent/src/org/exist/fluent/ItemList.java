@@ -243,9 +243,15 @@ public class ItemList extends Resource implements Iterable<Item> {
 	ItemList(Sequence seq, NamespaceMap namespaceBindings, Database db) {
 		super(namespaceBindings, db);
 		this.seq = seq;
-		for (SequenceIterator it = seq.unorderedIterator(); it.hasNext(); ) {
-			org.exist.xquery.value.Item item = it.nextItem();
-			if (item instanceof NodeProxy) Database.trackNode((NodeProxy) item);
+		try{
+			for (SequenceIterator it = seq.unorderedIterator(); it.hasNext(); ) {
+				org.exist.xquery.value.Item item = it.nextItem();
+				if (item instanceof NodeProxy) Database.trackNode((NodeProxy) item);
+			}
+		}
+		catch(XPathException xpe)
+		{
+			throw new DatabaseException(xpe);
 		}
 	}
 	

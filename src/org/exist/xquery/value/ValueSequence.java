@@ -174,7 +174,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
-	public SequenceIterator unorderedIterator() {
+	public SequenceIterator unorderedIterator() throws XPathException {
         sortInDocumentOrder();
         return new ValueSequenceIterator();
 	}
@@ -406,7 +406,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         noDuplicates = true;
 	}
 	
-    public void clearContext(int contextId) {
+    public void clearContext(int contextId) throws XPathException {
         for (int i = 0; i <= size; i++) {
             if (Type.subTypeOf(values[i].getType(), Type.NODE))
                 ((NodeValue) values[i]).clearContext(contextId);

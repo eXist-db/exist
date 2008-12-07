@@ -42,7 +42,7 @@ public class EmptySequence extends AbstractSequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
-	public SequenceIterator unorderedIterator() {
+	public SequenceIterator unorderedIterator() throws XPathException {
 		return EmptySequenceIterator.EMPTY_ITERATOR;
 	}
 	

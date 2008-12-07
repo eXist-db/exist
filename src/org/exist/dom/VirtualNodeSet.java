@@ -831,7 +831,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
      */
-    public SequenceIterator unorderedIterator() {
+    public SequenceIterator unorderedIterator() throws XPathException {
         realize();
         return realSet.unorderedIterator();
     }
@@ -872,7 +872,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * The method <code>clearContext</code>
      *
      */
-    public void clearContext() {
+    public void clearContext() throws XPathException {
 		// ignored for a virtual set
 	}
     

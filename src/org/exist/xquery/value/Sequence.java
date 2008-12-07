@@ -90,7 +90,7 @@ public interface Sequence {
 	 * items may - but need not - to be in document order.
 	 * 
 	 */
-	public SequenceIterator unorderedIterator();
+	public SequenceIterator unorderedIterator() throws XPathException;
 	
 	/**
 	 * Returns the number of items contained in the sequence.
@@ -239,9 +239,9 @@ public interface Sequence {
 	 * feature is used for node sets, which may store information
 	 * about their context node.
 	 */
-    public void clearContext(int contextId);
+    public void clearContext(int contextId) throws XPathException;
     
-	public void setSelfAsContext(int contextId);
+	public void setSelfAsContext(int contextId) throws XPathException;
     
     public boolean isPersistentSet();
 

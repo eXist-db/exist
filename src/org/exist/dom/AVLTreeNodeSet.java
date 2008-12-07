@@ -24,7 +24,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return new InorderTraversal();
     }
 
-    public SequenceIterator unorderedIterator() {
+    public SequenceIterator unorderedIterator() throws XPathException {
         return new InorderTraversal();
     }
 
