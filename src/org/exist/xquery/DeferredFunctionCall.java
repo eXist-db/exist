@@ -68,7 +68,7 @@ public abstract class DeferredFunctionCall implements Sequence {
         sequence.addAll(other);
     }
 
-    public void clearContext(int contextId) {
+    public void clearContext(int contextId) throws XPathException {
         if (sequence != null) sequence.clearContext(contextId);
     }
 
@@ -226,7 +226,7 @@ public abstract class DeferredFunctionCall implements Sequence {
         }
     }
 
-    public void setSelfAsContext(int contextId) {
+    public void setSelfAsContext(int contextId) throws XPathException {
         try {
             realize();
             sequence.setSelfAsContext(contextId);
@@ -250,14 +250,15 @@ public abstract class DeferredFunctionCall implements Sequence {
         return sequence.toMemNodeSet();
     }
 
-    public SequenceIterator unorderedIterator() {
-        try {
+    public SequenceIterator unorderedIterator() throws XPathException {
+        //try {
             realize();
             return sequence.unorderedIterator();
-        } catch (XPathException e) {
+        
+        /*} catch (XPathException e) {
             LOG.error("Exception in deferred function: " + e.getMessage());
             return null;
-        }
+        }*/
     }
 
 

@@ -79,7 +79,7 @@ public class PreorderedValueSequence extends AbstractSequence {
 		}
 	}
 
-    public void clearContext(int contextId) {
+    public void clearContext(int contextId) throws XPathException {
         for (int i = 0; i < nodes.length; i++) {
             nodes[i].clearContext(contextId);
         }
@@ -103,7 +103,7 @@ public class PreorderedValueSequence extends AbstractSequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
-	public SequenceIterator unorderedIterator() {
+	public SequenceIterator unorderedIterator() throws XPathException{
 		return new PreorderedValueSequenceIterator();
 	}
 

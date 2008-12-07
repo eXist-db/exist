@@ -136,7 +136,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		return new SingleItemIterator(this);
 	}
 
-	public SequenceIterator unorderedIterator() {
+	public SequenceIterator unorderedIterator() throws XPathException {
 		return new SingleItemIterator(this);
 	}
 	
@@ -324,14 +324,14 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		// ignore
 	}
 	
-	public void clearContext(int contextId) {
+	public void clearContext(int contextId) throws XPathException {
 		// ignore
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#setSelfAsContext()
 	 */
-	public void setSelfAsContext(int contextId) {
+	public void setSelfAsContext(int contextId) throws XPathException {
 	}
 	
     /* (non-Javadoc)

@@ -272,7 +272,7 @@ public abstract class BindingExpression extends AbstractExpression {
 		}
 	}
 	
-	protected final static void setContext(int contextId, Sequence seq) {
+	protected final static void setContext(int contextId, Sequence seq) throws XPathException {
 		if (seq instanceof VirtualNodeSet) {
 			((VirtualNodeSet)seq).setInPredicate(true);
             ((VirtualNodeSet)seq).setSelfIsContext();
@@ -286,7 +286,7 @@ public abstract class BindingExpression extends AbstractExpression {
 		}
 	}
 	
-	protected final static void clearContext(int contextId, Sequence seq) {
+	protected final static void clearContext(int contextId, Sequence seq) throws XPathException {
 		if (seq != null && !(seq instanceof VirtualNodeSet)) {
 			Item next;
 			for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {

@@ -56,7 +56,7 @@ public abstract class AbstractSequence implements Sequence {
 
 	public abstract SequenceIterator iterate() throws XPathException;
 
-	public abstract SequenceIterator unorderedIterator();
+	public abstract SequenceIterator unorderedIterator() throws XPathException;
 	
 	public abstract int getItemCount();
 
@@ -251,7 +251,7 @@ public abstract class AbstractSequence implements Sequence {
 		return null;
 	}
 	
-	public void clearContext(int contextId) {
+	public void clearContext(int contextId)  throws XPathException {
 		Item next;
 		for (SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
 			next = i.nextItem();
@@ -260,7 +260,7 @@ public abstract class AbstractSequence implements Sequence {
 		}
 	}
 	
-	public void setSelfAsContext(int contextId) {
+	public void setSelfAsContext(int contextId) throws XPathException {
 		Item next;
         NodeValue node;
 		for (SequenceIterator i = unorderedIterator(); i.hasNext();) {
