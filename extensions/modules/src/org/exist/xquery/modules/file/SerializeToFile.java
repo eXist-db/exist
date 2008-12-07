@@ -21,13 +21,11 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Properties;
 
@@ -48,7 +46,6 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 

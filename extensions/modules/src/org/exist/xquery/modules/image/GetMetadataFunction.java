@@ -25,6 +25,7 @@ package org.exist.xquery.modules.image;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Iterator;
+
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
@@ -44,15 +45,9 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-
-
-
-import org.w3c.dom.Node;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * eXist Image Module Extension GetMetadataFunction 

@@ -22,24 +22,21 @@
 
 package org.exist.xquery.modules.jndi;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttributes;
 
+import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

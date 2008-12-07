@@ -2,18 +2,17 @@ package org.exist.xquery.modules.image;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Iterator;
+
 import javax.imageio.ImageIO;
 
 import org.exist.collections.Collection;
-
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;

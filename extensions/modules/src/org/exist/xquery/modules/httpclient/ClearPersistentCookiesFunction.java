@@ -23,7 +23,6 @@
 package org.exist.xquery.modules.httpclient;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;

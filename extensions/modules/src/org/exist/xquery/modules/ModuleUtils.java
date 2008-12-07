@@ -25,10 +25,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.log4j.Logger;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.DocumentImpl;

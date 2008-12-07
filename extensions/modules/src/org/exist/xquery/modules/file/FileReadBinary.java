@@ -21,18 +21,15 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.IOException;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.File; 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.exist.dom.QName;
-
-import org.exist.util.Base64Encoder;
-
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -41,7 +38,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
