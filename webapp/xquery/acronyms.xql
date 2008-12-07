@@ -1,5 +1,5 @@
 xquery version "1.0";
-(: $Id$ :)
+(: $Id: acronyms.xq 8359 2008-12-03 20:31:47Z wolfgang_m $ :)
 
 declare namespace a="http://www.xml-acronym-demystifier.org";
 declare namespace request="http://exist-db.org/xquery/request";
@@ -65,7 +65,7 @@ declare function a:do-query() as element()
         <ulink url="../admin/admin.xql?user=admin&amp;password=&amp;panel=setup">Examples 
         Setup</ulink> page.</para>
 
-		<form method="get" action="acronyms.xq">
+		<form method="get" action="acronyms.xql">
 			<table bgcolor="#F3F3F3" width="100%" cellpadding="5"
 				cellspacing="0" border="0">
 				<tr bgcolor="#D9D9D9">
@@ -92,7 +92,7 @@ declare function a:do-query() as element()
 		</form>
 		{ a:do-query() }
 		<para>
-			<small>View <a href="source/acronyms.xq">source code</a>
+			<small>View <a href="source/acronyms.xql">source code</a>
 			</small>
 		</para>
 	</chapter>

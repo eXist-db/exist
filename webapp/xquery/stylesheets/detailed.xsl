@@ -13,8 +13,6 @@
     xmlns:java="http://xml.apache.org/xslt/java"
     version="1.0">
     
-    <xsl:include href="context://stylesheets/doc2html-2.xsl"/>
-    
     <xsl:template match="section">
         <xsl:apply-templates/>
     </xsl:template>
@@ -38,19 +36,19 @@
         <tr bgcolor="#D9D9D9" width="100%">
             <th class="{$cssclass}" align="left" width="20%">
                 <xsl:if test="@start &gt; 1">
-                    <a href="biblio.xq?start={@start - 1}&amp;howmany={@max}&amp;display=details">
+                    <a href="biblio.xql?start={@start - 1}&amp;howmany={@max}&amp;display=details">
                         &lt;&lt; Previous
                     </a>
                 </xsl:if>
             </th>
             <th class="{$cssclass}" align="center" width="60%">
-                <a href="biblio.xq?start={$summary}&amp;howmany={@max}&amp;display=summary">
+                <a href="biblio.xql?start={$summary}&amp;howmany={@max}&amp;display=summary">
                     <span class="icondesc">[Short Display]</span>
                 </a>
             </th>
             <th class="{$cssclass}" align="right" width="20%">
                 <xsl:if test="number(@next) &lt; @hits">
-                    <a href="biblio.xq?start={@next}&amp;howmany={@max}&amp;display=details">
+                    <a href="biblio.xql?start={@next}&amp;howmany={@max}&amp;display=details">
                         Next &gt;&gt;
                     </a>
                 </xsl:if>
@@ -73,7 +71,7 @@
                             <xsl:if test="position() &gt; 1">
                                 <xsl:text>; </xsl:text>
                             </xsl:if>
-                            <a href="biblio.xq?field1=au&amp;term1={java:java.net.URLEncoder.encode(., 'UTF-8')}&amp;mode1=near">
+                            <a href="biblio.xql?field1=au&amp;term1={java:java.net.URLEncoder.encode(., 'UTF-8')}&amp;mode1=near">
                                 <xsl:value-of select="."/>
                             </a>
                         </xsl:for-each>
@@ -86,7 +84,7 @@
                             <xsl:if test="position() &gt; 1">
                                 <xsl:text>; </xsl:text>
                             </xsl:if>
-                            <a href="biblio.xq?field1=au&amp;term1={java:java.net.URLEncoder.encode(text(), 'UTF-8')}&amp;mode1=near">
+                            <a href="biblio.xql?field1=au&amp;term1={java:java.net.URLEncoder.encode(text(), 'UTF-8')}&amp;mode1=near">
                                 <xsl:value-of select="."/>
                             </a>
                         </xsl:for-each>
@@ -104,7 +102,7 @@
                                 <xsl:if test="position() &gt; 1">
                                     <xsl:text>; </xsl:text>
                                 </xsl:if>
-                                <a href="biblio.xq?field1=su&amp;term1={java:java.net.URLEncoder.encode(.)}&amp;mode1=exact">
+                                <a href="biblio.xql?field1=su&amp;term1={java:java.net.URLEncoder.encode(.)}&amp;mode1=exact">
                                     <xsl:apply-templates/>
                                 </a>
                             </xsl:for-each>
@@ -143,4 +141,9 @@
 	    <span style="background-color: #FFFF00"><xsl:apply-templates/></span>
     </xsl:template>
     
+  	<xsl:template match="node()|@*" priority="-1">
+		<xsl:copy>
+			<xsl:apply-templates select="node()|@*"/>
+		</xsl:copy>
+	</xsl:template>
 </xsl:stylesheet>

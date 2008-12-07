@@ -23,7 +23,7 @@
             <link href="../quickstart.xml">Quick Start</link>
         </item>
         <item>
-            <link href="functions.xq">Function Library</link>
+            <link href="functions.xql">Function Library</link>
         </item>
         <item>
             <link href="../extensions.xml">Extension Modules</link>
@@ -43,10 +43,10 @@
             <link href="../sandbox/sandbox.xql">XQuery Sandbox</link>
         </item>
         <item>
-            <link href="acronyms.xq">XML Acronyms</link>
+            <link href="acronyms.xql">XML Acronyms</link>
         </item>
         <item>
-            <link href="../mods/">Bibliographic</link>
+            <link href="../cocoon/biblio.xq">Bibliographic</link>
         </item>
         <item>
             <link href="../examples.xml">All Examples</link>
@@ -97,10 +97,7 @@
             <link href="../admin/admin.xql">Admin</link>
         </item>
         <item>
-            <link href="../status">Server Status</link>
-        </item>
-        <item>
-            <link href="../cluster">Cluster Status</link>
+            <link href="../cocoon/status">Server Status</link>
         </item>
         <item>
             <link href="../webstart/exist.jnlp">Webstart Client</link>

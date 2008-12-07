@@ -560,6 +560,11 @@
                     uri-prefix="mods"/>
             </map:match>
             
+            <map:match pattern="cocoon/**">
+                <map:mount check-reload="yes" src="cocoon/sitemap.xmap"
+                    uri-prefix="cocoon"/>
+            </map:match>
+
             <map:match pattern="apps/**">
                 <map:mount check-reload="yes" src="apps/sitemap.xmap"
                     uri-prefix="apps"/>
@@ -799,7 +804,7 @@
             <!-- Documentation -->
             <map:match pattern="roadmap.xml">
             	<map:generate src="roadmap.xml"/>
-                <map:transform type="cinclude"/>
+                <map:transform type="xinclude"/>
                 <map:transform src="stylesheets/roadmap.xsl"/>
                 <map:serialize type="html"/>
             </map:match>

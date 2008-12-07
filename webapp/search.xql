@@ -8,7 +8,7 @@ import module namespace setup="http://exist-db.org/xquery/docs/setup" at "docset
 
 declare namespace dq="http://exist-db.org/xquery/documentation";
 
-declare option exist:serialize "method=xhtml media-type=text/html expand-xincludes=yes";
+declare option exist:serialize "method=html media-type=text/html expand-xincludes=yes";
 
 declare variable $dq:COLLECTION := "xqdocs";
 
@@ -30,8 +30,8 @@ as element()* {
 	for $hit in $hits
 	let $nodeId := util:node-id($hit)
 	let $uri := concat(
-		(: util:document-name(root($hit)), "?q=", :)
-		"docs.xql?path=", document-uri(root($hit)), "&amp;q=",
+		util:document-name(root($hit)), "?q=",
+		(: "docs.xql?path=", document-uri(root($hit)), "&amp;q=", :)
 		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
 	)
 	let $config :=
@@ -50,8 +50,8 @@ declare function dq:print-headings($section as element(section)*, $docXPath as x
 	for $s at $p in $section/ancestor-or-self::section
 	let $nodeId := util:node-id($s)
 	let $uri := concat(
-		"docs.xql?path=", document-uri(root($s)), "&amp;q=",
-		(: util:document-name(root($s)), "?q=", :)
+		(: "docs.xql?path=", document-uri(root($s)), "&amp;q=", :)
+		util:document-name(root($s)), "?q=",
 		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
 	)
 	return
@@ -216,6 +216,4 @@ let $askPass :=
     else
         false()
 return
-	(: dq:get-page((), $askPass) :)
-	transform:transform(dq:get-page((), $askPass), 
-		"stylesheets/db2html.xsl", (), "expand-xincludes=yes")
+	dq:get-page((), $askPass)

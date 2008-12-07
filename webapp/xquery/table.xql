@@ -1,5 +1,5 @@
 xquery version "1.0";
-(: $Id$ :)
+(: $Id: table.xq 6434 2007-08-28 18:59:23Z ellefj $ :)
 (: An example found in Saxon: creates a table with 10x10 cells :)
 
 declare namespace f="http://my-namespaces.org";
@@ -29,7 +29,7 @@ as xs:string {
 	}</table>
 
 	<p>
-		<small>View <a href="source/table.xq">source code</a>
+		<small>View <a href="table.xql?_source=yes">source code</a>
 		</small>
 	</p>
 </body>

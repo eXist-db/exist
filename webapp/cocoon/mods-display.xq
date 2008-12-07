@@ -1,5 +1,5 @@
 xquery version "1.0";
-(: $Id$ :)
+(: $Id: mods-display.xq 6538 2007-09-12 09:09:35Z brihaye $ :)
 
 module namespace md="http://exist-db.org/biblio/mods-display";
 

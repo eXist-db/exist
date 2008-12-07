@@ -1,5 +1,5 @@
 xquery version "1.0";
-(: $Id$ :)
+(: $Id: biblio.xq 6538 2007-09-12 09:09:35Z brihaye $ :)
 
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace dc="http://purl.org/dc/elements/1.1/";
@@ -190,7 +190,7 @@ declare function local:main() as element()+
 
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
 	
-	<xi:include href="context://header.xml"/>
+	<xi:include href="header.xml"/>
 	<xi:include href="sidebar.xml"/>
 
 	<body>
@@ -200,7 +200,7 @@ declare function local:main() as element()+
 					local:main(),
             		<p><small>Request served in 
 					{seconds-from-duration(current-time()-$start)}
-					seconds. <a href="source/biblio.xq">View Source</a>.
+					seconds. <a href="source/biblio.xql">View Source</a>.
 					</small></p>
 				)
 			}
