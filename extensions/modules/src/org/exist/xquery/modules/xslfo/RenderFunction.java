@@ -137,7 +137,7 @@ public class RenderFunction extends BasicFunction {
 		try {
 			// setup a transformer handler
 			TransformerHandler handler = TransformerFactoryAllocator
-					.getTransformerFactory(context.getBroker())
+					.getTransformerFactory(context.getBroker().getBrokerPool())
 					.newTransformerHandler();
 			Transformer transformer = handler.getTransformer();
 

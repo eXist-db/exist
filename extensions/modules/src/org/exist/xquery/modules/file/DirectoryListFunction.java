@@ -24,24 +24,15 @@ package org.exist.xquery.modules.file;
 
 
 import java.io.File;
-import java.util.StringTokenizer;
 
-import org.exist.Namespaces;
 import org.exist.dom.QName;
-
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
-
 import org.exist.util.DirectoryScanner;
-
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
