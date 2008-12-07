@@ -29,6 +29,7 @@ import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
+import org.exist.storage.BrokerPool;
 
 /**
  * Allows the TransformerFactory that is used for XSLT to be
@@ -63,7 +64,7 @@ public class TransformerFactoryAllocator
      * If the class can't be found or the given class doesn't implement
      * the required interface, the default factory is returned.
      *
-     * @param broker A database broker, used for reading the conf.xml configuration
+     * @param pool A database broker pool, used for reading the conf.xml configuration
      *
      * @return  A SAXTransformerFactory, for which newInstance() can then be called
      *
@@ -73,12 +74,12 @@ public class TransformerFactoryAllocator
      * Instead of SAXTransformerFactory.newInstance() use
      * TransformerFactoryAllocator.getTransformerFactory(broker).newInstance()
      */
-	public static SAXTransformerFactory getTransformerFactory( DBBroker broker ) 
+	public static SAXTransformerFactory getTransformerFactory( BrokerPool pool )
 	{
 		SAXTransformerFactory factory;
 		
 		//get the transformer class name from conf.xml
-		String transformerFactoryClassName = (String)broker.getConfiguration().getProperty(PROPERTY_TRANSFORMER_CLASS);
+		String transformerFactoryClassName = (String)pool.getConfiguration().getProperty(PROPERTY_TRANSFORMER_CLASS);
 		
 		//		if( LOG.isDebugEnabled() ) {
 		//          LOG.debug( "transformerFactoryClassName=" + transformerFactoryClassName );
@@ -98,7 +99,7 @@ public class TransformerFactoryAllocator
 					LOG.debug( "Set transformer factory: " + transformerFactoryClassName );
 				}
 				
-				Hashtable attributes = (Hashtable)broker.getConfiguration().getProperty( PROPERTY_TRANSFORMER_ATTRIBUTES );
+				Hashtable attributes = (Hashtable)pool.getConfiguration().getProperty( PROPERTY_TRANSFORMER_ATTRIBUTES );
 				Enumeration attrNames = attributes.keys();
 				
 				while( attrNames.hasMoreElements() ) {

@@ -43,6 +43,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -202,6 +203,19 @@ public class LocalResourceSet implements ResourceSet {
 		res.setProperties(outputProperties);
 		return res;
 	}
+
+    public Sequence toSequence() {
+        if (resources.size() == 0)
+            return Sequence.EMPTY_SEQUENCE;
+        if (resources.size() == 1)
+            return ((Item) resources.get(0)).toSequence();
+        ValueSequence s = new ValueSequence();
+        for (int i = 0; i < resources.size(); i++) {
+            Item item = (Item) resources.get(i);
+            s.add(item);
+        }
+        return s;
+    }
 
 	/**
 	 *  Gets the size attribute of the LocalResourceSet object

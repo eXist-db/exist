@@ -209,7 +209,7 @@ public class Transform extends BasicFunction {
                 serializer.setProperties(serializeOptions);
                 if (expandXIncludes) {
                     XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
-                    xinclude.setXQueryContext(context);
+                    xinclude.setModuleLoadPath(context.getModuleLoadPath());
                     receiver = xinclude;
                 }
                 serializer.setReceiver(receiver);
@@ -270,7 +270,7 @@ public class Transform extends BasicFunction {
                     serializer.setProperties(serializeOptions);
                     if (expandXIncludes) {
                         XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
-                        xinclude.setXQueryContext(context);
+                        xinclude.setModuleLoadPath(context.getModuleLoadPath());
                         receiver = xinclude;
                     }
                     serializer.setReceiver(receiver);
@@ -298,7 +298,7 @@ public class Transform extends BasicFunction {
      */
     private TransformerHandler createHandler(Item stylesheetItem, Node options) throws TransformerFactoryConfigurationError, XPathException
     {
-    	SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactoryAllocator.getTransformerFactory(context.getBroker());
+    	SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
     	
 		TransformerHandler handler;
 		try

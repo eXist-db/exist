@@ -44,6 +44,7 @@ import org.exist.source.Source;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xmldb.LocalResourceSet;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
@@ -342,7 +343,9 @@ public class XQueryServlet extends HttpServlet {
         }
         if(actualUser == null) actualUser = user;
         if(actualPassword == null) actualPassword = password;
-        
+
+        String requestAttr = (String) request.getAttribute("xquery.attribute");
+
         try {
             Collection collection = DatabaseManager.getCollection(collectionURI.toString(), actualUser, actualPassword);
             XQueryService service = (XQueryService)
@@ -363,9 +366,13 @@ public class XQueryServlet extends HttpServlet {
                 if (!response.isCommitted())
                     response.setContentType(mediaType + "; charset=" + formEncoding);
             }
-            for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
-                Resource res = i.nextResource();
-                output.println(res.getContent().toString());
+            if (requestAttr != null && !((CollectionImpl)collection).isRemoteCollection()) {
+                request.setAttribute(requestAttr, ((LocalResourceSet)result).toSequence());
+            } else {
+                for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
+                    Resource res = i.nextResource();
+                    output.println(res.getContent().toString());
+                }
             }
         } catch (XMLDBException e) {
             LOG.debug(e);

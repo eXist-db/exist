@@ -103,7 +103,7 @@ public class XIncludeFilter implements Receiver {
     private Receiver receiver;
     private Serializer serializer;
     private DocumentImpl document = null;
-    private XQueryContext context = null;
+    private String moduleLoadPath = null;
     
     private HashMap namespaces = new HashMap(10);
 
@@ -134,8 +134,8 @@ public class XIncludeFilter implements Receiver {
         this.error = null;
     }
 
-    public void setXQueryContext(XQueryContext context) {
-        this.context = context;
+    public void setModuleLoadPath(String path) {
+        this.moduleLoadPath = path;
     }
     
     /* (non-Javadoc)
@@ -337,11 +337,11 @@ public class XIncludeFilter implements Receiver {
                 // we have to check if it is a relative path, and if yes, try to
                 // interpret it relative to the moduleLoadPath property of the current
                 // XQuery context.
-                if (scheme == null && context != null) {
+                if (scheme == null && moduleLoadPath != null) {
                     String path = externalUri.getSchemeSpecificPart();
                     File f = new File(path);
                     if (!f.isAbsolute()) {
-                        f = new File(context.getModuleLoadPath() + '/' + path);
+                        f = new File(moduleLoadPath + '/' + path);
                         externalUri = f.toURI();
                     }
                 }
