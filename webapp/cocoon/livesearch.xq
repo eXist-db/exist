@@ -1,5 +1,5 @@
 xquery version "1.0";
-(: $Id$ :)
+(: $Id: livesearch.xq 7972 2008-07-05 20:53:33Z brihaye $ :)
 
 declare namespace f="http://exist-db.org/xquery/test";
 declare namespace mods="http://www.loc.gov/mods/v3";

@@ -42,6 +42,33 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
+                            <link href="xquery/functions.xql">Built-in functions</link>
+                        </td>
+                        <td width="70%"> Display and search all functions currently registered with
+                        the database.</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/table.xql">Simple HTML Example</link>
+                        </td>
+                        <td width="70%"> Prints a table in HTML with 10x10 cells. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/fibo.xql">Fibonacci</link>
+                        </td>
+                        <td width="70%"> Calculates the first 10 Fibonacci numbers. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/acronyms.xql">XML Acronyms</link>
+                        </td>
+                        <td width="70%"> XQuery version of the <a
+                                href="http://www.xml-acronym-demystifier.org/"> XML Acronym
+                                Demystifier</a>, entirely implemented in XQuery. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
                             <link href="xquery/login.xql">Session example</link>
                         </td>
                         <td width="70%"> Presents a login page. Only valid database users can log
@@ -49,14 +76,14 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/hello.xq">Basic form example</link>
+                            <link href="xquery/hello.xql">Basic form example</link>
                         </td>
                         <td width="70%"> Presents a form page. The response echoes the name entered.
                         </td>
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/hello-plural-db.xq">Form example with XUpdate</link>
+                            <link href="xquery/hello-plural-db.xql">Form example with XUpdate</link>
                         </td>
                         <td width="70%"> Presents a form page. The response echoes all the names
                             entered since database creation. </td>
@@ -93,6 +120,13 @@
                         query determines where the request is directed to. This happens transparently
                         to the client.</td>
                     </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/biblio.xml">Bibliography 2</link>
+                        </td>
+                        <td width="70%"> Another bibliographic demo from
+                            previous releases of eXist. No AJAX.</td>
+                    </tr>
                 </table>
             </section>
 
@@ -100,45 +134,11 @@
                 <table border="0" width="100%" cellspacing="10">
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/table.xq">Simple HTML Example</link>
-                        </td>
-                        <td width="70%"> Prints a table in HTML with 10x10 cells. </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/fibo.xq">Fibonacci</link>
-                        </td>
-                        <td width="70%"> Calculates the first 10 Fibonacci numbers. </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/functions.xq">Built-in functions</link>
-                        </td>
-                        <td width="70%"> Display and search all functions currently registered with
-                        the database.</td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/acronyms.xq">XML Acronyms</link>
-                        </td>
-                        <td width="70%"> XQuery version of the <a
-                                href="http://www.xml-acronym-demystifier.org/"> XML Acronym
-                                Demystifier</a>, entirely implemented in XQuery. </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="mods/">Bibliography</link>
+                            <link href="cocoon/biblio.xq">Bibliography</link>
                         </td>
                         <td width="70%"> A bibliographic demo, based on the MODS bibliographic
                             format, which is maintained by the Library of Congress. Shows session
                             handling and user authentication as well as some AJAX goodies. </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/biblio.xml">Bibliography 2</link>
-                        </td>
-                        <td width="70%"> Another bibliographic demo from
-                            previous releases of eXist. No AJAX.</td>
                     </tr>
                 </table>
             </section>
@@ -183,7 +183,7 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xmldb/db/">Cocoon-based Database Browser</link>
+                            <link href="cocoon/xmldb/db/">Cocoon-based Database Browser</link>
                         </td>
                         <td width="70%">A database browser which uses Cocoon's <code>xmldb://</code>
                             pseudo-protocol and XSL stylesheets for the rendering.</td>
@@ -194,7 +194,7 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="acronyms/query.xsp">XML Acronyms</link>
+                            <link href="cocoon/query.xsp">XML Acronyms</link>
                         </td>
                         <td width="70%"> An XSP-based version of the <link
                                 href="http://www.acronym-demystifier.org">XML Acronym

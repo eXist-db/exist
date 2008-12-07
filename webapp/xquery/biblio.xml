@@ -5,7 +5,7 @@
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
   
    <!-- include header -->
-   <xi:include href="context://header.xml"/>
+   <xi:include href="header.xml"/>
        
    <!-- include sidebar -->
    <xi:include href="sidebar.xml"/>
@@ -19,7 +19,7 @@
    <p>The sample collection contains 71098 book description (in RDF/XML)
    taken from our local university library.</p>
    
-   <form action="biblio.xq" method="GET">
+   <form action="biblio.xql" method="GET">
          
      <table width="90%" cellpadding="5" cellspacing="0" border="0" bgcolor="#EEEEEE">
        <tr bgcolor="#99CCFF">

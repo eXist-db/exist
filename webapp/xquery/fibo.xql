@@ -1,5 +1,5 @@
 xquery version "1.0";
-(: $Id$ :)
+(: $Id: fibo.xq 6434 2007-08-28 18:59:23Z ellefj $ :)
 (: computes the first 10 fibonacci numbers :)
 
 declare namespace f="http://exist-db.org/NS/fibo";
@@ -27,7 +27,7 @@ declare function f:fibo($n as xs:integer) as item() {
 		</table>
 
 		<p>
-			<small>View <a href="source/fibo.xq">source code</a>
+			<small>View <a href="fibo.xql?_source=yes">source code</a>
 			</small>
 		</p>
 	</body>

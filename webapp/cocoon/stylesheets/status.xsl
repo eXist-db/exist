@@ -58,6 +58,10 @@
 		          	font-size: 16pt;
 		          }
 		          
+				  table.shutdown {
+					  background-color: #6666AA;
+				  }
+
 		          span.display {
 		          	color: #FFFFFF;
 		          }
@@ -151,7 +155,7 @@
 					</tr>
 				</table>
 				<p></p>
-				<table border="0" width="650" cellpadding="0" cellspacing="0">
+				<table class="shutdown" border="0" width="650" cellpadding="0" cellspacing="0">
 					<tr bgcolor="6666AA">
 						<form action="shutdown" method="POST">
 						<td>

@@ -1,5 +1,5 @@
 xquery version "1.0";
-(: $Id$ :)
+(: $Id: biblio.xq 7220 2008-01-14 10:50:38Z wolfgang_m $ :)
 
 declare namespace bib="http://exist-db.org/bibliography";
 

@@ -289,6 +289,7 @@ let $pos := xs:integer(request:get-parameter("num", ()))
 let $save := request:get-parameter("save", ())
 let $query := request:get-parameter("qu", ())
 let $check := request:get-parameter("check", ())
+let $log := util:log("DEBUG", ("$query: ", $query, " $check: ", $check))
 let $export := request:get-parameter("export", ())
 return
     if ($save) then

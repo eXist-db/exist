@@ -2,7 +2,7 @@
     Search the built-in function library
 :)
 xquery version "1.0";
-(: $Id$ :)
+(: $Id: functions.xq 8359 2008-12-03 20:31:47Z wolfgang_m $ :)
 
 declare namespace xqdoc="http://www.xqdoc.org/1.0";
 
@@ -116,7 +116,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
             <title>XQuery Function Documentation</title>
             {
                 if ($askPass) then
-                    <form id="f-pass" name="f-pass" action="functions.xq" method="POST">
+                    <form id="f-pass" name="f-pass" action="functions.xql" method="POST">
                         <para>The function documentation needs to be generated first,
                         which requires administrator rights. Please enter the
                         password for the admin user below:</para>

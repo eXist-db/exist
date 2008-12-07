@@ -1,5 +1,5 @@
 xquery version "1.0";
-(: $Id$ :)
+(: $Id: display.xq 6434 2007-08-28 18:59:23Z ellefj $ :)
 
 module namespace display="http://exist-db.org/biblio/display";
 

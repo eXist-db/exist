@@ -6,8 +6,8 @@
   xmlns:exist="http://exist.sourceforge.net/NS/exist"
   version="1.0">
   
-  	<xsl:preserve-space elements="*"/>
-  	
+    <xsl:output method="xml" media-type="text/html"/>
+
   	<xsl:template match="entries">
   		<table border="0" cellspacing="15" cellpadding="10">
   			<xsl:apply-templates select="xmlad:Entry"/>
@@ -56,6 +56,14 @@
   		</tr>
   	</xsl:template>
   	
+	<xsl:template match="xmlad:Acronym">
+		<xsl:apply-templates/>
+	</xsl:template>
+
+	<xsl:template match="xmlad:Definition">
+		<xsl:apply-templates/>
+	</xsl:template>
+
   	<xsl:template match="xmlad:a">
   		<xsl:text> </xsl:text>
   		<xsl:choose>
