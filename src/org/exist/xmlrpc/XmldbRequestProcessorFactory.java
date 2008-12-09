@@ -39,7 +39,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
 
     private final static Logger LOG = Logger.getLogger(XmldbRequestProcessorFactory.class);
     
-    public final static int CHECK_INTERVAL = 2000;
+    public final static int CHECK_INTERVAL = 400;
 
     protected BrokerPool brokerPool;
 
