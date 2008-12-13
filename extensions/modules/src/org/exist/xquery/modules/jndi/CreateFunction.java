@@ -64,7 +64,8 @@ public class CreateFunction extends BasicFunction
 					new QName( "create", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 							"Create a JNDI Directory entry. $a is the directory context handle from a jndi:get-dir-context() call. $b is the DN. Expects "
 							+ " entry attributes to be set in $c in the"
-							+ " form <attributes><attribute name=\"\" value=\"\"/></attributes>. ",
+							+ " form <attributes><attribute name=\"\" value=\"\"/></attributes>. "
+							+ " You can also optionally specify ordered=\"true\" for an attribute.",
 					new SequenceType[] {
 							new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ), 
 							new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ), 
