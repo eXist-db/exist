@@ -38,6 +38,7 @@ import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
+import org.exist.util.UTF8;
 import org.w3c.dom.Node;
 
 import javax.xml.stream.XMLStreamException;
@@ -304,10 +305,10 @@ public class ConsistencyCheck {
             CollectionStore store = (CollectionStore) ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             int collectionId = CollectionStore.DocumentKey.getCollectionId(key);
             int docId = CollectionStore.DocumentKey.getDocumentId(key);
+            DocumentImpl doc = null;
             try {
                 byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
                 VariableByteInput istream = store.getAsStream(pointer);
-                DocumentImpl doc = null;
                 if (type == DocumentImpl.BINARY_FILE)
                     doc = new BinaryDocument(broker.getBrokerPool());
                 else
@@ -320,8 +321,10 @@ public class ConsistencyCheck {
                     if (type == DocumentImpl.XML_FILE) {
                         ErrorReport report = checkXMLTree(doc);
                         if (report != null) {
-                            if (report instanceof ErrorReport.ResourceError)
+                            if (report instanceof ErrorReport.ResourceError) {
                                 ((ErrorReport.ResourceError)report).setDocumentId(docId);
+                                ((ErrorReport.ResourceError)report).setResourceDesc(getResourceDescription(docId, doc, collectionId));
+                            }
                             if (errors != null)
                                 errors.add(report);
                             if (progress != null)
@@ -334,10 +337,61 @@ public class ConsistencyCheck {
                 org.exist.backup.ErrorReport.ResourceError error =
                         new org.exist.backup.ErrorReport.ResourceError(org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
                 error.setDocumentId(docId);
+                error.setResourceDesc(getResourceDescription(docId, doc, collectionId));
                 if (errors != null)
                     errors.add(error);
                 if (progress != null)
                     progress.error(error);
+            }
+            return true;
+        }
+    }
+
+    private String getResourceDescription(int docId, DocumentImpl doc, int collectionId) {
+        String collUri = getCollectionForId(collectionId);
+        if (doc == null) {
+            if (collUri != null)
+                return "document id: " + docId + " in collection " + collUri;
+            return "document id: " + docId;
+        }
+        if (collUri == null)
+            return "document name: " + doc.getFileURI().toString();
+        else
+            return "document path: " + XmldbURI.createInternal(collUri).append(doc.getFileURI()).toString();
+    }
+
+    private String getCollectionForId(int id) {
+        CollectionCallback cb = new CollectionCallback(id);
+        broker.getCollectionsFailsafe(cb);
+        return cb.uri;
+    }
+
+    private class CollectionCallback implements BTreeCallback {
+
+        int targetId;
+        String uri = null;
+
+        public CollectionCallback(int id) {
+            this.targetId = id;
+        }
+
+        public boolean indexInfo(Value value, long pointer) throws TerminatedException {
+            String uri = UTF8.decode(value.data(), value.start() + CollectionStore.CollectionKey.OFFSET_VALUE,
+                        value.getLength() - CollectionStore.CollectionKey.OFFSET_VALUE).toString();
+            if (CollectionStore.NEXT_COLLECTION_ID_KEY.equals(uri) || CollectionStore.NEXT_DOC_ID_KEY.equals(uri) ||
+                    CollectionStore.FREE_COLLECTION_ID_KEY.equals(uri) || CollectionStore.FREE_DOC_ID_KEY.equals(uri))
+                return true;
+            CollectionStore store = (CollectionStore) ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
+            Collection collection = new Collection(XmldbURI.createInternal(uri));
+            try {
+                VariableByteInput istream = store.getAsStream(pointer);
+                collection.read(broker, istream);
+                if (collection.getId() == targetId) {
+                    this.uri = uri;
+                    return false;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             return true;
         }
