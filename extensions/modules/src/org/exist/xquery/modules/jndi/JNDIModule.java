@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 
 import org.apache.log4j.Logger;
@@ -283,8 +284,9 @@ public class JNDIModule extends AbstractInternalModule
 				for( int i = 0; i < attrs.getLength(); i++ ) {
 					Element attr = ((Element)attrs.item( i ));
 	
-					String name  = attr.getAttribute( "name" );
-					String value = attr.getAttribute( "value" );
+					String name  	= attr.getAttribute( "name" );
+					String value 	= attr.getAttribute( "value" );
+					String ordered 	= attr.getAttribute( "ordered" );
 	
 					if( name != null && value != null ) {
 						Attribute existingAttr = attributes.get( name );
@@ -292,7 +294,7 @@ public class JNDIModule extends AbstractInternalModule
 						if( existingAttr != null ) {
 							existingAttr.add( value );
 						} else {
-							attributes.put( name, value );
+							attributes.put( new BasicAttribute( name, value, ordered != null && ordered.equalsIgnoreCase( "true" ) ) );
 						}
 					} else {
 						LOG.warn( "Name or value attribute missing for attribute" );

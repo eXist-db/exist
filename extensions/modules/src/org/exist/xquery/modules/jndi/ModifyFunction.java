@@ -26,6 +26,7 @@ package org.exist.xquery.modules.jndi;
 import java.util.ArrayList;
 
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
@@ -71,7 +72,8 @@ public class ModifyFunction extends BasicFunction
 					new QName( "modify", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 							"Modify a JNDI Directory entry. $a is the directory context handle from a jndi:get-dir-context() call. $b is the DN. Expects "
 							+ " entry attributes to be set in $c in the"
-							+ " form <attributes><attribute name=\"\" value=\"\" operation=\"add | replace | remove\"/></attributes>. ",
+							+ " form <attributes><attribute name=\"\" value=\"\" operation=\"add | replace | remove\"/></attributes>. "
+							+ " You can also optionally specify ordered=\"true\" for an attribute.",
 					new SequenceType[] {
 							new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ), 
 							new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ), 
@@ -158,9 +160,10 @@ public class ModifyFunction extends BasicFunction
 				for( int i = 0; i < attrs.getLength(); i++ ) {
 					Element attr = ((Element)attrs.item( i ));
 	
-					String name  = attr.getAttribute( "name" );
-					String value = attr.getAttribute( "value" );
-					String op 	 = attr.getAttribute( "operation" );
+					String name  	= attr.getAttribute( "name" );
+					String value 	= attr.getAttribute( "value" );
+					String op 	 	= attr.getAttribute( "operation" );
+					String ordered 	= attr.getAttribute( "ordered" );
 	
 					if( name != null && value != null && op != null ) {
 						int opCode = 0;
@@ -173,14 +176,38 @@ public class ModifyFunction extends BasicFunction
 							opCode = 3;
 						}
 						
+						
+						
 						if( opCode == 0 ) {
 							LOG.error( "jndi:modify() - Invalid operation code: [" + op + "]" );
 							throw( new XPathException( getASTNode(), "jndi:modify() - Invalid operation code: [" + op + "]" ) );
 						}
-
-						ModificationItem item =	new ModificationItem( opCode, new BasicAttribute( name, value ) );
 						
-						items.add( item );
+						Attribute existingAttr = null;
+						
+						// Scan the existing list of ModificationItems backwards for one that matches the name we're trying to add.
+						// If the last such entry matches the opCode, then just add the value to the existing attribute (ModItem),
+						// Otherwise create a new ModificationItem.
+						//
+						// This basically collapses nearby identically named attributes that have the same opCode into one.
+						
+						for( int j = items.size() - 1; j >= 0; j-- ) {
+							ModificationItem item  = (ModificationItem)items.get( j );
+							
+							if( name.equals( item.getAttribute().getID() ) ) {
+								if( item.getModificationOp() == opCode ) {
+									existingAttr = item.getAttribute();
+								} 
+								
+								break;
+							} 
+						}
+			
+						if( existingAttr != null ) {
+							existingAttr.add( value );
+						} else {
+							items.add( new ModificationItem( opCode, new BasicAttribute( name, value, ordered != null && ordered.equalsIgnoreCase( "true" ) ) ) );
+						}
 					} else {
 						LOG.warn( "Name, value or operation attribute missing for attribute" );
 					}
