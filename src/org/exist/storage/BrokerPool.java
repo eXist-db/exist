@@ -55,6 +55,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.ReadOnlyException;
@@ -1476,8 +1477,9 @@ public class BrokerPool {
 		//collectionCache.something();
 		//xmlReaderPool.close();
 
-        transactionManager.getJournal().flushToLog(true, true);
-
+        if (isTransactional())
+            transactionManager.getJournal().flushToLog(true, true);
+        
         boolean hangingThreads = false;
 		long waitStart = System.currentTimeMillis();
 		//Are there active brokers ?
