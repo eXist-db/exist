@@ -123,7 +123,9 @@ public class ModifyFunction extends BasicFunction
 				} else {	
 					ModificationItem[] items = parseAttributes( args[ 2 ] );
 					
-					ctx.modifyAttributes( dn, items );
+					if( items.length > 0 ) {
+						ctx.modifyAttributes( dn, items );
+					}
 				}
 			}
 			catch( NamingException ne ) {
@@ -176,8 +178,6 @@ public class ModifyFunction extends BasicFunction
 							opCode = 3;
 						}
 						
-						
-						
 						if( opCode == 0 ) {
 							LOG.error( "jndi:modify() - Invalid operation code: [" + op + "]" );
 							throw( new XPathException( getASTNode(), "jndi:modify() - Invalid operation code: [" + op + "]" ) );
@@ -189,13 +189,13 @@ public class ModifyFunction extends BasicFunction
 						// If the last such entry matches the opCode, then just add the value to the existing attribute (ModItem),
 						// Otherwise create a new ModificationItem.
 						//
-						// This basically collapses nearby identically named attributes that have the same opCode into one.
+						// This basically collapses nearby identically named attributes that have the same opCode into one, except for removes
 						
 						for( int j = items.size() - 1; j >= 0; j-- ) {
 							ModificationItem item  = (ModificationItem)items.get( j );
 							
 							if( name.equals( item.getAttribute().getID() ) ) {
-								if( item.getModificationOp() == opCode ) {
+								if( item.getModificationOp() == opCode && opCode != 3 ) {
 									existingAttr = item.getAttribute();
 								} 
 								

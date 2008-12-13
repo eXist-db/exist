@@ -115,7 +115,11 @@ public class CreateFunction extends BasicFunction
 				} else {	
 					BasicAttributes attributes = JNDIModule.parseAttributes( args[ 2 ] );
 					
-					ctx.createSubcontext( dn, attributes );
+					if( attributes.size() > 0 ) {
+						ctx.createSubcontext( dn, attributes );
+					} else {
+						ctx.createSubcontext( dn );
+					}
 				}
 			}
 			catch( NamingException ne ) {
