@@ -1,29 +1,19 @@
 package org.exist.fluent;
 
-import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.triggers.DocumentTrigger;
+import java.io.IOException;
+import java.util.*;
+
+import javax.xml.datatype.*;
+
+import org.exist.collections.*;
+import org.exist.collections.triggers.*;
 import org.exist.collections.triggers.Trigger;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NodeList;
-
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
+import org.exist.xquery.value.*;
+import org.w3c.dom.*;
 
 /**
  * A node in the database.  Nodes are most often contained in XML documents, but can also
@@ -112,6 +102,23 @@ public class Node extends Item {
 		} else {
 			return item.hashCode();
 		}
+	}
+	
+	/**
+	 * Return the namespace bindings in force in the scope of this node.  Only works on nodes
+	 * that are XML elements.  Namespaces reserved by the XML spec, and implicitly in scope
+	 * for all XML elements, are not reported.
+	 *
+	 * @return the namespace bindings in force for this node
+	 */
+	public NamespaceMap inScopeNamespaces() {
+		NamespaceMap namespaceMap = new NamespaceMap();
+		for (Iterator<String> it = query().all(
+				"for $prefix in in-scope-prefixes($_1) return ($prefix, namespace-uri-for-prefix($prefix, $_1))", this).values().iterator(); it.hasNext(); ) {
+			String prefix = it.next(), namespace = it.next();
+			if (!NamespaceMap.isReservedPrefix(prefix)) namespaceMap.put(prefix, namespace);
+		}
+		return namespaceMap;
 	}
 	
 	/**
@@ -355,11 +362,11 @@ public class Node extends Item {
 	private DocumentTrigger fireTriggerBefore(Transaction tx) throws TriggerException {
 		if (!(item instanceof NodeProxy)) return null;
 		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
-        DBBroker broker = null;
+		DBBroker broker = null;
 		try {
-            broker = db.acquireBroker();
-            CollectionConfiguration config = docimpl.getCollection().getConfiguration(broker);
-            if (config == null) return null;
+			broker = db.acquireBroker();
+			CollectionConfiguration config = docimpl.getCollection().getConfiguration(broker);
+			if (config == null) return null;
 			DocumentTrigger trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, docimpl.getCollection());
 			if (trigger == null) return null;
 			trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, broker, tx.tx, docimpl.getURI(), docimpl);
@@ -367,21 +374,21 @@ public class Node extends Item {
 		} catch (CollectionConfigurationException e) {
 			throw new DatabaseException(e);
 		} finally {
-            db.releaseBroker(broker);
-        }
+			db.releaseBroker(broker);
+		}
 	}
 	
 	private void fireTriggerAfter(Transaction tx, DocumentTrigger trigger) {
 		if (trigger == null) return;
-        DBBroker broker = null;
-        try {
-            broker = db.acquireBroker();
-            DocumentImpl docimpl = ((NodeProxy) item).getDocument();
-            trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, broker, tx.tx, docimpl.getURI(), docimpl);
-        } finally {
-            db.releaseBroker(broker);
-        }
-    }
+		DBBroker broker = null;
+		try {
+			broker = db.acquireBroker();
+			DocumentImpl docimpl = ((NodeProxy) item).getDocument();
+			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, broker, tx.tx, docimpl.getURI(), docimpl);
+		} finally {
+			db.releaseBroker(broker);
+		}
+	}
 
 	private void defrag(Transaction tx) {
 		if (!(item instanceof NodeProxy)) return;
@@ -428,6 +435,7 @@ public class Node extends Item {
 		@Override public boolean extant() {return Item.NULL.extant();}
 		@Override public QueryService query() {return Item.NULL.query();}
 		@Override public String value() {return Item.NULL.value();}
+		@Override public String valueWithDefault(String defaultValue) {return Item.NULL.value();}
 		@Override	Sequence convertToSequence() {return Item.NULL.convertToSequence();}
 		
 		@Override public String toString() {	return "NULL Node";}

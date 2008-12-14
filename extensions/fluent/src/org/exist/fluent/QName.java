@@ -100,6 +100,15 @@ public class QName extends javax.xml.namespace.QName implements Comparable<QName
 	}
 	
 	/**
+	 * Get the XML tag for this qualified name, either prefix:localName or just localName if there
+	 * is no prefix.  Be careful: this tag is dependent on namespace context for correct interpretation.
+	 * @return the XML tag for this qname, based on the qualified name's prefix and localName 
+	 */
+	public String getTag() {
+		return tag;
+	}
+	
+	/**
 	 * Return the qualified name of the given node.
 	 *
 	 * @param node the target node

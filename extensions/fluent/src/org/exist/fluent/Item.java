@@ -142,6 +142,15 @@ public class Item extends Resource {
 	}
 	
 	/**
+	 * @param defaultValue the default value to return if the item is null (unbound)
+	 * @return the string value of this item if atomic, or the concatenation of its text content if a node,
+	 * 		or the given default value if this is a null item
+	 */
+	public String valueWithDefault(String defaultValue) {
+		return value();
+	}
+	
+	/**
 	 * Return the converted boolean value following XQuery / XPath conversion rules.
 	 * For numeric values, return false iff the value is 0.  For strings, return true if
 	 * the value is 'true' or '1' and false if the value is 'false' or '0', fail otherwise.  For
@@ -315,6 +324,7 @@ public class Item extends Resource {
 		@Override public boolean extant() {return false;}
 		@Override public QueryService query() {return QueryService.NULL;}
 		@Override public String value() {return null;}
+		@Override public String valueWithDefault(String defaultValue) {return defaultValue;}
 		@Override public String toString() {return "NULL item";}
 		@Override	Sequence convertToSequence() {return Sequence.EMPTY_SEQUENCE;}
 	};
