@@ -3010,6 +3010,29 @@ public class XQueryTest extends XMLTestCase {
     }
 
 
+    // http://sourceforge.net/support/tracker.php?aid=2429093
+    public void bugtestXPTY0018_mixedsequences_2429093() {
+
+        try {
+            String query = "declare variable $a := <A><B/></A>;\n" +
+                    "($a/B, \"delete\") ";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(2, result.getSize());
+            assertEquals(query, "<B/>",
+                    result.getResource(0).getContent().toString());
+            assertEquals(query, "delete",
+                    result.getResource(0).getContent().toString());
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
+
     // ======================================
     /**
      * @return
