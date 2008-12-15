@@ -481,7 +481,7 @@
               <varlistentry>
                   <term>queryUri</term>
                   <listitem>
-                      <para>The query to be processed specified a URI.</para>
+                      <para>The query to be processed specified as a URI.</para>
                   </listitem>
               </varlistentry>
               <varlistentry>
