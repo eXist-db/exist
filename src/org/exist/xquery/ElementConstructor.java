@@ -244,23 +244,21 @@ public class ElementConstructor extends NodeConstructor {
             if(!XMLChar.isValidName(qn.getLocalName()))
 			throw new XPathException(getASTNode(), "XPTY0004 '" + qnitem.getStringValue() + "' is not a valid element name");
 
-			/* Temporarily commented out, till we can fix the duplicate default namespace generation bug that this code introduced
+            // add namespace declaration nodes
+            int nodeNr = builder.startElement(qn, attrs);
+            if(namespaceDecls != null) {
+                for(int i = 0; i < namespaceDecls.length; i++) {
+                    builder.namespaceNode(namespaceDecls[i]);
+                }
+            }
+            // do we need to add a namespace declaration for the current node?
             if (qn.needsNamespaceDecl()) {
                 if (context.getInScopePrefix(qn.getNamespaceURI()) == null) {
                     String prefix = qn.getPrefix();
                     if (prefix == null || prefix.length() == 0)
                         prefix = "";
                     context.declareInScopeNamespace(prefix, qn.getNamespaceURI());
-                    addNamespaceDecl(new QName(prefix, qn.getNamespaceURI(), "xmlns"));
-                }
-            }
-			*/
-
-            // add namespace declaration nodes
-            int nodeNr = builder.startElement(qn, attrs);
-            if(namespaceDecls != null) {
-                for(int i = 0; i < namespaceDecls.length; i++) {
-                    builder.namespaceNode(namespaceDecls[i]);
+                    builder.namespaceNode(new QName(prefix, qn.getNamespaceURI(), "xmlns"));
                 }
             }
             // process element contents
