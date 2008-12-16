@@ -3011,7 +3011,7 @@ public class XQueryTest extends XMLTestCase {
 
 
     // http://sourceforge.net/support/tracker.php?aid=2429093
-    public void bugtestXPTY0018_mixedsequences_2429093() {
+    public void testXPTY0018_mixedsequences_2429093() {
 
         try {
             String query = "declare variable $a := <A><B/></A>;\n" +
@@ -3024,7 +3024,7 @@ public class XQueryTest extends XMLTestCase {
             assertEquals(query, "<B/>",
                     result.getResource(0).getContent().toString());
             assertEquals(query, "delete",
-                    result.getResource(0).getContent().toString());
+                    result.getResource(1).getContent().toString());
 
         } catch (XMLDBException ex) {
             ex.printStackTrace();

@@ -252,7 +252,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 //it looks like an empty sequence could be considered as a sub-type of Type.NODE
                 //well, no so stupid I think...    
                 if (steps.size() > 1 && !(result instanceof VirtualNodeSet) && !result.isEmpty() &&
-                        !Type.subTypeOf(result.getItemType(), Type.NODE))
+                        Type.subTypeOf(result.getItemType(), Type.ATOMIC))
                     gotAtomicResult = true;
 
                 if(steps.size() > 1)
