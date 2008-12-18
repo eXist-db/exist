@@ -204,7 +204,7 @@ as element() {
 };
 
 let $askPass :=
-    if (empty(collection($dq:COLLECTION))) then
+    if (not(xdb:collection-available($dq:COLLECTION))) then
         let $adminPass := request:get-parameter("pass", ())
         let $generate := request:get-parameter("generate", ())
         return
