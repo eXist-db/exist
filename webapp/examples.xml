@@ -26,26 +26,37 @@
                         </td>
                     </tr>
                     <tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/guess.xql">Guess a Number</link>
-                            </td>
-                            <td width="70%"> Simple number guessing game to illustrate different
-                                servlet features. </td>
-                        </tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/transform.xql">Built-in functions</link>
+                            <link href="xquery/guess.xql">Guess a Number</link>
                         </td>
-                        <td width="70%"> Extracts the function documentation for all available functions. It uses the transform function to transform XML output into HTML using an XSL
-                            stylesheet (also check the <link href="xquery/functions.xq">function search</link>
-                            interface.</td>
+                        <td width="70%"> Simple number guessing game to illustrate different
+                            servlet features. </td>
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/functions.xql">Built-in functions</link>
+                            <link href="xquery/functions.xql">XQuery Function Library Search</link>
                         </td>
-                        <td width="70%"> Display and search all functions currently registered with
-                        the database.</td>
+                        <td width="70%">The search interface for XQuery functions demonstrates usage of 
+                            the NGram index or AJAX. The function documentation is generated once from
+                            the Java classes and stored in XQDoc format.</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="search.xql">Search the Documentation</link>
+                        </td>
+                        <td width="70%">
+                            A not too complex example featuring full text queries and
+                            post-processing of query results to show keywords in context. 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/transform.xql">Built-in functions</link>
+                        </td>
+                        <td width="70%">A simple example which lists all functions in the built-in XQuery function library.
+                            It uses the transform function to transform XML output into HTML using an XSL
+                            stylesheet (also check the <link href="xquery/functions.xq">function search</link>
+                            interface.</td>
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
@@ -130,21 +141,6 @@
                 </table>
             </section>
 
-            <section title="XQueryGenerator (using Cocoon)">
-                <table border="0" width="100%" cellspacing="10">
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="cocoon/biblio.xq">Bibliography</link>
-                        </td>
-                        <td width="70%"> A bibliographic demo, based on the MODS bibliographic
-                            format, which is maintained by the Library of Congress. Shows session
-                            handling and user authentication as well as some AJAX goodies. </td>
-                    </tr>
-                </table>
-            </section>
-
-
-
             <section title="Misc Examples">
                 <table border="0" width="100%" cellspacing="10">
                     <tr>
@@ -179,6 +175,14 @@
 
                 <table border="0" width="100%" cellspacing="10">
                     <tr>
+                        <td width="30%" valign="top">
+                            <link href="cocoon/biblio.xq">Bibliography</link>
+                        </td>
+                        <td width="70%"> A bibliographic demo, based on the MODS bibliographic
+                            format, which is maintained by the Library of Congress. Shows session
+                            handling and user authentication as well as some AJAX goodies. </td>
+                    </tr>
+                    <tr>
                         <th align="left" colspan="2"> Cocoon XML:DB Pseudo-Protocol </th>
                     </tr>
                     <tr>
@@ -203,6 +207,21 @@
                     </tr>
                 </table>
             </section>
+            
+            <section title="External Examples">
+                <table border="0" width="100%" cellspacing="10">
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="http://atomic.exist-db.org/atomic/AtomicWikiFeatures">AtomicWiki</link>
+                        </td>
+                        <td width="70%">AtomicWiki is a combined Wiki and Weblog entirely
+                            written in XQuery (and some XSLT) and using XQuery as a scripting
+                            language within Wiki entries and Blog posts.
+                        </td>
+                    </tr>
+                </table>
+            </section>
+            
         </section>
     </body>
 </document>
