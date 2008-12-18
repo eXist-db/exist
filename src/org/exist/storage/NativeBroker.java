@@ -2030,14 +2030,18 @@ public class NativeBroker extends DBBroker {
                 InputStream is = getBinaryResource((BinaryDocument) doc); 
                 destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
             } else {
-            	//TODO : put a lock on newDoc ?
                 DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
-                newDoc.setPermissions(doc.getPermissions()); 
-                copyXMLResource(transaction, doc, newDoc);
-                destination.addDocument(transaction, this, newDoc);
-                storeXMLResource(transaction, newDoc);
+                newDoc.setPermissions(doc.getPermissions());
+                newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                try {
+	                copyXMLResource(transaction, doc, newDoc);
+	                destination.addDocument(transaction, this, newDoc);
+	                storeXMLResource(transaction, newDoc);
+                } finally {
+               	 newDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                }
             }
 	    //          saveCollection(destination);
         } catch (EXistException e) {

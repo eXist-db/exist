@@ -188,6 +188,7 @@ public class Node extends Item {
 				public Node completed(org.w3c.dom.Node[] nodes) {
 					Transaction tx = Database.requireTransaction();
 					try {
+						tx.lockWrite(node.getDocument());
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						StoredNode result = null;
 						if (nodes.length == 1) {
@@ -242,6 +243,7 @@ public class Node extends Item {
 		} else {
 			Transaction tx = Database.requireTransaction();
 			try {
+				if (parent instanceof StoredNode) tx.lockWrite(((StoredNode) parent).getDocument());
 				DocumentTrigger trigger = fireTriggerBefore(tx);
 				parent.removeChild(tx.tx, child);
 				fireTriggerAfter(tx, trigger);
@@ -296,8 +298,9 @@ public class Node extends Item {
 					assert nodes.length == 1;
 					Transaction tx = Database.requireTransaction();
 					try {
-						DocumentTrigger trigger = fireTriggerBefore(tx);
 						DocumentImpl doc = (DocumentImpl) oldNode.getOwnerDocument();
+						tx.lockWrite(doc);
+						DocumentTrigger trigger = fireTriggerBefore(tx);
 						((NodeImpl) oldNode.getParentNode()).replaceChild(tx.tx, nodes[0], oldNode);
 						doc.getMetadata().setLastModified(System.currentTimeMillis());
 						defrag(tx);
@@ -337,9 +340,11 @@ public class Node extends Item {
 				public void completed(NodeList removeList, NodeList addList) {
 					Transaction tx = Database.requireTransaction();
 					try {
+						DocumentImpl doc = (DocumentImpl) elem.getOwnerDocument();
+						tx.lockWrite(doc);
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						elem.removeAppendAttributes(tx.tx, removeList, addList);
-						((DocumentImpl) elem.getOwnerDocument()).getMetadata().setLastModified(System.currentTimeMillis());
+						doc.getMetadata().setLastModified(System.currentTimeMillis());
 						defrag(tx);
 						fireTriggerAfter(tx, trigger);
 						tx.commit();

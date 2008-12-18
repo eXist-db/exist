@@ -1045,6 +1045,7 @@ public class Folder extends NamedResource implements Cloneable {
 	void removeDocument(DocumentImpl dimpl) {
 		transact(Lock.WRITE_LOCK);
 		try {
+			tx.lockWrite(dimpl);
 			if (dimpl instanceof BinaryDocument) {
 				handle.removeBinaryResource(tx.tx, broker, dimpl.getFileURI());
 			} else {
@@ -1069,8 +1070,10 @@ public class Folder extends NamedResource implements Cloneable {
 			name.setContext(handle);
 			uri = XmldbURI.create(name.get());
 			if (copy) {
+				tx.lockRead(doc);
 				broker.copyXMLResource(tx.tx, doc, handle, uri);
 			} else {
+				tx.lockWrite(doc);
 				broker.moveXMLResource(tx.tx, doc, handle, uri);
 			}
 			commit();
