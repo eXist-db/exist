@@ -1,6 +1,9 @@
 package org.exist.fluent;
 
+import org.exist.dom.DocumentImpl;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.*;
+import org.exist.util.LockException;
 
 /**
  * A transaction on the database.  This can be either a top-level transaction, or a "nested"
@@ -54,4 +57,19 @@ class Transaction {
 		complete = true;
 	}
 	
+	void lockWrite(DocumentImpl doc) {
+		try {
+			tx.acquireLock(doc.getUpdateLock(), Lock.WRITE_LOCK);
+		} catch (LockException e) {
+			throw new DatabaseException(e);
+		}
+	}
+	
+	void lockRead(DocumentImpl doc) {
+		try {
+			tx.acquireLock(doc.getUpdateLock(), Lock.READ_LOCK);
+		} catch (LockException e) {
+			throw new DatabaseException(e);
+		}		
+	}
 }
