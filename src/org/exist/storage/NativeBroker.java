@@ -82,9 +82,10 @@ import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.TerminatedException;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
@@ -523,7 +524,7 @@ public class NativeBroker extends DBBroker {
 	throws IOException, XMLStreamException {
         if (streamReader == null) {
             RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
-            streamReader = new EmbeddedXMLStreamReader(this, (DocumentImpl) node.getOwnerDocument(), iterator, reportAttributes);
+            streamReader = new EmbeddedXMLStreamReader(this, (DocumentImpl) node.getOwnerDocument(), iterator, node, null, reportAttributes);
         } else {
             streamReader.reposition(this, node, reportAttributes);
         }
@@ -534,7 +535,7 @@ public class NativeBroker extends DBBroker {
 	throws IOException, XMLStreamException {
         if (streamReader == null) {
             RawNodeIterator iterator = new RawNodeIterator(this, domDb, proxy);
-            streamReader = new EmbeddedXMLStreamReader(this, (DocumentImpl) proxy.getOwnerDocument(), iterator, reportAttributes);
+            streamReader = new EmbeddedXMLStreamReader(this, (DocumentImpl) proxy.getOwnerDocument(), iterator, null, proxy, reportAttributes);
         } else {
             streamReader.reposition(this, proxy, reportAttributes);
         }
@@ -3036,22 +3037,39 @@ public class NativeBroker extends DBBroker {
 	    .run();
     }
 
-    public StoredNode objectWith(final NodeProxy p) {       
+    public StoredNode objectWith(final NodeProxy p) {
 	if (p.getInternalAddress() == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
 	    return objectWith(p.getDocument(), p.getNodeId());
 	return (StoredNode) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 		public Object start() {
-		    Value val = domDb.get(p.getInternalAddress());
+		    // DocumentImpl sets the nodeId to DOCUMENT_NODE when it's trying to find its top-level
+		    // children (for which it doesn't persist the actual node ids), so ignore that.  Nobody else
+		    // should be passing DOCUMENT_NODE into here.
+			boolean fakeNodeId = p.getNodeId().equals(NodeId.DOCUMENT_NODE);
+		    Value val = domDb.get(p.getInternalAddress(), false);
 		    if (val == null) {
 			LOG.debug("Node " + p.getNodeId() + " not found in document " + p.getDocument().getURI() +
 				  "; docId = " + p.getDocument().getDocId() + ": " + StorageAddress.toString(p.getInternalAddress()));
 			//					LOG.debug(domDb.debugPages(p.doc, true));
 			//					return null;
-			return objectWith(p.getDocument(), p.getNodeId()); // retry?
+			if (fakeNodeId) return null;
+		    } else {
+			    StoredNode node = StoredNode.deserialize(val.getData(), 0, val.getLength(), p.getDocument());
+			    node.setOwnerDocument((DocumentImpl)p.getOwnerDocument());
+			    node.setInternalAddress(p.getInternalAddress());
+			    if (fakeNodeId) return node;
+		   	 if (p.getDocument().getDocId() == node.getDocId() && p.getNodeId().equals(node.getNodeId())) {
+					 return node;
+				 } else {
+					 LOG.debug(
+						 "Proxy at address " + StorageAddress.toString(p.getInternalAddress()) +
+						 " in document " + p.getDocument().getDocId() + " has node id " +
+						 p.getNodeId() + ", but node retrieved has node id " + node.getNodeId());
+				 }
 		    }
-		    StoredNode node = StoredNode.deserialize(val.getData(), 0, val.getLength(), p.getDocument());
-		    node.setOwnerDocument((DocumentImpl)p.getOwnerDocument());
-		    node.setInternalAddress(p.getInternalAddress());
+		    // retry based on nodeid
+		    StoredNode node = objectWith(p.getDocument(), p.getNodeId());
+		    p.setInternalAddress(node.getInternalAddress());  // update proxy with correct address
 		    return node;
 		}
 	    }

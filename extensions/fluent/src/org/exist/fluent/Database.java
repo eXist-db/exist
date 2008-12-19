@@ -361,8 +361,9 @@ public class Database {
 	private static final WeakMultiValueHashMap<String, StaleMarker> staleMap = new WeakMultiValueHashMap<String, StaleMarker>();
 	
 	private static void stale(String key) {
+		int updated = 0;
 		synchronized(staleMap) {
-			for (StaleMarker value : staleMap.get(key)) value.mark();
+			for (StaleMarker value : staleMap.get(key)) {value.mark(); updated++;}
 			staleMap.remove(key);
 		}
 	}

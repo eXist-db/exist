@@ -46,9 +46,13 @@ public class Node extends Item {
 	
 	org.w3c.dom.Node getDOMNode() {
 		staleMarker.check();
-		org.w3c.dom.Node domNode = ((NodeValue) item).getNode();
-		if (domNode == null) throw new DatabaseException("unable to load node data");
-		return domNode;
+		try {
+			org.w3c.dom.Node domNode = ((NodeValue) item).getNode();
+			if (domNode == null) throw new DatabaseException("unable to load node data");
+			return domNode;
+		} catch (org.exist.util.sanity.AssertFailure e) {
+			throw new DatabaseException(e);
+		}
 	}
 	
 	/**
