@@ -1495,11 +1495,15 @@ public class DOMFile extends BTree implements Lockable {
      * @return Description of the Return Value
      */
     public Value get(long p) {
+   	 return get(p, true);
+    }
+    
+    public Value get(long p, boolean warnIfMissing) {
 	if (!lock.hasLock())
 	    LOG.warn("the file doesn't own a lock");		
 	RecordPos rec = findRecord(p);
 	if (rec == null) {
-	    SanityCheck.TRACE("object at " + StorageAddress.toString(p)	+ " not found.");
+	    if (warnIfMissing) SanityCheck.TRACE("object at " + StorageAddress.toString(p)	+ " not found.");
 	    return null;
 	}
 	final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);

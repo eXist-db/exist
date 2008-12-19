@@ -21,6 +21,7 @@
  */
 package org.exist.stax;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CharacterDataImpl;
 import org.exist.dom.DocumentImpl;
@@ -56,6 +57,8 @@ import java.util.Stack;
  * an element will not be read unless {@link #getText()} is called.
  */
 public class EmbeddedXMLStreamReader implements XMLStreamReader {
+	
+	private static final Logger LOG = Logger.getLogger(EmbeddedXMLStreamReader.class);
 
     public final static String PROPERTY_NODE_ID = "node-id";
 
@@ -72,6 +75,9 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     private DocumentImpl document;
 
     private NodeId nodeId;
+    
+    private NodeProxy originProxy;
+    private StoredNode originNode;
 
     private QName qname = null;
 
@@ -91,15 +97,21 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
      *
      * @param doc the document to which the start node belongs.
      * @param iterator a RawNodeIterator positioned on the start node.
+     * @param originNode an optional StoredNode whose nodeId should match the first node in the stream
+     *     (or null if no need to check); at most one of originNode and originProxy should be set
+     * @param originProxy an optional NodeProxy whose nodeId should match the first node in the stream
+     *     (or null if no need to check); at most one of originNode and originProxy should be set
      * @param reportAttributes if set to true, attributes will be reported as top-level events.
      * @throws XMLStreamException
      */
-    public EmbeddedXMLStreamReader(DBBroker broker, DocumentImpl doc, RawNodeIterator iterator, boolean reportAttributes)
+    public EmbeddedXMLStreamReader(DBBroker broker, DocumentImpl doc, RawNodeIterator iterator, StoredNode originNode, NodeProxy originProxy, boolean reportAttributes)
             throws XMLStreamException {
         this.broker = broker;
         this.document = doc;
         this.iterator = iterator;
         this.reportAttribs = reportAttributes;
+        this.originProxy = originProxy;
+        this.originNode = originNode;
     }
 
     /**
@@ -110,15 +122,19 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
      * @throws IOException
      */
     public void reposition(DBBroker broker, StoredNode node, boolean reportAttributes) throws IOException {
-        reset();
         this.broker = broker;
+        // Seeking to a node with unknown address will reuse this reader, so do it before setting all
+        // the fields otherwise they could get overwritten.
+        iterator.seek(node);
+        reset();
         this.current = null;
         this.previous = null;
         this.elementStack.clear();
         this.state = START_DOCUMENT;
         this.reportAttribs = reportAttributes;
         this.document = (DocumentImpl) node.getOwnerDocument();
-        iterator.seek(node);
+        this.originProxy = null;
+        this.originNode = node;
     }
 
     /**
@@ -129,15 +145,19 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
      * @throws IOException
      */
     public void reposition(DBBroker broker, NodeProxy proxy, boolean reportAttributes) throws IOException {
-        reset();
         this.broker = broker;
+        // Seeking to a proxy with unknown address will reuse this reader, so do it before setting all
+        // the fields otherwise they could get overwritten.
+        iterator.seek(proxy);
+        reset();
         this.current = null;
         this.previous = null;
         this.elementStack.clear();
         this.state = START_DOCUMENT;
         this.reportAttribs = reportAttributes;
         this.document = (DocumentImpl) proxy.getOwnerDocument();
-        iterator.seek(proxy);
+        this.originProxy = proxy;
+        this.originNode = null;
     }
 
     public short getNodeType() {
@@ -223,10 +243,53 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
             }
         } else if (state != START_DOCUMENT)
             throw new NoSuchElementException();
+        boolean first = state == START_DOCUMENT;
         current = iterator.next();
         initNode();
+        if (first && (originProxy != null || originNode != null)) {
+      	  verifyOriginNodeId();
+      	  originProxy = null;
+      	  originNode = null;
+        }
         return state;
     }
+
+	private void verifyOriginNodeId() throws XMLStreamException {
+	  NodeId desiredId = originNode != null ? originNode.getNodeId() : originProxy.getNodeId();
+	  if (!nodeId.equals(desiredId)) {
+		  // Node got moved, we had the wrong address.  Resync iterator by nodeid.
+		  LOG.warn("expected node id " + desiredId + ", got " + nodeId + "; resyncing address");
+		  if (originNode != null) {
+			  originNode.setInternalAddress(StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+		  } else {
+			  originProxy.setInternalAddress(StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+		  }
+		  boolean reportAttribsBackup = reportAttribs;
+		  DocumentImpl documentBackup = document;
+		  try {
+			  if (originNode != null) {
+				  iterator.seek(originNode);
+			  } else {
+				  iterator.seek(originProxy);
+			  }
+		  } catch (IOException e) {
+			  throw new XMLStreamException(e);
+		  }
+		  // Seeking the iterator might've reused this reader, so reset all fields.
+	     reset();
+	     previous = null;
+	     elementStack.clear();
+	     reportAttribs = reportAttribsBackup;
+	     document = documentBackup;
+		  current = iterator.next();
+		  initNode();
+		  if (originNode != null) {
+			  originNode.setInternalAddress(iterator.currentAddress());
+		  } else {
+			  originProxy.setInternalAddress(iterator.currentAddress());
+		  }
+	  }
+	}
 
     private void reset() {
         nodeId = null;
