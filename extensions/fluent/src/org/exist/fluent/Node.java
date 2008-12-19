@@ -407,7 +407,10 @@ public class Node extends Item {
 			Integer fragmentationLimit = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
 			if (fragmentationLimit == null) fragmentationLimit = Integer.valueOf(0);
 			DocumentImpl doc = ((NodeProxy) item).getDocument();
-			if (doc.getMetadata().getSplitCount() > fragmentationLimit) broker.defragXMLResource(tx.tx, doc);
+			if (doc.getMetadata().getSplitCount() > fragmentationLimit) {
+				Database.ignoreStaleKeyOnce(doc.getURI().getCollectionPath());
+				broker.defragXMLResource(tx.tx, doc);
+			}
 		} finally {
 			db.releaseBroker(broker);
 		}
