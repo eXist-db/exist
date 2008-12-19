@@ -16,7 +16,7 @@ return
 			<redirect url="index.xml"/>
 		</dispatch>
 	(: /rest and /webdav will be ignored :)
-	else if (matches($path, "/(rest|webdav$|cocoon)")) then
+	else if (matches($path, "/(rest|webdav|cocoon)")) then
 		<ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>
 		</ignore>
