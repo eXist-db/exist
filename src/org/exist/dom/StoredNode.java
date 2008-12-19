@@ -42,7 +42,7 @@ import java.util.Iterator;
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
-public class StoredNode extends NodeImpl implements Visitable {
+public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
 	
     public final static int LENGTH_SIGNATURE_LENGTH = 1; //sizeof byte
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;

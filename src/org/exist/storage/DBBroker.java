@@ -26,11 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
@@ -764,10 +760,7 @@ public abstract class DBBroker extends Observable {
 		return id;
 	}
 
-    public abstract EmbeddedXMLStreamReader getXMLStreamReader(StoredNode node, boolean reportAttributes)
-            throws IOException, XMLStreamException;
-
-    public abstract EmbeddedXMLStreamReader getXMLStreamReader(NodeProxy node, boolean reportAttributes)
+    public abstract EmbeddedXMLStreamReader getXMLStreamReader(NodeHandle node, boolean reportAttributes)
             throws IOException, XMLStreamException;
 
     public abstract void backupToArchive(RawDataBackup backup) throws IOException;

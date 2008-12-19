@@ -28,17 +28,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.fulltext.FTIndex;
 import org.exist.fulltext.FTIndexWorker;
 import org.exist.indexing.StreamListener;
@@ -82,7 +72,6 @@ import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -520,24 +509,13 @@ public class NativeBroker extends DBBroker {
         return worker.getEngine();
     }
 
-    public EmbeddedXMLStreamReader getXMLStreamReader(StoredNode node, boolean reportAttributes)
+    public EmbeddedXMLStreamReader getXMLStreamReader(NodeHandle node, boolean reportAttributes)
 	throws IOException, XMLStreamException {
         if (streamReader == null) {
             RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
-            streamReader = new EmbeddedXMLStreamReader(this, (DocumentImpl) node.getOwnerDocument(), iterator, node, null, reportAttributes);
+            streamReader = new EmbeddedXMLStreamReader(this, (DocumentImpl) node.getOwnerDocument(), iterator, node, reportAttributes);
         } else {
             streamReader.reposition(this, node, reportAttributes);
-        }
-        return streamReader;
-    }
-
-    public EmbeddedXMLStreamReader getXMLStreamReader(NodeProxy proxy, boolean reportAttributes)
-	throws IOException, XMLStreamException {
-        if (streamReader == null) {
-            RawNodeIterator iterator = new RawNodeIterator(this, domDb, proxy);
-            streamReader = new EmbeddedXMLStreamReader(this, (DocumentImpl) proxy.getOwnerDocument(), iterator, null, proxy, reportAttributes);
-        } else {
-            streamReader.reposition(this, proxy, reportAttributes);
         }
         return streamReader;
     }
