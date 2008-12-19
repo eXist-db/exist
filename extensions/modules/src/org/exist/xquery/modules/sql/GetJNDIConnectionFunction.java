@@ -60,9 +60,8 @@ public class GetJNDIConnectionFunction extends BasicFunction {
 					"Open's a connection to a SQL Database. Expects a JNDI name in $a. Returns an xs:long representing the connection handle.",
 					new SequenceType[] {
 							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE) },
+									Cardinality.EXACTLY_ONE)
+					},
 					new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)),
 
 			new FunctionSignature(
