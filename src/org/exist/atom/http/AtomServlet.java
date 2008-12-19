@@ -443,25 +443,35 @@ public class AtomServlet extends HttpServlet {
          try {
             broker = pool.get(user);
             module.process(broker,new HttpRequestMessage(request,path,'/'+moduleName),new HttpResponseMessage(response));
+
          } catch (NotFoundException ex) {
             LOG.info("Resource "+path+" not found by "+moduleName,ex);
-            response.sendError(404,ex.getMessage());
+            response.sendError(HttpServletResponse.SC_NOT_FOUND,ex.getMessage());
+
          } catch (PermissionDeniedException ex) {
             LOG.info("Permission denied to "+path+" by "+moduleName+" for "+user.getName(),ex);
-            response.sendError(401,ex.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,ex.getMessage());
+
          } catch (BadRequestException ex) {
             LOG.info("Bad request throw from module "+moduleName,ex);
-            response.sendError(400,ex.getMessage());
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST,ex.getMessage());
+
          } catch (EXistException ex) {
             LOG.fatal("Exception getting broker from pool for user "+user.getName(),ex);
-            response.sendError(500,"Service is not available.");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Service is not available.");
+
+         } catch (Throwable e){
+            LOG.error(e);
+            throw new ServletException("An error occurred: " + e.getMessage(), e);
+
          } finally {
             pool.release(broker);
          }
+         
       } catch (IOException ex) {
          LOG.fatal("I/O exception on request.",ex);
          try {
-            response.sendError(500,"Service is not available.");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Service is not available.");
          } catch (IOException finalEx) {
             LOG.fatal("Cannot return 500 on exception.",ex);
          }
