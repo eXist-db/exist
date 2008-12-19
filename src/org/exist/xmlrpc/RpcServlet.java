@@ -53,7 +53,12 @@ public class RpcServlet extends XmlRpcServlet {
             descriptor.doLogRequestInReplayLog(request);
         }
 
-        super.doPost(request, response);
+        try {
+            super.doPost(request, response);
+        } catch (Throwable e){
+            log("Problem during XmlRpc execution", e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+        }
     }
 
     protected XmlRpcHandlerMapping newXmlRpcHandlerMapping() throws XmlRpcException {

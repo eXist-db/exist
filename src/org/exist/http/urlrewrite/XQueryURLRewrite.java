@@ -23,7 +23,7 @@
 package org.exist.http.urlrewrite;
 
 import org.apache.log4j.Logger;
-import org.exist.source.FileSource;
+
 import org.exist.source.Source;
 import org.exist.source.DBSource;
 import org.exist.source.SourceFactory;
@@ -54,6 +54,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -71,8 +72,8 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponseWrapper;
+
 import java.io.IOException;
-import java.io.File;
 import java.io.Writer;
 import java.io.OutputStreamWriter;
 import java.io.ByteArrayOutputStream;
@@ -88,7 +89,6 @@ import java.util.Vector;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.net.URISyntaxException;
 
@@ -357,11 +357,22 @@ public class XQueryURLRewrite implements Filter {
 //                writeResults(response, broker, result);
 //            }
         } catch (EXistException e) {
-            throw new ServletException("An error occurred while retrieving query results: " + e.getMessage(), e);
+            LOG.error(e);
+            throw new ServletException("An error occurred while retrieving query results: " 
+                    + e.getMessage(), e);
+
         } catch (XPathException e) {
-            throw new ServletException("An error occurred while executing the urlrewrite query: " + e.getMessage(), e);
+            LOG.error(e);
+            throw new ServletException("An error occurred while executing the urlrewrite query: " 
+                    + e.getMessage(), e);
+
 //        } catch (SAXException e) {
 //            throw new ServletException("Error while serializing results: " + e.getMessage(), e);
+            
+        } catch (Throwable e){
+            LOG.error(e);
+            throw new ServletException("An error occurred: "
+                    + e.getMessage(), e);
         }
     }
 

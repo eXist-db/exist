@@ -166,10 +166,17 @@ public class XSLTServlet extends HttpServlet {
                 }
                 bufferedOutputStream.close();
                 response.flushBuffer();
+
             } catch (IOException e) {
                 throw new ServletException("IO exception while transforming node: " + e.getMessage(), e);
+
             } catch (TransformerException e) {
                 throw new ServletException("Exception while transforming node: " + e.getMessage(), e);
+                
+            } catch (Throwable e){
+                LOG.error(e);
+                throw new ServletException("An error occurred: " + e.getMessage(), e);
+
             } finally {
                 pool.release(broker);
             }

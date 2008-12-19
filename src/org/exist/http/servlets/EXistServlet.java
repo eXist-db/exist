@@ -196,34 +196,36 @@ public class EXistServlet extends HttpServlet {
 		DBBroker broker = null;
                 File tempFile = null;
 		try {
-                   XmldbURI dbpath = XmldbURI.create(path);
-                   broker = pool.get(user);
-                   Collection collection = broker.getCollection(dbpath);
-                   if (collection != null) {
-                      response.sendError(400,"A PUT request is not allowed against a plain collection path.");
-                      return;
-                   }
-                   //fourth, process the request
-                   ServletInputStream is = request.getInputStream();
-                   int len = request.getContentLength();
-                   // put may send a lot of data, so save it
-                   // to a temporary file first.
-                   tempFile = File.createTempFile("existSRV", ".tmp");
-                   FileOutputStream fos = new FileOutputStream(tempFile);
-                   BufferedOutputStream os = new BufferedOutputStream(fos);
-                   byte[] buffer = new byte[4096];
-                   int count, l = 0;
-                   do {
-                      count = is.read(buffer);
-                      if (count > 0)
-                         os.write(buffer, 0, count);
-                      l += count;
-                   } while (l < len);
-                   os.close();
-                   
-                   srvREST.doPut(broker, tempFile, dbpath, request, response);
+           XmldbURI dbpath = XmldbURI.create(path);
+           broker = pool.get(user);
+           Collection collection = broker.getCollection(dbpath);
+           if (collection != null) {
+              response.sendError(400,"A PUT request is not allowed against a plain collection path.");
+              return;
+           }
+           //fourth, process the request
+           ServletInputStream is = request.getInputStream();
+           int len = request.getContentLength();
+           // put may send a lot of data, so save it
+           // to a temporary file first.
+           tempFile = File.createTempFile("existSRV", ".tmp");
+           FileOutputStream fos = new FileOutputStream(tempFile);
+           BufferedOutputStream os = new BufferedOutputStream(fos);
+           byte[] buffer = new byte[4096];
+           int count, l = 0;
+           do {
+              count = is.read(buffer);
+              if (count > 0)
+                 os.write(buffer, 0, count);
+              l += count;
+           } while (l < len);
+           os.close();
+
+           srvREST.doPut(broker, tempFile, dbpath, request, response);
+
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+
 		} catch (PermissionDeniedException e) {
 			//If the current user is the Default User and they do not have permission
 			//then send a challenge request to prompt the client for a username/password.
@@ -233,15 +235,21 @@ public class EXistServlet extends HttpServlet {
 			} else {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
 			}
+            
 		} catch (EXistException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+
+        } catch (Throwable e){
+            LOG.error(e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+            
 		} finally {
-                   if (broker!=null) {
-                      pool.release(broker);
-                   }
-                   if (tempFile!=null) {
-                      tempFile.delete();
-                   }
+            if (broker!=null) {
+              pool.release(broker);
+            }
+            if (tempFile!=null) {
+              tempFile.delete();
+            }
 		}
 	}
 
@@ -309,8 +317,8 @@ public class EXistServlet extends HttpServlet {
 				srvREST.doGet(broker, request, response, path);
 			}
 		} catch (BadRequestException e) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e
-					.getMessage());
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+
 		} catch (PermissionDeniedException e) {
 			//If the current user is the Default User and they do not have permission
 			//then send a challenge request to prompt the client for a username/password.
@@ -318,15 +326,20 @@ public class EXistServlet extends HttpServlet {
 			if (user.equals(defaultUser)) {
 				authenticator.sendChallenge(request, response);
 			} else {
-				response
-						.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
 			}
+
 		} catch (NotFoundException e) {
-			response
-					.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+
 		} catch (EXistException e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e
-					.getMessage());
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    e.getMessage());
+
+        } catch (Throwable e){
+            LOG.error(e);
+            throw new ServletException("An error occurred: " + e.getMessage(), e);
+            
 		} finally {
 			pool.release(broker);
 		}
@@ -362,9 +375,10 @@ public class EXistServlet extends HttpServlet {
 		try {
 			broker = pool.get(user);
 			srvREST.doHead(broker, request, response, path);
+
 		} catch (BadRequestException e) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e
-					.getMessage());
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+
 		} catch (PermissionDeniedException e) {
 			//If the current user is the Default User and they do not have permission
 			//then send a challenge request to prompt the client for a username/password.
@@ -375,12 +389,18 @@ public class EXistServlet extends HttpServlet {
 				response
 						.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
 			}
+
 		} catch (NotFoundException e) {
-			response
-					.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+
 		} catch (EXistException e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e
-					.getMessage());
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    e.getMessage());
+            
+        } catch (Throwable e){
+            LOG.error(e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+
 		} finally {
 			pool.release(broker);
 		}
@@ -416,6 +436,7 @@ public class EXistServlet extends HttpServlet {
 		try {
 			broker = pool.get(user);
 			srvREST.doDelete(broker, XmldbURI.create(path), response);
+
 		} catch (PermissionDeniedException e) {
 			//If the current user is the Default User and they do not have permission
 			//then send a challenge request to prompt the client for a username/password.
@@ -426,12 +447,17 @@ public class EXistServlet extends HttpServlet {
 				response
 				.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
 			}
+
 		} catch (NotFoundException e) {
-			response
-			.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+
 		} catch (EXistException e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e
-					.getMessage());
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            
+        } catch (Throwable e){
+            LOG.error(e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+
 		} finally {
 			pool.release(broker);
 		}
@@ -509,6 +535,7 @@ public class EXistServlet extends HttpServlet {
 				//REST Server
 				srvREST.doPost(broker, request, response, path);
 			}
+            
 		} catch (PermissionDeniedException e) {
 			//If the current user is the Default User and they do not have permission
 			//then send a challenge request to prompt the client for a username/password.
@@ -519,13 +546,21 @@ public class EXistServlet extends HttpServlet {
 				response
 				.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
 			}
+
 		} catch (EXistException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e
 					.getMessage());
+
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+
 		} catch (NotFoundException e) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+
+        } catch (Throwable e){
+            LOG.error(e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+            
 		} finally {
 			pool.release(broker);
 		}

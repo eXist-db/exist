@@ -153,6 +153,10 @@ public class WebDAV {
             
         } catch (URISyntaxException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+
+        } catch (Throwable e){
+            LOG.error(e);
+            throw new ServletException("An error occurred: " + e.getMessage(), e);
             
         } finally {
             // for debugging webdav
