@@ -22,6 +22,7 @@
 package org.exist.storage.dom;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.NodeHandle;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.storage.DBBroker;
@@ -63,25 +64,10 @@ public class RawNodeIterator {
      * @param node the start node where the iterator will be positioned.
      * @throws IOException
      */
-    public RawNodeIterator(DBBroker broker, DOMFile db, StoredNode node) throws IOException {
+    public RawNodeIterator(DBBroker broker, DOMFile db, NodeHandle node) throws IOException {
         this.db = db;
 		this.broker = broker;
         seek(node);
-    }
-
-    /**
-     * Construct the iterator. The iterator will be positioned before the specified
-     * start node.
-     *
-     * @param broker the owner object used to acquire a lock on the underlying data file (usually a DBBroker)
-     * @param db the underlying data file
-     * @param proxy the start node where the iterator will be positioned.
-     * @throws IOException
-     */
-    public RawNodeIterator(DBBroker broker, DOMFile db, NodeProxy proxy) throws IOException {
-        this.db = db;
-		this.broker = broker;
-        seek(proxy);
     }
 
     /**
@@ -90,7 +76,7 @@ public class RawNodeIterator {
      * @param node the start node where the iterator will be positioned.
      * @throws IOException
      */
-    public void seek(StoredNode node) throws IOException {
+    public void seek(NodeHandle node) throws IOException {
         Lock lock = db.getLock();
         try {
             lock.acquire(Lock.READ_LOCK);
@@ -100,40 +86,6 @@ public class RawNodeIterator {
             if (rec == null) {
                 try {
                     long addr = db.findValue(broker, new NodeProxy(node));
-                    if (addr == BTree.KEY_NOT_FOUND)
-                        throw new IOException("Node not found.");
-                    rec = db.findRecord(addr);
-                } catch (BTreeException e) {
-                    throw new IOException("Node not found: " + e.getMessage());
-                }
-            }
-            page = rec.getPage().getPageNum();
-            //Position the stream at the very beginning of the record
-            offset = rec.offset - DOMFile.LENGTH_TID;
-            p = rec.getPage();
-        } catch (LockException e) {
-            throw new IOException("Exception while scanning document: " + e.getMessage());
-        } finally {
-            lock.release(Lock.READ_LOCK);
-        }
-    }
-
-    /**
-     * Reposition the iterator to the start of the specified node.
-     *
-     * @param proxy the start node where the iterator will be positioned.
-     * @throws IOException
-     */
-    public void seek(NodeProxy proxy) throws IOException {
-        Lock lock = db.getLock();
-        try {
-            lock.acquire(Lock.READ_LOCK);
-            RecordPos rec = null;
-            if (proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                rec = db.findRecord(proxy.getInternalAddress());
-            if (rec == null) {
-                try {
-                    long addr = db.findValue(broker, proxy);
                     if (addr == BTree.KEY_NOT_FOUND)
                         throw new IOException("Node not found.");
                     rec = db.findRecord(addr);

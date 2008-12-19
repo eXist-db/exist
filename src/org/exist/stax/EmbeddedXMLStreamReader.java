@@ -22,12 +22,7 @@
 package org.exist.stax;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.CharacterDataImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.Signatures;
@@ -76,8 +71,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
 
     private NodeId nodeId;
     
-    private NodeProxy originProxy;
-    private StoredNode originNode;
+    private NodeHandle origin;
 
     private QName qname = null;
 
@@ -97,21 +91,18 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
      *
      * @param doc the document to which the start node belongs.
      * @param iterator a RawNodeIterator positioned on the start node.
-     * @param originNode an optional StoredNode whose nodeId should match the first node in the stream
-     *     (or null if no need to check); at most one of originNode and originProxy should be set
-     * @param originProxy an optional NodeProxy whose nodeId should match the first node in the stream
-     *     (or null if no need to check); at most one of originNode and originProxy should be set
+     * @param origin an optional NodeHandle whose nodeId should match the first node in the stream
+     *     (or null if no need to check)
      * @param reportAttributes if set to true, attributes will be reported as top-level events.
      * @throws XMLStreamException
      */
-    public EmbeddedXMLStreamReader(DBBroker broker, DocumentImpl doc, RawNodeIterator iterator, StoredNode originNode, NodeProxy originProxy, boolean reportAttributes)
+    public EmbeddedXMLStreamReader(DBBroker broker, DocumentImpl doc, RawNodeIterator iterator, NodeHandle origin, boolean reportAttributes)
             throws XMLStreamException {
         this.broker = broker;
         this.document = doc;
         this.iterator = iterator;
         this.reportAttribs = reportAttributes;
-        this.originProxy = originProxy;
-        this.originNode = originNode;
+        this.origin = origin;
     }
 
     /**
@@ -121,7 +112,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
      * @param reportAttributes if set to true, attributes will be reported as top-level events.
      * @throws IOException
      */
-    public void reposition(DBBroker broker, StoredNode node, boolean reportAttributes) throws IOException {
+    public void reposition(DBBroker broker, NodeHandle node, boolean reportAttributes) throws IOException {
         this.broker = broker;
         // Seeking to a node with unknown address will reuse this reader, so do it before setting all
         // the fields otherwise they could get overwritten.
@@ -133,31 +124,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         this.state = START_DOCUMENT;
         this.reportAttribs = reportAttributes;
         this.document = (DocumentImpl) node.getOwnerDocument();
-        this.originProxy = null;
-        this.originNode = node;
-    }
-
-    /**
-     * Reposition the stream reader to another start node, maybe in a different document.
-     *
-     * @param proxy the new start node.
-     * @param reportAttributes if set to true, attributes will be reported as top-level events.
-     * @throws IOException
-     */
-    public void reposition(DBBroker broker, NodeProxy proxy, boolean reportAttributes) throws IOException {
-        this.broker = broker;
-        // Seeking to a proxy with unknown address will reuse this reader, so do it before setting all
-        // the fields otherwise they could get overwritten.
-        iterator.seek(proxy);
-        reset();
-        this.current = null;
-        this.previous = null;
-        this.elementStack.clear();
-        this.state = START_DOCUMENT;
-        this.reportAttribs = reportAttributes;
-        this.document = (DocumentImpl) proxy.getOwnerDocument();
-        this.originProxy = proxy;
-        this.originNode = null;
+        this.origin = node;
     }
 
     public short getNodeType() {
@@ -246,32 +213,22 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         boolean first = state == START_DOCUMENT;
         current = iterator.next();
         initNode();
-        if (first && (originProxy != null || originNode != null)) {
+        if (first && origin != null) {
       	  verifyOriginNodeId();
-      	  originProxy = null;
-      	  originNode = null;
+      	  origin = null;
         }
         return state;
     }
 
 	private void verifyOriginNodeId() throws XMLStreamException {
-	  NodeId desiredId = originNode != null ? originNode.getNodeId() : originProxy.getNodeId();
-	  if (!nodeId.equals(desiredId)) {
+	  if (!nodeId.equals(origin.getNodeId())) {
 		  // Node got moved, we had the wrong address.  Resync iterator by nodeid.
-		  LOG.warn("expected node id " + desiredId + ", got " + nodeId + "; resyncing address");
-		  if (originNode != null) {
-			  originNode.setInternalAddress(StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
-		  } else {
-			  originProxy.setInternalAddress(StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
-		  }
+		  LOG.warn("expected node id " + origin.getNodeId() + ", got " + nodeId + "; resyncing address");
+		  origin.setInternalAddress(StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
 		  boolean reportAttribsBackup = reportAttribs;
 		  DocumentImpl documentBackup = document;
 		  try {
-			  if (originNode != null) {
-				  iterator.seek(originNode);
-			  } else {
-				  iterator.seek(originProxy);
-			  }
+			  iterator.seek(origin);
 		  } catch (IOException e) {
 			  throw new XMLStreamException(e);
 		  }
@@ -283,11 +240,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
 	     document = documentBackup;
 		  current = iterator.next();
 		  initNode();
-		  if (originNode != null) {
-			  originNode.setInternalAddress(iterator.currentAddress());
-		  } else {
-			  originProxy.setInternalAddress(iterator.currentAddress());
-		  }
+		  origin.setInternalAddress(iterator.currentAddress());
 	  }
 	}
 

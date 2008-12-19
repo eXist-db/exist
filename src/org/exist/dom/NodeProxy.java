@@ -76,7 +76,7 @@ import java.util.Properties;
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class NodeProxy implements NodeSet, NodeValue, DocumentSet, Comparable {
+public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, Comparable {
 
     /*
      * Special values for nodes gid :
@@ -169,21 +169,14 @@ public class NodeProxy implements NodeSet, NodeValue, DocumentSet, Comparable {
     /**
      * Creates a new <code>NodeProxy</code> instance.
      *
-     * @param p a <code>NodeProxy</code> value
-     */
-    public NodeProxy(NodeProxy p) {
-        this(p.doc, p.nodeId, p.nodeType, p.internalAddress);
-	match = p.match;
-        //TODO : what about node's context ?
-    }
-
-    /**
-     * Creates a new <code>NodeProxy</code> instance.
-     *
      * @param n a <code>StoredNode</code> value
      */
-    public NodeProxy(StoredNode n) {
-        this((DocumentImpl)n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
+    public NodeProxy(NodeHandle n) {
+        this(n.getDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
+        if (n instanceof NodeProxy) {
+      	  this.match = ((NodeProxy) n).match;
+           //TODO : what about node's context ?
+        }
     }
 
     /**
