@@ -359,8 +359,14 @@ public class Database {
 	}
 	
 	private static final WeakMultiValueHashMap<String, StaleMarker> staleMap = new WeakMultiValueHashMap<String, StaleMarker>();
+	private static final HashSet<String> dropIndexKeysToIngoreOnce = new HashSet<String>();
+	
+	static void ignoreStaleKeyOnce(String key) {
+		dropIndexKeysToIngoreOnce.add(normalizePath(key));
+	}
 	
 	private static void stale(String key) {
+		if (dropIndexKeysToIngoreOnce.remove(key)) return;
 		int updated = 0;
 		synchronized(staleMap) {
 			for (StaleMarker value : staleMap.get(key)) {value.mark(); updated++;}
