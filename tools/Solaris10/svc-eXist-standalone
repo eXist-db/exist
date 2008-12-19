@@ -7,7 +7,7 @@
 # NOTE: Make sure EXIST_HOME is owned BY the exist user and exist group 
 #
 
-.. /lib/svc/share/smf_include.sh
+. /lib/svc/share/smf_include.sh
 
 EXIST_HOME=/eXist											# Installed location of eXist
 EXIST_ADMIN_PWD=admin										# Password for eXist admin user

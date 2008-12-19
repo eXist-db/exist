@@ -16,10 +16,10 @@ boot time and shutdown with the system.
 
 Notes for eXist SMF
 ===================
-By default it expects eXist to be installed to /eXist. If you wish
+By default the scripts expect eXist to be installed to /eXist. If you wish
 to change this then change the EXIST_HOME variable in the appropriate svc-eXist-* file.
-It also expects the admin password of eXist to be "admin" you need to change this to your
-password by setting the EXIST_ADMIN variable in the appropriate svc-eXist-* file.
+The scripts also expect the admin password of eXist to be "admin" you need to change this
+to your password by setting the EXIST_ADMIN variable in the appropriate svc-eXist-* file.
 
 By default it expects to run eXist under the user account "exist" and the group "exist".
 If you wish to change this then change the values of the user and group attributes in the
@@ -30,6 +30,11 @@ Installing eXist into SMF
 =========================
 1) Create the user "exist" in the group "exist"
 
+e.g. useradd -c "eXist Database" -d /home/exist -g exist -m -s /bin/bash exist
+
+You must ensure that the users home directory exists otherwise the service
+will fail to start
+
 2) chown -R exist:exist /eXist
 
 3) Choose either the eXist Jetty or eXist Standalone configuration, only one may be used.
@@ -38,8 +43,12 @@ Adjust the following for your chosen configuration (Standalone configuration is 
 
 4) Become Super User - su root
 
-5) Copy svc-eXist-standalone to /lib/svc/method (if you are using
-Zones then this should be done in the Global Zone)
+5) Copy svc-eXist-standalone to /lib/svc/method
+If you are using Zones then this can be done in the Global Zone, otherwise if you
+are in a zone this is not possible as /lib/svc/method is read-only. However for operation
+in a zone you can place the svc-eXist-standalone file in a different location of your
+choosing and update the eXist-standalone.smf.xml file to reflect this.
+You must still ensure the svc file is owned by root:bin with 555 permissions!
 
 6) chown root:bin /lib/svc/method/svc-eXist-standalone
 
@@ -58,3 +67,7 @@ svccfg import /var/svc/manifest/application/eXist-standalone.smf.xml
 
 12) Enable and start the eXist service -
 svcadm -v enable eXist
+
+You can then view the status of the service using `svcs -a | grep eXist"
+If the service does not start then the log file /var/svc/log/application-eXist:default.log
+may yield some clues.
