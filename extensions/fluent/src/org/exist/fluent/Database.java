@@ -460,7 +460,7 @@ public class Database {
 	
 	private static final Defragmenter defragmenter = new Defragmenter();
 	static {
-		Thread thread = new Thread(defragmenter);
+		Thread thread = new Thread(defragmenter, "Database defragmenter");
 		thread.setPriority(Thread.NORM_PRIORITY-3);
 		thread.setDaemon(true);
 		thread.start();
@@ -486,6 +486,7 @@ public class Database {
 					LOG.debug(new MessageFormat(
 							"checking for documents to defragment, {0,choice,0#no candidates|1#1 candidate|1<{0,number,integer} candidates}")
 							.format(new Object[] {docsToDefrag.size()}));
+					int count = 0;
 					try {
 						DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
 						try {
@@ -493,8 +494,11 @@ public class Database {
 							if (fragmentationLimit == null) fragmentationLimit = Integer.valueOf(0);
 							for (Iterator<DocumentImpl> it = docsToDefrag.iterator(); it.hasNext(); ) {
 								DocumentImpl doc = it.next();
-								if (doc.getMetadata().getSplitCount() > fragmentationLimit && !docsInUse.containsKey(normalizePath(doc.getURI().getCollectionPath()))) {
+								if (doc.getMetadata().getSplitCount() <= fragmentationLimit) {
+									it.remove();
+								} else if (!docsInUse.containsKey(normalizePath(doc.getURI().getCollectionPath()))) {
 									LOG.debug("defragmenting " + normalizePath(doc.getURI().getCollectionPath()));
+									count++;
 									Transaction tx = Database.requireTransaction();
 									try {
 										tx.lockWrite(doc);
@@ -512,7 +516,9 @@ public class Database {
 					} catch (EXistException e) {
 						LOG.error("unable to get broker with system privileges to defragment documents", e);
 					}
-					LOG.debug("finished looking for documents to defragment, next cycle in " + DEFRAG_INTERVAL / 1000 + "s");
+					LOG.debug(new MessageFormat(
+							"defragmented {0,choice,0#0 documents|1#1 document|1<{0,number,integer} documents}, next cycle in {1,number,integer}s")
+							.format(new Object[] {count, DEFRAG_INTERVAL / 1000}));
 				}
 			}
 		}

@@ -79,7 +79,7 @@ class WeakMultiValueHashMap<K,V> {
 	
 	private static final Sweeper SWEEPER = new Sweeper();
 	static {
-		Thread thread = new Thread(SWEEPER);
+		Thread thread = new Thread(SWEEPER, "WeakMultiValueHashMap sweeper");
 		thread.setPriority(Thread.NORM_PRIORITY-3);
 		thread.setDaemon(true);
 		thread.start();
