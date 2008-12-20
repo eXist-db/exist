@@ -3040,14 +3040,15 @@ public class NativeBroker extends DBBroker {
 					 return node;
 				 } else {
 					 LOG.debug(
-						 "Proxy at address " + StorageAddress.toString(p.getInternalAddress()) +
-						 " in document " + p.getDocument().getDocId() + " has node id " +
-						 p.getNodeId() + ", but node retrieved has node id " + node.getNodeId());
+							 "Node " + p.getNodeId() + " not found in document " + p.getDocument().getURI() +
+							 "; docId = " + p.getDocument().getDocId() + ": " + StorageAddress.toString(p.getInternalAddress()) +
+							 "; found node " + node.getNodeId() + " instead"
+					 );
 				 }
 		    }
 		    // retry based on nodeid
 		    StoredNode node = objectWith(p.getDocument(), p.getNodeId());
-		    p.setInternalAddress(node.getInternalAddress());  // update proxy with correct address
+		    if (node != null) p.setInternalAddress(node.getInternalAddress());  // update proxy with correct address
 		    return node;
 		}
 	    }
