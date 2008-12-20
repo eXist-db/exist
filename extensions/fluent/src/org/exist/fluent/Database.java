@@ -1,6 +1,7 @@
 package org.exist.fluent;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.*;
 
 import org.apache.log4j.Logger;
@@ -13,7 +14,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.*;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
@@ -359,14 +360,8 @@ public class Database {
 	}
 	
 	private static final WeakMultiValueHashMap<String, StaleMarker> staleMap = new WeakMultiValueHashMap<String, StaleMarker>();
-	private static final HashSet<String> dropIndexKeysToIngoreOnce = new HashSet<String>();
-	
-	static void ignoreStaleKeyOnce(String key) {
-		dropIndexKeysToIngoreOnce.add(normalizePath(key));
-	}
 	
 	private static void stale(String key) {
-		if (dropIndexKeysToIngoreOnce.remove(key)) return;
 		int updated = 0;
 		synchronized(staleMap) {
 			for (StaleMarker value : staleMap.get(key)) {value.mark(); updated++;}
@@ -383,7 +378,11 @@ public class Database {
 			stale(normalizePath(collection.getURI().getCollectionPath()));
 		}
 		public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
-			stale(normalizePath(doc.getURI().getCollectionPath()));
+			String docPath = normalizePath(doc.getURI().getCollectionPath());
+			if (docsInUse.containsKey(docPath)) {
+				LOG.fatal("index dropped on document in use, database corruption likely to follow: " + docPath);
+			}
+			stale(docPath);
 		}
 		public void removeNode(StoredNode node, NodePath currentPath, String content) {
 			stale(normalizePath(((DocumentImpl) node.getOwnerDocument()).getURI().getCollectionPath()) + "#" + node.getNodeId());
@@ -418,6 +417,7 @@ public class Database {
 	}
 	
 	private static final WeakMultiValueHashMap<Long, NodeProxy> nodes = new WeakMultiValueHashMap<Long, NodeProxy>();
+	private static final WeakMultiValueHashMap<String, NodeProxy> docsInUse = new WeakMultiValueHashMap<String, NodeProxy>();
 	private static final long ADDRESS_MASK = 0xFFFFFFFF0000FFFFL;
 	
 	private static final NodeIndexListener indexChangeListener = new NodeIndexListener() {
@@ -426,9 +426,11 @@ public class Database {
 		
 		public void nodeChanged(StoredNode node) {
 			int numUpdated = 0;
-			for (NodeProxy target : nodes.get(node.getInternalAddress() & ADDRESS_MASK)) {
-				target.setNodeId(node.getNodeId());
-				numUpdated++;
+			synchronized(nodes) {
+				for (NodeProxy target : nodes.get(node.getInternalAddress() & ADDRESS_MASK)) {
+					target.setNodeId(node.getNodeId());
+					numUpdated++;
+				}
 			}
 			if (LOG.isDebugEnabled()) System.out.println("change nodeid at " + StorageAddress.toString(node.getInternalAddress()) + " to " + node.getNodeId() + "; updated " + numUpdated);
 		}
@@ -449,6 +451,71 @@ public class Database {
 		// this may cause duplicates in the list; try to avoid them by design,
 		// or it might become a performance hit
 		nodes.put(proxy.getInternalAddress() & ADDRESS_MASK, proxy);
+		docsInUse.put(normalizePath(proxy.getDocument().getURI().getCollectionPath()), proxy);
+	}
+	
+	static void queueDefrag(DocumentImpl doc) {
+		defragmenter.queue(doc);
+	}
+	
+	private static final Defragmenter defragmenter = new Defragmenter();
+	static {
+		Thread thread = new Thread(defragmenter);
+		thread.setPriority(Thread.NORM_PRIORITY-3);
+		thread.setDaemon(true);
+		thread.start();
+	}
+	
+	private static class Defragmenter implements Runnable {
+		private static final Logger LOG = Logger.getLogger("org.exist.fluent.Database.defragmenter");
+		private static final long DEFRAG_INTERVAL = 10000;  // ms
+		private final Set<DocumentImpl> docsToDefrag = new TreeSet<DocumentImpl>();
+		
+		public synchronized void queue(DocumentImpl doc) {
+			docsToDefrag.add(doc);
+		}
+		
+		public void run() {
+			while(true) {
+				try {
+					Thread.sleep(DEFRAG_INTERVAL);
+				} catch (InterruptedException e) {
+					break;
+				}
+				synchronized(this) {
+					LOG.debug(new MessageFormat(
+							"checking for documents to defragment, {0,choice,0#no candidates|1#1 candidate|1<{0,number,integer} candidates}")
+							.format(new Object[] {docsToDefrag.size()}));
+					try {
+						DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
+						try {
+							Integer fragmentationLimit = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+							if (fragmentationLimit == null) fragmentationLimit = Integer.valueOf(0);
+							for (Iterator<DocumentImpl> it = docsToDefrag.iterator(); it.hasNext(); ) {
+								DocumentImpl doc = it.next();
+								if (doc.getMetadata().getSplitCount() > fragmentationLimit && !docsInUse.containsKey(normalizePath(doc.getURI().getCollectionPath()))) {
+									LOG.debug("defragmenting " + normalizePath(doc.getURI().getCollectionPath()));
+									Transaction tx = Database.requireTransaction();
+									try {
+										tx.lockWrite(doc);
+										broker.defragXMLResource(tx.tx, doc);
+										tx.commit();
+										it.remove();
+									} finally {
+										tx.abortIfIncomplete();
+									}
+								}
+							}
+						} finally {
+							pool.release(broker);
+						}
+					} catch (EXistException e) {
+						LOG.error("unable to get broker with system privileges to defragment documents", e);
+					}
+					LOG.debug("finished looking for documents to defragment, next cycle in " + DEFRAG_INTERVAL / 1000 + "s");
+				}
+			}
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -201,7 +201,7 @@ public class Node extends Item {
 							node.appendChildren(tx.tx, toNodeList(nodes), 0);
 						}
 						((DocumentImpl) node.getOwnerDocument()).getMetadata().setLastModified(System.currentTimeMillis());
-						defrag(tx);
+						defrag();
 						fireTriggerAfter(tx, trigger);
 						tx.commit();
 						if (result == null) return null;
@@ -307,7 +307,7 @@ public class Node extends Item {
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						((NodeImpl) oldNode.getParentNode()).replaceChild(tx.tx, nodes[0], oldNode);
 						doc.getMetadata().setLastModified(System.currentTimeMillis());
-						defrag(tx);
+						defrag();
 						fireTriggerAfter(tx, trigger);
 						tx.commit();
 						// no point in returning the old node; we'd rather return the newly inserted one,
@@ -349,7 +349,7 @@ public class Node extends Item {
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						elem.removeAppendAttributes(tx.tx, removeList, addList);
 						doc.getMetadata().setLastModified(System.currentTimeMillis());
-						defrag(tx);
+						defrag();
 						fireTriggerAfter(tx, trigger);
 						tx.commit();
 					} catch (TriggerException e) {
@@ -399,21 +399,8 @@ public class Node extends Item {
 		}
 	}
 
-	private void defrag(Transaction tx) {
-		if (!(item instanceof NodeProxy)) return;
-		DBBroker broker = null;
-		try {
-			broker = db.acquireBroker();
-			Integer fragmentationLimit = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
-			if (fragmentationLimit == null) fragmentationLimit = Integer.valueOf(0);
-			DocumentImpl doc = ((NodeProxy) item).getDocument();
-			if (doc.getMetadata().getSplitCount() > fragmentationLimit) {
-				Database.ignoreStaleKeyOnce(doc.getURI().getCollectionPath());
-				broker.defragXMLResource(tx.tx, doc);
-			}
-		} finally {
-			db.releaseBroker(broker);
-		}
+	private void defrag() {
+		if (item instanceof NodeProxy) Database.queueDefrag(((NodeProxy) item).getDocument());
 	}
 	
 	static NodeList toNodeList(final org.w3c.dom.Node[] nodes) {
