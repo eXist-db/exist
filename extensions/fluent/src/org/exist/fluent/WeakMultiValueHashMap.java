@@ -28,6 +28,17 @@ class WeakMultiValueHashMap<K,V> {
 		map.remove(key);
 	}
 	
+	public synchronized boolean containsKey(K key) {
+		final Collection<WeakReference<V>> list = map.get(key);
+		if (list == null) return false;
+		for (Iterator<WeakReference<V>> it = list.iterator(); it.hasNext(); ) {
+			if (it.next().get() != null) return true;
+			it.remove();
+		}
+		map.remove(key);
+		return false;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public synchronized Iterable<V> get(final K key) {
 		final Collection<WeakReference<V>> list = map.get(key);
