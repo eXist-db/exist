@@ -55,13 +55,14 @@ public class Database {
 	 */
 	public static void startup(File configFile) {
 		try {
-			if (BrokerPool.isConfigured(dbName)) throw new IllegalStateException("database already started");
+			if (isStarted()) throw new IllegalStateException("database already started");
 			configFile = configFile.getAbsoluteFile();
 			Configuration config = new Configuration(configFile.getName(), configFile.getParentFile().getAbsolutePath());
 			BrokerPool.configure(dbName, 1, 2, config);
 			pool = BrokerPool.getInstance(dbName);
 			txManager = pool.getTransactionManager();
 			ListenerManager.configureTriggerDispatcher(new Database(SecurityManager.SYSTEM_USER));
+			defragmenter.start();
 		} catch (DatabaseConfigurationException e) {
 			throw new DatabaseException(e);
 		} catch (EXistException e) {
@@ -73,6 +74,7 @@ public class Database {
 	 * Shut down the database connection.  If the database is not started, do nothing.
 	 */
 	public static void shutdown() {
+		defragmenter.stop();
 		if (pool != null) pool.shutdown();
 		pool = null;
 	}
@@ -459,17 +461,31 @@ public class Database {
 	}
 	
 	private static final Defragmenter defragmenter = new Defragmenter();
-	static {
-		Thread thread = new Thread(defragmenter, "Database defragmenter");
-		thread.setPriority(Thread.NORM_PRIORITY-3);
-		thread.setDaemon(true);
-		thread.start();
-	}
 	
 	private static class Defragmenter implements Runnable {
 		private static final Logger LOG = Logger.getLogger("org.exist.fluent.Database.defragmenter");
 		private static final long DEFRAG_INTERVAL = 10000;  // ms
-		private final Set<DocumentImpl> docsToDefrag = new TreeSet<DocumentImpl>();
+		private Set<DocumentImpl> docsToDefrag = new TreeSet<DocumentImpl>();
+		private Thread thread;
+		
+		public void start() {
+			if (thread != null) throw new IllegalStateException("defragmenter already started");
+			thread = new Thread(this, "Database defragmenter");
+			thread.setPriority(Thread.NORM_PRIORITY-3);
+			thread.setDaemon(true);
+			thread.start();
+		}
+		
+		public void stop() {
+			if (thread == null) throw new IllegalStateException("defragmenter already stopped");
+			thread.interrupt();
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				// oh well
+			}
+			thread = null;
+		}
 		
 		public synchronized void queue(DocumentImpl doc) {
 			docsToDefrag.add(doc);
@@ -482,44 +498,54 @@ public class Database {
 				} catch (InterruptedException e) {
 					break;
 				}
+				
+				// Grab copy of docsToDefrag to avoid potential deadlocks (if an executing query has a lock on
+				// the document we want to defrag, we block, then if it tries to queue another document for
+				// defrag it blocks, and it's deadlock time).
+				Set<DocumentImpl> docsToDefragCopy;
 				synchronized(this) {
 					LOG.debug(new MessageFormat(
 							"checking for documents to defragment, {0,choice,0#no candidates|1#1 candidate|1<{0,number,integer} candidates}")
 							.format(new Object[] {docsToDefrag.size()}));
-					int count = 0;
+					docsToDefragCopy = docsToDefrag;
+					docsToDefrag = new TreeSet<DocumentImpl>();
+				}
+					
+				int count = 0;
+				try {
+					DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
 					try {
-						DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
-						try {
-							Integer fragmentationLimit = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
-							if (fragmentationLimit == null) fragmentationLimit = Integer.valueOf(0);
-							for (Iterator<DocumentImpl> it = docsToDefrag.iterator(); it.hasNext(); ) {
-								DocumentImpl doc = it.next();
-								if (doc.getMetadata().getSplitCount() <= fragmentationLimit) {
+						Integer fragmentationLimit = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+						if (fragmentationLimit == null) fragmentationLimit = Integer.valueOf(0);
+						for (Iterator<DocumentImpl> it = docsToDefragCopy.iterator(); it.hasNext(); ) {
+							DocumentImpl doc = it.next();
+							if (doc.getMetadata().getSplitCount() <= fragmentationLimit) {
+								it.remove();
+							} else if (!docsInUse.containsKey(normalizePath(doc.getURI().getCollectionPath()))) {
+								LOG.debug("defragmenting " + normalizePath(doc.getURI().getCollectionPath()));
+								count++;
+								Transaction tx = Database.requireTransaction();
+								try {
+									// It would be nicer to just try the lock here, and keep going if we can't get it, but oh well.
+									tx.lockWrite(doc);
+									broker.defragXMLResource(tx.tx, doc);
+									tx.commit();
 									it.remove();
-								} else if (!docsInUse.containsKey(normalizePath(doc.getURI().getCollectionPath()))) {
-									LOG.debug("defragmenting " + normalizePath(doc.getURI().getCollectionPath()));
-									count++;
-									Transaction tx = Database.requireTransaction();
-									try {
-										tx.lockWrite(doc);
-										broker.defragXMLResource(tx.tx, doc);
-										tx.commit();
-										it.remove();
-									} finally {
-										tx.abortIfIncomplete();
-									}
+								} finally {
+									tx.abortIfIncomplete();
 								}
 							}
-						} finally {
-							pool.release(broker);
 						}
-					} catch (EXistException e) {
-						LOG.error("unable to get broker with system privileges to defragment documents", e);
+					} finally {
+						pool.release(broker);
 					}
-					LOG.debug(new MessageFormat(
-							"defragmented {0,choice,0#0 documents|1#1 document|1<{0,number,integer} documents}, next cycle in {1,number,integer}s")
-							.format(new Object[] {count, DEFRAG_INTERVAL / 1000}));
+				} catch (EXistException e) {
+					LOG.error("unable to get broker with system privileges to defragment documents", e);
 				}
+				
+				LOG.debug(new MessageFormat(
+						"defragmented {0,choice,0#0 documents|1#1 document|1<{0,number,integer} documents}, next cycle in {1,number,integer}s")
+						.format(new Object[] {count, DEFRAG_INTERVAL / 1000}));
 			}
 		}
 	}
