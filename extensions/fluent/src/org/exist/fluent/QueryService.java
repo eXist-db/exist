@@ -5,10 +5,11 @@ import java.util.*;
 import java.util.regex.*;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.*;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.*;
 import org.exist.storage.*;
+import org.exist.util.LockException;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.*;
 import org.exist.xquery.value.*;
@@ -262,13 +263,20 @@ public class QueryService implements Cloneable {
 			final XQuery xquery = broker.getXQueryService();
 			final XQueryPool pool = xquery.getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
+			MutableDocumentSet docsToLock = new DefaultDocumentSet();
+			docsToLock.addAll(docs);
 			try {
 				XQueryContext context = compiledQuery == null
 						? xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP)
 						: compiledQuery.getContext();
-				buildXQueryContext(context, params);
+				buildXQueryContext(context, params, docsToLock);
 				if (compiledQuery == null) compiledQuery = xquery.compile(context, source);
-				return new ItemList(xquery.execute(wrap(compiledQuery, wrapperFactory, context), base), namespaceBindings.extend(), db);
+				docsToLock.lock(broker, false, false);
+				try {
+					return new ItemList(xquery.execute(wrap(compiledQuery, wrapperFactory, context), base), namespaceBindings.extend(), db);
+				} finally {
+					docsToLock.unlock(false);
+				}
 			} finally {
 				if (compiledQuery != null) pool.returnCompiledXQuery(source, compiledQuery);
 			}
@@ -277,6 +285,8 @@ public class QueryService implements Cloneable {
 			throw new DatabaseException("failed to execute query", e);
 		} catch (IOException e) {
 			throw new DatabaseException("unexpected exception", e);
+		} catch (LockException e) {
+			throw new DatabaseException("deadlock", e);
 		} finally {
 			db.releaseBroker(broker);
 		}
@@ -304,7 +314,7 @@ public class QueryService implements Cloneable {
 		return new StringSourceWithMapKey(query, combinedMap);
 	}
 
-	private void buildXQueryContext(XQueryContext context, Object[] params) throws XPathException {
+	private void buildXQueryContext(XQueryContext context, Object[] params, MutableDocumentSet docsToLock) throws XPathException {
 		context.declareNamespaces(namespaceBindings.getCombinedMap());
 		context.setBackwardsCompatibility(false);
 		context.setStaticallyKnownDocuments(docs);
@@ -318,10 +328,14 @@ public class QueryService implements Cloneable {
 					convertValue(entry.getValue()));
 		}
 		if (params != null) for (int i = 0; i < params.length; i++) {
-			context.declareVariable("_"+(i+1), convertValue(params[i]));
+			Object convertedValue = convertValue(params[i]);
+			if (docsToLock != null && convertedValue instanceof Sequence) {
+				docsToLock.addAll(((Sequence) convertedValue).getDocumentSet());
+			}
+			context.declareVariable("_"+(i+1), convertedValue);
 		}
 	}
-	
+		
 	/**
 	 * Convert the given object into a value appropriate for being defined as
 	 * the value of a variable in an XQuery.  This will extract a sequence out
@@ -480,7 +494,7 @@ public class QueryService implements Cloneable {
 					return func;
 				}
 			};
-			buildXQueryContext(context, params);
+			buildXQueryContext(context, params, null);
 			return new QueryAnalysis(
 					// No need to keep track of composite key here, since we're not going to cache the compilation result.
 					xquery.compile(context, new StringSource(query)),
