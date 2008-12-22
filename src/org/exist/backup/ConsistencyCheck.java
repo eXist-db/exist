@@ -68,7 +68,7 @@ public class ConsistencyCheck {
     public ConsistencyCheck(DBBroker broker) {
         this.broker = broker;
         this.defaultIndexDepth = ((NativeBroker) broker).getDefaultIndexDepth();
-        System.out.println("DefaultIndexDepth = " + this.defaultIndexDepth);
+        // System.out.println("DefaultIndexDepth = " + this.defaultIndexDepth);
     }
 
     /**

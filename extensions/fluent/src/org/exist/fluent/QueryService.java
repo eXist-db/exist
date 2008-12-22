@@ -58,7 +58,7 @@ public class QueryService implements Cloneable {
 	}
 	
 	boolean isFreshFrom(Resource origin) {
-		return !presub && bindings.isEmpty() && (namespaceBindings == null || namespaceBindings.isFreshFrom(origin.namespaceBindings()));
+		return !presub && bindings.isEmpty() && moduleMap.isEmpty() && (namespaceBindings == null || namespaceBindings.isFreshFrom(origin.namespaceBindings()));
 	}
 	
 	static final QueryService NULL = new QueryService() {
@@ -264,7 +264,8 @@ public class QueryService implements Cloneable {
 			final XQueryPool pool = xquery.getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
 			MutableDocumentSet docsToLock = new DefaultDocumentSet();
-			docsToLock.addAll(docs);
+			if (docs != null) docsToLock.addAll(docs);
+			if (base != null) docsToLock.addAll(base.getDocumentSet());
 			try {
 				XQueryContext context = compiledQuery == null
 						? xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP)

@@ -50,7 +50,7 @@ public class QueryServiceTest extends DatabaseTestCase {
 		assertEquals("foo", f.query().importModule(doc).single("_123:foo()").value());
 	}
 	
-	@Test(expected = DatabaseException.class) public void importModule3() {
+	@Test public void importModule3() {
 		Folder f = db.getFolder("/");
 		Document doc1 = f.documents().load(Name.create("module1"), Source.blob(
 				"module namespace ex = 'http://example.com';\n" +
@@ -64,18 +64,17 @@ public class QueryServiceTest extends DatabaseTestCase {
 		assertEquals("bar", f.query().importModule(doc2).single("ex:foo()").value());
 	}
 	
-	@Test public void importModule4() {
+	@Test(expected = DatabaseException.class) public void importModule4() {
 		Folder f = db.getFolder("/");
 		Document doc1 = f.documents().load(Name.create("module1"), Source.blob(
 				"module namespace ex = 'http://example.com';\n" +
 				"declare function ex:foo() { 'foo' };\n"
 		));
 		Document doc2 = f.documents().load(Name.create("module2"), Source.blob(
-				"module namespace ex = 'http://example.com';\n" +
+				"module namespace ex = 'http://example.com/other';\n" +
 				"declare function ex:foo() { 'bar' };\n"
 		));
-		assertEquals("foo", db.getFolder("/").query().importModule(doc1).single("ex:foo()").value());
-		assertEquals("bar", db.getFolder("/").query().importModule(doc2).single("ex:foo()").value());
+		f.query().importModule(doc1).importModule(doc2).single("ex:foo()");
 	}
 	
 	@Test public void analyze1() {
