@@ -6,6 +6,7 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.backup.*;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.security.*;
@@ -19,6 +20,7 @@ import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+import org.jgroups.blocks.DistributedLockManager.AcquireLockDecree;
 
 /**
  * <p>The global entry point to an embedded instance of the <a href='http://exist-db.org'>eXist </a>database.
@@ -129,6 +131,39 @@ public class Database {
 			throw new DatabaseException(e);
 		}
 	}
+	
+	/**
+	 * Verify the internal consistency of the database's data structures.  Log a fatal message if the
+	 * database is corrupted, as well as error-level messages for all the problems found.  If the
+	 * database is corrupted, you can try using admin tools to reindex it, or back it up and restore
+	 * it.  However, there's a good chance it's unrecoverable.
+	 * 
+	 * @return <code>true</code> if the database's internal data structures are consistent,
+	 * 		<code>false</code> if the database is corrupted
+	 */
+	@SuppressWarnings("unchecked")
+	public static boolean checkConsistency() {
+		try {
+			DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
+			try {
+				List<ErrorReport> errors = new ConsistencyCheck(broker).checkAll(NULL_PROGRESS_CALLBACK);
+				if (errors.isEmpty()) return true;
+				LOG.fatal("database corrupted");
+				for (ErrorReport error : errors) LOG.error(error.toString().replace("\n", " "));
+				return false;
+			} finally {
+				pool.release(broker);
+			}
+		} catch (EXistException e) {
+			throw new DatabaseException(e);
+		}
+	}
+	
+	private static final ConsistencyCheck.ProgressCallback NULL_PROGRESS_CALLBACK = new ConsistencyCheck.ProgressCallback() {
+		@Override	public void error(ErrorReport error) {}
+		@Override public void startCollection(String path) {}
+		@Override public void startDocument(String path) {}
+	};
 	
 	/**
 	 * Login to obtain access to the database.  The password should be passed in the clear.
@@ -380,11 +415,7 @@ public class Database {
 			stale(normalizePath(collection.getURI().getCollectionPath()));
 		}
 		public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
-			String docPath = normalizePath(doc.getURI().getCollectionPath());
-			if (docsInUse.containsKey(docPath)) {
-				LOG.fatal("index dropped on document in use, database corruption likely to follow: " + docPath);
-			}
-			stale(docPath);
+			stale(normalizePath(doc.getURI().getCollectionPath()));
 		}
 		public void removeNode(StoredNode node, NodePath currentPath, String content) {
 			stale(normalizePath(((DocumentImpl) node.getOwnerDocument()).getURI().getCollectionPath()) + "#" + node.getNodeId());

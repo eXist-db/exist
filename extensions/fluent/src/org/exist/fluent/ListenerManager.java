@@ -134,17 +134,16 @@ public class ListenerManager {
 			Listener x = refListener.get();
 			return x == null || x == listener;
 		}
-		boolean fireDocumentEvent(EventKey key, DocumentImpl doc) {
-			Listener listener = refListener.get();
-			if (listener == null) return false;
-			if (listener instanceof Document.Listener) ((Document.Listener) listener).handle(new Document.Event(key, wrap(doc)));
-			return true;
+		boolean isAlive() {
+			return refListener.get() != null;
 		}
-		boolean fireFolderEvent(EventKey key, Collection col) {
+		void fireDocumentEvent(EventKey key, DocumentImpl doc) {
 			Listener listener = refListener.get();
-			if (listener == null) return false;
+			if (listener instanceof Document.Listener) ((Document.Listener) listener).handle(new Document.Event(key, wrap(doc)));
+		}
+		void fireFolderEvent(EventKey key, Collection col) {
+			Listener listener = refListener.get();
 			if (listener instanceof Folder.Listener) ((Folder.Listener) listener).handle(new Folder.Event(key, wrap(col)));
-			return true;
 		}
 	}
 	
@@ -167,9 +166,9 @@ public class ListenerManager {
 	@SuppressWarnings("unchecked")
 	private ListenerManager() {
 		listenerMaps = new Map[Depth.values().length];
-		listenerMaps[Depth.ZERO.ordinal()] = new HashMap<EventKey,List<ListenerWrapper>>();
-		listenerMaps[Depth.ONE.ordinal()] = new HashMap<EventKey,List<ListenerWrapper>>();
-		listenerMaps[Depth.MANY.ordinal()] = new TreeMap<EventKey,List<ListenerWrapper>>();
+		listenerMaps[Depth.ZERO.ordinal()] = Collections.synchronizedMap(new HashMap<EventKey,List<ListenerWrapper>>());
+		listenerMaps[Depth.ONE.ordinal()] = Collections.synchronizedMap(new HashMap<EventKey,List<ListenerWrapper>>());
+		listenerMaps[Depth.MANY.ordinal()] = Collections.synchronizedSortedMap(new TreeMap<EventKey,List<ListenerWrapper>>());
 	}
 	
 	private void checkListenerType(Listener listener) {
@@ -182,12 +181,17 @@ public class ListenerManager {
 		if (triggers.isEmpty()) throw new IllegalArgumentException("cannot add listener with empty set of triggers");
 		for (Trigger trigger : triggers) {
 			EventKey key = new EventKey(pathPrefix, trigger);
-			List<ListenerWrapper> list = listenerMaps[depth.ordinal()].get(key);
-			if (list == null) {
-				list = new LinkedList<ListenerWrapper>();
-				listenerMaps[depth.ordinal()].put(key, list);
+			List<ListenerWrapper> list;
+			synchronized(listenerMaps[depth.ordinal()]) {
+				list = listenerMaps[depth.ordinal()].get(key);
+				if (list == null) {
+					list = new LinkedList<ListenerWrapper>();
+					listenerMaps[depth.ordinal()].put(key, list);
+				}
 			}
-			list.add(new ListenerWrapper(listener, origin));
+			synchronized(list) {
+				list.add(new ListenerWrapper(listener, origin));
+			}
 		}
 	}
 
@@ -201,13 +205,17 @@ public class ListenerManager {
 	
 	private void remove(String path, Map<EventKey,List<ListenerWrapper>> map, Listener listener) {
 		checkListenerType(listener);
-		for (Iterator<Map.Entry<EventKey,List<ListenerWrapper>>> it = map.entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry<EventKey,List<ListenerWrapper>> entry = it.next();
-			if (path != null && !entry.getKey().path.equals(path)) continue;
-			for (Iterator<ListenerWrapper> it2 = entry.getValue().iterator(); it2.hasNext(); ) {
-				if (it2.next().sameOrNull(listener)) it2.remove();
+		synchronized(map) {
+			for (Iterator<Map.Entry<EventKey,List<ListenerWrapper>>> it = map.entrySet().iterator(); it.hasNext(); ) {
+				Map.Entry<EventKey,List<ListenerWrapper>> entry = it.next();
+				if (path != null && !entry.getKey().path.equals(path)) continue;
+				synchronized(entry.getValue()) {
+					for (Iterator<ListenerWrapper> it2 = entry.getValue().iterator(); it2.hasNext(); ) {
+						if (it2.next().sameOrNull(listener)) it2.remove();
+					}
+				}
+				if (entry.getValue().isEmpty()) it.remove();
 			}
-			if (entry.getValue().isEmpty()) it.remove();
 		}
 	}
 	
@@ -229,8 +237,13 @@ public class ListenerManager {
 			fire(listenerMaps[Depth.ONE.ordinal()].get(trimmedKey), key, doc, col, documentEvent);
 		}
 		
-		for (Map.Entry<EventKey,List<ListenerWrapper>> entry :
-				((SortedMap<EventKey,List<ListenerWrapper>>) listenerMaps[Depth.MANY.ordinal()]).tailMap(key).entrySet()) {
+		SortedMap<EventKey,List<ListenerWrapper>> map =
+				(SortedMap<EventKey,List<ListenerWrapper>>) listenerMaps[Depth.MANY.ordinal()];
+		SortedMap<EventKey,List<ListenerWrapper>> tailMap;
+		synchronized(map) {
+			tailMap = new TreeMap<EventKey,List<ListenerWrapper>>(map.tailMap(key));
+		}
+		for (Map.Entry<EventKey,List<ListenerWrapper>> entry : tailMap.entrySet()) {
 			EventKey target = entry.getKey();
 			if (!target.matchesAsPrefix(key)) break;
 			fire(entry.getValue(), key, doc, col, documentEvent);
@@ -239,12 +252,17 @@ public class ListenerManager {
 	
 	private void fire(List<ListenerWrapper> list, EventKey key, DocumentImpl doc, org.exist.collections.Collection col, boolean documentEvent) {
 		if (list == null) return;
-		for (Iterator<ListenerWrapper> it = list.iterator(); it.hasNext(); ) {
-			ListenerWrapper wrap = it.next();
-			boolean wrapOK = documentEvent
-				? wrap.fireDocumentEvent(key, doc)
-				: wrap.fireFolderEvent(key, col);
-			if (!wrapOK) it.remove();
+		List<ListenerWrapper> listCopy;
+		synchronized(list) {
+			for (Iterator<ListenerWrapper> it = list.iterator(); it.hasNext(); ) {
+				if (!it.next().isAlive()) it.remove();
+			}
+			listCopy = new ArrayList<ListenerWrapper>(list);
+		}
+		if (documentEvent) {
+			for (ListenerWrapper wrap : listCopy) wrap.fireDocumentEvent(key, doc);
+		} else {
+			for (ListenerWrapper wrap : listCopy) wrap.fireFolderEvent(key, col);
 		}
 	}
 
