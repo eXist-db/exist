@@ -15,12 +15,11 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.*;
+import org.exist.storage.txn.TransactionManager;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-import org.jgroups.blocks.DistributedLockManager.AcquireLockDecree;
 
 /**
  * <p>The global entry point to an embedded instance of the <a href='http://exist-db.org'>eXist </a>database.
@@ -160,9 +159,9 @@ public class Database {
 	}
 	
 	private static final ConsistencyCheck.ProgressCallback NULL_PROGRESS_CALLBACK = new ConsistencyCheck.ProgressCallback() {
-		@Override	public void error(ErrorReport error) {}
-		@Override public void startCollection(String path) {}
-		@Override public void startDocument(String path) {}
+		public void error(ErrorReport error) {}
+		public void startCollection(String path) {}
+		public void startDocument(String path) {}
 	};
 	
 	/**
