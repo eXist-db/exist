@@ -143,7 +143,7 @@ public class Database {
 	@SuppressWarnings("unchecked")
 	public static boolean checkConsistency() {
 		try {
-			DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
+			DBBroker broker = pool.enterServiceMode(SecurityManager.SYSTEM_USER);
 			try {
 				List<ErrorReport> errors = new ConsistencyCheck(broker).checkAll(NULL_PROGRESS_CALLBACK);
 				if (errors.isEmpty()) return true;
@@ -151,9 +151,9 @@ public class Database {
 				for (ErrorReport error : errors) LOG.error(error.toString().replace("\n", " "));
 				return false;
 			} finally {
-				pool.release(broker);
+				pool.exitServiceMode(SecurityManager.SYSTEM_USER);
 			}
-		} catch (EXistException e) {
+		} catch (PermissionDeniedException e) {
 			throw new DatabaseException(e);
 		}
 	}

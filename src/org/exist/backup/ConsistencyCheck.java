@@ -33,9 +33,11 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.Value;
-import org.exist.storage.dom.DOMFile;
+import org.exist.storage.dom.*;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.lock.Lock;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
@@ -184,107 +186,111 @@ public class ConsistencyCheck {
      * @param doc the document to check
      * @return null if the document is consistent, an error report otherwise.
      */
-    public org.exist.backup.ErrorReport checkXMLTree(DocumentImpl doc) {
-        DOMFile domDb = ((NativeBroker)broker).getDOMFile();
-        try {
-            ElementImpl root = (ElementImpl) doc.getDocumentElement();
-            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, true);
-            NodeId nodeId;
-            boolean attribsAllowed = false;
-            int expectedAttribs = 0;
-            int attributeCount = 0;
-            while (reader.hasNext()) {
-                int status = reader.next();
-
-                nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
-                ElementNode parent = null;
-                if (status != XMLStreamReader.END_ELEMENT && !elementStack.isEmpty()) {
-                    parent = (ElementNode) elementStack.peek();
-                    parent.childCount++;
-                    // test parent-child relation
-                    if (!nodeId.isChildOf(parent.elem.getNodeId()))
-                        return new ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Node " + nodeId + " is not a child of " +
-                            parent.elem.getNodeId());
-                    // test sibling relation
-                    if (parent.prevSibling != null && !(
-                            nodeId.isSiblingOf(parent.prevSibling) &&
-                            nodeId.compareTo(parent.prevSibling) > 0
-                    )) {
-                        return new ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_ID, "Node " + nodeId + " is not a sibling of " +
-                                parent.prevSibling);
-                    }
-                    parent.prevSibling = nodeId;
-                }
-                switch (status) {
-                    case XMLStreamReader.ATTRIBUTE :
-                        attributeCount++;
-                        break;
-                    case XMLStreamReader.END_ELEMENT :
-                        if (elementStack.isEmpty())
-                            return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: received END_ELEMENT event " +
-                                    "but stack was empty!");
-                        ElementNode lastElem = (ElementNode) elementStack.pop();
-                        if (lastElem.childCount != lastElem.elem.getChildCount())
-                            return new ErrorReport.ResourceError(org.exist.backup.ErrorReport.NODE_HIERARCHY, "Element reports incorrect child count: expected " +
-                                    lastElem.elem.getChildCount() + " but found " + lastElem.childCount);
-                        break;
-                    case XMLStreamReader.START_ELEMENT :
-                        if (nodeId.getTreeLevel() <= defaultIndexDepth) {
-                            // check dom.dbx btree, which maps the node id to the node's storage address
-                            // look up the node id and check if the returned storage address is correct
-                            NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), nodeId);
-                            try {
-                                long p = domDb.findValue(nodeRef);
-                                if (p != reader.getCurrentPosition()) {
-                                    Value v = domDb.get(p);
-                                    if (v == null)
-                                        return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node " + nodeId +
-                                            " through dom.dbx index. Wrong storage address. Expected: " +
-                                            p + "; got: " +
-                                            reader.getCurrentPosition() + " - ", doc.getDocId());
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node " + nodeId +
-                                        " through dom.dbx index.", e, doc.getDocId());
-                            }
-                        }
-                        
-                        StoredNode node = reader.getNode();
-                        if (node.getNodeType() != Node.ELEMENT_NODE)
-                            return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_TYPE,
-                                    "Expected an element node, received node of type " +
-                                    node.getNodeType());
-                        elementStack.push(new ElementNode((ElementImpl) node));
-                        attribsAllowed = true;
-                        attributeCount = 0;
-                        expectedAttribs = reader.getAttributeCount();
-                        break;
-                    default :
-                        if (attribsAllowed) {
-                            if (attributeCount != expectedAttribs)
-                                return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_TYPE,
-                                    "Wrong number of attributes. Expected: " +
-                                    expectedAttribs + "; found: " + attributeCount);
-                        }
-                        attribsAllowed = false;
-                        break;
-                }
-            }
-            if (!elementStack.isEmpty()) {
-                return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: reached end of tree but " +
-                        "stack was not empty!");
-            }
-            return null;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-            return new ErrorReport.ResourceError(org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
-        } finally {
-            elementStack.clear();
-        }
+    public ErrorReport checkXMLTree(final DocumentImpl doc) {
+        final DOMFile domDb = ((NativeBroker)broker).getDOMFile();
+        return (ErrorReport) new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
+      	  public Object start() {
+		        try {
+		            ElementImpl root = (ElementImpl) doc.getDocumentElement();
+		            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, true);
+		            NodeId nodeId;
+		            boolean attribsAllowed = false;
+		            int expectedAttribs = 0;
+		            int attributeCount = 0;
+		            while (reader.hasNext()) {
+		                int status = reader.next();
+		
+		                nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+		                ElementNode parent = null;
+		                if (status != XMLStreamReader.END_ELEMENT && !elementStack.isEmpty()) {
+		                    parent = (ElementNode) elementStack.peek();
+		                    parent.childCount++;
+		                    // test parent-child relation
+		                    if (!nodeId.isChildOf(parent.elem.getNodeId()))
+		                        return new ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Node " + nodeId + " is not a child of " +
+		                            parent.elem.getNodeId());
+		                    // test sibling relation
+		                    if (parent.prevSibling != null && !(
+		                            nodeId.isSiblingOf(parent.prevSibling) &&
+		                            nodeId.compareTo(parent.prevSibling) > 0
+		                    )) {
+		                        return new ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_ID, "Node " + nodeId + " is not a sibling of " +
+		                                parent.prevSibling);
+		                    }
+		                    parent.prevSibling = nodeId;
+		                }
+		                switch (status) {
+		                    case XMLStreamReader.ATTRIBUTE :
+		                        attributeCount++;
+		                        break;
+		                    case XMLStreamReader.END_ELEMENT :
+		                        if (elementStack.isEmpty())
+		                            return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: received END_ELEMENT event " +
+		                                    "but stack was empty!");
+		                        ElementNode lastElem = (ElementNode) elementStack.pop();
+		                        if (lastElem.childCount != lastElem.elem.getChildCount())
+		                            return new ErrorReport.ResourceError(org.exist.backup.ErrorReport.NODE_HIERARCHY, "Element reports incorrect child count: expected " +
+		                                    lastElem.elem.getChildCount() + " but found " + lastElem.childCount);
+		                        break;
+		                    case XMLStreamReader.START_ELEMENT :
+		                        if (nodeId.getTreeLevel() <= defaultIndexDepth) {
+		                            // check dom.dbx btree, which maps the node id to the node's storage address
+		                            // look up the node id and check if the returned storage address is correct
+		                            NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), nodeId);
+		                            try {
+		                                long p = domDb.findValue(nodeRef);
+		                                if (p != reader.getCurrentPosition()) {
+		                                    Value v = domDb.get(p);
+		                                    if (v == null)
+		                                        return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node " + nodeId +
+		                                            " through dom.dbx index. Wrong storage address. Expected: " +
+		                                            p + "; got: " +
+		                                            reader.getCurrentPosition() + " - ", doc.getDocId());
+		                                }
+		                            } catch (Exception e) {
+		                                e.printStackTrace();
+		                                return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node " + nodeId +
+		                                        " through dom.dbx index.", e, doc.getDocId());
+		                            }
+		                        }
+		                        
+		                        StoredNode node = reader.getNode();
+		                        if (node.getNodeType() != Node.ELEMENT_NODE)
+		                            return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_TYPE,
+		                                    "Expected an element node, received node of type " +
+		                                    node.getNodeType());
+		                        elementStack.push(new ElementNode((ElementImpl) node));
+		                        attribsAllowed = true;
+		                        attributeCount = 0;
+		                        expectedAttribs = reader.getAttributeCount();
+		                        break;
+		                    default :
+		                        if (attribsAllowed) {
+		                            if (attributeCount != expectedAttribs)
+		                                return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.INCORRECT_NODE_TYPE,
+		                                    "Wrong number of attributes. Expected: " +
+		                                    expectedAttribs + "; found: " + attributeCount);
+		                        }
+		                        attribsAllowed = false;
+		                        break;
+		                }
+		            }
+		            if (!elementStack.isEmpty()) {
+		                return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: reached end of tree but " +
+		                        "stack was not empty!");
+		            }
+		            return null;
+		        } catch (IOException e) {
+		            e.printStackTrace();
+		            return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
+		        } catch (XMLStreamException e) {
+		            e.printStackTrace();
+		            return new ErrorReport.ResourceError(org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e);
+		        } finally {
+		            elementStack.clear();
+		        }
+	        }
+        }.run();
     }
 
     private class DocumentCallback implements BTreeCallback {
