@@ -1045,7 +1045,6 @@ public class Folder extends NamedResource implements Cloneable {
 	void removeDocument(DocumentImpl dimpl) {
 		transact(Lock.WRITE_LOCK);
 		try {
-			tx.lockWrite(dimpl);
 			if (dimpl instanceof BinaryDocument) {
 				handle.removeBinaryResource(tx.tx, broker, dimpl.getFileURI());
 			} else {
