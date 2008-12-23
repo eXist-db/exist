@@ -1220,7 +1220,7 @@ public class BrokerPool {
 		}
 	}
 
-    public void enterServiceMode(User user) throws PermissionDeniedException {
+    public DBBroker enterServiceMode(User user) throws PermissionDeniedException {
         if (!user.hasDbaRole())
             throw new PermissionDeniedException("Only users of group dba can switch the db to service mode");
         serviceModeUser = user;
@@ -1239,6 +1239,8 @@ public class BrokerPool {
         checkpoint = true;
         sync(broker, Sync.MAJOR_SYNC);
         checkpoint = false;
+        // Return a broker that can be used to perform system tasks
+        return broker;
     }
 
     public void exitServiceMode(User user) throws PermissionDeniedException {
