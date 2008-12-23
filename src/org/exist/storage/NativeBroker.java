@@ -823,7 +823,31 @@ public class NativeBroker extends DBBroker {
     
     public void moveCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newName) 
 	throws PermissionDeniedException, LockException, IOException {
-        if (readOnly)
+   	  // Need to move each collection in the source tree individually, so recurse.
+        moveCollectionRecursive(transaction, collection, destination, newName);
+        // For binary resources, though, just move the top level directory and all descendants come with it.
+        moveBinaryFork(transaction, collection, destination, newName);
+    }
+
+	private void moveBinaryFork(Txn transaction, Collection collection, Collection destination, XmldbURI newName) throws IOException {
+		File sourceDir = getCollectionFile(fsDir,collection.getURI(),false);
+        File targetDir = getCollectionFile(fsDir,destination.getURI().append(newName),false);
+        if (sourceDir.exists()) {
+           if (sourceDir.renameTo(targetDir)) {
+              Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
+              try {
+                 logManager.writeToLog(loggable);
+              } catch (TransactionException e) {
+                  LOG.warn(e.getMessage(), e);
+              }
+           } else {
+              LOG.fatal("Cannot move "+sourceDir+" to "+targetDir);
+           }
+        }
+	}
+
+	private void moveCollectionRecursive(Txn transaction, Collection collection, Collection destination, XmldbURI newName) throws PermissionDeniedException, IOException, LockException {
+		if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 		if(newName!=null && newName.numSegments()!=1) {
 		    throw new PermissionDeniedException("New collection name must have one segment!");
@@ -841,8 +865,6 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Insufficient privileges on target collection " +
 						destination.getURI());
         
-        File sourceDir = getCollectionFile(fsDir,collection.getURI(),false);
-        File targetDir = getCollectionFile(fsDir,destination.getURI(),false);
         // check if another collection with the same name exists at the destination
         Collection old = openCollection(destination.getURI().append(newName), Lock.WRITE_LOCK);
         if(old != null) {
@@ -895,26 +917,14 @@ public class NativeBroker extends DBBroker {
                     LOG.warn("Child collection " + childName + " not found");
                 else {
                     try {
-                        moveCollection(transaction, child, collection, childName);
+                        moveCollectionRecursive(transaction, child, collection, childName);
                     } finally {
                         child.release(Lock.WRITE_LOCK);
                     }
                 }
             }
         }
-        if (sourceDir.exists()) {
-           if (sourceDir.renameTo(targetDir)) {
-              Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
-              try {
-                 logManager.writeToLog(loggable);
-              } catch (TransactionException e) {
-                  LOG.warn(e.getMessage(), e);
-              }
-           } else {
-              LOG.fatal("Cannot move "+sourceDir+" to "+targetDir);
-           }
-        }
-    }    
+	}    
     
     private void canRemoveCollection(Collection collection) throws PermissionDeniedException {
         if(!collection.getPermissions().validate(getUser(), Permission.WRITE))
