@@ -469,8 +469,8 @@ public class QueryService implements Cloneable {
 	public QueryAnalysis analyze(String query, Object... params) {
 		if (presub) query = presub(query, params);
 		
-		final Collection<QName> requiredVariables = new TreeSet<QName>();
-		final Collection<QName> requiredFunctions = new TreeSet<QName>();
+		final Set<QName> requiredVariables = new TreeSet<QName>();
+		final Set<QName> requiredFunctions = new TreeSet<QName>();
 		DBBroker broker = null;
 		try {
 			broker = db.acquireBroker();
@@ -499,8 +499,8 @@ public class QueryService implements Cloneable {
 			return new QueryAnalysis(
 					// No need to keep track of composite key here, since we're not going to cache the compilation result.
 					xquery.compile(context, new StringSource(query)),
-					Collections.unmodifiableCollection(requiredVariables),
-					Collections.unmodifiableCollection(requiredFunctions));
+					Collections.unmodifiableSet(requiredVariables),
+					Collections.unmodifiableSet(requiredFunctions));
 		} catch (XPathException e) {
 			LOG.warn("query compilation failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));
 			throw new DatabaseException("failed to compile query", e);
@@ -516,10 +516,10 @@ public class QueryService implements Cloneable {
 	 */
 	public static class QueryAnalysis {
 		private final CompiledXQuery query;
-		private final Collection<QName> requiredVariables;
-		private final Collection<QName> requiredFunctions;
+		private final Set<QName> requiredVariables;
+		private final Set<QName> requiredFunctions;
 		
-		private QueryAnalysis(CompiledXQuery query, Collection<QName> requiredVariables, Collection<QName> requiredFunctions) {
+		private QueryAnalysis(CompiledXQuery query, Set<QName> requiredVariables, Set<QName> requiredFunctions) {
 			this.query = query;
 			this.requiredVariables = requiredVariables;
 			this.requiredFunctions = requiredFunctions;
@@ -573,7 +573,7 @@ public class QueryService implements Cloneable {
 		 * 
 		 * @return a list of variables required by this query
 		 */
-		public Collection<QName> requiredVariables() {
+		public Set<QName> requiredVariables() {
 			return requiredVariables;
 		}
 		
@@ -583,7 +583,7 @@ public class QueryService implements Cloneable {
 		 *
 		 * @return a list of functions required by this query
 		 */
-		public Collection<QName> requiredFunctions() {
+		public Set<QName> requiredFunctions() {
 			return requiredFunctions;
 		}
 	}
