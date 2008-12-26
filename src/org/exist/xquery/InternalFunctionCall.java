@@ -171,10 +171,6 @@ public class InternalFunctionCall extends Function
 	{
 		return function.isCalledAs(localName);
 	}
-	public boolean isValid()
-	{
-		return function.isValid();
-	}
 	public void replaceLastExpression(Expression s)
 	{
 		function.replaceLastExpression(s);

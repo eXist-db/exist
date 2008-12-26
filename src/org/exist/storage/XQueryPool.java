@@ -23,15 +23,13 @@
 package org.exist.storage;
 
 import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.Stack;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Object2ObjectHashMap;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 
 /**
  * Global pool for pre-compiled XQuery expressions. Expressions are
@@ -117,8 +115,28 @@ public class XQueryPool extends Object2ObjectHashMap {
 
     }
 
-    public synchronized void returnCompiledXQuery(Source source,
-            CompiledXQuery xquery) {
+    public void returnCompiledXQuery(Source source, CompiledXQuery xquery) {
+   	 returnModules(xquery.getContext(), null);
+   	 returnObject(source, xquery);
+    }
+    
+    private void returnModules(XQueryContext context, ExternalModule self) {
+   	 for (Iterator it = context.getModules(); it.hasNext(); ) {
+   		 Module module = (Module) it.next();
+   		 if (module != self && !module.isInternalModule()) {
+   			 ExternalModule extModule = (ExternalModule) module;
+   			 returnModule(extModule.getSource(), extModule);
+   		 }
+   	 }
+    }
+    
+    public void returnModule(Source source, ExternalModule module) {
+   	 returnModules(module.getContext(), module);
+   	 returnObject(source, module);
+    }
+    
+    private synchronized void returnObject(Source source, Object o) {
+   	 if (size() >= maxPoolSize) timeoutCheck();
         if (size() < maxPoolSize) {
             Stack stack = (Stack) get(source);
             if (stack == null) {
@@ -127,43 +145,88 @@ public class XQueryPool extends Object2ObjectHashMap {
                 put(source, stack);
             }
             if (stack.size() < maxStackSize) {
-                stack.push(xquery);
+                stack.push(o);
             }
         }
-        timeoutCheck();
+    }
+    
+    private synchronized Object borrowObject(DBBroker broker, Source source) {
+       int idx = getIndex(source);
+       if (idx < 0) {
+       	return null;
+       }
+       Source key = (Source) keys[idx];
+       int validity = key.isValid(broker);
+       if (validity == Source.UNKNOWN)
+           validity = key.isValid(source);
+       if (validity == Source.INVALID || validity == Source.UNKNOWN) {
+           keys[idx] = REMOVED;
+           values[idx] = null;
+           LOG.debug(source.getKey() + " is invalid");
+           return null;
+       }
+       Stack stack = (Stack) values[idx];
+       if (stack == null || stack.isEmpty()) return null;
+       return stack.pop();
     }
 
     public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) {
-        int idx = getIndex(source);
-        if (idx < 0) {
-        	return null;
-        }
-        Source key = (Source) keys[idx];
-        int validity = key.isValid(broker);
-        if (validity == Source.UNKNOWN)
-            validity = key.isValid(source);
-        if (validity == Source.INVALID || validity == Source.UNKNOWN) {
-            keys[idx] = REMOVED;
-            values[idx] = null;
-            LOG.debug(source.getKey() + " is invalid");
-            return null;
-        }
-        Stack stack = (Stack) values[idx];
-        if (stack != null && !stack.isEmpty()) {
-            // now check if the compiled expression is valid
-            // it might become invalid if an imported module has changed.
-            CompiledXQuery query = (CompiledXQuery) stack.pop();
-            XQueryContext context = query.getContext();
-            context.setBroker(broker);
-            if (!query.isValid()) {
-                // the compiled query is no longer valid: one of the imported
-                // modules may have changed
-                remove(key);
-                return null;
-            } else
-                return query;
-        }
-        return null;
+   	 CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
+   	 if (query == null) return null;
+      // now check if the compiled expression is valid
+      // it might become invalid if an imported module has changed.
+      XQueryContext context = query.getContext();
+      context.setBroker(broker);
+      if (!borrowModules(broker, context, null)) {
+          // the compiled query is no longer valid: one of the imported
+          // modules may have changed
+          remove(source);
+          return null;
+      } else {
+          return query;
+      }
+    }
+    
+    private synchronized boolean borrowModules(DBBroker broker, XQueryContext context, ExternalModule self) {
+   	 Map borrowedModules = new TreeMap();
+   	 for (Iterator it = context.getModules(); it.hasNext(); ) {
+   		 Module module = (Module) it.next();
+   		 if (module != self && !module.isInternalModule()) {
+   			 ExternalModule extModule = (ExternalModule) module;
+   			 ExternalModule borrowedModule = borrowModule(broker, extModule.getSource());
+   			 if (borrowedModule == null) {
+   		   	 for (Iterator it2 = borrowedModules.values().iterator(); it2.hasNext(); ) {
+   		   		 ExternalModule moduleToReturn = (ExternalModule) it2.next();
+   		   		 returnModule(moduleToReturn.getSource(), moduleToReturn);
+   		   	 }
+   		   	 return false;
+   			 }
+   			 borrowedModules.put(extModule.getNamespaceURI(), borrowedModule);
+   		 }
+   	 }
+   	 for (Iterator it = borrowedModules.entrySet().iterator(); it.hasNext(); ) {
+   		 Map.Entry entry = (Map.Entry) it.next();
+  			 context.setModule((String) entry.getKey(), (ExternalModule) entry.getValue());
+   	 }
+   	 return true;
+    }
+    
+    public synchronized ExternalModule borrowModule(DBBroker broker, Source source) {
+   	 ExternalModule module = (ExternalModule) borrowObject(broker, source);
+   	 if (module == null) return null;
+   	 XQueryContext context = module.getContext();
+   	 context.setBroker(broker);
+   	 if (!module.moduleIsValid()) {
+			 LOG.debug("Module with URI " + module.getNamespaceURI() + 
+				" has changed and needs to be reloaded");
+			 // fall through
+   	 } else if (!borrowModules(broker, context, module)) {
+   		 // fall through
+   	 } else {
+   		 return module;
+   	 }
+   	 remove(source);
+   	 return null;
     }
 
     private void timeoutCheck() {

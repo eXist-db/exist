@@ -477,19 +477,6 @@ public class XQueryContext {
 		//Reset current context position
 		setContextPosition(0);	
 		//Note that, for some reasons, an XQueryContext might be used without calling this method
-		try {
-			if (calendar == null) {
-				//Initialize to current dateTime
-				calendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
-			}
-		} catch (DatatypeConfigurationException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		if (implicitTimeZone == null) {
-			implicitTimeZone = TimeZone.getDefault();
-			if (implicitTimeZone.inDaylightTime(new Date()))
-				implicitTimeZone.setRawOffset(implicitTimeZone.getRawOffset() + implicitTimeZone.getDSTSavings());
-		}
 	}
 	
 	public AccessContext getAccessContext() {
@@ -1257,24 +1244,12 @@ public class XQueryContext {
 	public Module getModule(String namespaceURI) {
 		return (Module) modules.get(namespaceURI);
 	}
-
-	/**
-	 * For compiled expressions: check if the source of any
-	 * module imported by the current query has changed since
-	 * compilation.
-	 */
-	public boolean checkModulesValid() {
-		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
-			Module module = (Module)i.next();
-			if(!module.isInternalModule()) {
-				if(!((ExternalModule)module).moduleIsValid()) {
-					LOG.debug("Module with URI " + module.getNamespaceURI() + 
-							" has changed and needs to be reloaded");
-					return false;
-				}
-			}
+	
+	public void setModule(String namespaceURI, Module module) {
+		modules.put(namespaceURI, module);
+		if (!module.isInternalModule()) {
+			((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(this);
 		}
-		return true;
 	}
 	
 	/**
@@ -2024,7 +1999,8 @@ public class XQueryContext {
                                 throw new XPathException("source for module " + location + " is not an XQuery or " +
                                 "declares a wrong mime-type");
                             source = new DBSource(broker, (BinaryDocument) sourceDoc, true);
-                            module = compileModule(prefix, namespaceURI, location, module, source);
+                            // we don't know if the module will get returned, oh well
+                            module = compileOrBorrowModule(prefix, namespaceURI, location, source);
                         } catch (PermissionDeniedException e) {
                             throw new XPathException("permission denied to read module source from " + location);
                         } finally {
@@ -2049,13 +2025,22 @@ public class XQueryContext {
                     	throw new XPathException("Permission denied to access module '" + namespaceURI + "' at '" + location + "': " +
                                 e.getMessage());
                     }  
-                    module = compileModule(prefix, namespaceURI, location, module, source);
+                    // we don't know if the module will get returned, oh well
+                    module = compileOrBorrowModule(prefix, namespaceURI, location, source);
                 }
 			}
 		}
 		if(prefix == null)
 			prefix = module.getDefaultPrefix();
 		declareNamespace(prefix, namespaceURI);
+	}
+	
+	private ExternalModule compileOrBorrowModule(String prefix, String namespaceURI, String location, Source source) throws XPathException {
+		ExternalModule module = broker.getBrokerPool().getXQueryPool().borrowModule(broker, source);
+		if (module == null) module = compileModule(prefix, namespaceURI, location, source);
+     	modules.put(module.getNamespaceURI(), module);
+      declareModuleVars(module);
+      return module;
 	}
 
     /**
@@ -2066,7 +2051,7 @@ public class XQueryContext {
      * @return The compiled module.
      * @throws XPathException
      */
-    private Module compileModule(String prefix, String namespaceURI, String location, Module module, Source source) throws XPathException {
+    private ExternalModule compileModule(String prefix, String namespaceURI, String location, Source source) throws XPathException {
         LOG.debug("Loading module from " + location);
         
         Reader reader;
@@ -2104,10 +2089,9 @@ public class XQueryContext {
         	if(!modExternal.getNamespaceURI().equals(namespaceURI))
         		throw new XPathException("namespace URI declared by module (" + modExternal.getNamespaceURI() + 
         			") does not match namespace URI in import statement, which was: " + namespaceURI);        	
-        	modules.put(modExternal.getNamespaceURI(), modExternal);
         	modExternal.setSource(source);
         	modExternal.setContext(modContext);
-        	module = modExternal;
+        	return modExternal;
         } catch (RecognitionException e) {
         	throw new XPathException(
         		"error found while loading module from " + location + ": " + e.getMessage(),
@@ -2128,8 +2112,6 @@ public class XQueryContext {
                 LOG.warn("Error while closing module source: " + e.getMessage(), e);
             }
         }
-        declareModuleVars(module);
-        return module;
     }
 
     private void declareModuleVars(Module module) {
