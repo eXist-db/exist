@@ -1,6 +1,7 @@
 package org.exist.fluent;
 
-import java.io.*;
+import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.*;
 
@@ -24,6 +25,15 @@ public class QueryService implements Cloneable {
 	
 	private static final Pattern PRE_SUB_PATTERN = Pattern.compile("\\$(\\d+)");
 	private static final Logger LOG = Logger.getLogger(QueryService.class);
+	
+	private static final Statistics STATS = new Statistics();
+	
+	/**
+	 * Get the process-wide performance statistics gathering facet.
+	 * 
+	 * @return the performance statistics facet
+	 */
+	public static Statistics statistics() {return STATS;}
 	
 	private NamespaceMap namespaceBindings;
 	private Map<String, Document> moduleMap = new TreeMap<String, Document>();
@@ -254,12 +264,13 @@ public class QueryService implements Cloneable {
 	}
 		
 	ItemList executeQuery(String query, WrapperFactory wrapperFactory, Object[] params) {
+		long t1 = System.currentTimeMillis(), t2 = 0, t3 = 0, t4 = 0;
 		if (presub) query = presub(query, params);
 		DBBroker broker = null;
 		try {
 			broker = db.acquireBroker();
 			prepareContext(broker);
-			final org.exist.source.Source source = buildQuerySource(query, params);
+			final org.exist.source.Source source = buildQuerySource(query, params, "execute");
 			final XQuery xquery = broker.getXQueryService();
 			final XQueryPool pool = xquery.getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
@@ -267,16 +278,26 @@ public class QueryService implements Cloneable {
 			if (docs != null) docsToLock.addAll(docs);
 			if (base != null) docsToLock.addAll(base.getDocumentSet());
 			try {
-				XQueryContext context = compiledQuery == null
-						? xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP)
-						: compiledQuery.getContext();
-				buildXQueryContext(context, params, docsToLock);
-				if (compiledQuery == null) compiledQuery = xquery.compile(context, source);
+				XQueryContext context;
+				if (compiledQuery == null) {
+					context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
+					buildXQueryStaticContext(context);
+				} else {
+					context = compiledQuery.getContext();
+					// static context already set
+				}
+				buildXQueryDynamicContext(context, params, docsToLock);
+				t2 = System.currentTimeMillis();
+				if (compiledQuery == null) {
+					compiledQuery = xquery.compile(context, source);
+					t3 = System.currentTimeMillis();
+				}
 				docsToLock.lock(broker, false, false);
 				try {
 					return new ItemList(xquery.execute(wrap(compiledQuery, wrapperFactory, context), base), namespaceBindings.extend(), db);
 				} finally {
 					docsToLock.unlock(false);
+					t4 = System.currentTimeMillis();
 				}
 			} finally {
 				if (compiledQuery != null) pool.returnCompiledXQuery(source, compiledQuery);
@@ -290,6 +311,7 @@ public class QueryService implements Cloneable {
 			throw new DatabaseException("deadlock", e);
 		} finally {
 			db.releaseBroker(broker);
+			STATS.update(query, t1, t2, t3, t4, System.currentTimeMillis());
 		}
 	}
 	
@@ -302,7 +324,7 @@ public class QueryService implements Cloneable {
 		return wrapper;
 	}
 	
-	private org.exist.source.Source buildQuerySource(String query, Object[] params) {
+	private org.exist.source.Source buildQuerySource(String query, Object[] params, String cookie) {
 		Map<String, String> combinedMap = namespaceBindings.getCombinedMap();
 		for (Map.Entry<String, Document> entry : moduleMap.entrySet()) {
 			combinedMap.put("<module> " + entry.getKey(), entry.getValue().path());
@@ -311,18 +333,15 @@ public class QueryService implements Cloneable {
 			combinedMap.put("<var> " + entry.getKey(), null);	// don't care about values, as long as the same vars are bound
 		}
 		combinedMap.put("<posvars> " + params.length, null);
+		combinedMap.put("<cookie>", cookie);
 		// TODO: should include statically known documents and baseURI too?
 		return new StringSourceWithMapKey(query, combinedMap);
 	}
 
-	private void buildXQueryContext(XQueryContext context, Object[] params, MutableDocumentSet docsToLock) throws XPathException {
-		context.declareNamespaces(namespaceBindings.getCombinedMap());
+	private void buildXQueryDynamicContext(XQueryContext context, Object[] params, MutableDocumentSet docsToLock) throws XPathException {
 		context.setBackwardsCompatibility(false);
 		context.setStaticallyKnownDocuments(docs);
 		context.setBaseURI(baseUri == null ? new AnyURIValue("/db") : baseUri);
-		for (Map.Entry<String, Document> entry : moduleMap.entrySet()) {
-			context.importModule(entry.getKey(), null, "xmldb:exist:///db" + entry.getValue().path());
-		}
 		for (Map.Entry<QName, Object> entry : bindings.entrySet()) {
 			context.declareVariable(
 					new org.exist.dom.QName(entry.getKey().getLocalPart(), entry.getKey().getNamespaceURI(), entry.getKey().getPrefix()),
@@ -337,6 +356,13 @@ public class QueryService implements Cloneable {
 		}
 	}
 		
+	private void buildXQueryStaticContext(XQueryContext context) throws XPathException {
+		context.declareNamespaces(namespaceBindings.getCombinedMap());
+		for (Map.Entry<String, Document> entry : moduleMap.entrySet()) {
+			context.importModule(entry.getKey(), null, "xmldb:exist:///db" + entry.getValue().path());
+		}
+	}
+	
 	/**
 	 * Convert the given object into a value appropriate for being defined as
 	 * the value of a variable in an XQuery.  This will extract a sequence out
@@ -471,36 +497,35 @@ public class QueryService implements Cloneable {
 		
 		final Set<QName> requiredVariables = new TreeSet<QName>();
 		final Set<QName> requiredFunctions = new TreeSet<QName>();
+		long t1 = System.currentTimeMillis(), t2 = 0, t3 = 0;
 		DBBroker broker = null;
 		try {
 			broker = db.acquireBroker();
 			prepareContext(broker);
-			XQuery xquery = broker.getXQueryService();
-			final XQueryContext context = new XQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP) {
-				@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {
-					Variable var = super.resolveVariable(qname);
-					if (var == null) {
-						requiredVariables.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
-						var = new Variable(qname);
-					}
-					return var;
+			final org.exist.source.Source source = buildQuerySource(query, params, "analyze");
+			final XQuery xquery = broker.getXQueryService();
+			final XQueryPool pool = xquery.getXQueryPool();
+			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
+			try {
+				XQueryContext context;
+				if (compiledQuery == null) {
+					context = createAnalysisContext(broker, requiredVariables, requiredFunctions);
+					buildXQueryStaticContext(context);
+				} else {
+					context = compiledQuery.getContext();
+					// static context already set
 				}
-				@Override public UserDefinedFunction resolveFunction(org.exist.dom.QName qname, int argCount) throws XPathException {
-					UserDefinedFunction func = super.resolveFunction(qname, argCount);
-					if (func == null) {
-						requiredFunctions.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
-						func = new UserDefinedFunction(this, new FunctionSignature(qname, null, new SequenceType(Type.ITEM, org.exist.xquery.Cardinality.ZERO_OR_MORE), true));
-						func.setFunctionBody(new SequenceConstructor(this));
-					}
-					return func;
+				buildXQueryDynamicContext(context, params, null);
+				t2 = System.currentTimeMillis();
+				if (compiledQuery == null) {
+					compiledQuery = xquery.compile(context, source);
+					t3 = System.currentTimeMillis();
 				}
-			};
-			buildXQueryContext(context, params, null);
-			return new QueryAnalysis(
-					// No need to keep track of composite key here, since we're not going to cache the compilation result.
-					xquery.compile(context, new StringSource(query)),
-					Collections.unmodifiableSet(requiredVariables),
-					Collections.unmodifiableSet(requiredFunctions));
+				return new QueryAnalysis(
+						compiledQuery, Collections.unmodifiableSet(requiredVariables), Collections.unmodifiableSet(requiredFunctions));
+			} finally {
+				if (compiledQuery != null) pool.returnCompiledXQuery(source, compiledQuery);				
+			}
 		} catch (XPathException e) {
 			LOG.warn("query compilation failed --  " + query + "  -- " + (params == null ? "" : " with params " + Arrays.asList(params)) + (bindings.isEmpty() ? "" : " and bindings " + bindings));
 			throw new DatabaseException("failed to compile query", e);
@@ -508,7 +533,30 @@ public class QueryService implements Cloneable {
 			throw new DatabaseException("unexpected exception", e);
 		} finally {
 			db.releaseBroker(broker);
+			STATS.update(query, t1, t2, t3, 0, System.currentTimeMillis());
 		}
+	}
+		
+	private XQueryContext createAnalysisContext(DBBroker broker, final Set<QName> requiredVariables, final Set<QName> requiredFunctions) {
+		return new XQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP) {
+			@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {
+				Variable var = super.resolveVariable(qname);
+				if (var == null) {
+					requiredVariables.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
+					var = new Variable(qname);
+				}
+				return var;
+			}
+			@Override public UserDefinedFunction resolveFunction(org.exist.dom.QName qname, int argCount) throws XPathException {
+				UserDefinedFunction func = super.resolveFunction(qname, argCount);
+				if (func == null) {
+					requiredFunctions.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
+					func = new UserDefinedFunction(this, new FunctionSignature(qname, null, new SequenceType(Type.ITEM, org.exist.xquery.Cardinality.ZERO_OR_MORE), true));
+					func.setFunctionBody(new SequenceConstructor(this));
+				}
+				return func;
+			}
+		};
 	}
 	
 	/**
@@ -587,4 +635,141 @@ public class QueryService implements Cloneable {
 			return requiredFunctions;
 		}
 	}
+	
+	public static class Statistics {
+		private static final MessageFormat FORMAT = new MessageFormat(
+				"{1,number,000} uses over {3,number,0.000}s ({7,number,0.000}s avg) [" +
+				"{4,number,0.000}s compiling ({8,number,0.000}s avg, {2,number,percent} cache hits), " +
+				"{5,number,0.000}s preparing ({9,number,0.000}s avg), {6,number,0.000}s executing ({10,number,0.000}s avg)" +
+				"]: {0}");
+		
+		private static final Comparator<Entry> TOTAL_TIME_DESCENDING = new Comparator<Entry>() {
+			public int compare(Entry e1, Entry e2) {
+				return e1.queryTime == e2.queryTime ? 0 : (e1.queryTime > e2.queryTime ? -1 : 1); 
+			}
+		};
+		
+		private final Map<String, Entry> entries = new HashMap<String, Entry>();
+		
+		void update(String query, long t1, long t2, long t3, long t4, long t5) {
+			long tQuery = t5 - t1, tPreparation = t2 > 0 ? t2 - t1 : -1, tCompilation = t3 > 0 ? t3 - t2 : -1, tExecution = t4 > 0 ? t4 - (t3 > 0 ? t3 : t2) : -1;
+			get(null).update(tQuery, tPreparation, tCompilation, tExecution);
+			get(query).update(tQuery, tPreparation, tCompilation, tExecution);
+		}
+		
+		synchronized Entry get(String query) {
+			Entry entry = entries.get(query);
+			if (entry == null) entries.put(query, entry = new Entry(query));
+			return entry;
+		}
+		
+		/**
+		 * Get a list of all statistics entries for which data has been gathered.  The list is a copy
+		 * and can be further manipulating without affecting the service.
+		 *
+		 * @return a list of all statistics entries
+		 */
+		public synchronized List<Entry> entries() {
+			return new ArrayList<Entry>(entries.values());
+		}
+		
+		/**
+		 * Get the entry that aggregates statistics over all the queries.
+		 *
+		 * @return the totals entry
+		 */
+		public Entry totals() {
+			return get(null);
+		}
+		
+		/**
+		 * Reset all gathered statistics back to zero.
+		 */
+		public synchronized void reset() {
+			entries.clear();
+		}
+		
+		/**
+		 * Return a string that describes the statistics gathered for all the entries.
+		 * 
+		 * @return a string describing the statistics gathered so far
+		 */
+		public synchronized String toString() {
+			return toStringTop(entries.size());
+		}
+		
+		/**
+		 * Return a string that describes the statistics for the top n entries, sorted by
+		 * descending order of total time spent dealing with the query.  This will always
+		 * include the totals entry in the first position.
+		 *
+		 * @param n the desired number of entries to describe
+		 * @return a string describing the statistics for the top n entries
+		 */
+		public synchronized String toStringTop(int n) {
+			StringBuilder out = new StringBuilder();
+			List<Entry> list = entries();
+			Collections.sort(list, TOTAL_TIME_DESCENDING);
+			for (Entry entry : list.subList(0, n)) out.append(entry).append('\n');
+			return out.toString();
+		}
+		
+		/**
+		 * Performance counters for a single query.  The fields are public for convenience (and to avoid
+		 * a forest of accessors) but should be considered as read-only.
+		 *
+		 * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
+		 */
+		public static class Entry {
+			/**
+			 * The query string (after pre-substitution) that this entry is about.  If <code>null</code>
+			 * then this is the totals entry.
+			 */
+			public final String query;
+			
+			// These are simple counters
+			public long numQueries, queriesPrepared, queriesCompiled, queriesRun;
+			
+			// All times are in seconds.
+			public double queryTime, queryPreparationTime, queryCompilationTime, queryRunTime;
+			
+			Entry(String query) {
+				this.query = query;
+			}
+			
+			synchronized void update(long tQuery, long tPreparation, long tCompilation, long tRun) {
+				numQueries++;
+				queryTime += tQuery / 1000.0;
+				if (tPreparation >= 0) {
+					queriesPrepared++;
+					queryPreparationTime += tPreparation / 1000.0;
+				}
+				if (tCompilation >= 0) {
+					queriesCompiled++;
+					queryCompilationTime += tCompilation / 1000.0;
+				}
+				if (tRun >= 0) {
+					queryRunTime += tRun / 1000.0;
+					queriesRun++;
+				}
+			}
+			
+			public synchronized String toString() {
+				return FORMAT.format(new Object[] {
+						query == null ? "TOTALS" : query,
+						numQueries,
+						(queriesPrepared - queriesCompiled) / (double) queriesPrepared,
+						queryTime,
+						queryCompilationTime,
+						queryPreparationTime,
+						queryRunTime,
+						queryTime / numQueries,
+						queriesCompiled == 0 ? 0 : queryCompilationTime / queriesCompiled,
+						queriesPrepared == 0 ? 0 : queryPreparationTime / queriesPrepared,
+						queriesRun == 0 ? 0 : queryRunTime / queriesRun
+				});
+			}
+		}
+	}
+
 }

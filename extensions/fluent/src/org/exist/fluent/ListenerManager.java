@@ -22,48 +22,10 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public class ListenerManager {
 	
-	private static final Logger LOG = Logger.getLogger(ListenerManager.class);
-	
-	static void configureTriggerDispatcher(Database db) {
-		Folder rootConfigFolder = db.createFolder(CollectionConfigurationManager.CONFIG_COLLECTION + Database.ROOT_PREFIX);
-		rootConfigFolder.namespaceBindings().put("", CollectionConfiguration.NAMESPACE);
-		boolean hasTrigger = rootConfigFolder.documents().query().exists(
-				"//trigger[" +
-				"	@event='store update remove create-collection rename-collection delete-collection' and" +
-				"	@class='org.exist.fluent.ListenerManager$TriggerDispatcher']");
-		if (hasTrigger) return;
-		
-		org.w3c.dom.Node trigger = createGlobalTrigger(rootConfigFolder.namespaceBindings());
-		boolean hadConfig = false;
-		try {
-			// We try to merge in our trigger if a config already exists, but if something goes wrong we'll just blow it away instead.
-			Document configDoc = rootConfigFolder.documents().get(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE);
-			hadConfig = true;
-			Node triggers = configDoc.query().optional("//triggers").node();
-			if (!triggers.extant()) {
-				// If no <collection> at root, let the exception take us to the "overwrite" path since the config isn't valid anyway.
-				Node configRoot = configDoc.query().single("/collection").node();
-				configRoot.append().elem("triggers").end("triggers").commit();
-				triggers = rootConfigFolder.documents().query().single("//triggers").node();
-			}
-			triggers.append().node(trigger).commit();
-			// Hack: collection config will only refresh on new document store, so move the document away and back.
-			configDoc.move(rootConfigFolder, Name.generate());
-			configDoc.move(rootConfigFolder, Name.create(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE));
-		} catch (DatabaseException e) {
-			rootConfigFolder.documents().build(Name.overwrite(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE))
-				.elem("collection").elem("triggers").node(trigger).end("triggers").end("collection").commit();
-			if (hadConfig) LOG.warn("forced to overwrite root collection config due to exception", e);
-		}
+	static String getTriggerConfigXml() {
+		return "<triggers><trigger event='store update remove create-collection rename-collection delete-collection' class='org.exist.fluent.ListenerManager$TriggerDispatcher'/></triggers>";
 	}
 	
-	private static org.w3c.dom.Node createGlobalTrigger(NamespaceMap namespaceBindings) {
-		return ElementBuilder.createScratch(namespaceBindings).elem("trigger")
-			.attr("event", "store update remove create-collection rename-collection delete-collection")
-			.attr("class", "org.exist.fluent.ListenerManager$TriggerDispatcher")
-		.end("trigger").commit();
-	}
-
 	static class EventKey implements Comparable<EventKey> {
 		final String path;
 		final Trigger trigger;

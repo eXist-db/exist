@@ -7,6 +7,7 @@ import java.util.*;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.*;
+import org.exist.collections.*;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.security.*;
@@ -59,15 +60,56 @@ public class Database {
 			if (isStarted()) throw new IllegalStateException("database already started");
 			configFile = configFile.getAbsoluteFile();
 			Configuration config = new Configuration(configFile.getName(), configFile.getParentFile().getAbsolutePath());
-			BrokerPool.configure(dbName, 1, 2, config);
+			BrokerPool.configure(dbName, 1, 5, config);
 			pool = BrokerPool.getInstance(dbName);
 			txManager = pool.getTransactionManager();
-			ListenerManager.configureTriggerDispatcher(new Database(SecurityManager.SYSTEM_USER));
+			configureRootCollection(configFile);
 			defragmenter.start();
+			QueryService.statistics().reset();
 		} catch (DatabaseConfigurationException e) {
 			throw new DatabaseException(e);
 		} catch (EXistException e) {
 			throw new DatabaseException(e);
+		}
+	}
+
+	static void configureRootCollection(File configFile) {
+		Database db = new Database(SecurityManager.SYSTEM_USER);
+		StringBuilder configXml = new StringBuilder();
+		configXml.append("<collection xmlns='http://exist-db.org/collection-config/1.0'>");
+		configXml.append(ListenerManager.getTriggerConfigXml());
+		{
+			XMLDocument configDoc = db.getFolder("/").documents().load(Name.generate(), Source.xml(configFile));
+			Node indexNode = configDoc.query().optional("/exist/indexer/index").node();
+			if (indexNode.extant()) configXml.append(indexNode.toString());
+			configDoc.delete();
+		}
+		configXml.append("</collection>");
+		
+		// If the config is already *exactly* how we want it, no need to reload and reindex.
+		try {
+			if (db.getFolder(CollectionConfigurationManager.CONFIG_COLLECTION + Database.ROOT_PREFIX).documents()
+					.get(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
+					.contentsAsString().equals(configXml.toString())) return;
+		} catch (DatabaseException e) {
+			// fall through
+		}
+		
+		// Now force reload and reindex so it'll pick up the new settings.
+		DBBroker broker = null;
+		Transaction tx = requireTransaction();
+		try {
+			broker = db.acquireBroker();
+			pool.getConfigurationManager().addConfiguration(tx.tx, broker, broker.getCollection(XmldbURI.ROOT_COLLECTION_URI), configXml.toString());
+			tx.commit();
+			broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
+		} catch (PermissionDeniedException e) {
+			throw new DatabaseException(e);
+		} catch (CollectionConfigurationException e) {
+			throw new DatabaseException(e);
+		} finally {
+			tx.abortIfIncomplete();
+			db.releaseBroker(broker);
 		}
 	}
 	
@@ -75,8 +117,9 @@ public class Database {
 	 * Shut down the database connection.  If the database is not started, do nothing.
 	 */
 	public static void shutdown() {
+		if (pool == null) return;
 		defragmenter.stop();
-		if (pool != null) pool.shutdown();
+		pool.shutdown();
 		pool = null;
 	}
 	
