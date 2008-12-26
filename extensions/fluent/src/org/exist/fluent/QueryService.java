@@ -1,7 +1,7 @@
 package org.exist.fluent;
 
 import java.io.IOException;
-import java.text.MessageFormat;
+import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -637,10 +637,16 @@ public class QueryService implements Cloneable {
 	}
 	
 	public static class Statistics {
-		private static final MessageFormat FORMAT = new MessageFormat(
-				"{1,number,000} uses over {3,number,0.000}s ({7,number,0.000}s avg) [" +
-				"{4,number,0.000}s compiling ({8,number,0.000}s avg, {2,number,percent} cache hits), " +
-				"{5,number,0.000}s preparing ({9,number,0.000}s avg), {6,number,0.000}s executing ({10,number,0.000}s avg)" +
+		private static final NumberFormat COUNT_FORMAT = NumberFormat.getIntegerInstance();
+		private static final MessageFormat FULL_ENTRY_FORMAT = new MessageFormat(
+				"{1} uses in {3,number,0.000}s ({11,number,percent}, {7,number,0.00}ms avg) [" +
+				"{4,number,0.000}s compiling ({8,number,0.00}ms avg, {2,number,percent} cache hits), " +
+				"{5,number,0.000}s preparing ({9,number,0.00}ms avg), {6,number,0.000}s executing ({10,number,0.00}ms avg)" +
+				"]: {0}");
+		private static final MessageFormat STAND_ALONE_ENTRY_FORMAT = new MessageFormat(
+				"{1,number,integer} uses in {3,number,0.000}s ({7,number,0.00}ms avg) [" +
+				"{4,number,0.000}s compiling ({8,number,0.00}ms avg, {2,number,percent} cache hits), " +
+				"{5,number,0.000}s preparing ({9,number,0.00}ms avg), {6,number,0.000}s executing ({10,number,0.00}ms avg)" +
 				"]: {0}");
 		
 		private static final Comparator<Entry> TOTAL_TIME_DESCENDING = new Comparator<Entry>() {
@@ -710,7 +716,9 @@ public class QueryService implements Cloneable {
 			StringBuilder out = new StringBuilder();
 			List<Entry> list = entries();
 			Collections.sort(list, TOTAL_TIME_DESCENDING);
-			for (Entry entry : list.subList(0, n)) out.append(entry).append('\n');
+			int maxCountLength = COUNT_FORMAT.format(list.get(0).numQueries).length();
+			double totalDuration = list.get(0).queryTime;
+			for (Entry entry : list.subList(0, n)) out.append(entry.toString(maxCountLength, totalDuration)).append('\n');
 			return out.toString();
 		}
 		
@@ -754,8 +762,26 @@ public class QueryService implements Cloneable {
 				}
 			}
 			
-			public synchronized String toString() {
-				return FORMAT.format(new Object[] {
+			public synchronized String toString(int maxCountLength, double totalDuration) {
+				String formattedCount = String.format("%" + maxCountLength + "s", COUNT_FORMAT.format(numQueries));
+				return FULL_ENTRY_FORMAT.format(new Object[] {
+						query == null ? "TOTALS" : query,
+						formattedCount,
+						(queriesPrepared - queriesCompiled) / (double) queriesPrepared,
+						queryTime,
+						queryCompilationTime,
+						queryPreparationTime,
+						queryRunTime,
+						queryTime * 1000 / numQueries,
+						queriesCompiled == 0 ? 0 : queryCompilationTime * 1000 / queriesCompiled,
+						queriesPrepared == 0 ? 0 : queryPreparationTime * 1000 / queriesPrepared,
+						queriesRun == 0 ? 0 : queryRunTime * 1000 / queriesRun,
+						queryTime / totalDuration
+				});
+			}
+
+			@Override public synchronized String toString() {
+				return STAND_ALONE_ENTRY_FORMAT.format(new Object[] {
 						query == null ? "TOTALS" : query,
 						numQueries,
 						(queriesPrepared - queriesCompiled) / (double) queriesPrepared,
@@ -763,10 +789,10 @@ public class QueryService implements Cloneable {
 						queryCompilationTime,
 						queryPreparationTime,
 						queryRunTime,
-						queryTime / numQueries,
-						queriesCompiled == 0 ? 0 : queryCompilationTime / queriesCompiled,
-						queriesPrepared == 0 ? 0 : queryPreparationTime / queriesPrepared,
-						queriesRun == 0 ? 0 : queryRunTime / queriesRun
+						queryTime * 1000 / numQueries,
+						queriesCompiled == 0 ? 0 : queryCompilationTime * 1000 / queriesCompiled,
+						queriesPrepared == 0 ? 0 : queryPreparationTime * 1000 / queriesPrepared,
+						queriesRun == 0 ? 0 : queryRunTime * 1000 / queriesRun
 				});
 			}
 		}
