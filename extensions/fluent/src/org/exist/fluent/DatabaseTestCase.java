@@ -34,16 +34,17 @@ public abstract class DatabaseTestCase {
 	protected static Database db;
     
 	@Before public void startupDatabase() throws Exception {
+		ConfigFile configFileAnnotation = getClass().getAnnotation(ConfigFile.class);
+		if (configFileAnnotation == null)
+			throw new DatabaseException("Missing ConfigFile annotation on DatabaseTestCase subclass");
+		File configFile = new File(configFileAnnotation.value());
 		if (!Database.isStarted()) {
-			ConfigFile configFileAnnotation = getClass().getAnnotation(ConfigFile.class);
-			if (configFileAnnotation == null)
-				throw new DatabaseException("Missing ConfigFile annotation on DatabaseTestCase subclass");
-			Database.startup(new File(configFileAnnotation.value()));
+			Database.startup(configFile);
 			db = null;
 		}
 		if (db == null) db = new Database(SecurityManager.SYSTEM_USER);
 		wipeDatabase();
-		ListenerManager.configureTriggerDispatcher(db);	// config file gets erased by wipeDatabase()
+		Database.configureRootCollection(configFile);	// config file gets erased by wipeDatabase()
 	}
 	
 	@After public void shutdownDatabase() throws Exception {
