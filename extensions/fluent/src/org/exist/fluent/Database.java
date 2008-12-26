@@ -240,7 +240,7 @@ public class Database {
 	}
 
 	private static String dbName = "exist";
-	static final String ROOT_PREFIX = "/db";		// should match the root prefix in NativeBroker
+	public static final String ROOT_PREFIX = DBBroker.ROOT_COLLECTION;
 	private static BrokerPool pool;
 	private static TransactionManager txManager;
 	private static final ThreadLocal<Transaction> localTransaction = new ThreadLocal<Transaction>();
