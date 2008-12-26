@@ -67,6 +67,8 @@ public interface ExternalModule extends Module {
 	 */
 	public void setSource(Source source);
 	
+	public XQueryContext getContext();
+	
 	/**
 	 * Set the XQueryContext of this module. This will be a sub-context
 	 * of the main context as parts of the static context are shared. 

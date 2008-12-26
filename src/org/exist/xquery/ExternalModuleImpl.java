@@ -173,14 +173,15 @@ public class ExternalModuleImpl implements ExternalModule {
 		mContext = context;
 	}
 	
+	public XQueryContext getContext() {
+		return mContext;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.ExternalModule#moduleIsValid()
 	 */
 	public boolean moduleIsValid() {
-		if(mSource.isValid(mContext.getBroker()) != Source.VALID)
-			return false;
-		// check other modules imported from here
-		return mContext.checkModulesValid();
+		return mSource.isValid(mContext.getBroker()) == Source.VALID;
 	}
 	
 	public void reset(XQueryContext xqueryContext) {

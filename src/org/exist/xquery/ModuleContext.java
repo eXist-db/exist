@@ -43,7 +43,6 @@ public class ModuleContext extends XQueryContext {
 	private XQueryContext parentContext;
     private String modulePrefix;
     private String moduleNamespace;
-    private boolean initializing = true;
 
     /**
 	 * @param parentContext
@@ -52,13 +51,16 @@ public class ModuleContext extends XQueryContext {
 		super(parentContext.getAccessContext());
         this.moduleNamespace = moduleNamespace;
         this.modulePrefix = modulePrefix;
-        this.parentContext = parentContext;
+        setParentContext(parentContext);
+		loadDefaults(broker.getConfiguration());
+    }
+	
+	void setParentContext(XQueryContext parentContext) {
+      this.parentContext = parentContext;
 		this.broker = parentContext.broker;
 		baseURI = parentContext.baseURI;
 		moduleLoadPath = parentContext.moduleLoadPath;
-		loadDefaults(broker.getConfiguration());
-        initializing = false;
-    }
+	}
 
     public boolean hasParent() {
         return true;
