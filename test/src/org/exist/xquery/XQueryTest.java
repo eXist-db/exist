@@ -327,7 +327,7 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
-    public void bugtestConstructedNode1() {
+    public void testConstructedNode1() {
         try {
             String q1 =
                     "let $a := <A/> for $b in $a//B/string() return \"Oops!\"";
@@ -1361,7 +1361,7 @@ public class XQueryTest extends XMLTestCase {
         }
     }
     
-    public void bugtestDoubleDocNode_2078755() {
+    public void testDoubleDocNode_2078755() {
         try {
             Collection testCollection = getTestCollection();
             Resource doc = testCollection.createResource(MODULE8_NAME, "BinaryResource");
@@ -1826,7 +1826,7 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
-    public void bugtestAttributeNamespace() {
+    public void testAttributeNamespace() {
 
         String query = "declare function local:copy($nodes as node()*) as node()* {" + "for $n in $nodes return " + "if ($n instance of element()) then " + "  element {node-name($n)} {(local:copy($n/@*), local:copy($n/node()))} " + "else if ($n instance of attribute()) then " + "  attribute {node-name($n)} {$n} " + "else if ($n instance of text()) then " + "  text {$n} " + "else " + "  <Other/>" + "};" + "let $c :=" + "<c:C  xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">" + "ccc" + "</c:C>" + "return local:copy($c)";
         try {
@@ -2153,7 +2153,7 @@ public class XQueryTest extends XMLTestCase {
 
     }
 
-    public void bugtestDocumentNode_1730690() {
+    public void testDocumentNode_1730690() {
 
         try {
             String query = "let $doc := document { <element/> } " +
