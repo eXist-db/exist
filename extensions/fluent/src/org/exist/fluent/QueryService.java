@@ -715,10 +715,11 @@ public class QueryService implements Cloneable {
 		public synchronized String toStringTop(int n) {
 			StringBuilder out = new StringBuilder();
 			List<Entry> list = entries();
+			if (list.isEmpty()) return "<no queries executed>";
 			Collections.sort(list, TOTAL_TIME_DESCENDING);
 			int maxCountLength = COUNT_FORMAT.format(list.get(0).numQueries).length();
 			double totalDuration = list.get(0).queryTime;
-			for (Entry entry : list.subList(0, n)) out.append(entry.toString(maxCountLength, totalDuration)).append('\n');
+			for (Entry entry : list.subList(0, Math.min(n, list.size()))) out.append(entry.toString(maxCountLength, totalDuration)).append('\n');
 			return out.toString();
 		}
 		

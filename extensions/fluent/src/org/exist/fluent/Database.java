@@ -185,19 +185,21 @@ public class Database {
 	 */
 	@SuppressWarnings("unchecked")
 	public static boolean checkConsistency() {
-		try {
-			DBBroker broker = pool.enterServiceMode(SecurityManager.SYSTEM_USER);
+		synchronized(pool) {
 			try {
-				List<ErrorReport> errors = new ConsistencyCheck(broker).checkAll(NULL_PROGRESS_CALLBACK);
-				if (errors.isEmpty()) return true;
-				LOG.fatal("database corrupted");
-				for (ErrorReport error : errors) LOG.error(error.toString().replace("\n", " "));
-				return false;
-			} finally {
-				pool.exitServiceMode(SecurityManager.SYSTEM_USER);
+				DBBroker broker = pool.enterServiceMode(SecurityManager.SYSTEM_USER);
+				try {
+					List<ErrorReport> errors = new ConsistencyCheck(broker).checkAll(NULL_PROGRESS_CALLBACK);
+					if (errors.isEmpty()) return true;
+					LOG.fatal("database corrupted");
+					for (ErrorReport error : errors) LOG.error(error.toString().replace("\n", " "));
+					return false;
+				} finally {
+					pool.exitServiceMode(SecurityManager.SYSTEM_USER);
+				}
+			} catch (PermissionDeniedException e) {
+				throw new DatabaseException(e);
 			}
-		} catch (PermissionDeniedException e) {
-			throw new DatabaseException(e);
 		}
 	}
 	
