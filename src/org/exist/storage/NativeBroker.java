@@ -73,8 +73,8 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.TerminatedException;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
@@ -2025,14 +2025,18 @@ public class NativeBroker extends DBBroker {
                 InputStream is = getBinaryResource((BinaryDocument) doc); 
                 destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
             } else {
-            	//TODO : put a lock on newDoc ?
                 DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
-                newDoc.setPermissions(doc.getPermissions()); 
-                copyXMLResource(transaction, doc, newDoc);
-                destination.addDocument(transaction, this, newDoc);
-                storeXMLResource(transaction, newDoc);
+                newDoc.setPermissions(doc.getPermissions());
+                newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                try {
+	                copyXMLResource(transaction, doc, newDoc);
+	                destination.addDocument(transaction, this, newDoc);
+	                storeXMLResource(transaction, newDoc);
+                } finally {
+               	 newDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                }
             }
 	    //          saveCollection(destination);
         } catch (EXistException e) {
