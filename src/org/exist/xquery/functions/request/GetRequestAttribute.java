@@ -29,11 +29,11 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
@@ -49,7 +49,7 @@ public class GetRequestAttribute extends BasicFunction {
 			new SequenceType[] {
                     new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
             },
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
 
 	/**
 	 * @param context
@@ -76,7 +76,7 @@ public class GetRequestAttribute extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			Object attrib = ((RequestWrapper) value.getObject()).getAttribute(name);
-            return attrib == null ? Sequence.EMPTY_SEQUENCE : new StringValue(attrib.toString());
+            return attrib == null ? Sequence.EMPTY_SEQUENCE : XPathUtil.javaObjectToXPath(attrib, context);
         } else
 			throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
 	}
