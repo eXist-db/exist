@@ -102,7 +102,7 @@ public class XMLDiff {
         return simplified;
     }
 
-    protected String diff2XML(List changes, Properties properties) throws IOException {
+    protected String diff2XML(List changes, Properties properties) throws DiffException {
         changes = simplify(changes);
         try {
             StringWriter writer = new StringWriter();
@@ -123,7 +123,7 @@ public class XMLDiff {
             sax.endDocument();
             return writer.toString();
         } catch (SAXException e) {
-            throw new IOException("error while serializing diff: " + e.getMessage(), e);
+            throw new DiffException("error while serializing diff: " + e.getMessage(), e);
         }
     }
 
