@@ -763,5 +763,8 @@ public abstract class DBBroker extends Observable {
     public abstract EmbeddedXMLStreamReader getXMLStreamReader(NodeHandle node, boolean reportAttributes)
             throws IOException, XMLStreamException;
 
+    public abstract EmbeddedXMLStreamReader newXMLStreamReader(StoredNode node, boolean reportAttributes)
+            throws IOException, XMLStreamException;
+
     public abstract void backupToArchive(RawDataBackup backup) throws IOException;
 }

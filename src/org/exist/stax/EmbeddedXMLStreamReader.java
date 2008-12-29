@@ -52,7 +52,7 @@ import java.util.Stack;
  * an element will not be read unless {@link #getText()} is called.
  */
 public class EmbeddedXMLStreamReader implements XMLStreamReader {
-	
+
 	private static final Logger LOG = Logger.getLogger(EmbeddedXMLStreamReader.class);
 
     public final static String PROPERTY_NODE_ID = "node-id";
@@ -70,7 +70,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     private DocumentImpl document;
 
     private NodeId nodeId;
-    
+
     private NodeHandle origin;
 
     private QName qname = null;
@@ -158,6 +158,12 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         readNodeId();
     }
 
+    public int getChildCount() {
+        if (state == START_ELEMENT)
+            return ((ElementEvent)elementStack.peek()).getChildCount();
+        return 0;
+    }
+    
     private void skipAttributes() throws XMLStreamException {
         if (attributes == null) {
             // attributes were not yet read. skip them...
@@ -316,6 +322,15 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         if (i > attributes.getLength())
             throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
         return attributes.getQName(i).toJavaQName();
+    }
+
+    public org.exist.dom.QName getAttributeQName(int i) {
+        if (state != START_ELEMENT)
+            throw new IllegalStateException("Cursor is not at an element");
+        readAttributes();
+        if (i > attributes.getLength())
+            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+        return attributes.getQName(i);
     }
 
     public String getAttributeNamespace(int i) {

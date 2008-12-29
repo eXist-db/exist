@@ -73,8 +73,8 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.TerminatedException;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
@@ -518,6 +518,12 @@ public class NativeBroker extends DBBroker {
             streamReader.reposition(this, node, reportAttributes);
         }
         return streamReader;
+    }
+
+    public EmbeddedXMLStreamReader newXMLStreamReader(StoredNode node, boolean reportAttributes)
+            throws IOException, XMLStreamException {
+        RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
+        return new EmbeddedXMLStreamReader(this, (DocumentImpl) node.getOwnerDocument(), iterator, null, reportAttributes);
     }
 
     public Iterator getNodeIterator(StoredNode node) {
@@ -2019,18 +2025,14 @@ public class NativeBroker extends DBBroker {
                 InputStream is = getBinaryResource((BinaryDocument) doc); 
                 destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
             } else {
+            	//TODO : put a lock on newDoc ?
                 DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
-                newDoc.setPermissions(doc.getPermissions());
-                newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
-                try {
-	                copyXMLResource(transaction, doc, newDoc);
-	                destination.addDocument(transaction, this, newDoc);
-	                storeXMLResource(transaction, newDoc);
-                } finally {
-               	 newDoc.getUpdateLock().release(Lock.WRITE_LOCK);
-                }
+                newDoc.setPermissions(doc.getPermissions()); 
+                copyXMLResource(transaction, doc, newDoc);
+                destination.addDocument(transaction, this, newDoc);
+                storeXMLResource(transaction, newDoc);
             }
 	    //          saveCollection(destination);
         } catch (EXistException e) {
@@ -2178,15 +2180,17 @@ public class NativeBroker extends DBBroker {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
             }
-            new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                public Object start() {
-                    StoredNode node = (StoredNode)document.getFirstChild();
-                    domDb.removeAll(transaction, node.getInternalAddress());
-                    return null;
+            if (!document.getMetadata().isReferenced()) {
+                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                    public Object start() {
+                        StoredNode node = (StoredNode)document.getFirstChild();
+                        domDb.removeAll(transaction, node.getInternalAddress());
+                        return null;
+                    }
                 }
+                .run();
             }
-            .run();
-            
+
             NodeRef ref = new NodeRef(document.getDocId());
             final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
             new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -3025,7 +3029,7 @@ public class NativeBroker extends DBBroker {
 	    .run();
     }
 
-    public StoredNode objectWith(final NodeProxy p) {
+    public StoredNode objectWith(final NodeProxy p) {       
 	if (p.getInternalAddress() == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
 	    return objectWith(p.getDocument(), p.getNodeId());
 	return (StoredNode) new DOMTransaction(this, domDb, Lock.READ_LOCK) {

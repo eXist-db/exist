@@ -62,7 +62,9 @@ public class DocumentMetadata {
     private transient NodeIndexListener listener = NullNodeIndexListener.INSTANCE;
     
     protected transient int splitCount = 0;
-    
+
+    private boolean isReferenced = false;
+
     public DocumentMetadata() {
     }
     
@@ -220,5 +222,13 @@ public class DocumentMetadata {
     
     public void setSplitCount(int count) {
         splitCount = count;
+    }
+
+    public boolean isReferenced() {
+        return isReferenced;
+    }
+
+    public void setReferenced(boolean referenced) {
+        isReferenced = referenced;
     }
 }
