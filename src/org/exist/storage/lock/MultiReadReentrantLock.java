@@ -109,9 +109,9 @@ public class MultiReadReentrantLock implements Lock {
         }
         switch (mode) {
             case Lock.WRITE_LOCK:
-                return writeLock();
+                return writeLock(true);
             default:
-                return readLock();
+                return readLock(true);
         }
     }
 
@@ -119,15 +119,25 @@ public class MultiReadReentrantLock implements Lock {
 	 * @see org.exist.util.Lock#attempt(int)
 	 */
     public boolean attempt(int mode) {
-        throw new RuntimeException("Not implemented");
+   	 try {
+	       switch (mode) {
+	          case Lock.WRITE_LOCK:
+	              return writeLock(false);
+	          default:
+	              return readLock(false);
+	      }
+   	 } catch (LockException e) {
+   		 return false;
+   	 }
     }
 
     /**
      * Issue a read lock if there is no outstanding write lock or threads
      * waiting to get a write lock. Caller of this method must be careful to
      * avoid synchronizing the calling code so as to avoid deadlock.
+    * @param waitIfNecessary whether to wait if the lock is not available right away
      */
-    private synchronized boolean readLock() throws LockException {
+    private synchronized boolean readLock(boolean waitIfNecessary) throws LockException {
         final Thread thisThread = Thread.currentThread();
         if (writeLockedThread == thisThread) {
             // add acquired lock to the current list of read locks
@@ -138,6 +148,7 @@ public class MultiReadReentrantLock implements Lock {
         deadlockCheck();
         waitingForReadLock++;
         if (writeLockedThread != null) {
+           if (!waitIfNecessary) return false;
             WaitingThread waiter = new WaitingThread(thisThread, this, this, Lock.READ_LOCK);
             DeadlockDetection.addResourceWaiter(thisThread, waiter);
             while (writeLockedThread != null) {
@@ -159,8 +170,9 @@ public class MultiReadReentrantLock implements Lock {
      * Issue a write lock if there are no outstanding read or write locks.
      * Caller of this method must be careful to avoid synchronizing the calling
      * code so as to avoid deadlock.
+    * @param waitIfNecessary whether to wait if the lock is not available right away
      */
-    private boolean writeLock() throws LockException {
+    private boolean writeLock(boolean waitIfNecessary) throws LockException {
         Thread thisThread = Thread.currentThread();
         WaitingThread waiter;
         synchronized (this) {
@@ -178,6 +190,7 @@ public class MultiReadReentrantLock implements Lock {
 
                 return true;
             }
+            if (!waitIfNecessary) return false;
 //            if (writeLockedThread == thisThread) {
 //                LOG.debug("nested write lock: " + outstandingWriteLocks);
 //            }
