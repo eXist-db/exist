@@ -94,6 +94,9 @@ public class ModuleContext extends XQueryContext {
 	 */
 	public Module getModule(String namespaceURI) {
 		Module module = super.getModule(namespaceURI);
+		// TODO: I don't think modules should be able to access their parent context's modules,
+		// since that breaks lexical scoping.  However, it seems that some eXist modules rely on
+		// this so let's leave it for now.  (pkaminsk2)
 		if(module == null)
 			module = parentContext.getModule(namespaceURI);
 		return module;
@@ -119,13 +122,6 @@ public class ModuleContext extends XQueryContext {
         return module;
     }
 
-    /* (non-Javadoc)
-	 * @see org.exist.xquery.XQueryContext#getModules()
-	 */
-	public Iterator getModules() {
-		return parentContext.getModules();
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getWatchDog()
 	 */
