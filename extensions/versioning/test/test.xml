@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<v:testSuite xmlns:v="http://exist-db.org/versioning">
+    <v:test id="simple-insert">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>Inserted paragraph</para>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-insert-first">
+        <v:revision>
+            <book>
+                <para>First paragraph</para>jj
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-insert-last">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-insert-last-multi">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+                <para>Second paragraph</para>
+                <para>Third paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-insert-first-multi">
+        <v:revision>
+            <book>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>Very first paragraph</para>
+                <para>Before second paragraph</para>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-update-first">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>New Book Title</title>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-update-last">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>Very first paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-update-multi">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>New Book Title</title>
+                <para>Very first paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-remove-first">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-update-mixed">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First <emphasis>important</emphasis> paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>Most <emphasis>important</emphasis> paragraph!</para>
+            </book>
+        </v:revision>
+    </v:test>
+</v:testSuite>

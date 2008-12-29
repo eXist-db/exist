@@ -8,8 +8,8 @@
 
 	<property file="${top.dir}/build.properties"/>
 	
-    <property file="local.build.properties"/>
-    <property file="build.properties"/>
+    <property file="../local.build.properties"/>
+    <property file="../build.properties"/>
 
     <condition property="include.module.simpleql.config">
         <istrue value="${include.module.simpleql}"/>

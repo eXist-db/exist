@@ -365,7 +365,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-modules,extension-indexes,extension-fluent,test-compile"
+        depends="jar,wrapper,extension-modules,extension-indexes,extension-versioning,extension-fluent,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -488,6 +488,7 @@
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="clean"/>
         <ant antfile="build.xml" dir="extensions/fluent" target="clean"/>
+		<ant antfile="build.xml" dir="extensions/versioning" target="clean"/>
         <antcall target="extensions-xslt"/>
     </target>
 
@@ -533,6 +534,10 @@
         <ant antfile="build.xml" dir="extensions/indexes" inheritall="false"/>
     </target>
 
+    <target name="extension-versioning" depends="prepare-extensions,jar">
+        <ant antfile="build.xml" dir="extensions/versioning" inheritall="false"/>
+    </target>
+    
     <target name="extension-fluent" depends="jar">
         <ant antfile="build.xml" dir="extensions/fluent" inheritall="false"/>
     </target>
