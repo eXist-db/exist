@@ -1,12 +1,10 @@
 package org.exist.util;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import org.xml.sax.InputSource;
 
 /**
  * This class extends InputSource to be able to deal with

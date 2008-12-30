@@ -21,14 +21,13 @@
  */
 package org.exist.xslt;
 
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+
 import org.apache.log4j.Logger;
-import org.exist.storage.DBBroker;
 import org.exist.storage.BrokerPool;
 
 /**

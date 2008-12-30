@@ -21,16 +21,15 @@
  */
 package org.exist.memtree;
 
-import org.w3c.dom.Node;
-import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.stax.ExtendedXMLStreamReader;
-import org.exist.numbering.NodeId;
-
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.exist.numbering.NodeId;
+import org.exist.stax.ExtendedXMLStreamReader;
+import org.w3c.dom.Node;
 
 /**
  * Implementation of a StAX {@link javax.xml.stream.XMLStreamReader}, which wraps around

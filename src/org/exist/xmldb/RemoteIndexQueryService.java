@@ -21,7 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;

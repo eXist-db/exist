@@ -27,7 +27,7 @@ public class LuceneModule extends AbstractInternalModule {
     }
 
     public String getDescription() {
-        return "Extension functions for NGram search.";
+        return "Extension functions for Lucene search.";
     }
 }
 

@@ -4,7 +4,6 @@ import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.util.LockException;
-import org.w3c.dom.NodeList;
 
 /**
  * 
