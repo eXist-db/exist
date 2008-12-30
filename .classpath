@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="extensions/fluent/src"/>
+	<classpathentry kind="src" path="extensions/fluent/test/src"/>
+	<classpathentry kind="src" path="extensions/indexes/lucene/src"/>
+	<classpathentry kind="src" path="extensions/indexes/lucene/test/src"/>
+	<classpathentry kind="src" path="extensions/indexes/ngram/src"/>
+	<classpathentry kind="src" path="extensions/indexes/ngram/test/src"/>
+	<classpathentry kind="src" path="extensions/indexes/spatial/src"/>
+	<classpathentry kind="src" path="extensions/indexes/spatial/test/src"/>
+	<classpathentry kind="src" path="extensions/modules/src"/>
 	<classpathentry kind="src" path="tools/ircbot/src"/>
 	<classpathentry kind="src" path="tools/requestlog/src"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test/src"/>
 	<classpathentry kind="src" path="tools/wrapper/src"/>
-	<classpathentry kind="src" path="extensions/modules/src"/>
-	<classpathentry kind="src" path="extensions/indexes/ngram/src"/>
-	<classpathentry kind="src" path="extensions/indexes/ngram/test/src"/>
-	<classpathentry kind="src" path="extensions/indexes/spatial/src"/>
-	<classpathentry kind="src" path="extensions/indexes/spatial/test/src"/>
 	<classpathentry kind="src" path="samples/src"/>
 	<classpathentry kind="lib" path="lib/core/jEdit-syntax.jar" sourcepath="/jEdit-syntax"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/gt2-api-2.4-M1.jar"/>
