@@ -1,37 +1,36 @@
 package org.exist.xquery.modules.lucene;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.lucene.queryParser.ParseException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
-import org.exist.indexing.ngram.NGramIndexWorker;
-import org.exist.indexing.ngram.NGramIndex;
+import org.exist.storage.ElementValue;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Atomize;
+import org.exist.xquery.BasicExpressionVisitor;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.DynamicCardinalityCheck;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.BasicExpressionVisitor;
 import org.exist.xquery.LocationStep;
-import org.exist.xquery.Constants;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.Optimizable;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.modules.lucene.LuceneModule;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.storage.ElementValue;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
 
 public class Query extends Function implements Optimizable {
 
