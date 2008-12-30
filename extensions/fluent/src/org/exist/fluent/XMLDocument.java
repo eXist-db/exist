@@ -32,6 +32,7 @@ public class XMLDocument extends Document {
 	}
 	
 	@Override Sequence convertToSequence() {
+		staleMarker.check();
 		return proxy;
 	}
 	

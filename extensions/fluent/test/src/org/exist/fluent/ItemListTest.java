@@ -56,9 +56,17 @@ public class ItemListTest extends DatabaseTestCase {
 		assertEquals(2, doc.query().all("$_1//c", new Object[] { res }).size());
 	}
 	
-	@Test public void deleteAllNodes() {
+	@Test public void deleteAllNodes1() {
 		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
 				"<foo><bar><bar/></bar></foo>"));
 		doc.query().all("//bar").deleteAllNodes();
+		assertEquals("<foo/>", doc.contentsAsString());
+	}
+
+	@Test public void deleteAllNodes2() {
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
+				"<bar><bar><bar/></bar></bar>"));
+		doc.query().all("//bar").deleteAllNodes();
+		assertEquals(0, db.getFolder("/top").documents().size());
 	}
 }

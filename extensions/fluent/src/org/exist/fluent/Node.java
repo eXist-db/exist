@@ -9,7 +9,6 @@ import org.exist.collections.*;
 import org.exist.collections.triggers.*;
 import org.exist.collections.triggers.Trigger;
 import org.exist.dom.*;
-import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
@@ -24,13 +23,12 @@ import org.w3c.dom.*;
 public class Node extends Item {
 	
 	private XMLDocument document;
-	private final StaleMarker staleMarker = new StaleMarker();
+	final StaleMarker staleMarker = new StaleMarker();
 	
 	private Node() {}
 	
-	Node(org.exist.xquery.value.Item item, NamespaceMap namespaceBindings, Database db) {
+	Node(org.exist.xquery.value.NodeValue item, NamespaceMap namespaceBindings, Database db) {
 		super(item, namespaceBindings, db);
-		if (!(item instanceof NodeValue)) throw new IllegalArgumentException("item is not a node");
 		if (item instanceof NodeProxy) {
 			NodeProxy proxy = (NodeProxy) item;
 			String docPath = proxy.getDocument().getURI().getCollectionPath();
@@ -40,12 +38,17 @@ public class Node extends Item {
 		}
 	}
 	
+	@Override	Sequence convertToSequence() {
+		staleMarker.check();
+		return super.convertToSequence();
+	}
+
 	public boolean extant() {
 		return !staleMarker.stale();
 	}
 	
 	org.w3c.dom.Node getDOMNode() {
-		staleMarker.check();
+		staleMarker.check();	
 		try {
 			org.w3c.dom.Node domNode = ((NodeValue) item).getNode();
 			if (domNode == null) throw new DatabaseException("unable to load node data");
@@ -190,23 +193,16 @@ public class Node extends Item {
 			final StoredNode node = (StoredNode) getDOMNode(); 
 			return new ElementBuilder<Node>(namespaceBindings, true, new ElementBuilder.CompletedCallback<Node>() {
 				public Node completed(org.w3c.dom.Node[] nodes) {
-					Transaction tx = Database.requireTransaction();
+					Transaction tx = db.requireTransactionWithBroker();
 					try {
 						tx.lockWrite(node.getDocument());
 						DocumentTrigger trigger = fireTriggerBefore(tx);
-						StoredNode result = null;
-						if (nodes.length == 1) {
-							result = (StoredNode) node.appendChild(nodes[0]);
-						} else {
-							node.appendChildren(tx.tx, toNodeList(nodes), 0);
-						}
-						((DocumentImpl) node.getOwnerDocument()).getMetadata().setLastModified(System.currentTimeMillis());
-						defrag();
-						fireTriggerAfter(tx, trigger);
+						node.appendChildren(tx.tx, toNodeList(nodes), 0);
+						StoredNode result = (StoredNode) node.getLastChild();
+						touchDefragAndFireTriggerAfter(tx, trigger);
 						tx.commit();
 						if (result == null) return null;
 						NodeProxy proxy = new NodeProxy((DocumentImpl) result.getOwnerDocument(), result.getNodeId(), result.getNodeType(), result.getInternalAddress());
-						Database.trackNode(proxy);
 						return new Node(proxy, namespaceBindings.extend(), db);
 					} catch (DOMException e) {
 						throw new DatabaseException(e);
@@ -245,12 +241,12 @@ public class Node extends Item {
 		} else if (parent == null) {
 			throw new DatabaseException("cannot delete node with no parent");
 		} else {
-			Transaction tx = Database.requireTransaction();
+			Transaction tx = db.requireTransactionWithBroker();
 			try {
 				if (parent instanceof StoredNode) tx.lockWrite(((StoredNode) parent).getDocument());
 				DocumentTrigger trigger = fireTriggerBefore(tx);
 				parent.removeChild(tx.tx, child);
-				fireTriggerAfter(tx, trigger);
+				touchDefragAndFireTriggerAfter(tx, trigger);
 				tx.commit();
 			} catch (DOMException e) {
 				throw new DatabaseException(e);
@@ -300,15 +296,13 @@ public class Node extends Item {
 			return new ElementBuilder<Object>(namespaceBindings, false, new ElementBuilder.CompletedCallback<Object>() {
 				public Object completed(org.w3c.dom.Node[] nodes) {
 					assert nodes.length == 1;
-					Transaction tx = Database.requireTransaction();
+					Transaction tx = db.requireTransactionWithBroker();
 					try {
 						DocumentImpl doc = (DocumentImpl) oldNode.getOwnerDocument();
 						tx.lockWrite(doc);
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						((NodeImpl) oldNode.getParentNode()).replaceChild(tx.tx, nodes[0], oldNode);
-						doc.getMetadata().setLastModified(System.currentTimeMillis());
-						defrag();
-						fireTriggerAfter(tx, trigger);
+						touchDefragAndFireTriggerAfter(tx, trigger);
 						tx.commit();
 						// no point in returning the old node; we'd rather return the newly inserted one,
 						// but it's not easily available
@@ -342,15 +336,13 @@ public class Node extends Item {
 			final ElementImpl elem = (ElementImpl) getDOMNode();
 			return new AttributeBuilder(elem, namespaceBindings, new AttributeBuilder.CompletedCallback() {
 				public void completed(NodeList removeList, NodeList addList) {
-					Transaction tx = Database.requireTransaction();
+					Transaction tx = db.requireTransactionWithBroker();
 					try {
 						DocumentImpl doc = (DocumentImpl) elem.getOwnerDocument();
 						tx.lockWrite(doc);
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						elem.removeAppendAttributes(tx.tx, removeList, addList);
-						doc.getMetadata().setLastModified(System.currentTimeMillis());
-						defrag();
-						fireTriggerAfter(tx, trigger);
+						touchDefragAndFireTriggerAfter(tx, trigger);
 						tx.commit();
 					} catch (TriggerException e) {
 						throw new DatabaseException("append aborted by listener", e);
@@ -371,36 +363,26 @@ public class Node extends Item {
 	private DocumentTrigger fireTriggerBefore(Transaction tx) throws TriggerException {
 		if (!(item instanceof NodeProxy)) return null;
 		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
-		DBBroker broker = null;
 		try {
-			broker = db.acquireBroker();
-			CollectionConfiguration config = docimpl.getCollection().getConfiguration(broker);
+			CollectionConfiguration config = docimpl.getCollection().getConfiguration(tx.broker);
 			if (config == null) return null;
-			DocumentTrigger trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, docimpl.getCollection());
+			DocumentTrigger trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, tx.broker, docimpl.getCollection());
 			if (trigger == null) return null;
-			trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, broker, tx.tx, docimpl.getURI(), docimpl);
+			trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, tx.broker, tx.tx, docimpl.getURI(), docimpl);
 			return trigger;
 		} catch (CollectionConfigurationException e) {
 			throw new DatabaseException(e);
-		} finally {
-			db.releaseBroker(broker);
 		}
 	}
 	
-	private void fireTriggerAfter(Transaction tx, DocumentTrigger trigger) {
-		if (trigger == null) return;
-		DBBroker broker = null;
-		try {
-			broker = db.acquireBroker();
-			DocumentImpl docimpl = ((NodeProxy) item).getDocument();
-			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, broker, tx.tx, docimpl.getURI(), docimpl);
-		} finally {
-			db.releaseBroker(broker);
-		}
-	}
-
-	private void defrag() {
+	private void touchDefragAndFireTriggerAfter(Transaction tx, DocumentTrigger trigger) {
+		DocumentImpl doc = ((NodeProxy) item).getDocument();
+		doc.getMetadata().setLastModified(System.currentTimeMillis());
+      tx.broker.storeXMLResource(tx.tx, doc);
 		if (item instanceof NodeProxy) Database.queueDefrag(((NodeProxy) item).getDocument());
+		if (trigger == null) return;
+		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
+		trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, tx.broker, tx.tx, docimpl.getURI(), docimpl);
 	}
 	
 	static NodeList toNodeList(final org.w3c.dom.Node[] nodes) {

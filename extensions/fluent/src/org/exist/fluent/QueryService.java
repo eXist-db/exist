@@ -281,12 +281,12 @@ public class QueryService implements Cloneable {
 				XQueryContext context;
 				if (compiledQuery == null) {
 					context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
-					buildXQueryStaticContext(context);
+					buildXQueryStaticContext(context, true);
 				} else {
 					context = compiledQuery.getContext();
 					// static context already set
 				}
-				buildXQueryDynamicContext(context, params, docsToLock);
+				buildXQueryDynamicContext(context, params, docsToLock, true);
 				t2 = System.currentTimeMillis();
 				if (compiledQuery == null) {
 					compiledQuery = xquery.compile(context, source);
@@ -338,25 +338,27 @@ public class QueryService implements Cloneable {
 		return new StringSourceWithMapKey(query, combinedMap);
 	}
 
-	private void buildXQueryDynamicContext(XQueryContext context, Object[] params, MutableDocumentSet docsToLock) throws XPathException {
+	private void buildXQueryDynamicContext(XQueryContext context, Object[] params, MutableDocumentSet docsToLock, boolean bindVariables) throws XPathException {
 		context.setBackwardsCompatibility(false);
 		context.setStaticallyKnownDocuments(docs);
 		context.setBaseURI(baseUri == null ? new AnyURIValue("/db") : baseUri);
-		for (Map.Entry<QName, Object> entry : bindings.entrySet()) {
-			context.declareVariable(
-					new org.exist.dom.QName(entry.getKey().getLocalPart(), entry.getKey().getNamespaceURI(), entry.getKey().getPrefix()),
-					convertValue(entry.getValue()));
-		}
-		if (params != null) for (int i = 0; i < params.length; i++) {
-			Object convertedValue = convertValue(params[i]);
-			if (docsToLock != null && convertedValue instanceof Sequence) {
-				docsToLock.addAll(((Sequence) convertedValue).getDocumentSet());
+		if (bindVariables) {
+			for (Map.Entry<QName, Object> entry : bindings.entrySet()) {
+				context.declareVariable(
+						new org.exist.dom.QName(entry.getKey().getLocalPart(), entry.getKey().getNamespaceURI(), entry.getKey().getPrefix()),
+						convertValue(entry.getValue()));
 			}
-			context.declareVariable("_"+(i+1), convertedValue);
+			if (params != null) for (int i = 0; i < params.length; i++) {
+				Object convertedValue = convertValue(params[i]);
+				if (docsToLock != null && convertedValue instanceof Sequence) {
+					docsToLock.addAll(((Sequence) convertedValue).getDocumentSet());
+				}
+				context.declareVariable("_"+(i+1), convertedValue);
+			}
 		}
 	}
 		
-	private void buildXQueryStaticContext(XQueryContext context) throws XPathException {
+	private void buildXQueryStaticContext(XQueryContext context, boolean importModules) throws XPathException {
 		context.declareNamespaces(namespaceBindings.getCombinedMap());
 		for (Map.Entry<String, Document> entry : moduleMap.entrySet()) {
 			context.importModule(entry.getKey(), null, "xmldb:exist:///db" + entry.getValue().path());
@@ -403,7 +405,7 @@ public class QueryService implements Cloneable {
 		StringBuffer buf = new StringBuffer();
 		Matcher matcher = PRE_SUB_PATTERN.matcher(query);
 		while(matcher.find()) {
-			matcher.appendReplacement(buf, (String) params[Integer.parseInt(matcher.group(1))-1]);
+			matcher.appendReplacement(buf, ((String) params[Integer.parseInt(matcher.group(1))-1]).replace("\\", "\\\\").replace("$", "\\$"));
 		}
 		matcher.appendTail(buf);
 		return buf.toString();
@@ -495,8 +497,6 @@ public class QueryService implements Cloneable {
 	public QueryAnalysis analyze(String query, Object... params) {
 		if (presub) query = presub(query, params);
 		
-		final Set<QName> requiredVariables = new TreeSet<QName>();
-		final Set<QName> requiredFunctions = new TreeSet<QName>();
 		long t1 = System.currentTimeMillis(), t2 = 0, t3 = 0;
 		DBBroker broker = null;
 		try {
@@ -507,22 +507,20 @@ public class QueryService implements Cloneable {
 			final XQueryPool pool = xquery.getXQueryPool();
 			CompiledXQuery compiledQuery = pool.borrowCompiledXQuery(broker, source);
 			try {
-				XQueryContext context;
+				AnalysisXQueryContext context;
 				if (compiledQuery == null) {
-					context = createAnalysisContext(broker, requiredVariables, requiredFunctions);
-					buildXQueryStaticContext(context);
-				} else {
-					context = compiledQuery.getContext();
-					// static context already set
-				}
-				buildXQueryDynamicContext(context, params, null);
-				t2 = System.currentTimeMillis();
-				if (compiledQuery == null) {
+					context = new AnalysisXQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP);
+					buildXQueryStaticContext(context, false);
+					buildXQueryDynamicContext(context, params, null, false);
+					t2 = System.currentTimeMillis();
 					compiledQuery = xquery.compile(context, source);
 					t3 = System.currentTimeMillis();
+				} else {
+					context = (AnalysisXQueryContext) compiledQuery.getContext();
+					t2 = System.currentTimeMillis();
 				}
 				return new QueryAnalysis(
-						compiledQuery, Collections.unmodifiableSet(requiredVariables), Collections.unmodifiableSet(requiredFunctions));
+						compiledQuery, Collections.unmodifiableSet(context.requiredVariables), Collections.unmodifiableSet(context.requiredFunctions));
 			} finally {
 				if (compiledQuery != null) pool.returnCompiledXQuery(source, compiledQuery);				
 			}
@@ -536,29 +534,35 @@ public class QueryService implements Cloneable {
 			STATS.update(query, t1, t2, t3, 0, System.currentTimeMillis());
 		}
 	}
-		
-	private XQueryContext createAnalysisContext(DBBroker broker, final Set<QName> requiredVariables, final Set<QName> requiredFunctions) {
-		return new XQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP) {
-			@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {
-				Variable var = super.resolveVariable(qname);
-				if (var == null) {
-					requiredVariables.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
-					var = new Variable(qname);
-				}
-				return var;
-			}
-			@Override public UserDefinedFunction resolveFunction(org.exist.dom.QName qname, int argCount) throws XPathException {
-				UserDefinedFunction func = super.resolveFunction(qname, argCount);
-				if (func == null) {
-					requiredFunctions.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
-					func = new UserDefinedFunction(this, new FunctionSignature(qname, null, new SequenceType(Type.ITEM, org.exist.xquery.Cardinality.ZERO_OR_MORE), true));
-					func.setFunctionBody(new SequenceConstructor(this));
-				}
-				return func;
-			}
-		};
-	}
 	
+	private static final class AnalysisXQueryContext extends XQueryContext {
+		final Set<QName> requiredFunctions = new TreeSet<QName>();
+		final Set<QName> requiredVariables = new TreeSet<QName>();
+
+		private AnalysisXQueryContext(DBBroker broker, AccessContext accessCtx) {
+			super(broker, accessCtx);
+		}
+
+		@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {
+			Variable var = super.resolveVariable(qname);
+			if (var == null) {
+				requiredVariables.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
+				var = new Variable(qname);
+			}
+			return var;
+		}
+
+		@Override public UserDefinedFunction resolveFunction(org.exist.dom.QName qname, int argCount) throws XPathException {
+			UserDefinedFunction func = super.resolveFunction(qname, argCount);
+			if (func == null) {
+				requiredFunctions.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
+				func = new UserDefinedFunction(this, new FunctionSignature(qname, null, new SequenceType(Type.ITEM, org.exist.xquery.Cardinality.ZERO_OR_MORE), true));
+				func.setFunctionBody(new SequenceConstructor(this));
+			}
+			return func;
+		}
+	}
+
 	/**
 	 * An access point for running various analyses on a query.
 	 */
