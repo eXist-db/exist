@@ -139,6 +139,14 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.w3c.dom.Node#setNodeValue(java.lang.String)
+	 */
+	public void setNodeValue( String arg0 ) throws DOMException {
+		// This method was added to enable the SQL XQuery Exztension Module to change the value of an attribute after the fact - Andrzej
+		document.attrValue[nodeNumber] = arg0;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.w3c.dom.Attr#setValue(java.lang.String)
 	 */
 	public void setValue(String arg0) throws DOMException {
