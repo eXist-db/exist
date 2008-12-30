@@ -269,6 +269,7 @@ public class Folder extends NamedResource implements Cloneable {
 		}
 		
 		@Override Sequence convertToSequence() {
+			staleMarker.check();
 			return getDocsSequence(false);
 		}
 		
@@ -994,6 +995,7 @@ public class Folder extends NamedResource implements Cloneable {
 	}
 	
 	@Override Sequence convertToSequence() {
+		staleMarker.check();
 		return getDocsSequence(true);
 	}
 	

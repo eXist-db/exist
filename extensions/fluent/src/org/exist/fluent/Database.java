@@ -88,28 +88,26 @@ public class Database {
 		
 		// If the config is already *exactly* how we want it, no need to reload and reindex.
 		try {
-			if (db.getFolder(CollectionConfigurationManager.CONFIG_COLLECTION + Database.ROOT_PREFIX).documents()
-					.get(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
-					.contentsAsString().equals(configXml.toString())) return;
+			Node currentConfig =
+				db.getFolder(CollectionConfigurationManager.CONFIG_COLLECTION + Database.ROOT_PREFIX).documents()
+					.get(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE).xml().root();
+			if (currentConfig.query().presub().single("deep-equal(., $1)", configXml.toString()).booleanValue()) return;
 		} catch (DatabaseException e) {
 			// fall through
 		}
 		
 		// Now force reload and reindex so it'll pick up the new settings.
-		DBBroker broker = null;
-		Transaction tx = requireTransaction();
+		Transaction tx = db.requireTransactionWithBroker();
 		try {
-			broker = db.acquireBroker();
-			pool.getConfigurationManager().addConfiguration(tx.tx, broker, broker.getCollection(XmldbURI.ROOT_COLLECTION_URI), configXml.toString());
+			pool.getConfigurationManager().addConfiguration(tx.tx, tx.broker, tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI), configXml.toString());
 			tx.commit();
-			broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
+			tx.broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
 		} catch (PermissionDeniedException e) {
 			throw new DatabaseException(e);
 		} catch (CollectionConfigurationException e) {
 			throw new DatabaseException(e);
 		} finally {
 			tx.abortIfIncomplete();
-			db.releaseBroker(broker);
 		}
 	}
 	
@@ -435,6 +433,24 @@ public class Database {
 		};
 	}
 	
+	/**
+	 * Return a transaction for use with database operations.  If a transaction is already in progress
+	 * then join it, otherwise begin a new one.  If a transaction is joined, calling <code>commit</code>
+	 * or <code>abort</code> on the returned instance will have no effect; only the outermost 
+	 * transaction object can do this.
+	 *
+	 * @return a transaction object
+	 */
+	static Transaction requireTransaction() {
+		Transaction t = localTransaction.get();
+		return t == null ? new Transaction(txManager, null) : new Transaction(t, null);
+	}
+	
+	Transaction requireTransactionWithBroker() {
+		Transaction t = localTransaction.get();
+		return t == null ? new Transaction(txManager, this) : new Transaction(t, this);
+	}
+	
 	void checkSame(Resource o) {
 		// allow other resource to be a NULL, as those are safe and database-neutral
 		if (!(o.database() == null || o.database().user == this.user)) throw new IllegalArgumentException("cannot combine objects from two database instances in one operation");
@@ -479,57 +495,6 @@ public class Database {
 		}
 
 	};
-	
-	/**
-	 * Return a transaction for use with database operations.  If a transaction is already in progress
-	 * then join it, otherwise begin a new one.  If a transaction is joined, calling <code>commit</code>
-	 * or <code>abort</code> on the returned instance will have no effect; only the outermost 
-	 * transaction object can do this.
-	 *
-	 * @return a transaction object
-	 */
-	static Transaction requireTransaction() {
-		Transaction t = localTransaction.get();
-		return t == null ? new Transaction(txManager) : new Transaction(t.tx);
-	}
-	
-	private static final WeakMultiValueHashMap<Long, NodeProxy> nodes = new WeakMultiValueHashMap<Long, NodeProxy>();
-	private static final WeakMultiValueHashMap<String, NodeProxy> docsInUse = new WeakMultiValueHashMap<String, NodeProxy>();
-	private static final long ADDRESS_MASK = 0xFFFFFFFF0000FFFFL;
-	
-	private static final NodeIndexListener indexChangeListener = new NodeIndexListener() {
-		@SuppressWarnings("hiding")
-		private final Logger LOG = Logger.getLogger("org.exist.fluent.Database.indexChangeListener");
-		
-		public void nodeChanged(StoredNode node) {
-			int numUpdated = 0;
-			synchronized(nodes) {
-				for (NodeProxy target : nodes.get(node.getInternalAddress() & ADDRESS_MASK)) {
-					target.setNodeId(node.getNodeId());
-					numUpdated++;
-				}
-			}
-			if (LOG.isDebugEnabled()) System.out.println("change nodeid at " + StorageAddress.toString(node.getInternalAddress()) + " to " + node.getNodeId() + "; updated " + numUpdated);
-		}
-	};
-	
-	static void trackNode(NodeProxy proxy) {
-		if (proxy.getNodeType() == org.w3c.dom.Node.DOCUMENT_NODE) return;	// no need to track document nodes as they don't change gids
-		if (proxy.getInternalAddress() == -1) {
-			StoredNode node = (StoredNode) proxy.getNode();
-			if (node == null) {
-				LOG.error("can't load node for proxy, doc=" + proxy.getDocument().getURI().lastSegment() + ", nodeid=" + proxy.getNodeId());
-				return;
-			}
-			proxy.setInternalAddress(node.getInternalAddress());
-			assert proxy.getInternalAddress() != -1;
-		}
-		proxy.getDocument().getMetadata().setIndexListener(indexChangeListener);
-		// this may cause duplicates in the list; try to avoid them by design,
-		// or it might become a performance hit
-		nodes.put(proxy.getInternalAddress() & ADDRESS_MASK, proxy);
-		docsInUse.put(normalizePath(proxy.getDocument().getURI().getCollectionPath()), proxy);
-	}
 	
 	static void queueDefrag(DocumentImpl doc) {
 		defragmenter.queue(doc);
@@ -590,24 +555,30 @@ public class Database {
 				try {
 					DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
 					try {
-						Integer fragmentationLimit = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
-						if (fragmentationLimit == null) fragmentationLimit = Integer.valueOf(0);
+						Integer fragmentationLimitObject = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+						int fragmentationLimit = fragmentationLimitObject == null ? 0 : fragmentationLimitObject;
 						for (Iterator<DocumentImpl> it = docsToDefragCopy.iterator(); it.hasNext(); ) {
 							DocumentImpl doc = it.next();
 							if (doc.getMetadata().getSplitCount() <= fragmentationLimit) {
 								it.remove();
-							} else if (!docsInUse.containsKey(normalizePath(doc.getURI().getCollectionPath()))) {
-								LOG.debug("defragmenting " + normalizePath(doc.getURI().getCollectionPath()));
-								count++;
-								Transaction tx = Database.requireTransaction();
-								try {
-									// It would be nicer to just try the lock here, and keep going if we can't get it, but oh well.
-									tx.lockWrite(doc);
-									broker.defragXMLResource(tx.tx, doc);
-									tx.commit();
-									it.remove();
+							} else {
+								// Must hold write lock on doc before checking stale map to avoid race condition
+								if (doc.getUpdateLock().attempt(Lock.WRITE_LOCK)) try {
+									String docPath = normalizePath(doc.getURI().getCollectionPath());
+									if (!staleMap.containsKey(docPath)) {
+										LOG.debug("defragmenting " + docPath);
+										count++;
+										Transaction tx = Database.requireTransaction();
+										try {
+											broker.defragXMLResource(tx.tx, doc);
+											tx.commit();
+											it.remove();
+										} finally {
+											tx.abortIfIncomplete();
+										}
+									}
 								} finally {
-									tx.abortIfIncomplete();
+									doc.getUpdateLock().release(Lock.WRITE_LOCK);
 								}
 							}
 						}

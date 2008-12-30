@@ -1,6 +1,7 @@
 package org.exist.fluent;
 
 import org.exist.dom.DocumentImpl;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.*;
 import org.exist.util.LockException;
@@ -17,6 +18,8 @@ import org.exist.util.LockException;
 class Transaction {
 	private final TransactionManager txManager;
 	final Txn tx;
+	final DBBroker broker;
+	private final Database db;
 	private boolean complete;
 	
 	/**
@@ -24,9 +27,11 @@ class Transaction {
 	 *
 	 * @param txManager the manager to use
 	 */
-	Transaction(TransactionManager txManager) {
+	Transaction(TransactionManager txManager, Database db) {
 		this.txManager = txManager;
 		this.tx = txManager.beginTransaction();
+		this.db = db;
+		this.broker = db == null ? null : db.acquireBroker();
 		complete = false;
 	}
 	
@@ -35,25 +40,32 @@ class Transaction {
 	 *
 	 * @param tx the transaction to join
 	 */
-	Transaction(Txn tx) {
+	Transaction(Transaction tx, Database db) {
 		this.txManager = null;
-		this.tx = tx;
+		this.tx = tx.tx;
+		this.db = db;
+		this.broker = db == null ? null : db.acquireBroker();
 		complete = true;
 	}
 	
 	void commit() {
 		if (complete) return;
-		if (tx != null && txManager != null) try {
-			txManager.commit(tx);
-			complete = true;
-		} catch (TransactionException e) {
-			throw new DatabaseException(e);
+		try {
+			if (tx != null && txManager != null) try {
+				txManager.commit(tx);
+				complete = true;
+			} catch (TransactionException e) {
+				throw new DatabaseException(e);
+			}
+		} finally {
+			if (broker != null) db.releaseBroker(broker);
 		}
 	}
 	
 	void abortIfIncomplete() {
 		if (complete) return;
 		if (tx != null && txManager != null) txManager.abort(tx);
+		if (broker != null) db.releaseBroker(broker);
 		complete = true;
 	}
 	

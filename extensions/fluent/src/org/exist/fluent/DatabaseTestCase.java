@@ -2,8 +2,10 @@ package org.exist.fluent;
 
 import java.io.File;
 import java.lang.annotation.*;
+import java.util.Iterator;
 
 import org.exist.collections.Collection;
+import org.exist.dom.*;
 import org.exist.security.SecurityManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
@@ -47,28 +49,36 @@ public abstract class DatabaseTestCase {
 		Database.configureRootCollection(configFile);	// config file gets erased by wipeDatabase()
 	}
 	
-	@After public void shutdownDatabase() throws Exception {
+	@AfterClass public static void shutdownDatabase() throws Exception {
 		if (Database.isStarted()) {
-			// TODO: a bug in eXist's removeCollection(root) means that we need to shut down immediately
-			// after wiping every time, otherwise the database gets corrupted.  When this is fixed, this
-			// method can become a static @AfterClass method for increased performance.
 			wipeDatabase();
 			Database.shutdown();
 			db = null;
 		}
 	}
     
+	@SuppressWarnings("unchecked")
 	private static void wipeDatabase() throws Exception {
-		DBBroker broker = null;
-		Transaction tx = Database.requireTransaction();
+		Transaction tx = db.requireTransactionWithBroker();
 		try {
-			broker = db.acquireBroker();
-			Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
-			broker.removeCollection(tx.tx, root);
+			Collection root = tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
+			for (Iterator<XmldbURI> it = root.collectionIterator(); it.hasNext(); ) {
+				XmldbURI childName = it.next();
+				if (!childName.getCollectionPath().equals(DBBroker.SYSTEM_COLLECTION_NAME)) {
+					tx.broker.removeCollection(tx.tx, tx.broker.getCollection(root.getURI().append(childName)));
+				}
+			}
+			for (Iterator<DocumentImpl> it = root.iterator(tx.broker); it.hasNext(); ) {
+				DocumentImpl doc = it.next();
+				if (doc instanceof BinaryDocument) {
+					root.removeBinaryResource(tx.tx, tx.broker, doc);
+				} else {
+					root.removeXMLResource(tx.tx, tx.broker, doc.getFileURI());
+				}
+			}
 			tx.commit();
 		} finally {
 			tx.abortIfIncomplete();
-			db.releaseBroker(broker);
 		}
 	}
 

@@ -2,7 +2,6 @@ package org.exist.fluent;
 
 import java.util.*;
 
-import org.exist.dom.NodeProxy;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 
@@ -31,24 +30,12 @@ public class ItemList extends Resource implements Iterable<Item> {
 		 * @return a string value iterator
 		 */
 		public Iterator<String> iterator() {
-			try {
-				return new Iterator<String>() {
-					private final SequenceIterator delegate = seq.iterate();
-					public boolean hasNext() {
-						return delegate.hasNext();
-					}
-					public String next() {
-						try {
-							return delegate.nextItem().getStringValue();
-						} catch (XPathException e) {
-							throw new DatabaseException(e);
-						}
-					}
-					public void remove() {throw new UnsupportedOperationException();}
-				};
-			} catch (XPathException e) {
-				throw new DatabaseException("failed to construct iterator over sequence", e);
-			}
+			return new Iterator<String>() {
+				private final Iterator<Item> delegate = ItemList.this.iterator();
+				public boolean hasNext() {	return delegate.hasNext();}
+				public String next() {return delegate.next().value();}
+				public void remove() {throw new UnsupportedOperationException();}
+			};
 		}
 
 		private ItemList itemList() {
@@ -70,16 +57,8 @@ public class ItemList extends Resource implements Iterable<Item> {
 		 */
 		public List<String> asList() {
 			return new AbstractList<String>() {
-				@Override public String get(int index) {
-					try {
-						return seq.itemAt(index).getStringValue();
-					} catch (XPathException e) {
-						throw new DatabaseException(e);
-					}
-				}
-				@Override public int size() {
-					return seq.getItemCount();
-				}
+				@Override public String get(int index) {return items.get(index).value();}
+				@Override public int size() {return items.size();}
 			};
 		}
 		
@@ -89,7 +68,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 		 * @return an array of effective string values
 		 */
 		public String[] toArray() {
-			return toArray(new String[size()]);
+			return asList().toArray(new String[size()]);
 		}
 		
 		/**
@@ -101,21 +80,10 @@ public class ItemList extends Resource implements Iterable<Item> {
 		 * @return an array of effective string values
 		 */
 		public String[] toArray(String[] a) {
-			if (a == null && size() == 0) return null;
-			if (a == null || a.length < size()) a = new String[size()];
-			for (int i = 0; i < size(); i++) {
-				try {
-					a[i] = seq.itemAt(i).getStringValue();
-				} catch (XPathException e) {
-					throw new DatabaseException(e);
-				}
-			}
-			if (a.length > size()) a[size()] = null;
-			return a;
+			return asList().toArray(a);
 		}
 		
-		@Override
-		public String toString() {
+		@Override public String toString() {
 			return ItemList.this.toString();
 		}
 	}
@@ -133,20 +101,18 @@ public class ItemList extends Resource implements Iterable<Item> {
 		 * @return an iterator over the list of nodes
 		 */
 		public Iterator<Node> iterator() {
-			try {
-				return new Iterator<Node>() {
-					private final SequenceIterator delegate = seq.iterate();
-					public boolean hasNext() {
-						return delegate.hasNext();
+			return new Iterator<Node>() {
+				private final Iterator<Item> delegate = ItemList.this.iterator();
+				public boolean hasNext() {return delegate.hasNext();}
+				public Node next() {
+					try {
+						return (Node) delegate.next();
+					} catch (ClassCastException e) {
+						throw new DatabaseException("item is not a node");
 					}
-					public Node next() {
-						return new Node(delegate.nextItem(), namespaceBindings.extend(), db);
-					}
-					public void remove() {throw new UnsupportedOperationException();}
-				};
-			} catch (XPathException e) {
-				throw new DatabaseException("failed to construct iterator over sequence", e);
-			}
+				}
+				public void remove() {throw new UnsupportedOperationException();}
+			};
 		}
 		
 		/**
@@ -186,10 +152,14 @@ public class ItemList extends Resource implements Iterable<Item> {
 		public List<Node> asList() {
 			return new AbstractList<Node>() {
 				@Override public Node get(int index) {
-					return new Node(seq.itemAt(index), namespaceBindings.extend(), db);
+					try {
+						return (Node) items.get(index);
+					} catch (ClassCastException e) {
+						throw new DatabaseException("item is not a node");
+					}
 				}
 				@Override public int size() {
-					return seq.getItemCount();
+					return items.size();
 				}
 			};
 		}
@@ -200,7 +170,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 		 * @return an array of nodes
 		 */
 		public Node[] toArray() {
-			return toArray(new Node[size()]);
+			return asList().toArray(new Node[size()]);
 		}
 		
 		/**
@@ -212,48 +182,50 @@ public class ItemList extends Resource implements Iterable<Item> {
 		 * @return an array of nodes
 		 */
 		public Node[] toArray(Node[] a) {
-			if (a.length < size()) a = new Node[size()];
-			for (int i = 0; i < size(); i++) {
-				a[i] = new Node(seq.itemAt(i), namespaceBindings.extend(), db);
-			}
-			if (a.length > size()) a[size()] = null;
-			return a;
+			return asList().toArray(a);
 		}
 		
 		@Override
 		public String toString() {
 			StringBuilder buf = new StringBuilder();
-			for (Node node : this) {
-				buf.append(node).append('\n');
-			}
+			for (Node node : this) buf.append(node).append('\n');
 			return buf.toString();
 		}
 	}
 
 	
 	private final Sequence seq;
+	private final List<Item> items;
 	private ValuesFacet values;
 	private NodesFacet nodes;
 
 	private ItemList() {
 		super(null, null);
-		this.seq = null;
+		this.seq = Sequence.EMPTY_SEQUENCE;
+		this.items = Collections.emptyList();
 	}
 
 	ItemList(Sequence seq, NamespaceMap namespaceBindings, Database db) {
 		super(namespaceBindings, db);
 		this.seq = seq;
+		List<Item> modifiableItems = new ArrayList<Item>(seq.getItemCount());
 		try {
-			for (SequenceIterator it = seq.unorderedIterator(); it.hasNext(); ) {
-				org.exist.xquery.value.Item item = it.nextItem();
-				if (item instanceof NodeProxy) Database.trackNode((NodeProxy) item);
+			for (SequenceIterator it = seq.iterate(); it.hasNext(); ) {
+				org.exist.xquery.value.Item existItem = it.nextItem();
+				if (existItem instanceof NodeValue) {
+					modifiableItems.add(new Node((NodeValue) existItem, namespaceBindings.extend(), db));
+				} else {
+					modifiableItems.add(new Item(existItem, namespaceBindings.extend(), db));
+				}
 			}
 		} catch (XPathException xpe) {
 			throw new DatabaseException(xpe);
 		}
+		this.items = Collections.unmodifiableList(modifiableItems);
 	}
 	
 	@Override	Sequence convertToSequence() {
+		for (Item item : items) if (item instanceof Node) ((Node) item).staleMarker.check();
 		return seq;
 	}
 	
@@ -263,7 +235,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 * @return the number of elements in this item list
 	 */
 	public int size() {
-		return seq.getItemCount();
+		return items.size();
 	}
 	
 	/**
@@ -272,12 +244,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 * @return <code>true</code> if this item list has no elements
 	 */
 	public boolean isEmpty() {
-		return seq.isEmpty();
-	}
-	
-	Item wrap(org.exist.xquery.value.Item x) {
-		if (x instanceof NodeValue) return new Node(x, namespaceBindings.extend(), db);
-		return new Item(x, namespaceBindings.extend(), db);
+		return items.isEmpty();
 	}
 
 	/**
@@ -288,8 +255,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 * @throws IndexOutOfBoundsException if the index is out of bounds
 	 */
 	public Item get(int index) {
-		if (index < 0 || index >= size()) throw new IndexOutOfBoundsException("index " + index + " out of bounds (upper bound at " + size() + ")");
-		return wrap(seq.itemAt(index));
+		return items.get(index);
 	}
 	
 	/**
@@ -299,7 +265,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	public void deleteAllNodes() {
 		Transaction tx = Database.requireTransaction();
 		try {
-			for (Item item : this) if (item instanceof Node) ((Node) item).delete();
+			for (Item item : items) if (item instanceof Node) ((Node) item).delete();
 			tx.commit();
 		} finally {
 			tx.abortIfIncomplete();
@@ -308,10 +274,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	
 	@Override public boolean equals(Object o) {
 		if (!(o instanceof ItemList)) return false;
-		ItemList that = (ItemList) o;
-		if (this.size() != that.size()) return false;
-		for (int i=0; i<size(); i++) if (!this.get(i).equals(that.get(i))) return false;
-		return true;
+		return items.equals(((ItemList) o).items);
 	}
 	
 	/**
@@ -320,7 +283,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 */
 	@Override public int hashCode() {
 		int hashCode = 1;
-		for (Item item : this) hashCode = hashCode * 31 + item.hashCode();
+		for (Item item : items) hashCode = hashCode * 31 + item.hashCode();
 		return hashCode;
 	}
 	
@@ -330,20 +293,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 * @return an iterator over this item list
 	 */
 	public Iterator<Item> iterator() {
-		try {
-			return new Iterator<Item>() {
-				private final SequenceIterator delegate = seq.iterate();
-				public boolean hasNext() {
-					return delegate.hasNext();
-				}
-				public Item next() {
-					return wrap(delegate.nextItem());
-				}
-				public void remove() {throw new UnsupportedOperationException();}
-			};
-		} catch (XPathException e) {
-			throw new DatabaseException("failed to construct iterator over sequence", e);
-		}
+		return items.iterator();
 	}
 	
 	/**
@@ -352,14 +302,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 * @return a list view
 	 */
 	public List<Item> asList() {
-		return new AbstractList<Item>() {
-			@Override public Item get(int index) {
-				return wrap(seq.itemAt(index));
-			}
-			@Override public int size() {
-				return seq.getItemCount();
-			}
-		};
+		return items;
 	}
 	
 	/**
@@ -368,7 +311,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 * @return an array of items
 	 */
 	public Item[] toArray() {
-		return toArray(new Item[size()]);
+		return items.toArray(new Item[size()]);
 	}
 	
 	/**
@@ -380,12 +323,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 	 * @return an array of items
 	 */
 	public Item[] toArray(Item[] a) {
-		if (a.length < size()) a = new Item[size()];
-		for (int i = 0; i < size(); i++) {
-			a[i] = wrap(seq.itemAt(i));
-		}
-		if (a.length > size()) a[size()] = null;
-		return a;
+		return items.toArray(a);
 	}
 	
 	@Override
@@ -393,7 +331,7 @@ public class ItemList extends Resource implements Iterable<Item> {
 		StringBuilder buf = new StringBuilder();
 		buf.append("(");
 		boolean first = true;
-		for (Item item : this) {
+		for (Item item : items) {
 			if (first) first = false; else buf.append(", ");
 			buf.append(item);
 		}
@@ -426,8 +364,6 @@ public class ItemList extends Resource implements Iterable<Item> {
 
 	static final ItemList NULL = new ItemList() {
 		@Override public QueryService query() {return QueryService.NULL;}
-		@Override public int size() {return 0;}
-		@Override public Iterator<Item> iterator() {return Database.emptyIterator();}
 		@Override public ValuesFacet values() {return new ValuesFacet() {
 			@Override	public Iterator<String> iterator() {return Database.emptyIterator();}
 			// toArray/0 and toArray/1 take care of themselves thanks to size()
@@ -436,9 +372,6 @@ public class ItemList extends Resource implements Iterable<Item> {
 			@Override public Iterator<Node> iterator() {return Database.emptyIterator();}
 			// toArray/0 and toArray/1 take care of themselves thanks to size()
 		};}
-		@Override Sequence convertToSequence() {
-			return Sequence.EMPTY_SEQUENCE;
-		}
 	};
 
 }
