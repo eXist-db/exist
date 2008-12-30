@@ -35,6 +35,8 @@ import org.exist.dom.MutableDocumentSet;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.ResponseWrapper;
+import org.exist.memtree.ElementImpl;
+import org.exist.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
@@ -76,13 +78,17 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
 import java.io.File;
@@ -98,8 +104,10 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -297,7 +305,7 @@ public class RESTServer {
 			// query parameter specified, search method does all the rest of the
 			// work
 			try {
-				search(broker, query, path, howmany, start, outputProperties,
+				search(broker, query, path, null, howmany, start, outputProperties,
 						wrap, cache, request, response);
 
 			} catch (XPathException e) {
@@ -595,20 +603,8 @@ public class RESTServer {
 		Txn transaction = transact.beginTransaction();
 		try {
 			String content = getRequestContent(request);
-			InputSource src = new InputSource(new StringReader(content));
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory
-					.newInstance();
-			docFactory.setNamespaceAware(true);
-			DocumentBuilder docBuilder;
-			try {
-				docBuilder = docFactory.newDocumentBuilder();
-			} catch (ParserConfigurationException e) {
-				LOG.warn(e);
-				transact.abort(transaction);
-				throw new BadRequestException(e.getMessage());
-			}
-			Document doc = docBuilder.parse(src);
-			Element root = doc.getDocumentElement();
+			NamespaceExtractor nsExtractor = new NamespaceExtractor();
+			Element root = parseXML(content, nsExtractor);
 			String rootNS = root.getNamespaceURI();
 			if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
 				if (root.getLocalName().equals("query")) {
@@ -692,7 +688,7 @@ public class RESTServer {
 				if (query != null) {
 					String result;
 					try {
-						search(broker, query, path, howmany, start,
+						search(broker, query, path, nsExtractor.getNamespaces(), howmany, start,
 								outputProperties, enclose, cache, request,
 								response);
 					} catch (Exception e) {
@@ -777,6 +773,62 @@ public class RESTServer {
 		}
 	}
 
+	private ElementImpl parseXML(String content, NamespaceExtractor nsExtractor) throws ParserConfigurationException, SAXException, IOException
+	{
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(true);
+		InputSource src = new InputSource(new StringReader(content));
+		SAXParser parser = factory.newSAXParser();
+		XMLReader reader = parser.getXMLReader();
+		SAXAdapter adapter = new SAXAdapter();
+		//reader.setContentHandler(adapter);
+		//reader.parse(src);
+		nsExtractor.setContentHandler(adapter);
+		nsExtractor.setParent(reader);
+		nsExtractor.parse(src);
+
+		Document doc = adapter.getDocument();
+
+		return (ElementImpl) doc.getDocumentElement();
+	}
+	
+	private class NamespaceExtractor extends XMLFilterImpl
+	{
+		List namespaces = new ArrayList(); //<Namespace>
+		
+		public void startPrefixMapping(String prefix, String uri) throws SAXException
+		{
+			Namespace ns = new Namespace(prefix, uri);
+			namespaces.add(ns);
+			super.startPrefixMapping(prefix, uri);
+		}
+		
+		public List  getNamespaces()
+		{
+			return namespaces;
+		}
+	}
+	
+	private class Namespace
+	{
+		private String prefix = null;
+		private String uri = null;
+		
+		public Namespace(String prefix, String uri)
+		{
+			this.prefix = prefix;
+			this.uri = uri;
+		}
+
+		public String getPrefix() {
+			return prefix;
+		}
+
+		public String getUri() {
+			return uri;
+		}
+	}
+	
 	/**
 	 * Creates an input source from a URL location with an optional known
 	 * charset.
@@ -974,7 +1026,7 @@ public class RESTServer {
 	 * @throws XPathException
 	 */
 	protected void search(DBBroker broker, String query, String path,
-			int howmany, int start, Properties outputProperties, boolean wrap,
+			List/*<Namespace>*/ namespaces, int howmany, int start, Properties outputProperties, boolean wrap,
 			boolean cache, HttpServletRequest request,
 			HttpServletResponse response) throws BadRequestException,
 			PermissionDeniedException, XPathException {
@@ -1013,6 +1065,7 @@ public class RESTServer {
 				context = compiled.getContext();
 			context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
 			context.setBaseURI(new AnyURIValue(pathUri.toString()));
+			declareNamespaces(context, namespaces);
 			declareVariables(context, request, response);
 
 			if (compiled == null)
@@ -1047,6 +1100,18 @@ public class RESTServer {
 		}
 	}
 
+	private void declareNamespaces(XQueryContext context, List/*<Namespace>*/ namespaces) throws XPathException
+	{
+		if(namespaces == null)
+			return;
+		
+		for(int i = 0; i < namespaces.size(); i++)
+		{
+			Namespace ns = (Namespace)namespaces.get(i);
+			context.declareNamespace(ns.getPrefix(), ns.getUri());
+		}
+	}
+	
 	/**
 	 * Pass the request, response and session objects to the XQuery context.
 	 * 
