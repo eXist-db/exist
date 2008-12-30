@@ -435,29 +435,58 @@ public class RESTServer {
 		}
 	}
 
-	public void doHead(DBBroker broker, HttpServletRequest request,
-			HttpServletResponse response, String path)
-			throws BadRequestException, PermissionDeniedException,
-			NotFoundException, IOException {
+	public void doHead(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, NotFoundException, IOException
+	{
+		Properties outputProperties = new Properties(defaultOutputKeysProperties);
+		String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+		  
+		String encoding;
+		if ((encoding = request.getParameter("_encoding")) != null)
+			outputProperties.setProperty(OutputKeys.ENCODING, encoding);
+		else
+			encoding = "UTF-8";
+		
 		DocumentImpl resource = null;
 		XmldbURI pathUri = XmldbURI.create(path);
-		try {
+		try
+		{
 			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-			if (resource == null) {
-				throw new NotFoundException("Resource " + pathUri
-						+ " not found");
+			
+			if(resource != null)
+			{
+				if (!resource.getPermissions().validate(broker.getUser(),
+						Permission.READ)) {
+					throw new PermissionDeniedException(
+							"Permission to read resource " + path + " denied");
+				}
+				DocumentMetadata metadata = resource.getMetadata();
+				response.setContentType(metadata.getMimeType());
+				response.setContentLength(resource.getContentLength());
+				response.addDateHeader("Last-Modified", metadata.getLastModified());
+				response.addDateHeader("Created", metadata.getCreated());
 			}
-			if (!resource.getPermissions().validate(broker.getUser(),
-					Permission.READ)) {
-				throw new PermissionDeniedException(
-						"Permission to read resource " + path + " denied");
+			else
+			{
+				Collection col = broker.getCollection(pathUri);
+				//no resource or collection
+				if(col == null)
+				{
+					response.sendError(HttpServletResponse.SC_NOT_FOUND, "No resource at location: " + path);
+
+					return;
+				}
+				
+				if(!col.getPermissions().validate(broker.getUser(), Permission.READ))
+				{
+					throw new PermissionDeniedException(
+							"Permission to read resource " + path + " denied");
+				}
+				response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
+				response.addDateHeader("Created", col.getCreationTime());
 			}
-			DocumentMetadata metadata = resource.getMetadata();
-			response.setContentType(metadata.getMimeType());
-			response.setContentLength(resource.getContentLength());
-			response.addDateHeader("Last-Modified", metadata.getLastModified());
-			response.addDateHeader("Created", metadata.getCreated());
-		} finally {
+		}
+		finally
+		{
 			if (resource != null)
 				resource.getUpdateLock().release(Lock.READ_LOCK);
 		}
