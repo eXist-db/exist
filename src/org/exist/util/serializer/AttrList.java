@@ -23,6 +23,7 @@ package org.exist.util.serializer;
 
 import org.exist.dom.AttrImpl;
 import org.exist.dom.QName;
+import org.exist.numbering.NodeId;
 
 /**
  * Represents a list of attributes. Each attribute is defined by
@@ -34,6 +35,7 @@ import org.exist.dom.QName;
  */
 public class AttrList {
 
+    protected NodeId nodeIds[] = new NodeId[4];
 	protected QName names[] = new QName[4];
 	protected String values[] = new String[4];
     protected int type[] = new int[4];
@@ -51,7 +53,12 @@ public class AttrList {
     }
 
     public void addAttribute(QName name, String value, int attrType) {
+        addAttribute(name, value, attrType, null);
+    }
+    
+    public void addAttribute(QName name, String value, int attrType, NodeId nodeId) {
 		ensureCapacity();
+        nodeIds[size] = nodeId;
 		names[size] = name;
 		values[size] = value;
         type[size] = attrType;
@@ -65,7 +72,11 @@ public class AttrList {
 	public QName getQName(int pos) {
 		return names[pos];
 	}
-	
+
+    public NodeId getNodeId(int pos) {
+        return nodeIds[pos];
+    }
+    
 	public String getValue(int pos) {
 		return values[pos];
 	}
@@ -86,6 +97,9 @@ public class AttrList {
 		if(size == names.length) {
 			// resize
 			final int newSize = names.length * 3 / 2;
+            NodeId tnodeIds[] = new NodeId[newSize];
+            System.arraycopy(nodeIds, 0, tnodeIds, 0, nodeIds.length);
+
 			QName tnames[] = new QName[newSize];
 			System.arraycopy(names, 0, tnames, 0, names.length);
 			
@@ -95,6 +109,7 @@ public class AttrList {
             int ttype[] = new int[newSize];
             System.arraycopy(type, 0, ttype, 0, type.length);
 
+            nodeIds = tnodeIds;
             names = tnames;
 			values = tvalues;
             type = ttype;

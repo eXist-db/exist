@@ -1,20 +1,21 @@
 package org.exist.versioning;
 
+import bmsi.util.Diff;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
-import org.exist.dom.QName;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.NewArrayNodeSet;
+import org.exist.dom.QName;
+import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
-import org.exist.numbering.NodeId;
+import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.util.serializer.Receiver;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.XPathException;
-import org.w3c.dom.Node;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamException;
@@ -22,17 +23,13 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Properties;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Stack;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Stack;
 import java.util.TreeMap;
-
-import bmsi.util.Diff;
 
 public class XMLDiff {
 
@@ -149,46 +146,86 @@ public class XMLDiff {
             int start = next.line1;
             int last = start + next.inserted;
 
+            Stack elementStack = new Stack();
+
             // sanitize the diff: move the start and end offsets of the chunk to properly include
             // all required start and end tags.
 
-            // step 1: at the end of the chunk, remove start tags with missing end tags
-            for (int i = last - 1; i >= start; i--) {
-                if (nodesB[i].nodeType == XMLStreamReader.START_ELEMENT) {
-//                    System.out.println("Found element out of context at end of chunk: " + nodesB[i].value);
-                    last--;
-                } else
-                    break;
-            }
-            // step 2: search for end tags with missing start tags. adjust start to include the start tags.
-            // this may need to be done for more than one tag.
-            Stack elementStack = new Stack();
-            boolean needRescan;
-            do {
-                needRescan = false;
-                for (int i = start; i < last; i++) {
+            if (next.inserted > 0) {
+                // step 1: at the end of the chunk, remove start tags with missing end tags
+                for (int i = last - 1; i >= start; i--) {
                     if (nodesB[i].nodeType == XMLStreamReader.START_ELEMENT) {
-                        elementStack.push(nodesB[i]);
-                    } else if (nodesB[i].nodeType == XMLStreamReader.END_ELEMENT) {
-                        if (elementStack.isEmpty()) {
-//                            System.out.println("Found out of context element: " + nodesB[i].value);
-                            for (int j = start - 1; j > -1; j--) {
-                                if (nodesB[j].nodeId.equals(nodesB[i].nodeId)) {
-                                    start0 = start0 - (start - j);
-                                    start = j;
-                                    last = start + next.inserted;
-                                    needRescan = true;
+                        System.out.println("Found element out of context at end of chunk: " + nodesB[i].value);
+                        last--;
+                    } else
+                        break;
+                }
+                // step 2: search for end tags with missing start tags. adjust start to include the start tags.
+                // this may need to be done for more than one tag.
+                boolean needRescan;
+                do {
+                    needRescan = false;
+                    for (int i = start; i < last; i++) {
+                        if (nodesB[i].nodeType == XMLStreamReader.START_ELEMENT) {
+                            elementStack.push(nodesB[i]);
+                        } else if (nodesB[i].nodeType == XMLStreamReader.END_ELEMENT) {
+                            if (elementStack.isEmpty()) {
+                                System.out.println("Found out of context element: " + nodesB[i].value);
+                                for (int j = start - 1; j > -1; j--) {
+                                    if (nodesB[j].nodeId.equals(nodesB[i].nodeId)) {
+                                        start0 = start0 - (start - j);
+                                        start = j;
+                                        last = start + next.inserted;
+                                        needRescan = true;
+                                    }
                                 }
+                            } else {
+                                DiffNode n = (DiffNode) elementStack.pop();
+                                if (!n.nodeId.equals(nodesB[i].nodeId))
+                                    throw new XMLStreamException("Diff error: element is out of context: " + nodesB[i].value);
                             }
-                        } else {
-                            DiffNode n = (DiffNode) elementStack.pop();
-                            if (!n.nodeId.equals(nodesB[i].nodeId))
-                                throw new XMLStreamException("Diff error: element is out of context: " + nodesB[i].value);
                         }
                     }
+                    elementStack.clear();
+                } while (needRescan);
+            } else if (next.deleted > 0) {
+                last = start0 + next.deleted;
+                // step 1: at the end of the chunk, remove start tags with missing end tags
+                for (int i = last - 1; i >= start0; i--) {
+                    if (nodesA[i].nodeType == XMLStreamReader.START_ELEMENT) {
+                        System.out.println("Found element out of context at end of chunk: " + nodesA[i].value);
+                        last--;
+                    } else
+                        break;
                 }
-                elementStack.clear();
-            } while (needRescan);
+                // step 2: search for end tags with missing start tags. adjust start to include the start tags.
+                // this may need to be done for more than one tag.
+                boolean needRescan;
+                do {
+                    needRescan = false;
+                    for (int i = start0; i < last; i++) {
+                        if (nodesA[i].nodeType == XMLStreamReader.START_ELEMENT) {
+                            elementStack.push(nodesA[i]);
+                        } else if (nodesA[i].nodeType == XMLStreamReader.END_ELEMENT) {
+                            if (elementStack.isEmpty()) {
+                                System.out.println("Found out of context element: " + nodesA[i].value);
+                                for (int j = start0 - 1; j > -1; j--) {
+                                    if (nodesA[j].nodeId.equals(nodesA[i].nodeId)) {
+                                        start0 = j;
+                                        last = start0 + next.deleted;
+                                        needRescan = true;
+                                    }
+                                }
+                            } else {
+                                DiffNode n = (DiffNode) elementStack.pop();
+                                if (!n.nodeId.equals(nodesA[i].nodeId))
+                                    throw new XMLStreamException("Diff error: element is out of context: " + nodesB[i].value);
+                            }
+                        }
+                    }
+                    elementStack.clear();
+                } while (needRescan);
+            }
 
            if (next.inserted > 0) {
 //               System.out.println("Insertion next.line1 = " + next.line1 + " next.inserted = " + next.inserted +
@@ -206,7 +243,8 @@ public class XMLDiff {
                for (int i = start; i < last; i++) {
 //                   System.out.println(Integer.toString(i) + " " + nodesB[i]);
                    NodeId nodeId = nodesB[i].nodeId;
-                   NodeProxy p = new NodeProxy(docB, nodeId);
+                   NodeProxy p = new NodeProxy(docB, nodeId, (short)
+                           (nodesB[i].nodeType == XMLStreamReader.ATTRIBUTE ? Type.ATTRIBUTE : Type.NODE));
                    if (nodesB[i].nodeType == XMLStreamReader.END_ELEMENT) {
                        elementStack.pop();
                        insertedNodes.add(p);
@@ -240,7 +278,9 @@ public class XMLDiff {
            }
            
            if (next.deleted > 0) {
-               last = start0 + next.deleted;
+               if (next.inserted > 0)
+                   last = start0 + next.deleted;
+//               System.out.println("Deleted: " + start0 + " last: " + last);
                for (int i = start0; i < last; i++) {
                    NodeId nodeId = nodesA[i].nodeId;
                    NodeProxy p = new NodeProxy(docA, nodeId);
@@ -282,6 +322,7 @@ public class XMLDiff {
                     nodes.add(node);
 
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
+                        nodeId = reader.getAttributeId(i);
                         String value = reader.getAttributeQName(i).getStringValue() + '=' +
                                 reader.getAttributeValue(i);
                         node = new DiffNode(nodeId, XMLStreamReader.ATTRIBUTE, value);

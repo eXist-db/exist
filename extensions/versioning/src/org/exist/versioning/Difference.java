@@ -3,17 +3,20 @@ package org.exist.versioning;
 import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.AttrImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 import org.exist.Namespaces;
 import org.xml.sax.SAXException;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.AttributesImpl;
+import org.w3c.dom.Node;
 
 import java.io.StringWriter;
 import java.util.Iterator;
@@ -33,7 +36,6 @@ public abstract class Difference {
     }
 
     public abstract void serialize(DBBroker broker, ContentHandler handler);
-
 
     public static class Insert extends Difference {
 
@@ -67,7 +69,15 @@ public abstract class Difference {
                 handler.startElement(XMLDiff.NAMESPACE, "insert", XMLDiff.PREFIX + ":insert", attribs);
                 for (SequenceIterator i = nodes.iterate(); i.hasNext(); ) {
                     NodeProxy proxy = (NodeProxy) i.nextItem();
-                    proxy.toSAX(broker, handler, null);
+                    if (proxy.getType() == Type.ATTRIBUTE) {
+                        AttrImpl attr = (AttrImpl) proxy.getNode();
+                        attribs.clear();
+                        attribs.addAttribute(attr.getNamespaceURI(), attr.getLocalName(), attr.getName(),
+                                AttrImpl.getAttributeType(attr.getType()), attr.getValue());
+                        handler.startElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute", attribs);
+                        handler.endElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute");
+                    } else
+                        proxy.toSAX(broker, handler, null);
                 }
                 handler.endElement(XMLDiff.NAMESPACE, "insert", XMLDiff.PREFIX + ":insert");
             } catch (XPathException e) {
@@ -91,7 +101,15 @@ public abstract class Difference {
                 handler.startElement(XMLDiff.NAMESPACE, "append", XMLDiff.PREFIX + ":append", attribs);
                 for (SequenceIterator i = nodes.iterate(); i.hasNext(); ) {
                     NodeProxy proxy = (NodeProxy) i.nextItem();
-                    proxy.toSAX(broker, handler, null);
+                    if (proxy.getType() == Type.ATTRIBUTE) {
+                        AttrImpl attr = (AttrImpl) proxy.getNode();
+                        attribs.clear();
+                        attribs.addAttribute(attr.getNamespaceURI(), attr.getLocalName(), attr.getName(),
+                                AttrImpl.getAttributeType(attr.getType()), attr.getValue());
+                        handler.startElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute", attribs);
+                        handler.endElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute");
+                    } else
+                        proxy.toSAX(broker, handler, null);
                 }
                 handler.endElement(XMLDiff.NAMESPACE, "append", XMLDiff.PREFIX + ":append");
             } catch (XPathException e) {

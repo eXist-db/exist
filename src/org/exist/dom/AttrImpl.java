@@ -207,7 +207,7 @@ public class AttrImpl extends NamedNode implements Attr {
             LOG.warn(uee);
             value = new String( data, pos, len - (pos - start));
         }
-        list.addAttribute(broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix), value, attrType);
+        list.addAttribute(broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix), value, attrType, dln);
     }
 
     public String getName() {
@@ -222,6 +222,16 @@ public class AttrImpl extends NamedNode implements Attr {
         //TODO : range check -pb
 		attributeType = type;
 	}
+
+    public static String getAttributeType(int type) {
+        if (type == AttrImpl.ID)
+            return "ID";
+        if (type == AttrImpl.IDREF)
+            return "IDREF";
+        if (type == AttrImpl.IDREFS)
+            return "IDREFS";
+        return "CDATA";
+    }
 
     public String getValue() {
         return value.toString();

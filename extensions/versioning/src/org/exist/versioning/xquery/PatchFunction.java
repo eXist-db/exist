@@ -41,6 +41,7 @@ import org.exist.memtree.InMemoryXMLStreamReader;
 import org.exist.memtree.NodeImpl;
 import org.exist.versioning.Patch;
 import org.exist.versioning.DiffException;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamReader;
@@ -67,7 +68,7 @@ public class PatchFunction extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         context.pushDocumentContext();
         try {
-            XMLStreamReader reader;
+            ExtendedXMLStreamReader reader;
             NodeValue nv = (NodeValue) args[0].itemAt(0);
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                 NodeImpl node = (NodeImpl) nv;
