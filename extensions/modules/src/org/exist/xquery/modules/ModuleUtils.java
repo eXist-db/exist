@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules;
 
+import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -62,30 +63,51 @@ public class ModuleUtils {
 	 * 
 	 * @return The NodeValue of XML
 	 */
-	public static NodeValue stringToXML(XQueryContext context, String xml)
-			throws XPathException, SAXException {
+	public static NodeValue stringToXML( XQueryContext context, String xml ) throws XPathException, SAXException 
+	{
+		return( streamToXML( context, new ByteArrayInputStream( xml.getBytes() ) ) );
+	}
+	
+	
+	/**
+	 * Takes a  InputStream of XML and Creates an XML Node from it using SAX in the
+	 * context of the query
+	 * 
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param xml
+	 *            The InputStream of XML
+	 * 
+	 * @return The NodeValue of XML
+	 */
+	public static NodeValue streamToXML( XQueryContext context, InputStream xml ) throws XPathException, SAXException 
+	{
 		context.pushDocumentContext();
+		
 		try {
 			// try and construct xml document from input stream, we use eXist's
 			// in-memory DOM implementation
-                        XMLReader reader= context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
-                        LOG.debug("Parsing XML response ...");
+            XMLReader reader= context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
+            LOG.debug( "Parsing XML response ..." );
+			
 			// TODO : we should be able to cope with context.getBaseURI()
-			InputSource src = new InputSource(new ByteArrayInputStream(xml.getBytes()));
+			InputSource src = new InputSource( xml );
 			MemTreeBuilder builder = context.getDocumentBuilder();
-			DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(
-					builder);
-			reader.setContentHandler(receiver);
-			reader.parse(src);
+			DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder );
+			reader.setContentHandler( receiver );
+			reader.parse( src );
 			Document doc = receiver.getDocument();
 			// return (NodeValue)doc.getDocumentElement();
-			return (NodeValue) doc;
-		} catch (IOException e) {
-			throw new XPathException(e.getMessage());
-		} finally {
+			return( (NodeValue)doc );
+		} 
+		catch( IOException e ) {
+			throw( new XPathException(e.getMessage() ) );
+		} 
+		finally {
 			context.popDocumentContext();
 		}
 	}
+	
 
 	/**
 	 * Takes a HTML InputSource and creates an XML representation of the HTML by

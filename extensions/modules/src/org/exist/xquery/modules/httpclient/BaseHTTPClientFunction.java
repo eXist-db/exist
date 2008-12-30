@@ -25,6 +25,8 @@ package org.exist.xquery.modules.httpclient;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.methods.OptionsMethod;
+import org.apache.commons.httpclient.util.EncodingUtil;
+
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
@@ -39,12 +41,16 @@ import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 
@@ -261,10 +267,25 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     {
         boolean     parsed       = false;
         NodeImpl    responseNode = null;
-        String      bodyAsString = method.getResponseBodyAsString();
+        InputStream bodyAsStream = method.getResponseBodyAsStream();
         
         // check if there is a response body
-        if( bodyAsString != null ) {
+        if( bodyAsStream != null ) {
+			
+			long contentLength = ((HttpMethodBase)method).getResponseContentLength();
+            if( contentLength > Integer.MAX_VALUE ) { //guard from overflow
+                throw( new XPathException( getASTNode(), "HTTPClient response too large to be buffered: " + contentLength + " bytes" ) );
+            }
+				
+			ByteArrayOutputStream outstream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int len;
+			
+            while( ( len = bodyAsStream.read( buffer ) ) > 0 ) {
+                outstream.write( buffer, 0, len );
+            }
+            outstream.close();
+            byte[] body = outstream.toByteArray();
             
             // determine the type of the response document
             MimeType responseMimeType = getResponseMimeType( method.getResponseHeader( "Content-Type" ) );
@@ -272,8 +293,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             
             //try and parse the response as XML
             try {
-                //TODO: replace getResponseBodyAsString() with getResponseBodyAsStream()
-                responseNode = (NodeImpl)ModuleUtils.stringToXML( context, bodyAsString );
+                responseNode = (NodeImpl)ModuleUtils.streamToXML( context, new ByteArrayInputStream( body ) );
                 builder.addAttribute( new QName( "type", null, null ), "xml" );
                 responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );         
             }
@@ -289,7 +309,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                     //html document
                     try {
                         //parse html to xml(html)
-                        responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource(method.getResponseBodyAsStream() ) ).getDocumentElement();
+                        responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource( new ByteArrayInputStream( body ) ) ).getDocumentElement();
                         builder.addAttribute( new QName( "type", null, null ), "xhtml" );
                         responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );                  
                     }
@@ -307,11 +327,9 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                     // Assume it's a text body and URL encode it
                     builder.addAttribute( new QName( "type", null, null ), "text" );
                     builder.addAttribute( new QName( "encoding", null, null ), "URLEncoded" );
-                    builder.characters( URLEncoder.encode( method.getResponseBodyAsString(), "UTF-8" ) );
+                    builder.characters( URLEncoder.encode( EncodingUtil.getString( body, ((HttpMethodBase)method).getResponseCharSet() ), "UTF-8" ) );
                 } else {
-                    // Assume it's a binary body and Base64 encode it
-                    byte[] body = method.getResponseBody();
-                    
+                    // Assume it's a binary body and Base64 encode it                    
                     builder.addAttribute( new QName( "type", null, null ), "binary" );
                     builder.addAttribute( new QName( "encoding", null, null ), "Base64Encoded" );
                     
