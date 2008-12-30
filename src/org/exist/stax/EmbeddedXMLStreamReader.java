@@ -21,8 +21,24 @@
  */
 package org.exist.stax;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Stack;
+
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.log4j.Logger;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.CharacterDataImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeHandle;
+import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.Signatures;
@@ -33,17 +49,6 @@ import org.exist.util.XMLString;
 import org.exist.util.serializer.AttrList;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
-
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Stack;
 
 /**
  * Lazy implementation of a StAX {@link javax.xml.stream.XMLStreamReader}, which directly reads

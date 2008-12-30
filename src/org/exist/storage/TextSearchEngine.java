@@ -20,10 +20,21 @@
  */
 package org.exist.storage;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StreamTokenizer;
+import java.util.Observable;
+import java.util.TreeSet;
+
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
-import org.exist.fulltext.FTIndexWorker;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
 import org.exist.fulltext.ElementContent;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.SimpleTokenizer;
@@ -35,13 +46,6 @@ import org.exist.util.Occurrences;
 import org.exist.util.PorterStemmer;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StreamTokenizer;
-import java.util.Observable;
-import java.util.TreeSet;
 
 /**
  * This is the base class for all classes providing access to the fulltext index.

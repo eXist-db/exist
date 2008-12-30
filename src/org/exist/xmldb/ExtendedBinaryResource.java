@@ -25,7 +25,6 @@ package org.exist.xmldb;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
 
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
