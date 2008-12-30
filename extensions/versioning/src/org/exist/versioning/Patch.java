@@ -28,12 +28,15 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Attr;
 import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamException;
@@ -75,7 +78,7 @@ public class Patch {
      *
      * @throws DiffException
      */
-    public void patch(XMLStreamReader reader, Receiver receiver) throws DiffException {
+    public void patch(ExtendedXMLStreamReader reader, Receiver receiver) throws DiffException {
         try {
             NodeId skip = null;
             while (reader.hasNext()) {
@@ -113,27 +116,59 @@ public class Patch {
     private void insertNode(Element insertedNode, Receiver receiver) throws XMLStreamException, IOException, SAXException {
         StoredNode child = (StoredNode) insertedNode.getFirstChild();
         while (child != null) {
-            XMLStreamReader reader = broker.newXMLStreamReader(child, false);
-            while (reader.hasNext()) {
-                int status = reader.next();
-                copyNode(reader, receiver, status);
+            if (XMLDiff.NAMESPACE.equals(child.getNamespaceURI()) && "attribute".equals(child.getLocalName())) {
+                NamedNodeMap attrs = child.getAttributes();
+                for (int i = 0; i < attrs.getLength(); i++) {
+                    AttrImpl attr = (AttrImpl) attrs.item(i);
+                    if (!attr.getName().startsWith("xmlns"))
+                        receiver.attribute(attr.getQName(), attr.getValue());
+                }
+            } else {
+                ExtendedXMLStreamReader reader = broker.newXMLStreamReader(child, false);
+                while (reader.hasNext()) {
+                    int status = reader.next();
+                    copyNode(reader, receiver, status);
+                }
             }
             child = (StoredNode) child.getNextSibling();
         }
     }
 
-    private void copyNode(XMLStreamReader reader, Receiver receiver, int status) throws SAXException {
+    private void copyNode(ExtendedXMLStreamReader reader, Receiver receiver, int status) throws SAXException, XMLStreamException, IOException {
         switch (status) {
             case XMLStreamReader.START_ELEMENT:
                 AttrList attrs = new AttrList();
                 for (int i = 0; i < reader.getAttributeCount(); i++) {
-                    QName attrQn = new QName(reader.getAttributeLocalName(i), reader.getAttributeNamespace(i),
-                            reader.getAttributePrefix(i));
-                    attrs.addAttribute(
-                            attrQn,
-                            reader.getAttributeValue(i),
-                            getAttributeType(reader.getAttributeType(i))
-                    );
+                    // check if an attribute has to be inserted before the current attribute
+                    NodeId nodeId = reader.getAttributeId(i);
+
+                    // check if an attribute has to be inserted before the current attribute
+                    ElementImpl insertedNode = (ElementImpl) insertedNodes.get(nodeId);
+                    if (insertedNode != null) {
+                        StoredNode child = (StoredNode) insertedNode.getFirstChild();
+                        while (child != null) {
+                            if (XMLDiff.NAMESPACE.equals(child.getNamespaceURI()) && "attribute".equals(child.getLocalName())) {
+                                NamedNodeMap map = child.getAttributes();
+                                for (int j = 0; j < map.getLength(); j++) {
+                                    AttrImpl attr = (AttrImpl) map.item(j);
+                                    if (!attr.getName().startsWith("xmlns"))
+                                        attrs.addAttribute(attr.getQName(), attr.getValue(),
+                                                attr.getType(), attr.getNodeId());
+                                }
+                            }
+                            child = (StoredNode) child.getNextSibling();
+                        }
+                    }
+
+                    if (!deletedNodes.contains(nodeId)) {
+                        QName attrQn = new QName(reader.getAttributeLocalName(i), reader.getAttributeNamespace(i),
+                                reader.getAttributePrefix(i));
+                        attrs.addAttribute(
+                                attrQn,
+                                reader.getAttributeValue(i),
+                                getAttributeType(reader.getAttributeType(i))
+                        );
+                    }
                 }
                 receiver.startElement(new QName(reader.getLocalName(), reader.getNamespaceURI(), reader.getPrefix()),
                         attrs);

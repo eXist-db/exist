@@ -23,6 +23,8 @@ package org.exist.memtree;
 
 import org.w3c.dom.Node;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.numbering.NodeId;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
@@ -35,7 +37,7 @@ import javax.xml.stream.XMLStreamReader;
  * eXist's in-memory DOM. This class complements {@link org.exist.stax.EmbeddedXMLStreamReader}
  * which reads persistent documents.
  */
-public class InMemoryXMLStreamReader implements XMLStreamReader {
+public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
     protected DocumentImpl doc;
     protected int currentNode;
@@ -51,7 +53,7 @@ public class InMemoryXMLStreamReader implements XMLStreamReader {
     }
 
     public Object getProperty(String name) throws IllegalArgumentException {
-        if (name.equals(EmbeddedXMLStreamReader.PROPERTY_NODE_ID)) {
+        if (name.equals(PROPERTY_NODE_ID)) {
             if (currentNode < 0 || currentNode >= doc.size)
                 return null;
             doc.expand();
@@ -66,8 +68,13 @@ public class InMemoryXMLStreamReader implements XMLStreamReader {
         }
         if (currentNode > -1) {
             int next = -1;
-            if (state == XMLStreamReader.START_ELEMENT)
+            if (state == XMLStreamReader.START_ELEMENT) {
                 next = doc.getFirstChildFor(currentNode);
+                if (next < 0) { // no child nodes
+                    state = XMLStreamReader.END_ELEMENT;
+                    return state;
+                }
+            }
             if (next < 0) {
                 next = doc.next[currentNode];
                 if (next < currentNode) {
@@ -178,6 +185,16 @@ public class InMemoryXMLStreamReader implements XMLStreamReader {
         if (state != START_ELEMENT)
             throw new IllegalStateException("Cursor is not at an element");
         return getAttributeQName(index).getPrefix();
+    }
+
+    public NodeId getAttributeId(int index) {
+        if (state != START_ELEMENT)
+            throw new IllegalStateException("Cursor is not at an element");
+        if (index > getAttributeCount())
+            throw new ArrayIndexOutOfBoundsException("bad attribute index");
+        doc.expand();
+        int attr = doc.alpha[currentNode];
+        return doc.attrNodeId[attr + index];
     }
 
     public String getAttributeType(int index) {

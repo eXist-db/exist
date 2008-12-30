@@ -51,11 +51,9 @@ import java.util.Stack;
  * a few selected node properties are requested. Node properties are extracted on demand. For example, the QName of
  * an element will not be read unless {@link #getText()} is called.
  */
-public class EmbeddedXMLStreamReader implements XMLStreamReader {
+public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 
 	private static final Logger LOG = Logger.getLogger(EmbeddedXMLStreamReader.class);
-
-    public final static String PROPERTY_NODE_ID = "node-id";
 
     private RawNodeIterator iterator;
 
@@ -367,13 +365,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         if (i > attributes.getLength())
             throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
         final int type = attributes.getType(i);
-        if (type == AttrImpl.ID)
-            return "ID";
-        if (type == AttrImpl.IDREF)
-            return "IDREF";
-        if (type == AttrImpl.IDREFS)
-            return "IDREFS";
-        return "CDATA";
+        return AttrImpl.getAttributeType(type);
     }
 
     public String getAttributeValue(int i) {
@@ -383,6 +375,15 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         if (i > attributes.getLength())
             throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
         return attributes.getValue(i);
+    }
+
+    public NodeId getAttributeId(int i) {
+        if (state != START_ELEMENT)
+            throw new IllegalStateException("Cursor is not at an element");
+        readAttributes();
+        if (i > attributes.getLength())
+            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+        return attributes.getNodeId(i);
     }
 
     public boolean isAttributeSpecified(int i) {

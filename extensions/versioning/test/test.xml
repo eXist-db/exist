@@ -126,7 +126,42 @@
             </book>
         </v:revision>
     </v:test>
+    <v:test id="simple-remove">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+                <para>Second paragraph</para>
+                <para>Third <emphasis>important</emphasis> paragraph.</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>Second paragraph</para>
+                <para>Third paragraph.</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-remove-last">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+            </book>
+        </v:revision>
+    </v:test>
     <v:test id="simple-update-mixed">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+            </book>
+        </v:revision>
         <v:revision>
             <book>
                 <title>Book Title</title>
@@ -138,6 +173,248 @@
                 <title>Book Title</title>
                 <para>Most <emphasis>important</emphasis> paragraph!</para>
             </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-update-empty">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <ulink url="http://exist-db.org"/>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <ulink url="http://exist-db.org/"/>
+                <para>First paragraph</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <ulink url="http://exist-db.org/"/>
+                <para>First <emphasis>important</emphasis> paragraph</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-attribute-insert-mixed">
+        <v:revision>
+            <book>
+                <title></title>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book xmlns:x="http://foo.org">
+                <title x:id="title1">Book Title</title>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-attribute-insert">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book xmlns:x="http://foo.org">
+                <title x:id="title1">Book Title</title>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-attribute-insert2">
+        <v:revision>
+            <book>
+                <title id="title1">Book Title</title>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title n="22" id="title1">Book Title</title>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-attribute-update">
+        <v:revision>
+            <book>
+                <title label="1.1" id="title1" n="22">Book Title</title>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title label="1.1" id="title2" n="22">Book Title</title>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-attribute-delete">
+        <v:revision>
+            <book>
+                <title n="22" id="title1" label="1.1">Book Title</title>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title id="title2">Book Title</title>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-insert-namespace">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book xmlns:t="http://test.com">
+                <title>Book Title</title>
+				<t:test>Bla</t:test>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="complex-insert">
+        <v:revision>
+            <book>
+                <title>Backup</title>
+                <procedure>
+                    <step>
+                        <para>Select either the Backup Icon (arrow pointed upward) in the toolbar OR
+                            <guimenuitem>Tools &#187; Backup</guimenuitem> from the menu.</para>
+                    </step>
+                    <step>
+                        <para>From the <guimenuitem>Collection</guimenuitem> drop-down menu, select the
+                            collection to backup. To backup the entire database, select
+                            <filename>/db</filename>. Otherwise, select the topmost collection that
+                            should be stored. Note, however, that user data and permissions will only be
+                            exported if you backup the entire database.</para>
+                        <screenshot><graphic fileref="resources/backup1.png"/></screenshot>
+                    </step>
+                    <step>
+                        <para>In the <command>Backup-Directory</command> field, enter the full directory
+                            path to the where you want the backup database files to be stored or the
+                            path to a zip file into which the backup will be written. In general, if the
+                            file name ends with <filename>.zip</filename>, the client will attempt to
+                            write to a ZIP. Otherwise, it tries to create the specified
+                            directory.</para>
+                    </step>
+                    <step>
+                        <para>Click <command>OK</command>.</para>
+                    </step>
+                </procedure>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Backup</title>
+                <procedure>
+                    <step>
+                        <para>From the <guimenuitem>Collection</guimenuitem> drop-down menu, select the
+                            collection to backup. To backup the entire database, select
+                            <filename>/db</filename>. Otherwise, select the topmost collection that
+                            should be stored. Note, however, that user data and permissions will only be
+                            exported if you backup the entire database.</para>
+                        <screenshot><graphic fileref="resources/backup1.png"/></screenshot>
+                    </step>
+                    <step>
+                        <para>Select either the Backup Icon (arrow pointed upward) in the toolbar OR
+                            <guimenuitem>Tools &#187; Backup</guimenuitem> from the menu.</para>
+                    </step>
+                    <step>
+                        <para>In the <command>Backup-Directory</command> field, enter the full directory
+                            path to the where you want the backup database files to be stored or the
+                            path to a zip file into which the backup will be written. In general, if the
+                            file name ends with <filename>.zip</filename>, the client will attempt to
+                            write to a ZIP. Otherwise, it tries to create the specified
+                            directory.</para>
+                    </step>
+                    <step>
+                        <para>Click <command>OK</command>.</para>
+                    </step>
+                </procedure>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="complex-atom">
+        <v:revision>
+            <feed xmlns="http://www.w3.org/2005/Atom">
+                <id>urn:uuid:bbc0ae94-582f-4e8c-b937-58d6a0cd0757</id>
+                <updated>2008-10-16T22:23:14+02:00</updated>
+                <title>Help</title>
+                <subtitle>AtomicWiki Quick Help</subtitle>
+                <author>
+                    <name>wolf</name>
+                </author>
+                <link href="#" rel="edit" type="application/atom+xml"/>
+                <link href="#" rel="self" type="application/atom+xml"/>
+                <entry>
+                    <id>urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147</id>
+                    <updated>2008-10-16T22:23:14+02:00</updated>
+                    <published>2008-03-03T10:48:51+01:00</published>
+                    <link href="?id=urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147" rel="edit" type="application/atom+xml"/>
+                    <atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Quick Help</atom:title>
+                    <wiki:id xmlns:wiki="http://exist-db.org/xquery/wiki">QuickHelp</wiki:id>
+                    <atom:content xmlns:atom="http://www.w3.org/2005/Atom" type="xhtml">
+                        <div xmlns="http://www.w3.org/1999/xhtml">
+                            <h2>Addressing</h2>
+                            <p>The hierarchical structure of feeds and entries is directly reflected in the URLs you use to access an entry or feed. In general, URLs that end with a <span class="strong">slash</span> point to a feed, while URLs not ending with a slash reference an entry within a feed. For example:</p>
+                        </div>
+                    </atom:content>
+                </entry>
+            </feed>
+        </v:revision>
+        <v:revision>
+            <feed xmlns="http://www.w3.org/2005/Atom">
+                <id>urn:uuid:bbc0ae94-582f-4e8c-b937-58d6a0cd0757</id>
+                <updated>2008-10-16T22:23:14+02:00</updated>
+                <title>Quick Help</title>
+                <subtitle>AtomicWiki Quick Help</subtitle>
+                <author>
+                    <name>wolf</name>
+                </author>
+                <category scheme="http://exist-db.org/NS/wiki/type/" term="wiki"/>
+                <link href="#" rel="edit" type="application/atom+xml"/>
+                <link href="#" rel="self" type="application/atom+xml"/>
+                <link href="#" rel="self" type="application/atom+xml"/>
+                <entry>
+                    <id>urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147</id>
+                    <updated>2008-11-16T22:23:14+02:00</updated>
+                    <link href="?id=urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147" rel="edit" type="application/atom+xml"/>
+                    <atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Quick Help</atom:title>
+                    <wiki:id xmlns:wiki="http://exist-db.org/xquery/wiki">QuickHelp</wiki:id>
+                    <atom:content xmlns:atom="http://www.w3.org/2005/Atom" type="xhtml">
+                        <div xmlns="http://www.w3.org/1999/xhtml">
+                            <h2>Addressing</h2>
+                            <p>The hierarchical structure of feeds and entries is directly reflected in the URLs you use to access an entry or feed. In general, URLs that end with a <span class="strong">slash</span> point to a feed, while URLs not ending with a slash reference an entry within a feed. For example:</p>
+                        </div>
+                    </atom:content>
+                </entry>
+            </feed>
+        </v:revision>
+        <v:revision>
+            <feed xmlns="http://www.w3.org/2005/Atom">
+                <id>urn:uuid:bbc0ae94-582f-4e8c-b937-58d6a0cd0757</id>
+                <updated>2008-10-16T22:23:14+02:00</updated>
+                <title>Quick Help</title>
+                <subtitle>AtomicWiki Quick Help</subtitle>
+                <author>
+                    <name>wolf</name>
+                </author>
+                <category scheme="http://exist-db.org/NS/wiki/type/" term="wiki"/>
+                <link href="#" rel="edit" type="application/atom+xml"/>
+                <link href="#" rel="self" type="application/atom+xml"/>
+                <entry>
+                    <id>urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147</id>
+                    <updated>2008-11-16T22:23:14+02:00</updated>
+                    <link href="?id=urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147" rel="edit" type="application/atom+xml"/>
+                    <atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Quick Help</atom:title>
+                    <wiki:id xmlns:wiki="http://exist-db.org/xquery/wiki">QuickHelp</wiki:id>
+                    <atom:content xmlns:atom="http://www.w3.org/2005/Atom" type="xhtml">
+                        <div xmlns="http://www.w3.org/1999/xhtml">
+                            <h2>Addressing</h2>
+                            <p>The <b>hierarchical</b> structure of feeds and entries is directly reflected in the URLs you use to access an entry or feed. In general, URLs that end with a <span class="strong">slash</span> point to a feed, while URLs not ending with a slash reference an entry within a feed. For example:</p>
+                        </div>
+                    </atom:content>
+                </entry>
+            </feed>
         </v:revision>
     </v:test>
 </v:testSuite>
