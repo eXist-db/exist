@@ -93,18 +93,18 @@ body {
 #status td.key {
 }
 
-#browse {
+.browse {
     margin-left: 15px;
     font-size: smaller;
     border-bottom: 1px solid black;
 }
 
-#browse th {
+.browse th {
     text-align: left;
     border-bottom: 1px solid black;
 }
 
-#browse td.perm {
+.browse td.perm {
     font-family: Courier, monospace;
 }
 
@@ -188,4 +188,13 @@ td.help {
 
 .high {
     color: #00ff00;
+}
+
+.diffsource {
+	width: 600px;
+	overflow: auto;
+}
+
+.revisions {
+	width: 620px;
 }

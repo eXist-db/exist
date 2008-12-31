@@ -9,6 +9,7 @@ module namespace browse="http://exist-db.org/xquery/admin-interface/browse";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
+declare namespace v="http://exist-db.org/versioning";
 
 import module namespace date="http://exist-db.org/xquery/admin-interface/date" at "dates.xqm";
 
@@ -200,7 +201,7 @@ declare function browse:create-collection($parentColName as xs:string) as elemen
 :)
 declare function browse:display-collection($colName as xs:string) as element()
 {
-    <table cellspacing="0" cellpadding="5" id="browse">
+    <table cellspacing="0" cellpadding="5" class="browse">
         <tr>
             <th/>
             <th>Name</th>
@@ -210,6 +211,7 @@ declare function browse:display-collection($colName as xs:string) as element()
             <th>Created</th>
             <th>Modified</th>
             <th>Size (KB)</th>
+			<th>Revision</th>
         </tr>
         <tr>
             <td/>
@@ -220,6 +222,7 @@ declare function browse:display-collection($colName as xs:string) as element()
             <td/>
             <td/>
             <td/>
+			<td/>
         </tr>
         {
             browse:display-child-collections($colName),
@@ -243,12 +246,14 @@ declare function browse:display-child-collections($colName as xs:string) as elem
             <td>{date:format-dateTime($created)}</td>
             <td/>
             <td/>
+			<td/>
         </tr>
 };
 
 declare function browse:display-child-resources($colName as xs:string) as element()* 
 {
-    for $child in xdb:get-child-resources($colName) order by $child return
+    for $child in xdb:get-child-resources($colName) order by $child 
+	return
         <tr>
             <td><input type="checkbox" name="resource" value="{$colName}/{$child}"/></td>
             <td><a target="_new" href="../rest/{xdb:encode-uri($colName)}/{xdb:encode-uri($child)}">{xdb:decode-uri(xs:anyURI($child))}</a></td>
@@ -258,7 +263,24 @@ declare function browse:display-child-resources($colName as xs:string) as elemen
             <td>{date:format-dateTime(xdb:created($colName, $child))}</td>
             <td>{date:format-dateTime(xdb:last-modified($colName, $child))}</td>
             <td>{fn:ceiling(xdb:size($colName, $child) div 1024)}</td>
+			<td>
+				<a href="?panel=revisions&amp;resource={$colName}/{$child}">
+				{browse:last-revision($colName, $child)//v:properties/v:revision/string()}
+				</a>
+			</td>
         </tr>
+};
+
+declare function browse:last-revision($collection as xs:string, $resource as xs:string) {
+	let $vCollection := concat("/db/system/versions", $collection)
+	let $versions :=
+		for $version in collection($vCollection)/v:version[
+			v:properties[v:document = $resource]
+		]
+		order by xs:long($version/v:properties/v:revision) descending
+		return $version
+	return
+		$versions[1]
 };
 
 (:

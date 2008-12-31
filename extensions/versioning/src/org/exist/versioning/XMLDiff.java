@@ -107,7 +107,7 @@ public class XMLDiff {
                     SAXSerializer.class);
             Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-            outputProperties.setProperty(OutputKeys.INDENT, "yes");
+            outputProperties.setProperty(OutputKeys.INDENT, "no");
             sax.setOutput(writer, outputProperties);
             sax.startDocument();
             sax.startElement(DIFF_ELEMENT, null);
