@@ -4,6 +4,9 @@ import module namespace version="http://exist-db.org/xquery/versioning"
 at "java:org.exist.versioning.xquery.VersioningModule";
 import module namespace util="http://exist-db.org/xquery/util";
 
+declare function v:version-collection($collectionPath as xs:string) as xs:string {
+	concat("/db/system/versions/", replace($collectionPath, "^/?(.*)$", "$1"))
+};
 
 declare function v:list-revisions($root as node()) as xs:long* {
     let $collection := util:collection-name($root)
@@ -14,6 +17,16 @@ declare function v:list-revisions($root as node()) as xs:long* {
     order by $rev ascending
     return
         $rev
+};
+
+declare function v:list-versions($root as node()) as element(v:version)* {
+    let $collection := util:collection-name($root)
+    let $docName := util:document-name($root)
+    let $vCollection := concat("/db/system/versions", $collection)
+    for $version in collection($vCollection)/v:version[v:properties[v:document = $docName]]
+    order by xs:long($version/v:properties/v:revision) ascending
+    return
+        $version
 };
 
 declare function v:get-revision($root as node(), $rev as xs:long) {
