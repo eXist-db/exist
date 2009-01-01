@@ -1,5 +1,5 @@
 <book>
-    
+<!-- $Id$ -->    
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <title>Open Source Native XML Database</title>
@@ -77,10 +77,10 @@
                 <tr>
                     <td class="description">The eXist Wiki, the demo server and other vital parts of
                         our project infrastructure are kindly hosted by <a
-                            href="http://www.csw.co.uk/">CSW Group Ltd.</a> in the UK.</td>
+                            href="http://www.friprogramvarusyndikatet.se/">Fri programvaru-syndikatet / exist-db.se.</a> in Sweden.</td>
                     <td align="center">
-                        <a href="http://www.csw.co.uk/">
-                            <img border="0" src="resources/cswgroup.gif"/>
+                        <a href="http://www.friprogramvarusyndikatet.se/">
+                            <img border="0" src="resources/fps-logo.png"/>
                         </a>
                     </td>
                 </tr>
