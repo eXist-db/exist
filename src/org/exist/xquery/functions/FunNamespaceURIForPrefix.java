@@ -44,7 +44,6 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class FunNamespaceURIForPrefix extends BasicFunction {

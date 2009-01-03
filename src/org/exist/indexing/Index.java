@@ -25,7 +25,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.backup.RawDataBackup;
 import org.w3c.dom.Element;
 
 /**

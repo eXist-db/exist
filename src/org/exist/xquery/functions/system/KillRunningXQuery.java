@@ -22,24 +22,19 @@
  */
 package org.exist.xquery.functions.system;
 
+import java.util.Iterator;
+
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
-import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-
-import java.util.Iterator;
 
 
 /**
