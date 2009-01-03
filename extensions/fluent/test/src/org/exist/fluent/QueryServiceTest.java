@@ -77,6 +77,19 @@ public class QueryServiceTest extends DatabaseTestCase {
 		f.query().importModule(doc1).importModule(doc2).single("ex:foo()");
 	}
 	
+	@Test public void importModule5() {
+		Folder f = db.getFolder("/");
+		Document module = f.documents().load(Name.create("module"), Source.blob(
+				"module namespace ex = 'http://example.com';\n" +
+				"declare function ex:root() { / };\n"
+		));
+		XMLDocument doc1 = f.documents().load(Name.create("doc1"), Source.xml("<foo/>"));
+		f.documents().load(Name.create("doc2"), Source.xml("<foo/>"));
+		QueryService qs = db.query(doc1).importModule(module);
+		assertEquals(1, qs.all("/").size());
+		assertEquals(1, qs.all("ex:root()").size());
+	}
+	
 	@Test public void analyze1() {
 		QueryService.QueryAnalysis qa = db.getFolder("/").query().analyze("zero-or-one(//blah)");
 		assertEquals(QueryService.QueryAnalysis.Cardinality.ZERO_OR_ONE, qa.cardinality());
