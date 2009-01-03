@@ -2038,7 +2038,7 @@ public class XQueryContext {
 	private ExternalModule compileOrBorrowModule(String prefix, String namespaceURI, String location, Source source) throws XPathException {
 		ExternalModule module = broker.getBrokerPool().getXQueryPool().borrowModule(broker, source);
 		if (module == null) module = compileModule(prefix, namespaceURI, location, source);
-     	modules.put(module.getNamespaceURI(), module);
+     	setModule(module.getNamespaceURI(), module);
       declareModuleVars(module);
       return module;
 	}
