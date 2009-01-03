@@ -323,7 +323,7 @@ public class User {
           this.password = null;
           this.digestPassword = null;
        } else {
-          this.password = MD5.md(passwd,true);
+          this.password = MessageDigester.md5(passwd,true);
           this.digestPassword = digest(passwd);
        }
     }
@@ -352,9 +352,9 @@ public class User {
     		case PLAIN_ENCODING:
     			return passwd;
     		case MD5_ENCODING:
-    			return MD5.md(user + ":"+realm+":" + passwd,false);
+    			return MessageDigester.md5(user + ":"+realm+":" + passwd,false);
     		default:
-    			return MD5.md(passwd,true);
+    			return MessageDigester.md5(passwd,true);
     	}
     	
     }
@@ -439,7 +439,7 @@ public class User {
         }
         
         if (password!=null) {
-            if (MD5.md(passwd,true).equals( password )) {
+            if (MessageDigester.md5(passwd,true).equals( password )) {
                 return true;
             }
         }

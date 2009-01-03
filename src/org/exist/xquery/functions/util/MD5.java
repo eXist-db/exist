@@ -28,11 +28,11 @@ import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.security.MessageDigester;
 
 /**
  * Generate an MD5 key from a string.
@@ -41,14 +41,16 @@ import org.exist.xquery.value.Type;
  */
 public class MD5 extends BasicFunction 
 {
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature deprecated[] = {
 		new FunctionSignature(
 			new QName( "md5", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
 			"Generates an MD5 key from a string.",
 			new SequenceType[] {
 				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
 				},
-			new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ) ),
+			new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
+                "Use the hash($a, \"MD5\") function instead. SHA-1 is supported as " +
+                        "more secure message digest algorithm."),
 	
 		new FunctionSignature(
 			new QName( "md5", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
@@ -57,7 +59,9 @@ public class MD5 extends BasicFunction
 				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
 				new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE )
 				},
-			new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ) )
+			new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
+                "Use the hash($a, \"MD5\") function instead. SHA-1 is supported as " +
+                        "more secure message digest algorithm.")
 		};
 
 	public MD5( XQueryContext context , FunctionSignature signature ) 
@@ -78,7 +82,7 @@ public class MD5 extends BasicFunction
 			base64 = args[1].effectiveBooleanValue();
 		}
 		
-		String md = org.exist.security.MD5.md( arg, base64 );
+		String md = MessageDigester.md5( arg, base64 );
 		
 		return( new StringValue( md ) );
 	}
