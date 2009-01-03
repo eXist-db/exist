@@ -8,19 +8,19 @@ import org.apache.log4j.Logger;
 import org.exist.util.Base64Encoder;
 
 
-public class MD5 {
+public class MessageDigester {
 
     private static String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7",
             "8", "9", "a", "b", "c", "d", "e", "f"};
 
-    private static final Logger LOG = Logger.getLogger(MD5.class);
+    private static final Logger LOG = Logger.getLogger(MessageDigester.class);
 
-    public static String md( String passwd, boolean base64) {
+    public static String md5( String message, boolean base64) {
         MessageDigest md5 = null;
-        String digest = passwd;
+        String digest = message;
         try {
             md5 = MessageDigest.getInstance( "MD5" );
-            md5.update( passwd.getBytes() );
+            md5.update( message.getBytes() );
             byte[] digestData = md5.digest();
             
             if(base64)
@@ -39,6 +39,40 @@ public class MD5 {
             LOG.warn( "Digest creation failed. Using plain string as password!" );
         }
         return digest;
+    }
+
+    public static String calculate(String message, String algorithm, boolean base64)
+    throws IllegalArgumentException {
+
+        // Can throw a  NoSuchAlgorithmException
+        MessageDigest  md = null;
+        try {
+            md = MessageDigest.getInstance(algorithm);
+
+        } catch (NoSuchAlgorithmException e) {
+            String error = "'"+ algorithm + "' is not a supported MessageDigest algorithm.";
+            LOG.error(error, e);
+            throw new IllegalArgumentException(error);
+        }
+
+
+        // Calculate hash
+        md.update( message.getBytes() );
+        byte[] digestData = md.digest();
+
+        // Write digest as string
+        String digest = null;
+        if(base64)
+        {
+            Base64Encoder enc = new Base64Encoder();
+            enc.translate(digestData);
+            digest = new String(enc.getCharArray());
+
+        } else {
+           digest = byteArrayToHex( digestData );
+        }
+
+        return  digest;
     }
 
 
@@ -70,8 +104,8 @@ public class MD5 {
      */
     public static void main( String[] args ) {
         System.out.println( "input: " + args[0] );
-        System.out.println( "MD5:   " + MD5.md( args[0], false ) );
-        System.out.println( "MD5 (base64):   " + MD5.md( args[0], true ) );
+        System.out.println( "MD5:   " + MessageDigester.md5( args[0], false ) );
+        System.out.println( "MD5 (base64):   " + MessageDigester.md5( args[0], true ) );
     }
 }
 

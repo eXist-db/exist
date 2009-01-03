@@ -54,8 +54,6 @@ public class UtilModule extends AbstractInternalModule {
 		new FunctionDef(Eval.signatures[3], Eval.class),
 		new FunctionDef(Eval.signatures[4], Eval.class),
 		new FunctionDef(Compile.signature, Compile.class),
-		new FunctionDef(MD5.signatures[0], MD5.class),
-		new FunctionDef(MD5.signatures[1], MD5.class),
 		new FunctionDef(DocumentNameOrId.docIdSignature, DocumentNameOrId.class),
 		new FunctionDef(DocumentNameOrId.docNameSignature, DocumentNameOrId.class),
 		new FunctionDef(CollectionName.signature, CollectionName.class),
@@ -104,11 +102,15 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(Parse.signatures[1], Parse.class),
         new FunctionDef(ExtractDocs.signature, ExtractDocs.class),
         new FunctionDef(NodeXPath.signature, NodeXPath.class),
+        new FunctionDef(Hash.signatures[0], Hash.class),
+        new FunctionDef(Hash.signatures[1], Hash.class),
 
         // deprecated functions
         new FunctionDef(GetVersion.deprecated, GetVersion.class),
 		new FunctionDef(FileRead.deprecated[0], FileRead.class),
 		new FunctionDef(FileRead.deprecated[1], FileRead.class),
+		new FunctionDef(MD5.deprecated[0], MD5.class),
+		new FunctionDef(MD5.deprecated[1], MD5.class),
     };
 
     static {
