@@ -90,6 +90,14 @@ public class QueryServiceTest extends DatabaseTestCase {
 		assertEquals(1, qs.all("ex:root()").size());
 	}
 	
+	@Test public void limitRootDocuments1() {
+		Folder f = db.getFolder("/");
+		XMLDocument doc1 = f.documents().load(Name.create("doc1"), Source.xml("<foo/>"));
+		f.documents().load(Name.create("doc2"), Source.xml("<foo/>"));
+		assertEquals(2, f.query().all("/foo").size());
+		assertEquals(1, f.query().limitRootDocuments(doc1).all("/foo").size());
+	}
+	
 	@Test public void analyze1() {
 		QueryService.QueryAnalysis qa = db.getFolder("/").query().analyze("zero-or-one(//blah)");
 		assertEquals(QueryService.QueryAnalysis.Cardinality.ZERO_OR_ONE, qa.cardinality());

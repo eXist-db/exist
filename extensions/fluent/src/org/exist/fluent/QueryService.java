@@ -38,7 +38,7 @@ public class QueryService implements Cloneable {
 	private NamespaceMap namespaceBindings;
 	private Map<String, Document> moduleMap = new TreeMap<String, Document>();
 	private final Database db;
-	protected DocumentSet docs;
+	protected DocumentSet docs, overrideDocs;
 	protected Sequence base;
 	protected AnyURIValue baseUri;
 	private Map<QName, Object> bindings = new HashMap<QName, Object>();
@@ -192,6 +192,32 @@ public class QueryService implements Cloneable {
 	}
 	
 	/**
+	 * Limit the root documents accessible to the query to the given list, overriding the any set
+	 * derived from the query's context.  The query will still be able to access other documents
+	 * through bound variables or by naming them directly, though.
+	 * 
+	 * @param rootDocs the list of root documents to limit the query to
+	 * @return this service, to chain calls
+	 */
+	public QueryService limitRootDocuments(XMLDocument... rootDocs) {
+		return limitRootDocuments(Arrays.asList(rootDocs));
+	}
+	
+	/**
+	 * Limit the root documents accessible to the query to the given list, overriding the any set
+	 * derived from the query's context.  The query will still be able to access other documents
+	 * through bound variables or by naming them directly, though.
+	 * 
+	 * @param rootDocs the list of root documents to limit the query to
+	 * @return this service, to chain calls
+	 */
+	public QueryService limitRootDocuments(Collection<XMLDocument> rootDocs) {
+		overrideDocs = new DefaultDocumentSet();
+		for (XMLDocument doc : rootDocs) ((MutableDocumentSet) overrideDocs).add(doc.doc);
+		return this;
+	}
+	
+	/**
 	 * Pre-substitute variables of the form '$n' where n is an integer in all query expressions
 	 * evaluated subsequently.  The values are taken from the usual postional parameter list.
 	 * Parameters that are presubbed are also bound to the usual $_n variables and can be
@@ -270,6 +296,7 @@ public class QueryService implements Cloneable {
 		try {
 			broker = db.acquireBroker();
 			prepareContext(broker);
+			if (overrideDocs != null) docs = overrideDocs;
 			final org.exist.source.Source source = buildQuerySource(query, params, "execute");
 			final XQuery xquery = broker.getXQueryService();
 			final XQueryPool pool = xquery.getXQueryPool();
