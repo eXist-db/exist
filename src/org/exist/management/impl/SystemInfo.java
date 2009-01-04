@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 import java.util.Properties;
-import javax.management.*;
+
 import org.apache.log4j.Logger;
 
 /**

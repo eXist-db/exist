@@ -21,6 +21,15 @@
  */
 package org.exist.backup;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Stack;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -33,22 +42,14 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.Value;
-import org.exist.storage.dom.*;
+import org.exist.storage.dom.DOMFile;
+import org.exist.storage.dom.DOMTransaction;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.lock.Lock;
-import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
 
 public class ConsistencyCheck {
 

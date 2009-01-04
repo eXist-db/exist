@@ -21,16 +21,15 @@
  */
 package org.exist.xmlrpc;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Vector;
 import java.util.List;
-import java.net.URISyntaxException;
+import java.util.Vector;
 
 import org.exist.EXistException;
-import org.exist.util.LockException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
 
