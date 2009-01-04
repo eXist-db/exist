@@ -146,7 +146,16 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     }
 
     public String getAttributeValue(String namespaceURI, String localName) {
-        throw new UnsupportedOperationException();
+        int attrCount = doc.getAttributesCountFor(currentNode);
+        if (attrCount == 0)
+            return null;
+        int attrStart = doc.alpha[currentNode];
+        for (int i = 0; i < attrCount; i++) {
+            org.exist.dom.QName qname = (org.exist.dom.QName) doc.namePool.get(doc.attrName[attrStart + i]);
+            if (namespaceURI.equals(qname.getNamespaceURI()) && localName.equals(qname.getLocalName()))
+                return doc.attrValue[attrStart + i];
+        }
+        return null;
     }
 
     public int getAttributeCount() {
