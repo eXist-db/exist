@@ -309,8 +309,14 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         return false;
     }
 
-    public String getAttributeValue(String string, String string1) {
-        throw new UnsupportedOperationException();
+    public String getAttributeValue(String namespaceURI, String localName) {
+        readAttributes();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            org.exist.dom.QName qn = attributes.getQName(i);
+            if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalName().equals(localName))
+                return attributes.getValue(i);
+        }
+        return null;
     }
 
     public int getAttributeCount() {

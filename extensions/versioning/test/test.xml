@@ -18,7 +18,7 @@
     <v:test id="simple-insert-first">
         <v:revision>
             <book>
-                <para>First paragraph</para>jj
+                <para>First paragraph</para>
             </book>
         </v:revision>
         <v:revision>
@@ -126,7 +126,7 @@
             </book>
         </v:revision>
     </v:test>
-    <v:test id="simple-remove">
+    <v:test id="simple-remove1">
         <v:revision>
             <book>
                 <title>Book Title</title>
@@ -139,6 +139,23 @@
             <book>
                 <title>Book Title</title>
                 <para>Second paragraph</para>
+                <para>Third paragraph.</para>
+            </book>
+        </v:revision>
+    </v:test>
+    <v:test id="simple-remove2">
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>First paragraph</para>
+                <para>Second paragraph</para>
+                <para>Third <emphasis>important</emphasis> paragraph.</para>
+            </book>
+        </v:revision>
+        <v:revision>
+            <book>
+                <title>Book Title</title>
+                <para>Second paragraph <b>bold</b></para>
                 <para>Third paragraph.</para>
             </book>
         </v:revision>
@@ -201,7 +218,7 @@
     <v:test id="simple-attribute-insert-mixed">
         <v:revision>
             <book>
-                <title></title>
+                <title/>
             </book>
         </v:revision>
         <v:revision>
@@ -267,7 +284,7 @@
         <v:revision>
             <book xmlns:t="http://test.com">
                 <title>Book Title</title>
-				<t:test>Bla</t:test>
+                <t:test>Bla</t:test>
             </book>
         </v:revision>
     </v:test>
@@ -278,23 +295,24 @@
                 <procedure>
                     <step>
                         <para>Select either the Backup Icon (arrow pointed upward) in the toolbar OR
-                            <guimenuitem>Tools &#187; Backup</guimenuitem> from the menu.</para>
+                                <guimenuitem>Tools &#187; Backup</guimenuitem> from the
+                            menu.</para>
                     </step>
                     <step>
-                        <para>From the <guimenuitem>Collection</guimenuitem> drop-down menu, select the
-                            collection to backup. To backup the entire database, select
-                            <filename>/db</filename>. Otherwise, select the topmost collection that
-                            should be stored. Note, however, that user data and permissions will only be
-                            exported if you backup the entire database.</para>
+                        <para>From the <guimenuitem>Collection</guimenuitem> drop-down menu, select
+                            the collection to backup. To backup the entire database, select
+                                <filename>/db</filename>. Otherwise, select the topmost collection
+                            that should be stored. Note, however, that user data and permissions
+                            will only be exported if you backup the entire database.</para>
                         <screenshot><graphic fileref="resources/backup1.png"/></screenshot>
                     </step>
                     <step>
-                        <para>In the <command>Backup-Directory</command> field, enter the full directory
-                            path to the where you want the backup database files to be stored or the
-                            path to a zip file into which the backup will be written. In general, if the
-                            file name ends with <filename>.zip</filename>, the client will attempt to
-                            write to a ZIP. Otherwise, it tries to create the specified
-                            directory.</para>
+                        <para>In the <command>Backup-Directory</command> field, enter the full
+                            directory path to the where you want the backup database files to be
+                            stored or the path to a zip file into which the backup will be written.
+                            In general, if the file name ends with <filename>.zip</filename>, the
+                            client will attempt to write to a ZIP. Otherwise, it tries to create the
+                            specified directory.</para>
                     </step>
                     <step>
                         <para>Click <command>OK</command>.</para>
@@ -307,24 +325,25 @@
                 <title>Backup</title>
                 <procedure>
                     <step>
-                        <para>From the <guimenuitem>Collection</guimenuitem> drop-down menu, select the
-                            collection to backup. To backup the entire database, select
-                            <filename>/db</filename>. Otherwise, select the topmost collection that
-                            should be stored. Note, however, that user data and permissions will only be
-                            exported if you backup the entire database.</para>
+                        <para>From the <guimenuitem>Collection</guimenuitem> drop-down menu, select
+                            the collection to backup. To backup the entire database, select
+                                <filename>/db</filename>. Otherwise, select the topmost collection
+                            that should be stored. Note, however, that user data and permissions
+                            will only be exported if you backup the entire database.</para>
                         <screenshot><graphic fileref="resources/backup1.png"/></screenshot>
                     </step>
                     <step>
                         <para>Select either the Backup Icon (arrow pointed upward) in the toolbar OR
-                            <guimenuitem>Tools &#187; Backup</guimenuitem> from the menu.</para>
+                                <guimenuitem>Tools &#187; Backup</guimenuitem> from the
+                            menu.</para>
                     </step>
                     <step>
-                        <para>In the <command>Backup-Directory</command> field, enter the full directory
-                            path to the where you want the backup database files to be stored or the
-                            path to a zip file into which the backup will be written. In general, if the
-                            file name ends with <filename>.zip</filename>, the client will attempt to
-                            write to a ZIP. Otherwise, it tries to create the specified
-                            directory.</para>
+                        <para>In the <command>Backup-Directory</command> field, enter the full
+                            directory path to the where you want the backup database files to be
+                            stored or the path to a zip file into which the backup will be written.
+                            In general, if the file name ends with <filename>.zip</filename>, the
+                            client will attempt to write to a ZIP. Otherwise, it tries to create the
+                            specified directory.</para>
                     </step>
                     <step>
                         <para>Click <command>OK</command>.</para>
@@ -349,13 +368,19 @@
                     <id>urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147</id>
                     <updated>2008-10-16T22:23:14+02:00</updated>
                     <published>2008-03-03T10:48:51+01:00</published>
-                    <link href="?id=urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147" rel="edit" type="application/atom+xml"/>
-                    <atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Quick Help</atom:title>
+                    <link href="?id=urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147" rel="edit"
+                        type="application/atom+xml"/>
+                    <atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Quick
+                        Help</atom:title>
                     <wiki:id xmlns:wiki="http://exist-db.org/xquery/wiki">QuickHelp</wiki:id>
                     <atom:content xmlns:atom="http://www.w3.org/2005/Atom" type="xhtml">
                         <div xmlns="http://www.w3.org/1999/xhtml">
                             <h2>Addressing</h2>
-                            <p>The hierarchical structure of feeds and entries is directly reflected in the URLs you use to access an entry or feed. In general, URLs that end with a <span class="strong">slash</span> point to a feed, while URLs not ending with a slash reference an entry within a feed. For example:</p>
+                            <p>The hierarchical structure of feeds and entries is directly reflected
+                                in the URLs you use to access an entry or feed. In general, URLs
+                                that end with a <span class="strong">slash</span> point to a feed,
+                                while URLs not ending with a slash reference an entry within a feed.
+                                For example:</p>
                         </div>
                     </atom:content>
                 </entry>
@@ -377,13 +402,19 @@
                 <entry>
                     <id>urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147</id>
                     <updated>2008-11-16T22:23:14+02:00</updated>
-                    <link href="?id=urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147" rel="edit" type="application/atom+xml"/>
-                    <atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Quick Help</atom:title>
+                    <link href="?id=urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147" rel="edit"
+                        type="application/atom+xml"/>
+                    <atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Quick
+                        Help</atom:title>
                     <wiki:id xmlns:wiki="http://exist-db.org/xquery/wiki">QuickHelp</wiki:id>
                     <atom:content xmlns:atom="http://www.w3.org/2005/Atom" type="xhtml">
                         <div xmlns="http://www.w3.org/1999/xhtml">
                             <h2>Addressing</h2>
-                            <p>The hierarchical structure of feeds and entries is directly reflected in the URLs you use to access an entry or feed. In general, URLs that end with a <span class="strong">slash</span> point to a feed, while URLs not ending with a slash reference an entry within a feed. For example:</p>
+                            <p>The hierarchical structure of feeds and entries is directly reflected
+                                in the URLs you use to access an entry or feed. In general, URLs
+                                that end with a <span class="strong">slash</span> point to a feed,
+                                while URLs not ending with a slash reference an entry within a feed.
+                                For example:</p>
                         </div>
                     </atom:content>
                 </entry>
@@ -404,17 +435,299 @@
                 <entry>
                     <id>urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147</id>
                     <updated>2008-11-16T22:23:14+02:00</updated>
-                    <link href="?id=urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147" rel="edit" type="application/atom+xml"/>
-                    <atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Quick Help</atom:title>
+                    <link href="?id=urn:uuid:1b976cef-bb06-4a4f-85e0-bc2a9c948147" rel="edit"
+                        type="application/atom+xml"/>
+                    <atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Quick
+                        Help</atom:title>
                     <wiki:id xmlns:wiki="http://exist-db.org/xquery/wiki">QuickHelp</wiki:id>
                     <atom:content xmlns:atom="http://www.w3.org/2005/Atom" type="xhtml">
                         <div xmlns="http://www.w3.org/1999/xhtml">
                             <h2>Addressing</h2>
-                            <p>The <b>hierarchical</b> structure of feeds and entries is directly reflected in the URLs you use to access an entry or feed. In general, URLs that end with a <span class="strong">slash</span> point to a feed, while URLs not ending with a slash reference an entry within a feed. For example:</p>
+                            <p>The <b>hierarchical</b> structure of feeds and entries is directly
+                                reflected in the URLs you use to access an entry or feed. In
+                                general, URLs that end with a <span class="strong">slash</span>
+                                point to a feed, while URLs not ending with a slash reference an
+                                entry within a feed. For example:</p>
                         </div>
                     </atom:content>
                 </entry>
             </feed>
+        </v:revision>
+    </v:test>
+    <v:test id="different-documents">
+        <v:revision>
+            <PLAY>
+                <PERSONAE>
+                    <TITLE>Dramatis Personae</TITLE>
+
+                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
+                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
+                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
+                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
+                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
+                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
+
+                    <PGROUP>
+                        <PERSONA>VOLTIMAND</PERSONA>
+                        <PERSONA>CORNELIUS</PERSONA>
+                        <PERSONA>ROSENCRANTZ</PERSONA>
+                        <PERSONA>GUILDENSTERN</PERSONA>
+                        <PERSONA>OSRIC</PERSONA>
+                        <GRPDESCR>courtiers.</GRPDESCR>
+                    </PGROUP>
+
+                    <PERSONA>A Gentleman</PERSONA>
+                    <PERSONA>A Priest. </PERSONA>
+                </PERSONAE>
+            </PLAY>
+        </v:revision>
+        <v:revision>
+            <PLAY>
+                <PERSONAE>
+                    <TITLE>Dramatis Personae</TITLE>
+
+                    <PERSONA>ESCALUS, prince of Verona. </PERSONA>
+                    <PERSONA>PARIS, a young nobleman, kinsman to the prince.</PERSONA>
+
+                    <PGROUP>
+                        <PERSONA>MONTAGUE</PERSONA>
+                        <PERSONA>CAPULET</PERSONA>
+                        <GRPDESCR>heads of two houses at variance with each other.</GRPDESCR>
+                    </PGROUP>
+
+                    <PERSONA>An old man, cousin to Capulet. </PERSONA>
+                </PERSONAE>
+            </PLAY>
+        </v:revision>
+    </v:test>
+    <v:test id="different-documents2">
+        <v:revision>
+            <PLAY>
+                <PERSONAE>
+                    <TITLE>Dramatis Personae</TITLE>
+
+                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
+                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
+                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
+                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
+                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
+                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
+
+                    <PGROUP>
+                        <PERSONA>VOLTIMAND</PERSONA>
+                        <PERSONA>CORNELIUS</PERSONA>
+                        <PERSONA>ROSENCRANTZ</PERSONA>
+                        <PERSONA>GUILDENSTERN</PERSONA>
+                        <PERSONA>OSRIC</PERSONA>
+                        <GRPDESCR>courtiers.</GRPDESCR>
+                    </PGROUP>
+
+                    <PERSONA>A Gentleman</PERSONA>
+                    <PERSONA>A Priest. </PERSONA>
+
+                    <PGROUP>
+                        <PERSONA>MARCELLUS</PERSONA>
+                        <PERSONA>BERNARDO</PERSONA>
+                        <GRPDESCR>officers.</GRPDESCR>
+                    </PGROUP>
+
+                    <PERSONA>FRANCISCO, a soldier.</PERSONA>
+                    <PERSONA>REYNALDO, servant to Polonius.</PERSONA>
+                    <PERSONA>Players.</PERSONA>
+                    <PERSONA>Two Clowns, grave-diggers.</PERSONA>
+                    <PERSONA>FORTINBRAS, prince of Norway. </PERSONA>
+                    <PERSONA>A Captain.</PERSONA>
+                    <PERSONA>English Ambassadors. </PERSONA>
+                    <PERSONA>GERTRUDE, queen of Denmark, and mother to Hamlet. </PERSONA>
+                    <PERSONA>OPHELIA, daughter to Polonius.</PERSONA>
+                    <PERSONA>Lords, Ladies, Officers, Soldiers, Sailors, Messengers, and other
+                        Attendants.</PERSONA>
+                    <PERSONA>Ghost of Hamlet's Father. </PERSONA>
+                </PERSONAE>
+            </PLAY>
+        </v:revision>
+        <v:revision>
+            <PLAY>
+                <PERSONAE>
+                    <TITLE>Dramatis Personae</TITLE>
+
+                    <PERSONA>DUNCAN, king of Scotland.</PERSONA>
+
+                    <PGROUP>
+                        <PERSONA>MALCOLM</PERSONA>
+                        <PERSONA>DONALBAIN</PERSONA>
+                        <GRPDESCR>his sons.</GRPDESCR>
+                    </PGROUP>
+
+                    <PGROUP>
+                        <PERSONA>MACBETH</PERSONA>
+                        <PERSONA>BANQUO</PERSONA>
+                        <GRPDESCR>generals of the king's army.</GRPDESCR>
+                    </PGROUP>
+
+                    <PGROUP>
+                        <PERSONA>MACDUFF</PERSONA>
+                        <PERSONA>LENNOX</PERSONA>
+                        <PERSONA>ROSS</PERSONA>
+                        <PERSONA>MENTEITH</PERSONA>
+                        <PERSONA>ANGUS</PERSONA>
+                        <PERSONA>CAITHNESS</PERSONA>
+                        <GRPDESCR>noblemen of Scotland.</GRPDESCR>
+                    </PGROUP>
+
+                    <PERSONA>FLEANCE, son to Banquo.</PERSONA>
+                    <PERSONA>SIWARD, Earl of Northumberland, general of the English
+                        forces.</PERSONA>
+                    <PERSONA>YOUNG SIWARD, his son.</PERSONA>
+                    <PERSONA>SEYTON, an officer attending on Macbeth.</PERSONA>
+                    <PERSONA>Boy, son to Macduff. </PERSONA>
+                    <PERSONA>An English Doctor. </PERSONA>
+                    <PERSONA>A Scotch Doctor. </PERSONA>
+                    <PERSONA>A Soldier.</PERSONA>
+                    <PERSONA>A Porter.</PERSONA>
+                    <PERSONA>An Old Man.</PERSONA>
+                    <PERSONA>LADY MACBETH</PERSONA>
+                    <PERSONA>LADY MACDUFF</PERSONA>
+                    <PERSONA>Gentlewoman attending on Lady Macbeth. </PERSONA>
+                    <PERSONA>HECATE</PERSONA>
+                    <PERSONA>Three Witches.</PERSONA>
+                    <PERSONA>Apparitions.</PERSONA>
+                    <PERSONA>Lords, Gentlemen, Officers, Soldiers, Murderers, Attendants, and
+                        Messengers. </PERSONA>
+                </PERSONAE>
+            </PLAY>
+        </v:revision>
+    </v:test>
+    <v:test id="different-documents2">
+        <v:revision>
+            <PLAY>
+                <PERSONAE>
+                    <TITLE>Dramatis Personae</TITLE>
+
+                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
+                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
+                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
+                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
+                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
+                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
+
+                    <PGROUP>
+                        <PERSONA>VOLTIMAND</PERSONA>
+                        <PERSONA>CORNELIUS</PERSONA>
+                        <PERSONA>ROSENCRANTZ</PERSONA>
+                        <PERSONA>GUILDENSTERN</PERSONA>
+                        <PERSONA>OSRIC</PERSONA>
+                        <GRPDESCR>courtiers.</GRPDESCR>
+                    </PGROUP>
+
+                    <PERSONA>A Gentleman</PERSONA>
+                    <PERSONA>A Priest. </PERSONA>
+                </PERSONAE>
+            </PLAY>
+        </v:revision>
+        <v:revision>
+            <PLAY>
+                <PERSONAE>
+                    <TITLE>Dramatis Personae</TITLE>
+
+                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
+                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
+                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
+                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
+                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
+                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
+					<PERSONA>Rudi Rüssel, Hamlet's pet.</PERSONA>
+
+                    <PGROUP>
+                        <PERSONA>VOLTIMAND</PERSONA>
+                        <PERSONA>CORNELIUS</PERSONA>
+                        <PERSONA>ROSENCRANTZ</PERSONA>
+                        <PERSONA>GUILDENSTERN</PERSONA>
+                        <PERSONA>OSRIC</PERSONA>
+                        <GRPDESCR>courtiers.</GRPDESCR>
+                    </PGROUP>
+
+                    <PERSONA>A Gentleman</PERSONA>
+                    <PERSONA>A Priest. </PERSONA>
+                </PERSONAE>
+            </PLAY>
+        </v:revision>
+        <v:revision>
+            <PLAY>
+                <PERSONAE>
+                    <TITLE>Dramatis Personae</TITLE>
+
+                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
+                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
+                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
+                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
+                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
+                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
+					<PERSONA>Rudi Rüssel, Hamlet's pet.</PERSONA>
+
+                    <PGROUP>
+                        <PERSONA>VOLTIMAND</PERSONA>
+                        <PERSONA>CORNELIUS</PERSONA>
+                        <PERSONA>ROSENCRANTZ</PERSONA>
+                        <PERSONA>GUILDENSTERN</PERSONA>
+                        <PERSONA>OSRIC</PERSONA>
+                        <GRPDESCR>courtiers.</GRPDESCR>
+                    </PGROUP>
+
+                    <PERSONA>A Gentleman</PERSONA>
+                    <PERSONA>A Priest. </PERSONA>
+                </PERSONAE>
+            </PLAY>
+        </v:revision>
+        <v:revision>
+            <PLAY>
+                <PERSONAE>
+                    <TITLE>Dramatis Personae</TITLE>
+
+                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
+                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
+                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
+                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
+                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
+                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
+					<PERSONA>Rudi Rüssel, Hamlet's pet.</PERSONA>
+
+                    <PGROUP>
+                        <PERSONA>VOLTIMAND</PERSONA>
+                        <PERSONA>CORNELIUS</PERSONA>
+                        <PERSONA>ROSENCRANTZ</PERSONA>
+                        <PERSONA>GUILDENSTERN</PERSONA>
+                        <PERSONA>OSRIC</PERSONA>
+						<PERSONA>Hamlet's lover.</PERSONA>
+                        <GRPDESCR>courtiers.</GRPDESCR>
+                    </PGROUP>
+
+                    <PERSONA>A Gentleman</PERSONA>
+                    <PERSONA>A Priest. </PERSONA>
+                </PERSONAE>
+            </PLAY>
+        </v:revision>
+	</v:test>
+    <v:test id="nested1">
+        <v:revision>
+            <a>
+                <b>A</b>
+                <a>
+                    <b>B</b>
+                    <a>
+                        <b>C</b>
+                    </a>
+                </a>
+            </a>
+        </v:revision>
+        <v:revision>
+            <a>
+                <b>A</b>
+                <a>
+                    <b>D</b>
+                    <b>E</b>
+                </a>
+            </a>
         </v:revision>
     </v:test>
 </v:testSuite>

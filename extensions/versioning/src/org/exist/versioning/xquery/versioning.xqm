@@ -40,12 +40,17 @@ declare function v:get-revision($root as node(), $rev as xs:long) {
         else
             v:apply-patch(
                 doc($baseName),
-                collection($vCollection)/v:version[v:properties[v:document = $docName]
-                    [v:revision <= $rev]]
+				for $version in
+                	collection($vCollection)/v:version[v:properties[v:document = $docName]
+                    	[v:revision <= $rev]]
+					order by xs:long($version/v:properties/v:revision) ascending
+				return
+					$version
             )
 };
 
 declare function v:apply-patch($base, $diffs as element(v:version)*) {
+	let $log := util:log("DEBUG", ("Applying revision: ", $diffs[1]//v:revision))
     let $newVersion := version:patch($base, $diffs[1])
     return
         if (count($diffs) > 1) then

@@ -17,6 +17,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
+import org.apache.log4j.Logger;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -26,19 +27,19 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
-import java.util.TreeMap;
 
 public class XMLDiff {
+
+    private final static Logger LOG = Logger.getLogger(XMLDiff.class);
 
     public final static String NAMESPACE = "http://exist-db.org/versioning";
     public final static String PREFIX = "v";
     
     private final static QName DIFF_ELEMENT = new QName("version", NAMESPACE, PREFIX);
     private final static QName PROPERTIES_ELEMENT = new QName("properties", NAMESPACE, PREFIX);
-    
+
     private DBBroker broker;
 
     public XMLDiff(DBBroker broker) {
@@ -53,10 +54,12 @@ public class XMLDiff {
             root = (ElementImpl) docB.getDocumentElement();
             DiffNode[] nodesB = getNodes(broker, root);
 
-//            System.out.println("Source:");
-//            debugNodes(nodesA);
-//            System.out.println("Modified:");
-//            debugNodes(nodesB);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Source:");
+                debugNodes(nodesA);
+                LOG.trace("Modified:");
+                debugNodes(nodesB);
+            }
 
             Diff diff = new Diff(nodesA, nodesB);
             Diff.change script = diff.diff_2(false);
@@ -70,37 +73,16 @@ public class XMLDiff {
     }
 
     private void debugNodes(DiffNode[] nodes) {
+        StringBuffer buf = new StringBuffer();
+        buf.append('\n');
         for (int i = 0; i < nodes.length; i++) {
             DiffNode node = nodes[i];
-            System.out.println(Integer.toString(i) + " " + node);
+            buf.append(Integer.toString(i)).append(' ').append(node.toString()).append('\n');
         }
-    }
-
-    protected List simplify(List changes) {
-        List simplified = new ArrayList(changes.size());
-        Map map = new TreeMap();
-        for (int i = 0; i < changes.size(); i++) {
-            Difference diff = (Difference) changes.get(i);
-            if (diff.type == Difference.INSERT) {
-                NodeId nodeId = diff.refChild.getNodeId();
-                if (map.containsKey(nodeId)) {
-                    Difference.Insert diff2 = (Difference.Insert) map.get(nodeId);
-                    diff2.addNodes(((Difference.Insert) diff).nodes);
-                } else
-                    map.put(nodeId, diff);
-            } else {
-                simplified.add(diff);
-            }
-        }
-        for (Iterator i = map.values().iterator(); i.hasNext();) {
-            Difference diff = (Difference) i.next();
-            simplified.add(diff);
-        }
-        return simplified;
+        LOG.trace(buf.toString());
     }
 
     protected String diff2XML(List changes, Properties properties) throws DiffException {
-        changes = simplify(changes);
         try {
             StringWriter writer = new StringWriter();
             SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
@@ -138,175 +120,58 @@ public class XMLDiff {
 
     protected List getChanges(Diff.change script, DocumentImpl docA, DocumentImpl docB, DiffNode[] nodesA, DiffNode[] nodesB) throws XMLStreamException {
         List changes = new ArrayList();
-        NodeSet deletedNodes = new NewArrayNodeSet(1, 16);
         Diff.change next = script;
-//        System.out.println("Modifications:");
         while (next != null) {
             int start0 = next.line0;
             int start = next.line1;
             int last = start + next.inserted;
-
-            Stack elementStack = new Stack();
-
-            // sanitize the diff: move the start and end offsets of the chunk to properly include
-            // all required start and end tags.
+            int lastDeleted = start0 + next.deleted;
 
             if (next.inserted > 0) {
-                // step 1: at the end of the chunk, remove start tags with missing end tags
-                for (int i = last - 1; i >= start; i--) {
-                    if (nodesB[i].nodeType == XMLStreamReader.START_ELEMENT) {
-                        System.out.println("Found element out of context at end of chunk: " + nodesB[i].value);
-                        last--;
-                    } else
-                        break;
+
+                Difference.Insert diff;
+                if (nodesA[start0].nodeType == XMLStreamReader.END_ELEMENT)
+                    diff = new Difference.Append(new NodeProxy(docA, nodesA[start0].nodeId), docB);
+                else
+                    diff = new Difference.Insert(new NodeProxy(docA, nodesA[start0].nodeId), docB);
+                
+                // now scan the chunk and collect the nodes into a node set
+                DiffNode[] nodes = new DiffNode[last - start];
+                int j = 0;
+                for (int i = start; i < last; i++, j++) {
+                    if (LOG.isTraceEnabled())
+                        LOG.trace(Integer.toString(i) + " " + nodesB[i]);
+                    nodes[j] = nodesB[i];
                 }
-                // step 2: search for end tags with missing start tags. adjust start to include the start tags.
-                // this may need to be done for more than one tag.
-                boolean needRescan;
-                do {
-                    needRescan = false;
-                    for (int i = start; i < last; i++) {
-                        if (nodesB[i].nodeType == XMLStreamReader.START_ELEMENT) {
-                            elementStack.push(nodesB[i]);
-                        } else if (nodesB[i].nodeType == XMLStreamReader.END_ELEMENT) {
-                            if (elementStack.isEmpty()) {
-                                System.out.println("Found out of context element: " + nodesB[i].value);
-                                for (int j = start - 1; j > -1; j--) {
-                                    if (nodesB[j].nodeId.equals(nodesB[i].nodeId)) {
-                                        start0 = start0 - (start - j);
-                                        start = j;
-                                        last = start + next.inserted;
-                                        needRescan = true;
-                                    }
-                                }
-                            } else {
-                                DiffNode n = (DiffNode) elementStack.pop();
-                                if (!n.nodeId.equals(nodesB[i].nodeId))
-                                    throw new XMLStreamException("Diff error: element is out of context: " + nodesB[i].value);
-                            }
-                        }
-                    }
-                    elementStack.clear();
-                } while (needRescan);
-            } else if (next.deleted > 0) {
-                last = start0 + next.deleted;
-                // step 1: at the end of the chunk, remove start tags with missing end tags
-                for (int i = last - 1; i >= start0; i--) {
+                diff.setNodes(nodes);
+                changes.add(diff);
+            }
+            if (next.deleted > 0) {
+                if (LOG.isTraceEnabled())
+                    LOG.trace("Deleted: " + start0 + " last: " + lastDeleted);
+                for (int i = start0; i < lastDeleted; i++) {
+                    boolean elementDeleted = false;
                     if (nodesA[i].nodeType == XMLStreamReader.START_ELEMENT) {
-                        System.out.println("Found element out of context at end of chunk: " + nodesA[i].value);
-                        last--;
-                    } else
-                        break;
-                }
-                // step 2: search for end tags with missing start tags. adjust start to include the start tags.
-                // this may need to be done for more than one tag.
-                boolean needRescan;
-                do {
-                    needRescan = false;
-                    for (int i = start0; i < last; i++) {
-                        if (nodesA[i].nodeType == XMLStreamReader.START_ELEMENT) {
-                            elementStack.push(nodesA[i]);
-                        } else if (nodesA[i].nodeType == XMLStreamReader.END_ELEMENT) {
-                            if (elementStack.isEmpty()) {
-                                System.out.println("Found out of context element: " + nodesA[i].value);
-                                for (int j = start0 - 1; j > -1; j--) {
-                                    if (nodesA[j].nodeId.equals(nodesA[i].nodeId)) {
-                                        start0 = j;
-                                        last = start0 + next.deleted;
-                                        needRescan = true;
-                                    }
-                                }
-                            } else {
-                                DiffNode n = (DiffNode) elementStack.pop();
-                                if (!n.nodeId.equals(nodesA[i].nodeId))
-                                    throw new XMLStreamException("Diff error: element is out of context: " + nodesB[i].value);
+                        for (int j = i; j < lastDeleted; j++) {
+                            if (nodesA[j].nodeType == XMLStreamReader.END_ELEMENT &&
+                                    nodesA[j].nodeId.equals(nodesA[i].nodeId)) {
+                                Difference.Delete diff = new Difference.Delete(new NodeProxy(docA, nodesA[i].nodeId));
+                                changes.add(diff);
+                                i = j;
+                                elementDeleted = true;
+                                break;
                             }
                         }
                     }
-                    elementStack.clear();
-                } while (needRescan);
-            }
-
-           if (next.inserted > 0) {
-//               System.out.println("Insertion next.line1 = " + next.line1 + " next.inserted = " + next.inserted +
-//                "\nnext.line0 = " + next.line0 + " next.deleted = " + next.deleted);
-
-
-               Difference.Insert diff;
-               if (nodesA[start0].nodeType == XMLStreamReader.END_ELEMENT)
-                   diff = new Difference.Append(new NodeProxy(docA, nodesA[start0].nodeId));
-               else
-                   diff = new Difference.Insert(new NodeProxy(docA, nodesA[start0].nodeId));
-
-               // now scan the chunk and collect the nodes into a node set
-               NodeSet insertedNodes = new NewArrayNodeSet(1, 8);
-               for (int i = start; i < last; i++) {
-//                   System.out.println(Integer.toString(i) + " " + nodesB[i]);
-                   NodeId nodeId = nodesB[i].nodeId;
-                   NodeProxy p = new NodeProxy(docB, nodeId, (short)
-                           (nodesB[i].nodeType == XMLStreamReader.ATTRIBUTE ? Type.ATTRIBUTE : Type.NODE));
-                   if (nodesB[i].nodeType == XMLStreamReader.END_ELEMENT) {
-                       elementStack.pop();
-                       insertedNodes.add(p);
-                   } else if (nodesB[i].nodeType == XMLStreamReader.START_ELEMENT) {
-                       elementStack.push(nodesB[i]);
-                   } else
-                       insertedNodes.add(p);
-               }
-
-               // handle all elements which were not properly closed
-               while (!elementStack.isEmpty()) {
-                   DiffNode n = (DiffNode) elementStack.pop();
-                   insertedNodes.add(new NodeProxy(docB, n.nodeId));
-               }
-
-               // scan the node set and keep the top nodes only. filter out all descendants.
-               NodeSet filtered = new NewArrayNodeSet(1, insertedNodes.getItemCount());
-               try {
-                   for (SequenceIterator i = insertedNodes.iterate(); i.hasNext(); ) {
-                       NodeProxy p = (NodeProxy) i.nextItem();
-                       if (filtered.parentWithChild(p.getDocument(), p.getNodeId(), false, true) == null)
-                           filtered.add(p);
-                   }
-               } catch (XPathException e) {
-                   e.printStackTrace();
-               }
-               // finally add the node set to the Difference
-               diff.setNodes(filtered);
-               // and the Difference to the changes
-               changes.add(diff);
-           }
-           
-           if (next.deleted > 0) {
-               if (next.inserted > 0)
-                   last = start0 + next.deleted;
-//               System.out.println("Deleted: " + start0 + " last: " + last);
-               for (int i = start0; i < last; i++) {
-                   NodeId nodeId = nodesA[i].nodeId;
-                   NodeProxy p = new NodeProxy(docA, nodeId);
-                   deletedNodes.add(p);
-               }
-           }
-           next = next.link;
-        }
-        processDeleted(deletedNodes, changes);
-        return changes;
-    }
-
-    protected void processDeleted(NodeSet nodes, List changes) {
-        NodeSet filtered = new NewArrayNodeSet(1, nodes.getItemCount());
-        try {
-            for (SequenceIterator i = nodes.iterate(); i.hasNext();) {
-                NodeProxy p = (NodeProxy) i.nextItem();
-                if (filtered.parentWithChild(p.getDocument(), p.getNodeId(), false, true) == null) {
-                    filtered.add(p);
-                    Difference.Delete diff = new Difference.Delete(p);
-                    changes.add(diff);
+                    if (!elementDeleted) {
+                        Difference.Delete diff = new Difference.Delete(nodesA[i].nodeType, new NodeProxy(docA, nodesA[i].nodeId));
+                        changes.add(diff);
+                    }
                 }
             }
-        } catch (XPathException e) {
-            e.printStackTrace();
+            next = next.link;
         }
+        return changes;
     }
 
     protected DiffNode[] getNodes(DBBroker broker, ElementImpl root) throws XMLStreamException, IOException {
@@ -318,7 +183,7 @@ public class XMLDiff {
             NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
             switch (status) {
                 case XMLStreamReader.START_ELEMENT:
-                    node = new DiffNode(nodeId, status, reader.getQName().getStringValue());
+                    node = new DiffNode(nodeId, status, reader.getQName());
                     nodes.add(node);
 
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -330,7 +195,7 @@ public class XMLDiff {
                     }
                     break;
                 case XMLStreamReader.END_ELEMENT:
-                    node = new DiffNode(nodeId, status, "/" + reader.getQName().getStringValue());
+                    node = new DiffNode(nodeId, status, reader.getQName());
                     nodes.add(node);
                     break;
                 case XMLStreamReader.CHARACTERS:
@@ -348,33 +213,4 @@ public class XMLDiff {
         return (DiffNode[]) nodes.toArray(array);
     }
 
-    private static class DiffNode {
-
-        int diffType;
-
-        NodeId nodeId;
-        int nodeType;
-        String value;
-
-        public DiffNode(NodeId nodeId, int nodeType, String value) {
-            this.nodeId = nodeId;
-            this.nodeType = nodeType;
-            this.value = value;
-        }
-
-        public boolean equals(Object obj) {
-            DiffNode other = (DiffNode) obj;
-            if (nodeType != other.nodeType)
-                return false;
-            return value.equals(other.value);
-        }
-
-        public int hashCode() {
-            return (value.hashCode() << 1) + nodeType;
-        }
-
-        public String toString() {
-            return nodeType + " " + nodeId.toString() + " " + value;
-        }
-    }
 }

@@ -26,6 +26,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.dom.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -33,6 +34,10 @@ import org.exist.storage.DBBroker;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.security.xacml.AccessContext;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NamedNodeMap;
@@ -54,8 +59,14 @@ import java.util.ArrayList;
  */
 public class Patch {
 
+    private final static String D_START = "start";
+    private final static String D_END = "end";
+    private final static String D_BOTH = "both";
+    private final static String D_SUBTREE = "subtree";
+    
     private DBBroker broker;
-    private Set deletedNodes = null;
+
+    private Map deletedNodes = null;
     private Map insertedNodes = null;
     private Map appendedNodes = null;
 
@@ -80,7 +91,7 @@ public class Patch {
      */
     public void patch(ExtendedXMLStreamReader reader, Receiver receiver) throws DiffException {
         try {
-            NodeId skip = null;
+            NodeId skipSubtree = null;
             while (reader.hasNext()) {
                 int status = reader.next();
                 NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
@@ -95,13 +106,21 @@ public class Patch {
                         insertNode(appendedNode, receiver);
                     }
                 }
-                if (status == XMLStreamReader.END_ELEMENT && skip != null && nodeId.equals(skip))
-                    skip = null;
-                else if (deletedNodes.contains(nodeId)) {
+                String opt = (String) deletedNodes.get(nodeId);
+                if (opt == D_SUBTREE) {
                     if (status == XMLStreamReader.START_ELEMENT)
-                        skip = nodeId;
-                } else if (skip == null)
+                        skipSubtree = nodeId;
+                } else if (opt == D_BOTH) {
+                    //skip
+                } else if (opt == D_END && status == XMLStreamReader.END_ELEMENT) {
+                    // skip
+                } else if (opt == D_START && status == XMLStreamReader.START_ELEMENT) {
+                    // skip
+                } else if (skipSubtree == null)
                     copyNode(reader, receiver, status);
+                if (status == XMLStreamReader.END_ELEMENT && skipSubtree != null &&
+                        skipSubtree.equals(nodeId))
+                    skipSubtree = null;
             }
         } catch (XMLStreamException e) {
             throw new DiffException("Caught exception while reading source document for patch: " +
@@ -113,24 +132,33 @@ public class Patch {
         }
     }
 
-    private void insertNode(Element insertedNode, Receiver receiver) throws XMLStreamException, IOException, SAXException {
-        StoredNode child = (StoredNode) insertedNode.getFirstChild();
-        while (child != null) {
-            if (XMLDiff.NAMESPACE.equals(child.getNamespaceURI()) && "attribute".equals(child.getLocalName())) {
-                NamedNodeMap attrs = child.getAttributes();
-                for (int i = 0; i < attrs.getLength(); i++) {
-                    AttrImpl attr = (AttrImpl) attrs.item(i);
-                    if (!attr.getName().startsWith("xmlns"))
-                        receiver.attribute(attr.getQName(), attr.getValue());
+    private void insertNode(StoredNode insertedNode, Receiver receiver) throws XMLStreamException, IOException, SAXException {
+        ExtendedXMLStreamReader reader = broker.newXMLStreamReader(insertedNode, false);
+        reader.next();
+        while (reader.hasNext()) {
+            int status = reader.next();
+            if ((status == XMLStreamReader.START_ELEMENT || status == XMLStreamReader.END_ELEMENT) &&
+                    XMLDiff.NAMESPACE.equals(reader.getNamespaceURI())) {
+                if (status == XMLStreamReader.START_ELEMENT) {
+                    if ("attribute".equals(reader.getLocalName())) {
+                        int attrCount = reader.getAttributeCount();
+                        for (int i = 0; i < attrCount; i++) {
+                            QName qname = reader.getAttributeQName(i);
+                            receiver.attribute(qname, reader.getAttributeValue(i));
+                        }
+                    } else if ("start".equals(reader.getLocalName())) {
+                        String namespace = reader.getAttributeValue("", "namespace");
+                        String name = reader.getAttributeValue("", "name");
+                        receiver.startElement(new QName(QName.extractLocalName(name), namespace, QName.extractPrefix(name)), null);
+                    } else if ("end".equals(reader.getLocalName())) {
+                        String namespace = reader.getAttributeValue("", "namespace");
+                        String name = reader.getAttributeValue("", "name");
+                        receiver.endElement(new QName(QName.extractLocalName(name), namespace, QName.extractPrefix(name)));
+                    }
                 }
             } else {
-                ExtendedXMLStreamReader reader = broker.newXMLStreamReader(child, false);
-                while (reader.hasNext()) {
-                    int status = reader.next();
-                    copyNode(reader, receiver, status);
-                }
+                copyNode(reader, receiver, status);
             }
-            child = (StoredNode) child.getNextSibling();
         }
     }
 
@@ -160,7 +188,7 @@ public class Patch {
                         }
                     }
 
-                    if (!deletedNodes.contains(nodeId)) {
+                    if (deletedNodes.get(nodeId) == null) {
                         QName attrQn = new QName(reader.getAttributeLocalName(i), reader.getAttributeNamespace(i),
                                 reader.getAttributePrefix(i));
                         attrs.addAttribute(
@@ -194,34 +222,50 @@ public class Patch {
     }
 
     private void parseDiff(DBBroker broker, DocumentImpl doc) throws XPathException {
-        deletedNodes = new TreeSet();
+        deletedNodes = new TreeMap();
         insertedNodes = new TreeMap();
         appendedNodes = new TreeMap();
-
-        Element root = doc.getDocumentElement();
-        Node child = root.getFirstChild();
-        while (child != null) {
+        XQuery service = broker.getXQueryService();
+        Sequence changes = service.execute("declare namespace v=\"http://exist-db.org/versioning\";" +
+                "doc('" + doc.getURI().toString() + "')/v:version/*",
+                Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
+        for (SequenceIterator i = changes.iterate(); i.hasNext(); ) {
+            NodeProxy p = (NodeProxy) i.nextItem();
+            Element child = (Element) p.getNode();
             if (child.getNodeType() == Node.ELEMENT_NODE &&
                     child.getNamespaceURI().equals(XMLDiff.NAMESPACE)) {
+               NodeId id = parseRef(broker, child, "ref");
                if (child.getLocalName().equals("delete")) {
-                   NodeId id = parseRef(broker, child);
-                   deletedNodes.add(id);
+                   String event = ((Element) child).getAttribute("event");
+                   if (event == null || event.length() == 0)
+                       deletedNodes.put(id, D_SUBTREE);
+                   else if ("both".equals(event))
+                       deletedNodes.put(id, D_BOTH);
+                   else if ("start".equals(event)) {
+                       String opt = (String) deletedNodes.get(id);
+                       if (opt == D_END)
+                           deletedNodes.put(id, D_BOTH);
+                       else
+                           deletedNodes.put(id, D_START);
+                   } else {
+                       String opt = (String) deletedNodes.get(id);
+                       if (opt == D_START)
+                           deletedNodes.put(id, D_BOTH);
+                       else
+                           deletedNodes.put(id, D_END);
+                   }
                } else if (child.getLocalName().equals("insert")) {
-                   NodeId id = parseRef(broker, child);
                    insertedNodes.put(id, child);
                } else if (child.getLocalName().equals("append")) {
-                   NodeId id = parseRef(broker, child);
                    appendedNodes.put(id, child);
                }
             }
-            child = child.getNextSibling();
         }
     }
 
-    private NodeId parseRef(DBBroker broker, Node child) {
-        String idval = ((Element)child).getAttribute("ref");
-        NodeId id = broker.getBrokerPool().getNodeFactory().createFromString(idval);
-        return id;
+    private NodeId parseRef(DBBroker broker, Node child, String attr) {
+        String idval = ((Element)child).getAttribute(attr);
+        return broker.getBrokerPool().getNodeFactory().createFromString(idval);
     }
 
     private int getAttributeType(String attributeType) {

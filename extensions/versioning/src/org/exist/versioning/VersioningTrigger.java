@@ -129,7 +129,7 @@ public class VersioningTrigger extends FilteringTrigger {
                 IndexInfo info = vCollection.validateXMLResource(transaction, broker, diffUri, editscript);
                 vCollection.store(transaction, broker, info, editscript, false);
                 
-                System.out.println(editscript);
+//                System.out.println(editscript);
 
                 if (removeLast)
                     vCollection.removeXMLResource(transaction, broker, lastRev.getFileURI());
