@@ -4,10 +4,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.zip.GZIPInputStream;
 
 public class FileInputSource extends EXistInputSource {
 

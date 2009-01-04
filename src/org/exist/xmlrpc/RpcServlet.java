@@ -21,22 +21,22 @@
  */
 package org.exist.xmlrpc;
 
-import org.apache.xmlrpc.webserver.XmlRpcServlet;
-import org.apache.xmlrpc.server.XmlRpcHandlerMapping;
-import org.apache.xmlrpc.server.AbstractReflectiveHandlerMapping;
-import org.apache.xmlrpc.server.RequestProcessorFactoryFactory;
-import org.apache.xmlrpc.server.XmlRpcNoSuchHandlerException;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.XmlRpcHandler;
+import org.apache.xmlrpc.server.AbstractReflectiveHandlerMapping;
+import org.apache.xmlrpc.server.RequestProcessorFactoryFactory;
+import org.apache.xmlrpc.server.XmlRpcHandlerMapping;
+import org.apache.xmlrpc.server.XmlRpcNoSuchHandlerException;
+import org.apache.xmlrpc.webserver.XmlRpcServlet;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.http.servlets.HttpServletRequestWrapper;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class RpcServlet extends XmlRpcServlet {
 
