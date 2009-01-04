@@ -123,6 +123,7 @@ public class VersioningTrigger extends FilteringTrigger {
                 properties.setProperty("document", document.getFileURI().toString());
                 properties.setProperty("revision", Long.toString(rev));
                 properties.setProperty("date", new DateTimeValue(new Date()).getStringValue());
+                properties.setProperty("user", broker.getUser().getName());
                 String editscript = diff.diff(lastRev, document, properties);
 
                 XmldbURI diffUri = XmldbURI.createInternal(document.getFileURI().toString() + '.' + rev);
