@@ -24,9 +24,12 @@ declare function t:setup() {
 };
 
 declare function t:store($revision as element(v:revision), $docId as xs:string) {
-    xdb:store("/db/test", $docId,
-        $revision/*
-    )
+	if (empty($revision/*)) then
+		xdb:store("/db/test", $docId, $revision/string())
+	else
+    	xdb:store("/db/test", $docId,
+        	$revision/*
+    	)
 };
 
 declare function t:store-revisions($test as element(v:test), $docId as xs:string) {
