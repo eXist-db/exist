@@ -517,7 +517,7 @@ public class NativeBroker extends DBBroker {
         return streamReader;
     }
 
-    public EmbeddedXMLStreamReader newXMLStreamReader(StoredNode node, boolean reportAttributes)
+    public EmbeddedXMLStreamReader newXMLStreamReader(NodeHandle node, boolean reportAttributes)
             throws IOException, XMLStreamException {
         RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
         return new EmbeddedXMLStreamReader(this, (DocumentImpl) node.getOwnerDocument(), iterator, null, reportAttributes);

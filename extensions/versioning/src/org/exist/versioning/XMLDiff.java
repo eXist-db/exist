@@ -1,11 +1,10 @@
 package org.exist.versioning;
 
 import bmsi.util.Diff;
+import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
-import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -13,11 +12,7 @@ import org.exist.storage.DBBroker;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
-import org.apache.log4j.Logger;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -28,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Stack;
 
 public class XMLDiff {
 
@@ -50,9 +44,9 @@ public class XMLDiff {
     throws DiffException {
         try {
             ElementImpl root = (ElementImpl) docA.getDocumentElement();
-            DiffNode[] nodesA = getNodes(broker, root);
+            DiffNode[] nodesA = getNodes(broker, docA);
             root = (ElementImpl) docB.getDocumentElement();
-            DiffNode[] nodesB = getNodes(broker, root);
+            DiffNode[] nodesB = getNodes(broker, docB);
 
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Source:");
@@ -174,8 +168,8 @@ public class XMLDiff {
         return changes;
     }
 
-    protected DiffNode[] getNodes(DBBroker broker, ElementImpl root) throws XMLStreamException, IOException {
-        EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
+    protected DiffNode[] getNodes(DBBroker broker, DocumentImpl root) throws XMLStreamException, IOException {
+        EmbeddedXMLStreamReader reader = broker.newXMLStreamReader(new NodeProxy(root, NodeId.DOCUMENT_NODE, root.getFirstChildAddress()), false);
         List nodes = new ArrayList();
         DiffNode node;
         while (reader.hasNext()) {

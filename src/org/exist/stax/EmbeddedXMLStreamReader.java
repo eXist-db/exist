@@ -70,6 +70,8 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 
     private int state = START_DOCUMENT;
 
+    private boolean beforeRoot = false;
+    
     private DocumentImpl document;
 
     private NodeId nodeId;
@@ -136,10 +138,13 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     
     private void initNode() {
         final short type = Signatures.getType(current.data()[current.start()]);    // TODO: remove potential NPE
+        if (state == START_DOCUMENT && type != Node.ELEMENT_NODE)
+            beforeRoot = true;
         switch (type) {
             case Node.ELEMENT_NODE :
                 state = START_ELEMENT;
                 elementStack.push(new ElementEvent(current));
+                beforeRoot = false;
                 break;
             case Node.ATTRIBUTE_NODE :
                 state = ATTRIBUTE;
@@ -217,7 +222,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
             } else {
                 parent.incrementChild();
             }
-        } else if (state != START_DOCUMENT)
+        } else if (state != START_DOCUMENT && !beforeRoot)
             throw new NoSuchElementException();
         boolean first = state == START_DOCUMENT;
         current = iterator.next();
@@ -286,7 +291,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     }
 
     public boolean hasNext() throws XMLStreamException {
-        return state == START_DOCUMENT || !elementStack.isEmpty();
+        return state == START_DOCUMENT || beforeRoot || !elementStack.isEmpty();
     }
 
     public void close() throws XMLStreamException {
