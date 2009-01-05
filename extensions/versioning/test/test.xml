@@ -598,116 +598,6 @@
             </PLAY>
         </v:revision>
     </v:test>
-    <v:test id="different-documents2">
-        <v:revision>
-            <PLAY>
-                <PERSONAE>
-                    <TITLE>Dramatis Personae</TITLE>
-
-                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
-                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
-                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
-                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
-                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
-                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
-
-                    <PGROUP>
-                        <PERSONA>VOLTIMAND</PERSONA>
-                        <PERSONA>CORNELIUS</PERSONA>
-                        <PERSONA>ROSENCRANTZ</PERSONA>
-                        <PERSONA>GUILDENSTERN</PERSONA>
-                        <PERSONA>OSRIC</PERSONA>
-                        <GRPDESCR>courtiers.</GRPDESCR>
-                    </PGROUP>
-
-                    <PERSONA>A Gentleman</PERSONA>
-                    <PERSONA>A Priest. </PERSONA>
-                </PERSONAE>
-            </PLAY>
-        </v:revision>
-        <v:revision>
-            <PLAY>
-                <PERSONAE>
-                    <TITLE>Dramatis Personae</TITLE>
-
-                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
-                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
-                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
-                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
-                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
-                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
-					<PERSONA>Rudi Rüssel, Hamlet's pet.</PERSONA>
-
-                    <PGROUP>
-                        <PERSONA>VOLTIMAND</PERSONA>
-                        <PERSONA>CORNELIUS</PERSONA>
-                        <PERSONA>ROSENCRANTZ</PERSONA>
-                        <PERSONA>GUILDENSTERN</PERSONA>
-                        <PERSONA>OSRIC</PERSONA>
-                        <GRPDESCR>courtiers.</GRPDESCR>
-                    </PGROUP>
-
-                    <PERSONA>A Gentleman</PERSONA>
-                    <PERSONA>A Priest. </PERSONA>
-                </PERSONAE>
-            </PLAY>
-        </v:revision>
-        <v:revision>
-            <PLAY>
-                <PERSONAE>
-                    <TITLE>Dramatis Personae</TITLE>
-
-                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
-                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
-                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
-                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
-                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
-                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
-					<PERSONA>Rudi Rüssel, Hamlet's pet.</PERSONA>
-
-                    <PGROUP>
-                        <PERSONA>VOLTIMAND</PERSONA>
-                        <PERSONA>CORNELIUS</PERSONA>
-                        <PERSONA>ROSENCRANTZ</PERSONA>
-                        <PERSONA>GUILDENSTERN</PERSONA>
-                        <PERSONA>OSRIC</PERSONA>
-                        <GRPDESCR>courtiers.</GRPDESCR>
-                    </PGROUP>
-
-                    <PERSONA>A Gentleman</PERSONA>
-                    <PERSONA>A Priest. </PERSONA>
-                </PERSONAE>
-            </PLAY>
-        </v:revision>
-        <v:revision>
-            <PLAY>
-                <PERSONAE>
-                    <TITLE>Dramatis Personae</TITLE>
-
-                    <PERSONA>CLAUDIUS, king of Denmark. </PERSONA>
-                    <PERSONA>HAMLET, son to the late, and nephew to the present king.</PERSONA>
-                    <PERSONA>POLONIUS, lord chamberlain. </PERSONA>
-                    <PERSONA>HORATIO, friend to Hamlet.</PERSONA>
-                    <PERSONA>LAERTES, son to Polonius.</PERSONA>
-                    <PERSONA>LUCIANUS, nephew to the king.</PERSONA>
-					<PERSONA>Rudi Rüssel, Hamlet's pet.</PERSONA>
-
-                    <PGROUP>
-                        <PERSONA>VOLTIMAND</PERSONA>
-                        <PERSONA>CORNELIUS</PERSONA>
-                        <PERSONA>ROSENCRANTZ</PERSONA>
-                        <PERSONA>GUILDENSTERN</PERSONA>
-                        <PERSONA>OSRIC</PERSONA>
-						<PERSONA>Hamlet's lover.</PERSONA>
-                        <GRPDESCR>courtiers.</GRPDESCR>
-                    </PGROUP>
-
-                    <PERSONA>A Gentleman</PERSONA>
-                    <PERSONA>A Priest. </PERSONA>
-                </PERSONAE>
-            </PLAY>
-        </v:revision>
-	</v:test>
     <v:test id="nested1">
         <v:revision>
             <a>
@@ -730,4 +620,73 @@
             </a>
         </v:revision>
     </v:test>
+	<v:test id="comment-remove">
+		<v:revision><![CDATA[
+			<book>
+				<title>Book Title</title>
+				<!-- A comment -->
+				<para>First paragraph.</para>
+				<para><!-- Comment in paragraph -->Second paragraph.</para>
+			</book>
+		]]></v:revision>
+		<v:revision>
+			<book>
+				<title>Book Title</title>
+				<para>First paragraph.</para>
+				<para>Second paragraph.</para>
+			</book>
+		</v:revision>
+	</v:test>
+	<v:test id="comment-insert">
+		<v:revision>
+			<book>
+				<title>Book Title</title>
+				<para>First paragraph.</para>
+				<para>Second paragraph.</para>
+			</book>
+		</v:revision>
+		<v:revision><![CDATA[
+			<book>
+				<title>Book Title</title>
+				<?php print "Hello" ?>
+				<para>First paragraph.</para>
+				<para><!-- Comment in paragraph -->Second paragraph.</para>
+			</book>]]>
+		</v:revision>
+	</v:test>
+	<v:test id="comment-insert-top">
+		<v:revision>
+			<book>
+				<title>Book Title</title>
+				<para>First paragraph.</para>
+				<para>Second paragraph.</para>
+			</book>
+		</v:revision>
+		<v:revision><![CDATA[
+			<!-- My new book -->
+			<book>
+				<title>Book Title</title>
+				<para>First paragraph.</para>
+				<para>Second paragraph.</para>
+			</book>]]>
+		</v:revision>
+	</v:test>
+	<v:test id="insert-top-multi">
+		<v:revision>
+			<book>
+				<title>Book Title</title>
+				<para>First paragraph.</para>
+				<para>Second paragraph.</para>
+			</book>
+		</v:revision>
+		<v:revision><![CDATA[
+			<?xml-stylesheet href="shakes.xsl" type="text/xsl"?>
+			<!-- My new book -->
+			<book>
+				<title>Book Title</title>
+				<para>First paragraph.</para>
+				<para>Second paragraph.</para>
+			</book>]]>
+		</v:revision>
+	</v:test>
 </v:testSuite>
