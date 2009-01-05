@@ -67,7 +67,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
         }
         if (currentNode > -1) {
             int next = -1;
-            if (state == XMLStreamReader.START_ELEMENT) {
+            if (state == XMLStreamReader.START_ELEMENT || state == XMLStreamReader.START_DOCUMENT) {
                 next = doc.getFirstChildFor(currentNode);
                 if (next < 0) { // no child nodes
                     state = XMLStreamReader.END_ELEMENT;
@@ -77,7 +77,10 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
             if (next < 0) {
                 next = doc.next[currentNode];
                 if (next < currentNode) {
-                    state = XMLStreamReader.END_ELEMENT;
+                    if (next == 0)
+                        state = XMLStreamReader.END_DOCUMENT;
+                    else
+                        state = XMLStreamReader.END_ELEMENT;
                     currentNode = next;
                     return state;
                 }

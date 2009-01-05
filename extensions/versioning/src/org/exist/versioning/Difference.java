@@ -73,46 +73,58 @@ public abstract class Difference {
 
         protected void serializeChildren(DBBroker broker, ContentHandler handler, AttributesImpl attribs) throws SAXException {
             for (int i = 0; i < nodes.length; i++) {
-                if (nodes[i].nodeType == XMLStreamReader.ATTRIBUTE) {
-                    AttrImpl attr = (AttrImpl) broker.objectWith(otherDoc, nodes[i].nodeId);
-                    attribs.clear();
-                    attribs.addAttribute(attr.getNamespaceURI(), attr.getLocalName(), attr.getName(),
-                            AttrImpl.getAttributeType(attr.getType()), attr.getValue());
-                    handler.startElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute", attribs);
-                    handler.endElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute");
-                } else if (nodes[i].nodeType == XMLStreamReader.START_ELEMENT) {
-                    // check if there's a complete element to write, not just a start or end tag
-                    // if yes, just copy the element, if no, write a start-tag node
-                    boolean isClosed = false;
-                    NodeId nodeId = nodes[i].nodeId;
-                    for (int j = i; j < nodes.length; j++) {
-                        if (nodes[j].nodeType == XMLStreamReader.END_ELEMENT &&
-                                nodes[j].nodeId.equals(nodeId)) {
-                            isClosed = true;
-                            NodeProxy proxy = new NodeProxy(otherDoc, nodes[i].nodeId);
-                            proxy.toSAX(broker, handler, null);
-                            i = j;
-                            break;
+                switch (nodes[i].nodeType) {
+                    case XMLStreamReader.ATTRIBUTE:
+                        AttrImpl attr = (AttrImpl) broker.objectWith(otherDoc, nodes[i].nodeId);
+                        attribs.clear();
+                        attribs.addAttribute(attr.getNamespaceURI(), attr.getLocalName(), attr.getName(),
+                                AttrImpl.getAttributeType(attr.getType()), attr.getValue());
+                        handler.startElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute", attribs);
+                        handler.endElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute");
+                        break;
+                    case XMLStreamReader.START_ELEMENT:
+                        // check if there's a complete element to write, not just a start or end tag
+                        // if yes, just copy the element, if no, write a start-tag node
+                        boolean isClosed = false;
+                        NodeId nodeId = nodes[i].nodeId;
+                        for (int j = i; j < nodes.length; j++) {
+                            if (nodes[j].nodeType == XMLStreamReader.END_ELEMENT &&
+                                    nodes[j].nodeId.equals(nodeId)) {
+                                isClosed = true;
+                                NodeProxy proxy = new NodeProxy(otherDoc, nodes[i].nodeId);
+                                proxy.toSAX(broker, handler, null);
+                                i = j;
+                                break;
+                            }
                         }
-                    }
-                    if (!isClosed) {
+                        if (!isClosed) {
+                            attribs.clear();
+                            if (nodes[i].qname.needsNamespaceDecl())
+                                attribs.addAttribute("", "namespace", "namespace", "CDATA", nodes[i].qname.getNamespaceURI());
+                            attribs.addAttribute("", "name", "name", "CDATA", nodes[i].qname.getStringValue());
+                            handler.startElement(XMLDiff.NAMESPACE, "start", XMLDiff.PREFIX + ":start", attribs);
+                            handler.endElement(XMLDiff.NAMESPACE, "start", XMLDiff.PREFIX + ":start");
+                        }
+                        break;
+                    case XMLStreamReader.END_ELEMENT:
                         attribs.clear();
                         if (nodes[i].qname.needsNamespaceDecl())
                             attribs.addAttribute("", "namespace", "namespace", "CDATA", nodes[i].qname.getNamespaceURI());
                         attribs.addAttribute("", "name", "name", "CDATA", nodes[i].qname.getStringValue());
-                        handler.startElement(XMLDiff.NAMESPACE, "start", XMLDiff.PREFIX + ":start", attribs);
-                        handler.endElement(XMLDiff.NAMESPACE, "start", XMLDiff.PREFIX + ":start");
-                    }
-                } else if (nodes[i].nodeType == XMLStreamReader.END_ELEMENT) {
-                    attribs.clear();
-                    if (nodes[i].qname.needsNamespaceDecl())
-                        attribs.addAttribute("", "namespace", "namespace", "CDATA", nodes[i].qname.getNamespaceURI());
-                    attribs.addAttribute("", "name", "name", "CDATA", nodes[i].qname.getStringValue());
-                    handler.startElement(XMLDiff.NAMESPACE, "end", XMLDiff.PREFIX + ":end", attribs);
-                    handler.endElement(XMLDiff.NAMESPACE, "end", XMLDiff.PREFIX + ":end");
-                } else {
-                    NodeProxy proxy = new NodeProxy(otherDoc, nodes[i].nodeId);
-                    proxy.toSAX(broker, handler, null);
+                        handler.startElement(XMLDiff.NAMESPACE, "end", XMLDiff.PREFIX + ":end", attribs);
+                        handler.endElement(XMLDiff.NAMESPACE, "end", XMLDiff.PREFIX + ":end");
+                        break;
+                    case XMLStreamReader.COMMENT:
+                        attribs.clear();
+                        handler.startElement(XMLDiff.NAMESPACE, "comment", XMLDiff.PREFIX + ":comment", attribs);
+                        char ch[] = nodes[i].value.toCharArray();
+                        handler.characters(ch, 0, ch.length);
+                        handler.endElement(XMLDiff.NAMESPACE, "comment", XMLDiff.PREFIX + ":comment");
+                        break;
+                    default:
+                        NodeProxy proxy = new NodeProxy(otherDoc, nodes[i].nodeId);
+                        proxy.toSAX(broker, handler, null);
+                        break;
                 }
             }
         }

@@ -24,10 +24,11 @@ package org.exist.versioning;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
-import org.exist.dom.NodeProxy;
 import org.exist.numbering.NodeId;
+import org.exist.security.xacml.AccessContext;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -37,22 +38,16 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.security.xacml.AccessContext;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Patch a given source document by applying a diff in eXist's diff format.
@@ -146,6 +141,19 @@ public class Patch {
                             QName qname = reader.getAttributeQName(i);
                             receiver.attribute(qname, reader.getAttributeValue(i));
                         }
+                    } else if ("comment".equals(reader.getLocalName())) {
+                        StringBuffer buf = new StringBuffer();
+                        while (reader.hasNext()) {
+                            status = reader.next();
+                            if (status == XMLStreamReader.END_ELEMENT &&
+                                    reader.getNamespaceURI().equals(XMLDiff.NAMESPACE) &&
+                                    reader.getLocalName().equals("comment"))
+                                break;
+                            if (status == XMLStreamReader.CHARACTERS)
+                                buf.append(reader.getText());
+                        }
+                        char[] ch = buf.toString().toCharArray();
+                        receiver.comment(ch, 0, ch.length);
                     } else if ("start".equals(reader.getLocalName())) {
                         String namespace = reader.getAttributeValue("", "namespace");
                         String name = reader.getAttributeValue("", "name");

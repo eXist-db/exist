@@ -21,30 +21,27 @@
  */
 package org.exist.versioning.xquery;
 
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.functions.system.SystemModule;
-import org.exist.dom.QName;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.ElementImpl;
 import org.exist.dom.DocumentImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.InMemoryXMLStreamReader;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
-import org.exist.versioning.Patch;
-import org.exist.versioning.DiffException;
+import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
-import org.xml.sax.SAXException;
+import org.exist.versioning.DiffException;
+import org.exist.versioning.Patch;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 
@@ -72,11 +69,10 @@ public class PatchFunction extends BasicFunction {
             NodeValue nv = (NodeValue) args[0].itemAt(0);
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                 NodeImpl node = (NodeImpl) nv;
-                reader = new InMemoryXMLStreamReader(node.getDocument(), node);
+                reader = new InMemoryXMLStreamReader(node.getDocument(), node.getDocument());
             } else {
                 NodeProxy proxy = (NodeProxy) nv;
-                ElementImpl root = (ElementImpl) proxy.getDocument().getDocumentElement();
-                reader = context.getBroker().newXMLStreamReader(root, false);
+                reader = context.getBroker().newXMLStreamReader(new NodeProxy(proxy.getDocument(), NodeId.DOCUMENT_NODE, proxy.getDocument().getFirstChildAddress()), false);
             }
 
             nv = (NodeValue) args[1].itemAt(0);
@@ -89,7 +85,8 @@ public class PatchFunction extends BasicFunction {
             DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
             Patch patch = new Patch(context.getBroker(), diff);
             patch.patch(reader, receiver);
-            return (NodeValue) builder.getDocument().getDocumentElement();
+            NodeValue result = (NodeValue) builder.getDocument().getDocumentElement();
+            return result == null ? Sequence.EMPTY_SEQUENCE : result;
         } catch (IOException e) {
             throw new XPathException(getASTNode(), e.getMessage(), e);
         } catch (XMLStreamException e) {
