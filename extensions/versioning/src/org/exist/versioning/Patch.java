@@ -235,7 +235,7 @@ public class Patch {
         appendedNodes = new TreeMap();
         XQuery service = broker.getXQueryService();
         Sequence changes = service.execute("declare namespace v=\"http://exist-db.org/versioning\";" +
-                "doc('" + doc.getURI().toString() + "')/v:version/*",
+                "doc('" + doc.getURI().toString() + "')/v:version/v:diff/*",
                 Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
         for (SequenceIterator i = changes.iterate(); i.hasNext(); ) {
             NodeProxy p = (NodeProxy) i.nextItem();

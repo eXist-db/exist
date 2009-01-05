@@ -31,21 +31,20 @@ public class XMLDiff {
     public final static String NAMESPACE = "http://exist-db.org/versioning";
     public final static String PREFIX = "v";
     
-    private final static QName DIFF_ELEMENT = new QName("version", NAMESPACE, PREFIX);
-    private final static QName PROPERTIES_ELEMENT = new QName("properties", NAMESPACE, PREFIX);
+    private final static QName DIFF_ELEMENT = new QName("diff", NAMESPACE, PREFIX);
 
     private DBBroker broker;
+
+    private List changes = null;
 
     public XMLDiff(DBBroker broker) {
         this.broker = broker;
     }
 
-    public String diff(DocumentImpl docA, DocumentImpl docB, Properties properties)
+    public void diff(DocumentImpl docA, DocumentImpl docB)
     throws DiffException {
         try {
-            ElementImpl root = (ElementImpl) docA.getDocumentElement();
             DiffNode[] nodesA = getNodes(broker, docA);
-            root = (ElementImpl) docB.getDocumentElement();
             DiffNode[] nodesB = getNodes(broker, docB);
 
             if (LOG.isTraceEnabled()) {
@@ -57,8 +56,7 @@ public class XMLDiff {
 
             Diff diff = new Diff(nodesA, nodesB);
             Diff.change script = diff.diff_2(false);
-            List changes = getChanges(script, docA, docB, nodesA, nodesB);
-            return diff2XML(changes, properties);
+            changes = getChanges(script, docA, docB, nodesA, nodesB);
         } catch (XMLStreamException e) {
             throw new DiffException(e.getMessage(), e);
         } catch (IOException e) {
@@ -76,7 +74,7 @@ public class XMLDiff {
         LOG.trace(buf.toString());
     }
 
-    protected String diff2XML(List changes, Properties properties) throws DiffException {
+    public String diff2XML() throws DiffException {
         try {
             StringWriter writer = new StringWriter();
             SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
@@ -86,31 +84,28 @@ public class XMLDiff {
             outputProperties.setProperty(OutputKeys.INDENT, "no");
             sax.setOutput(writer, outputProperties);
             sax.startDocument();
-            sax.startElement(DIFF_ELEMENT, null);
-            writeProperties(sax, properties);
-            for (int i = 0; i < changes.size(); i++) {
-                Difference diff = (Difference) changes.get(i);
-                diff.serialize(broker, sax);
-            }
-            sax.endElement(DIFF_ELEMENT);
+            diff2XML(sax);
             sax.endDocument();
             return writer.toString();
         } catch (SAXException e) {
             throw new DiffException("error while serializing diff: " + e.getMessage(), e);
         }
     }
-
-    protected void writeProperties(Receiver receiver, Properties properties) throws SAXException {
-        receiver.startElement(PROPERTIES_ELEMENT, null);
-        for (Iterator i = properties.keySet().iterator(); i.hasNext();) {
-            String key = (String) i.next();
-            QName qn = new QName(key, NAMESPACE, PREFIX);
-            receiver.startElement(qn, null);
-            receiver.characters(properties.get(key).toString());
-            receiver.endElement(qn);
+    
+    public void diff2XML(Receiver receiver ) throws DiffException {
+        try {
+            receiver.startElement(DIFF_ELEMENT, null);
+            for (int i = 0; i < changes.size(); i++) {
+                Difference diff = (Difference) changes.get(i);
+                diff.serialize(broker, receiver);
+            }
+            receiver.endElement(DIFF_ELEMENT);
+            receiver.endDocument();
+        } catch (SAXException e) {
+            throw new DiffException("error while serializing diff: " + e.getMessage(), e);
         }
-        receiver.endElement(PROPERTIES_ELEMENT);
     }
+
 
     protected List getChanges(Diff.change script, DocumentImpl docA, DocumentImpl docB, DiffNode[] nodesA, DiffNode[] nodesB) throws XMLStreamException {
         List changes = new ArrayList();
