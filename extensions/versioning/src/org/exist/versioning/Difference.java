@@ -5,10 +5,14 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.util.serializer.Receiver;
+import org.exist.util.serializer.AttrList;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -30,6 +34,18 @@ public abstract class Difference {
     public final static int APPEND = 2;
     public final static int UPDATE = 3;
 
+    public final static QName ELEMENT_INSERT = new QName("insert", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ATTR_REF = new QName("ref", "", "");
+    public final static QName ATTR_NAMESPACE = new QName("namespace", "", "");
+    public final static QName ATTR_NAME = new QName("name", "", "");
+    public final static QName ATTR_EVENT = new QName("event", "", "");
+    public final static QName ELEMENT_ATTRIBUTE = new QName("attribute", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ELEMENT_START = new QName("start", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ELEMENT_END = new QName("end", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ELEMENT_COMMENT = new QName("comment", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ELEMENT_APPEND = new QName("append", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ELEMENT_DELETE = new QName("delete", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+
     protected int type;
     protected NodeProxy refChild;
 
@@ -38,7 +54,7 @@ public abstract class Difference {
         this.refChild = reference;
     }
 
-    public abstract void serialize(DBBroker broker, ContentHandler handler);
+    public abstract void serialize(DBBroker broker, Receiver handler);
 
     public static class Insert extends Difference {
 
@@ -59,28 +75,29 @@ public abstract class Difference {
             this.nodes = nodes;
         }
 
-        public void serialize(DBBroker broker, ContentHandler handler) {
+        public void serialize(DBBroker broker, Receiver handler) {
             try {
-                AttributesImpl attribs = new AttributesImpl();
-                attribs.addAttribute("", "ref", "ref", "CDATA", refChild.getNodeId().toString());
-                handler.startElement(XMLDiff.NAMESPACE, "insert", XMLDiff.PREFIX + ":insert", attribs);
-                serializeChildren(broker, handler, attribs);
-                handler.endElement(XMLDiff.NAMESPACE, "insert", XMLDiff.PREFIX + ":insert");
+                AttrList attribs = new AttrList();
+                attribs.addAttribute(ATTR_REF, refChild.getNodeId().toString());
+                handler.startElement(ELEMENT_INSERT, attribs);
+                serializeChildren(broker, handler);
+                handler.endElement(ELEMENT_INSERT);
             } catch (SAXException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
 
-        protected void serializeChildren(DBBroker broker, ContentHandler handler, AttributesImpl attribs) throws SAXException {
+        protected void serializeChildren(DBBroker broker, Receiver handler) throws SAXException {
+            AttrList attribs;
             for (int i = 0; i < nodes.length; i++) {
                 switch (nodes[i].nodeType) {
                     case XMLStreamReader.ATTRIBUTE:
+                        attribs = new AttrList();
                         AttrImpl attr = (AttrImpl) broker.objectWith(otherDoc, nodes[i].nodeId);
-                        attribs.clear();
-                        attribs.addAttribute(attr.getNamespaceURI(), attr.getLocalName(), attr.getName(),
-                                AttrImpl.getAttributeType(attr.getType()), attr.getValue());
-                        handler.startElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute", attribs);
-                        handler.endElement(XMLDiff.NAMESPACE, "attribute", XMLDiff.PREFIX + ":attribute");
+                        attribs.addAttribute(new QName(attr.getLocalName(), attr.getNamespaceURI(), attr.getPrefix()),
+                                attr.getValue(), attr.getType());
+                        handler.startElement(ELEMENT_ATTRIBUTE, attribs);
+                        handler.endElement(ELEMENT_ATTRIBUTE);
                         break;
                     case XMLStreamReader.START_ELEMENT:
                         // check if there's a complete element to write, not just a start or end tag
@@ -92,38 +109,45 @@ public abstract class Difference {
                                     nodes[j].nodeId.equals(nodeId)) {
                                 isClosed = true;
                                 NodeProxy proxy = new NodeProxy(otherDoc, nodes[i].nodeId);
-                                proxy.toSAX(broker, handler, null);
+                                Serializer serializer = broker.getSerializer();
+                                serializer.reset();
+                                serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+                                serializer.setReceiver(handler);
+                                serializer.toReceiver(proxy, false);
                                 i = j;
                                 break;
                             }
                         }
                         if (!isClosed) {
-                            attribs.clear();
+                            attribs = new AttrList();
                             if (nodes[i].qname.needsNamespaceDecl())
-                                attribs.addAttribute("", "namespace", "namespace", "CDATA", nodes[i].qname.getNamespaceURI());
-                            attribs.addAttribute("", "name", "name", "CDATA", nodes[i].qname.getStringValue());
-                            handler.startElement(XMLDiff.NAMESPACE, "start", XMLDiff.PREFIX + ":start", attribs);
-                            handler.endElement(XMLDiff.NAMESPACE, "start", XMLDiff.PREFIX + ":start");
+                                attribs.addAttribute(ATTR_NAMESPACE, nodes[i].qname.getNamespaceURI());
+                            attribs.addAttribute(ATTR_NAME, nodes[i].qname.getStringValue());
+                            handler.startElement(ELEMENT_START, attribs);
+                            handler.endElement(ELEMENT_START);
                         }
                         break;
                     case XMLStreamReader.END_ELEMENT:
-                        attribs.clear();
+                        attribs = new AttrList();
                         if (nodes[i].qname.needsNamespaceDecl())
-                            attribs.addAttribute("", "namespace", "namespace", "CDATA", nodes[i].qname.getNamespaceURI());
-                        attribs.addAttribute("", "name", "name", "CDATA", nodes[i].qname.getStringValue());
-                        handler.startElement(XMLDiff.NAMESPACE, "end", XMLDiff.PREFIX + ":end", attribs);
-                        handler.endElement(XMLDiff.NAMESPACE, "end", XMLDiff.PREFIX + ":end");
+                            attribs.addAttribute(ATTR_NAMESPACE, nodes[i].qname.getNamespaceURI());
+                        attribs.addAttribute(ATTR_NAME, nodes[i].qname.getStringValue());
+                        handler.startElement(ELEMENT_END, attribs);
+                        handler.endElement(ELEMENT_END);
                         break;
                     case XMLStreamReader.COMMENT:
-                        attribs.clear();
-                        handler.startElement(XMLDiff.NAMESPACE, "comment", XMLDiff.PREFIX + ":comment", attribs);
-                        char ch[] = nodes[i].value.toCharArray();
-                        handler.characters(ch, 0, ch.length);
-                        handler.endElement(XMLDiff.NAMESPACE, "comment", XMLDiff.PREFIX + ":comment");
+                        attribs = new AttrList();
+                        handler.startElement(ELEMENT_COMMENT, attribs);
+                        handler.characters(nodes[i].value);
+                        handler.endElement(ELEMENT_COMMENT);
                         break;
                     default:
                         NodeProxy proxy = new NodeProxy(otherDoc, nodes[i].nodeId);
-                        proxy.toSAX(broker, handler, null);
+                        Serializer serializer = broker.getSerializer();
+                        serializer.reset();
+                        serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+                        serializer.setReceiver(handler);
+                        serializer.toReceiver(proxy, false);
                         break;
                 }
             }
@@ -136,13 +160,13 @@ public abstract class Difference {
             super(APPEND, reference, otherDoc);
         }
 
-        public void serialize(DBBroker broker, ContentHandler handler) {
+        public void serialize(DBBroker broker, Receiver handler) {
             try {
-                AttributesImpl attribs = new AttributesImpl();
-                attribs.addAttribute("", "ref", "ref", "CDATA", refChild.getNodeId().toString());
-                handler.startElement(XMLDiff.NAMESPACE, "append", XMLDiff.PREFIX + ":append", attribs);
-                serializeChildren(broker, handler, attribs);
-                handler.endElement(XMLDiff.NAMESPACE, "append", XMLDiff.PREFIX + ":append");
+                AttrList attribs = new AttrList();
+                attribs.addAttribute(ATTR_REF, refChild.getNodeId().toString());
+                handler.startElement(ELEMENT_APPEND, attribs);
+                serializeChildren(broker, handler);
+                handler.endElement(ELEMENT_APPEND);
             } catch (SAXException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -162,38 +186,16 @@ public abstract class Difference {
             this.event = event;
         }
 
-        public void serialize(DBBroker broker, ContentHandler handler) {
+        public void serialize(DBBroker broker, Receiver handler) {
             try {
-                AttributesImpl attribs = new AttributesImpl();
+                AttrList attribs = new AttrList();
                 if (event == XMLStreamReader.START_ELEMENT || event == XMLStreamReader.END_ELEMENT) {
                     String ev = event == XMLStreamReader.START_ELEMENT ? "start" : "end";
-                    attribs.addAttribute("", "event", "event", "CDATA", ev);
+                    attribs.addAttribute(ATTR_EVENT, ev);
                 }
-                attribs.addAttribute("", "ref", "ref", "CDATA", refChild.getNodeId().toString());
-                handler.startElement(XMLDiff.NAMESPACE, "delete", XMLDiff.PREFIX + ":delete", attribs);
-                handler.endElement(XMLDiff.NAMESPACE, "delete", XMLDiff.PREFIX + ":delete");
-            } catch (SAXException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-    }
-
-    public final static class Update extends Difference {
-
-        private NodeId endId;
-
-        public Update(NodeProxy reference, NodeId endId) {
-            super(UPDATE, reference);
-            this.endId = endId;
-        }
-
-        public void serialize(DBBroker broker, ContentHandler handler) {
-            try {
-                AttributesImpl attribs = new AttributesImpl();
-                attribs.addAttribute("", "ref", "ref", "CDATA", refChild.getNodeId().toString());
-                attribs.addAttribute("", "end", "end", "CDATA", endId.toString());
-                handler.startElement(XMLDiff.NAMESPACE, "update", XMLDiff.PREFIX + ":update", attribs);
-                handler.endElement(XMLDiff.NAMESPACE, "update", XMLDiff.PREFIX + ":update");
+                attribs.addAttribute(ATTR_REF, refChild.getNodeId().toString());
+                handler.startElement(ELEMENT_DELETE, attribs);
+                handler.endElement(ELEMENT_DELETE);
             } catch (SAXException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }

@@ -42,7 +42,7 @@ declare function v:get-revision($root as node(), $rev as xs:long) {
                 doc($baseName),
 				for $version in
                 	collection($vCollection)/v:version[v:properties[v:document = $docName]
-                    	[v:revision <= $rev]]
+                    	[v:revision <= $rev]][v:diff]
 					order by xs:long($version/v:properties/v:revision) ascending
 				return
 					$version
