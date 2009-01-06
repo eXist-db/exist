@@ -124,9 +124,9 @@ public class BrokerPool {
     };
 	
 	//TODO : make this defaut value configurable ? useless if we have a registerShutdownHook(Thread aThread) method (null = deregister)
-	private static boolean registerShutdownHook = true;	
-    
-	/**
+	private static boolean registerShutdownHook = true;
+
+    /**
      * Whether of not the JVM should run the shutdown thread.
 	 * @param register <code>true</code> if the JVM should run the thread
 	 */
@@ -477,7 +477,7 @@ public class BrokerPool {
 	/**
 	 * The monitor in which the database instance's strong>running</strong> XQueries are managed.
 	 */
-	private XQueryMonitor xQueryMonitor;
+	private ProcessMonitor processMonitor;
 
     /**
      * The global manager for accessing collection configuration files from the database instance.
@@ -697,7 +697,7 @@ public class BrokerPool {
         //REFACTOR : construct then configure
         xQueryPool = new XQueryPool(conf);
         //REFACTOR : construct then... configure
-        xQueryMonitor = new XQueryMonitor();
+        processMonitor = new ProcessMonitor();
         //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(conf, new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
@@ -1050,8 +1050,8 @@ public class BrokerPool {
      * 
      * @return The monitor
      */
-    public XQueryMonitor getXQueryMonitor() {
-    	return xQueryMonitor;
+    public ProcessMonitor getProcessMonitor() {
+    	return processMonitor;
     }  
     
 	/**
@@ -1473,7 +1473,7 @@ public class BrokerPool {
 		}
 
 		//Notify all running XQueries that we are shutting down
-		xQueryMonitor.killAll(500);
+		processMonitor.killAll(500);
 		//TODO : close other objects using varying methods ? set them to null ?
 		//cacheManager.something();
 		//xQueryPool.something();
@@ -1559,7 +1559,7 @@ public class BrokerPool {
         collectionCache = null;
         collectionCacheMgr = null;
         xQueryPool = null;
-        xQueryMonitor = null;
+        processMonitor = null;
         collectionConfigurationManager = null;
         notificationService = null;
         indexManager = null;

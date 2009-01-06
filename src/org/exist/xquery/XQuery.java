@@ -219,7 +219,7 @@ public class XQuery {
         //do any preparation before execution
         context.prepare();
         
-        broker.getBrokerPool().getXQueryMonitor().queryStarted(context.getWatchDog());
+        broker.getBrokerPool().getProcessMonitor().queryStarted(context.getWatchDog());
         try {
         	Sequence result = expression.eval(contextSequence);
         	if (LOG.isDebugEnabled()) {
@@ -231,7 +231,7 @@ public class XQuery {
             expression.reset();
             if (resetContext)
                 context.reset();
-        	broker.getBrokerPool().getXQueryMonitor().queryCompleted(context.getWatchDog());
+        	broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());
         }
     }
 

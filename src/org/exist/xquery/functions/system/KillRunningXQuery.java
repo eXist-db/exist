@@ -22,8 +22,6 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.util.Iterator;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -35,6 +33,8 @@ import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import java.util.Iterator;
 
 
 /**
@@ -111,13 +111,13 @@ public class KillRunningXQuery extends BasicFunction
 		}
         
         if( id != 0 ) {
-	        for( Iterator i = getContext().getBroker().getBrokerPool().getXQueryMonitor().getRunningXQueriesIterator(); i.hasNext(); ) {
-	        	XQueryWatchDog	watchdog 	= (XQueryWatchDog)i.next();
-	        	XQueryContext 	context 	= watchdog.getContext();
+            XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
+            for (int i = 0; i < watchdogs.length; i++) {
+	        	XQueryContext 	context 	= watchdogs[i].getContext();
 	        	
 	      		if( id == context.hashCode() ) {
-	      			if( !watchdog.isTerminating() ) {
-	      				watchdog.kill( waittime );
+	      			if( !watchdogs[i].isTerminating() ) {
+	      				watchdogs[i].kill( waittime );
 	      			}
 	      			break;
 	      		}
