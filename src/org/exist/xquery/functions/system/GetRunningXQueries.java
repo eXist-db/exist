@@ -22,8 +22,6 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.util.Iterator;
-
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
@@ -85,12 +83,11 @@ public class GetRunningXQueries extends BasicFunction
         builder.startElement( new QName( "xqueries", NAMESPACE_URI, PREFIX ), null );
         
         //Add all the running xqueries
-        
-        for( Iterator i = getContext().getBroker().getBrokerPool().getXQueryMonitor().getRunningXQueriesIterator(); i.hasNext(); ) {
-        	XQueryWatchDog	watchdog 	= (XQueryWatchDog)i.next();
-        	XQueryContext 	context 	= watchdog.getContext();
+        XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
+        for (int i = 0; i < watchdogs.length; i++) {
+        	XQueryContext 	context 	= watchdogs[i].getContext();
         	
-        	getRunningXQuery( builder, context, watchdog );
+        	getRunningXQuery( builder, context, watchdogs[i] );
         }
         
         builder.endElement();
