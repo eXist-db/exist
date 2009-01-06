@@ -142,7 +142,6 @@ let $isLoggedIn :=  if(xdb:get-current-user() eq "guest")then
         )
     )
 return
-
     <html>
         <head>
             <title>eXist Database Administration</title>
@@ -168,7 +167,8 @@ return
                         <li><a href="{session:encode-url(request:get-uri())}?panel=status">System Status</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=browse">Browse Collections</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=users">Manage Users</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=xqueries">View Running XQueries</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=xqueries">
+						View Running Jobs</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples Setup</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=shutdown">Shutdown</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>

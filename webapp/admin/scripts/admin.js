@@ -1,4 +1,36 @@
-var Dom = YAHOO.util.Dom;
+var Dom = YAHOO.util.Dom,
+    Event = YAHOO.util.Event;
+
+Event.onDOMReady(function () {
+	setTimeout('reloadJobs()', 3000);
+	setTimeout('reloadQueries()', 5000);
+});
+
+function reloadJobs() {
+	var pdiv = document.getElementById('processes-container');
+	var callback = {
+		success: function (response) {
+			pdiv.innerHTML = response.responseText;
+			setTimeout('reloadJobs()', 3000);
+		},
+		failure: function (response) {
+		}
+	};
+	YAHOO.util.Connect.asyncRequest('GET', 'proc.xql?mode=p', callback);
+}
+
+function reloadQueries() {
+	var pdiv = document.getElementById('xqueries-container');
+	var callback = {
+		success: function (response) {
+			pdiv.innerHTML = response.responseText;
+			setTimeout('reloadQueries()', 5000);
+		},
+		failure: function (response) {
+		}
+	};
+	YAHOO.util.Connect.asyncRequest('GET', 'proc.xql?mode=q', callback);
+}
 
 function displayDiff(id, resource, revision) {
 	var div = document.getElementById(id);
