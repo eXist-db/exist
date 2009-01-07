@@ -87,7 +87,7 @@
 
             <para>If these scripts do not launch eXist, you can load it directly with the bootstrap
                 loader by entering the following into the console:</para>
-            <synopsis>java -Xmx128M -Djava.endorsed.dirs=lib/endorsed -jar start.jar jetty</synopsis>
+            <synopsis>java -Xmx256m -Djava.endorsed.dirs=lib/endorsed -jar start.jar jetty</synopsis>
             <note>
                 <para>If you have problems understanding or running the shell/batch scripts, read
                 <ulink url="#appendix">Running Executable Files</ulink> below.</para>
