@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id: JMXClient.java 7641 2008-04-20 19:39:58Z wolfgang_m $
+ * $Id: JMXClient.java 8487 2009-01-07 13:12:53Z wolfgang_m $
  */
 package org.exist.management.client;
 
@@ -202,17 +202,57 @@ public class JMXClient {
                 echo(String.format("%22s: %s", "Description", data.get("description")));
             }
         } catch (MBeanException e) {
-            e.printStackTrace();
+            error(e);
         } catch (AttributeNotFoundException e) {
-            e.printStackTrace();
+            error(e);
         } catch (InstanceNotFoundException e) {
-            e.printStackTrace();
+            error(e);
         } catch (ReflectionException e) {
-            e.printStackTrace();
+            error(e);
         } catch (IOException e) {
-            e.printStackTrace();
+            error(e);
         } catch (MalformedObjectNameException e) {
-            e.printStackTrace();
+            error(e);
+        }
+    }
+
+    public void jobReport() {
+        echo("\nRunning jobs report");
+        echo("-----------------------------------------------");
+        try {
+            ObjectName name = new ObjectName("org.exist.management." + instance + ":type=ProcessReport");
+
+            TabularData table = (TabularData)
+                    connection.getAttribute(name, "RunningJobs");
+            String[] cols = new String[] { "ID", "Action", "Info" };
+            echo(String.format("%15s %30s %30s", cols[0], cols[1], cols[2]));
+            for (Iterator i = table.values().iterator(); i.hasNext(); ) {
+                CompositeData data = (CompositeData) i.next();
+                echo(String.format("%15s %30s %30s", data.get("id"), data.get("action"), data.get("info")));
+            }
+
+            echo("\nRunning queries");
+            echo("-----------------------------------------------");
+            table = (TabularData)
+                    connection.getAttribute(name, "RunningQueries");
+            cols = new String[] { "ID", "Type", "Key", "Terminating" };
+            echo(String.format("%10s %10s %30s %s", cols[0], cols[1], cols[2], cols[3]));
+            for (Iterator i = table.values().iterator(); i.hasNext(); ) {
+                CompositeData data = (CompositeData) i.next();
+                echo(String.format("%15s %15s %30s %6s", data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
+            }
+        } catch (MBeanException e) {
+            error(e);
+        } catch (AttributeNotFoundException e) {
+            error(e);
+        } catch (InstanceNotFoundException e) {
+            error(e);
+        } catch (ReflectionException e) {
+            error(e);
+        } catch (IOException e) {
+            error(e);
+        } catch (MalformedObjectNameException e) {
+            error(e);
         }
     }
 
@@ -243,6 +283,7 @@ public class JMXClient {
     private final static int INSTANCE_OPT = 'i';
     private final static int ADDRESS_OPT = 'a';
     private final static int SANITY_OPT = 's';
+    private final static int JOBS_OPT = 'j';
     
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
@@ -267,7 +308,9 @@ public class JMXClient {
         new CLOptionDescriptor( "instance", CLOptionDescriptor.ARGUMENT_REQUIRED,
             INSTANCE_OPT, "the ID of the database instance to connect to"),
         new CLOptionDescriptor( "report", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            SANITY_OPT, "retrieve sanity check report from the db")
+            SANITY_OPT, "retrieve sanity check report from the db"),
+        new CLOptionDescriptor( "jobs", CLOptionDescriptor.ARGUMENT_DISALLOWED,
+            JOBS_OPT, "list currently running jobs")
     };
 
     private final static int MODE_STATS = 0;
@@ -290,6 +333,7 @@ public class JMXClient {
         boolean displayMem = false;
         boolean displayInstance = false;
         boolean displayReport = false;
+        boolean jobReport = false;
         for(int i = 0; i < size; i++) {
             option = (CLOption)opt.get(i);
             switch(option.getId()) {
@@ -338,6 +382,8 @@ public class JMXClient {
                 case SANITY_OPT :
                     displayReport = true;
                     break;
+                case JOBS_OPT :
+                    jobReport = true;
             }
         }
         try {
@@ -356,6 +402,7 @@ public class JMXClient {
                 if (displayInstance) stats.instanceStats();
                 if (displayMem) stats.memoryStats();
                 if (displayReport) stats.sanityReport();
+                if (jobReport) stats.jobReport();
                 if (waitTime > 0) {
                     synchronized (stats) {
                         try {
