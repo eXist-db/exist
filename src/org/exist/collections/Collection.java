@@ -61,6 +61,7 @@ import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.storage.UpdateListener;
+import org.exist.storage.ProcessMonitor;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
@@ -747,6 +748,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
     throws PermissionDeniedException, TriggerException, LockException {
     	DocumentImpl doc = null;
     	try {
+            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_XML, docUri);
+
 	    	//Doh ! READ lock ?
 	        getLock().acquire(Lock.READ_LOCK);        
 	        
@@ -793,6 +796,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        
 	        broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
     	} finally {
+            broker.getBrokerPool().getProcessMonitor().endJob();
     		if (doc != null)
     			doc.getUpdateLock().release(Lock.WRITE_LOCK);
     		//Doh ! A READ lock ?
@@ -802,7 +806,6 @@ public  class Collection extends Observable implements Comparable, Cacheable
     
     public void removeBinaryResource(Txn transaction, DBBroker broker, XmldbURI uri)
     throws PermissionDeniedException, LockException, TriggerException {
-
     	try {
 	        getLock().acquire(Lock.WRITE_LOCK);
 	     
@@ -831,7 +834,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
             return;
         
         try {
-            getLock().acquire(Lock.WRITE_LOCK);       
+            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_BINARY, doc.getFileURI());
+            getLock().acquire(Lock.WRITE_LOCK);
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
                 throw new PermissionDeniedException("document " + doc.getFileURI()
                 + " is not a binary object");
@@ -866,6 +870,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), null);
             }
         } finally {
+            broker.getBrokerPool().getProcessMonitor().endJob();
        		getLock().release(Lock.WRITE_LOCK);
         }
     }
@@ -996,6 +1001,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     		LOG.warn("document is not locked for write !");
     	}
         try {
+            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_DOC, document.getFileURI());
             doParse.run();
             
             broker.storeXMLResource(transaction, document);
@@ -1015,6 +1021,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         } finally {
         	//This lock has been acquired in validateXMLResourceInternal()
             document.getUpdateLock().release(Lock.WRITE_LOCK);
+            broker.getBrokerPool().getProcessMonitor().endJob();
         }
         
         collectionConfEnabled = true;
@@ -1146,6 +1153,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         DocumentImpl oldDoc = null;
         boolean oldDocLocked = false;
         try {
+			broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, docUri); 
             getLock().acquire(Lock.WRITE_LOCK);   
             DocumentImpl document = new DocumentImpl(broker.getBrokerPool(), this, docUri);
             
@@ -1215,6 +1223,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             if (oldDocLocked) 
             	oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
             getLock().release(Lock.WRITE_LOCK);
+			broker.getBrokerPool().getProcessMonitor().endJob();
         }
     }
     
@@ -1388,7 +1397,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         DocumentImpl oldDoc = getDocument(broker, docUri);
         
         try {
-
+            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
         	getLock().acquire(Lock.WRITE_LOCK);
 	        
 	        checkPermissions(transaction, broker, oldDoc);
@@ -1441,7 +1450,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        return blob;
 	        
         } finally {
-        	getLock().release(Lock.WRITE_LOCK);  	
+            broker.getBrokerPool().getProcessMonitor().endJob();
+        	getLock().release(Lock.WRITE_LOCK);
         }
     }
     
