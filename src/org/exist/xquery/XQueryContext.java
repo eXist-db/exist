@@ -332,6 +332,10 @@ public class XQueryContext {
 
     private boolean isShared = false;
     
+    private String  sourceKey = "unknown";
+    
+    private String  sourceType = "unknown";
+    
     private XQueryContext() {}
 	
 	protected XQueryContext(AccessContext accessCtx) {
@@ -542,9 +546,54 @@ public class XQueryContext {
         return expressionCounter;
     }
     
-	/**
-	 * Declare a user-defined prefix/namespace mapping.
+    /**
+	 * Called from the XQuery compiler to set the XQuery Source key value
+	 * for this context.
 	 * 
+	 * @param key
+	 */
+	public void setSourceKey( String key ) 
+	{
+		this.sourceKey = key;
+	}
+	
+	/**
+	 * Returns the Source Key of the XQuery associated with
+	 * this context.
+	 * 
+	 * @return source key
+	 */
+	public String getSourceKey() 
+	{
+		return( sourceKey );
+	}
+	
+	 /**
+	 * Called from the XQuery compiler to set the XQuery Source type value
+	 * for this context.
+	 * 
+	 * @param type
+	 */
+	public void setSourceType( String type ) 
+	{
+		this.sourceType = type;
+	}
+	
+	/**
+	 * Returns the Source Type of the XQuery associated with
+	 * this context.
+	 * 
+	 * @return source type
+	 */
+	public String getSourceType() 
+	{
+		return( sourceType );
+	}
+	
+    
+	/**
+	 * Declare a user-defined static prefix/namespace mapping.
+	 *
 	 * eXist internally keeps a table containing all prefix/namespace
 	 * mappings it found in documents, which have been previously
 	 * stored into the database. These default mappings need not to be

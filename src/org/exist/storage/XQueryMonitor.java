@@ -67,4 +67,9 @@ public class XQueryMonitor {
 			watchdog.kill(waitTime);
 		}
 	}
+	
+	public Iterator getRunningXQueriesIterator()
+	{
+		return( runningQueries.iterator() );
+	}
 }
