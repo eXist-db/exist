@@ -105,6 +105,9 @@ public class JMXAgent implements Agent {
             
             addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=DiskUsage",
                     new DiskUsage(instance));
+
+            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=ProcessReport",
+                    new ProcessReport(instance));
                         
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Exception while registering database mbean.", e);
