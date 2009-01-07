@@ -8,6 +8,10 @@ body {
   padding: 0px;
 }
 
+th {
+	text-align: left;
+}
+
 .header {
     margin-bottom: 5px;
     padding-top: 10px;
@@ -79,6 +83,10 @@ body {
 
 .panel-head {
   font-size: large;
+}
+
+.inner-panel {
+	margin-top: 20px;
 }
 
 #status {
