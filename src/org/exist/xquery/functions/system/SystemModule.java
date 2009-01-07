@@ -48,7 +48,10 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(Shutdown.signatures[1], Shutdown.class),
             new FunctionDef(GetModuleLoadPath.signature, GetModuleLoadPath.class),
             new FunctionDef(TriggerSystemTask.signature, TriggerSystemTask.class),
-            new FunctionDef(AsUser.signature, AsUser.class)
+            new FunctionDef(AsUser.signature, AsUser.class),
+            new FunctionDef(GetRunningXQueries.signature, GetRunningXQueries.class),
+            new FunctionDef(KillRunningXQuery.signatures[0], KillRunningXQuery.class),
+            new FunctionDef(KillRunningXQuery.signatures[1], KillRunningXQuery.class)
     };
 	
 	public SystemModule() {
