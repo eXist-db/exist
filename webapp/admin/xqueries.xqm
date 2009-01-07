@@ -24,18 +24,59 @@ declare function xqueries:main() as element()
         { xqueries:process-action() }
         <div class="panel-head">Running XQueries</div>
         <form method="POST" enctype="multipart/form-data">
+			<div id="xqueries-container">
             {
                 xqueries:display-xqueries()
             }
-            <table class="actions" cellspacing="0">
-                <tr><td colspan="3"><input type="submit" name="action" value="Kill Selected"/></td></tr>
-            </table>
-            
-             <input type="hidden" name="panel" value="xqueries"/>
+			</div>
+            <input type="submit" name="action" value="Kill Selected"/>
+            <input type="hidden" name="panel" value="xqueries"/>
         </form>
+
+		<div class="inner-panel">
+			<div class="panel-head">Running Jobs</div>
+			<div id="processes-container">
+			{
+				xqueries:display-processes()
+			}
+			</div>
+			<form>
+				<input type="hidden" name="panel" value="xqueries"/>
+				<input type="submit" value="Refresh"/>
+			</form>
+		</div>
     </div>
 };
 
+declare function xqueries:display-processes() {
+	let $processes := system:get-running-jobs()//system:job
+	return
+		if (empty($processes)) then
+			<p>No long running jobs are active right now.</p>
+		else
+			<table cellspacing="0" cellpadding="5" width="100%">
+				<tr>
+					<th width="20%">ID</th>
+					<th width="30%">Action</th>
+					<th width="30%">Info</th>
+					<th width="20%">Running Since</th>
+				</tr>
+				{
+					for $proc in $processes
+					return
+						xqueries:display-process($proc)
+				}
+			</table>
+};
+
+declare function xqueries:display-process($proc as element(system:job)) {
+	<tr>
+		<td>{$proc/@id/string()}</td>
+		<td>{$proc/@action/string()}</td>
+		<td>{$proc/@info/string()}</td>
+		<td>{$proc/@start/string()}</td>
+	</tr>
+};
 (:
     Process an action.
 :)
@@ -74,7 +115,7 @@ declare function xqueries:kill-xquery() as element()*
 :)
 declare function xqueries:display-xqueries() as element()
 {
-    <table cellspacing="0" cellpadding="5" id="xqueries">
+    <table cellspacing="0" cellpadding="5" id="xqueries" width="100%">
         <tr>
             <th/>
             <th>ID</th>

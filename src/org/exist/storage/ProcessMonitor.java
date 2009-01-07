@@ -89,7 +89,7 @@ public class ProcessMonitor {
         synchronized (processes) {
             JobInfo jobs[] = new JobInfo[processes.size()];
             int j = 0;
-            for (Iterator i = processes.keySet().iterator(); i.hasNext(); j++) {
+            for (Iterator i = processes.values().iterator(); i.hasNext(); j++) {
                 jobs[j] = (JobInfo) i.next();
             }
             return jobs;
