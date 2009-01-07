@@ -46,7 +46,7 @@
     <property name="build.optimize" value="on"/>
     <property name="build.deprecation" value="on"/>
     <property name="jvmarg"
-        value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
+        value="-Xms128m -Xmx512m -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
 

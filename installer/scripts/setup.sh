@@ -28,7 +28,7 @@ OPTIONS="-Dexist.home=$EXIST_HOME"
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-	JAVA_OPTIONS="-Xms16000k -Xmx256000k"
+	JAVA_OPTIONS="-Xms64m -Xmx256m"
 fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
