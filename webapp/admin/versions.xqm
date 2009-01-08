@@ -1,8 +1,8 @@
 module namespace rev="http://exist-db.org/xquery/admin-interface/revisions";
 
+import module namespace v="http://exist-db.org/versioning"
+at "resource:org/exist/versioning/xquery/versioning.xqm";
 import module namespace date="http://exist-db.org/xquery/admin-interface/date" at "dates.xqm";
-
-declare namespace v="http://exist-db.org/versioning";
 
 declare function rev:main() as element()
 {
@@ -14,7 +14,8 @@ declare function rev:main() as element()
 				<tr>
 					<th>Revision</th>
 					<th>Date</th>
-					<th colspan="2">Actions</th>
+					<th>User</th>
+					<th colspan="3">Actions</th>
 				</tr>
 				{rev:display-revisions($resource)}
 			</table>
@@ -23,16 +24,13 @@ declare function rev:main() as element()
 
 declare function rev:display-revisions($resource as xs:string) {
 	let $doc := doc($resource)
-	let $docName := util:document-name($doc)
-	let $collection := util:collection-name($doc)
-	let $vCollection := concat("/db/system/versions", $collection)
-	for $version in collection($vCollection)/v:version[v:properties[v:document = $docName]]
-	let $rev := $version/v:properties/v:revision/string()
-	order by xs:long($rev) ascending
+	for $version in v:list-versions($doc)
+	let $rev := $version/v:properties/v:revision/text()
 	return (
 		<tr>
-			<td>{$version/v:properties/v:revision/text()}</td>
+			<td>{$rev}</td>
 			<td>{date:format-dateTime($version/v:properties/v:date)}</td>
+			<td>{$version/v:properties/v:user/text()}</td>
 			<td>
 				<a target="_new" 
 					href="versions.xql?action=restore&amp;resource={$resource}&amp;rev={$rev}">
@@ -40,13 +38,20 @@ declare function rev:display-revisions($resource as xs:string) {
 				</a>
 			</td>
 			<td>
-				<a href="#" onclick="return displayDiff('R{$rev}','{$resource}','{$rev}')">
+				<a href="versions.xql?action=diff&amp;resource={$resource}&amp;rev={$rev}" 
+				    onclick="return displayDiff('R{$rev}','{$resource}','{$rev}')">
 				Diff
 				</a>
 			</td>
+			<td>
+			    <a target="_new"
+			        href="versions.xql?action=annotate&amp;resource={$resource}&amp;rev={$rev}">
+			    Annotate
+			    </a>
+		    </td>
 		</tr>,
 		<tr>
-			<td colspan="4">
+			<td colspan="5">
 				<div id="R{$rev}" class="diffsource" style="display: none"></div>
 			</td>
 		</tr>

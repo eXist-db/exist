@@ -2,8 +2,10 @@ var Dom = YAHOO.util.Dom,
     Event = YAHOO.util.Event;
 
 Event.onDOMReady(function () {
-	setTimeout('reloadJobs()', 3000);
-	setTimeout('reloadQueries()', 5000);
+    if (document.getElementById('xqueries-container')) {
+    	setTimeout('reloadJobs()', 3000);
+    	setTimeout('reloadQueries()', 5000);
+	}
 });
 
 function reloadJobs() {

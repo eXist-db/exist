@@ -47,18 +47,34 @@ import java.io.IOException;
 
 public class PatchFunction extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public final static FunctionSignature signatures[] = {
             new FunctionSignature(
                     new QName( "patch", VersioningModule.NAMESPACE_URI, VersioningModule.PREFIX ),
-                    "Apply a patch to a document.",
+                    "Apply a patch to a document. The patch will be applied to the document of the node " +
+                    "passed in first parameter. The second parameter should contain a version document as generated " +
+                    "by eXist's VersioningTrigger. Note: though an arbitrary node can be passed in $a, the patch will " +
+                    "always be applied to the entire document to which this node belongs.",
                     new SequenceType[] {
                             new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
                             new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
                     },
                     new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
-            );
+            ),
+            new FunctionSignature(
+                    new QName( "annotate", VersioningModule.NAMESPACE_URI, VersioningModule.PREFIX ),
+                    "Apply a patch to a document. The patch will be applied to the document of the node " +
+                            "passed in first parameter. The second parameter should contain a version document as generated " +
+                            "by eXist's VersioningTrigger. Note: though an arbitrary node can be passed in $a, the patch will " +
+                            "always be applied to the entire document to which this node belongs.",
+                    new SequenceType[] {
+                            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+                            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+                    },
+                    new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+            )
+    };
 
-    public PatchFunction(XQueryContext context) {
+    public PatchFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -84,7 +100,10 @@ public class PatchFunction extends BasicFunction {
             MemTreeBuilder builder = context.getDocumentBuilder();
             DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
             Patch patch = new Patch(context.getBroker(), diff);
-            patch.patch(reader, receiver);
+            if (isCalledAs("annotate"))
+                patch.annotate(reader, receiver);
+            else
+                patch.patch(reader, receiver);
             NodeValue result = (NodeValue) builder.getDocument().getDocumentElement();
             return result == null ? Sequence.EMPTY_SEQUENCE : result;
         } catch (IOException e) {
