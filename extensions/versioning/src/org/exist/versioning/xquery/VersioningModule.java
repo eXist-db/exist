@@ -32,7 +32,8 @@ public class VersioningModule extends AbstractInternalModule {
     public static final String PREFIX = "version";
 
     public static final FunctionDef[] functions = {
-        new FunctionDef(PatchFunction.signature, PatchFunction.class)
+        new FunctionDef(PatchFunction.signatures[0], PatchFunction.class),
+        new FunctionDef(PatchFunction.signatures[1], PatchFunction.class)
     };
 
     public VersioningModule() {

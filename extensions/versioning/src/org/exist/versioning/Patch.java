@@ -27,6 +27,9 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.dom.NodeSet;
+import org.exist.dom.NewArrayNodeSet;
+import org.exist.dom.ExtNodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.security.xacml.AccessContext;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -48,11 +51,20 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Stack;
+import java.util.Iterator;
 
 /**
  * Patch a given source document by applying a diff in eXist's diff format.
  */
 public class Patch {
+
+    public final static QName ATTR_CHANGE = new QName("change", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ELEMENT_WRAPPER = new QName("wrapper", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+
+    public final static String CHANGE_INSERT = "added";
+    public final static String CHANGE_APPEND = "appended";
+    public final static String CHANGE_DELETED = "deleted";
 
     private final static String D_START = "start";
     private final static String D_END = "end";
@@ -65,6 +77,12 @@ public class Patch {
     private Map insertedNodes = null;
     private Map appendedNodes = null;
 
+    private boolean annotate = false;
+    private Stack elementStack = null;
+
+    private NewArrayNodeSet changeSet = null;
+    private DocumentImpl diffDoc;
+
     /**
      * Create a new Patch instance using the specified broker and diff document.
      *
@@ -75,6 +93,7 @@ public class Patch {
      */
     public Patch(DBBroker broker, DocumentImpl diff) throws XPathException {
         this.broker = broker;
+        this.diffDoc = diff;
         parseDiff(broker, diff);
     }
 
@@ -85,6 +104,7 @@ public class Patch {
      * @throws DiffException
      */
     public void patch(ExtendedXMLStreamReader reader, Receiver receiver) throws DiffException {
+        annotate = false;
         try {
             NodeId skipSubtree = null;
             while (reader.hasNext()) {
@@ -93,12 +113,12 @@ public class Patch {
                 if (status != XMLStreamReader.END_ELEMENT) {
                     ElementImpl insertedNode = (ElementImpl) insertedNodes.get(nodeId);
                     if (insertedNode != null) {
-                        insertNode(insertedNode, receiver);
+                        insertNode(insertedNode, receiver, null);
                     }
                 } else {
                     ElementImpl appendedNode = (ElementImpl) appendedNodes.get(nodeId);
                     if (appendedNode != null) {
-                        insertNode(appendedNode, receiver);
+                        insertNode(appendedNode, receiver, null);
                     }
                 }
                 String opt = (String) deletedNodes.get(nodeId);
@@ -112,7 +132,7 @@ public class Patch {
                 } else if (opt == D_START && status == XMLStreamReader.START_ELEMENT) {
                     // skip
                 } else if (skipSubtree == null)
-                    copyNode(reader, receiver, status);
+                    copyNode(reader, receiver, status, false, null);
                 if (status == XMLStreamReader.END_ELEMENT && skipSubtree != null &&
                         skipSubtree.equals(nodeId))
                     skipSubtree = null;
@@ -127,9 +147,60 @@ public class Patch {
         }
     }
 
-    private void insertNode(StoredNode insertedNode, Receiver receiver) throws XMLStreamException, IOException, SAXException {
+    public void annotate(ExtendedXMLStreamReader reader, Receiver receiver) throws DiffException {
+        annotate = true;
+        elementStack = new Stack();
+        buildChangeSet();
+        try {
+            NodeId skipSubtree = null;
+            while (reader.hasNext()) {
+                int status = reader.next();
+                NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                if (status != XMLStreamReader.END_ELEMENT) {
+                    ElementImpl insertedNode = (ElementImpl) insertedNodes.get(nodeId);
+                    if (insertedNode != null) {
+                        insertNode(insertedNode, receiver, CHANGE_INSERT);
+                    }
+                } else {
+                    ElementImpl appendedNode = (ElementImpl) appendedNodes.get(nodeId);
+                    if (appendedNode != null) {
+                        insertNode(appendedNode, receiver, CHANGE_APPEND);
+                    }
+                }
+                boolean skip = false;
+                String opt = (String) deletedNodes.get(nodeId);
+                if (opt != null) {
+                    if (opt == D_SUBTREE) {
+                        if (status == XMLStreamReader.START_ELEMENT)
+                            skipSubtree = nodeId;
+                        skip = true;
+                    } else if (opt == D_BOTH ||
+                            (opt == D_END && status == XMLStreamReader.END_ELEMENT) ||
+                            (opt == D_START && status == XMLStreamReader.START_ELEMENT)) {
+                        skip = true;
+                    }
+                }
+                if (annotate || (!skip && skipSubtree == null))
+                    copyNode(reader, receiver, status, skip || (skipSubtree != null && skipSubtree == nodeId), CHANGE_DELETED);
+                if (status == XMLStreamReader.END_ELEMENT && skipSubtree != null &&
+                        skipSubtree.equals(nodeId))
+                    skipSubtree = null;
+            }
+        } catch (XMLStreamException e) {
+            throw new DiffException("Caught exception while reading source document for patch: " +
+                    e.getMessage(), e);
+        } catch (IOException e) {
+            throw new DiffException("Caught exception while patching document: " + e.getMessage(), e);
+        } catch (SAXException e) {
+            throw new DiffException("Caught exception while serializing patch output: " + e.getMessage(), e);
+        }
+        changeSet = null;
+    }
+
+    private void insertNode(StoredNode insertedNode, Receiver receiver, String changeMessage) throws XMLStreamException, IOException, SAXException {
         ExtendedXMLStreamReader reader = broker.newXMLStreamReader(insertedNode, false);
         reader.next();
+        int treeLevel = 0;
         while (reader.hasNext()) {
             int status = reader.next();
             if ((status == XMLStreamReader.START_ELEMENT || status == XMLStreamReader.END_ELEMENT) &&
@@ -165,15 +236,33 @@ public class Patch {
                     }
                 }
             } else {
-                copyNode(reader, receiver, status);
+                copyNode(reader, receiver, status, treeLevel == 0, changeMessage);
+                if (status == XMLStreamReader.START_ELEMENT)
+                    treeLevel++;
+                else if (status == XMLStreamReader.END_ELEMENT)
+                    treeLevel--;
             }
         }
     }
 
-    private void copyNode(ExtendedXMLStreamReader reader, Receiver receiver, int status) throws SAXException, XMLStreamException, IOException {
+    private void copyNode(ExtendedXMLStreamReader reader, Receiver receiver, int status,
+                          boolean onFirstNode, String changeMessage) throws SAXException, XMLStreamException, IOException {
+        AttrList attrs;
         switch (status) {
             case XMLStreamReader.START_ELEMENT:
-                AttrList attrs = new AttrList();
+                attrs = new AttrList();
+                if (annotate) {
+                    if (onFirstNode)
+                        attrs.addAttribute(ATTR_CHANGE, changeMessage);
+                    else {
+                        NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                        if (changeSet.hasDescendantsInSet(diffDoc, nodeId, false, -1) != null)
+                            attrs.addAttribute(ATTR_CHANGE, "changed");
+                    }
+                    if (elementStack.size() == 0)
+                        receiver.startPrefixMapping(XMLDiff.PREFIX, XMLDiff.NAMESPACE);
+                }
+
                 for (int i = 0; i < reader.getAttributeCount(); i++) {
                     // check if an attribute has to be inserted before the current attribute
                     NodeId nodeId = reader.getAttributeId(i);
@@ -206,18 +295,36 @@ public class Patch {
                         );
                     }
                 }
-                receiver.startElement(new QName(reader.getLocalName(), reader.getNamespaceURI(), reader.getPrefix()),
-                        attrs);
+                QName qn = new QName(reader.getLocalName(), reader.getNamespaceURI(), reader.getPrefix());
+                receiver.startElement(qn, attrs);
+                if (elementStack != null)
+                    elementStack.push(qn);
                 break;
             case XMLStreamReader.END_ELEMENT:
                 receiver.endElement(new QName(reader.getLocalName(), reader.getNamespaceURI(), reader.getPrefix()));
+                if (elementStack != null) {
+                    if (elementStack.isEmpty())
+                        receiver.endPrefixMapping(XMLDiff.PREFIX);
+                    elementStack.pop();
+                }
                 break;
             case XMLStreamReader.CHARACTERS:
+                if (onFirstNode && annotate) {
+                    attrs = new AttrList();
+                    attrs.addAttribute(ATTR_CHANGE, changeMessage);
+                    receiver.startElement(ELEMENT_WRAPPER, attrs);
+                }
                 receiver.characters(reader.getText());
+                if (onFirstNode && annotate)
+                    receiver.endElement(ELEMENT_WRAPPER);
                 break;
             case XMLStreamReader.CDATA:
+                if (onFirstNode && annotate)
+                    receiver.startElement(ELEMENT_WRAPPER, null);
                 char[] cdata = reader.getTextCharacters();
                 receiver.cdataSection(cdata, 0, cdata.length);
+                if (onFirstNode && annotate)
+                    receiver.endElement(ELEMENT_WRAPPER);
                 break;
             case XMLStreamReader.PROCESSING_INSTRUCTION:
                 receiver.processingInstruction(reader.getPITarget(), reader.getPIData());
@@ -285,5 +392,21 @@ public class Patch {
             return AttrImpl.IDREFS;
         else
             return AttrImpl.CDATA;
+    }
+
+    private void buildChangeSet() {
+        changeSet = new NewArrayNodeSet();
+        for (Iterator i = insertedNodes.keySet().iterator(); i.hasNext();) {
+            NodeId nodeId = (NodeId) i.next();
+            changeSet.add(new NodeProxy(diffDoc, nodeId));
+        }
+        for (Iterator i = appendedNodes.keySet().iterator(); i.hasNext();) {
+            NodeId nodeId = (NodeId) i.next();
+            changeSet.add(new NodeProxy(diffDoc, nodeId));
+        }
+        for (Iterator i = deletedNodes.keySet().iterator(); i.hasNext();) {
+            NodeId nodeId = (NodeId) i.next();
+            changeSet.add(new NodeProxy(diffDoc, nodeId));
+        }
     }
 }

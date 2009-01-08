@@ -192,8 +192,8 @@ public class VersioningTrigger extends FilteringTrigger {
                     sax.endDocument();
                     String editscript = writer.toString();
 
-                    System.out.println("documentPath: " + documentPath);
-                    System.out.println(editscript);
+//                    System.out.println("documentPath: " + documentPath);
+//                    System.out.println(editscript);
 
                     if (removeLast)
                         vCollection.removeXMLResource(transaction, broker, lastRev.getFileURI());
