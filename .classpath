@@ -77,14 +77,14 @@
 	<classpathentry kind="lib" path="lib/core/sunxacml-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis-1.3.04.jar"/>
-	<classpathentry kind="lib" path="lib/optional/axis-ant.jar"/>
+	<classpathentry kind="lib" path="lib/optional/axis-ant-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-schema.jar"/>
-	<classpathentry kind="lib" path="lib/optional/axis.jar"/>
+	<classpathentry kind="lib" path="lib/optional/axis-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-io-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jaxrpc.jar"/>
-	<classpathentry kind="lib" path="lib/optional/saaj.jar"/>
+	<classpathentry kind="lib" path="lib/optional/jaxrpc-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/saaj-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="thirdparty/tomcat5/bin/jmx.jar"/>
 	<classpathentry kind="lib" path="thirdparty/tomcat5/server/lib/catalina-5.0.28.jar"/>
