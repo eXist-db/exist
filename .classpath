@@ -71,10 +71,10 @@
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/javax.servlet-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/core/jgroups-all.jar"/>
+	<classpathentry kind="lib" path="lib/core/jgroups-all-2.2.6.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-0_9_5.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-1.2.15.jar"/>
-	<classpathentry kind="lib" path="lib/core/sunxacml.jar"/>
+	<classpathentry kind="lib" path="lib/core/sunxacml-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-ant.jar"/>
@@ -95,7 +95,7 @@
 	<classpathentry kind="lib" path="tools/jetty/lib/org.mortbay.jetty.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-api-4.1.5.jar"/>
-	<classpathentry kind="lib" path="lib/core/jta.jar"/>
+	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/quartz-1.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-logging-1.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-collections-3.1.jar"/>
