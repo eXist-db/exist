@@ -76,7 +76,7 @@
 	<classpathentry kind="lib" path="lib/core/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="lib/core/sunxacml-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
-	<classpathentry kind="lib" path="lib/endorsed/xml-apis.jar"/>
+	<classpathentry kind="lib" path="lib/endorsed/xml-apis-1.3.04.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-ant.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-schema.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis.jar"/>
