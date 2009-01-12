@@ -183,6 +183,16 @@ public class XQueryPool extends Object2ObjectHashMap {
           remove(source);
           return null;
       } else {
+      	if (query instanceof PathExpr) try {
+      		// This is necessary because eXist performs whole-expression analysis, so a function
+      		// can only be analyzed as part of the expression it's called from.  It might be better
+      		// to make module functions more stand-alone, so they only need to be analyzed
+      		// once.
+      		context.analyzeAndOptimizeIfModulesChanged((PathExpr) query);
+      	} catch (XPathException e) {
+      		remove(source);
+      		return null;
+      	}
           return query;
       }
     }

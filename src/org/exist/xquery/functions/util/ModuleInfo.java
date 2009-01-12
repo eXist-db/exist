@@ -62,7 +62,7 @@ public class ModuleInfo extends BasicFunction {
 			return new StringValue(module.getDescription());
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
-			for(Iterator i = context.getModules(); i.hasNext(); ) {
+			for(Iterator i = context.getRootModules(); i.hasNext(); ) {
 				Module module = (Module)i.next();
 				resultSeq.add(new StringValue(module.getNamespaceURI()));
 			}

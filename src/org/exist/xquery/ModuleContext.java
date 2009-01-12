@@ -55,11 +55,19 @@ public class ModuleContext extends XQueryContext {
 		loadDefaults(broker.getConfiguration());
     }
 	
+	void setModulesChanged() {
+		parentContext.setModulesChanged();
+	}
+	
 	void setParentContext(XQueryContext parentContext) {
       this.parentContext = parentContext;
 		this.broker = parentContext.broker;
 		baseURI = parentContext.baseURI;
 		moduleLoadPath = parentContext.moduleLoadPath;
+	}
+	
+	XQueryContext getParentContext() {
+		return parentContext;
 	}
 
     public boolean hasParent() {
@@ -100,6 +108,13 @@ public class ModuleContext extends XQueryContext {
 		if(module == null)
 			module = parentContext.getModule(namespaceURI);
 		return module;
+	}
+	
+   /**
+	 * @return iterator over all modules registered in the root context
+	 */
+	public Iterator getRootModules() {
+		return parentContext.getRootModules();
 	}
 
     /**

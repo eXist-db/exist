@@ -34,7 +34,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents a call to a user-defined function 
@@ -55,8 +55,6 @@ public class FunctionCall extends Function {
 	private List arguments = null;
 	
 	private boolean isRecursive = false;
-	
-	private boolean analyzed = false;
 
     private VariableReference varDeps[];
 
@@ -89,35 +87,52 @@ public class FunctionCall extends Function {
 			expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
 	}
 	
+	/**
+	 * For calls to functions in external modules, check that the instance of the function we were
+	 * bound to matches the current implementation of the module bound to our context.  If not,
+	 * rebind to the correct instance, but don't bother resetting the signature since it's guaranteed
+	 * (I hope!) to be the same.
+	 */
+	private void updateFunction() {
+		if (functionDef.getContext() instanceof ModuleContext) {
+			ModuleContext modContext = (ModuleContext) functionDef.getContext();
+			if (modContext.getParentContext() != context) {
+				UserDefinedFunction replacementFunctionDef =
+					((ExternalModule) context.getModule(functionDef.getName().getNamespaceURI()))
+					.getFunction(functionDef.getName(), getArgumentCount());
+				if (replacementFunctionDef == null) throw new NoSuchElementException("internal error:  unable to rebind cached function reference " + functionDef.getName().getStringValue() + "/" + getArgumentCount() + " to new instance of module");
+				expression = functionDef = replacementFunctionDef;
+			}
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		updateFunction();
 		contextInfo.setParent(this);
-		if (!analyzed) {
-            AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-            newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
-            super.analyze(newContextInfo);
-			if (context.tailRecursiveCall(functionDef.getSignature())) {
-				isRecursive = true;
-			}
-			context.functionStart(functionDef.getSignature());
-			try {
-				expression.analyze(newContextInfo);
-				analyzed = true;
-			} finally {
-				context.functionEnd();
-			}
+         AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+         newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
+         super.analyze(newContextInfo);
+		if (context.tailRecursiveCall(functionDef.getSignature())) {
+			isRecursive = true;
+		}
+		context.functionStart(functionDef.getSignature());
+		try {
+			expression.analyze(newContextInfo);
+		} finally {
+			context.functionEnd();
+		}
 
-            varDeps = new VariableReference[getArgumentCount()];
-            for(int i = 0; i < getArgumentCount(); i++) {
-                Expression arg = getArgument(i);
-                VariableReference varRef = BasicExpressionVisitor.findVariableRef(arg);
-                if (varRef != null) {
-                    varDeps[i] = varRef;
-                }
-            }
-        }
+         varDeps = new VariableReference[getArgumentCount()];
+         for(int i = 0; i < getArgumentCount(); i++) {
+             Expression arg = getArgument(i);
+             VariableReference varRef = BasicExpressionVisitor.findVariableRef(arg);
+             if (varRef != null) {
+                 varDeps[i] = varRef;
+             }
+         }
 	}
 	
     /**
@@ -271,7 +286,6 @@ public class FunctionCall extends Function {
     public void resetState(boolean postOptimization) {
          super.resetState(postOptimization);
          functionDef.resetState(postOptimization);
-         analyzed = false;
         //TODO : reset expression ?        
 	}
 
