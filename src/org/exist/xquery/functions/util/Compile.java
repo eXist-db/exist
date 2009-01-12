@@ -68,6 +68,7 @@ public class Compile extends BasicFunction {
 		  return new EmptySequence();
 		context.pushNamespaceContext();
 		LOG.debug("eval: " + expr);
+		// TODO(pkaminsk2): why replicate XQuery.compile here?
 		XQueryLexer lexer = new XQueryLexer(context, new StringReader(expr));
 		XQueryParser parser = new XQueryParser(lexer);
 		// shares the context of the outer expression

@@ -202,6 +202,12 @@ public class XQueryContext {
 	 * Loaded modules.
 	 */
 	protected HashMap modules = new HashMap();
+	
+	/**
+	 * Whether some modules were rebound to new instances since the last time this context's
+	 * query was analyzed.  (This assumes that each context is attached to at most one query.)
+	 */
+	private boolean modulesChanged = true;
 
 	/** 
 	 * The set of statically known documents specified as
@@ -1227,11 +1233,17 @@ public class XQueryContext {
 	}
     
     /**
-	 * @return iterator over all built-in modules currently
-	 * registered.
-	 */
+ 	 * @return iterator over all modules imported into this context
+ 	 */
 	public Iterator getModules() {
 		return modules.values().iterator();
+	}
+	
+   /**
+	 * @return iterator over all modules registered in the root context
+	 */
+	public Iterator getRootModules() {
+		return getModules();
 	}
 
 	/**
@@ -1246,9 +1258,30 @@ public class XQueryContext {
 	}
 	
 	public void setModule(String namespaceURI, Module module) {
-		modules.put(namespaceURI, module);
 		if (!module.isInternalModule()) {
 			((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(this);
+		}
+		if (modules.get(namespaceURI) != module) setModulesChanged();
+		modules.put(namespaceURI, module);
+	}
+	
+	void setModulesChanged() {
+		this.modulesChanged = true;
+	}
+	
+	public void analyzeAndOptimizeIfModulesChanged(PathExpr expr) throws XPathException {
+		if (modulesChanged) {
+         expr.analyze(new AnalyzeContextInfo());
+         if (optimizationsEnabled()) {
+             Optimizer optimizer = new Optimizer(this);
+             expr.accept(optimizer);
+             if (optimizer.hasOptimized()) {
+                 reset(true);
+                 expr.resetState(true);
+                 expr.analyze(new AnalyzeContextInfo());
+             }
+         }
+			modulesChanged = false;
 		}
 	}
 	

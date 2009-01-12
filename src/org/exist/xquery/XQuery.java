@@ -149,18 +149,8 @@ public class XQuery {
             		treeParser.getErrorMessage(),
             		treeParser.getLastException());
             }
-
-            expr.analyze(new AnalyzeContextInfo());
-
-            if (context.optimizationsEnabled()) {
-                Optimizer optimizer = new Optimizer(context);
-                expr.accept(optimizer);
-                if (optimizer.hasOptimized()) {
-                    context.reset(true);
-                    expr.resetState(true);
-                    expr.analyze(new AnalyzeContextInfo());
-                }
-            }
+            
+            context.analyzeAndOptimizeIfModulesChanged(expr);
 
             // Log the query if it is not too large, but avoid
             // dumping huge queries to the log
