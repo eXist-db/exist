@@ -24,7 +24,11 @@
     </condition>
 
     <condition property="include.module.mail.config">
-        <istrue value="${include.module.mail}"/>
+      <istrue value="${include.module.mail}"/>
+    </condition>
+
+    <condition property="include.module.file.config">
+        <istrue value="${include.module.file}"/>
     </condition>
 
     <condition property="include.module.httpclient.config">
@@ -167,6 +171,7 @@
             <exclude name="org/exist/xquery/modules/xmldiff/**" unless="include.module.xmldiff.config"/>
             <exclude name="org/exist/xquery/modules/image/**" unless="include.module.image.config"/>
             <exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
+            <exclude name="org/exist/xquery/modules/file/**" unless="include.module.file.config"/>
             <exclude name="org/exist/xquery/modules/svn/**" unless="include.module.svn.config"/>
             <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
         </javac>
