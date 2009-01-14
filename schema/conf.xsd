@@ -102,6 +102,8 @@
                                                 <xs:attribute name="id" type="xs:string" default="ngram-index"/>
                                                 <xs:attribute name="class" type="xs:string" default="org.exist.indexing.impl.NGramIndex"/>
                                                 <xs:attribute name="file" type="xs:string" default="ngram.dbx"/>
+                                                <xs:attribute name="connectionTimeout" type="xs:integer" default="10000"/>
+                                                <xs:attribute name="flushAfter" type="xs:integer" default="300"/>
                                                 <xs:attribute name="n" type="xs:integer" default="3"/>
                                             </xs:complexType>
                                         </xs:element>
