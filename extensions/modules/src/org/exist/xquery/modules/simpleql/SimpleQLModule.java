@@ -23,7 +23,6 @@ package org.exist.xquery.modules.simpleql;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
-import org.exist.xquery.modules.example.EchoFunction;
 
 public class SimpleQLModule extends AbstractInternalModule {
 

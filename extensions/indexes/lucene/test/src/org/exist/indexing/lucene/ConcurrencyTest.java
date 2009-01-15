@@ -22,34 +22,33 @@
 
 package org.exist.indexing.lucene;
 
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XUpdateQueryService;
-import org.exist.storage.DBBroker;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XQueryService;
-import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.concurrent.DBUtils;
-import org.exist.collections.CollectionConfigurationManager;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.TestUtils;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import org.exist.TestUtils;
+import org.exist.storage.DBBroker;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.XQueryService;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XUpdateQueryService;
 
 public class ConcurrencyTest {
 
