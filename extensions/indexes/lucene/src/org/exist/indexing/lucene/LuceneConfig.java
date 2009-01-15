@@ -1,18 +1,17 @@
 package org.exist.indexing.lucene;
 
-import org.exist.util.DatabaseConfigurationException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
-import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
+import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.apache.lucene.analysis.Analyzer;
-
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Iterator;
-import java.util.List;
 
 public class LuceneConfig {
 

@@ -1,13 +1,17 @@
 package org.exist.indexing.lucene;
 
-import org.exist.TestUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.exist.Indexer;
-import org.exist.xupdate.XUpdateProcessor;
-import org.exist.xupdate.Modification;
-import org.exist.indexing.lucene.LuceneIndexWorker;
-import org.exist.indexing.lucene.LuceneIndex;
-import org.exist.indexing.OrderedValuesIndex;
-import org.exist.indexing.QNamedKeysIndex;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
@@ -15,9 +19,11 @@ import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.*;
+import org.exist.indexing.OrderedValuesIndex;
+import org.exist.indexing.QNamedKeysIndex;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -26,27 +32,21 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
-import org.exist.util.Occurrences;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.Occurrences;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
+import org.exist.xupdate.Modification;
+import org.exist.xupdate.XUpdateProcessor;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
-
-import java.io.File;
-import java.io.StringReader;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
 
 public class LuceneIndexTest {
 

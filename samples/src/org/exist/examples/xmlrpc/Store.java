@@ -21,13 +21,13 @@
  */
 package org.exist.examples.xmlrpc;
 
-import org.apache.xmlrpc.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.net.URL;
+import java.util.Vector;
+
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-
-import java.util.Vector;
-import java.io.*;
-import java.net.URL;
 
 /**
  * Store a document to the database using XML-RPC.
