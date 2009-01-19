@@ -86,7 +86,7 @@ declare function kwic:truncate-following($nodes as node()*, $truncated as item()
 (:~
 	Computes the total string length of the nodes in the argument sequence
 :)
-declare function kwic:string-length($nodes as item()*) as xs:int {
+declare function kwic:string-length($nodes as item()*) as xs:integer {
 	if (exists($nodes)) then
 		sum(for $n in $nodes return string-length($n))
 	else
