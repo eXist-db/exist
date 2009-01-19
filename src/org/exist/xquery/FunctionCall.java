@@ -206,7 +206,7 @@ public class FunctionCall extends Function {
                 !result.isEmpty())
 				getSignature().getReturnType().checkType(result.getItemType()); 
 		} catch (XPathException e) {
-			throw new XPathException(getASTNode(), "err:XPTY0004 in function '" + getSignature().getName() + "'. " + 
+			throw new XPathException(getASTNode(), "err:XPTY0004: return type of function '" + getSignature().getName() + "'. " + 
 					e.getMessage());
 		}
 
