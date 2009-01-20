@@ -249,7 +249,15 @@ public class CollectionConfiguration {
     public TriggerConfig getTriggerConfiguration(int eventType) {
 		return triggers[eventType];
 	}
-	
+
+    public boolean triggerRegistered(Class triggerClass) {
+        for (int i = 0; i < triggers.length; i++) {
+            if (triggers[i] != null && triggers[i].getTriggerClass() == triggerClass)
+                return true;
+        }
+        return false;
+    }
+
 	private void createTrigger(DBBroker broker, Element node, boolean testConfig)
             throws CollectionConfigurationException {
         

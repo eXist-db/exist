@@ -363,12 +363,12 @@ public class WebDAVServlet extends HttpServlet {
          } catch (ParserConfigurationException ex) {
             transact.abort(transaction);
             throw new ServletException("SAX error: "+ex.getMessage(),ex);
+         } catch (TriggerException ex) {
+             transact.abort(transaction);
+             throw new ServletException("Trigger failed: "+ex.getMessage(),ex);
          } catch (SAXException ex) {
             transact.abort(transaction);
             throw new ServletException("SAX error: "+ex.getMessage(),ex);
-         } catch (TriggerException ex) {
-            transact.abort(transaction);
-            throw new ServletException("Trigger failed: "+ex.getMessage(),ex);
          } catch (LockException ex) {
             transact.abort(transaction);
             throw new ServletException("Cannot acquire write lock.",ex);

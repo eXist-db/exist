@@ -937,6 +937,9 @@ public class RESTServer {
 			throw new BadRequestException("Parsing exception at "
 					+ e.getLineNumber() + "/" + e.getColumnNumber() + ": "
 					+ e.toString());
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new PermissionDeniedException(e.getMessage());
 		} catch (SAXException e) {
 			transact.abort(transaction);
 			Exception o = e.getException();
@@ -947,9 +950,6 @@ public class RESTServer {
 		} catch (EXistException e) {
 			transact.abort(transaction);
 			throw new BadRequestException("Internal error: " + e.getMessage());
-		} catch (TriggerException e) {
-			transact.abort(transaction);
-			throw new PermissionDeniedException(e.getMessage());
 		} catch (LockException e) {
 			transact.abort(transaction);
 			throw new PermissionDeniedException(e.getMessage());

@@ -164,6 +164,7 @@ public abstract class Serializer implements XMLReader {
     protected Templates templates = null;
     protected TransformerHandler xslHandler = null;
     protected XIncludeFilter xinclude;
+    protected CustomMatchListenerFactory customMatchListeners;
     protected Receiver receiver = null;
     protected SAXSerializer xmlout = null;
     protected LexicalHandler lexicalHandler = null;
@@ -173,6 +174,7 @@ public abstract class Serializer implements XMLReader {
 		this.broker = broker;
 		factory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
 		xinclude = new XIncludeFilter(this);
+        customMatchListeners = new CustomMatchListenerFactory(broker, config);
 		receiver = xinclude;
 		
 		String option = (String) config.getProperty(PROPERTY_ENABLE_XSL);
@@ -415,7 +417,8 @@ public abstract class Serializer implements XMLReader {
 		if (templates != null)
 			applyXSLHandler(writer);
 		else
-			setPrettyPrinter(writer, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no"), null); //setPrettyPrinter(writer, false);
+			setPrettyPrinter(writer, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no"),
+                    null, true); //setPrettyPrinter(writer, false);
 		
 		serializeToReceiver(doc, true);
 		releasePrettyPrinter();
@@ -432,7 +435,7 @@ public abstract class Serializer implements XMLReader {
 			applyXSLHandler(out);
 		else
 			setPrettyPrinter(out, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no"),
-                    n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy)n : null); //setPrettyPrinter(out, false);
+                    n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy)n : null, false); //setPrettyPrinter(out, false);
 		serializeToReceiver(n, true);
 		releasePrettyPrinter();
 		return out.toString();
@@ -455,7 +458,8 @@ public abstract class Serializer implements XMLReader {
 		if (templates != null)
 			applyXSLHandler(out);
 		else
-			setPrettyPrinter(out, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no"), p); //setPrettyPrinter(out, false);
+			setPrettyPrinter(out, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no"),
+                    p, false); //setPrettyPrinter(out, false);
 		serializeToReceiver(p, false);
 		releasePrettyPrinter();
 		return out.toString();
@@ -540,7 +544,7 @@ public abstract class Serializer implements XMLReader {
 		throw new SAXNotRecognizedException(name);
 	}
 
-	protected void setPrettyPrinter(Writer writer, boolean xmlDecl, NodeProxy root) {
+	protected void setPrettyPrinter(Writer writer, boolean xmlDecl, NodeProxy root, boolean applyFilters) {
 		outputProperties.setProperty(	
 			OutputKeys.OMIT_XML_DECLARATION,
 			xmlDecl ? "no" : "yes");
@@ -560,6 +564,10 @@ public abstract class Serializer implements XMLReader {
                 last.setNextInChain(receiver);
                 receiver = listener;
             }
+        }
+        if (root == null && applyFilters && customMatchListeners.getFirst() != null) {
+            customMatchListeners.getLast().setNextInChain(receiver);
+            receiver = customMatchListeners.getFirst();
         }
     }
 
@@ -700,7 +708,7 @@ public abstract class Serializer implements XMLReader {
 			xslHandler.getTransformer().setParameter(param, value);
 	}
 
-	protected void setXSLHandler(NodeProxy root) {
+	protected void setXSLHandler(NodeProxy root, boolean applyFilters) {
 		if (templates != null && xslHandler != null) {
 			SAXResult result = new SAXResult();
 			boolean processXInclude =
@@ -734,6 +742,10 @@ public abstract class Serializer implements XMLReader {
                 receiver = listener;
             }
         }
+        if (applyFilters && root == null && customMatchListeners.getFirst() != null) {
+            customMatchListeners.getLast().setNextInChain(receiver);
+            receiver = customMatchListeners.getFirst();
+        }
     }
 
 	public void toSAX(DocumentImpl doc) throws SAXException {
@@ -751,7 +763,7 @@ public abstract class Serializer implements XMLReader {
         } catch (TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
-        setXSLHandler(null);
+        setXSLHandler(null, true);
 		serializeToReceiver(
 			doc,
 			getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
@@ -763,7 +775,7 @@ public abstract class Serializer implements XMLReader {
         } catch (TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
-        setXSLHandler(n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy)n : null);
+        setXSLHandler(n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy)n : null, false);
 		serializeToReceiver(
 				n,
 				getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
@@ -775,7 +787,7 @@ public abstract class Serializer implements XMLReader {
 	    } catch (TransformerConfigurationException e) {
 		throw new SAXException(e.getMessage(), e);
 	    }
-	    setXSLHandler(p);
+	    setXSLHandler(p, false);
 	    if (p.getNodeId() == NodeId.DOCUMENT_NODE) {
 		serializeToReceiver(p.getDocument(), getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	    } else {
@@ -802,7 +814,7 @@ public abstract class Serializer implements XMLReader {
         } catch (TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
-        setXSLHandler(null);
+        setXSLHandler(null, false);
 		AttrList attrs = new AttrList();
 		attrs.addAttribute(ATTR_HITS_QNAME, Integer.toString(seq.getItemCount()));
 		attrs.addAttribute(ATTR_START_QNAME, Integer.toString(start));

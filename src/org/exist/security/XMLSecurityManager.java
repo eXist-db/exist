@@ -383,11 +383,11 @@ public class XMLSecurityManager implements SecurityManager {
 			broker.saveCollection(transaction, doc.getCollection());
 		} catch (IOException e) {
 			throw new EXistException(e.getMessage());
+        } catch (TriggerException e) {
+            throw new EXistException(e.getMessage());
 		} catch (SAXException e) {
 			throw new EXistException(e.getMessage());
 		} catch (PermissionDeniedException e) {
-			throw new EXistException(e.getMessage());
-		} catch (TriggerException e) {
 			throw new EXistException(e.getMessage());
 		} catch (LockException e) {
 			throw new EXistException(e.getMessage());
