@@ -23,10 +23,12 @@
  */
 package org.exist.collections.triggers;
 
+import org.xml.sax.SAXException;
+
 /**
  * @author wolf
  */
-public class TriggerException extends Exception {
+public class TriggerException extends SAXException {
 
 	/**
 	 * 
@@ -45,7 +47,7 @@ public class TriggerException extends Exception {
 	/**
 	 * @param cause
 	 */
-	public TriggerException(Throwable cause) {
+	public TriggerException(Exception cause) {
 		super(cause);
 	}
 
@@ -53,7 +55,7 @@ public class TriggerException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public TriggerException(String message, Throwable cause) {
+	public TriggerException(String message, Exception cause) {
 		super(message, cause);
 	}
 

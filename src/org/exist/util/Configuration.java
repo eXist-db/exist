@@ -45,6 +45,7 @@ import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.serializers.CustomMatchListenerFactory;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
@@ -549,8 +550,26 @@ public class Configuration implements ErrorHandler
             config.put(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES, tagAttributeMatches);
             LOG.debug(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES + ": " + config.get(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES));
         }
+
+        NodeList nlFilters = serializer.getElementsByTagName(CustomMatchListenerFactory.CONFIGURATION_ELEMENT);
+        if (nlFilters == null)
+            return;
+
+        List filters = new ArrayList(nlFilters.getLength());
+        for (int i = 0; i < nlFilters.getLength(); i++) {
+            Element filterElem = (Element) nlFilters.item(i);
+            String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
+            if (filterClass != null) {
+                filters.add(filterClass);
+                LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": " + filterClass);
+            } else {
+                LOG.warn("Configuration element " + CustomMatchListenerFactory.CONFIGURATION_ELEMENT +
+                    " needs an attribute 'class'");
+            }
+        }
+        config.put(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filters);
     }
-    
+
     /**
      * Reads the scheduler configuration
      */

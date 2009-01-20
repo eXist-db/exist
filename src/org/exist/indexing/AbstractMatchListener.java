@@ -37,7 +37,8 @@ public class AbstractMatchListener implements MatchListener {
 
     public void setCurrentNode(StoredNode node) {
         this.currentNode = node;
-        getNextInChain().setCurrentNode(node);
+        if (nextListener != null)
+            getNextInChain().setCurrentNode(node);
     }
 
     protected StoredNode getCurrentNode() {

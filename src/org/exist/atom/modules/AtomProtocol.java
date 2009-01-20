@@ -297,12 +297,12 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             } catch (IOException ex) {
                 transact.abort(transaction);
                 throw new EXistException("IO error: "+ex.getMessage(),ex);
+            } catch (TriggerException ex) {
+                transact.abort(transaction);
+                throw new EXistException("Trigger failed: "+ex.getMessage(),ex);
             } catch (SAXException ex) {
                 transact.abort(transaction);
                 throw new EXistException("SAX error: "+ex.getMessage(),ex);
-            } catch (TriggerException ex) {
-               transact.abort(transaction);
-               throw new EXistException("Trigger failed: "+ex.getMessage(),ex);
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
@@ -400,6 +400,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             throw new BadRequestException("Parsing exception at "
                     + e.getLineNumber() + "/" + e.getColumnNumber() + ": "
                     + e.toString());
+         } catch (TriggerException e) {
+             transact.abort(transaction);
+             throw new PermissionDeniedException(e.getMessage());
          } catch (SAXException e) {
             transact.abort(transaction);
             Exception o = e.getException();
@@ -407,9 +410,6 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                o = e;
             throw new BadRequestException("Parsing exception: "
                     + o.getMessage());
-         } catch (TriggerException e) {
-            transact.abort(transaction);
-            throw new PermissionDeniedException(e.getMessage());
          } catch (LockException e) {
             transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
@@ -620,6 +620,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             throw new BadRequestException("Parsing exception at "
                     + e.getLineNumber() + "/" + e.getColumnNumber() + ": "
                     + e.toString());
+         } catch (TriggerException e) {
+             transact.abort(transaction);
+             throw new PermissionDeniedException(e.getMessage());
          } catch (SAXException e) {
             transact.abort(transaction);
             Exception o = e.getException();
@@ -627,9 +630,6 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                o = e;
             throw new BadRequestException("Parsing exception: "
                     + o.getMessage());
-         } catch (TriggerException e) {
-            transact.abort(transaction);
-            throw new PermissionDeniedException(e.getMessage());
          } catch (LockException e) {
             transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
