@@ -29,7 +29,6 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.NodeSet;
 import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.ExtNodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.security.xacml.AccessContext;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -59,8 +58,8 @@ import java.util.Iterator;
  */
 public class Patch {
 
-    public final static QName ATTR_CHANGE = new QName("change", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
-    public final static QName ELEMENT_WRAPPER = new QName("wrapper", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ATTR_CHANGE = new QName("change", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ELEMENT_WRAPPER = new QName("wrapper", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
 
     public final static String CHANGE_INSERT = "added";
     public final static String CHANGE_APPEND = "appended";
@@ -204,7 +203,7 @@ public class Patch {
         while (reader.hasNext()) {
             int status = reader.next();
             if ((status == XMLStreamReader.START_ELEMENT || status == XMLStreamReader.END_ELEMENT) &&
-                    XMLDiff.NAMESPACE.equals(reader.getNamespaceURI())) {
+                    StandardDiff.NAMESPACE.equals(reader.getNamespaceURI())) {
                 if (status == XMLStreamReader.START_ELEMENT) {
                     if ("attribute".equals(reader.getLocalName())) {
                         int attrCount = reader.getAttributeCount();
@@ -217,7 +216,7 @@ public class Patch {
                         while (reader.hasNext()) {
                             status = reader.next();
                             if (status == XMLStreamReader.END_ELEMENT &&
-                                    reader.getNamespaceURI().equals(XMLDiff.NAMESPACE) &&
+                                    reader.getNamespaceURI().equals(StandardDiff.NAMESPACE) &&
                                     reader.getLocalName().equals("comment"))
                                 break;
                             if (status == XMLStreamReader.CHARACTERS)
@@ -229,6 +228,8 @@ public class Patch {
                         String namespace = reader.getAttributeValue("", "namespace");
                         String name = reader.getAttributeValue("", "name");
                         receiver.startElement(new QName(QName.extractLocalName(name), namespace, QName.extractPrefix(name)), null);
+                        if (annotate)
+                            receiver.attribute(ATTR_CHANGE, "tag-" + changeMessage);
                     } else if ("end".equals(reader.getLocalName())) {
                         String namespace = reader.getAttributeValue("", "namespace");
                         String name = reader.getAttributeValue("", "name");
@@ -256,11 +257,12 @@ public class Patch {
                         attrs.addAttribute(ATTR_CHANGE, changeMessage);
                     else {
                         NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
-                        if (changeSet.hasDescendantsInSet(diffDoc, nodeId, false, -1) != null)
+                        NodeSet children = changeSet.selectParentChild(new NodeProxy(diffDoc, nodeId), NodeSet.ANCESTOR);
+                        if (children != null && !children.isEmpty())
                             attrs.addAttribute(ATTR_CHANGE, "changed");
                     }
                     if (elementStack.size() == 0)
-                        receiver.startPrefixMapping(XMLDiff.PREFIX, XMLDiff.NAMESPACE);
+                        receiver.startPrefixMapping(StandardDiff.PREFIX, StandardDiff.NAMESPACE);
                 }
 
                 for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -272,7 +274,7 @@ public class Patch {
                     if (insertedNode != null) {
                         StoredNode child = (StoredNode) insertedNode.getFirstChild();
                         while (child != null) {
-                            if (XMLDiff.NAMESPACE.equals(child.getNamespaceURI()) && "attribute".equals(child.getLocalName())) {
+                            if (StandardDiff.NAMESPACE.equals(child.getNamespaceURI()) && "attribute".equals(child.getLocalName())) {
                                 NamedNodeMap map = child.getAttributes();
                                 for (int j = 0; j < map.getLength(); j++) {
                                     AttrImpl attr = (AttrImpl) map.item(j);
@@ -304,7 +306,7 @@ public class Patch {
                 receiver.endElement(new QName(reader.getLocalName(), reader.getNamespaceURI(), reader.getPrefix()));
                 if (elementStack != null) {
                     if (elementStack.isEmpty())
-                        receiver.endPrefixMapping(XMLDiff.PREFIX);
+                        receiver.endPrefixMapping(StandardDiff.PREFIX);
                     elementStack.pop();
                 }
                 break;
@@ -348,7 +350,7 @@ public class Patch {
             NodeProxy p = (NodeProxy) i.nextItem();
             Element child = (Element) p.getNode();
             if (child.getNodeType() == Node.ELEMENT_NODE &&
-                    child.getNamespaceURI().equals(XMLDiff.NAMESPACE)) {
+                    child.getNamespaceURI().equals(StandardDiff.NAMESPACE)) {
                NodeId id = parseRef(broker, child, "ref");
                if (child.getLocalName().equals("delete")) {
                    String event = ((Element) child).getAttribute("event");
