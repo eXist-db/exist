@@ -25,6 +25,7 @@ import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock;
@@ -34,17 +35,16 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.security.*;
 import org.exist.util.LockException;
-import org.exist.util.Configuration;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.util.serializer.Receiver;
-import org.exist.EXistException;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.XPathException;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.AttributesImpl;
 
-import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.File;
@@ -54,10 +54,10 @@ import java.io.FileNotFoundException;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.StringWriter;
-import java.util.List;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Date;
+import java.util.Map;
 
 public class VersioningTrigger extends FilteringTrigger {
 
@@ -69,23 +69,43 @@ public class VersioningTrigger extends FilteringTrigger {
     public final static String TEMP_SUFFIX = ".tmp";
     public final static String DELETED_SUFFIX = ".deleted";
 
-    public final static QName ELEMENT_VERSION = new QName("version", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
-    public final static QName ELEMENT_REMOVED = new QName("removed", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
-    public final static QName PROPERTIES_ELEMENT = new QName("properties", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static String PARAM_OVERWRITE = "overwrite";
+
+    public final static QName ELEMENT_VERSION = new QName("version", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ELEMENT_REMOVED = new QName("removed", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName PROPERTIES_ELEMENT = new QName("properties", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
 
     private final static Object latch = new Object();
 
+    private DBBroker broker;
+    private XmldbURI documentPath;
     private DocumentImpl lastRev = null;
     private boolean removeLast = false;
     private Collection vCollection;
+    private DocumentImpl vDoc = null;
+
+    private int elementStack = 0;
+
+    private String documentKey = null;
+    private String documentRev = null;
+    private boolean checkForConflicts = false;
+
+    public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException {
+        super.configure(broker, parent, parameters);
+        String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE);
+        if (allowOverwrite != null)
+            checkForConflicts = allowOverwrite.equals("false") || allowOverwrite.equals("no");
+        LOG.debug("checkForConflicts: " + checkForConflicts);
+    }
 
     public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument)
     throws TriggerException {
+        this.broker = broker;
+        this.documentPath = documentPath;
         User activeUser = broker.getUser();
         try {
             broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
             if (event == UPDATE_DOCUMENT_EVENT || event == REMOVE_DOCUMENT_EVENT) {
-                existingDocument.getMetadata().setReferenced(true);
                 Collection collection = existingDocument.getCollection();
                 if (collection.getURI().startsWith(VERSIONS_COLLECTION))
                     return;
@@ -107,16 +127,14 @@ public class VersioningTrigger extends FilteringTrigger {
                     removeLast = true;
                 }
 
-                DocumentImpl vDoc = new DocumentImpl(broker.getBrokerPool(), vCollection, XmldbURI.createInternal(vFileName));
-                try {
-                    vDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
-                    vDoc.copyOf(existingDocument);
-                    vDoc.copyChildren(existingDocument);
-                    vCollection.addDocument(transaction, broker, vDoc);
-                    broker.storeXMLResource(transaction, vDoc);
-                } finally {
-                    vDoc.getUpdateLock().release(Lock.WRITE_LOCK);
-                }
+                // setReferenced(true) will tell the broker that the document
+                // data is referenced from another document and should not be
+                // deleted when the orignal document is removed.
+                existingDocument.getMetadata().setReferenced(true);
+
+                vDoc = new DocumentImpl(broker.getBrokerPool(), vCollection, XmldbURI.createInternal(vFileName));
+                vDoc.copyOf(existingDocument);
+                vDoc.copyChildren(existingDocument);
 
                 if (event != REMOVE_DOCUMENT_EVENT)
                     lastRev = vDoc;
@@ -131,14 +149,25 @@ public class VersioningTrigger extends FilteringTrigger {
     }
 
     public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+        if (documentPath.startsWith(VERSIONS_COLLECTION))
+            return;
         User activeUser = broker.getUser();
         try {
             broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
+            if (vDoc != null && !removeLast) {
+                try {
+                    vDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                    vCollection.addDocument(transaction, broker, vDoc);
+                    broker.storeXMLResource(transaction, vDoc);
+                } catch (LockException e) {
+                    LOG.warn("Versioning trigger could not store base document: " + vDoc.getFileURI() +
+                            e.getMessage(), e);
+                } finally {
+                    vDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                }
+            }
             if (event == STORE_DOCUMENT_EVENT) {
                 try {
-                    Collection collection = document.getCollection();
-                    if (collection.getURI().startsWith(VERSIONS_COLLECTION))
-                        return;
                     vCollection = getCollection(broker, transaction, documentPath.removeLastSegment());
 
                     String existingURI = document.getFileURI().toString();
@@ -156,7 +185,7 @@ public class VersioningTrigger extends FilteringTrigger {
                 }
             }
             if (lastRev != null || event == REMOVE_DOCUMENT_EVENT) {
-                XMLDiff diff = new XMLDiff(broker);
+                Diff diff = new StandardDiff(broker);
                 if (documentPath.isCollectionPathAbsolute())
                     documentPath = documentPath.lastSegment();
                 DocumentImpl base = null;
@@ -169,6 +198,9 @@ public class VersioningTrigger extends FilteringTrigger {
                     properties.setProperty("revision", Long.toString(rev));
                     properties.setProperty("date", new DateTimeValue(new Date()).getStringValue());
                     properties.setProperty("user", broker.getUser().getName());
+                    if (documentKey != null) {
+                        properties.setProperty("key", documentKey);
+                    }
                     StringWriter writer = new StringWriter();
                     SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
                             SAXSerializer.class);
@@ -218,7 +250,7 @@ public class VersioningTrigger extends FilteringTrigger {
         receiver.startElement(PROPERTIES_ELEMENT, null);
         for (Iterator i = properties.keySet().iterator(); i.hasNext();) {
             String key = (String) i.next();
-            QName qn = new QName(key, XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+            QName qn = new QName(key, StandardDiff.NAMESPACE, StandardDiff.PREFIX);
             receiver.startElement(qn, null);
             receiver.characters(properties.get(key).toString());
             receiver.endElement(qn);
@@ -238,31 +270,6 @@ public class VersioningTrigger extends FilteringTrigger {
             transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
         }
         return collection;
-    }
-
-    private DocumentImpl getLastRevision(DBBroker broker, Collection vCollection, XmldbURI documentPath) {
-        String docName = documentPath.lastSegment().toString();
-        long lastRev = -1;
-        DocumentImpl lastDoc = null;
-        for (Iterator i = vCollection.iterator(broker); i.hasNext(); ) {
-            DocumentImpl doc = (DocumentImpl) i.next();
-            String fname = doc.getFileURI().toString();
-            if (fname.startsWith(docName)) {
-                int p = fname.lastIndexOf('.');
-                if (p > -1) {
-                    String revStr = fname.substring(p + 1);
-                    try {
-                        long rev = Long.parseLong(revStr);
-                        if (rev > lastRev) {
-                            lastRev = rev;
-                            lastDoc = doc;
-                        }
-                    } catch (NumberFormatException e) {
-                    }
-                }
-            }
-        }
-        return lastDoc;
     }
 
     private long newRevision(BrokerPool pool) {
@@ -293,5 +300,49 @@ public class VersioningTrigger extends FilteringTrigger {
             }
             return rev;
         }
+    }
+
+    public void startElement(String namespaceURI, String localName, String qname, Attributes attributes) throws SAXException {
+        if (checkForConflicts && isValidating() && elementStack == 0) {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                if (StandardDiff.NAMESPACE.equals(attributes.getURI(i))) {
+                    String attrName = attributes.getLocalName(i);
+                    if (VersioningFilter.ATTR_KEY.getLocalName().equals(attrName))
+                        documentKey = attributes.getValue(i);
+                    else if (VersioningFilter.ATTR_REVISION.getLocalName().equals(attrName))
+                        documentRev = attributes.getValue(i);
+                }
+            }
+            if (documentKey != null && documentRev != null) {
+                try {
+                    long rev = Long.parseLong(documentRev);
+                    if (VersioningHelper.newerRevisionExists(broker, documentPath, rev, documentKey)) {
+                        throw new TriggerException("Possible version conflict detected for document: " + documentPath);
+                    }
+                } catch (XPathException e) {
+                    LOG.warn("Internal error in VersioningTrigger: " + e.getMessage(), e);
+                } catch (IOException e) {
+                    LOG.warn("Internal error in VersioningTrigger: " + e.getMessage(), e);
+                } catch (NumberFormatException e) {
+                    LOG.warn("Illegal revision number in VersioningTrigger: " + documentRev);
+                }
+            }
+        }
+        if (elementStack == 0) {
+            AttributesImpl nattrs = new AttributesImpl();
+            for (int i = 0; i < attributes.getLength(); i++) {
+                if (!StandardDiff.NAMESPACE.equals(attributes.getURI(i)))
+                    nattrs.addAttribute(attributes.getURI(i), attributes.getLocalName(i),
+                            attributes.getQName(i), attributes.getType(i), attributes.getValue(i));
+            }
+            attributes = nattrs;
+        }
+        elementStack++;
+        super.startElement(namespaceURI, localName, qname, attributes);
+    }
+
+    public void endElement(String namespaceURI, String localName, String qname) throws SAXException {
+        elementStack--;
+        super.endElement(namespaceURI, localName, qname);
     }
 }

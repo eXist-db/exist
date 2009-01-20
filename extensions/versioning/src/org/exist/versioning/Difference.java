@@ -1,31 +1,17 @@
 package org.exist.versioning;
 
-import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.AttrList;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.Namespaces;
 import org.xml.sax.SAXException;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.AttributesImpl;
-import org.w3c.dom.Node;
 
 import javax.xml.stream.XMLStreamReader;
-import java.io.StringWriter;
-import java.util.Iterator;
 
 public abstract class Difference {
 
@@ -34,17 +20,17 @@ public abstract class Difference {
     public final static int APPEND = 2;
     public final static int UPDATE = 3;
 
-    public final static QName ELEMENT_INSERT = new QName("insert", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ELEMENT_INSERT = new QName("insert", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
     public final static QName ATTR_REF = new QName("ref", "", "");
     public final static QName ATTR_NAMESPACE = new QName("namespace", "", "");
     public final static QName ATTR_NAME = new QName("name", "", "");
     public final static QName ATTR_EVENT = new QName("event", "", "");
-    public final static QName ELEMENT_ATTRIBUTE = new QName("attribute", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
-    public final static QName ELEMENT_START = new QName("start", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
-    public final static QName ELEMENT_END = new QName("end", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
-    public final static QName ELEMENT_COMMENT = new QName("comment", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
-    public final static QName ELEMENT_APPEND = new QName("append", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
-    public final static QName ELEMENT_DELETE = new QName("delete", XMLDiff.NAMESPACE, XMLDiff.PREFIX);
+    public final static QName ELEMENT_ATTRIBUTE = new QName("attribute", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ELEMENT_START = new QName("start", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ELEMENT_END = new QName("end", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ELEMENT_COMMENT = new QName("comment", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ELEMENT_APPEND = new QName("append", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ELEMENT_DELETE = new QName("delete", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
 
     protected int type;
     protected NodeProxy refChild;

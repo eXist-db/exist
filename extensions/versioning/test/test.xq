@@ -43,7 +43,7 @@ declare function t:test($test as element(v:test)) {
     let $stored :=
         t:store-revisions($test, $docId)
     let $doc := doc(concat("/db/test/", $docId))
-    let $lastRev := v:list-revisions($doc)[last()]
+    let $lastRev := v:revisions($doc)[last()]
     let $reconstructed :=
         v:doc($doc, $lastRev)
     let $testPassed := xdiff:compare($doc, $reconstructed)

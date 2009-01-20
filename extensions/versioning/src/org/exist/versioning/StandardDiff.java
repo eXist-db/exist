@@ -3,7 +3,6 @@ package org.exist.versioning;
 import bmsi.util.Diff;
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
@@ -20,13 +19,12 @@ import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-public class XMLDiff {
+public class StandardDiff implements org.exist.versioning.Diff {
 
-    private final static Logger LOG = Logger.getLogger(XMLDiff.class);
+    private final static Logger LOG = Logger.getLogger(StandardDiff.class);
 
     public final static String NAMESPACE = "http://exist-db.org/versioning";
     public final static String PREFIX = "v";
@@ -37,7 +35,7 @@ public class XMLDiff {
 
     private List changes = null;
 
-    public XMLDiff(DBBroker broker) {
+    public StandardDiff(DBBroker broker) {
         this.broker = broker;
     }
 

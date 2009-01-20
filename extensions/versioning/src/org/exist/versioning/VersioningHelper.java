@@ -21,38 +21,95 @@
  */
 package org.exist.versioning;
 
-import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.xmldb.XmldbURI;
+import org.exist.security.xacml.AccessContext;
+import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.util.LockException;
+import org.exist.storage.XQueryPool;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Sequence;
 
-import java.util.Iterator;
+import java.io.IOException;
 
 public class VersioningHelper {
 
-    public static DocumentImpl getBaseRevision(DBBroker broker, XmldbURI docPath) throws LockException {
+    private final static String GET_CURRENT_REV =
+            "declare namespace v=\"http://exist-db.org/versioning\";\n" +
+            "declare variable $collection external;\n" +
+            "declare variable $document external;\n" +
+            "max(" +
+            "   for $r in collection($collection)//v:properties[v:document = $document]/v:revision\n" +
+            "   return xs:long($r)" +
+            ")";
+
+    private final static StringSource GET_CURRENT_REV_SOURCE = new StringSource(GET_CURRENT_REV);
+
+    private final static String GET_CONFLICTING_REV =
+            "declare namespace v=\"http://exist-db.org/versioning\";\n" +
+            "declare variable $collection external;\n" +
+            "declare variable $document external;\n" +
+            "declare variable $base external;\n" +
+            "declare variable $key external;\n" +
+            "collection($collection)//v:properties[v:document = $document]" +
+            "   [v:revision > $base][v:key != $key]";
+
+    private final static StringSource GET_CONFLICTING_REV_SOURCE = new StringSource(GET_CONFLICTING_REV);
+
+    public static long getCurrentRevision(DBBroker broker, XmldbURI docPath) throws XPathException, IOException {
         String docName = docPath.lastSegment().toString();
         XmldbURI collectionPath = docPath.removeLastSegment();
         XmldbURI path = VersioningTrigger.VERSIONS_COLLECTION.append(collectionPath);
-        Collection vCollection = broker.openCollection(path, Lock.READ_LOCK);
+        XQuery xquery = broker.getXQueryService();
+        XQueryPool pool = xquery.getXQueryPool();
+        XQueryContext context;
+        CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, GET_CURRENT_REV_SOURCE);
+        if(compiled == null)
+                context = xquery.newContext(AccessContext.VALIDATION_INTERNAL);
+            else
+                context = compiled.getContext();
+        context.declareVariable("collection", path.toString());
+        context.declareVariable("document", docName);
+        if(compiled == null)
+            compiled = xquery.compile(context, GET_CURRENT_REV_SOURCE);
         try {
-            for (Iterator i = vCollection.iterator(broker); i.hasNext(); ) {
-                DocumentImpl doc = (DocumentImpl) i.next();
-                String fname = doc.getFileURI().toString();
-                int p = fname.lastIndexOf('.');
-                if (p > -1) {
-                    String name = fname.substring(0, p);
-                    if (name.equals(docName)) {
-                        doc.getUpdateLock().acquire(Lock.READ_LOCK);
-                        return doc;
-                    }
-                }
-            }
+            Sequence s = xquery.execute(compiled, Sequence.EMPTY_SEQUENCE);
+            if (s.isEmpty())
+                return 0;
+            IntegerValue iv = (IntegerValue) s.itemAt(0);
+            return iv.getLong();
         } finally {
-            vCollection.release(Lock.READ_LOCK);
+            pool.returnCompiledXQuery(GET_CURRENT_REV_SOURCE, compiled);
         }
-        return null;
+    }
+
+    public static boolean newerRevisionExists(DBBroker broker, XmldbURI docPath, long baseRev, String key) throws XPathException, IOException {
+        String docName = docPath.lastSegment().toString();
+        XmldbURI collectionPath = docPath.removeLastSegment();
+        XmldbURI path = VersioningTrigger.VERSIONS_COLLECTION.append(collectionPath);
+        XQuery xquery = broker.getXQueryService();
+        XQueryPool pool = xquery.getXQueryPool();
+        XQueryContext context;
+        CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, GET_CONFLICTING_REV_SOURCE);
+        if(compiled == null)
+            context = xquery.newContext(AccessContext.VALIDATION_INTERNAL);
+        else
+            context = compiled.getContext();
+        System.out.println("base: " + baseRev + "; key: " + key);
+        context.declareVariable("collection", path.toString());
+        context.declareVariable("document", docName);
+        context.declareVariable("base", new IntegerValue(baseRev));
+        context.declareVariable("key", key);
+        if(compiled == null)
+            compiled = xquery.compile(context, GET_CONFLICTING_REV_SOURCE);
+        try {
+            Sequence s = xquery.execute(compiled, Sequence.EMPTY_SEQUENCE);
+            return !s.isEmpty();
+        } finally {
+            pool.returnCompiledXQuery(GET_CONFLICTING_REV_SOURCE, compiled);
+        }
     }
 }
