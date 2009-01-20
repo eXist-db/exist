@@ -53,7 +53,7 @@ public class JnlpJarFiles {
         "jline-%latest%",
         "log4j-%latest%",
         "stax-api-%latest%",
-        "sunxacml"
+        "sunxacml-%latest%"
     };
     
     // Resolves jar file patterns from jars[].
