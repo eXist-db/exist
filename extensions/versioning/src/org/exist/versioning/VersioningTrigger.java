@@ -92,9 +92,11 @@ public class VersioningTrigger extends FilteringTrigger {
 
     public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
-        String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE);
-        if (allowOverwrite != null)
-            checkForConflicts = allowOverwrite.equals("false") || allowOverwrite.equals("no");
+        if (parameters != null) {
+            String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE);
+            if (allowOverwrite != null)
+                checkForConflicts = allowOverwrite.equals("false") || allowOverwrite.equals("no");
+        }
         LOG.debug("checkForConflicts: " + checkForConflicts);
     }
 
@@ -246,7 +248,7 @@ public class VersioningTrigger extends FilteringTrigger {
         }
     }
 
-    protected void writeProperties(Receiver receiver, Properties properties) throws SAXException {
+    public static void writeProperties(Receiver receiver, Properties properties) throws SAXException {
         receiver.startElement(PROPERTIES_ELEMENT, null);
         for (Iterator i = properties.keySet().iterator(); i.hasNext();) {
             String key = (String) i.next();
