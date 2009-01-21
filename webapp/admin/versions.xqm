@@ -24,7 +24,7 @@ declare function rev:main() as element()
 
 declare function rev:display-revisions($resource as xs:string) {
 	let $doc := doc($resource)
-	for $version in v:list-versions($doc)
+	for $version in v:versions($doc)
 	let $rev := $version/v:properties/v:revision/text()
 	return (
 		<tr>
