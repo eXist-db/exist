@@ -295,6 +295,8 @@ public class JavaCall extends Function {
          if (context.getProfiler().isEnabled())           
                 context.getProfiler().end(this, "", result); 
         
+        if (result==null) result = Sequence.EMPTY_SEQUENCE; 
+         
         return result;
         
 	}
