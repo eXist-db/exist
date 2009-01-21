@@ -18,6 +18,7 @@ public class VersioningFilter extends CustomMatchListener {
 
     public final static QName ATTR_REVISION = new QName("revision", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
     public final static QName ATTR_KEY = new QName("key", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ATTR_PATH = new QName("path", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
 
     private int elementStack = 0;
 
@@ -30,7 +31,7 @@ public class VersioningFilter extends CustomMatchListener {
             if (node != null) {
                 DocumentImpl doc = node.getDocument();
                 XmldbURI uri = doc.getURI();
-                if (!uri.startsWith(VersioningTrigger.VERSIONS_COLLECTION)) {
+                if (!uri.startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
                     if (doc.getCollection().getConfiguration(getBroker()).
                             triggerRegistered(VersioningTrigger.class)) {
                         try {
@@ -39,6 +40,7 @@ public class VersioningFilter extends CustomMatchListener {
                             String key = Long.toHexString(time) + Long.toHexString(rev);
                             attribs.addAttribute(ATTR_REVISION, rev == 0 ? "0" : Long.toString(rev));
                             attribs.addAttribute(ATTR_KEY, key);
+                            attribs.addAttribute(ATTR_PATH, doc.getURI().toString());
                         } catch (XPathException e) {
                             LOG.error("Exception while retrieving versioning info: " + e.getMessage(), e);
                         } catch (IOException e) {

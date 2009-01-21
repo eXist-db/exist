@@ -98,7 +98,6 @@ public class VersioningHelper {
             context = xquery.newContext(AccessContext.VALIDATION_INTERNAL);
         else
             context = compiled.getContext();
-        System.out.println("base: " + baseRev + "; key: " + key);
         context.declareVariable("collection", path.toString());
         context.declareVariable("document", docName);
         context.declareVariable("base", new IntegerValue(baseRev));
