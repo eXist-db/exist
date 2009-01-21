@@ -33,7 +33,8 @@ public class VersioningModule extends AbstractInternalModule {
 
     public static final FunctionDef[] functions = {
         new FunctionDef(PatchFunction.signatures[0], PatchFunction.class),
-        new FunctionDef(PatchFunction.signatures[1], PatchFunction.class)
+        new FunctionDef(PatchFunction.signatures[1], PatchFunction.class),
+        new FunctionDef(DiffFunction.signature, DiffFunction.class)
     };
 
     public VersioningModule() {

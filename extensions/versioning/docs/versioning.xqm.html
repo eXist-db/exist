@@ -1,0 +1,189 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xml:space="preserve"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>xqDoc -- Module</title><script language="JavaScript"><!--
+        function popUp(URL) {
+                 day = new Date();
+                 id = day.getTime();
+                 eval("page = window.open(URL, 'xqdoccode', 'toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,resizable=1,width=600,height=400,left = 412,top = 334');")
+                 page.focus();
+        }
+      --></script><script language="JavaScript"><!--
+	    function litePopUp(str) {    
+  		  OpenWindow=window.open('', 'xqdoccode', 'toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,resizable=1,width=600,height=400,left = 412,top = 334');
+  		  OpenWindow.document.write('<html xmlspace="preserve">');
+  		  OpenWindow.document.write('<head>');
+  		  OpenWindow.document.write('<title>xqDoc - Code Sample</title>');
+  		  OpenWindow.document.write('</head>');  		    		    		  
+  		  OpenWindow.document.write('<body xml:space="preserve">');
+  		  OpenWindow.document.write('<pre>');
+ 		  OpenWindow.document.write(str);
+ 		  OpenWindow.document.write('</pre>');
+  		  OpenWindow.document.write('</body>');
+  		  OpenWindow.document.write('</html>');
+  		  OpenWindow.document.close();
+  		  page.focus();
+        }
+      --></script><style><!--
+body		{
+		font: 80% Verdana;
+		}
+table		{
+		font-size: 100%;
+		}
+h1, h2, h3, h4, h5, h6
+		{
+		clear: both;
+		float: none;
+		}
+h1		{
+		font-size: 100%;
+		margin: 0em;
+		}
+h2		{
+		font-size: 180%;
+		margin-bottom: -1em;
+		margin-top: .3em;
+		}
+h3		{
+		font-size: 150%;
+		}	
+h4		{
+		font-size: 140%;
+		background-color: #ccf;
+		border-bottom: 1px solid #99f;
+		width: 100%;
+		}
+h5		{
+		margin: 1em 0em 0em 0em;
+		font-size: 120%;
+		}
+h6		{
+		margin: 0em 0em 0em 3em;
+		font-style: italic;
+		font: bold italic;
+		font-size: 100%;
+		}
+#variables, #methods, #methoddetail
+		{
+		padding-left: 3em;
+		margin-bottom: 1.4em;
+		clear: both;
+		float: none;
+		}
+#methods ul.method, #variables ul.method
+		{
+		margin: 1em 0em 0em;
+		}
+#methoddetail ul.method
+		{
+		margin: 0em;
+		}
+div.inexternal
+		{
+		padding-left: 2em;
+		margin-bottom: 1em;
+		}
+div.methoddetail p
+		{
+		float: none;
+		clear: both;
+		padding-left: 2em;
+		margin-bottom: 1em;
+		}
+div.methoddetail{
+		padding-bottom: 1em;
+		}
+div.methoddetail li
+		{
+		list-style-type: none;
+		font-weight: bold;
+		}
+div.methoddetail li li
+		{
+		list-style-type: circle;
+		font-weight: normal;
+		}
+div.methoddetail li ul
+		{
+		padding-bottom: 0.5em;
+		font-weight: normal;
+		}
+table.inexternal{
+		clear: both;
+		float: none;
+		width: 80%;
+		margin-left: 3em;
+		padding: 0em;
+		
+		}
+table.inexternal th
+		{
+		background-color:#dedede;
+		width: 50%;
+		}			
+td		{
+		vertical-align: top;
+		}
+div.description {
+		margin-top: .5em;
+		font-weight: normal;
+		padding-left: 1em;
+		}
+ul.method	{
+		clear: both;
+		float: none;
+		width: 90%;
+		list-style-type: none;
+		border-top: 1px solid #ccc;
+		}
+ul.method li.left
+		{
+		float: left;
+		clear: none;
+		width: 40%;
+		font-weight: bold;
+		margin-bottom: 2em;
+		}
+ul.method li.right
+		{
+		position: relative;
+            top: 0em;
+		float: left;
+            width: 55%;
+		margin-bottom: 2em;
+		padding-left: 2em;
+		}
+div.home 	{
+		width: 60%;
+		float: left;
+		margin-right: 1%;
+		border: 1px
+		}
+div.home h4	{
+		font-size: 120%;
+		background-color: #fff;
+		border-bottom: 1px solid #99f;
+		width: 100%;
+		margin-bottom: -1em;
+		}
+div.overview p {
+               width: 60%;
+               }
+     
+ --></style></head><body><h4>Module URI</h4><h1>http://exist-db.org/versioning</h1>&nbsp;<h4>Imported Modules</h4><div id="imports"><div><ul class="method"><li class="left">http://exist-db.org/xquery/versioning</li><li class="right"></li></ul><ul></ul></div><div><ul class="method"><li class="left">http://exist-db.org/xquery/util</li><li class="right"></li></ul><ul></ul></div><div><ul class="method"><li class="left">http://exist-db.org/xquery/xmldb</li><li class="right"></li></ul><ul></ul></div></div>&nbsp;<h4>Function Summary</h4><div id="methods"><a name="methods"></a><ul class="method"><li class="left"><a href="#annotate">annotate</a><div class="description">	Return an XML document in which all changes between	$rev and $rev - 1 are annotated.</div></li><li class="right">( $doc as node() ,<br>&nbsp; $rev as xs:integer)<br><br></li></ul><ul class="method"><li class="left"><a href="#apply-patch">apply-patch</a><div class="description">	Apply a given patch on a document.</div></li><li class="right">( $doc as node() ,<br>&nbsp; $diffs as element(v:version)*)<br><br></li></ul><ul class="method"><li class="left"><a href="#diff">diff</a><div class="description">	For the document passed as first argument, retrieve the revision	specified in the second argument.</div></li><li class="right">( $doc as node() ,<br>&nbsp; $rev as xs:integer) as element(v:version)?<br><br></li></ul><ul class="method"><li class="left"><a href="#doc">doc</a><div class="description">	Restore a certain revision of a document by applying a	sequence of diffs and return it as an in-memory node.</div></li><li class="right">( $doc as node() ,<br>&nbsp; $rev as xs:integer?) as node()*<br><br></li></ul><ul class="method"><li class="left"><a href="#find-newer-revision">find-newer-revision</a><div class="description">	Check if there are any revisions in the database which are newer than the	version identified by the specified base revision and key.</div></li><li class="right">( $doc as node() ,<br>&nbsp; $base as xs:integer ,<br>&nbsp; $key as xs:string) as element(v:version)?<br><br></li></ul><ul class="method"><li class="left"><a href="#history">history</a><div class="description">	Returns an XML fragment showing the version history of the 	document to which the specified node belongs.</div></li><li class="right">( $doc as node()) as element(v:history)<br><br></li></ul><ul class="method"><li class="left"><a href="#revisions">revisions</a><div class="description"></div></li><li class="right">( $doc as node()) as xs:integer*<br><br></li></ul><ul class="method"><li class="left"><a href="#versions">versions</a><div class="description">	Return all version docs, including the full diff, for the specified	document.</div></li><li class="right">( $doc as node()) as element(v:version)*<br><br></li></ul></div>&nbsp;<h4>Function Detail</h4><div id="methoddetail"><div id="annotate" class="methoddetail"><h5><a name="annotate"></a>annotate</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function v:annotate($doc as node(), $rev as xs:integer){<br/&gt;    let $collection := util:collection-name($doc)<br/&gt;    let $docName := util:document-name($doc)<br/&gt;    let $vCollection := concat(&#34;/db/system/versions&#34;, $collection)<br/&gt;    let $revisions := v:revisions($doc)<br/&gt;    let $p := index-of($revisions, $rev)<br/&gt;%09return<br/&gt;%09%09if (empty($p)) then<br/&gt;%09%09%09()<br/&gt;%09%09else<br/&gt;%09%09%09let $previous := <br/&gt;%09%09%09%09if ($p eq 1) then<br/&gt;%09%09%09%09%09doc(concat($vCollection, &#34;/&#34;, $docName, &#34;.base&#34;))<br/&gt;%09%09%09%09else<br/&gt;%09%09%09%09%09v:doc($doc, $revisions[$p - 1])<br/&gt;%09%09%09return<br/&gt;%09%09%09%09version:annotate(<br/&gt;%09%09%09%09%09$previous, <br/&gt;%09%09%09%09%09collection($vCollection)/v:version[v:properties[v:document = $docName]<br/&gt;%09%09%09%09%09%09[v:revision = $rev]]<br/&gt;%09%09%09%09)<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $doc as node() ,<br>&nbsp; $rev as xs:integer)<br><br></li></ul><p>	Return an XML document in which all changes between	$rev and $rev - 1 are annotated.</p><ul><li>Parameters:</li><ul><li>$doc - a node in the document which should be annotated<br></li><li>$rev - the revision whose changes will be annotated<br></li></ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/util</td><td>collection-name</td></tr><tr><td>document-name</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/xquery/versioning</td><td>annotate</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="5">http://www.w3.org/2005/xpath-functions</td><td>collection</td></tr><tr><td>concat</td></tr><tr><td>doc</td></tr><tr><td>empty</td></tr><tr><td>index-of</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/versioning</td><td><a href="#doc">doc</a></td></tr><tr><td><a href="#revisions">revisions</a></td></tr></table></div></div>&nbsp;<div id="apply-patch" class="methoddetail"><h5><a name="apply-patch"></a>apply-patch</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function v:apply-patch($doc as node(), $diffs as element(v:version)*){<br/&gt;    if (empty($diffs)) then<br/&gt;        $doc<br/&gt;    else<br/&gt;        v:apply-patch(version:patch($doc, $diffs[1]), subsequence($diffs, 2))<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $doc as node() ,<br>&nbsp; $diffs as element(v:version)*)<br><br></li></ul><p>	Apply a given patch on a document. This function is used by v:doc 	internally.</p><ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/xquery/versioning</td><td>patch</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.w3.org/2005/xpath-functions</td><td>empty</td></tr><tr><td>subsequence</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/versioning</td><td><a href="#apply-patch">apply-patch</a></td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/versioning</td><td><a href="#apply-patch">apply-patch</a></td></tr><tr><td><a href="#doc">doc</a></td></tr></table></div></div>&nbsp;<div id="diff" class="methoddetail"><h5><a name="diff"></a>diff</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function v:diff($doc as node(), $rev as xs:integer) as element(v:version)?{<br/&gt;%09let $base := v:doc($doc, $rev)<br/&gt;%09return<br/&gt;%09%09if (empty($base)) then<br/&gt;%09%09%09()<br/&gt;%09%09else<br/&gt;%09%09%09let $col := xdb:create-collection(&#34;/db/system/versions&#34;, &#34;temp&#34;)<br/&gt;%09%09%09let $stored := xdb:store(&#34;/db/system/versions/temp&#34;, util:document-name($doc), $base)<br/&gt;%09%09%09let $diff := version:diff(doc($stored), $doc)<br/&gt;%09%09%09let $deleted := xdb:remove(&#34;/db/system/versions/temp&#34;, util:document-name($doc))<br/&gt;%09%09%09return $diff<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $doc as node() ,<br>&nbsp; $rev as xs:integer) as element(v:version)?<br><br></li></ul><p>	For the document passed as first argument, retrieve the revision	specified in the second argument. Generate a diff between both version,	i.e. HEAD and the given revision. The empty sequence is returned if the 	given revision is invalid, i.e. v:doc returns the empty sequence.</p><ul><li>Parameters:</li><ul><li>$doc - a node in the document for which the diff should be generated<br></li><li>$rev - a valid revision number<br></li></ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/xquery/util</td><td>document-name</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/xquery/versioning</td><td>diff</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="3">http://exist-db.org/xquery/xmldb</td><td>create-collection</td></tr><tr><td>remove</td></tr><tr><td>store</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.w3.org/2005/xpath-functions</td><td>doc</td></tr><tr><td>empty</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/versioning</td><td><a href="#doc">doc</a></td></tr></table></div></div>&nbsp;<div id="doc" class="methoddetail"><h5><a name="doc"></a>doc</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function v:doc($doc as node(), $rev as xs:integer?) as node()*{<br/&gt;    let $collection := util:collection-name($doc)<br/&gt;    let $docName := util:document-name($doc)<br/&gt;    let $vCollection := concat(&#34;/db/system/versions&#34;, $collection)<br/&gt;    let $baseName := concat($vCollection, &#34;/&#34;, $docName, &#34;.base&#34;)<br/&gt;    return<br/&gt;        if (not(doc-available($baseName))) then<br/&gt;            ()<br/&gt;        else if (exists($rev)) then<br/&gt;            v:apply-patch(<br/&gt;                doc($baseName),<br/&gt;%09%09%09%09for $version in<br/&gt;                %09collection($vCollection)/v:version[v:properties[v:document = $docName]<br/&gt;                    %09[v:revision &amp;lt;= $rev]][v:diff]<br/&gt;%09%09%09%09%09order by xs:long($version/v:properties/v:revision) ascending<br/&gt;%09%09%09%09return<br/&gt;%09%09%09%09%09$version<br/&gt;            )<br/&gt;%09%09else<br/&gt;%09%09%09doc($baseName)<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $doc as node() ,<br>&nbsp; $rev as xs:integer?) as node()*<br><br></li></ul><p>	Restore a certain revision of a document by applying a	sequence of diffs and return it as an in-memory node. If the	revision argument is empty or smaller than the first actual	revision of the document, the function will return the base	version of the document. If the revision number is greater than	the latest revision, the latest version will be returned.</p><ul><li>Parameters:</li><ul><li>$doc - a node in the document for which a revision should be retrieved.<br></li><li>$rev - the revision which should be restored<br></li></ul><li>Return:</li><ul><li> a sequence of nodes corresponding to the restored document	(TODO: return a document node instead?) </li></ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/util</td><td>collection-name</td></tr><tr><td>document-name</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="6">http://www.w3.org/2005/xpath-functions</td><td>collection</td></tr><tr><td>concat</td></tr><tr><td>doc</td></tr><tr><td>doc-available</td></tr><tr><td>exists</td></tr><tr><td>not</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/versioning</td><td><a href="#apply-patch">apply-patch</a></td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/versioning</td><td><a href="#annotate">annotate</a></td></tr><tr><td><a href="#diff">diff</a></td></tr></table></div></div>&nbsp;<div id="find-newer-revision" class="methoddetail"><h5><a name="find-newer-revision"></a>find-newer-revision</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function v:find-newer-revision($doc as node(), $base as xs:integer, $key as xs:string) as element(v:version)?{<br/&gt;    let $collection := util:collection-name($doc)<br/&gt;    let $docName := util:document-name($doc)<br/&gt;    let $vCollection := concat(&#34;/db/system/versions&#34;, $collection)<br/&gt;%09let $newer := <br/&gt;%09%09for $v in collection($vCollection)/v:version[<br/&gt;%09%09%09v:properties[v:document = $docName][v:revision &amp;gt; $base][v:key != $key]<br/&gt;%09%09]<br/&gt;    %09order by xs:long($v/v:properties/v:revision) descending<br/&gt;%09%09return $v<br/&gt;%09return $newer[1]<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $doc as node() ,<br>&nbsp; $base as xs:integer ,<br>&nbsp; $key as xs:string) as element(v:version)?<br><br></li></ul><p>	Check if there are any revisions in the database which are newer than the	version identified by the specified base revision and key. If versioning is	active, the base revision and key are added to the document root element	as attributes whenever a document is serialized. The combination of the two	attributes allows eXist to determine if a newer revision of the document	exists in the database, which usually means that another user/client has	committed it in the meantime.	If one or more newer revisions exist in the database, v:find-newer-revision will	return the version document of the newest revision or an empty sequence	otherwise.</p><ul><li>Parameters:</li><ul><li>$doc - a node in the document which should be checked<br></li><li>$base - the base revision as provided in the v:revision attribute of the document which was retrieved from the db.<br></li><li>$key - the key as provided in the v:key attribute of the document which was retrieved from the db.<br></li></ul><li>Return:</li><ul><li> a v:version element or the empty sequence if there's no newer revision	in the database</li></ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/util</td><td>collection-name</td></tr><tr><td>document-name</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.w3.org/2005/xpath-functions</td><td>collection</td></tr><tr><td>concat</td></tr></table></div></div>&nbsp;<div id="history" class="methoddetail"><h5><a name="history"></a>history</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function v:history($doc as node()) as element(v:history){<br/&gt;    let $collection := util:collection-name($doc)<br/&gt;    let $docName := util:document-name($doc)<br/&gt;    let $vCollection := concat(&#34;/db/system/versions&#34;, $collection)<br/&gt;%09return<br/&gt;%09%09&amp;lt;v:history&amp;gt;<br/&gt;%09%09%09&amp;lt;v:document&amp;gt;{base-uri($doc)}&amp;lt;/v:document&amp;gt;<br/&gt;%09%09%09&amp;lt;v:revisions&amp;gt;<br/&gt;%09%09%09{<br/&gt;%09%09%09%09for $v in collection($vCollection)//v:properties[v:document = $docName]<br/&gt;%09%09%09%09order by xs:long($v/v:revision) ascending<br/&gt;%09%09%09%09return<br/&gt;%09%09%09%09%09&amp;lt;v:revision rev=&#34;{$v/v:revision}&#34;&amp;gt;<br/&gt;%09%09%09%09%09{ $v/v:date, $v/v:user}<br/&gt;%09%09%09%09%09&amp;lt;/v:revision&amp;gt;<br/&gt;%09%09%09}<br/&gt;%09%09%09&amp;lt;/v:revisions&amp;gt;<br/&gt;%09%09&amp;lt;/v:history&amp;gt;<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $doc as node()) as element(v:history)<br><br></li></ul><p>	Returns an XML fragment showing the version history of the 	document to which the specified node belongs. All revisions	are listed with date and user, but without the detailed diff.</p><ul><li>Parameters:</li><ul><li>$doc - an arbitrary node in a document<br></li></ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/util</td><td>collection-name</td></tr><tr><td>document-name</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="3">http://www.w3.org/2005/xpath-functions</td><td>base-uri</td></tr><tr><td>collection</td></tr><tr><td>concat</td></tr></table></div></div>&nbsp;<div id="revisions" class="methoddetail"><h5><a name="revisions"></a>revisions</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function v:revisions($doc as node()) as xs:integer*{<br/&gt;    let $collection := util:collection-name($doc)<br/&gt;    let $docName := util:document-name($doc)<br/&gt;    let $vCollection := concat(&#34;/db/system/versions&#34;, $collection)<br/&gt;    for $version in collection($vCollection)//v:properties[v:document = $docName]<br/&gt;    let $rev := xs:long($version/v:revision)<br/&gt;    order by $rev ascending<br/&gt;    return<br/&gt;        $rev<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $doc as node()) as xs:integer*<br><br></li></ul><ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/util</td><td>collection-name</td></tr><tr><td>document-name</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.w3.org/2005/xpath-functions</td><td>collection</td></tr><tr><td>concat</td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/versioning</td><td><a href="#annotate">annotate</a></td></tr></table></div></div>&nbsp;<div id="versions" class="methoddetail"><h5><a name="versions"></a>versions</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function v:versions($doc as node()) as element(v:version)*{<br/&gt;    let $collection := util:collection-name($doc)<br/&gt;    let $docName := util:document-name($doc)<br/&gt;    let $vCollection := concat(&#34;/db/system/versions&#34;, $collection)<br/&gt;    for $version in collection($vCollection)/v:version[v:properties[v:document = $docName]]<br/&gt;    order by xs:long($version/v:properties/v:revision) ascending<br/&gt;    return<br/&gt;        $version<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $doc as node()) as element(v:version)*<br><br></li></ul><p>	Return all version docs, including the full diff, for the specified	document. This is mainly for internal use.</p><ul><li>Parameters:</li><ul><li>$doc - a node in the document for which revisions should be retrieved.<br></li></ul><li>Return:</li><ul><li> zero or more v:version elements describing the changes 	made in a revision.</li></ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/util</td><td>collection-name</td></tr><tr><td>document-name</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.w3.org/2005/xpath-functions</td><td>collection</td></tr><tr><td>concat</td></tr></table></div></div>&nbsp;</div>&nbsp;<div align="left"><i>Created by xqDoc-Lite version 1.0 on Wed Jan 21 21:21:45 CET 2009</i></div></body></html>
