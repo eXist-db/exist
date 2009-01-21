@@ -235,10 +235,14 @@ public class XQueryTrigger extends FilteringTrigger
         }
         catch(XPathException e)
         {
+    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
+    		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException("Error during trigger prepare", e);
 	    }
         catch(IOException e)
         {
+    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
+    		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException("Error during trigger prepare", e);
 	    }
 
@@ -253,6 +257,8 @@ public class XQueryTrigger extends FilteringTrigger
         }
         catch(XPathException e)
         {
+    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
+    		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException("Error during trigger prepare", e);
         }
 	}
@@ -337,16 +343,16 @@ public class XQueryTrigger extends FilteringTrigger
 	        NodeSet contextSet = NodeSet.EMPTY_SET;	        
 			service.execute(compiledQuery, contextSet);
 			//TODO : should we have a special processing ?
-			
-			TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-			TriggerStatePerThread.setTransaction(null);
-			LOG.debug("Trigger fired for finish");
         }
         catch (XPathException e)
         {
         	//Should never be reached
 			LOG.error("Error during trigger finish " + e );
-		}	   
+        }
+        
+		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
+		TriggerStatePerThread.setTransaction(null);
+		LOG.debug("Trigger fired for finish");
     }	
       
 	public void startDocument() throws SAXException
