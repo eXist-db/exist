@@ -21,6 +21,9 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Iterator;
 
 public class StandardDiff implements org.exist.versioning.Diff {
 
@@ -107,6 +110,7 @@ public class StandardDiff implements org.exist.versioning.Diff {
 
     protected List getChanges(Diff.change script, DocumentImpl docA, DocumentImpl docB, DiffNode[] nodesA, DiffNode[] nodesB) throws XMLStreamException {
         List changes = new ArrayList();
+        Map inserts = new TreeMap();
         Diff.change next = script;
         while (next != null) {
             int start0 = next.line0;
@@ -115,14 +119,41 @@ public class StandardDiff implements org.exist.versioning.Diff {
             int lastDeleted = start0 + next.deleted;
 
             if (next.inserted > 0) {
-
+                if (next.deleted == 0) {
+                    // Simplify edit script: if there's a set of start tags at the end of the
+                    // insertion, check if they correspond to similar start tags *before* the
+                    // inserted section. If yes, move the inserted range to match the entire
+                    // inserted element instead of a sequence of end/start tags.
+                    int offsetFix = 0;
+                    for (int i = last - 1; i > start; i--) {
+                        DiffNode node = nodesB[i];
+                        if (node.nodeType == XMLStreamReader.START_ELEMENT && start - (last - i) > 0) {
+                            DiffNode before = nodesB[start - (last - i)];
+                            if (before.nodeType == XMLStreamReader.START_ELEMENT &&
+                                before.qname.equals(node.qname))
+                                offsetFix++;
+                        } else
+                            break;
+                    }
+                    if (offsetFix > 0) {
+                        start = start - offsetFix;
+                        start0 = start0 - offsetFix;
+                        last = start + next.inserted;
+                    }
+                }
                 Difference.Insert diff;
-                if (nodesA[start0].nodeType == XMLStreamReader.END_ELEMENT)
+                if (nodesA[start0].nodeType == XMLStreamReader.END_ELEMENT) {
                     diff = new Difference.Append(new NodeProxy(docA, nodesA[start0].nodeId), docB);
-                else
-                    diff = new Difference.Insert(new NodeProxy(docA, nodesA[start0].nodeId), docB);
+                    changes.add(diff);
+                } else {
+                    diff = (Difference.Insert) inserts.get(nodesA[start0].nodeId);
+                    if (diff == null) {
+                        diff = new Difference.Insert(new NodeProxy(docA, nodesA[start0].nodeId), docB);
+                        inserts.put(nodesA[start0].nodeId, diff);
+                    }
+                }
                 
-                // now scan the chunk and collect the nodes into a node set
+                // now scan the chunk and collect the nodes
                 DiffNode[] nodes = new DiffNode[last - start];
                 int j = 0;
                 for (int i = start; i < last; i++, j++) {
@@ -130,8 +161,7 @@ public class StandardDiff implements org.exist.versioning.Diff {
                         LOG.trace(Integer.toString(i) + " " + nodesB[i]);
                     nodes[j] = nodesB[i];
                 }
-                diff.setNodes(nodes);
-                changes.add(diff);
+                diff.addNodes(nodes);
             }
             if (next.deleted > 0) {
                 if (LOG.isTraceEnabled())
@@ -157,6 +187,9 @@ public class StandardDiff implements org.exist.versioning.Diff {
                 }
             }
             next = next.link;
+        }
+        for (Iterator i = inserts.values().iterator(); i.hasNext();) {
+            changes.add(i.next());
         }
         return changes;
     }

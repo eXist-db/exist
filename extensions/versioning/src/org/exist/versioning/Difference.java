@@ -13,7 +13,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamReader;
 
-public abstract class Difference {
+public abstract class Difference implements Comparable {
 
     public final static int INSERT = 0;
     public final static int DELETE = 1;
@@ -42,6 +42,16 @@ public abstract class Difference {
 
     public abstract void serialize(DBBroker broker, Receiver handler);
 
+    public boolean equals(Object obj) {
+        Difference other = (Difference) obj;
+        return refChild.getNodeId().equals(other.refChild.getNodeId());
+    }
+
+    public int compareTo(Object obj) {
+        Difference other = (Difference) obj;
+        return refChild.getNodeId().compareTo(other.refChild.getNodeId());
+    }
+
     public static class Insert extends Difference {
 
         protected DocumentImpl otherDoc;
@@ -57,8 +67,15 @@ public abstract class Difference {
             this.otherDoc = otherDoc;
         }
 
-        protected void setNodes(DiffNode[] nodes) {
-            this.nodes = nodes;
+        protected void addNodes(DiffNode[] nodesToAdd) {
+            if (nodes == null)
+                nodes = nodesToAdd;
+            else {
+                DiffNode n[] = new DiffNode[nodes.length + nodesToAdd.length];
+                System.arraycopy(nodes, 0, n, 0, nodes.length);
+                System.arraycopy(nodesToAdd, 0, n, nodes.length, nodesToAdd.length);
+                nodes = n;
+            }
         }
 
         public void serialize(DBBroker broker, Receiver handler) {
