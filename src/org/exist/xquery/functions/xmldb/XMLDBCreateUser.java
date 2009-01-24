@@ -90,13 +90,13 @@ public class XMLDBCreateUser extends BasicFunction {
         for (int x = 0; x < len; x++)
             userObj.addGroup(groups.itemAt(x).getStringValue());
         
-        if("".equals(args[3].getStringValue()))
-            throw new XPathException(getASTNode(), "Empty user collection");
+        if(!"".equals(args[3].getStringValue())) {
         try {
         	userObj.setHome(new AnyURIValue(args[3].getStringValue()).toXmldbURI());
         } catch(XPathException e) {
         	throw new XPathException(getASTNode(),"Invalid home collection URI",e);
         }
+		}
         Collection collection = null;
 		try {
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
