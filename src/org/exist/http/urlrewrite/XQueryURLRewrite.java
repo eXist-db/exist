@@ -307,16 +307,15 @@ public class XQueryURLRewrite implements Filter {
                 if (modelView.useCache()) {
                     urlCache.put(request.getRequestURI(), modelView);
                 }
-            } else
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Request URI found in cache: " + request.getRequestURI());
-
+            } 
             if (LOG.isDebugEnabled())
                 LOG.debug("URLRewrite took " + (System.currentTimeMillis() - start) + "ms.");
 
             HttpServletResponse wrappedResponse = response;
             if (modelView.hasViews())
                 wrappedResponse = new CachingResponseWrapper(response);
+			if (modelView.getModel() == null)
+                modelView.setModel(new PassThrough(request.getRequestURI()));
             modelView.getModel().prepareRequest(modifiedRequest);
             modelView.getModel().doRewrite(modifiedRequest, wrappedResponse, filterChain);
 
@@ -357,12 +356,12 @@ public class XQueryURLRewrite implements Filter {
 //                writeResults(response, broker, result);
 //            }
         } catch (EXistException e) {
-            LOG.error(e);
+            LOG.error(e.getMessage(), e);
             throw new ServletException("An error occurred while retrieving query results: " 
                     + e.getMessage(), e);
 
         } catch (XPathException e) {
-            LOG.error(e);
+            LOG.error(e.getMessage(), e);
             throw new ServletException("An error occurred while executing the urlrewrite query: " 
                     + e.getMessage(), e);
 
@@ -370,7 +369,7 @@ public class XQueryURLRewrite implements Filter {
 //            throw new ServletException("Error while serializing results: " + e.getMessage(), e);
             
         } catch (Throwable e){
-            LOG.error(e);
+            LOG.error(e.getMessage(), e);
             throw new ServletException("An error occurred: "
                     + e.getMessage(), e);
         }
