@@ -26,6 +26,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -406,7 +407,12 @@ public class Transform extends BasicFunction {
 				long modified = connection.getLastModified();
 				if(templates == null || modified > lastModified || modified == 0) {
 					LOG.debug("compiling stylesheet " + url.toString());
-					templates = factory.newTemplates(new StreamSource(connection.getInputStream()));
+                    InputStream is = connection.getInputStream();
+                    try {
+                        templates = factory.newTemplates(new StreamSource(is));
+                    } finally {
+                        is.close();
+                    }
 				}
 				lastModified = modified;
 			}
