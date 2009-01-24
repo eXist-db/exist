@@ -48,7 +48,7 @@ public abstract class URLRewrite {
     protected URLRewrite(Element config, String uri) {
         this.uri = uri;
         // Check for add-parameter elements etc.
-        if (config.hasChildNodes()) {
+        if (config != null && config.hasChildNodes()) {
             Node node = config.getFirstChild();
             while (node != null) {
                 if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
