@@ -450,8 +450,11 @@ public class Transform extends BasicFunction {
 				if(templates == null || modified > lastModified || modified == 0) {
 					LOG.debug("compiling stylesheet " + url.toString());
                     InputStream is = connection.getInputStream();
-					templates = factory.newTemplates(new StreamSource(is));
-                    is.close();
+                    try {
+                        templates = factory.newTemplates(new StreamSource(is));
+                    } finally {
+                        is.close();
+                    }
 				}
 				lastModified = modified;
 			}
