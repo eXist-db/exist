@@ -22,6 +22,8 @@
 
 package org.exist.xquery.modules.sql;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -37,6 +39,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
@@ -51,8 +54,8 @@ import org.w3c.dom.Node;
  * Execute a SQL statement against a SQL capable Database
  * 
  * @author Adam Retter <adam@exist-db.org>
- * @serial 2008-05-19
- * @version 1.11
+ * @serial 2009-01-25
+ * @version 1.13
  * 
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
  *      org.exist.xquery.FunctionSignature)
@@ -216,15 +219,65 @@ public class ExecuteFunction extends BasicFunction
 			if( count != null ) {
 				count.setNodeValue( String.valueOf( iRow ) );
 			}
+			builder.endDocument();
+			
 			
 			// return the XML result set
-			
 			return( node );
 			
 		} 
-		catch( SQLException sqle ) {
+		catch(SQLException sqle)
+		{
 			LOG.error( "sql:execute() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle );
-			throw( new XPathException( getASTNode(), "sql:execute() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle ) );
+			
+			//return details about the SQLException
+			MemTreeBuilder builder = context.getDocumentBuilder();
+			
+			builder.startDocument();
+			builder.startElement(new QName("exception", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+			
+			boolean recoverable = false;
+			/* if(sqle instanceof SQLRecoverableException)
+			{
+				recoverable = true;
+			}*/ // NOT UNTIL JDK 6!
+			builder.addAttribute(new QName("recoverable", null, null), String.valueOf(recoverable));
+			
+			
+			builder.startElement(new QName("state", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+			builder.characters(sqle.getSQLState());
+			builder.endElement();
+			
+			builder.startElement(new QName("message", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+			builder.characters(sqle.getMessage());
+			builder.endElement();
+			
+			builder.startElement(new QName("stack-trace", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+			ByteArrayOutputStream bufStackTrace = new ByteArrayOutputStream();
+			sqle.printStackTrace(new PrintStream(bufStackTrace));
+			builder.characters(new String(bufStackTrace.toByteArray()));
+			builder.endElement();
+			
+			builder.startElement(new QName("sql", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+			builder.characters(escapeXmlText(sql));
+			builder.endElement();
+			
+			XQueryAST astNode = getASTNode();
+			if(astNode != null)
+			{
+				int line = astNode.getLine();
+				int column = astNode.getColumn();
+				
+				builder.startElement(new QName("xquery", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+				builder.addAttribute(new QName("line", null, null), String.valueOf(line));
+				builder.addAttribute(new QName("column", null, null), String.valueOf(column));
+				builder.endElement();
+			}
+			
+			builder.endElement();
+			builder.endDocument();
+			
+			return (NodeValue)builder.getDocument().getDocumentElement();
 		} 
 		finally {
 			// close any record set or statement
