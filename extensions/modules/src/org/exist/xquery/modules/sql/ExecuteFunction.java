@@ -223,8 +223,8 @@ public class ExecuteFunction extends BasicFunction
 			
 		} 
 		catch( SQLException sqle ) {
-			LOG.error( "sql:execute() Caught SQLException for SQL: \"" + sql + "\"", sqle );
-			throw( new XPathException( getASTNode(), "sql:execute() Caught SQLException for SQL: \"" + sql + "\"", sqle ) );
+			LOG.error( "sql:execute() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle );
+			throw( new XPathException( getASTNode(), "sql:execute() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle ) );
 		} 
 		finally {
 			// close any record set or statement
