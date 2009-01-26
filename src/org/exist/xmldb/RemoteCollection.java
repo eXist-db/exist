@@ -601,6 +601,15 @@ public class RemoteCollection implements CollectionImpl {
 				params.add(new Integer(len));
 				fileName = (String) rpcClient.execute("uploadCompressed", params);
 			}
+			// Zero length stream? Let's get a fileName!
+			if(fileName==null) {
+				compressed=Compressor.compress(new byte[0],0);
+				params = new ArrayList(3);
+				params.add(compressed);
+				params.add(new Integer(0));
+				fileName = (String) rpcClient.execute("uploadCompressed", params);
+			}
+
 			params = new ArrayList(6);
 			params.add(fileName);
 			try {
