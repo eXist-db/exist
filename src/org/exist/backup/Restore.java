@@ -278,7 +278,7 @@ public class Restore extends DefaultHandler {
 						return;
 					}
 				}
-				InputSource is=contents.getInputSource(filename);
+				EXistInputSource is=contents.getInputSource(filename);
 				try {
 					if (dialog != null && current instanceof Observable) {
 						((Observable) current).addObserver(dialog.getObserver());
@@ -290,7 +290,11 @@ public class Restore extends DefaultHandler {
 					if (mimetype != null)
 						((EXistResource)res).setMimeType(mimetype);
 
-					res.setContent(is);
+					if(is.getByteStreamLength() > 0) {
+						res.setContent(is);
+					} else {
+						res.setContent("");
+					}
 
     				// Restoring name
 					
