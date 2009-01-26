@@ -7,13 +7,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
-      <properties />
-    </buildFile>
-    <buildFile url="file://$PROJECT_DIR$/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
-      <customJdkName value="" />
-      <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
   </component>
@@ -39,7 +33,6 @@
     <option name="DEFAULT_COMPILER" value="Javac" />
     <option name="DEPLOY_AFTER_MAKE" value="0" />
     <excludeFromCompile>
-      <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/xquery/modules/spatial/FunGeometricProperties.java" />
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/xquery/modules/spatial/FunGeometricProperties.java" />
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndexWorker.java" />
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/AbstractGMLJDBCIndexWorker.java" />
@@ -95,6 +88,7 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
     <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
+  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false" />
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
   </component>
@@ -275,13 +269,16 @@
       </item>
     </group>
   </component>
+  <component name="ProjectDetails">
+    <option name="projectName" value="eXist" />
+  </component>
   <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/eXist.iml" filepath="$PROJECT_DIR$/eXist.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6 (3)" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/intellij" />
   </component>
   <component name="ResourceManagerContainer">
@@ -317,7 +314,7 @@
         </entry>
       </map>
     </option>
-    <option name="myVersion" value="123" />
+    <option name="myVersion" value="124" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
@@ -340,7 +337,9 @@
         <root url="file://$PROJECT_DIR$/tools/wrapper/lib" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../Development/jetty-5.1.12/src" />
+      </SOURCES>
       <jarDirectory url="file://$PROJECT_DIR$/tools/ant/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tools/wrapper/lib" recursive="false" />
     </library>
@@ -403,10 +402,12 @@
         <root url="file://$PROJECT_DIR$/lib/extensions" />
         <root url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" />
         <root url="file://$PROJECT_DIR$/extensions/fluent/lib" />
+        <root url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/lib/extensions" recursive="false" />
     </library>
