@@ -126,6 +126,14 @@ public class RemoteResourceSet implements ResourceSet {
         resources.get( (int) pos );
     }
 
+    protected void finalize() throws Throwable {
+        try {
+            clear();
+        } finally {
+            super.finalize();
+        }
+    }
+
     class NewResourceIterator implements ResourceIterator {
 
         long pos = 0;
