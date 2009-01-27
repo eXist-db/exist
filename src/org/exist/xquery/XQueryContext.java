@@ -293,7 +293,7 @@ public class XQueryContext {
      * Shared name pool used by all in-memory documents constructed in
      * this query context.
      */
-    private NamePool sharedNamePool = new NamePool();
+    private NamePool sharedNamePool = null; 
     
     /**
 	 * Stack for temporary document fragments
@@ -1705,6 +1705,8 @@ public class XQueryContext {
      * @return the shared name pool
      */
     public NamePool getSharedNamePool() {
+        if (sharedNamePool == null)
+            sharedNamePool = new NamePool();
         return sharedNamePool;
     }
     
