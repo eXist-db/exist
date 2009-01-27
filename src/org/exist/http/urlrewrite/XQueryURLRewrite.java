@@ -216,7 +216,8 @@ public class XQueryURLRewrite implements Filter {
             }
         }
 
-        LOG.debug(request.getRequestURI());
+        if (LOG.isTraceEnabled())
+            LOG.trace(request.getRequestURI());
         
         try {
             configure();
@@ -308,8 +309,8 @@ public class XQueryURLRewrite implements Filter {
                     urlCache.put(request.getRequestURI(), modelView);
                 }
             } 
-            if (LOG.isDebugEnabled())
-                LOG.debug("URLRewrite took " + (System.currentTimeMillis() - start) + "ms.");
+            if (LOG.isTraceEnabled())
+                LOG.trace("URLRewrite took " + (System.currentTimeMillis() - start) + "ms.");
 
             HttpServletResponse wrappedResponse = response;
             if (modelView.hasViews())
