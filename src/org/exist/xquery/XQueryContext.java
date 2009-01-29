@@ -2007,7 +2007,7 @@ public class XQueryContext {
 			
 			//Is the module's namespace mapped to a URL ?
 			if (mappedModules.containsKey(location))
-				location = ((XmldbURI)mappedModules.get(location)).toString();
+				location = mappedModules.get(location).toString();
 			
 			// is it a Java module?
 			if(location.startsWith(JAVA_URI_START)) {
@@ -2015,8 +2015,9 @@ public class XQueryContext {
 				module = loadBuiltInModule(namespaceURI, location);
 			} else {
 				Source source;
-                if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) || 
-                        moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) ||
+                        (location.indexOf(':') < 0 &&
+                        moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
                     // Is the module source stored in the database?
     				try {
     					XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
