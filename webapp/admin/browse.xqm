@@ -252,11 +252,13 @@ declare function browse:display-child-collections($colName as xs:string) as elem
 
 declare function browse:display-child-resources($colName as xs:string) as element()* 
 {
-    for $child in xdb:get-child-resources($colName) order by $child 
+    for $child in xdb:get-child-resources($colName)
+    let $restUri := concat(request:get-context-path(), '/rest')
+    order by $child 
 	return
         <tr>
             <td><input type="checkbox" name="resource" value="{$colName}/{$child}"/></td>
-            <td><a target="_new" href="../rest/{xdb:encode-uri($colName)}/{xdb:encode-uri($child)}">{xdb:decode-uri(xs:anyURI($child))}</a></td>
+            <td><a target="_new" href="{$restUri}/{xdb:encode-uri($colName)}/{xdb:encode-uri($child)}">{xdb:decode-uri(xs:anyURI($child))}</a></td>
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($colName, $child))}</td>
             <td>{xdb:get-owner($colName, $child)}</td>
             <td>{xdb:get-group($colName, $child)}</td>
