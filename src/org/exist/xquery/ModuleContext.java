@@ -55,6 +55,10 @@ public class ModuleContext extends XQueryContext {
 		loadDefaults(broker.getConfiguration());
     }
 	
+	String getModuleNamespace() {
+		return moduleNamespace;
+	}
+	
 	void setModulesChanged() {
 		parentContext.setModulesChanged();
 	}
