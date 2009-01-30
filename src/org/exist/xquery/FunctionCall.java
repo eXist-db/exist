@@ -96,7 +96,10 @@ public class FunctionCall extends Function {
 	private void updateFunction() {
 		if (functionDef.getContext() instanceof ModuleContext) {
 			ModuleContext modContext = (ModuleContext) functionDef.getContext();
-			if (modContext.getParentContext() != context) {
+			// util:eval will stuff non-module function declarations into a module context sometimes,
+			// so watch out for those and ignore them.
+			if (functionDef.getName().getNamespaceURI().equals(modContext.getModuleNamespace()) &&
+					modContext.getParentContext() != context) {
 				UserDefinedFunction replacementFunctionDef =
 					((ExternalModule) context.getModule(functionDef.getName().getNamespaceURI()))
 					.getFunction(functionDef.getName(), getArgumentCount());
