@@ -86,7 +86,7 @@
                     <title>JLine</title>
                     <description>JLine</description>
                     <used-by>exist</used-by>
-                    <lib>optional/jline-0_9_5.jar</lib>
+                    <lib>optional/jline-0.9.5.jar</lib>
                     <homepage>http://jline.sourceforge.net/</homepage>
                 </file>
                 <file>
