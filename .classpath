@@ -97,8 +97,8 @@
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-api-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/quartz-1.6.4.jar"/>
-	<classpathentry kind="lib" path="lib/core/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/core/commons-collections-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/resolver-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/stax-api-1.0.1.jar"/>
