@@ -5,7 +5,7 @@ at "java:org.exist.backup.xquery.BackupModule";
 import module namespace date="http://exist-db.org/xquery/admin-interface/date" at "dates.xqm";
 import module namespace system="http://exist-db.org/xquery/system";
 
-declare variable $backup:BACKUP_DIR := "sanity";
+declare variable $backup:BACKUP_DIR := "export";
 
 declare function backup:main() as element() {
     let $action := request:get-parameter("action", "refresh")

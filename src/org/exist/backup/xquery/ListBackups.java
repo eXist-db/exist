@@ -23,9 +23,6 @@ package org.exist.backup.xquery;
 
 import org.exist.Namespaces;
 import org.exist.backup.BackupDirectory;
-import org.exist.backup.BackupReader;
-import org.exist.backup.FileSystemReader;
-import org.exist.backup.ZipReader;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.ZipArchiveBackupDescriptor;
 import org.exist.backup.FileSystemBackupDescriptor;
