@@ -2,6 +2,11 @@ package org.exist.backup;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.util.Properties;
 
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileInputSource;
@@ -55,4 +60,27 @@ public class FileSystemBackupDescriptor
 			resbase=new File(resbase,BackupDescriptor.COLLECTION_DESCRIPTOR);
 		return resbase.getAbsolutePath();
 	}
+
+    public Properties getProperties() throws IOException {
+        File dir = descriptor.getParentFile();
+        if (dir != null) {
+            File parentDir = dir.getParentFile();
+            if (parentDir != null) {
+                File propFile = new File(parentDir, BACKUP_PROPERTIES);
+                InputStream is = new BufferedInputStream(new FileInputStream(propFile));
+                Properties properties = new Properties();
+                try {
+                    properties.load(is);
+                } finally {
+                    is.close();
+                }
+                return properties;
+            }
+        }
+        return null;
+    }
+
+    public File getParentDir() {
+        return descriptor.getParentFile().getParentFile().getParentFile();
+    }
 }

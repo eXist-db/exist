@@ -36,6 +36,7 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Stack;
+import java.util.Properties;
 
 
 /**
@@ -77,32 +78,45 @@ public class Restore extends DefaultHandler {
 		SAXParser sax = saxFactory.newSAXParser();
 		reader = sax.getXMLReader();
 		reader.setContentHandler(this);
-		
-		BackupDescriptor bd=null;
-		
-		try {
-			if(contents.isDirectory()) {
-				bd=new FileSystemBackupDescriptor(new File(contents,BackupDescriptor.COLLECTION_DESCRIPTOR));
-			} else if(contents.getName().endsWith(".zip") || contents.getName().endsWith(".ZIP")) {
-				bd=new ZipArchiveBackupDescriptor(contents);
-			} else {
-				bd=new FileSystemBackupDescriptor(contents);
-			}
-		} catch(Exception e) {
-			throw new SAXException("Unable to create backup descriptor object from "+contents,e);
-		}
-		
-		stack.push(bd);
 
-		// check if the system collection is in the backup. We have to process
-		// this first to create users.
-		File dir = contents.getParentFile();	
-		//TODO : find a way to make a corespondance with DBRoker's named constants
-		BackupDescriptor sysbd=bd.getChildBackupDescriptor("system");
-		if (sysbd!=null) {
-			stack.push(sysbd);
-		}
-	}
+
+        do {
+            BackupDescriptor bd=null;
+            Properties properties = null;
+            try {
+                if(contents.isDirectory()) {
+                    bd=new FileSystemBackupDescriptor(new File(contents,BackupDescriptor.COLLECTION_DESCRIPTOR));
+                } else if(contents.getName().endsWith(".zip") || contents.getName().endsWith(".ZIP")) {
+                    bd=new ZipArchiveBackupDescriptor(contents);
+                } else {
+                    bd=new FileSystemBackupDescriptor(contents);
+                }
+                properties = bd.getProperties();
+            } catch(Exception e) {
+                throw new SAXException("Unable to create backup descriptor object from "+contents,e);
+            }
+
+            stack.push(bd);
+
+            // check if the system collection is in the backup. We have to process
+            // this first to create users.
+            //TODO : find a way to make a corespondance with DBRoker's named constants
+            BackupDescriptor sysbd=bd.getChildBackupDescriptor("system");
+            if (sysbd!=null) {
+                stack.push(sysbd);
+            }
+
+            contents = null;
+            if (properties != null && properties.getProperty("incremental", "no").equals("yes")) {
+                String previous = properties.getProperty("previous", "");
+                if (previous.length() > 0) {
+                    contents = new File(bd.getParentDir(), previous);
+                    if (!contents.canRead())
+                        throw new SAXException("Required part of incremental backup not found: " + contents.getAbsolutePath());
+                }
+            }
+        } while (contents != null);
+    }
 
 	public void restore(boolean showGUI, JFrame parent)
 		throws XMLDBException, FileNotFoundException, IOException, SAXException {
@@ -114,6 +128,7 @@ public class Restore extends DefaultHandler {
 					while (!stack.isEmpty()) {
 						try {
 							contents = (BackupDescriptor) stack.pop();
+                            dialog.setBackup(contents.getSymbolicPath());
 							reader.parse(contents.getInputSource());
 						} catch (FileNotFoundException e) {
 							dialog.displayMessage(e.getMessage());
@@ -236,127 +251,129 @@ public class Restore extends DefaultHandler {
 					stack.push(subbd);
 				else
 					System.err.println(name + " does not exist or is not readable.");
-			} else if (localName.equals("resource")) {
+            } else if (localName.equals("resource")) {
+                String skip = atts.getValue("skip");
+                if (skip == null || skip.equals("no")) {
+                    String type = atts.getValue("type");
+                    if(type == null)
+                        type ="XMLResource";
+                    final String name = atts.getValue("name");
+                    final String owner = atts.getValue("owner");
+                    final String group = atts.getValue("group");
+                    final String perms = atts.getValue("mode");
 
-				String type = atts.getValue("type");
-				if(type == null)
-					type ="XMLResource";
-				final String name = atts.getValue("name");
-				final String owner = atts.getValue("owner");
-				final String group = atts.getValue("group");
-				final String perms = atts.getValue("mode");
-				
-				String filename = atts.getValue("filename");
-				final String mimetype = atts.getValue("mimetype");
-				final String created = atts.getValue("created");
-				final String modified = atts.getValue("modified");
+                    String filename = atts.getValue("filename");
+                    final String mimetype = atts.getValue("mimetype");
+                    final String created = atts.getValue("created");
+                    final String modified = atts.getValue("modified");
 
-				final String publicid = atts.getValue("publicid");
-				final String systemid = atts.getValue("systemid");
-				final String namedoctype = atts.getValue("namedoctype");
-				
-				if (filename == null) filename = name;
+                    final String publicid = atts.getValue("publicid");
+                    final String systemid = atts.getValue("systemid");
+                    final String namedoctype = atts.getValue("namedoctype");
 
-				if (name == null) {
-                    if (dialog != null)
-                        dialog.displayMessage("Wrong entry in backup descriptor: resource requires a name attribute.");
-                    else
-                        System.err.println("Wrong entry in backup descriptor: resource requires a name attribute.");
-                }
-				XmldbURI docUri;
-				if(version >= strictUriVersion) {
-					docUri = XmldbURI.create(name);
-				} else {
-					try {
-						docUri = URIUtils.encodeXmldbUriFor(name);
-					} catch (URISyntaxException e) {
-						String message = "Could not parse document name into a URI: "+e.getMessage();
-	                    if (dialog != null)
-	                        dialog.displayMessage(message);
-	                    else
-	                        System.err.println(message);
-						return;
-					}
-				}
-				EXistInputSource is=contents.getInputSource(filename);
-				try {
-					if (dialog != null && current instanceof Observable) {
-						((Observable) current).addObserver(dialog.getObserver());
-					}
-					if(dialog != null)
-						dialog.setResource(name);
-					final Resource res =
-						current.createResource(docUri.toString(), type);
-					if (mimetype != null)
-						((EXistResource)res).setMimeType(mimetype);
+                    if (filename == null) filename = name;
 
-					if(is.getByteStreamLength() > 0) {
-						res.setContent(is);
-					} else {
-						res.setContent("");
-					}
-
-    				// Restoring name
-					
-					Date date_created = null;
-					Date date_modified = null;
-					
-					if (created != null)
-						try {
-							date_created = (Date)(new DateTimeValue(created)).getDate();
-						} catch (XPathException e2) {
-                            System.err.println("Illegal creation date. Skipping ...");
-						} 
-					
-					if (modified != null)
-						try {
-							date_modified = (Date)(new DateTimeValue(modified)).getDate();
-						} catch (XPathException e2) {
-                            System.err.println("Illegal modification date. Skipping ...");
-						} 
-					
-					current.storeResource(res, date_created, date_modified);
-					
-					
-					if (publicid != null  || systemid != null )
-					{
-						DocumentType doctype = new DocumentTypeImpl(namedoctype,publicid,systemid );
-						try {
-						((EXistResource)res).setDocType(doctype);
-						} catch (XMLDBException e1) {							
-							e1.printStackTrace();							
-						}
-					}
-					
-					UserManagementService service =
-						(UserManagementService) current.getService("UserManagementService", "1.0");
-					User u = new User(owner, null, group);
-					try {
-						service.chown(res, u, group);
-					} catch (XMLDBException e1) {
-						if(dialog != null) {
-							dialog.displayMessage("Failed to change owner on document '" + name + "'; skipping ...");
+                    if (name == null) {
+                        if (dialog != null)
+                            dialog.displayMessage("Wrong entry in backup descriptor: resource requires a name attribute.");
+                        else
+                            System.err.println("Wrong entry in backup descriptor: resource requires a name attribute.");
+                    }
+                    XmldbURI docUri;
+                    if(version >= strictUriVersion) {
+                        docUri = XmldbURI.create(name);
+                    } else {
+                        try {
+                            docUri = URIUtils.encodeXmldbUriFor(name);
+                        } catch (URISyntaxException e) {
+                            String message = "Could not parse document name into a URI: "+e.getMessage();
+                            if (dialog != null)
+                                dialog.displayMessage(message);
+                            else
+                                System.err.println(message);
+                            return;
                         }
-					}
-					service.chmod(res, Integer.parseInt(perms, 8));
-					if(dialog != null)
-						dialog.displayMessage("restored " + name);
-				} catch (Exception e) {
-                    if (dialog != null) {
+                    }
+                    EXistInputSource is=contents.getInputSource(filename);
+                    try {
+                        if (dialog != null && current instanceof Observable) {
+                            ((Observable) current).addObserver(dialog.getObserver());
+                        }
+                        if(dialog != null)
+                            dialog.setResource(name);
+                        final Resource res =
+                                current.createResource(docUri.toString(), type);
+                        if (mimetype != null)
+                            ((EXistResource)res).setMimeType(mimetype);
+
+                        if(is.getByteStreamLength() > 0) {
+                            res.setContent(is);
+                        } else {
+                            res.setContent("");
+                        }
+
+                        // Restoring name
+
+                        Date date_created = null;
+                        Date date_modified = null;
+
+                        if (created != null)
+                            try {
+                                date_created = (Date)(new DateTimeValue(created)).getDate();
+                            } catch (XPathException e2) {
+                                System.err.println("Illegal creation date. Skipping ...");
+                            }
+
+                        if (modified != null)
+                            try {
+                                date_modified = (Date)(new DateTimeValue(modified)).getDate();
+                            } catch (XPathException e2) {
+                                System.err.println("Illegal modification date. Skipping ...");
+                            }
+
+                        current.storeResource(res, date_created, date_modified);
+
+
+                        if (publicid != null  || systemid != null )
+                        {
+                            DocumentType doctype = new DocumentTypeImpl(namedoctype,publicid,systemid );
+                            try {
+                                ((EXistResource)res).setDocType(doctype);
+                            } catch (XMLDBException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+
+                        UserManagementService service =
+                                (UserManagementService) current.getService("UserManagementService", "1.0");
+                        User u = new User(owner, null, group);
+                        try {
+                            service.chown(res, u, group);
+                        } catch (XMLDBException e1) {
+                            if(dialog != null) {
+                                dialog.displayMessage("Failed to change owner on document '" + name + "'; skipping ...");
+                            }
+                        }
+                        service.chmod(res, Integer.parseInt(perms, 8));
+                        if(dialog != null)
+                            dialog.displayMessage("restored " + name);
+                    } catch (Exception e) {
+                        if (dialog != null) {
                             dialog.displayMessage("Failed to restore resource '" + name + "'\nfrom file '" +
                                     contents.getSymbolicPath(name,false) + "'.\nReason: " + e.getMessage());
                             showErrorMessage(
                                     "Failed to restore resource '" + name + "' from file: '" +
-                                    contents.getSymbolicPath(name,false) + "'.\n\nReason: " + e.getMessage()
+                                            contents.getSymbolicPath(name,false) + "'.\n\nReason: " + e.getMessage()
                             );
-                    } else {
-                        System.err.println("Failed to restore resource '" + name + "' from file '" +
-                        		contents.getSymbolicPath(name,false) + "'");
-                        e.printStackTrace();
+                        } else {
+                            System.err.println("Failed to restore resource '" + name + "' from file '" +
+                                    contents.getSymbolicPath(name,false) + "'");
+                            e.printStackTrace();
+                        }
                     }
-				}
-			}
-		}
+                }
+            }
+        }
 	}
 
 	private final CollectionImpl mkcol(XmldbURI collPath, Date created) throws XMLDBException, URISyntaxException {

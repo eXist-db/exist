@@ -96,6 +96,7 @@ public class ExportGUI extends javax.swing.JFrame {
         jToolBar1 = new javax.swing.JToolBar();
         startBtn = new javax.swing.JButton();
         exportBtn = new javax.swing.JButton();
+        incrementalBtn = new JCheckBox("Incremental backup");
         outputDir = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         btnChangeDir = new javax.swing.JButton();
@@ -179,6 +180,8 @@ public class ExportGUI extends javax.swing.JFrame {
         });
         jToolBar1.add(exportBtn);
 
+        jToolBar1.add(incrementalBtn);
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -378,10 +381,11 @@ public class ExportGUI extends javax.swing.JFrame {
             progress.setMaximum(documentCount);
 
             displayMessage("Starting export ...");
+            boolean incremental = incrementalBtn.getSelectedObjects()[0] != null;
             SystemExport sysexport = new SystemExport(broker, callback);
-            sysexport.export(SystemExport.getUniqueFile("data", ".zip", exportTarget).getAbsolutePath(), errorList);
+            File file = sysexport.export(exportTarget, incremental, true, errorList);
 
-            displayMessage("Export completed successfully.");
+            displayMessage("Export to " + file.getAbsolutePath() + " completed successfully.");
             progress.setString("");
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
@@ -494,6 +498,7 @@ public class ExportGUI extends javax.swing.JFrame {
     private javax.swing.JLabel currentTask;
     private javax.swing.JTextField dbConfig;
     private javax.swing.JButton exportBtn;
+    private javax.swing.JCheckBox incrementalBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;

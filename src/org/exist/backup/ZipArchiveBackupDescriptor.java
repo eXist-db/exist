@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import java.util.Properties;
 
 import org.exist.util.EXistInputSource;
 import org.exist.util.ZipEntryInputSource;
@@ -16,7 +17,7 @@ public class ZipArchiveBackupDescriptor
 	protected ZipFile archive;
 	protected ZipEntry descriptor;
 	protected String base;
-	
+
 	public ZipArchiveBackupDescriptor(File fileArchive)
 		throws ZipException,IOException,FileNotFoundException
 	{
@@ -74,4 +75,18 @@ public class ZipArchiveBackupDescriptor
 			retval+="/"+BackupDescriptor.COLLECTION_DESCRIPTOR;
 		return retval;
 	}
+
+    public Properties getProperties() throws IOException {
+        Properties properties = null;
+        ZipEntry ze = archive.getEntry(BACKUP_PROPERTIES);
+        if (ze != null) {
+            properties = new Properties();
+            properties.load(archive.getInputStream(ze));
+        }
+        return properties;
+    }
+
+    public File getParentDir() {
+        return new File(archive.getName()).getParentFile();
+    }
 }

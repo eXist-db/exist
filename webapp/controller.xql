@@ -2,7 +2,38 @@
 	XQueryURLRewrite filter configured in web.xml. :)
 xquery version "1.0";
 
+declare namespace c="http://exist-db.org/xquery/controller";
+
 import module namespace request="http://exist-db.org/xquery/request";
+import module namespace xdb = "http://exist-db.org/xquery/xmldb";
+
+declare function c:admin($path as xs:string, $name as xs:string) {
+    if (starts-with($path, "/admin/backups")) then
+        let $user := xdb:get-current-user()
+        return
+            if (not(xdb:is-admin-user($user))) then
+                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        			<redirect url="../admin.xql"/>
+        		</dispatch>
+        	else
+                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                    <forward url="/admin/retrieve-backup.xql">
+                        <add-parameter name="archive" value="{$name}"/>
+                    </forward>
+                </dispatch>
+    else if (matches($path, "admin/?$")) then
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+			<redirect url="admin.xql"/>
+		</dispatch>
+    else if ($name eq "admin.xql") then
+	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+	        <forward url="/admin/admin.xql"/>
+	    </dispatch>
+    else
+        <ignore xmlns="http://exist.sourceforge.net/NS/exist">
+            <cache-control cache="yes"/>
+		</ignore>
+};
 
 let $uri := request:get-uri()
 let $context := request:get-context-path()
@@ -11,12 +42,12 @@ let $name := replace($uri, '^.*/([^/]+)$', '$1')
 let $query := request:get-parameter("q", ())
 return
 	(: redirect webapp root to index.xml :)
-	if ($path eq '/') then
+    if ($path eq '/') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<redirect url="index.xml"/>
 		</dispatch>
 	(: /rest and /webdav will be ignored :)
-	else if (matches($path, "/(rest|webdav|cocoon)")) then
+	else if (matches($path, "/(rest|webdav|cocoon|test.xml)")) then
 		<ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>
 		</ignore>
@@ -25,6 +56,8 @@ return
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<redirect url="sandbox.xql"/>
 		</dispatch>
+	else if (starts-with($path, "/admin")) then
+	    c:admin($path, $name)
 	else if ($name = ('search.xql', 'functions.xql')) then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<forward url="{$path}">

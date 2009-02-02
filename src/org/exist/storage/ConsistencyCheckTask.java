@@ -47,6 +47,7 @@ public class ConsistencyCheckTask implements SystemTask {
     private String exportDir;
     private boolean createBackup = false;
     private boolean paused = false;
+    private boolean incremental = false;
     
     public void configure(Configuration config, Properties properties) throws EXistException {
         exportDir = properties.getProperty("output", "export");
@@ -61,6 +62,8 @@ public class ConsistencyCheckTask implements SystemTask {
 
         String backup = properties.getProperty("backup", "no");
         createBackup = backup.equalsIgnoreCase("YES");
+        String inc = properties.getProperty("incremental", "yes");
+        incremental = inc.equalsIgnoreCase("YES");
     }
 
     public void execute(DBBroker broker) throws EXistException {
@@ -90,11 +93,10 @@ public class ConsistencyCheckTask implements SystemTask {
             }
             AgentFactory.getInstance().updateErrors(broker.getBrokerPool(), errors, start);
             if (doBackup) {
-                File exportFile = SystemExport.getUniqueFile("data", ".zip", exportDir);
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Creating emergency backup to file: " + exportFile.getAbsolutePath());
                 SystemExport sysexport = new SystemExport(broker, null);
-                sysexport.export(exportFile.getAbsolutePath(), errors);
+                File exportFile = sysexport.export(exportDir, incremental, true, errors);
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Created backup to file: " + exportFile.getAbsolutePath());
             }
         } finally {
             report.close();

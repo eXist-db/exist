@@ -3,6 +3,7 @@ package org.exist.backup;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.Properties;
 
 /**
  * Helper interface for writing backups. Serves as an abstraction for writing
@@ -23,4 +24,6 @@ public interface BackupWriter {
     void closeCollection();
 
     void close() throws IOException;
+
+    void setProperties(Properties properties) throws IOException;
 }
