@@ -56,6 +56,8 @@ public class OrderedValueSequence extends AbstractSequence {
     
 	public OrderedValueSequence(OrderSpec orderSpecs[], int size) {
 		this.orderSpecs = orderSpecs;
+        if (size == 0)
+            size = 1;
 		this.items = new Entry[size];
 	}
 
