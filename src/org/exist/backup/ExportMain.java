@@ -125,9 +125,8 @@ public class ExportMain {
                 File dir = new File(exportTarget);
                 if (!dir.exists())
                     dir.mkdirs();
-                File exportFile = SystemExport.getUniqueFile("data", ".zip", dir.getAbsolutePath());
                 SystemExport sysexport = new SystemExport(broker, new Callback());
-                sysexport.export(exportFile.getAbsolutePath(), errors);
+                sysexport.export(exportTarget, false, true, errors);
             }
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());

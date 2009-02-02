@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Properties;
 
 /**
  * Implementation of BackupWriter that writes to the file system.
@@ -17,9 +18,13 @@ public class FileSystemWriter implements BackupWriter {
     private File currentContents;
     private Writer currentContentsOut;
     private OutputStream currentOut;
+    private boolean dataWritten = false;
 
     public FileSystemWriter(String path) {
-        File file = new File(path);
+        this(new File(path));
+    }
+
+    public FileSystemWriter(File file) {
 		if(file.exists()) {
 			//removing "path"
 			file.delete();
@@ -34,6 +39,7 @@ public class FileSystemWriter implements BackupWriter {
 			file.delete();
 		}
 		file.mkdirs();
+        dataWritten = true;
         currentDir = file;
     }
 
@@ -49,6 +55,7 @@ public class FileSystemWriter implements BackupWriter {
         currentContentsOut =
 			new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(currentContents), "UTF-8"));
+        dataWritten = true;
         return currentContentsOut;
     }
 
@@ -58,10 +65,20 @@ public class FileSystemWriter implements BackupWriter {
 
     public OutputStream newEntry(String name) throws IOException {
         currentOut = new FileOutputStream(new File(currentDir, name));
+        dataWritten = true;
         return currentOut;
     }
 
     public void closeEntry() throws IOException {
         currentOut.close();
+    }
+
+    public void setProperties(Properties properties) throws IOException {
+        if (dataWritten)
+            throw new IOException("Backup properties need to be set before any backup data is written");
+        File propFile = new File(currentDir, "backup.properties");
+        Writer writer = new OutputStreamWriter(new FileOutputStream(propFile), "UTF-8");
+        properties.store(writer, "Backup properties");
+        writer.close();
     }
 }

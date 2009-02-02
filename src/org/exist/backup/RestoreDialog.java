@@ -29,6 +29,7 @@ import org.exist.util.ProgressIndicator;
 public class RestoreDialog extends JDialog {
 
 	JTextField currentCollection;
+    JTextField currentBackup;
 	JTextField resource;
 	JTextArea messages;
 	JProgressBar progress;
@@ -54,18 +55,35 @@ public class RestoreDialog extends JDialog {
 		GridBagConstraints c = new GridBagConstraints();
 		c.insets = new Insets(5, 5, 5, 5);
 
-		JLabel label = new JLabel("Collection:");
+        JLabel label = new JLabel("Backup:");
+        c.gridx = 0;
+        c.gridy = 0;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        grid.setConstraints(label, c);
+        getContentPane().add(label);
+
+        currentBackup = new JTextField(50);
+        currentBackup.setEditable(false);
+        c.gridx = 1;
+        c.gridy = 0;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        grid.setConstraints(currentBackup, c);
+        getContentPane().add(currentBackup);
+
+		label = new JLabel("Collection:");
 		c.gridx = 0;
-		c.gridy = 0;
+		c.gridy = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
-		currentCollection = new JTextField(40);
+		currentCollection = new JTextField(50);
 		currentCollection.setEditable(false);
 		c.gridx = 1;
-		c.gridy = 0;
+		c.gridy = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(currentCollection, c);
@@ -73,7 +91,7 @@ public class RestoreDialog extends JDialog {
 
 		label = new JLabel("Restoring:");
 		c.gridx = 0;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
@@ -82,7 +100,7 @@ public class RestoreDialog extends JDialog {
 		resource = new JTextField(40);
 		resource.setEditable(false);
 		c.gridx = 1;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(resource, c);
@@ -90,7 +108,7 @@ public class RestoreDialog extends JDialog {
 
 		label = new JLabel("Progress:");
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
@@ -100,7 +118,7 @@ public class RestoreDialog extends JDialog {
 		progress.setStringPainted(true);
 		progress.setString("");
 		c.gridx = 1;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(progress, c);
@@ -115,7 +133,7 @@ public class RestoreDialog extends JDialog {
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scroll.setBorder(BorderFactory.createTitledBorder("Messages"));
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 4;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -123,6 +141,10 @@ public class RestoreDialog extends JDialog {
 		getContentPane().add(scroll);
 	}
 
+    public void setBackup(String backup) {
+        currentBackup.setText(backup);
+    }
+    
 	public void setCollection(String collection) {
 		currentCollection.setText(collection);
 	}
