@@ -67,7 +67,7 @@ public class BasicAuthenticator implements Authenticator {
                 }
                 
 		//get the user from the session if possible
-		HttpSession session = request.getSession();
+		HttpSession session = request.getSession( false );
 		User user = null;
 		if(session != null)
 		{

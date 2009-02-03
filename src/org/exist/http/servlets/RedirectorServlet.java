@@ -171,7 +171,7 @@ public class RedirectorServlet extends HttpServlet {
             if(!((CollectionImpl)collection).isRemoteCollection()) {
                 service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, "UTF-8", "UTF-8"));
                 service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
-                service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(request.getSession()));
+                service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(request.getSession( false )));
             }
             ResourceSet result = service.execute(source);
 
