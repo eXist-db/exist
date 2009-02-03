@@ -744,7 +744,7 @@ public class SOAPServer
     	{
 	    	RequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
 	        context.declareVariable(RequestModule.PREFIX + ":request", reqw);
-	        context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession());
+	        context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession( false ));
     	}
         
     	if(response != null)

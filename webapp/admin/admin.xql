@@ -121,7 +121,7 @@ let $isLoggedIn :=  if(xdb:get-current-user() eq "guest")then
             else
             (
                 (: try and log the user in :)
-                xdb:login("/db", request:get-parameter("user", ()), request:get-parameter("pass", ()))
+                xdb:login( "/db", request:get-parameter("user", ()), request:get-parameter("pass", () ), true() )
             )
         )
         else
@@ -135,8 +135,10 @@ let $isLoggedIn :=  if(xdb:get-current-user() eq "guest")then
         (: if we are already logged in, are we logging out - i.e. set permissions back to guest :)
         if(request:get-parameter("logout",()))then
         (
-        	let $null := xdb:login("/db", "guest", "guest") return
-        	    false()
+        	let $null  := xdb:login("/db", "guest", "guest") 
+            let $inval := session:invalidate()
+            
+            return false()
         )
         else
         (

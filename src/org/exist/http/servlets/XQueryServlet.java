@@ -336,7 +336,7 @@ public class XQueryServlet extends HttpServlet {
         String moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
         String actualUser = null;
         String actualPassword = null;
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession( false );
         if(session != null && request.isRequestedSessionIdValid()) {
             actualUser = getSessionAttribute(session, "user");
             actualPassword = getSessionAttribute(session, "password");
@@ -356,7 +356,7 @@ public class XQueryServlet extends HttpServlet {
             if(!((CollectionImpl)collection).isRemoteCollection()) {
                 service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, formEncoding, containerEncoding));
                 service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
-                service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(session));
+                service.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
             }
             
             Source source = new FileSource(f, encoding, true);

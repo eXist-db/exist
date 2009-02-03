@@ -261,7 +261,7 @@ public class Query extends AtomModuleBase implements Atom {
        //context.declareNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
        context.declareVariable(RequestModule.PREFIX + ":request", reqw);
        context.declareVariable(ResponseModule.PREFIX + ":response", respw);
-       context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession());
+       context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession( false ));
    }
    
    public void doQuery(DBBroker broker,IncomingMessage request,OutgoingMessage response,MethodConfiguration config)

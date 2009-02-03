@@ -1130,8 +1130,7 @@ public class RESTServer {
 		// RequestModule.NAMESPACE_URI);
 		context.declareVariable(RequestModule.PREFIX + ":request", reqw);
 		context.declareVariable(ResponseModule.PREFIX + ":response", respw);
-		context.declareVariable(SessionModule.PREFIX + ":session", reqw
-				.getSession());
+		context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession( false ));
 		return reqw;
 	}
 
