@@ -77,8 +77,8 @@ public class FileSystemWriter implements BackupWriter {
         if (dataWritten)
             throw new IOException("Backup properties need to be set before any backup data is written");
         File propFile = new File(currentDir, "backup.properties");
-        Writer writer = new OutputStreamWriter(new FileOutputStream(propFile), "UTF-8");
-        properties.store(writer, "Backup properties");
-        writer.close();
+        OutputStream os = new FileOutputStream(propFile);
+        properties.store(os, "Backup properties");
+        os.close();
     }
 }
