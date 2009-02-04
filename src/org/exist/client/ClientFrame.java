@@ -55,6 +55,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -156,7 +157,8 @@ public class ClientFrame extends JFrame
     private XmldbURI path = null;
     private ProcessThread process = new ProcessThread();
     private Properties properties;
-    
+    private Preferences preferences;
+
     /**
      * @throws java.awt.HeadlessException
      */
@@ -177,6 +179,8 @@ public class ClientFrame extends JFrame
         
         process.start();
         shell.requestFocus();
+
+        preferences = Preferences.userNodeForPackage(ClientFrame.class);
     }
     
     private void setupComponents() {
@@ -1071,13 +1075,15 @@ public class ClientFrame extends JFrame
     
     private void uploadAction(ActionEvent ev) {
         // TODO store last file choose in properties
-        String dir = properties.getProperty(Messages.getString("ClientFrame.145"), SingleInstanceConfiguration.getPath()); //$NON-NLS-1$
-        JFileChooser chooser = new JFileChooser(dir);
+        JFileChooser chooser = new JFileChooser(preferences.get("directory.last", System.getProperty("user.dir")));
         chooser.setMultiSelectionEnabled(true);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.addChoosableFileFilter(new BinaryFileFilter());
         chooser.addChoosableFileFilter(new XMLFileFilter());
         if (chooser.showDialog(this, Messages.getString("ClientFrame.146")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$
+            // remember directory in preferences
+            preferences.put("directory.last", chooser.getCurrentDirectory().getAbsolutePath());
+
             final File[] files = chooser.getSelectedFiles();
             if (files.length > 0) {
                 new Thread() {
@@ -1093,9 +1099,6 @@ public class ClientFrame extends JFrame
                     }
                 }.start();
             }
-            File selectedDir = chooser.getCurrentDirectory();
-            properties
-                    .setProperty("working-dir", selectedDir.getAbsolutePath()); //$NON-NLS-1$
         }
     }
     
@@ -1119,11 +1122,11 @@ public class ClientFrame extends JFrame
                 properties.getProperty("uri", "xmldb:exist://"),  
                 properties.getProperty("user", "admin"),  
                 properties.getProperty("password", null), 
-                properties.getProperty("backup-dir", System.getProperty("user.home") 
-                + File.separatorChar + "eXist-backup.zip")); 
+                new File(preferences.get("directory.backup", System.getProperty("user.home")))); 
         if (JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), 
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, null, null) == JOptionPane.YES_OPTION) {
+            
             String collection = dialog.getCollection();
             String backuptarget = dialog.getBackupTarget();
             
@@ -1168,7 +1171,7 @@ public class ClientFrame extends JFrame
 
     
     private void restoreAction(ActionEvent ev) {
-        JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser(preferences.get("directory.backup", System.getProperty("user.dir")));
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter(new BackupContentsFilter());
@@ -1177,6 +1180,8 @@ public class ClientFrame extends JFrame
         //chooser.setSelectedFile(new File("eXist-backup.zip"));
 
         if (chooser.showDialog(null, Messages.getString("ClientFrame.169")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$
+            File f = chooser.getSelectedFile();
+            preferences.put("directory.backup", chooser.getCurrentDirectory().getAbsolutePath());
         	JPanel askPass = new JPanel(new BorderLayout());
         	askPass.add(new JLabel(Messages.getString("ClientFrame.170")), BorderLayout.NORTH); //$NON-NLS-1$
         	JPasswordField passInput = new JPasswordField(25);
@@ -1185,7 +1190,6 @@ public class ClientFrame extends JFrame
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, null, null) == JOptionPane.YES_OPTION) {
         		String newDbaPass = passInput.getPassword().length == 0 ? null : new String(passInput.getPassword());
-	            File f = chooser.getSelectedFile();
 	            String restoreFile = f.getAbsolutePath();
 	            try {
 	                Restore restore = new Restore(properties.getProperty("user", //$NON-NLS-1$
@@ -1226,18 +1230,17 @@ public class ClientFrame extends JFrame
         if (desc.isCollection())
             return;
 
-        String workDir = properties.getProperty("working-dir", System
-                .getProperty("user.dir"));
-        JFileChooser chooser = new JFileChooser(workDir);
+        JFileChooser chooser = new JFileChooser(preferences.get("directory.last", System.getProperty("user.dir")));
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setSelectedFile(new File(desc.getName().toString()));
         if (chooser.showDialog(this, "Select file for export") == JFileChooser.APPROVE_OPTION) {
+            preferences.put("directory.last", chooser.getCurrentDirectory().getAbsolutePath());
             File file = chooser.getSelectedFile();
             if (file.exists()
                     && JOptionPane.showConfirmDialog(this,
-                            "File exists. Overwrite?", "Overwrite?",
-                            JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
+                    "File exists. Overwrite?", "Overwrite?",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
                 return;
             Resource resource;
             FileOutputStream os;
@@ -1251,7 +1254,7 @@ public class ClientFrame extends JFrame
                             .getResource(desc.getName().toString());
                     os = new FileOutputStream(file);
                     if (resource.getResourceType().equals("BinaryResource")) {
-                        ((ExtendedResource)resource).getContentIntoAStream(os);
+                        ((ExtendedResource) resource).getContentIntoAStream(os);
                     } else {
 
                         writer = new BufferedWriter(new OutputStreamWriter(os,
@@ -1421,7 +1424,7 @@ public class ClientFrame extends JFrame
             e.printStackTrace();
         }
     }
-    
+
     private void close() {
         setVisible(false);
         dispose();

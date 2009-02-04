@@ -28,21 +28,23 @@ public class CreateBackupDialog extends JPanel {
 
 	JComboBox collections;
 	JTextField backupTarget;
+    File backupDir;
 	String uri;
 	String user;
 	String passwd;
 
-	public CreateBackupDialog(String uri, String user, String passwd, String backupDir)
+	public CreateBackupDialog(String uri, String user, String passwd, File backupDir)
 		throws HeadlessException {
 		super(false);
 		this.uri = uri;
 		this.user = user;
 		this.passwd = passwd;
-		setupComponents(backupDir);
+        this.backupDir = backupDir;
+		setupComponents();
 		setSize(new Dimension(350, 200));
 	}
 
-	private void setupComponents(String backupDir) {
+	private void setupComponents() {
 		GridBagLayout grid = new GridBagLayout();
 		setLayout(grid);
 		GridBagConstraints c = new GridBagConstraints();
@@ -77,7 +79,7 @@ public class CreateBackupDialog extends JPanel {
 		grid.setConstraints(label, c);
 		add(label);
 
-		backupTarget = new JTextField(backupDir, 40);
+		backupTarget = new JTextField(new File(backupDir, "eXist-backup.zip").getAbsolutePath(), 40);
 		c.gridx = 1;
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.EAST;
@@ -106,13 +108,14 @@ public class CreateBackupDialog extends JPanel {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/zip"));
-                chooser.setSelectedFile(new File("eXist-backup.zip"));
-		chooser.setCurrentDirectory(null);
+        chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/zip"));
+        chooser.setSelectedFile(new File("eXist-backup.zip"));
+		chooser.setCurrentDirectory(backupDir);
                
 		if (chooser.showDialog(this, Messages.getString("CreateBackupDialog.5"))
 			== JFileChooser.APPROVE_OPTION) {
 			backupTarget.setText(chooser.getSelectedFile().getAbsolutePath());
+            backupDir = chooser.getCurrentDirectory();
 		}
 	}
 
@@ -145,4 +148,8 @@ public class CreateBackupDialog extends JPanel {
 	public String getBackupTarget() {
 		return backupTarget.getText();
 	}
+
+    public File getBackupDir() {
+        return backupDir;
+    }
 }
