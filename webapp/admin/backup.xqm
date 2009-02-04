@@ -56,7 +56,6 @@ declare function backup:display() {
                 <h2>Available DB Backups</h2>
                 { backup:list-backups($backupDir) }
                 <button class="refresh" type="submit" name="action" value="refresh">Refresh</button>
-                <button type="submit" name="action" value="download">Download</button>
             </div>
             
             <div class="inner-panel">
