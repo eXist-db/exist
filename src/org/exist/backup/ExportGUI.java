@@ -381,7 +381,8 @@ public class ExportGUI extends javax.swing.JFrame {
             progress.setMaximum(documentCount);
 
             displayMessage("Starting export ...");
-            boolean incremental = incrementalBtn.getSelectedObjects()[0] != null;
+            Object[] selected = incrementalBtn.getSelectedObjects();
+            boolean incremental = selected != null && selected[0] != null;
             SystemExport sysexport = new SystemExport(broker, callback);
             File file = sysexport.export(exportTarget, incremental, true, errorList);
 

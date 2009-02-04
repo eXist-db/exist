@@ -21,6 +21,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
@@ -93,6 +94,7 @@ public class Restore extends DefaultHandler {
                 }
                 properties = bd.getProperties();
             } catch(Exception e) {
+                e.printStackTrace();
                 throw new SAXException("Unable to create backup descriptor object from "+contents,e);
             }
 
@@ -370,6 +372,39 @@ public class Restore extends DefaultHandler {
                                     contents.getSymbolicPath(name,false) + "'");
                             e.printStackTrace();
                         }
+                    }
+                }
+            } else if (localName.equals("deleted")) {
+                final String name = atts.getValue("name");
+                final String type = atts.getValue("type");
+                if (type.equals("collection")) {
+                    try {
+                        Collection child = current.getChildCollection(name);
+                        if (child != null) {
+                            CollectionManagementService cmgt = (CollectionManagementService)
+                                    current.getService("CollectionManagementService", "1.0");
+                            cmgt.removeCollection(name);
+                        }
+                    } catch (XMLDBException e) {
+                        if (dialog != null)
+                            dialog.displayMessage("Failed to remove deleted collection: " +
+                                name + ": " + e.getMessage());
+                        else
+                            System.err.println("Failed to remove deleted collection: " +
+                                name + ": " + e.getMessage());
+                    }
+                } else if (type.equals("resource")) {
+                    try {
+                        Resource resource = current.getResource(name);
+                        if (resource != null)
+                            current.removeResource(resource);
+                    } catch (XMLDBException e) {
+                        if (dialog != null)
+                            dialog.displayMessage("Failed to remove deleted resource: " + name + ": " +
+                                e.getMessage());
+                        else
+                            System.err.println("Failed to remove deleted resource: " + name + ": " +
+                                    e.getMessage());
                     }
                 }
             }

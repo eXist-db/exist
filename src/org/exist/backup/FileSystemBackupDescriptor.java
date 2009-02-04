@@ -7,15 +7,17 @@ import java.io.InputStream;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.util.Properties;
+import java.util.Date;
 
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileInputSource;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.DateTimeValue;
 
-public class FileSystemBackupDescriptor
-	implements BackupDescriptor
+public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 {
 	protected File descriptor;
-	
+
 	public FileSystemBackupDescriptor(File theDesc)
 		throws FileNotFoundException
 	{
@@ -36,7 +38,20 @@ public class FileSystemBackupDescriptor
 		return bd;
 	}
 
-	public EXistInputSource getInputSource() {
+    public BackupDescriptor getBackupDescriptor(String describedItem) {
+        String topDir = descriptor.getParentFile().getParentFile().getAbsolutePath();
+        String subDir = topDir + describedItem;
+        String desc = subDir + '/' + BackupDescriptor.COLLECTION_DESCRIPTOR;
+        BackupDescriptor bd=null;
+        try {
+            bd=new FileSystemBackupDescriptor(new File(desc));
+        } catch(FileNotFoundException fnfe) {
+            // DoNothing(R)
+        }
+        return bd;
+    }
+
+    public EXistInputSource getInputSource() {
 		return new FileInputSource(descriptor);
 	}
 
@@ -67,14 +82,18 @@ public class FileSystemBackupDescriptor
             File parentDir = dir.getParentFile();
             if (parentDir != null) {
                 File propFile = new File(parentDir, BACKUP_PROPERTIES);
-                InputStream is = new BufferedInputStream(new FileInputStream(propFile));
-                Properties properties = new Properties();
                 try {
-                    properties.load(is);
-                } finally {
-                    is.close();
+                    InputStream is = new BufferedInputStream(new FileInputStream(propFile));
+                    Properties properties = new Properties();
+                    try {
+                        properties.load(is);
+                    } finally {
+                        is.close();
+                    }
+                    return properties;
+                } catch (FileNotFoundException e) {
+                    // do nothing, return null
                 }
-                return properties;
             }
         }
         return null;
@@ -82,5 +101,9 @@ public class FileSystemBackupDescriptor
 
     public File getParentDir() {
         return descriptor.getParentFile().getParentFile().getParentFile();
+    }
+
+    public String getName() {
+        return descriptor.getParentFile().getParentFile().getName();
     }
 }
