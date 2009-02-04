@@ -69,6 +69,7 @@
                 <include name="mime-types.xml"/>
                 <include name="descriptor.xml"/>
                 <include name="log4j.dtd"/>
+                <include name="atom-services.xml"/>
             </webinf>
             
             <!-- Add files context root ('/') -->
