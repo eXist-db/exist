@@ -355,7 +355,7 @@
             <xsl:copy-of select="@width|@height"/>
         </img>
     </xsl:template>
-    <xsl:template match="filename|classname|methodname|option[not(ancestor::form)]|command|parameter|         guimenu|guimenuitem|function|envar">
+    <xsl:template match="filename|classname|methodname|option[not(ancestor::form)]|command|parameter|guimenu|guimenuitem|guibutton|function|envar">
         <span class="{local-name(.)}">
             <xsl:apply-templates/>
         </span>
