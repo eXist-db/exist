@@ -21,15 +21,21 @@
  */
 package org.exist.backup;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
+import java.text.ParseException;
 
 public class BackupDirectory {
+
+    public final static Logger LOG = Logger.getLogger(BackupDirectory.class);
 
     public final static String FILE_REGEX = "(full|inc)(\\d{8}-\\d{4}).*";
 
@@ -65,25 +71,41 @@ public class BackupDirectory {
         return file;
     }
 
-    public BackupFile lastBackupFile() {
+    public BackupDescriptor lastBackupFile() {
         File[] files = dir.listFiles(new FileFilter() {
             public boolean accept(File path) {
                 return path.isFile();
             }
         });
 
-        BackupFile newest = null;
+        File newest = null;
+        Date newestDate = null;
         for (int i = 0; i < files.length; i++) {
             matcher.reset(files[i].getName());
             if (matcher.matches()) {
                 String dateTime = matcher.group(2);
-                BackupFile backup = new BackupFile(files[i], dateTime);
-                if (newest == null || backup.after(newest)) {
-                    newest = backup;
+                try {
+                    Date date = DATE_FORMAT.parse(dateTime);
+                    if (newestDate == null || date.after(newestDate)) {
+                        newestDate = date;
+                        newest = files[i];
+                    }
+                } catch (ParseException e) {
                 }
             }
         }
-        return newest;
+        BackupDescriptor descriptor = null;
+        if (newest != null) {
+            try {
+                if (newest.getName().endsWith(".zip") || newest.getName().endsWith(".ZIP"))
+                    descriptor = new ZipArchiveBackupDescriptor(newest);
+                else
+                    descriptor = new FileSystemBackupDescriptor(new File(newest + "/db", BackupDescriptor.COLLECTION_DESCRIPTOR));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return descriptor;
     }
 
 }

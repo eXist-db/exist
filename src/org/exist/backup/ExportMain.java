@@ -42,6 +42,7 @@ public class ExportMain {
     private final static int EXPORT_OPT = 'x';
     private final static int OUTPUT_DIR_OPT = 'd';
     private final static int CONFIG_OPT = 'c';
+    private final static int INCREMENTAL_OPT = 'i';
 
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
@@ -52,7 +53,9 @@ public class ExportMain {
             CONFIG_OPT, "the database configuration (conf.xml) file to use " +
                 "for launching the db." ),
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            EXPORT_OPT, "export database contents while preserving as much data as possible" )
+            EXPORT_OPT, "export database contents while preserving as much data as possible" ),
+        new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED,
+            INCREMENTAL_OPT, "create incremental backup (use with --export|-x)")
     };
 
     protected static BrokerPool startDB(String configFile) {
@@ -79,6 +82,7 @@ public class ExportMain {
             return;
         }
         boolean export = false;
+        boolean incremental = false;
         String exportTarget = "export/";
         String dbConfig = null;
 
@@ -101,6 +105,9 @@ public class ExportMain {
                     break;
                 case EXPORT_OPT :
                     export = true;
+                    break;
+                case INCREMENTAL_OPT :
+                    incremental = true;
                     break;
             }
         }
@@ -126,7 +133,7 @@ public class ExportMain {
                 if (!dir.exists())
                     dir.mkdirs();
                 SystemExport sysexport = new SystemExport(broker, new Callback());
-                sysexport.export(exportTarget, false, true, errors);
+                sysexport.export(exportTarget, incremental, true, errors);
             }
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());

@@ -7,12 +7,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.Properties;
+import java.util.Date;
 
 import org.exist.util.EXistInputSource;
 import org.exist.util.ZipEntryInputSource;
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.XPathException;
 
-public class ZipArchiveBackupDescriptor
-	implements BackupDescriptor
+public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor
 {
 	protected ZipFile archive;
 	protected ZipEntry descriptor;
@@ -51,7 +53,21 @@ public class ZipArchiveBackupDescriptor
 		return bd;
 	}
 
-	public EXistInputSource getInputSource() {
+    public BackupDescriptor getBackupDescriptor(String describedItem) {
+        if (describedItem.length() > 0 && describedItem.charAt(0) == '/')
+            describedItem = describedItem.substring(1);
+        if (!describedItem.endsWith("/"))
+            describedItem = describedItem + '/';
+        BackupDescriptor bd = null;
+        try {
+            bd = new ZipArchiveBackupDescriptor(archive, describedItem);
+        } catch (FileNotFoundException e) {
+            // DoNothing(R)
+        }
+        return bd;
+    }
+
+    public EXistInputSource getInputSource() {
 		return new ZipEntryInputSource(archive,descriptor);
 	}
 
@@ -88,5 +104,10 @@ public class ZipArchiveBackupDescriptor
 
     public File getParentDir() {
         return new File(archive.getName()).getParentFile();
+    }
+
+
+    public String getName() {
+        return new File(archive.getName()).getName();
     }
 }
