@@ -9,35 +9,39 @@
             <surname>Meier</surname>
         </author>
     </bookinfo>
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Database Backup and Restore</title>
 
+        <abstract>
+            <para>This section discusses eXist's database backup/restore procedures. eXist provides
+                different methods for creating backups, which will be explained below. Backups are
+                strongly recommended for data protection in the event you experience a system crash
+                or loss of data. Backups are also very useful for exporting data in order to
+                re-import all or parts of the data to a different database, e.g. while upgrading
+                eXist to a newer version. </para>
+        </abstract>
         <section>
-            <title>Overview</title>
-            <para>This section discusses eXist's database backup/restore procedures. Users can use
-                either the Java Admin Client or available Unix shell and Windows/DOS batch scripts
-                to both backup their entire database onto files, and to restore it from a backup.
-                Backups are strongly recommended for data protection in the event you experience a
-                system crash or loss of data. Backups are also very useful for exporting data in
-                order to re-import all or parts of the data to a different database, e.g. while
-                upgrading eXist to a newer version. </para>
-            
+            <title>Backup Format</title>
+
             <para>During backup, eXist exports the contents of its database (as standard XML files)
                 to a hierarchy of directories on the hard drive. This hierarchy is organized
                 according to the organization of collections in the database.</para>
-            
+
             <para>Other files stored during backup include index configuration files and user
-                settings. As well, resource and collection metadata is exported to a special XML
+                settings. Resource and collection metadata is exported to a special XML
                 file, called <filename>__contents__.xml</filename>, which lists information
                 including the resource type, owner, modification date and/or the permissions
                 assigned to a resource. You will find one <filename>__contents__.xml</filename> file
-                in each directory created by the backup.</para>
-            
+                in each directory created by the backup. This descriptor file is required to restore
+                the backup.</para>
+
             <para>Since eXist uses an open XML format rather than a proprietary format for its
                 database files, users can manually modify files in the backup directories without
                 requiring special software. Any changes made to these files are reflected in the
-                database with a restore or once the data is imported to another database system.</para>
+                database with a restore or once the data is imported to another database
+                system.</para>
+
             <para>It is even possible to directly edit user data and permissions stored in the file
                     <filename>/db/system/users.xml</filename>. This is particularly useful when
                 making global changes to the user database. For example, to reset the passwords for
@@ -53,9 +57,50 @@
             </note>
         </section>
         <section>
-            <title>Backing Up the Database</title>
-            <para>You can backup your database either by using the Admin Client menu, or the backup
-                command line utility.</para>
+            <title>Backup Methods</title>
+
+            <para>There are two main methods for creating a backup:</para>
+
+            <variablelist>
+                <varlistentry>
+                    <term>Client-side</term>
+                    <listitem>
+                        <para>You can use the Java admin client or a small command line utility to
+                            create a backup of the data on the server. In this case, the client
+                            controls the backup process. The server is not blocked and continues to
+                            accept requests from other clients. Other users can modify the db while
+                            the backup is running, so logical dependencies between different resources may
+                            not be preserved correctly.</para>
+
+                        <para>Client-side backups are <emphasis>not save</emphasis>. The client uses
+                            the XML:DB API to access the db. This means that it cannot backup
+                            documents or collections if they are damaged in any way.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>Server-side</term>
+                    <listitem>
+                        <para>Server-side backups are usually run through eXist's job scheduler,
+                            though they can also be triggered via the web interface. This type of
+                            backup extracts the data directly from the low-level database files. It
+                            is thus much faster then a client-side backup. It also supports
+                            incremental backups.</para>
+
+                        <para>It is guaranteed that the database is in a consistent state while the
+                            backup is running. Possible corruptions in the db will be detected and
+                            the backup process will try to work around them. In many cases, damaged
+                            resources can at least be partially recovered.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+
+            <para>The format of the generated backup archives will be the same for both backup
+                methods. They can all be restored via the standard Java client.</para>
+        </section>
+        <section>
+            <title>Client-side Backup</title>
+            <para>You can either use the Java-based Admin Client, or the backup command line
+                utility.</para>
 
             <para>If you are using the Admin Client, do the following:</para>
 
@@ -67,7 +112,7 @@
                 <step>
                     <para>From the <guimenuitem>Collection</guimenuitem> drop-down menu, select the
                         collection to backup. To backup the entire database, select
-                        <filename>/db</filename>. Otherwise, select the topmost collection that
+                            <filename>/db</filename>. Otherwise, select the topmost collection that
                         should be stored. Note, however, that user data and permissions will only be
                         exported if you backup the entire database.</para>
                     <screenshot><graphic fileref="resources/backup1.png"/></screenshot>
@@ -78,7 +123,7 @@
                         path to a zip file into which the backup will be written. In general, if the
                         file name ends with <filename>.zip</filename>, the client will attempt to
                         write to a ZIP. Otherwise, it tries to create the specified
-                    directory.</para>
+                        directory.</para>
                 </step>
                 <step>
                     <para>Click <command>OK</command>.</para>
@@ -129,343 +174,201 @@
             </note>
         </section>
 
-        <section id="restore">
-            <title>Restoring the Database</title>
+        <section>
+            <title>Server-side Backup</title>
 
-            <section>
-                <title>Important Note about the Restore Process</title>
-
-                <para>Restoring from a backup (or parts of it) does not mean that the existing data
-                    in the current database instance will be deleted entirely. The restore process
-                    will upload the collections and documents contained in the backup. Collections
-                    and documents which exist in the database but are not part of the backup will
-                    not be modified.</para>
-
-                <para>This is a feature, not a bug. It allows us to restore selected parts of the
-                    database without touching the rest.</para>
-
-                <para>If you really need to restore into a fresh, completely clean database, proceed
-                    as follows:</para>
-
-                <procedure>
-                    <step>
-                        <para>Stop the running eXist database instance</para>
-                    </step>
-                    <step>
-                        <para>Change into directory
-                            <filename>EXIST_HOME/webapp/WEB-INF/data</filename> or another directory
-                            you specified as data directory in the configuration (conf.xml). </para>
-                    </step>
-                    <step>
-                        <para>Remove all <filename>.dbx</filename>, <filename>.lck</filename> and
-                                <filename>.log</filename> files. This means removing all your old
-                            data! eXist will recreate those files upon the next restart.</para>
-                    </step>
-                    <step>
-                        <para>Start eXist again and launch a restore.</para>
-                    </step>
-                </procedure>
-
-            </section>
-
-            <section>
-                <title>Restore Using the Java Client</title>
-
-                <para>To restore the database files from a backup, you can again use either the
-                    Admin Client, or the backup command line utility.</para>
-                <note>
-                    <para>Currently, the restore tool can not directly read from a zipped backup.
-                        You have to extract it before restoring.</para>
-
-					<para>If you experience any issues with bad characters in collection names,
-						use the standard Java <filename>jar</filename> tool to unpack the zip.
-						Contrary to other zip tools, this utility handles character encodings
-						correctly.</para>
-                </note>
-                <para>If you are using the Admin Client, do the following:</para>
-                <procedure>
-                    <step>
-                        <para>Select either the Restore Icon (arrow pointed downward) in the toolbar
-                            OR <guimenuitem>Tools &#187; Restore</guimenuitem> from the
-                        menu.</para>
-                    </step>
-                    <step>
-                        <para>The dialog box shown below will then prompt you to select the backup
-                            file <filename>__contents__.xml</filename> from the topmost directory
-                            you want restored. To restore the entire database, select the
-                                <filename>__contents__.xml</filename> from the
-                            <filename>db/</filename> directory.</para>
-                        <screenshot><graphic fileref="resources/backup2.png"/></screenshot>
-                    </step>
-                    <step>
-                        <para>A second dialog box will then prompt you for an admin password to use
-                            for the restore process. This password is required ONLY IF the password
-                            of the "admin" user set during the backup differs from the log-in
-                            password for the current session. (If you provide an incorrect password,
-                            the restore will be aborted.) If the passwords are different, note that
-                            restoring the user settings from the backup will cause the current user
-                            password to become invalid. </para>
-                    </step>
-                    <step>
-                        <para>If the restore was accepted, a progress dialog box will display the
-                            restored files:</para>
-                        <screenshot><graphic fileref="resources/backup3.png"/></screenshot>
-                    </step>
-                </procedure>
-
-                <para>To restore from a backup using the command-line utility, follow the
-                    instructions above for launching <filename>bin/backup.sh</filename> (Unix), OR
-                    the <filename>bin/backup.bat</filename> (Windows/DOS) script files. Include the
-                        <parameter>-r</parameter> parameter, and the full path of the
-                        <filename>__contents__.xml</filename> file to restore. As with the Admin
-                    Client, if the backup uses a different password for the "admin" user than the
-                    current session, you must specify the backup password using the
-                    <parameter>-P</parameter>. For Example:</para>
-                <synopsis>bin/backup.sh -u admin -p admin-pass -P backup-pass 
-                                            -r /var/backup/hd060501/db/__contents__.xml</synopsis>
-
-                <note>
-                    <para>The restore operation will overwrite any existing resource in the database
-                        with the same path and name as a resource in the backup. However, resources
-                        in the database with different names will not be touched.</para>
-                </note>
-
-                <note>
-                    <para>Whenever the <filename>/db/system</filename> collection is restored, the
-                        existing user database is overwritten by the backup database. Consequently,
-                        new users added or user setting changes to the old database after a backup
-                        will be lost following a database restore. </para>
-                </note>
-            </section>
-
-        </section>
-
-        <section id="backuptask">
-            <title>Automatic Backup/Restore</title>
-
-            <para>In addition to the manual backup, you can also schedule automatic backups in
-                eXist's configuration file <filename>conf.xml</filename>. The backup will be
-                executed as a system task and will thus be configured in the
-                <option>system-task</option> section of the configuration file.</para>
-
-            <para>Contrary to the manual backup, running the backup as a system task means that the
-                database will be switched to a protected service mode before the backup starts.
-                eXist will wait for all pending transactions to complete before it enters protected
-                mode. A database checkpoint will be performed and the backup task is executed. While
-                the system task is running, no new transactions will be allowed. Concurrent requests
-                by other clients will be blocked and added to the internal queue. Once the backup is
+            <para>This is now the recommended backup method. To guarantee consistency, server-side
+                backups are always executed as system tasks, which means that the database will be
+                switched to a protected service mode before the backup starts. eXist will wait for
+                all pending transactions to complete before it enters protected mode. A database
+                checkpoint will be performed and the backup task is executed. While the system task
+                is running, no new transactions will be allowed. Concurrent requests by other
+                clients will be blocked and added to the internal queue. Once the backup is
                 complete, the database will switch back to normal service and all locks will be
                 released.</para>
 
-            <para>This approach has some advantages:</para>
+            <para>You can trigger the backup via the web interface <ulink url="admin/admin.xql"
+                    >admin client</ulink>:</para>
 
-            <itemizedlist>
-                <listitem>
-                    <para>the backup runs within the database process and will be faster than a
-                        manual backup over the network.</para>
-                </listitem>
-                <listitem>
-                    <para>it is guaranteed that the database is in a consistent state. No writes
-                        will occur while the backup runs.</para>
-                </listitem>
-            </itemizedlist>
+            <screenshot><graphic fileref="resources/backup4.png"/></screenshot>
 
-            <para>On the other hand, the db might be blocked for quite some time, so running the
-                backup as system task will only be possible during periods of low load.</para>
+            <para>Clicking the <guibutton>Trigger</guibutton> button will schedule a single backup
+                task. The server will wait for all running transactions to return before it executes
+                the task. You can click on <guibutton>Refresh</guibutton> to update the view, which
+                lists all backup archives currently available within the standard backup directory.
+                Click on the name of an archive to download it.</para>
 
-            <note>
-                <para>The consistency check service described <ulink url="#consistency"
-                    >below</ulink> can be used as an alternative to the BackupSystemTask. It is
-                    slightly faster.</para>
-            </note>
+            <para>Beginning with version 1.2.5, eXist can also create <emphasis>incremental backups</emphasis>.
+                Only resources which were modified since the last backup are archived.</para>
+            
+            <para>All backups will be stored in ZIP format into a directory
+                    <filename>export/</filename> below the main data directory, which means
+                    <filename>webapp/WEB-INF/data/export/</filename> by default (unless you
+                configured a different data directory in <filename>conf.xml</filename>).</para>
 
-            <para>An example configuration for the BackupSystemTask is shown below. Backups will be
-                written into the directory specified in parameter <parameter>dir</parameter>. For
-                each backup, a new file or directory will be created. The name of this file or
-                directory contains the current date and time plus an optional prefix and/or suffix.</para>
-
-            <example>
-                <title>Configuring a BackupSystemTask</title>
-                <programlisting><markup><![CDATA[<scheduler>
-    <job type="system" class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
-        <parameter name="dir" value="backup"/>
-        <parameter name="suffix" value=".zip"/>
-        <parameter name="prefix" value="backup-"/>
-        <parameter name="collection" value="/db"/>
-        <parameter name="user" value="admin"/>
-        <parameter name="password" value=""/>
-        <parameter name="zip-files-max" value="28"/>
-    </job>
-</scheduler>]]></markup></programlisting>
-            </example>
-
-            <para>The backup task can either directly write into a <option>.zip</option> file or a
-                plain directory. It will generate a zip file if the suffix is <option>.zip</option>,
-                a directory otherwise. The files generated by the configuration above will look like
-                this one: <filename>backup-2006-11-20T10:10:15.zip</filename>.</para>
-
-            <para>The time/frequency of the backup is specified in the <option>cron-trigger</option>
-                attribute. The syntax is borrowed from the Unix cron utility, though there are small
-                differences. Please consult the Quartz documentation about <ulink
-                    url="http://www.opensymphony.com/quartz/wikidocs/TutorialLesson6.html"
-                    >CronTrigger</ulink> configuration.</para>
         </section>
         <section>
-            <title>Triggering a Backup</title>
+            <title>Automatic Consistency Check</title>
+            
+            <para>The system task runs a consistency and sanity check on the database before backing
+                it up. Reports of this check are written into the same directory as the backup
+                archive. The last report can also be viewed via JMX (see below).</para>
 
-            <para>The <classname>BackupSystemTask</classname> can also be triggered via XQuery,
-                using the <command>system:trigger-system-task</command> function defined in the
-                "system" module: </para>
-
-            <example>
-                <title>Triggering a Backup From XQuery</title>
-                <programlisting language="xquery"><![CDATA[let $params :=
- <parameters>
-   <param name="dir" value="backup"/>
-   <param name="suffix" value=".zip"/>
-   <param name="prefix" value="backup-"/>
-   <param name="collection" value="/db"/>
- </parameters>
- return
-    system:trigger-system-task("org.exist.storage.BackupSystemTask", $params)]]></programlisting>
-            </example>
-
-            <para>The function will schedule a backup to be executed as soon as possible. As
-                explained above, the database will be switched to service mode, and eXist will wait
-                for all pending transactions to complete before the backup starts.</para>
-        </section>
-
-        <section id="consistency">
-            <title>Database Consistency Checks</title>
-
-            <para> When deploying eXist in a production environment, you really want to make sure
-                that the database is in a consistent state and that potential problems are detected
-                as early as possible. Even if the database is running well, bad things can happen
-                which are outside of eXist's reach (e.g. an OutOfMemory error in the servlet
-                container, which can be fatal).</para>
-
-            <para>Beginning with version 1.2.1, eXist offers an automatic consistency and sanity
-                checker, whose main job is to detect inconsistencies or damages in the core database
-                files. This includes the document and collection storage (dom.dbx, collections.dbx)
-                as well as the symbol table (symbols.dbx). While all the indexes can be rebuild
-                after a crash, a corruption in the core files can lead to real data loss.</para>
-
-            <para>The tool will first check the collection hierarchy, then scan through the stored
-                node tree of every document in the db, testing node properties like the node's id,
-                child count, attribute count and node relationships. Contrary to normal database
-                operations, the different dbx files are checked independently. This means that even
-                if a collection is no longer readable, the tool will still be able to scan the
-                documents in the damaged collection (this becomes important in connection with
-                emergency backups, see below).</para>
-
-            <para>Checking documents is very fast, much faster than serializing or exporting the
-                data.</para>
-
+            <para>The consistency check will first check the collection hierarchy, then scan through
+                the stored node tree of every document in the db, testing node properties like the
+                node's id, child count, attribute count and node relationships. Contrary to normal
+                database operations, the different dbx files are checked independently. This means
+                that even if a collection is no longer readable, the tool will still be able to scan
+                the documents in the damaged collection.</para>
+            
+            <para>The backup task uses the information provided by the consistency check to work around
+                damages in the db. It tries to export as much data as possible, even
+                if parts of the collection hierarchy are corrupted or documents are
+                damaged:</para>
+            
+            <itemizedlist>
+                <listitem>
+                    <para>Descendant collections will be exported properly even if their
+                        ancestor collection is corrupted</para>
+                </listitem>
+                <listitem>
+                    <para>Documents which are intact but belong to a destroyed collection will
+                        be stored into a special collection <filename>/db/lost_and_found</filename></para>
+                </listitem>
+                <listitem>
+                    <para>Damaged documents are detected and are removed from the backup</para>
+                </listitem>
+            </itemizedlist>
+            
             <section>
-                <title>Emergency Export Tool</title>
-
-                <para>The consistency check can be coupled with a new emergency backup class, called
-                    SystemExport. If an error is reported by the consistency checker, the service
-                    can immediately trigger an emergency export of the entire database. Contrary to
-                    the standard backup/restore, the SystemExport class operates on a much
-                    lower-level of the db, directly accessing the core database files.</para>
-
-                <para>It uses the information provided by the consistency check to work around
-                    damages in the db. SystemExport tries to export as much data as possible, even
-                    if parts of the collection hierarchy are corrupted or documents are damaged:</para>
-
-                <itemizedlist>
-                    <listitem>
-                        <para>Descendant collections will be exported properly even if their
-                            ancestor collection is corrupted</para>
-                    </listitem>
-                    <listitem>
-                        <para>Documents which are intact but belong to a destroyed collection will
-                            be stored into a special collection /db/lost_and_found</para>
-                    </listitem>
-                    <listitem>
-                        <para>Damaged documents are detected and are removed from the backup</para>
-                    </listitem>
-                </itemizedlist>
-
-                <para>The format of the emergency backup is compatible with the standard
-                    backup/restore tools.</para>
-            </section>
-
-            <section>
-                <title>Manual Checks/Exports</title>
-
-                <screenshot>
-                    <graphic align="right" fileref="resources/exportgui.png"/>
-                </screenshot>
+                <title>Scheduling Backups and Consistency Checks</title>
                 
-                <para>A standalone version of the consistency check and export tools can be launched
-                    with</para>
-
-                <synopsis>java -jar start.jar org.exist.backup.ExportGUI</synopsis>
-
-				<para>If you installed the eXist distribution using the installer, a shortcut to this
-				should have been placed into the start menu, so you don't need to type above
-				command.</para>
-
-                <para>On a headless system you can use the command-line version instead:</para>
-
-                <synopsis>java -jar start.jar org.exist.backup.ExportMain</synopsis>
-
-                <para>Call it with parameter <parameter>-h</parameter> to get a list of possible
-                    options.</para>
-
-                <para>The main purpose of this utility is to create emergency backups from a
-                    database which can no longer be started normally. The utility needs to open the
-                    database embedded. You have to shut down any running eXist instance before
-                    starting the scan or you will get an exception.</para>
-
-                <para>For every check run, an error report will be written into the directory
-                    specified in <guimenuitem>Output Directory</guimenuitem>. If you clicked on
-                        <guimenuitem>Check Export</guimenuitem>, the utility will also export the
-                    database into a zip file in the same directory. This backup can be restored via
-                    the standard <ulink url="#restore">backup/restore tools</ulink>.</para>
-            </section>
-
-            <section>
-                <title>Scheduling the Service</title>
-
-                <para>To run the consistency checker in a live environment, it needs to be set up as
-                    a <emphasis>system task</emphasis>. System tasks are launched by eXist's core
-                    scheduler. The scheduler will wait for all active transactions to complete then
-                    start the system task. New transactions will be blocked while the task is
-                    running. The system task can be configured in <filename>conf.xml</filename>
-                    (though it is also possible to schedule it via XQuery). Add the following job
-                    definition to the scheduler section:</para>
-
+                <para>The core class for the server-side backup as well as consistency checks is called
+                    <classname>ConsistencyCheckTask</classname>. It can be registered as a system task with eXist's
+                    <ulink url="configuration.xml#N104CF">scheduler</ulink>. To do this, add the following definition to the scheduler section in 
+                    <filename>conf.xml</filename>:</para>
+                
                 <example>
                     <title>Job Definition in conf.xml</title>
                     <programlisting lang="xml"><![CDATA[<job type="system" class="org.exist.storage.ConsistencyCheckTask"
     cron-trigger="0 0 0/12 * * ?">
     <!-- the output directory. paths are relative to the data dir -->
-    <parameter name="output" value="sanity"/>
-    <parameter name="backup" value="no"/>
+    <parameter name="output" value="export"/>
+    <parameter name="backup" value="yes"/>
+    <parameter name="incremental" value="yes"/>
 </job>]]></programlisting>
                 </example>
-
-                <para>This will launch a consistency check every 12 hours, starting at midnight. If
-                    parameter "backup" is set to "yes", a complete backup of the system will be
-                    triggered after each check run. If set to "no", a backup will only be created if
-                    consistency errors are detected.</para>
+                
+                <para>This will launch a consistency check and database backup every 12 hours, starting 
+                at midnight. The time/frequency of the backup is specified in the <option>cron-trigger</option>
+                    attribute. The syntax is borrowed from the Unix cron utility, though there are small
+                    differences. Please consult the Quartz documentation about <ulink
+                        url="http://www.opensymphony.com/quartz/wikidocs/TutorialLesson6.html">CronTrigger</ulink> 
+                    configuration.</para>
+                
+                <para>The task accepts the following parameters:</para>
+                
+                <variablelist>
+                    <varlistentry>
+                        <term>output</term>
+                        <listitem>
+                            <para>The directory to which the backup is written. Relative paths are interpreted
+                                relative to eXist's main data directory.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>backup</term>
+                        <listitem>
+                            <para>Create a full database backup in addition to running the system checks. Setting
+                                this to "no" will not create a backup - unless errors were detected during the
+                                consistency check! If errors are found, the task will always try to generate
+                                an emergency backup.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>incremental</term>
+                        <listitem>
+                            <para>Created backups will be incremental. Only resources which were modified since the
+                                last backup will be saved. The first backup will always be a full backup, subsequent
+                                backups will be incremental.</para>
+                            
+                            <para>Note: you can schedule more than one backup job. For example, an incremental backup
+                                could be done multiple times a day while a full backup is created only once during 
+                                the night.
+                            </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
             </section>
-
+            
             <section>
-                <title>Using JMX for Remote Access</title>
-
+                <title>Triggering Backups from XQuery</title>
+                
+                <para>System jobs can also be triggered from an XQuery
+                    using the <command>system:trigger-system-task</command> function defined in the
+                    "system" module: </para>
+                
+                <example>
+                    <title>Triggering a Backup From XQuery</title>
+                    <programlisting language="xquery"><![CDATA[let $params :=
+ <parameters>
+   <param name="output" value="export"/>
+    <param name="backup" value="yes"/>
+    <param name="incremental" value="yes"/>
+ </parameters>
+ return
+    system:trigger-system-task("org.exist.storage.ConsistencyCheckTask", $params)]]></programlisting>
+                </example>
+                
+                <para>The function will schedule a backup to be executed as soon as possible.</para>
+            </section>
+            
+            <section>
+                <title>Emergency Export Tool</title>
+                
+                <screenshot>
+                    <graphic align="right" fileref="resources/exportgui.png"/>
+                </screenshot>
+                
+                <para>eXist provides a graphical interface to the consistency check and backup
+                    utilities which can be used in case of an emergency, in particular if the database
+                    does not start up properly anymore. The tool needs direct access to the database
+                    files, so any running database instance has to be stopped before launching the GUI.</para>
+                    
+                <para>Use the following command line to start the utility:</para>
+                
+                <synopsis>java -jar start.jar org.exist.backup.ExportGUI</synopsis>
+                
+                <para>If you installed the eXist distribution using the installer, a shortcut to
+                    this should have been placed into the start menu, so you don't need to type
+                    above command.</para>
+                
+                <para>On a headless system you can use the command-line version instead:</para>
+                
+                <synopsis>java -jar start.jar org.exist.backup.ExportMain</synopsis>
+                
+                <para>Call it with parameter <parameter>-h</parameter> to get a list of possible
+                    options.</para>
+                
+                <para>For every check run, an error report will be written into the directory
+                    specified in <guimenuitem>Output Directory</guimenuitem>. If you clicked on
+                    <guimenuitem>Check Export</guimenuitem>, the utility will also export the
+                    database into a zip file in the same directory. This backup can be restored via
+                    the standard <ulink url="#restore">backup/restore tools</ulink>.</para>
+            </section>
+            
+            <section>
+                <title>Using JMX to View Check Reports</title>
+                
                 <para>If Java Management Extensions (JMX) are enabled in the Java VM that is running
                     eXist, you can use a JMX client to see the latest consistency check reports. The
                     screenshot shows jconsole, which is included with the Java 5 and 6 JDKs.</para>
-
+                
                 <screenshot>
                     <graphic fileref="resources/jconsole.png"/>
                 </screenshot>
-
-                <para>eXist also includes a command-line JMX client. Call it with parameter 
+                
+                <para>eXist also includes a command-line JMX client. Call it with parameter
                     <parameter>-s</parameter> to see the latest consistency report:</para>
                 
                 <synopsis>java -jar start.jar org.exist.management.client.JMXClient -s</synopsis>
@@ -490,5 +393,114 @@
                         url="jmx.xml">documentation</ulink> on how to configure JMX.</para>
             </section>
         </section>
+
+        <section id="restore">
+            <title>Restoring the Database</title>
+
+            <section>
+                <title>Important Note about the Restore Process</title>
+
+                <para>Restoring from a backup (or parts of it) does not mean that the existing data
+                    in the current database instance will be deleted entirely. The restore process
+                    will upload the collections and documents contained in the backup. Collections
+                    and documents which exist in the database but are not part of the backup will
+                    not be modified.</para>
+
+                <para>This is a feature, not a bug. It allows us to restore selected parts of the
+                    database without touching the rest.</para>
+
+                <para>If you really need to restore into a fresh, completely clean database, proceed
+                    as follows:</para>
+
+                <procedure>
+                    <step>
+                        <para>Stop the running eXist database instance</para>
+                    </step>
+                    <step>
+                        <para>Change into directory
+                                <filename>EXIST_HOME/webapp/WEB-INF/data</filename> or another
+                            directory you specified as data directory in the configuration
+                            (conf.xml). </para>
+                    </step>
+                    <step>
+                        <para>Remove all <filename>.dbx</filename>, <filename>.lck</filename> and
+                                <filename>.log</filename> files. This means removing all your old
+                            data! eXist will recreate those files upon the next restart.</para>
+                    </step>
+                    <step>
+                        <para>Start eXist again and launch a restore.</para>
+                    </step>
+                </procedure>
+
+            </section>
+
+            <section>
+                <title>Restore Using the Java Client</title>
+
+                <para>To restore the database files from a backup, you can again use either the
+                    Admin Client, or the backup command line utility.</para>
+                <note>
+                    <para>For eXist 1.2.x, the restore tool can not directly read from a zipped backup.
+                        You have to extract it before restoring. Version 1.3 can handle the zip.</para>
+
+                    <para>Also, if you experience any issues with bad characters in collection names, use
+                        the standard Java <filename>jar</filename> tool to unpack the zip. Contrary
+                        to other zip tools, this utility handles character encodings
+                        correctly.</para>
+                </note>
+                <para>If you are using the Admin Client, do the following:</para>
+                <procedure>
+                    <step>
+                        <para>Select either the Restore Icon (arrow pointed downward) in the toolbar
+                            OR <guimenuitem>Tools &#187; Restore</guimenuitem> from the
+                            menu.</para>
+                    </step>
+                    <step>
+                        <para>The dialog box shown below will then prompt you to select the backup
+                            descriptor <filename>__contents__.xml</filename> from the topmost directory
+                            you want restored. To restore the entire database, select the
+                                <filename>__contents__.xml</filename> from the
+                                <filename>db/</filename> directory.</para>
+                        
+                        <screenshot><graphic fileref="resources/backup2.png"/></screenshot>
+                        
+                        <para>eXist 1.3 allows to directly select the ZIP archive of a backup.</para>
+                    </step>
+                    
+                    <step>
+                        <para>A second dialog box will then prompt you for an admin password to use
+                            for the restore process. This password is required ONLY IF the password
+                            of the "admin" user set during the backup differs from the log-in
+                            password for the current session. (If you provide an incorrect password,
+                            the restore will be aborted.) If the passwords are different, note that
+                            restoring the user settings from the backup will cause the current user
+                            password to become invalid. </para>
+                    </step>
+                    <step>
+                        <para>If the restore was accepted, a progress dialog box will display the
+                            restored files:</para>
+                        <screenshot><graphic fileref="resources/backup3.png"/></screenshot>
+                    </step>
+                </procedure>
+
+                <section>
+                     <title>Using the Command Line</title>
+                    
+                <para>To restore from a backup using the command-line utility, follow the
+                    instructions above for launching <filename>bin/backup.sh</filename> (Unix), OR
+                    the <filename>bin/backup.bat</filename> (Windows/DOS) script files. Include the
+                        <parameter>-r</parameter> parameter, and the full path of the
+                        <filename>__contents__.xml</filename> file to restore. As with the Admin
+                    Client, if the backup uses a different password for the "admin" user than the
+                    current session, you must specify the backup password using the
+                        <parameter>-P</parameter>. For Example:</para>
+                <synopsis>bin/backup.sh -u admin -p admin-pass -P backup-pass 
+                                            -r /var/backup/hd060501/db/__contents__.xml</synopsis>
+                </section>
+                
+            </section>
+
+        </section>
+            
     </chapter>
 </book>

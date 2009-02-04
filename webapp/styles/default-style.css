@@ -392,7 +392,7 @@ select.choose {
 .filename, .option {
     font-family: "Bitstream Vera Sans Mono", Courier, monospace;
 }
-.guimenu, .guimenuitem {
+.guimenu, .guimenuitem, .guibutton {
     font-family: "Bitstream Vera Sans Mono", Courier, monospace;
     padding: 0 3px;
     background-color:#FF7;
