@@ -34,7 +34,7 @@
   <parameter name="wsdlServiceElement" value="QueryService"/>
   <parameter name="wsdlTargetNamespace" value="urn:exist"/>
   <parameter name="wsdlPortType" value="Query"/>
-  <parameter name="scope" value="Session"/>
+  <parameter name="scope" value="application"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns1:Collection" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.Collection" xmlns:ns1="urn:exist"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns2:QueryResponseDocument" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseDocument" xmlns:ns2="urn:exist"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns3:QueryResponseCollection" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseCollection" xmlns:ns3="urn:exist"/>
@@ -63,7 +63,7 @@
   <parameter name="wsdlServiceElement" value="AdminService"/>
   <parameter name="wsdlTargetNamespace" value="urn:exist"/>
   <parameter name="wsdlPortType" value="Admin"/>
-  <parameter name="scope" value="Session"/>
+  <parameter name="scope" value="application"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns9:Strings" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.Strings" xmlns:ns9="urn:exist"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns10:UserDescs" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.UserDescs" xmlns:ns10="urn:exist"/>
   <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns11:UserDesc" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.UserDesc" xmlns:ns11="urn:exist"/>
