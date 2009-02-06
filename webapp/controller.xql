@@ -58,7 +58,7 @@ return
 		</dispatch>
 	else if (starts-with($path, "/admin")) then
 	    c:admin($path, $name)
-	else if ($name = ('search.xql', 'functions.xql')) then
+	else if ($name = ('search.xql', 'functions.xql', 'svnlog.xql')) then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<forward url="{$path}">
 				<!-- query results are passed to XSLT servlet via request attribute -->
