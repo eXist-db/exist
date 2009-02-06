@@ -25,6 +25,8 @@
         </xsl:choose>
     </xsl:variable>
 
+    <xsl:variable name="include.analytics" select="false()"/>
+    
     <xsl:template match="document">
         <xsl:variable name="css">
             <xsl:choose>
@@ -71,6 +73,7 @@
                 <xsl:apply-templates select="sidebar:sidebar"/>
                 <xsl:apply-templates select="newsblock"/>
                 <xsl:apply-templates select="body"/>
+                <xsl:call-template name="analytics"/>
             </body>
         </html>
     </xsl:template>
@@ -463,4 +466,26 @@
     
     <xsl:include href="xmlsource.xsl"/>
     
+    <xsl:template name="analytics">
+        <xsl:if test="$include.analytics">
+            <!-- Piwik -->
+            <script type="text/javascript">
+                var pkBaseURL = (("https:" == document.location.protocol)? "https://apps.sourceforge.net/piwik/exist/": "http://apps.sourceforge.net/piwik/exist/");
+                document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));</script>
+            <script type="text/javascript">
+                piwik_action_name = '';
+                piwik_idsite = 1;
+                piwik_url = pkBaseURL + "piwik.php";
+                piwik_log(piwik_action_name, piwik_idsite, piwik_url);</script>
+            <object>
+                <noscript>
+                    <p>
+                        <img src="http://apps.sourceforge.net/piwik/exist/piwik.php?idsite=1"
+                            alt="piwik"/>
+                    </p>
+                </noscript>
+            </object>
+            <!-- End Piwik Tag -->
+        </xsl:if>
+    </xsl:template>
 </xsl:stylesheet>
