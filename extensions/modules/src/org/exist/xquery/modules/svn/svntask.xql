@@ -48,7 +48,7 @@ declare function svnu:update() {
             else
                 let $all := 
                     svn:log(xs:anyURI($svnu:uri), $svnu:USER, $svnu:PASS, 
-                        xs:integer($svnu:startRevision), 7250)
+                        xs:integer($svnu:startRevision), -1)
                 let $l := util:log("DEBUG", $all)
                 return
                     xdb:store($svnu:collection, (), $all),

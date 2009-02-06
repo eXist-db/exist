@@ -23,20 +23,25 @@
 package org.exist.xquery.modules.scheduler;
 
 import org.exist.dom.QName;
-import org.exist.security.User;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.UserJavaJob;
 import org.exist.scheduler.UserJob;
 import org.exist.scheduler.UserXQueryJob;
+import org.exist.security.User;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import java.util.Properties;
 
 /**
  * eXist Scheduler Module Extension ScheduleFunctions
@@ -56,23 +61,58 @@ public class ScheduleFunctions extends BasicFunction
 	public final static FunctionSignature [] signatures = {
 		new FunctionSignature(
 			new QName("schedule-java-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Schedules the Java Class named in $a (the class must extend org.exist.scheduler.UserJob) according to the Cron expression in $b",
+			"Schedules the Java Class named in $a (the class must extend org.exist.scheduler.UserJob) according " +
+            "to the Cron expression in $b. The job will be registered using the name passed in $c.",
 			new SequenceType[]
 			{
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)),
-			
+
+        new FunctionSignature(
+            new QName("schedule-java-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+            "Schedules the Java Class named in $a (the class must extend org.exist.scheduler.UserJob) according " +
+            "to the Cron expression in $b. The job will be registered using the name passed in $c. The final " +
+            "argument can be used to specify " +
+            "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
+            "in an XML fragment with the following structure: " +
+			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>,",
+            new SequenceType[]
+            {
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)),
 		new FunctionSignature(
 			new QName("schedule-xquery-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Schedules the XQuery resource named in $a (e.g. /db/foo.xql) according to the Cron expression in $b",
+			"Schedules the XQuery resource named in $a (e.g. /db/foo.xql) according to the Cron expression in $b. " +
+            "The job will be registered using the name passed in $c.",
 			new SequenceType[]
 			{
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE))
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)),
+        new FunctionSignature(
+            new QName("schedule-xquery-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+            "Schedules the XQuery resource named in $a (e.g. /db/foo.xql) according to the Cron expression in $b. " +
+            "The job will be registered using the name passed in $c. The final argument can be used to specify " +
+            "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
+            "in an XML fragment with the following structure: " +
+			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>",
+            new SequenceType[]
+            {
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE),
+            },
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE))
 	};
 	
 	/**
@@ -101,7 +141,14 @@ public class ScheduleFunctions extends BasicFunction
 	{
 		String resource = args[0].getStringValue();
 		String cronExpression = args[1].getStringValue();
-		
+        String jobName = args[2].getStringValue();
+        Properties properties = null;
+		if (getArgumentCount() == 4) {
+            Node options = ((NodeValue)args[3].itemAt(0)).getNode();
+            properties = new Properties();
+            parseParameters(options, properties);
+        }
+
 		User user = context.getUser();
 		
 		//Check if the user is a DBA
@@ -115,7 +162,7 @@ public class ScheduleFunctions extends BasicFunction
 		//scheule-xquery-cron-job
 		if(isCalledAs("schedule-xquery-cron-job"))
 		{
-			job = new UserXQueryJob(null, resource, user);
+			job = new UserXQueryJob(jobName, resource, user);
 		}
 		
 		//schedule-java-cron-job
@@ -131,6 +178,7 @@ public class ScheduleFunctions extends BasicFunction
 					LOG.error("Cannot Schedule job. Class " + resource + " is not an instance of org.exist.scheduler.UserJavaJob");
 					return(BooleanValue.FALSE);
 				}
+                ((UserJavaJob)job).setName(jobName);
 			}
 			catch(ClassNotFoundException cnfe)
 			{
@@ -152,7 +200,7 @@ public class ScheduleFunctions extends BasicFunction
 		if(job != null)
 		{
 			//schedule the job
-			if(scheduler.createCronJob(cronExpression, (UserJob)job, null))
+			if(scheduler.createCronJob(cronExpression, (UserJob)job, properties))
 			{
 				return(BooleanValue.TRUE);
 			}
@@ -166,4 +214,21 @@ public class ScheduleFunctions extends BasicFunction
 			return(BooleanValue.FALSE);
 		}
 	}
+
+    private void parseParameters(Node options, Properties properties) throws XPathException {
+        if(options.getNodeType() == Node.ELEMENT_NODE && options.getLocalName().equals("parameters")) {
+            Node child = options.getFirstChild();
+            while(child != null) {
+                if(child.getNodeType() == Node.ELEMENT_NODE && child.getLocalName().equals("param")) {
+                    Element elem = (Element)child;
+                    String name = elem.getAttribute("name");
+                    String value = elem.getAttribute("value");
+                    if(name == null || value == null)
+                        throw new XPathException(getASTNode(), "Name or value attribute missing for stylesheet parameter");
+                    properties.setProperty(name, value);
+                }
+                child = child.getNextSibling();
+            }
+        }
+    }
 }

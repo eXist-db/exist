@@ -47,6 +47,8 @@ public class SchedulerModule extends AbstractInternalModule
 	private final static FunctionDef[] functions = {
 		new FunctionDef(ScheduleFunctions.signatures[0], ScheduleFunctions.class),
 		new FunctionDef(ScheduleFunctions.signatures[1], ScheduleFunctions.class),
+        new FunctionDef(ScheduleFunctions.signatures[2], ScheduleFunctions.class),
+        new FunctionDef(ScheduleFunctions.signatures[3], ScheduleFunctions.class),
 		new FunctionDef(GetScheduledJobs.signature, GetScheduledJobs.class),
 		new FunctionDef(DeleteScheduledJob.signature, DeleteScheduledJob.class),
 		new FunctionDef(PauseScheduledJob.signature, PauseScheduledJob.class),
