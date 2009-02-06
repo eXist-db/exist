@@ -55,7 +55,7 @@
                         </td>
                         <td width="70%">A simple example which lists all functions in the built-in XQuery function library.
                             It uses the transform function to transform XML output into HTML using an XSL
-                            stylesheet (also check the <link href="xquery/functions.xq">function search</link>
+                            stylesheet (also check the <link href="xquery/functions.xql">function search</link>
                             interface.</td>
                     </tr>
                     <tr>
@@ -124,12 +124,15 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="redirect/search/db/my/collection/path">Redirecting HTTP requests</link>
+                            URL Rewriting
                         </td>
-                        <td width="70%">eXist's RedirectorServlet calls a user-defined XQuery to 
+                        <td width="70%">eXist's XQueryURLRewrite servlet filter calls a user-defined XQuery to 
                         decide how a HTTP request is handled. The XML fragment returned by the
-                        query determines where the request is directed to. This happens transparently
-                        to the client.</td>
+                        query determines how the request is processed. This happens transparently
+                        to the client. One or more "views" can be applied to a request to further processes it.
+                        This is how most of the pages here are rendered (except the Cocoon examples). Have a look
+                        the main controller XQuery, which resides in <code>webapp/controller.xql</code>.</td>
+                        
                     </tr>
                     <tr>
                         <td width="30%" valign="top">

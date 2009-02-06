@@ -71,7 +71,7 @@
             <link href="../api/index.html">Javadocs</link>
         </item>
         <item>
-            <link href="http://demo.exist-db.org/xquery/svnlog.xql">ChangeLog</link>
+            <link href="http://demo.exist-db.org/exist/xquery/svnlog.xql">ChangeLog</link>
         </item>
         <item>
             <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug

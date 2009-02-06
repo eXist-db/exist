@@ -1,35 +1,45 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:sidebar="http://exist-db.org/NS/sidebar" xmlns:exist="http://exist.sourceforge.net/NS/exist" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:sidebar="http://exist-db.org/NS/sidebar"
+    xmlns:exist="http://exist.sourceforge.net/NS/exist" version="1.0">
     <xsl:output method="html" media-type="text/html"/>
+    
     <xsl:param name="path" select="''"/>
+    
     <xsl:variable name="pathToWebapp">
         <xsl:call-template name="invertPath">
             <xsl:with-param name="str" select="$path"/>
         </xsl:call-template>
     </xsl:variable>
+    
+    <xsl:variable name="include.analytics" select="false()"/>
+    
     <xsl:template match="book|article">
         <html>
             <head>
                 <title>
                     <xsl:value-of select="(bookinfo|articleinfo)/title/text()"/>
                 </title>
-                <link type="text/css" href="{$pathToWebapp}styles/SyntaxHighlighter.css" rel="stylesheet"/>
-            	<link rel="shortcut icon" href="{$pathToWebapp}resources/exist_icon_16x16.ico"/>
-            	<link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png" type="image/png"/>
+                <link type="text/css" href="{$pathToWebapp}styles/SyntaxHighlighter.css"
+                    rel="stylesheet"/>
+                <link rel="shortcut icon" href="{$pathToWebapp}resources/exist_icon_16x16.ico"/>
+                <link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png"
+                    type="image/png"/>
                 <xsl:variable name="styleref" select="(bookinfo|articleinfo)/style/@href"/>
                 <xsl:choose>
                     <xsl:when test="$styleref">
                         <link rel="stylesheet" type="text/css" href="{$styleref}"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <link rel="stylesheet" type="text/css" href="{$pathToWebapp}styles/default-style.css"/>
+                        <link rel="stylesheet" type="text/css"
+                            href="{$pathToWebapp}styles/default-style.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
-                <xsl:copy-of select="(bookinfo|articleinfo)/link"/>	
+                <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
                 <script type="text/javascript" src="{$pathToWebapp}styles/niftycube.js"/>
                 <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/sh-min.js"/>
                 <script type="text/javascript">
-                    window.onload = function() {
+                    window.onload = function () {
                         Nifty("h1.chaptertitle", "transparent");
                         Nifty("div.note", "transparent");
                         Nifty("div.example", "transparent");
@@ -38,11 +48,10 @@
                         Nifty("div.block ul", "bottom");
                         
                         dp.SyntaxHighlighter.HighlightAll('code');
-                    }
-                </script>
+                    }</script>
             </head>
             <body bgcolor="#FFFFFF">
-				<xsl:apply-templates xmlns:xi="http://www.w3.org/2001/XInclude" select="xi:include"/>
+                <xsl:apply-templates xmlns:xi="http://www.w3.org/2001/XInclude" select="xi:include"/>
                 <xsl:apply-templates select="bookinfo|articleinfo"/>
                 <xsl:apply-templates select="sidebar:sidebar"/>
                 <div id="content2col">
@@ -59,6 +68,7 @@
                     </xsl:choose>
                     <xsl:apply-templates select="bookinfo|articleinfo" mode="backmatter"/>
                 </div>
+                <xsl:call-template name="analytics"/>
             </body>
         </html>
     </xsl:template>
@@ -87,11 +97,13 @@
                                     <a>
                                         <xsl:choose>
                                             <xsl:when test="@id">
-                                                <xsl:attribute name="href">#<xsl:value-of select="@id"/>
+                                                <xsl:attribute name="href">#<xsl:value-of
+                                                  select="@id"/>
                                                 </xsl:attribute>
                                             </xsl:when>
                                             <xsl:otherwise>
-                                                <xsl:attribute name="href">#<xsl:value-of select="generate-id()"/>
+                                                <xsl:attribute name="href">#<xsl:value-of
+                                                  select="generate-id()"/>
                                                 </xsl:attribute>
                                             </xsl:otherwise>
                                         </xsl:choose>
@@ -278,7 +290,8 @@
     <xsl:template match="chapter/section/section/section/section|article/section/section/section">
         <xsl:apply-templates/>
     </xsl:template>
-    <xsl:template match="chapter/section/section/section/section/title|article/section/section/section/title">
+    <xsl:template
+        match="chapter/section/section/section/section/title|article/section/section/section/title">
         <h5>
             <xsl:apply-templates/>
         </h5>
@@ -290,9 +303,9 @@
     <xsl:template match="para">
         <p>
             <xsl:copy-of select="@class"/>
-			<xsl:if test="@exist:id">
-				<a name="{@exist:id}"/>
-			</xsl:if>
+            <xsl:if test="@exist:id">
+                <a name="{@exist:id}"/>
+            </xsl:if>
             <xsl:apply-templates/>
         </p>
     </xsl:template>
@@ -318,12 +331,12 @@
                     <img src="{$pathToWebapp}logo.jpg" title="eXist"/>
                 </xsl:otherwise>
             </xsl:choose>
-			<div id="quicksearch">
-				<form action="{../sidebar:sidebar/sidebar:search/@href}" method="GET">
-					<input type="text" size="20" name="q"/>
-					<input type="submit" value="Search"/>
-				</form>
-			</div>
+            <div id="quicksearch">
+                <form action="{../sidebar:sidebar/sidebar:search/@href}" method="GET">
+                    <input type="text" size="20" name="q"/>
+                    <input type="submit" value="Search"/>
+                </form>
+            </div>
 
             <div id="navbar">
                 <xsl:apply-templates select="../sidebar:sidebar/sidebar:toolbar"/>
@@ -355,7 +368,8 @@
             <xsl:copy-of select="@width|@height"/>
         </img>
     </xsl:template>
-    <xsl:template match="filename|classname|methodname|option[not(ancestor::form)]|command|parameter|guimenu|guimenuitem|guibutton|function|envar">
+    <xsl:template
+        match="filename|classname|methodname|option[not(ancestor::form)]|command|parameter|guimenu|guimenuitem|guibutton|function|envar">
         <span class="{local-name(.)}">
             <xsl:apply-templates/>
         </span>
@@ -659,5 +673,28 @@
                 </xsl:call-template>
             </xsl:when>
         </xsl:choose>
+    </xsl:template>
+
+    <xsl:template name="analytics">
+        <xsl:if test="$include.analytics">
+            <!-- Piwik -->
+            <script type="text/javascript">
+                var pkBaseURL = (("https:" == document.location.protocol)? "https://apps.sourceforge.net/piwik/exist/": "http://apps.sourceforge.net/piwik/exist/");
+                document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));</script>
+            <script type="text/javascript">
+                piwik_action_name = '';
+                piwik_idsite = 1;
+                piwik_url = pkBaseURL + "piwik.php";
+                piwik_log(piwik_action_name, piwik_idsite, piwik_url);</script>
+            <object>
+                <noscript>
+                    <p>
+                        <img src="http://apps.sourceforge.net/piwik/exist/piwik.php?idsite=1"
+                            alt="piwik"/>
+                    </p>
+                </noscript>
+            </object>
+            <!-- End Piwik Tag -->
+        </xsl:if>
     </xsl:template>
 </xsl:stylesheet>

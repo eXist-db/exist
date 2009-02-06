@@ -17,7 +17,7 @@
                     recommendation</ulink>. Functions in the standard function library should also
                 follow the <ulink url="http://www.w3.org/TR/xpath-functions/">"XQuery 1.0 and XPath
                     2.0 Functions and Operators" recommendation</ulink>. Please check the local function library
-                    <ulink url="xquery/functions.xq">documentation</ulink>.</para>
+                    <ulink url="xquery/functions.xql">documentation</ulink>.</para>
 
             <para>The XQuery implementation is tested against the official XQuery Test Suite (XQTS
                 version 1.0.2). This suite contains more than 14,000 tests. As of November 2007,
@@ -73,7 +73,7 @@
         <section>
             <title>Function Library</title>
             <para>A complete list of eXist-supported XQuery functions can be viewed on the <ulink
-                    url="xquery/functions.xq">XQuery Function Documentation</ulink> page. Each
+                    url="xquery/functions.xql">XQuery Function Documentation</ulink> page. Each
                 function description is taken directly from the signature provided by the class
                 implementing the <classname>Function</classname> interface. </para>
 
@@ -567,7 +567,7 @@ for $rec in /rdf:RDF/* return
                     number of common utility functions. The <command>util:md5</command> function,
                     used in the above example, is one such function. In this subsection, we discuss
                     a few of the important available utility functions. For a complete list, please
-                    go to the <ulink url="xquery/functions.xq">Built-in Functions</ulink> section.</para>
+                    go to the <ulink url="xquery/functions.xql">Built-in Functions</ulink> section.</para>
                 <para>However, one important function, <command>util:eval</command>, requires
                     further explanation.</para>
 
