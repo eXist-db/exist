@@ -376,12 +376,12 @@ public class XQueryServlet extends HttpServlet {
             }
 
         } catch (XMLDBException e) {
-            LOG.debug(e);
+            LOG.debug(e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             sendError(output, e.getMessage(), e);
             
         } catch (Throwable e){
-            LOG.error(e);
+            LOG.error(e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             sendError(output, "Error", e.getMessage());
         }
