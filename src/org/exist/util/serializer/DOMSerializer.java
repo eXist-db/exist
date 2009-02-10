@@ -138,6 +138,9 @@ public class DOMSerializer {
 					} else if (attrName.indexOf(':') > 0) {
 						prefix = nextAttr.getPrefix();
 						uri = nextAttr.getNamespaceURI();
+                        if (prefix == null){
+                            prefix = attrName.split(":")[0];
+                        }
 						if (nsSupport.getURI(prefix) == null) {
 							namespaceDecls.put(prefix, uri);
 							nsSupport.declarePrefix(prefix, uri);
