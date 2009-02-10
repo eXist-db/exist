@@ -691,10 +691,16 @@ public class RESTServer {
 						search(broker, query, path, nsExtractor.getNamespaces(), howmany, start,
 								outputProperties, enclose, cache, request,
 								response);
-					} catch (Exception e) {
+					} catch (XPathException e) {
 						response.setStatus(HttpServletResponse.SC_ACCEPTED);
 						result = e.getMessage();
-						// TODO: write error response
+                        if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+                            writeXPathException(response, encoding, null, path,
+                                    e);
+                        } else {
+                            writeXPathExceptionHtml(response, encoding, null,
+                                    path, e);
+                        }
 					}
 
 				} else {
