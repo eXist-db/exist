@@ -199,7 +199,7 @@ public class Transform extends BasicFunction {
             ValueSequence seq = new ValueSequence();
     		context.pushDocumentContext();
     		MemTreeBuilder builder = context.getDocumentBuilder();
-    		DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder);
+    		DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
     		SAXResult result = new SAXResult(builderReceiver);
     		result.setLexicalHandler(builderReceiver);		//preserve comments etc... from xslt output
     		handler.setResult(result);

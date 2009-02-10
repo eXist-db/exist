@@ -168,7 +168,7 @@ public class GetData extends BasicFunction {
 					SAXParser parser = factory.newSAXParser();
 					XMLReader reader = parser.getXMLReader();
                     MemTreeBuilder builder = context.getDocumentBuilder();
-                    DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+                    DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
 					reader.setContentHandler(receiver);
 					reader.parse(src);
 					Document doc = receiver.getDocument();

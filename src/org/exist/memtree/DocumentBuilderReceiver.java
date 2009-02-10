@@ -34,7 +34,12 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.NamespaceSupport;
 import org.xml.sax.ext.LexicalHandler;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Builds an in-memory DOM tree from SAX {@link org.exist.util.serializer.Receiver}
@@ -45,16 +50,24 @@ import org.xml.sax.ext.LexicalHandler;
 public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
 
 	private MemTreeBuilder builder = null;
-	
+
+    private Map namespaces = null;
+    private boolean explicitNSDecl = false;
+
 	public DocumentBuilderReceiver() {
 		super();
 	}
 
 	public DocumentBuilderReceiver(MemTreeBuilder builder) {
-		super();
-		this.builder = builder;
+        this(builder, false);
 	}
-	
+
+    public DocumentBuilderReceiver(MemTreeBuilder builder, boolean declareNamespaces) {
+        super();
+        this.builder = builder;
+        this.explicitNSDecl = declareNamespaces;
+    }
+    
 	public Document getDocument() {
 		return builder.getDocument();
 	}
@@ -62,7 +75,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	public XQueryContext getContext() {
 	    return builder.getContext();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
 	 */
@@ -89,7 +102,12 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
 	 */
-	public void startPrefixMapping(String arg0, String arg1) throws SAXException {
+	public void startPrefixMapping(String prefix, String namespace) throws SAXException {
+        if (!explicitNSDecl)
+            return;
+        if (namespaces == null)
+            namespaces = new HashMap();
+        namespaces.put(prefix, namespace);
 	}
 
 	/* (non-Javadoc)
@@ -101,13 +119,25 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
-	public void startElement(String namespaceURI, String localName,	String qName, Attributes attrs)
+	public void startElement(String namespaceURI, String localName, String qName, Attributes attrs)
             throws SAXException {
 		builder.startElement(namespaceURI, localName, qName, attrs);
-	}
+        declareNamespaces();
+    }
 
-	public void startElement(QName qname, AttrList attribs) {
+    private void declareNamespaces() {
+        if (explicitNSDecl && namespaces != null) {
+            for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
+                Map.Entry entry = (Map.Entry) i.next();
+                builder.namespaceNode((String) entry.getKey(), (String) entry.getValue());
+            }
+            namespaces.clear();
+        }
+    }
+
+    public void startElement(QName qname, AttrList attribs) {
 		builder.startElement(qname, null);
+        declareNamespaces();
 		if(attribs != null) {
 			for (int i = 0; i < attribs.getLength(); i++) {
 				builder.addAttribute(attribs.getQName(i), attribs.getValue(i));
