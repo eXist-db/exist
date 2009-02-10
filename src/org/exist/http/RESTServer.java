@@ -798,8 +798,10 @@ public class RESTServer {
 		
 		public void startPrefixMapping(String prefix, String uri) throws SAXException
 		{
-			Namespace ns = new Namespace(prefix, uri);
-			namespaces.add(ns);
+            if (!Namespaces.EXIST_NS.equals(uri)) {
+			    Namespace ns = new Namespace(prefix, uri);
+			    namespaces.add(ns);
+            }
 			super.startPrefixMapping(prefix, uri);
 		}
 		

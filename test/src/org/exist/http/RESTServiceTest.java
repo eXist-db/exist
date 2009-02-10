@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.io.StringReader;
+import java.io.IOException;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -38,9 +40,20 @@ import junit.textui.TestRunner;
 
 import org.exist.Namespaces;
 import org.exist.StandaloneServer;
+import org.exist.memtree.SAXAdapter;
+import org.exist.memtree.ElementImpl;
 import org.exist.storage.DBBroker;
 import org.exist.util.Base64Encoder;
 import org.mortbay.util.MultiException;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.SAXException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.ParserConfigurationException;
 
 /** A test case for accessing a remote server via REST-Style Web API.
  * @author wolf
@@ -75,7 +88,7 @@ public class RESTServiceTest extends TestCase {
             + "<text>"
             + "xquery version \"1.0\";"
             + "(::pragma exist:serialize indent=no ::)"
-            + "//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()"
+            + "//para"
             + "</text>" + "</query>";
 
     private final static String QUERY_REQUEST_ERROR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -246,8 +259,6 @@ public class RESTServiceTest extends TestCase {
         }
     }
 
-
-
     public void testXqueryGetWithNonEmptyPath()
     {
     	try
@@ -342,6 +353,17 @@ public class RESTServiceTest extends TestCase {
 
     public void testPut() {
         try {
+            int r = uploadData();
+            assertEquals("Server returned response code " + r, 201, r);
+
+            doGet();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    private int uploadData() {
+        try {
             System.out.println("--- Storing document ---");
             HttpURLConnection connect = getConnection(RESOURCE_URI);
             connect.setRequestProperty("Authorization", "Basic " + credentials);
@@ -353,13 +375,11 @@ public class RESTServiceTest extends TestCase {
             writer.close();
 
             connect.connect();
-            int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, 201, r);
-
-            doGet();
+            return connect.getResponseCode();
         } catch (Exception e) {
             fail(e.getMessage());
         }
+        return -1;
     }
 
     public void testPutFailAgainstCollection() {
@@ -440,13 +460,17 @@ public class RESTServiceTest extends TestCase {
     }
 
     public void testQueryPost() {
+        uploadData();
         try {
             HttpURLConnection connect = preparePost(QUERY_REQUEST, RESOURCE_URI);
             connect.connect();
             int r = connect.getResponseCode();
             assertEquals("Server returned response code " + r, 200, r);
 
-            System.out.println(readResponse(connect.getInputStream()));
+            String data = readResponse(connect.getInputStream());
+            System.out.println(data);
+            int hits = parseResponse(data);
+            assertEquals(1, hits);
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -679,6 +703,29 @@ public class RESTServiceTest extends TestCase {
             fail(e.getMessage());
         }
         return null;
+    }
+
+    protected int parseResponse(String data) {
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            InputSource src = new InputSource(new StringReader(data));
+            SAXParser parser = factory.newSAXParser();
+            XMLReader reader = parser.getXMLReader();
+            SAXAdapter adapter = new SAXAdapter();
+            reader.setContentHandler(adapter);
+            reader.parse(src);
+
+            Document doc = adapter.getDocument();
+
+            Element root = doc.getDocumentElement();
+            String hits = root.getAttributeNS(Namespaces.EXIST_NS, "hits");
+            return Integer.parseInt(hits);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+        return 0;
     }
 
     protected HttpURLConnection getConnection(String url) {
