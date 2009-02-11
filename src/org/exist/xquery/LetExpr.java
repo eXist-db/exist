@@ -49,7 +49,7 @@ public class LetExpr extends BindingExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
 	 */
-    public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[], GroupSpec groupBy[]) throws XPathException { 
+    public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[], GroupSpec groupBy[]) throws XPathException {
         // bv : Declare the grouping variable 
         if(groupVarName != null){ 
             LocalVariable groupVar = new LocalVariable(QName.parse(context, groupVarName, null)); 

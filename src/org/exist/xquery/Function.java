@@ -59,7 +59,9 @@ public abstract class Function extends PathExpr {
 	
 	// The parent expression from which this function is called.
 	private Expression parent;
-	
+
+    private boolean argumentsChecked = false;
+    
 	private XQueryAST astNode = null;
 	
 	/**
@@ -182,21 +184,25 @@ public abstract class Function extends PathExpr {
 					+ arguments.size()
 					+ ')');
         steps = arguments;
+        argumentsChecked = false;
 	}
 
     /**
      * @throws XPathException
      */
     protected void checkArguments() throws XPathException {
-        SequenceType[] argumentTypes = mySignature.getArgumentTypes();
-        Expression next;
-		SequenceType argType = null;
-		for (int i = 0; i < getArgumentCount(); i++) {
-			if (argumentTypes != null && i < argumentTypes.length)
-				argType = argumentTypes[i];
-			next = checkArgument(getArgument(i), argType, i + 1);
-            steps.set(i, next);
-		}
+        if (!argumentsChecked) {
+            SequenceType[] argumentTypes = mySignature.getArgumentTypes();
+            Expression next;
+            SequenceType argType = null;
+            for (int i = 0; i < getArgumentCount(); i++) {
+                if (argumentTypes != null && i < argumentTypes.length)
+                    argType = argumentTypes[i];
+                next = checkArgument(getArgument(i), argType, i + 1);
+                steps.set(i, next);
+            }
+        }
+        argumentsChecked = true;
     }
 
 	/**
