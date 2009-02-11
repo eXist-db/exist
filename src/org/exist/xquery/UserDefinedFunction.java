@@ -46,7 +46,9 @@ public class UserDefinedFunction extends Function {
     private DocumentSet[] contextDocs = null;
     
     private boolean inRecursion = false;
-	
+
+    private boolean bodyAnalyzed = false;
+    
 	public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
@@ -89,7 +91,10 @@ public class UserDefinedFunction extends Function {
 			}
 			
 			contextInfo.setParent(this);
-			body.analyze(contextInfo);
+            if (!bodyAnalyzed) {
+    			body.analyze(contextInfo);
+                bodyAnalyzed = true;
+            }
 			
 			// restore the local variable stack
 			context.popLocalVariables(mark);
@@ -181,6 +186,7 @@ public class UserDefinedFunction extends Function {
 		// Answer: would lead to an infinite loop if the function is recursive.
 		if(!inRecursion) {
 			inRecursion = true;
+            bodyAnalyzed = false;
 			body.resetState(postOptimization);
 			inRecursion = false;
 		}
