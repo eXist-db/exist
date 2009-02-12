@@ -41,6 +41,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.URIResolver;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -103,7 +104,9 @@ public class Transform extends BasicFunction {
 			"Stylesheet parameters " +
 			"may be passed in the third argument using an XML fragment with the following structure: " +
 			"<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
-			"</parameters>",
+			"</parameters>. There are two special parameters named \"exist:stop-on-warn\" and " +
+            "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
+            "if the XSL processor reports a warning or error.",
 			new SequenceType[] {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
@@ -119,7 +122,11 @@ public class Transform extends BasicFunction {
 			"Stylesheet parameters " +
 			"may be passed in the third argument using an XML fragment with the following structure: " +
 			"<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
-			"</parameters>",
+			"</parameters>. There are two special parameters named \"exist:stop-on-warn\" and " +
+            "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
+            "if the XSL processor reports a warning or error. The fourth argument specifies serialization " +
+            "options in the same way as if they " +
+            "were passed to \"declare option exist:serialize\" expression.",
 			new SequenceType[] {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
@@ -152,7 +159,11 @@ public class Transform extends BasicFunction {
     };
 
 	private final Map cache = new HashMap();
-	
+
+    private ErrorListener errorListener = new TransformErrorListener();
+    private boolean stopOnError = true;
+    private boolean stopOnWarn = false;
+    
 	/**
 	 * @param context
 	 * @param signature
@@ -192,6 +203,7 @@ public class Transform extends BasicFunction {
                 serializeOptions.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes");
 
         TransformerHandler handler = createHandler(stylesheetItem, options);
+        handler.getTransformer().setErrorListener(errorListener);
         if (isCalledAs("transform"))
         {
         	//transform:transform()
@@ -215,8 +227,8 @@ public class Transform extends BasicFunction {
                 }
                 serializer.setReceiver(receiver);
     			serializer.toSAX((NodeValue)inputNode);
-    		} catch (SAXException e) {
-    			throw new XPathException(getASTNode(), "SAX exception while transforming node: " + e.getMessage(), e);
+    		} catch (Exception e) {
+    			throw new XPathException(getASTNode(), "Exception while transforming node: " + e.getMessage(), e);
     		}
     		Node next = builder.getDocument().getFirstChild();
             while (next != null) {
@@ -276,8 +288,8 @@ public class Transform extends BasicFunction {
                     }
                     serializer.setReceiver(receiver);
                     serializer.toSAX((NodeValue)inputNode);
-                } catch (SAXException e) {
-                    throw new XPathException(getASTNode(), "SAX exception while transforming node: " + e.getMessage(), e);
+                } catch (Exception e) {
+                    throw new XPathException(getASTNode(), "Exception while transforming node: " + e.getMessage(), e);
                 }
                 os.close();
                 
@@ -357,11 +369,17 @@ public class Transform extends BasicFunction {
 					String value = elem.getAttribute("value");
 					if(name == null || value == null)
 						throw new XPathException(getASTNode(), "Name or value attribute missing for stylesheet parameter");
-					handler.setParameter(name, value);
+                    if (name.equals("exist:stop-on-warn"))
+                        stopOnWarn = value.equals("yes");
+                    else if (name.equals("exist:stop-on-error"))
+                        stopOnError = value.equals("yes");
+                    else
+					    handler.setParameter(name, value);
 				}
 				child = child.getNextSibling();
 			}
 		}
+        LOG.debug("stop-on-error: " + stopOnError);
 	}
 	
 	private Templates getSource(SAXTransformerFactory factory, String stylesheet) 
@@ -464,6 +482,7 @@ public class Transform extends BasicFunction {
 		private Templates getSource(DocumentImpl stylesheet)
 		throws XPathException, TransformerConfigurationException {
 			factory.setURIResolver(new DatabaseResolver(stylesheet));
+            factory.setErrorListener(errorListener);
 			TemplatesHandler handler = factory.newTemplatesHandler();
 			try {
 				handler.startDocument();
@@ -473,9 +492,9 @@ public class Transform extends BasicFunction {
 				serializer.toSAX(stylesheet);
 				handler.endDocument();
 				return handler.getTemplates();
-			} catch (SAXException e) {
+			} catch (Exception e) {
 				throw new XPathException(getASTNode(),
-					"A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
+					"An exception occurred while compiling the stylesheet: " + e.getMessage(), e);
 			}
 		}
 	}
@@ -544,4 +563,24 @@ public class Transform extends BasicFunction {
 			return source;
 		}
 	}
+
+    private class TransformErrorListener implements ErrorListener {
+
+        public void warning(TransformerException exception) throws TransformerException {
+            LOG.warn("XSL transform reports warning: " + exception.getMessage(), exception);
+            if (stopOnWarn)
+                throw exception;
+        }
+
+        public void error(TransformerException exception) throws TransformerException {
+            LOG.warn("XSL transform reports recoverable error: " + exception.getMessage(), exception);
+            if (stopOnError)
+                throw exception;
+        }
+
+        public void fatalError(TransformerException exception) throws TransformerException {
+            LOG.warn("XSL transform reports fatal error: " + exception.getMessage(), exception);
+            throw exception;
+        }
+    }
 }
