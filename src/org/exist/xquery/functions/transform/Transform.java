@@ -33,6 +33,7 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Iterator;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -160,7 +161,6 @@ public class Transform extends BasicFunction {
 
 	private final Map cache = new HashMap();
 
-    private ErrorListener errorListener = new TransformErrorListener();
     private boolean stopOnError = true;
     private boolean stopOnWarn = false;
     
@@ -202,7 +202,9 @@ public class Transform extends BasicFunction {
         boolean expandXIncludes =
                 serializeOptions.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes");
 
-        TransformerHandler handler = createHandler(stylesheetItem, options);
+        Properties stylesheetParams = parseParameters(options);
+        TransformerHandler handler = createHandler(stylesheetItem, stylesheetParams);
+        TransformErrorListener errorListener = new TransformErrorListener();
         handler.getTransformer().setErrorListener(errorListener);
         if (isCalledAs("transform"))
         {
@@ -230,6 +232,7 @@ public class Transform extends BasicFunction {
     		} catch (Exception e) {
     			throw new XPathException(getASTNode(), "Exception while transforming node: " + e.getMessage(), e);
     		}
+            errorListener.checkForErrors();
     		Node next = builder.getDocument().getFirstChild();
             while (next != null) {
                 seq.add((NodeValue) next);
@@ -291,6 +294,7 @@ public class Transform extends BasicFunction {
                 } catch (Exception e) {
                     throw new XPathException(getASTNode(), "Exception while transforming node: " + e.getMessage(), e);
                 }
+                errorListener.checkForErrors();
                 os.close();
                 
                 //commit the response
@@ -309,9 +313,9 @@ public class Transform extends BasicFunction {
      * @throws TransformerFactoryConfigurationError
      * @throws XPathException
      */
-    private TransformerHandler createHandler(Item stylesheetItem, Node options) throws TransformerFactoryConfigurationError, XPathException
+    private TransformerHandler createHandler(Item stylesheetItem, Properties options) throws TransformerFactoryConfigurationError, XPathException
     {
-    	SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
+    	SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
     	
 		TransformerHandler handler;
 		try
@@ -349,7 +353,7 @@ public class Transform extends BasicFunction {
 			
 			if(options != null)
 			{
-				parseParameters(options, handler.getTransformer());
+				setParameters(options, handler.getTransformer());
 			}
 		}
 		catch (TransformerConfigurationException e)
@@ -359,7 +363,8 @@ public class Transform extends BasicFunction {
         return handler;
     }
 
-	private void parseParameters(Node options, Transformer handler) throws XPathException {
+	private Properties parseParameters(Node options) throws XPathException {
+        Properties properties = new Properties();
 		if(options.getNodeType() == Node.ELEMENT_NODE && options.getLocalName().equals("parameters")) {
 			Node child = options.getFirstChild();
 			while(child != null) {
@@ -374,14 +379,21 @@ public class Transform extends BasicFunction {
                     else if (name.equals("exist:stop-on-error"))
                         stopOnError = value.equals("yes");
                     else
-					    handler.setParameter(name, value);
+					    properties.setProperty(name, value);
 				}
 				child = child.getNextSibling();
 			}
 		}
-        LOG.debug("stop-on-error: " + stopOnError);
+        return properties;
 	}
-	
+
+    private void setParameters(Properties parameters, Transformer handler) {
+        for (Iterator i = parameters.keySet().iterator(); i.hasNext();) {
+            String key = (String) i.next();
+            handler.setParameter(key, parameters.getProperty(key));
+        }
+    }
+
 	private Templates getSource(SAXTransformerFactory factory, String stylesheet) 
 	throws XPathException, TransformerConfigurationException {
 		String base;
@@ -482,6 +494,7 @@ public class Transform extends BasicFunction {
 		private Templates getSource(DocumentImpl stylesheet)
 		throws XPathException, TransformerConfigurationException {
 			factory.setURIResolver(new DatabaseResolver(stylesheet));
+            TransformErrorListener errorListener = new TransformErrorListener();
             factory.setErrorListener(errorListener);
 			TemplatesHandler handler = factory.newTemplatesHandler();
 			try {
@@ -491,8 +504,12 @@ public class Transform extends BasicFunction {
 				serializer.setSAXHandlers(handler, null);
 				serializer.toSAX(stylesheet);
 				handler.endDocument();
-				return handler.getTemplates();
+				Templates t = handler.getTemplates();
+                errorListener.checkForErrors();
+                return t;
 			} catch (Exception e) {
+                if (e instanceof XPathException)
+                    throw (XPathException) e;
 				throw new XPathException(getASTNode(),
 					"An exception occurred while compiling the stylesheet: " + e.getMessage(), e);
 			}
@@ -566,21 +583,51 @@ public class Transform extends BasicFunction {
 
     private class TransformErrorListener implements ErrorListener {
 
-        public void warning(TransformerException exception) throws TransformerException {
-            LOG.warn("XSL transform reports warning: " + exception.getMessage(), exception);
+        private final static int NO_ERROR = 0;
+        private final static int WARNING = 1;
+        private final static int ERROR = 2;
+        private final static int FATAL = 3;
+
+        private int errcode = NO_ERROR;
+        private Exception exception;
+
+        protected void checkForErrors() throws XPathException {
+            switch (errcode) {
+                case WARNING:
+                    if (stopOnWarn)
+                        throw new XPathException("XSL transform reported warning: " + exception.getMessage(),
+                                exception);
+                    break;
+                case ERROR:
+                    if (stopOnError)
+                        throw new XPathException("XSL transform reported error: " + exception.getMessage(), exception);
+                    break;
+                case FATAL:
+                    throw new XPathException("XSL transform reported error: " + exception.getMessage(), exception);
+            }
+        }
+
+        public void warning(TransformerException except) throws TransformerException {
+            LOG.warn("XSL transform reports warning: " + except.getMessage(), except);
+            errcode = WARNING;
+            exception = except;
             if (stopOnWarn)
-                throw exception;
+                throw except;
         }
 
-        public void error(TransformerException exception) throws TransformerException {
-            LOG.warn("XSL transform reports recoverable error: " + exception.getMessage(), exception);
+        public void error(TransformerException except) throws TransformerException {
+            LOG.warn("XSL transform reports recoverable error: " + except.getMessage(), except);
+            errcode = ERROR;
+            exception = except;
             if (stopOnError)
-                throw exception;
+                throw except;
         }
 
-        public void fatalError(TransformerException exception) throws TransformerException {
-            LOG.warn("XSL transform reports fatal error: " + exception.getMessage(), exception);
-            throw exception;
+        public void fatalError(TransformerException except) throws TransformerException {
+            LOG.warn("XSL transform reports fatal error: " + except.getMessage(), except);
+            errcode = FATAL;
+            exception = except;
+            throw except;
         }
     }
 }
