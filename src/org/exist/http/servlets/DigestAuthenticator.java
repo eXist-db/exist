@@ -29,7 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.exist.security.MD5;
+import org.exist.security.MessageDigester;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -77,12 +77,12 @@ public class DigestAuthenticator implements Authenticator {
 				"Digest realm=\"exist\", " +
                 "nonce=\"" + createNonce(request) + "\", " +
 				"domain=\"" + request.getContextPath() + "\", " +
-				"opaque=\"" + MD5.md(Integer.toString(hashCode(), 27),false) + '"');
+				"opaque=\"" + MessageDigester.md5(Integer.toString(hashCode(), 27),false) + '"');
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 	}
 	
 	private String createNonce(HttpServletRequest request) {
-		return MD5.md(request.getRemoteAddr() + ':' +
+		return MessageDigester.md5(request.getRemoteAddr() + ':' +
 				Long.toString(System.currentTimeMillis()) +
 				':' + Integer.toString(hashCode()),false);
 	}
@@ -164,11 +164,11 @@ public class DigestAuthenticator implements Authenticator {
                 md.update((byte)':');
                 md.update(nonce.getBytes("ISO-8859-1"));
                 md.update((byte)':');
-                md.update(MD5.byteArrayToHex(ha2).getBytes("ISO-8859-1"));
+                md.update(MessageDigester.byteArrayToHex(ha2).getBytes("ISO-8859-1"));
                 byte[] digest=md.digest();
                 
                 // check digest
-                return (MD5.byteArrayToHex(digest).equalsIgnoreCase(response));
+                return (MessageDigester.byteArrayToHex(digest).equalsIgnoreCase(response));
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException("MD5 not supported");
             } catch (UnsupportedEncodingException e) {

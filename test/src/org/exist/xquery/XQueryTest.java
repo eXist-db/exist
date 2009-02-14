@@ -3000,6 +3000,75 @@ public class XQueryTest extends XMLTestCase {
             fail(e.getMessage());
         }
     }
+
+
+    public void testMessageDigester() {
+
+        try {
+            String query = "let $value:=\"ABCDEF\"\n" +
+                    "let $alg:=\"MD5\"\n" +
+                    "return\n" +
+                    "(util:hash($value, $alg), util:hash($value, $alg, xs:boolean('true')))";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(2, result.getSize());
+            assertEquals(query, "8827a41122a5028b9808c7bf84b9fcf6",
+                    result.getResource(0).getContent().toString());
+            assertEquals(query, "iCekESKlAouYCMe/hLn89g==",
+                    result.getResource(1).getContent().toString());
+
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+
+        try {
+            String query = "let $value:=\"ABCDEF\"\n" +
+                    "let $alg:=\"SHA-1\"\n" +
+                    "return\n" +
+                    "(util:hash($value, $alg), util:hash($value, $alg, xs:boolean('true')))";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(2, result.getSize());
+            assertEquals(query, "970093678b182127f60bb51b8af2c94d539eca3a",
+                    result.getResource(0).getContent().toString());
+            assertEquals(query, "lwCTZ4sYISf2C7UbivLJTVOeyjo=",
+                    result.getResource(1).getContent().toString());
+
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+
+        try {
+            String query = "let $value:=\"ABCDEF\"\n" +
+                    "let $alg:=\"SHA-256\"\n" +
+                    "return\n" +
+                    "(util:hash($value, $alg), util:hash($value, $alg, xs:boolean('true')))";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(2, result.getSize());
+            assertEquals(query, "e9c0f8b575cbfcb42ab3b78ecc87efa3b011d9a5d10b09fa4e96f240bf6a82f5",
+                    result.getResource(0).getContent().toString());
+            assertEquals(query, "6cD4tXXL/LQqs7eOzIfvo7AR2aXRCwn6TpbyQL9qgvU=",
+                    result.getResource(1).getContent().toString());
+
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
+
     
     // ======================================
     
