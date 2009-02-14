@@ -2278,12 +2278,10 @@ public XQueryTreeParser() {
 			org.exist.xquery.parser.XQueryAST tmp23_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_or);
 			_t = _t.getFirstChild();
-			
-						PathExpr left= new PathExpr(context);
-						PathExpr right= new PathExpr(context);
-					
+			PathExpr left= new PathExpr(context);	
 			step=expr(_t,left);
 			_t = _retTree;
+			PathExpr right= new PathExpr(context);
 			step=expr(_t,right);
 			_t = _retTree;
 			_t = __t147;
