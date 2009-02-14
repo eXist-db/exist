@@ -570,7 +570,7 @@ public class BrokerPool {
 		//TODO : sanity check : the synch period should be reasonable
 		LOG.info("database instance '" + instanceName + "' will be synchronized every " + nf.format(/*this.*/majorSyncPeriod) + " ms");
 
-		aLong = (Long) conf.getProperty("db-connection.pool.shutdown-wait");		
+		aLong = (Long) conf.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY);		
 		if (aLong != null) {
 			this.maxShutdownWait = aLong.longValue();			
 		}
@@ -1476,7 +1476,9 @@ public class BrokerPool {
         if (status == SHUTDOWN)
             // we are already shut down
             return;
-        
+
+        LOG.info("Database is shutting down ...");
+
         status = SHUTDOWN;
         
 		notificationService.debug();
@@ -1504,21 +1506,28 @@ public class BrokerPool {
 		//collectionCache.something();
 		//xmlReaderPool.close();
 
+        transactionManager.getJournal().flushToLog(true, true);
+
+        boolean hangingThreads = false;
 		long waitStart = System.currentTimeMillis();
 		//Are there active brokers ?
-		while (activeBrokers.size() > 0) {
-			try {
-				//Wait until they become inactive...
-				this.wait(1000);
-			} catch (InterruptedException e) {
-			}
-			//...or force the shutdown
-			if(System.currentTimeMillis() - waitStart > maxShutdownWait) {
-				LOG.warn("Not all threads returned. Forcing shutdown ...");
-				break;
-			}
-		}
-		LOG.debug("calling shutdown ...");
+        if (activeBrokers.size() > 0) {
+            LOG.info("Waiting " + maxShutdownWait + "ms for remaining threads to shut down...");
+            while (activeBrokers.size() > 0) {
+                try {
+                    //Wait until they become inactive...
+                    this.wait(1000);
+                } catch (InterruptedException e) {
+                }
+                //...or force the shutdown
+                if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait) {
+                    LOG.warn("Not all threads returned. Forcing shutdown ...");
+                    hangingThreads = true;
+                    break;
+                }
+            }
+        }
+		LOG.debug("Calling shutdown ...");
 
         // closing down external indexes
         try {
@@ -1549,8 +1558,13 @@ public class BrokerPool {
             broker.shutdown();
         }
         collectionCacheMgr.deregisterCache(collectionCache);
-        
-        transactionManager.shutdown();
+
+        if (hangingThreads)
+            // do not write a checkpoint if some threads did not return before shutdown
+            // there might be dirty transactions
+            transactionManager.shutdown(false);
+        else
+            transactionManager.shutdown(true);
 
         // deregister JMX MBeans
         AgentFactory.getInstance().closeDBInstance(this);

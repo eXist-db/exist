@@ -188,10 +188,10 @@ public class TransactionManager {
         }
     }
     
-    public void shutdown() {
+    public void shutdown(boolean checkpoint) {
         if (enabled) {
         	long txnId = nextTxnId++;
-            journal.shutdown(txnId);
+            journal.shutdown(txnId, checkpoint);
         }
     }
 }
