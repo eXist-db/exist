@@ -1965,7 +1965,8 @@ public class XQueryContext {
 			} else {
 				Source source;
                 if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) || 
-                        moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+											(location.indexOf(':') < 0 &&
+                        moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) ){
                     // Is the module source stored in the database?
     				try {
     					XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
