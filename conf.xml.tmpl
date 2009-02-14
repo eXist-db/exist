@@ -215,9 +215,20 @@
                 XP; not necessary on Linux). However, group-comit="yes"
                 will increase the risk of an already committed 
                 operation being rolled back after a database crash.
+
+			- force-restart:
+				Try to restart the db even if crash recovery failed. This is
+				dangerous because there might be corruptions inside the
+				data files. The transaction log will be cleared, all locks removed
+				and the db reindexed.
+				
+				Set this option to "yes" if you need to make sure that the db is
+				online, even after a fatal crash. Errors encountered during recovery 
+				are written to the log files. Scan the log files to see if any problems
+				occurred.
         -->
-        <recovery enabled="yes" group-commit="no" journal-dir="webapp/WEB-INF/data" 
-                  size="100M" sync-on-commit="no"/>
+        <recovery enabled="yes" group-commit="no" journal-dir="webapp/WEB-INF/data" size="100M"
+            sync-on-commit="no" force-restart="yes"/>
 
         <!-- 
             The <security> element in the <db-connection> node is used to select
@@ -559,7 +570,9 @@
     -->
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no" 
-                match-tagging-elements="no"/>
+                match-tagging-elements="no">
+		<!--custom-filter class="org.exist.versioning.VersioningFilter"/-->
+	</serializer>
 
     <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
