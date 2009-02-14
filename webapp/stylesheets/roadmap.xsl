@@ -50,7 +50,7 @@
                             <xsl:value-of select="title"/>
                         </h1>
                     </div>
-
+					<xsl:apply-templates select="p"/>
                     <table id="roadmap">
                         <tr>
                             <th align="left">
@@ -64,7 +64,7 @@
 
                         </tr>
                         <xsl:apply-templates
-                            select="*[not(self::sidebar:sidebar|self::title|self::legend|self::comment)]"/>
+                            select="*[not(self::sidebar:sidebar|self::title|self::legend|self::comment|self::p)]"/>
 
                     </table>
                     <xsl:apply-templates select="legend"/>

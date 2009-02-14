@@ -2,6 +2,10 @@
 <roadmap>
     <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
     <title>eXist: Current State, Features and Roadmap</title>
+	<p style="text-align: center; font-size: 1.25em;">This document may not always be up to date. Please also
+	<a href="http://atomic.exist-db.org/planning/">check the wiki</a>
+	for ideas and features we are currently working on or plan to implement in the future:</p>
+
     <comment>Due to size restrictions, longer remarks on some of the listed topics are available in
         separate documents. This is indicated with a reference.</comment>
     <module>
