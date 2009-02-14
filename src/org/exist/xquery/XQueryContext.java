@@ -458,8 +458,8 @@ public class XQueryContext {
 		User user = getUserFromHttpSession();
 		if(user != null)
 		{
-			broker.setUser(user);
-		}
+            broker.setUser(user);
+        }
 		//Reset current context position
 		setContextPosition(0);	
 		//Note that, for some reasons, an XQueryContext might be used without calling this method
@@ -1590,7 +1590,7 @@ public class XQueryContext {
 	 */
 	public User getUser()
 	{		
-		return broker.getUser();
+		return getBroker().getUser(); 
 	}
 	
 	/**
