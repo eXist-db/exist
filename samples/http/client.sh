@@ -202,7 +202,7 @@ case $action in
 </query>
 END
 `
-        echo $request | curl -i --data @- "$url$collection"
+        echo $request | curl -H 'content-type:text/xml' -i --data-binary @- "$url$collection"
         ;;
     xupdate)
         if [ ! -f $xupdate ]
