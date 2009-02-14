@@ -83,6 +83,7 @@ import org.exist.storage.journal.Journal;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.journal.Loggable;
+import org.exist.storage.journal.Lsn;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
@@ -579,7 +580,8 @@ public class BTree extends Paged {
                 p.read();
 				if ((p.getPageHeader().getStatus() == BRANCH ||
 						p.getPageHeader().getStatus() == LEAF) &&
-						requiresRedo(loggable, p)) {
+                        p.getPageHeader().getLsn() != Lsn.LSN_INVALID &&
+						!requiresRedo(loggable, p)) {
                     // node already found on disk: read it
 					node = new BTreeNode(p, false);
 					node.read();
