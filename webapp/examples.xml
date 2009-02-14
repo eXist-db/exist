@@ -203,6 +203,20 @@
                     </tr>
                 </table>
             </section>
+
+            <section title="External Examples">
+                <table border="0" width="100%" cellspacing="10">
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="http://atomic.exist-db.org/atomic/AtomicWikiFeatures">AtomicWiki</link>
+                        </td>
+                        <td width="70%">AtomicWiki is a combined Wiki and Weblog entirely
+                            written in XQuery (and some XSLT) and using XQuery as a scripting
+                            language within Wiki entries and Blog posts.
+                        </td>
+                    </tr>
+                </table>
+            </section>
         </section>
     </body>
 </document>
