@@ -199,6 +199,18 @@
                                     milliseconds) that the database will allow for any running
                                     processes to complete upon database shutdown. After that, eXist
                                     will try to kill the remaining processes.</para>
+                                
+                                <para>If wait-before-shutdown is set to a positive number, eXist
+                                    will stop the db after the specified timeout, even if there were
+                                    still running database operations. In this case, no checkpoint
+                                    will be written to the transaction log. If there were any open
+                                    transactions, eXist will trigger a recovery run after
+                                    restart.</para>
+                                
+                                <para>If wait-before-shutdown is set to -1, eXist will not shut down
+                                    before all active database operations returned. This is a safe
+                                    setting, but it may require a manual intervention to stop the
+                                    jvm.</para>
                             </listitem>
                         </varlistentry>
                     </variablelist>
@@ -270,6 +282,32 @@
                                 <para>However, <option>group-comit="yes"</option> will increase the
                                     chance that an already committed operation is rolled back after
                                     a database crash.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>force-restart</term>
+                            <listitem>
+                                <para>Try to restart the db even if crash recovery failed. This is
+                                    dangerous because there might be corruptions inside the
+                                    data files. The transaction log will be cleared, all locks removed
+                                    and the db reindexed.</para>
+                                    
+                                <para>Set this option to "yes" if you need to make sure that the db
+                                    is online, even after a fatal crash. Errors encountered during
+                                    recovery are written to the log files. Scan the log files to see
+                                    if any problems occurred.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>consistency-check</term>
+                            <listitem>
+                                <para>If set to "yes", a consistency check will be run on the database
+                                    if an error was detected during crash recovery. This option requires
+                                    force-restart to be set to "yes", otherwise it has no effect.</para>
+                                
+                                <para>The consistency check outputs a report to the directory {files}/sanity
+                                    and if inconsistencies are found in the db, it writes an emergency
+                                    backup to the same directory.</para>
                             </listitem>
                         </varlistentry>
                     </variablelist>
