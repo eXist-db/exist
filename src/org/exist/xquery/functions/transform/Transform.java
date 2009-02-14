@@ -202,7 +202,9 @@ public class Transform extends BasicFunction {
         boolean expandXIncludes =
                 serializeOptions.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes");
 
-        Properties stylesheetParams = parseParameters(options);
+        Properties stylesheetParams = new Properties();
+        if (options != null)
+            parseParameters(stylesheetParams, options);
         TransformerHandler handler = createHandler(stylesheetItem, stylesheetParams);
         TransformErrorListener errorListener = new TransformErrorListener();
         handler.getTransformer().setErrorListener(errorListener);
@@ -363,8 +365,7 @@ public class Transform extends BasicFunction {
         return handler;
     }
 
-	private Properties parseParameters(Node options) throws XPathException {
-        Properties properties = new Properties();
+	private void parseParameters(Properties properties, Node options) throws XPathException {
 		if(options.getNodeType() == Node.ELEMENT_NODE && options.getLocalName().equals("parameters")) {
 			Node child = options.getFirstChild();
 			while(child != null) {
@@ -384,7 +385,6 @@ public class Transform extends BasicFunction {
 				child = child.getNextSibling();
 			}
 		}
-        return properties;
 	}
 
     private void setParameters(Properties parameters, Transformer handler) {
