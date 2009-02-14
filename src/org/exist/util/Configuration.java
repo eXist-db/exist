@@ -886,6 +886,14 @@ public class Configuration implements ErrorHandler
         }
         setProperty(TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART, new Boolean(value));
         LOG.debug(TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get(TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART));
+
+        option = recovery.getAttribute(BrokerPool.RECOVERY_POST_RECOVERY_CHECK);
+        value = false;
+        if (option != null) {
+            value = option.equals("yes");
+        }
+        setProperty(BrokerPool.PROPERTY_RECOVERY_CHECK, new Boolean(value));
+        LOG.debug(BrokerPool.PROPERTY_RECOVERY_CHECK + ": " + config.get(BrokerPool.PROPERTY_RECOVERY_CHECK));
     }
     
     private void configurePermissions(Element defaultPermission) throws DatabaseConfigurationException {
