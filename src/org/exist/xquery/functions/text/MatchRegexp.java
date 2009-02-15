@@ -395,8 +395,8 @@ public class MatchRegexp extends Function implements Optimizable {
 	 * Translates the regular expression from XPath2 syntax to java regex
 	 * syntax.
 	 *
-	 * @param pattern
-	 * @return
+	 * @param pattern Xpath2 expression
+	 * @return Java regexp representation of pattern
 	 * @throws XPathException
 	 */
 	protected String translateRegexp(String pattern) throws XPathException {

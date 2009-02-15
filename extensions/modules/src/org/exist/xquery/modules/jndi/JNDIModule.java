@@ -159,8 +159,8 @@ public class JNDIModule extends AbstractInternalModule
 	/**
 	 * Closes a specified JNDI Context for the specified XQueryContext
 	 * 
-	 * @param xqueryContext 	The context to close JNDI Contexts for
-	 * @param ctxID 			The ID of the JNDI Context to retrieve from the Context of the XQuery
+	 * @param context   	The context to close JNDI Contexts for
+	 * @param ctxID 		The ID of the JNDI Context to retrieve from the Context of the XQuery
 	 */
 
 	public final static void closeJNDIContext( XQueryContext context, long ctxID ) 

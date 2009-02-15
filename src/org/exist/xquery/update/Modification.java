@@ -131,7 +131,6 @@ public abstract class Modification extends AbstractExpression
 	 * operation.
 	 * 
 	 * @param nodes
-	 * @return
 	 * @throws LockException
 	 */
 	protected StoredNode[] selectAndLock(Txn transaction, NodeSet nodes) throws LockException, PermissionDeniedException,

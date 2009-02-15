@@ -1355,7 +1355,6 @@ public class InteractiveClient {
     
     /** stores given Resource
      * @param fileName simple file or directory
-     * @return
      * @throws XMLDBException
      */
     protected synchronized boolean parse(String fileName) throws XMLDBException {
@@ -1487,7 +1486,6 @@ public class InteractiveClient {
     
     /** stores given Resource
      * @param fileName simple file or directory
-     * @return
      * @throws XMLDBException
      */
     protected synchronized boolean parseGZip(String fileName) throws XMLDBException {
@@ -1564,7 +1562,6 @@ public class InteractiveClient {
     
     /** stores given Resource
      * @param fileName simple file or directory
-     * @return
      * @throws XMLDBException
      */
     protected synchronized boolean parseZip(String fileName) throws XMLDBException {
@@ -1649,7 +1646,6 @@ public class InteractiveClient {
      * 
      * @param files  : selected
      * @param upload : GUI object 
-     * @return
      * @throws XMLDBException
      */
     protected synchronized boolean parse(File[] files, UploadDialog upload)
@@ -2485,7 +2481,7 @@ public class InteractiveClient {
     }
     
     /**
-     * @param queryHistoryFile
+     * Read Query History file.
      */
     protected void readQueryHistory() {
         try {

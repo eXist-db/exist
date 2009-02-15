@@ -131,7 +131,7 @@ public class Node extends Item {
 	/**
 	 * Compare the order of two nodes in a document. 
 	 *
-	 * @param the node to compare this one to
+	 * @param node the node to compare this one to
 	 * @return node 0 if this node is the same as the given node, a value less than 0 if it precedes the
 	 * 	given node in the document, and a value great than 0 if it follows the given node in the document
 	 * @throws DatabaseException if this node and the given one are not in the same document

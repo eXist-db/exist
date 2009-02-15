@@ -355,7 +355,7 @@ public class ExtRegexp extends Function implements Optimizable {
 	 * syntax.
 	 *
 	 * @param pattern
-	 * @return
+	 * @return Translated regexp 
 	 * @throws XPathException
 	 */
 	protected String translateRegexp(String pattern) throws XPathException {

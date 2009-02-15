@@ -1357,9 +1357,9 @@ public class RESTServer {
 	}
 
 	/**
-	 * @response
-	 * @encoding
-	 * @updateCount
+	 * @param response
+	 * @param encoding
+	 * @param updateCount
 	 */
 	private void writeXUpdateResult(HttpServletResponse response,
 			String encoding, long updateCount) throws IOException {
@@ -1380,10 +1380,10 @@ public class RESTServer {
 	}
 
 	/**
-	 * @response
-	 * @encoding
-	 * @broker
-	 * @collection
+	 * @param response
+	 * @param encoding
+	 * @param broker
+	 * @param collection
 	 */
 	protected void writeCollection(HttpServletResponse response,
 			String encoding, DBBroker broker, Collection collection)

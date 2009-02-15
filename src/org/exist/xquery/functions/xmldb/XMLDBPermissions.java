@@ -86,7 +86,7 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 	/**
 	 * @param collection
 	 * @param args
-	 * @return
+	 * @return permission
 	 * @throws XMLDBException
 	 * @throws XPathException
 	 */

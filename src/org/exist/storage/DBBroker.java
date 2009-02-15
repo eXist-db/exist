@@ -525,7 +525,7 @@ public abstract class DBBroker extends Observable {
 
 	public abstract void getCollectionResources(Collection collection);
 
-	/**
+	/* *
 	 * Retrieve the binary data stored under the resource descriptor
 	 * BinaryDocument.
 	 * 

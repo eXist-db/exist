@@ -8,7 +8,7 @@ import org.xml.sax.SAXException;
 /**
  * Callback interface used by the NGram {@link org.exist.indexing.MatchListener} to report matching
  * text sequences. Pass to
- * {@link NGramIndexWorker#getMatchListener(org.exist.dom.NodeProxy, NGramMatchCallback)}
+ * {@link NGramIndexWorker#getMatchListener(org.exist.storage.DBBroker, org.exist.dom.NodeProxy, NGramMatchCallback)}
  * to get informed of matches.
  */
 public interface NGramMatchCallback {

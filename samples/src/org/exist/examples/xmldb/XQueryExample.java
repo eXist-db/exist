@@ -27,7 +27,7 @@ import org.xmldb.api.modules.XMLResource;
  *  in the root directory of the distribution.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    20. September 2002
+ *created    20. September 2002
  */
 public class XQueryExample {
 

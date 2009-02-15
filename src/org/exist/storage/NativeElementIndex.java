@@ -489,9 +489,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * {@link NodeSelector}. The NodeSelector argument is optional. If selector is
      * null, all elements or attributes matching qname will be returned.
      * 
-     * @param type either {@link ElementValue#ATTRIBUTE}, {@link ElementValue#ELEMENT}
-     *      or {@link ElementValue#ATTRIBUTE_ID} or {@link ElementValue#ATTRIBUTE_IDREF}
-     *      or {@link ElementValue#ATTRIBUTE_IDREFS}
+     * @param type either {@link ElementValue#ATTRIBUTE}, {@link ElementValue#ELEMENT}.
      * @param docs the set of documents to look up in the index
      * @param qname the QName of the attribute or element
      * @param selector an (optional) NodeSelector
