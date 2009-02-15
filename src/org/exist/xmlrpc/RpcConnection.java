@@ -419,6 +419,10 @@ public class RpcConnection implements RpcAPI {
      */
     protected void checkPragmas(XQueryContext context, HashMap parameters) throws XPathException {
         Option pragma = context.getOption(Option.SERIALIZE_QNAME);
+        checkPragmas(pragma, parameters);
+    }
+
+    protected void checkPragmas(Option pragma, HashMap parameters) throws XPathException {
         if(pragma == null)
             return;
         String[] contents = pragma.tokenizeContents();
@@ -2737,7 +2741,7 @@ public class RpcConnection implements RpcAPI {
                 NodeValue nodeValue = (NodeValue)item;
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
-                checkPragmas(qr.context, parameters);
+                checkPragmas(qr.serialization, parameters);
                 serializer.setProperties(parameters);
                 return serializer.serialize(nodeValue);
             } else {
@@ -2783,7 +2787,7 @@ public class RpcConnection implements RpcAPI {
             if (qr == null)
                 throw new EXistException("result set unknown or timed out");
             qr.timestamp = System.currentTimeMillis();
-            checkPragmas(qr.context, parameters);
+            checkPragmas(qr.serialization, parameters);
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             serializer.setProperties(parameters);
@@ -2812,7 +2816,7 @@ public class RpcConnection implements RpcAPI {
             for(SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
                 current = i.nextItem();
                 if(Type.subTypeOf(current.getType(), Type.NODE))
-                    ((NodeValue)current).toSAX(broker, handler, null);
+                    current.toSAX(broker, handler, null);
                 else {
                     value = current.toString().toCharArray();
                     handler.characters(value, 0, value.length);
