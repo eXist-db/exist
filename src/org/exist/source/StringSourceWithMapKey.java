@@ -21,7 +21,7 @@ public class StringSourceWithMapKey extends AbstractSource {
 	 * you're passing a shared one.
 	 *
 	 * @param content the content of the query
-	 * @param namespaceMap the map of prefixes to namespace URIs
+	 * @param map the map of prefixes to namespace URIs
 	 */
 	public StringSourceWithMapKey(String content, Map<String, String> map) {
 		this.map = map;

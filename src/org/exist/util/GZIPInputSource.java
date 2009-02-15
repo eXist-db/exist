@@ -28,9 +28,9 @@ public final class GZIPInputSource
 	}
 	
 	/**
-	 * Constructor which calls {@link #getGZIPFile()}
+	 * Constructor which calls {@link #getFile()}
 	 * @param gzipFile
-	 * The file passed to {@link #getGZIPFile()}
+	 * The file passed to {@link #getFile()}
 	 */
 	public GZIPInputSource(File gzipFile) {
 		super(gzipFile);

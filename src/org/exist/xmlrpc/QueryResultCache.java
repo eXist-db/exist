@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 import java.util.Date;
 
 /**
- * Used by {@link RpcServer} to cache query results. Each query result
+ * Used by {@link XmldbRequestProcessorFactory} to cache query results. Each query result
  * is identified by a unique integer id.
  */
 public class QueryResultCache {

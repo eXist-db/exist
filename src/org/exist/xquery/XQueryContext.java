@@ -192,9 +192,6 @@ public class XQueryContext {
 	
     /**
      * the watchdog object assigned to this query
-     *  
-     * @uml.property name="watchdog"
-     * @uml.associationEnd multiplicity="(1 1)"
      */
 	protected XQueryWatchDog watchdog;
     
@@ -392,7 +389,7 @@ public class XQueryContext {
      * Returns true if this context has a parent context
      * (means it is a module context).
      * 
-     * @return
+     * @return False.
      */
     public boolean hasParent() {
         return false;

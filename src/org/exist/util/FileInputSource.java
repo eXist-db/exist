@@ -20,9 +20,9 @@ public class FileInputSource extends EXistInputSource {
 	}
 	
 	/**
-	 * Constructor which calls {@link #setFile()}
-	 * @param gzipFile
-	 * The file passed to {@link #setFile()}
+	 * Constructor which calls {@link #setFile(File)}
+	 * @param file
+	 * The file passed to {@link #setFile(File)}
 	 */
 	public FileInputSource(File file) {
 		this();
@@ -42,7 +42,7 @@ public class FileInputSource extends EXistInputSource {
 	/**
 	 * This method sets the File object used to get
 	 * the uncompressed stream of data
-	 * @param gzipFile
+	 * @param file
 	 * The File object pointing to the GZIP file.
 	 */
 	public void setFile(File file) {

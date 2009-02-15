@@ -34,7 +34,7 @@ import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
  * Execute bin\run.bat org.exist.examples.xmlrpc.Retrieve <remotedoc>
  *
  *  @author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *  @created    August 1, 2002
+ *  created    August 1, 2002
  */
 public class Retrieve {
 

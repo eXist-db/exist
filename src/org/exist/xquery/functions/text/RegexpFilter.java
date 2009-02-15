@@ -159,8 +159,8 @@ public class RegexpFilter extends BasicFunction {
 	 * Translates the regular expression from XPath2 syntax to java regex
 	 * syntax.
 	 * 
-	 * @param pattern
-	 * @return
+	 * @param pattern XPath regexp expression
+	 * @return Java regexp expression
 	 * @throws XPathException
 	 */
 	protected String translateRegexp(String pattern) throws XPathException {

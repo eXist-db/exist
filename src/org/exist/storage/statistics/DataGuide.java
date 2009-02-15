@@ -46,9 +46,6 @@ public class DataGuide {
      * Add the given node path (a path like /root/childA/childB) to the data guide.
      * The frequency for the target element (i.e. the last component in the path)
      * is incremented by one.
-     * 
-     * @param path
-     * @return
      */
     public NodeStats add(NodePath path) {
         return add(path, null);
@@ -57,10 +54,6 @@ public class DataGuide {
     /**
      * Add the given node path using the frequency and size information
      * given in the second argument. Used to merge two DataGuides.
-     *
-     * @param path
-     * @param mergeWith
-     * @return
      */
     protected NodeStats add(NodePath path, NodeStats mergeWith) {
         NodeStats current = root;
