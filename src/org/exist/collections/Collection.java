@@ -916,7 +916,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                     // mark is not supported: exception is expected, do nothing
                 }
 
-                XMLReader reader = getReader(broker, info.getCollectionConfig());
+                XMLReader reader = getReader(broker, false, info.getCollectionConfig());
 
                 info.setReader(reader, null);
                 try {
@@ -951,7 +951,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 
                 CollectionConfiguration colconf 
                         = info.getDocument().getCollection().getConfiguration(broker);
-                XMLReader reader = getReader(broker, colconf);
+                XMLReader reader = getReader(broker, false, colconf);
 
                 info.setReader(reader, null);
                 try {
@@ -1103,7 +1103,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         final CollectionConfiguration colconf = getConfiguration(broker);
         return validateXMLResourceInternal(transaction, broker, docUri, colconf, new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException, EXistException {
-                XMLReader reader = getReader(broker, colconf);
+                XMLReader reader = getReader(broker, true, colconf);
 
                 info.setReader(reader, null);
                 try {
@@ -1649,7 +1649,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     /** 
      * Get xml reader from readerpool and setup validation when needed.
      */
-    private XMLReader getReader(DBBroker broker, CollectionConfiguration colconfig) throws EXistException,
+    private XMLReader getReader(DBBroker broker, boolean validation, CollectionConfiguration colconfig) throws EXistException,
             SAXException {
         
         // If user-defined Reader is set, return it;
@@ -1662,7 +1662,9 @@ public  class Collection extends Observable implements Comparable, Cacheable
 
         // If Collection configuration exists (try to) get validation mode
         // and setup reader with this information.
-        if( colconfig!=null ) {
+        if (!validation)
+            XMLReaderObjectFactory.setReaderValidationMode(XMLReaderObjectFactory.VALIDATION_DISABLED, reader);
+        else if( colconfig!=null ) {
             int mode=colconfig.getValidationMode();
             XMLReaderObjectFactory.setReaderValidationMode(mode, reader);
         }

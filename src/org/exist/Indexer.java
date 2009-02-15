@@ -131,7 +131,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
      * a second time.
      */
     private int childCnt[] = new int[0x1000];
-    
+
     // the current position in childCnt
     private int elementCnt = 0;
 
@@ -339,27 +339,28 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	    if (!validate && GeneralRangeIndexSpec.hasQNameOrValueIndex(last.getIndexType())) {
             elemContent = (XMLString) nodeContentStack.pop();
         }
-			
-	    if (!validate) {
-                final String content = elemContent == null ? null : elemContent.toString();
-                broker.endElement(last, currentPath, content);
-                if (indexListener != null)
-                    indexListener.endElement(transaction, last, currentPath);
-            }
 
-            currentPath.removeLastComponent();
-	    if (validate) {
-		if (childCnt != null)
-		    setChildCount(last);
-	    } else {
-		document.setOwnerDocument(document);
-		if (childCnt == null && last.getChildCount() > 0) {
-		    broker.updateNode(transaction, last, false);
-		}
-	    }
-	    setPrevious(last);
-	    level--;
-	}
+        if (!validate) {
+            final String content = elemContent == null ? null : elemContent.toString();
+            broker.endElement(last, currentPath, content);
+            if (indexListener != null)
+                indexListener.endElement(transaction, last, currentPath);
+        }
+
+        currentPath.removeLastComponent();
+        if (validate) {
+            if (childCnt != null)
+                setChildCount(last);
+        } else {
+            document.setOwnerDocument(document);
+            if ((childCnt == null && last.getChildCount() > 0) ||
+                (childCnt != null && childCnt[last.getPosition()] != last.getChildCount())) {
+                broker.updateNode(transaction, last, false);
+            }
+        }
+        setPrevious(last);
+        level--;
+    }
     }
 
     /**
@@ -516,7 +517,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	    attrNS = attributes.getURI(i);
 	    attrQName = attributes.getQName(i);
 	    if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS))
-		--attrLength;
+            --attrLength;
 	}
 
 	ElementImpl last;
