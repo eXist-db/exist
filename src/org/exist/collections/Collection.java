@@ -1108,6 +1108,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
                 info.setReader(reader, null);
                 try {
                     reader.parse(source);
+                } catch (SAXException e) {
+                    throw new SAXException("The XML parser reported a problem: " + e.getMessage(), e);
                 } catch (IOException e) {
                     throw new EXistException(e);
                 } finally {
