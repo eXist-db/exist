@@ -374,7 +374,7 @@ public class XQueryContext {
      * Returns true if this context has a parent context
      * (means it is a module context).
      * 
-     * @return
+     * @return TRUE is context has parent context.
      */
     public boolean hasParent() {
         return false;
