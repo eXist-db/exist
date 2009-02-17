@@ -154,7 +154,7 @@
         priority is set to debug 
     -->
     <category name="org.apache" additivity="false">
-        <priority value="info"/>
+        <priority value="off"/>
         <appender-ref ref="console"/>
     </category>
     
