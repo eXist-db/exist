@@ -166,7 +166,9 @@ public class JnlpWriter {
         
         // Retrieve info from client
         String acceptedEncoding = request.getHeader(ACCEPT_ENCODING);
-//        String clientContentType = request.getContentType();
+        if(acceptedEncoding==null){
+            acceptedEncoding="";
+        }
         
         String contentType=JAR_MIME_TYPE;
         File downloadTarget=null;
