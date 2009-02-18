@@ -25,6 +25,7 @@ package org.exist.webstart;
 import java.io.File;
 import java.io.IOException;
 
+import java.net.SocketException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -98,6 +99,9 @@ public class JnlpServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid filename extension.");
                 return;
             }
+
+        } catch(SocketException ex) {
+            logger.debug(ex.getMessage());
             
         } catch (Throwable e){
             logger.error(e);
