@@ -25,6 +25,7 @@ package org.exist.webstart;
 import java.io.File;
 import java.io.IOException;
 
+import java.net.SocketException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -83,6 +84,9 @@ public class JnlpServlet extends HttpServlet {
         
         if(URI.endsWith(".jnlp")){
             jw.writeJnlpXML(jf, request, response);
+
+        } catch(SocketException ex) {
+            logger.debug(ex.getMessage());
             
         } else if (URI.endsWith(".jar")){
             String filename = stripFilename( request.getPathInfo() );
