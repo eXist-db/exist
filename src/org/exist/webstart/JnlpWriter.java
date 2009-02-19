@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -189,14 +190,21 @@ public class JnlpWriter {
         response.setDateHeader("Last-Modified",downloadTarget.lastModified());
         
         FileInputStream fis = new FileInputStream( downloadTarget );
-        OutputStream os = response.getOutputStream();
+        ServletOutputStream os = response.getOutputStream();
         
-        
-        // Transfer bytes from in to out
-        byte[] buf = new byte[4096];
-        int len;
-        while ((len = fis.read(buf)) > 0) {
-            os.write(buf, 0, len);
+        try {
+            // Transfer bytes from in to out
+            byte[] buf = new byte[4096];
+            int len;
+            while ((len = fis.read(buf)) > 0) {
+                os.write(buf, 0, len);
+            }
+
+        } catch (IllegalStateException ex){
+            logger.debug(ex.getMessage());
+
+        } catch (IOException ex){
+            logger.debug("Ignore IOException for '" + filename + "'");
         }
         
         os.flush();
@@ -229,14 +237,21 @@ public class JnlpWriter {
         response.setDateHeader("Last-Modified",imageFile.lastModified());
         
         FileInputStream fis = new FileInputStream( imageFile );
-        OutputStream os = response.getOutputStream();
+        ServletOutputStream os = response.getOutputStream();
         
-        
-        // Transfer bytes from in to out
-        byte[] buf = new byte[8096];
-        int len;
-        while ((len = fis.read(buf)) > 0) {
-            os.write(buf, 0, len);
+        try {
+            // Transfer bytes from in to out
+            byte[] buf = new byte[8096];
+            int len;
+            while ((len = fis.read(buf)) > 0) {
+                os.write(buf, 0, len);
+            }
+            
+        } catch (IllegalStateException ex){
+            logger.debug(ex.getMessage());
+
+        } catch (IOException ex){
+            logger.debug("Ignore IOException for '" + filename + "'");
         }
         
         os.flush();

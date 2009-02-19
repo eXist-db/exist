@@ -22,6 +22,7 @@
 
 package org.exist.webstart;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 
@@ -100,9 +101,12 @@ public class JnlpServlet extends HttpServlet {
                 return;
             }
 
+        } catch(EOFException ex) {
+            logger.debug(ex.getMessage(), ex);
+
         } catch(SocketException ex) {
-            logger.debug(ex.getMessage());
-            
+            logger.debug(ex.getMessage(), ex);
+
         } catch (Throwable e){
             logger.error(e);
             throw new ServletException("An error occurred: " + e.getMessage(), e);
