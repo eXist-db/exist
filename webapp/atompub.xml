@@ -553,4 +553,30 @@ Content- Length: nnn
       </section>
     </section>
   </chapter>
+    
+    <chapter>
+        <title>Extensions</title>
+        
+        <section>
+            <title>Setting permissions when creating feeds/entries</title>
+            
+            <para>When creating a new feed or entry, you can specify
+                access permissions as well as an owner and owner group
+                for the new resource. This is done by including a special
+                <sgmltag>exist:permissions</sgmltag> element in the posted
+                feed or entry document:</para>
+            
+            <synopsis><![CDATA[<exist:permissions mode="0755" owner="editor" group="users"/>]]></synopsis>
+            
+            <para>The <option>mode</option> attribute specifies the permissions to be
+                assigned to the resource. The attribute value has to be an octal number
+                or a string describing the permissions to set, using the syntax:</para>
+            
+            <synopsis>[user|group|other]=[+|-][read|write|update][, ...]</synopsis>
+            
+            <para>The <option>owner</option> attribute specifies the user which will own
+                all resources associated to the feed or entry. Parameter <option>group</option>
+                specifies the user group.</para>
+        </section>
+    </chapter>
 </book>
