@@ -1,21 +1,20 @@
 declare namespace atom="http://www.w3.org/2005/Atom";
 <feed xmlns="http://www.w3.org/2005/Atom">
    { 
-     "&#x0a;",
-     /atom:feed/atom:title,
-     "&#x0a;",
-     /atom:feed/atom:id,
-     "&#x0a;",
-     /atom:feed/atom:updated,
-     "&#x0a;",
-     /atom:feed/atom:entry[atom:category[concat(@scheme,@term)='http://www.atomojo.org/ontology/relation/subtopic']],
-     "&#x0a;",
-     /atom:feed/atom:link
-   }
-   {
-      let $current := substring-before(base-uri(/atom:feed),'/.feed.atom'),
-           $current-path := substring-after($current,'/db')
-         return (
+    let $current := substring-before(base-uri(/atom:feed),'/.feed.atom'),
+        $current-path := substring-after($current,'/db')
+    return(    
+         "&#x0a;",
+         /atom:feed/atom:title,
+         "&#x0a;",
+         /atom:feed/atom:id,
+         "&#x0a;",
+         /atom:feed/atom:updated,
+         "&#x0a;",
+         collection(string-join(($current,".feed.entry"),"/"))/atom:entry[atom:category[concat(@scheme,@term)='http://www.atomojo.org/ontology/relation/subtopic']],
+         "&#x0a;",
+         /atom:feed/atom:link,
+         
             <link rel="alternate" href="/atom/content{substring-after($current,'/db')}" type="application/atom+xml"/>,
            "&#x0a;",
             let $parts := tokenize($current-path,'/')

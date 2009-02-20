@@ -461,7 +461,7 @@ public class AtomServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Service is not available.");
 
          } catch (Throwable e){
-            LOG.error(e);
+            LOG.error(e.getMessage(), e);
             throw new ServletException("An error occurred: " + e.getMessage(), e);
 
          } finally {
