@@ -52,10 +52,12 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
    static final String FEED_DOCUMENT_NAME = ".feed.atom";
    static final XmldbURI FEED_DOCUMENT_URI = XmldbURI.create(FEED_DOCUMENT_NAME);
    URLSource entryByIdSource;
+   URLSource getFeedSource;
    
    /** Creates a new instance of AtomProtocol */
    public AtomFeeds() {
-      entryByIdSource = new URLSource(this.getClass().getResource("entry-by-id.xq"));
+	      entryByIdSource = new URLSource(this.getClass().getResource("entry-by-id.xq"));
+	      getFeedSource = new URLSource(this.getClass().getResource("get-feed.xq"));
    }
    
    public void doGet(DBBroker broker,IncomingMessage request,OutgoingMessage response)
@@ -104,24 +106,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
                if (returnContent) {
                   if (id==null) {
                      response.setStatusCode(200);
-                     response.setContentType(Atom.MIME_TYPE+"; charset="+charset);
-
-                     Serializer serializer = broker.getSerializer();
-                     serializer.reset();
-
-                     //Serialize the document
-                     try {
-                        Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
-                        serializer.serialize(feedDoc,w);
-                        w.flush();
-                        w.close();
-                     } catch (IOException ex) {
-                        LOG.fatal("Cannot read resource "+request.getPath(),ex);
-                        throw new EXistException("I/O error on read of resource "+request.getPath(),ex);
-                     } catch (SAXException saxe) {
-                        LOG.warn(saxe);
-                        throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
-                     }
+                     getFeed(broker,request.getPath(),response);
                   } else {
                      response.setStatusCode(200);
                      getEntryById(broker,request.getPath(),id,response);
@@ -183,63 +168,122 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
    }
    
    public void getEntryById(DBBroker broker,String path,String id,OutgoingMessage response)
-      throws EXistException,BadRequestException
-   {
-      XQuery xquery = broker.getXQueryService();
-      CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(broker,entryByIdSource);
+   throws EXistException,BadRequestException
+{
+   XQuery xquery = broker.getXQueryService();
+   CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(broker,entryByIdSource);
 
-      XQueryContext context;
-      if (feedQuery==null) {
-         context = xquery.newContext(AccessContext.REST);
-         try {
-            feedQuery = xquery.compile(context, entryByIdSource);
-         } catch (XPathException ex) {
-            throw new EXistException("Cannot compile xquery "+entryByIdSource.getURL(),ex);
-         } catch (IOException ex) {
-            throw new EXistException("I/O exception while compiling xquery "+entryByIdSource.getURL(),ex);
-         }
-      } else {
-         context = feedQuery.getContext();
-      }
-      context.setStaticallyKnownDocuments(new XmldbURI[] { XmldbURI.create(path).append(AtomProtocol.FEED_DOCUMENT_NAME) });
-
+   XQueryContext context;
+   if (feedQuery==null) {
+      context = xquery.newContext(AccessContext.REST);
       try {
-         context.declareVariable("id",id);
-         Sequence resultSequence = xquery.execute(feedQuery, null);
-         if (resultSequence.isEmpty()) {
-            throw new BadRequestException("No topic was found.");
-         }
-         String charset = getContext().getDefaultCharset();
-         response.setContentType("application/atom+xml; charset="+charset);
-         Serializer serializer = broker.getSerializer();
-         serializer.reset();
-         try {
-            Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
-            SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-            Properties outputProperties = new Properties();
-            sax.setOutput(w, outputProperties);
-            serializer.setProperties(outputProperties);
-            serializer.setSAXHandlers(sax, sax);
-
-            serializer.toSAX(resultSequence, 1, 1, false);
-
-            SerializerPool.getInstance().returnObject(sax);
-            w.flush();
-            w.close();
-         } catch (IOException ex) {
-            LOG.fatal("Cannot read resource "+path,ex);
-            throw new EXistException("I/O error on read of resource "+path,ex);
-         } catch (SAXException saxe) {
-            LOG.warn(saxe);
-            throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
-         }
-         resultSequence.itemAt(0);
+         feedQuery = xquery.compile(context, entryByIdSource);
       } catch (XPathException ex) {
-         throw new EXistException("Cannot execute xquery "+entryByIdSource.getURL(),ex);
-      } finally {
-         xquery.getXQueryPool().returnCompiledXQuery(entryByIdSource, feedQuery);
+         throw new EXistException("Cannot compile xquery "+entryByIdSource.getURL(),ex);
+      } catch (IOException ex) {
+         throw new EXistException("I/O exception while compiling xquery "+entryByIdSource.getURL(),ex);
       }
-      
+   } else {
+      context = feedQuery.getContext();
+   }
+   context.setStaticallyKnownDocuments(new XmldbURI[] { XmldbURI.create(path).append(AtomProtocol.FEED_DOCUMENT_NAME) });
+
+   try {
+      context.declareVariable("id",id);
+      Sequence resultSequence = xquery.execute(feedQuery, null);
+      if (resultSequence.isEmpty()) {
+         throw new BadRequestException("No topic was found.");
+      }
+      String charset = getContext().getDefaultCharset();
+      response.setContentType("application/atom+xml; charset="+charset);
+      Serializer serializer = broker.getSerializer();
+      serializer.reset();
+      try {
+         Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
+         SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+         Properties outputProperties = new Properties();
+         sax.setOutput(w, outputProperties);
+         serializer.setProperties(outputProperties);
+         serializer.setSAXHandlers(sax, sax);
+
+         serializer.toSAX(resultSequence, 1, 1, false);
+
+         SerializerPool.getInstance().returnObject(sax);
+         w.flush();
+         w.close();
+      } catch (IOException ex) {
+         LOG.fatal("Cannot read resource "+path,ex);
+         throw new EXistException("I/O error on read of resource "+path,ex);
+      } catch (SAXException saxe) {
+         LOG.warn(saxe);
+         throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
+      }
+      resultSequence.itemAt(0);
+   } catch (XPathException ex) {
+      throw new EXistException("Cannot execute xquery "+entryByIdSource.getURL(),ex);
+   } finally {
+      xquery.getXQueryPool().returnCompiledXQuery(entryByIdSource, feedQuery);
    }
    
+}
+
+   public void getFeed(DBBroker broker,String path,OutgoingMessage response)
+   throws EXistException,BadRequestException
+{
+   XQuery xquery = broker.getXQueryService();
+   CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(broker,getFeedSource);
+
+   XQueryContext context;
+   if (feedQuery==null) {
+      context = xquery.newContext(AccessContext.REST);
+      try {
+         feedQuery = xquery.compile(context, getFeedSource);
+      } catch (XPathException ex) {
+         throw new EXistException("Cannot compile xquery "+getFeedSource.getURL(),ex);
+      } catch (IOException ex) {
+         throw new EXistException("I/O exception while compiling xquery "+getFeedSource.getURL(),ex);
+      }
+   } else {
+      context = feedQuery.getContext();
+   }
+   context.setStaticallyKnownDocuments(new XmldbURI[] { XmldbURI.create(path).append(AtomProtocol.FEED_DOCUMENT_NAME) });
+
+   try {
+      Sequence resultSequence = xquery.execute(feedQuery, null);
+      if (resultSequence.isEmpty()) {
+         throw new BadRequestException("No feed was found.");
+      }
+      String charset = getContext().getDefaultCharset();
+      response.setContentType("application/atom+xml; charset="+charset);
+      Serializer serializer = broker.getSerializer();
+      serializer.reset();
+      try {
+         Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
+         SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+         Properties outputProperties = new Properties();
+         sax.setOutput(w, outputProperties);
+         serializer.setProperties(outputProperties);
+         serializer.setSAXHandlers(sax, sax);
+
+         serializer.toSAX(resultSequence, 1, 1, false);
+
+         SerializerPool.getInstance().returnObject(sax);
+         w.flush();
+         w.close();
+      } catch (IOException ex) {
+         LOG.fatal("Cannot read resource "+path,ex);
+         throw new EXistException("I/O error on read of resource "+path,ex);
+      } catch (SAXException saxe) {
+         LOG.warn(saxe);
+         throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
+      }
+      resultSequence.itemAt(0);
+   } catch (XPathException ex) {
+      throw new EXistException("Cannot execute xquery "+getFeedSource.getURL(),ex);
+   } finally {
+      xquery.getXQueryPool().returnCompiledXQuery(getFeedSource, feedQuery);
+   }
+   
+}
+
 }

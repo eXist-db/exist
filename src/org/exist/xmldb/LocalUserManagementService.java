@@ -154,9 +154,9 @@ public class LocalUserManagementService implements UserManagementService {
 						" not found");
             if (!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
                 transact.abort(transaction);
-				throw new XMLDBException(
-					ErrorCodes.PERMISSION_DENIED,
-					"you are not the owner of this collection");
+				   throw new XMLDBException(
+					   ErrorCodes.PERMISSION_DENIED,
+					   "you are not the owner of this collection");
             }
 			coll.setPermissions(modeStr);
 			broker.saveCollection(transaction, coll);
