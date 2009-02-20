@@ -198,7 +198,7 @@ public class Lock extends AbstractWebDAVMethod {
             broker = pool.get(user);
             
             try {
-            	resource = broker.getXMLResource(path,  org.exist.storage.lock.Lock.READ_LOCK);
+            	resource = broker.getXMLResource(path,  org.exist.storage.lock.Lock.WRITE_LOCK);
             } catch (PermissionDeniedException ex) {
                 LOG.error(ex);
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
@@ -274,7 +274,7 @@ public class Lock extends AbstractWebDAVMethod {
                 //TOUNDERSTAND : this lock is released below (in the finally clause)
                 //isn't it rather a user lock release attempt ? 
                 // ?
-                resource.getUpdateLock().release(org.exist.storage.lock.Lock.READ_LOCK);
+                resource.getUpdateLock().release(org.exist.storage.lock.Lock.WRITE_LOCK);
                 transact.commit(transaction);
                 
                 LOG.debug("Sucessfully locked '"+path+"'.");
@@ -292,7 +292,7 @@ public class Lock extends AbstractWebDAVMethod {
             if(isNullResource){
                 
                 if(resource!=null){
-                    resource.getUpdateLock().release(org.exist.storage.lock.Lock.READ_LOCK);
+                    resource.getUpdateLock().release(org.exist.storage.lock.Lock.WRITE_LOCK);
                 }
                 
                 if(collection != null){
