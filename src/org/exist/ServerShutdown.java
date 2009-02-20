@@ -9,9 +9,13 @@ import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
+
+import org.apache.xmlrpc.XmlRpcException;
+
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -22,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -101,9 +106,17 @@ public class ServerShutdown {
             System.out.println("Shutting down database instance at ");
             System.out.println('\t' + uri);
             manager.shutdown();
+
         } catch (XMLDBException e) {
             System.err.println("ERROR: " + e.getMessage());
-            e.printStackTrace();
+
+            Throwable t = e.getCause();
+            if(t!=null && t instanceof XmlRpcException){
+                System.err.println("CAUSE: "+t.getMessage());
+            } else {
+                e.printStackTrace();
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
