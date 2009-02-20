@@ -36,6 +36,7 @@ import org.xmldb.api.base.Database;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import org.mortbay.util.MultiException;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -95,13 +96,13 @@ public class JettyStart {
 
 		// start Jetty
 		final Server server;
+        int port = 8080;
 		try {
 			server = new Server(args[0]);
             BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
 			server.start();
 
             HttpListener[] listeners = server.getListeners();
-            int port = 8080;
             if (listeners.length > 0)
                 port = listeners[0].getPort();
             HttpContext[] contexts = server.getContexts();
@@ -131,6 +132,25 @@ public class JettyStart {
 				};
 				Runtime.getRuntime().addShutdownHook(hook);
 			}
+		} catch (MultiException  e) {
+
+            boolean hasBindException=false;
+            for(Object t : e.getExceptions()){
+                if(t instanceof java.net.BindException){
+                    hasBindException=true;
+                    System.out.println("----------------------------------------------------------");
+                    System.out.println("ERROR: Could not start jetty, port "
+                            + port + " is already in use.   ");
+                    System.out.println(t.toString());
+                    System.out.println("----------------------------------------------------------");
+                }
+            }
+
+            // If it is another error, print stacktrace
+            if(!hasBindException){
+                e.printStackTrace();
+            }
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
