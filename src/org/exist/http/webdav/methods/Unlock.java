@@ -68,7 +68,7 @@ public class Unlock extends AbstractWebDAVMethod {
             
             try {
 	            try {
-	                resource = broker.getXMLResource(path, org.exist.storage.lock.Lock.READ_LOCK);
+	                resource = broker.getXMLResource(path, org.exist.storage.lock.Lock.WRITE_LOCK);
 	                
 	            } catch (PermissionDeniedException ex) {
 	                response.sendError(HttpServletResponse.SC_FORBIDDEN, ex.getMessage());
@@ -159,7 +159,7 @@ public class Unlock extends AbstractWebDAVMethod {
 	            }
             } finally {
             	if (resource != null)
-            		resource.getUpdateLock().release(Lock.READ_LOCK);
+            		resource.getUpdateLock().release(Lock.WRITE_LOCK);
             }
             
         } catch (EXistException e) {
