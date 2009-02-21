@@ -18,17 +18,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: GetUploadedFile.java 790 2004-10-29 09:20:54 +0100 (Fri, 29 Oct 2004) wolfgang_m $
+ *  $Id: GetUploadedFileName.java 7936 2008-06-28 16:16:20Z dizzzz $
  */
 package org.exist.xquery.functions.request;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
@@ -38,44 +32,30 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @author wolf
+ * @author Adam Retter <adam.retter@exist-db.org>
  */
-public class GetUploadedFile extends BasicFunction {
+public class GetUploadedFileSize extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-uploaded-file", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Retrieve the Java file object where the file part of a multi-part request has been stored. " +
+			new QName("get-uploaded-file-size", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Retrieve the size of an uploaded file from a multi-part request. This returns the " +
+			"size of the file in bytes. " +
 			"Returns the empty sequence if the request is not a multi-part request or the parameter name " +
 			"does not point to a file part.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE),
-			"Deprecated in favour of get-uploaded-file-data()"
-		),
-			
-		new FunctionSignature(
-				new QName("get-uploaded-file-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-				"Retrieve the base64 encoded data where the file part of a multi-part request has been stored. " +
-				"Returns the empty sequence if the request is not a multi-part request or the parameter name " +
-				"does not point to a file part.",
-				new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-				},
-				new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
-		)
-		
-	};
+			new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE));
 	
-	public GetUploadedFile(XQueryContext context, FunctionSignature signature) {
+	public GetUploadedFileSize(XQueryContext context) {
 		super(context, signature);
 	}
 	
@@ -102,60 +82,12 @@ public class GetUploadedFile extends BasicFunction {
 			RequestWrapper request = (RequestWrapper)value.getObject();
 			File file = request.getFileUploadParam(uploadParamName);
 			if(file == null) {
-				LOG.debug("File param not found: " + uploadParamName);
 				return Sequence.EMPTY_SEQUENCE;
-			} else
-				LOG.debug("Uploaded file: " + file.getAbsolutePath());
-			
-			
-			if(isCalledAs("get-uploaded-file-data"))
-			{
-				InputStream is = null;
-				try
-				{
-					is = new BufferedInputStream(new FileInputStream(file));
-					byte buf[] = new byte[1024];
-					int read = -1;
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					while((read = is.read(buf)) != -1)
-					{
-						baos.write(buf, 0, read);
-					}
-					
-					return new Base64Binary(baos.toByteArray());
-					
-				}
-				catch(FileNotFoundException fnfe)
-				{
-					throw new XPathException(getASTNode(), fnfe.getMessage(), fnfe);
-				}
-				catch (IOException ioe)
-				{
-					throw new XPathException(getASTNode(), ioe.getMessage(), ioe);
-				}
-				finally
-				{
-					if(is != null)
-					{
-						try
-						{
-							is.close();
-						}
-						catch (IOException ioe)
-						{
-							LOG.warn(ioe.getMessage(), ioe);
-						}
-					}
-				}
 			}
-			else
-			{
-				return new JavaObjectValue(file);
-			}
-		}
-		else
-		{
+			
+			return new DoubleValue(file.length());
+		} else
 			throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
-		}
 	}
+
 }
