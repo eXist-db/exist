@@ -183,8 +183,10 @@ public class XQueryContext {
 	// Unresolved references to user defined functions
 	protected final Stack forwardReferences = new Stack();
 	
-	// List of options declared for this query
-	protected List options = null;
+	// List of options declared for this query at compile time - i.e. declare option 
+	protected List staticOptions = null;
+	// List of options declared for this query at run time - i.e. util:declare-option()
+	protected List dynamicOptions = null;
 	
 	//The Calendar for this context : may be changed by some options
 	XMLGregorianCalendar calendar = null; 
@@ -328,7 +330,7 @@ public class XQueryContext {
      */
     private Profiler profiler = new Profiler();
     
-    //For holding XQuery Context variables from setXQueryContextVar() and getXQueryContextVar()
+    //For holding XQuery Context variables for general storage in the XQuery Context
     HashMap XQueryContextVars = new HashMap();
     public static final String XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR = "_eXist_xquery_update_error";
     public static final String HTTP_SESSIONVAR_XMLDB_USER = "_eXist_xmldb_user";
@@ -1147,6 +1149,9 @@ public class XQueryContext {
         protectedDocuments = null;
         if (!keepGlobals)
             globalVariables.clear();
+        
+        if(dynamicOptions != null)
+        	dynamicOptions.clear(); //clear any dynamic options
         
         //remove the context-vars, subsequent execution of the query
 		//may generate different values for the vars based on the
@@ -2188,27 +2193,46 @@ public class XQueryContext {
         return enableOptimizer;
     }
     
-    public void addOption(String qnameString, String contents) throws XPathException {
-		QName qn = QName.parse(this, qnameString, defaultFunctionNamespace);
+    /**
+     * for static compile-time options i.e. declare option
+     */
+    public void addOption(String qnameString, String contents) throws XPathException
+    {
+    	if(staticOptions == null)
+			staticOptions = new ArrayList();
+    	
+		addOption(staticOptions, qnameString, contents);
+    }
+    
+    /**
+     * for dynamic run-time options i.e. util:declare-option
+     */
+    public void addDynamicOption(String qnameString, String contents) throws XPathException
+    {
+    	if(dynamicOptions == null)
+			dynamicOptions = new ArrayList();
+    	
+		addOption(dynamicOptions, qnameString, contents);
+    }
+    
+    private void addOption(List options, String qnameString, String contents) throws XPathException
+    {
+    	QName qn = QName.parse(this, qnameString, defaultFunctionNamespace);
 
 		Option option = new Option(qn, contents);
-		if(options == null)
-			options = new ArrayList();
 		
-		// check if this overwrites an already existing option
-		boolean added = false;
-		Option old;
-		for (int i = 0; i < options.size(); i++) {
-			old = (Option) options.get(i);
-			if (old.equals(option)) {
-				options.add(i, option);
-				added = true;
+		//if the option exists, remove it so we can add the new option
+		for(int i = 0; i < options.size(); i++)
+		{
+			if(options.get(i).equals(option))
+			{
+				options.remove(i);
 				break;
 			}
 		}
-		// add the option to the list if it does not yet exist
-		if (!added)
-			options.add(option);
+		
+		//add option
+		options.add(option);
 		
 		// check predefined options
         if (Option.PROFILE_QNAME.compareTo(qn) == 0) {
@@ -2242,15 +2266,40 @@ public class XQueryContext {
         	calendar = (XMLGregorianCalendar)dtv.calendar.clone();
         }
     }
+    
+    
 	
-	public Option getOption(QName qname) {
-		if(options != null) {
-			for(int i = 0; i < options.size(); i++) {
-				Option option = (Option)options.get(i);
+	public Option getOption(QName qname)
+	{
+		/*
+		 * check dynamic options that were declared at run-time
+		 * first as these have precedence and then check
+		 * static options that were declare at compile time 
+		 */
+		if(dynamicOptions != null)
+		{
+			for(int i = 0; i < dynamicOptions.size(); i++)
+			{
+				Option option = (Option)dynamicOptions.get(i);
 				if(qname.compareTo(option.getQName()) == 0)
+				{
 					return option;
+				}
 			}
 		}
+		
+		if(staticOptions != null)
+		{
+			for(int i = 0; i < staticOptions.size(); i++)
+			{
+				Option option = (Option)staticOptions.get(i);
+				if(qname.compareTo(option.getQName()) == 0)
+				{
+					return option;
+				}
+			}
+		}
+		
 		return null;
 	}
 	
@@ -2314,7 +2363,7 @@ public class XQueryContext {
     
     /**
 	 * Set an XQuery Context variable.
-	 * Used by the context extension module; called by context:set-var().
+	 * General variable storage in the xquery context
 	 * 
 	 * @param name The variable name
 	 * @param XQvar The variable value, may be of any xs: type 
@@ -2326,7 +2375,7 @@ public class XQueryContext {
     
     /**
 	 * Get an XQuery Context variable.
-	 * Used by the context extension module; called by context:get-var().
+	 * General variable storage in the xquery context
 	 * 
 	 * @param name The variable name
 	 * @return The variable value indicated by name.
@@ -2440,66 +2489,6 @@ public class XQueryContext {
     	}
     }
     
-    /**
-	 * Set the serializer to use for output
-	 * Used by the context extension module; called by context:set-serializer().
-	 * 
-	 * @param name The name of the serializer to use
-	 * @param indent Should the output be indented?
-	 * @param omitxmldeclaration Should the output omit the xml declaration?
-	 */
-    public void setXQuerySerializer(String name, boolean indent, boolean omitxmldeclaration) throws XPathException
-    {
-    	Option option;
-
-    	//Has a exist:serialize option already been set?
-    	for(int i = 0; i < options.size(); i++)
-    	{
-    		option = (Option)options.get(i);
-    		if(option.getQName().equals("exist:serialize"))
-    		{
-    			//yes, so modify the content from the existing option
-    			String content = option.getContents();
-    			if(content.indexOf("method=") != Constants.STRING_NOT_FOUND)
-    			{
-    				content = content.replaceFirst("method=[^/ ]*", "method=" + name);
-    			}
-    			else
-    			{
-    				content += " method=" + name;
-    			}
-    			if(content.indexOf("indent=") != Constants.STRING_NOT_FOUND)
-    			{
-    				content = content.replaceFirst("indent=[^/ ]*", "indent=" + (indent ? "yes":"no"));
-    			}
-    			else
-    			{
-    				content += " indent" + (indent ? "yes":"no");
-    			}
-    			if(content.indexOf("omit-xml-declaration") != Constants.STRING_NOT_FOUND)
-    			{
-    				content = content.replaceFirst("omit-xml-declaration=[^/ ]*", "omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
-    			}
-    			else
-    			{
-    				content += " omit-xml-declaration" +  (omitxmldeclaration ? "yes":"no");
-    			}
-    			
-    			//Delete the existing serialize option
-    			options.remove(i);
-    			
-    			//Add the new serialize option
-    			addOption("exist:serialize", content);
-    			
-    			return; //done
-    		}
-    	}
-    	
-    	//no, so set a option for serialization
-    	addOption("exist:serialize", "method=" + name + " indent=" + (indent ? "yes":"no") + " omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
-    	
-    }
-    
 	/**
 	 * Load the default prefix/namespace mappings table and set up
 	 * internal functions.
@@ -2598,8 +2587,8 @@ public class XQueryContext {
      * be added.
      * @throws XPathException if an error occurs while parsing the option
      */
-    public void checkOptions(Properties properties)
-    throws XPathException {
+    public void checkOptions(Properties properties) throws XPathException
+    {
         Option pragma = getOption(Option.SERIALIZE_QNAME);
         if (pragma == null)
             return;
