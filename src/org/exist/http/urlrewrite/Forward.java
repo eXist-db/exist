@@ -40,6 +40,7 @@ public abstract class Forward extends URLRewrite {
         RequestDispatcher dispatcher = getRequestDispatcher(request);
         if (dispatcher == null)
             throw new ServletException("Failed to initialize request dispatcher to forward request to " + uri);
+        setHeaders(response);
         dispatcher.forward(request, response);
     }
 
