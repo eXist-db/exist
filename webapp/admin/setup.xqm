@@ -24,7 +24,7 @@ let $action := request:get-parameter("action", ()) return
 		                    (
 		                        setup:importLocal()
 		                    )
-		                    else if($action eq "Import Remote Files") then
+		                    else if($action eq "Import Files") then
 		                    (
 		                        setup:importFromURLs()
 		                    )
@@ -157,7 +157,7 @@ declare function setup:select() as element()
         <a href="http://dbis.informatik.uni-goettingen.de/Mondial/" checked="true">The Mondial Database (Europe)</a>
         (approx. 410K)
         
-        <p><input type="submit" name="action" value="Import Remote Files"/>
+        <p><input type="submit" name="action" value="Import Files"/>
         <input type="submit" name="action" value="Skip"/></p>
         <input type="hidden" name="panel" value="setup"/>
     </form>
