@@ -137,6 +137,24 @@ return
 				</forward>
 			</view>
 		</dispatch>
+
+	else if ($name eq 'articles') then
+		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+			<forward url="/xquery/exist-articles.xql">
+				<!-- query results are passed to XSLT servlet via request attribute -->
+				<set-attribute name="xquery.attribute"
+					value="xslt.model"/>
+			</forward>
+			<view>
+				<forward servlet="XSLTServlet">
+					<set-attribute name="xslt.input"
+						value="xslt.model"/>
+					<set-attribute name="xslt.stylesheet" 
+						value="stylesheets/db2html.xsl"/>
+				</forward>
+			</view>
+		</dispatch>
+
 	(: the following xml files use different stylesheets :)
 	else if ($name = ('index.xml', 'examples.xml', 'roadmap.xml', 'facts.xml', 'biblio.xml')) then
 		let $stylesheet :=
