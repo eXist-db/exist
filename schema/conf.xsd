@@ -57,6 +57,8 @@
                                     <xs:attribute name="journal-dir" type="xs:string" default="webapp/WEB-INF/data"/>
                                     <xs:attribute name="size" type="xs:string" default="100M"/>
                                     <xs:attribute name="sync-on-commit" type="yes_no" default="no"/>
+                                    <xs:attribute name="force-restart" type="yes_no" default="no"/>
+                                    <xs:attribute name="consistency-check" type="yes_no" default="yes"/>
                                 </xs:complexType>
                             </xs:element>
                             
