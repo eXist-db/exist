@@ -509,7 +509,7 @@ public class Database {
 		private Thread thread;
 		
 		public void start() {
-			if (thread != null) throw new IllegalStateException("defragmenter already started");
+			if (thread != null) return;
 			thread = new Thread(this, "Database defragmenter");
 			thread.setPriority(Thread.NORM_PRIORITY-3);
 			thread.setDaemon(true);
@@ -517,7 +517,7 @@ public class Database {
 		}
 		
 		public void stop() {
-			if (thread == null) throw new IllegalStateException("defragmenter already stopped");
+			if (thread == null) return;
 			thread.interrupt();
 			try {
 				thread.join();
