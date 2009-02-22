@@ -97,30 +97,63 @@ public class HttpRequestWrapper implements RequestWrapper {
         return servletRequest.getCookies();
     }
     
+    private void addParameter(String paramName, Object value)
+    {
+    	Object old = params.get(paramName);
+        if(old != null)
+        {
+            if(old instanceof List)
+            {
+                ((List)old).add(value);
+            }
+            else
+            {
+                ArrayList list = new ArrayList();
+                list.add(old);
+                list.add(value);
+                params.put(paramName, list);
+            }
+        }
+        else
+        {
+            params.put(paramName, value);
+        }
+    }
+    
     /**
      * Parses multi-part requests in order to set the parameters. 
      */
     private void parseMultipartContent() {
         DiskFileUpload upload = new DiskFileUpload();
         upload.setSizeThreshold(0);
-        try {
+        try
+        {
             this.params = new Hashtable();
             List items = upload.parseRequest(this.servletRequest);
-            for(Iterator i = items.iterator(); i.hasNext(); ) {
+            for(Iterator i = items.iterator(); i.hasNext(); )
+            {
                 FileItem next = (FileItem) i.next();
-                Object old = params.get(next.getFieldName());
-                if(old != null) {
-                    if(old instanceof List)
-                        ((List)old).add(next);
-                    else {
-                        ArrayList list = new ArrayList();
-                        list.add(old);
-                        list.add(next);
-                        params.put(next.getFieldName(), list);
-                    }
-                } else
-                    params.put(next.getFieldName(), next);
+                addParameter(next.getFieldName(), next);
             }
+            
+            //also get parameters from the querystring
+            String qs = servletRequest.getQueryString();
+            if(qs != null && qs.length() > 0)
+            {
+            	String nvps[] = qs.split("&");
+            	if(nvps != null && nvps.length > 0)
+            	{
+            		for(int i = 0; i < nvps.length; i++)
+            		{
+            			String nvp[] = nvps[i].split("=");
+            			if(nvp != null && nvp.length == 2)
+            			{
+            				addParameter(nvp[0], nvp[1]);
+            			}
+            		}
+            	}
+            }
+            
         } catch (FileUploadException e) {
             // TODO: handle this
             e.printStackTrace();
@@ -214,30 +247,56 @@ public class HttpRequestWrapper implements RequestWrapper {
     
     /**@see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
-    public String getParameter(String name) {
-        if(params == null) {
+    public String getParameter(String name)
+    {
+        if(params == null)
+        {
             String value = servletRequest.getParameter(name);
             if(formEncoding == null || value == null)
                 return value;
             return decode(value);
-        } else {
+        }
+        else
+        {
             Object o = params.get(name);
             if(o == null)
+            {
                 return null;
-            FileItem item;
+            }
+            
             if(o instanceof List)
-                item = (FileItem)((List)o).get(0);
-            else
-                item = (FileItem)o;
-            if(formEncoding == null)
-                return item.getString();
-            else
-                try {
-                    return item.getString(formEncoding);
-                } catch (UnsupportedEncodingException e) {
-                	LOG.warn(e);
-                    return null;
+            {
+            	List lst = ((List)o);
+            	o = lst.get(0);
+            	
+            }
+            
+            if(o instanceof FileItem)
+        	{
+        		FileItem fi = (FileItem)o;
+        		if(formEncoding == null)
+                {
+                    return fi.getString();
                 }
+                else
+                {
+                    try
+                    {
+                        return fi.getString(formEncoding);
+                    }
+                    catch (UnsupportedEncodingException e)
+                    {
+                    	LOG.warn(e);
+                        return null;
+                    }
+                }
+        	}
+        	else if(o instanceof String)
+        	{
+        		return (String)o;
+        	}
+            
+            return null;
         }
     }
     
@@ -303,7 +362,8 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**@see javax.servlet.http.HttpServletRequest#getParameterValues(String)
      */
     public String[] getParameterValues(String key) {
-        if(params == null) {
+        if(params == null)
+        {
             String[] values = servletRequest.getParameterValues(key);
             if(formEncoding == null || values == null)
                 return values;
@@ -311,34 +371,58 @@ public class HttpRequestWrapper implements RequestWrapper {
                 values[i] = decode(values[i]);
             }
             return values;
-        } else {
+        }
+        else
+        {
             Object obj = (Object)params.get(key);
             if(obj == null)
                 return null;
             String[] values;
-            if(obj instanceof List) {
+            if(obj instanceof List)
+            {
                 List list = (List)obj;
                 values = new String[list.size()];
                 int j = 0;
-                for(Iterator i = list.iterator(); i.hasNext(); j++) {
-                    FileItem item = (FileItem)i.next();
-                    try {
-                        values[j] = formEncoding == null ? item.getString() : item.getString(formEncoding);
-                    } catch (UnsupportedEncodingException e) {
-                    	LOG.warn(e);
-                        e.printStackTrace();
-                    }
-                }
-            } else {
-                FileItem item = (FileItem)obj;
-                values = new String[1];
-                try {
-                    values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
-                } catch (UnsupportedEncodingException e) {
-                	LOG.warn(e);
-                    e.printStackTrace();
+                for(Iterator i = list.iterator(); i.hasNext(); j++)
+                {
+                	Object o = i.next();
+                	if(i instanceof FileItem)
+                	{
+                		FileItem item = (FileItem)o;
+                	
+	                    try {
+	                        values[j] = formEncoding == null ? item.getString() : item.getString(formEncoding);
+	                    } catch (UnsupportedEncodingException e) {
+	                    	LOG.warn(e);
+	                        e.printStackTrace();
+	                    }
+                	}
+                	else
+                	{
+                		values[j] = (String)o;
+                	}
                 }
             }
+            else
+            {
+            	values = new String[1];
+            	if(obj instanceof FileItem)
+            	{
+            		 FileItem item = (FileItem)obj;
+                     try {
+                         values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
+                     } catch (UnsupportedEncodingException e) {
+                     	LOG.warn(e);
+                         e.printStackTrace();
+                     }
+            	}
+            	else
+            	{
+            		values[0] = (String)obj;
+            	}
+               
+            }
+            
             return values;
         }
     }
