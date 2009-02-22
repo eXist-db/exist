@@ -40,6 +40,7 @@ public class PassThrough extends URLRewrite {
     }
 
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+        setHeaders(response);
         chain.doFilter(request, response);
     }
 }

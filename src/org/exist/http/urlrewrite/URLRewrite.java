@@ -57,11 +57,19 @@ public abstract class URLRewrite {
                         addParameter(elem.getAttribute("name"), elem.getAttribute("value"));
                     } else if ("set-attribute".equals(elem.getLocalName())) {
                         setAttribute(elem.getAttribute("name"), elem.getAttribute("value"));
+                    } else if ("set-header".equals(elem.getLocalName())) {
+                       setHeader(elem.getAttribute("name"), elem.getAttribute("value"));
                     }
                 }
                 node = node.getNextSibling();
             }
         }
+    }
+
+    private void setHeader(String key, String value) {
+        if (headers == null)
+            headers = new HashMap();
+        headers.put(key, value);
     }
 
     private void addParameter(String name, String value) {
@@ -95,6 +103,15 @@ public abstract class URLRewrite {
             for (Iterator iterator = attributes.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 request.setAttribute(entry.getKey().toString(), entry.getValue());
+            }
+        }
+    }
+
+    protected void setHeaders(HttpServletResponse response) {
+        if (headers != null) {
+            for (Iterator iterator = headers.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                response.setHeader(entry.getKey().toString(), entry.getValue().toString());
             }
         }
     }

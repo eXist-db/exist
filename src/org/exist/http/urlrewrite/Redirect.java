@@ -40,6 +40,7 @@ public class Redirect extends URLRewrite {
     }
 
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+        setHeaders(response);
         response.sendRedirect(target);
     }
 }
