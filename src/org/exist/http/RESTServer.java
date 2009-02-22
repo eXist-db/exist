@@ -1080,10 +1080,9 @@ public class RESTServer {
 				compiled = xquery.compile(context, source);
 			else
 				compiled.getContext().updateContext(context);
-			context.checkOptions(outputProperties);
 			try {
 				long startTime = System.currentTimeMillis();
-				Sequence resultSequence = xquery.execute(compiled, null);
+				Sequence resultSequence = xquery.execute(compiled, null, outputProperties);
 				long queryTime = System.currentTimeMillis() - startTime;
 				if (LOG.isDebugEnabled())
 					LOG.debug("Found " + resultSequence.getItemCount() + " in "
@@ -1179,9 +1178,9 @@ public class RESTServer {
 						+ resource.getURI(), e);
 			}
 		}
-		context.checkOptions(outputProperties);
+		
 		try {
-			Sequence result = xquery.execute(compiled, null);
+			Sequence result = xquery.execute(compiled, null, outputProperties);
 			writeResults(response, broker, result, -1, 1, outputProperties,
 					false);
 		} finally {

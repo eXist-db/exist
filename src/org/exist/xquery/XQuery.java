@@ -44,6 +44,7 @@ import org.exist.xquery.value.Sequence;
 import java.io.IOException;
 import java.io.Reader;
 import java.text.NumberFormat;
+import java.util.Properties;
 
 
 /**
@@ -176,15 +177,24 @@ public class XQuery {
         }
     }
     
+    
     public Sequence execute(CompiledXQuery expression, Sequence contextSequence) throws XPathException {
+    	return execute(expression, contextSequence, null);
+    }
+    
+    public Sequence execute(CompiledXQuery expression, Sequence contextSequence, Properties outputProperties) throws XPathException {
     	XQueryContext context = expression.getContext();
-        Sequence result = execute(expression, contextSequence, true);
+        Sequence result = execute(expression, contextSequence,  outputProperties, true);
         //TODO : move this elsewhere !
         HTTPUtils.addLastModifiedHeader( result, context );
     	return result;
     }
     
     public Sequence execute(CompiledXQuery expression, Sequence contextSequence, boolean resetContext) throws XPathException {
+    	return execute(expression, contextSequence, null, resetContext);
+    }
+    
+    public Sequence execute(CompiledXQuery expression, Sequence contextSequence, Properties outputProperties, boolean resetContext) throws XPathException {
     	long start = System.currentTimeMillis();
     	XQueryContext context = expression.getContext();
     	
@@ -216,6 +226,9 @@ public class XQuery {
         		NumberFormat nf = NumberFormat.getNumberInstance();
         		LOG.debug("Execution took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
         	}
+        	
+        	context.checkOptions(outputProperties); //must be done before context.reset!
+        	
         	return result;
         } finally {
             expression.reset();
