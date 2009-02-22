@@ -44,7 +44,7 @@ public class ModuleContext extends XQueryContext {
     private String modulePrefix;
     private String moduleNamespace;
 
-    /**
+	/**
 	 * @param parentContext
 	 */
 	public ModuleContext(XQueryContext parentContext, String modulePrefix, String moduleNamespace) {
@@ -93,6 +93,11 @@ public class ModuleContext extends XQueryContext {
         }
         return ctx;
     }
+    
+	public void addDynamicOption(String qnameString, String contents) throws XPathException
+	{
+		parentContext.addDynamicOption(qnameString, contents);
+	}
 
     /* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getStaticallyKnownDocuments()
