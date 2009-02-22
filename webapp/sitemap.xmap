@@ -804,6 +804,13 @@
                 <map:serialize type="html"/>
             </map:match>
             
+			<map:match pattern="articles">
+				<map:generate src="xquery/exist-articles.xq" type="xquery"/>
+				<map:transform type="xinclude"/>
+				<map:transform src="stylesheets/db2html.xsl"/>
+				<map:serialize type="html"/>
+			</map:match>
+
             <map:match pattern="docquery.xq">
             	<map:generate src="docquery.xq" type="xquery"/>
                 <map:transform type="cinclude"/>
