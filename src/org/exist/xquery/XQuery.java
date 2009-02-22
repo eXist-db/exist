@@ -227,7 +227,8 @@ public class XQuery {
         		LOG.debug("Execution took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
         	}
         	
-        	context.checkOptions(outputProperties); //must be done before context.reset!
+        	if(outputProperties != null)
+        		context.checkOptions(outputProperties); //must be done before context.reset!
         	
         	return result;
         } finally {
