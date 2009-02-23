@@ -67,6 +67,11 @@
             </tr>
 
             <tr>
+              <td class="doclink"><ulink url="articles">External Articles</ulink>:</td>
+              <td>Links to external articles, tutorials and blog posts.</td>
+            </tr>
+
+            <tr>
               <td class="doclink"><ulink url="atompub.xml">Atom Publishing Protocol</ulink>:</td>
               <td>how to configure and interact over the Atom Publishing Protocol to treat your
                 collections as Atom feeds.</td>
