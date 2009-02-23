@@ -125,7 +125,7 @@ public class FileSyncThread extends Thread {
             try {
                 endOfLog.force(false);
             } catch (IOException e) {
-                e.printStackTrace();
+                // may occur during shutdown
             }
             syncTriggered = false;
         }
