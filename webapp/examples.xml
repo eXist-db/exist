@@ -91,7 +91,8 @@
                         <td width="70%">eXist's RedirectorServlet calls a user-defined XQuery to 
                         decide how a HTTP request is handled. The XML fragment returned by the
                         query determines where the request is directed to. This happens transparently
-                        to the client.</td>
+                        to the client. <span style="color: darkred">There's a much improved 
+						version of this in the development trunk. Check the <a href="http://atomic.exist-db.org/blogs/eXist/IntroducingXQueryURLRewrite">wiki</a> for more.</span></td>
                     </tr>
                 </table>
             </section>
