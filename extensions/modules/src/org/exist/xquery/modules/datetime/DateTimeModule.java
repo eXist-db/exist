@@ -45,7 +45,10 @@ public class DateTimeModule extends AbstractInternalModule
 		new FunctionDef(FormatDateTimeFunction.signature, FormatDateTimeFunction.class),
 		new FunctionDef(FormatDateFunction.signature, FormatDateFunction.class),
 		new FunctionDef(FormatTimeFunction.signature, FormatTimeFunction.class),
-		new FunctionDef(DateForFunction.signature, DateForFunction.class)
+		new FunctionDef(DateForFunction.signature, DateForFunction.class),
+    new FunctionDef(DateRangeFunctions.signature[0], DateRangeFunctions.class),
+    new FunctionDef(DateRangeFunctions.signature[1], DateRangeFunctions.class),
+    new FunctionDef(DateRangeFunctions.signature[2], DateRangeFunctions.class)
 	};
 	
 	public DateTimeModule() {

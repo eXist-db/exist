@@ -4,7 +4,7 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace scheduler="http://exist-db.org/xquery/scheduler"
 at "java:org.exist.xquery.modules.scheduler.SchedulerModule";
 
-scheduler:schedule-xquery-cron-job("/db/svn/svntask.xql", "20 * * * * ?", "svn-stable-1.2",
+scheduler:schedule-xquery-cron-job("/db/svn/svntask.xql", "* */5 * * * ?", "svn-stable-1.2",
     <parameters>
         <param name="bindingPrefix" value="svnu"/>
         <param name="collection" value="/db/svn"/>
@@ -13,7 +13,7 @@ scheduler:schedule-xquery-cron-job("/db/svn/svntask.xql", "20 * * * * ?", "svn-s
         <param name="startRevision" value="8072"/>
     </parameters>
 ),
-scheduler:schedule-xquery-cron-job("/db/svn/svntask.xql", "50 * * * * ?", "svn-trunk",
+scheduler:schedule-xquery-cron-job("/db/svn/svntask.xql", "* */5 * * * ?", "svn-trunk",
     <parameters>
         <param name="bindingPrefix" value="svnu"/>
         <param name="collection" value="/db/svn"/>

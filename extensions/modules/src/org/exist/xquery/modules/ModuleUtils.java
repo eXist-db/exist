@@ -93,7 +93,7 @@ public class ModuleUtils {
 			// TODO : we should be able to cope with context.getBaseURI()
 			InputSource src = new InputSource( xml );
 			MemTreeBuilder builder = context.getDocumentBuilder();
-			DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder );
+			DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder, true );
 			reader.setContentHandler( receiver );
 			reader.parse( src );
 			Document doc = receiver.getDocument();
