@@ -190,15 +190,11 @@
 
         <note>
             <para>The build scripts were tested with Cocoon version 2.1.9 and a clean Cocoon
-                source tree.</para>
+                source tree. Cocoon 2.2.0 has a redesigned architecture and will not work
+				with our current build scripts. We are looking for someone to port them to 
+				2.2.x.
+				</para>
 
-            <para>Unfortunately, patching Cocoon isn't that easy. Cocoon ships with a few libraries, which
-                are incompatible with the ones used in eXist. This applies in particular to the XML:DB API
-                sources. eXist uses the latest sources from CVS while Cocoon has jars built from an older
-                version. Also, in order to run the webstart Java client, we need to sign a few jars.</para>
-            <para>I don't think the patches will break any existing functionality in Cocoon. So far, I have
-                not encountered any problems. However, it might not be possible to use XIndice and eXist at
-                the same time, due to the XML:DB incompatibilities.</para>
         </note>
 
         <para>To build Cocoon with eXist as a block, do the following:</para>
