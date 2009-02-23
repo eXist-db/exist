@@ -95,7 +95,7 @@
     <java classname="org.tmatesoft.svn.cli.SVN"
        dir="." fork="true">
       <arg value="co"/>
-      <arg value="${repository.URL}/trunk/eXist"/>
+      <arg value="${repository.URL}"/>
       <arg value="${source-root}"/>
       <classpath>
         <pathelement location="${svn.svnkit.jar}"/>
