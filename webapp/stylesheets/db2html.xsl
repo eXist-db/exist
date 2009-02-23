@@ -34,6 +34,7 @@
                             href="{$pathToWebapp}styles/default-style.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
+				<xsl:apply-templates select="(bookinfo|articleinfo)/style"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
                 <script type="text/javascript" src="{$pathToWebapp}styles/niftycube.js"/>
@@ -540,6 +541,11 @@
             <xsl:otherwise> &lt;<xsl:apply-templates/>&gt; </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
+	<xsl:template match="style">
+		<style type="text/css">
+			<xsl:apply-templates/>
+		</style>
+	</xsl:template>
     <xsl:template name="returns2br">
         <xsl:param name="string"/>
         <xsl:variable name="return" select="'&#xA;'"/>
