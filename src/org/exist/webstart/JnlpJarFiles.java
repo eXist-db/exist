@@ -53,7 +53,7 @@ public class JnlpJarFiles {
         "jline-%latest%",
         "log4j-%latest%",
         "stax-api-%latest%",
-        "sunxacml-%latest%"
+        "sunxacml"
     };
     
     // Resolves jar file patterns from jars[].
@@ -80,7 +80,7 @@ public class JnlpJarFiles {
                     );
             return jar;
         } else {
-            logger.warn("Could not resolve file pattern: " + fileToFind);
+            logger.error("Could not resolve file pattern: " + fileToFind);
             return null;
         }
     }
