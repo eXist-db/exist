@@ -78,7 +78,7 @@ public class JnlpServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
                                            throws ServletException, IOException{
         
-			try {
+		try {
             JnlpWriter jw=new JnlpWriter();
 
             String URI = request.getRequestURI();
