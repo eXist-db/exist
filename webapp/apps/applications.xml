@@ -148,32 +148,6 @@
     </application-->
 
     <application>
-        <dc:title>MyCoRe</dc:title>
-        <dc:description> MyCoRe is an Open Source project for the development of Digital Library and
-            archive solutions (or, put more generally, "Content Repositories" >> CoRe). In the
-            MyCoRe project a group of universities is working on the development of a shared
-            software core for such applications. This core will be adjustable to local requirements
-            and easy to modify. This is expressed by the "My" in MyCoRe, which represents the local
-            adaptability. On the basis of this core which will be available under the open source
-            GNU General Public License, specific local applications will emerge at the participating
-            institutes. The technical base of the system is formed of Java class libraries, XML
-            technology and the database backend IBM Content Manager and IBM DB2 or an native XML
-            Database System (eXist) and a relational database system such as MySQl or Postgresql. </dc:description>
-        <dc:subject>metadata</dc:subject>
-        <dc:subject>internal filesystem</dc:subject>
-        <dc:subject>hierarchical classification system</dc:subject>
-        <dc:subject>workflow</dc:subject>
-        <dc:subject>workbasket</dc:subject>
-        <dc:subject>distributed search</dc:subject>
-        <dc:subject>OAI</dc:subject>
-        <dc:subject>Z39.50</dc:subject>
-        <dc:format>Web application</dc:format>
-        <dc:identifier>http://www.mycore.de</dc:identifier>
-        <dc:creator>MyCoRe Project</dc:creator>
-        <dc:rights>GPL</dc:rights>
-        <demo-site> http://mycoresample.rz.uni-greifswald.de/docportal/ </demo-site>
-    </application>
-    <application>
         <dc:creator>Keith Campbell</dc:creator>
         <creator-site>http://www.nutritionadvocate.com/</creator-site>
         <dc:title>Content Management System</dc:title>
