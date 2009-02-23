@@ -148,7 +148,7 @@ public abstract class Match implements Comparable {
         Match m = null;
         for (int i = 0; i < currentOffset; i++) {
             for (int j = 0; j < other.currentOffset; j++) {
-                if (offsets[i] + lengths[i] == other.offsets[j]) {
+                if (other.offsets[j] > offsets[i] && other.offsets[j] <= offsets[i] + lengths[i]) {
                     if (m == null)
                         m = createInstance(context, nodeId, matchTerm + other.matchTerm);
                     m.addOffset(offsets[i], lengths[i] + other.lengths[j]);
