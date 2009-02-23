@@ -332,12 +332,6 @@
                     <img src="{$pathToWebapp}logo.jpg" title="eXist"/>
                 </xsl:otherwise>
             </xsl:choose>
-            <div id="quicksearch">
-                <form action="{../sidebar:sidebar/sidebar:search/@href}" method="GET">
-                    <input type="text" size="20" name="q"/>
-                    <input type="submit" value="Search"/>
-                </form>
-            </div>
 
             <div id="navbar">
                 <xsl:apply-templates select="../sidebar:sidebar/sidebar:toolbar"/>
