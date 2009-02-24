@@ -62,7 +62,7 @@
             <link href="roadmap.xml">Roadmap</link>
         </item>
         <item>
-            <link href="api/index.html">Javadocs</link>
+            <link href="../api/index.html">Javadocs</link>
         </item>
         <item>
             <link href="http://demo.exist-db.org/exist/xquery/svnlog.xql">ChangeLog</link>
