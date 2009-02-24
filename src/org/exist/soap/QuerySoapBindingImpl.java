@@ -271,6 +271,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             broker = pool.get(session.getUser());
             XQueryContext context = new XQueryContext(broker, AccessContext.SOAP);
             
+            // TODO(pkaminsk2): why replicate XQuery.compile here?
+            
             XQueryLexer lexer = new XQueryLexer(context, new StringReader(xpath));
             XQueryParser parser = new XQueryParser(lexer);
             XQueryTreeParser treeParser = new XQueryTreeParser(context);
