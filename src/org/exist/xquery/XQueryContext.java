@@ -2001,7 +2001,13 @@ public class XQueryContext {
 	 */
 	public void importModule(String namespaceURI, String prefix, String location) throws XPathException {
 		Module module = getModule(namespaceURI);
-		if(module != null) {
+		// getModule() may call into ModuleContext's overriden version which walks the ancestor
+		// contexts in search of the module, but when importing an external module we need to
+		// make sure it ends up in our own module map.  Yes, this means that if the same
+		// module is imported through multiple dependency paths, each import will get its own
+		// copy. This is necessary anyway since a module context must have a single parent
+		// context.
+		if(module != null && (!(module instanceof ExternalModule) || modules.get(namespaceURI) != null)) {
 			LOG.debug("Module " + namespaceURI + " already present.");
 		} else {
 			if(location == null)
