@@ -54,7 +54,8 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(GetRunningXQueries.signature, GetRunningXQueries.class),
             new FunctionDef(KillRunningXQuery.signatures[0], KillRunningXQuery.class),
             new FunctionDef(KillRunningXQuery.signatures[1], KillRunningXQuery.class),
-            new FunctionDef(GetRunningJobs.signature, GetRunningJobs.class)
+            new FunctionDef(GetRunningJobs.signature, GetRunningJobs.class),
+            new FunctionDef(Restore.signature, Restore.class)
     };
 	
 	public SystemModule() {
