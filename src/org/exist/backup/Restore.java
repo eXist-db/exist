@@ -16,7 +16,6 @@ import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -56,7 +55,8 @@ public class Restore extends DefaultHandler {
 	private Stack stack = new Stack();
 	private RestoreDialog dialog = null;
 	private int version=0;
-	
+	private RestoreListener listener;
+
 	private static final int strictUriVersion = 1;
 
 	/**
@@ -69,7 +69,9 @@ public class Restore extends DefaultHandler {
 		this.username = user;
 		this.pass = pass;
 		this.uri = uri;
-		
+
+      this.listener = new DefaultListener();
+
 		if (newAdminPass != null)
 			setAdminCredentials(newAdminPass);
 		
@@ -120,6 +122,10 @@ public class Restore extends DefaultHandler {
         } while (contents != null);
     }
 
+   public void setListener(RestoreListener listener) {
+      this.listener = listener;
+   }
+   
 	public void restore(boolean showGUI, JFrame parent)
 		throws XMLDBException, FileNotFoundException, IOException, SAXException {
 		if (showGUI) {
@@ -190,9 +196,7 @@ public class Restore extends DefaultHandler {
 				if (name == null)
 					throw new SAXException("collection requires a name " + "attribute");
 				try {
-					if(dialog != null)
-						dialog.displayMessage("creating collection " + name);
-					
+					listener.createCollection(name);
 					XmldbURI collUri;
 					if(version >= strictUriVersion) {
 						collUri = XmldbURI.create(name);
@@ -200,11 +204,7 @@ public class Restore extends DefaultHandler {
 						try {
 							collUri = URIUtils.encodeXmldbUriFor(name);
 						} catch (URISyntaxException e) {
-							String message = "Could not parse document name into a URI: "+e.getMessage();
-		                    if (dialog != null)
-		                        dialog.displayMessage(message);
-		                    else
-		                        System.err.println(message);
+							listener.warn("Could not parse document name into a URI: "+e.getMessage());
 							return;
 						}
 					}
@@ -213,7 +213,7 @@ public class Restore extends DefaultHandler {
 					
 					if (created != null)
 						try {
-							date_created = (Date)(new DateTimeValue(created)).getDate();
+							date_created = new DateTimeValue(created).getDate();
 						} catch (XPathException e2) {
 						} 
 
@@ -228,14 +228,9 @@ public class Restore extends DefaultHandler {
 					service.chown(u, group);
 					service.chmod(Integer.parseInt(mode, 8));
 				} catch (Exception e) {
-                    if (dialog != null) {
-                    showErrorMessage("An unrecoverable error occurred while restoring\ncollection '" + name + "'. " +
-                            "Aborting restore!");
-                    } else {
-                        System.err.println("An unrecoverable error occurred while restoring\ncollection '" + name + "'. " +
-                            "Aborting restore!");
-                    }
-                    e.printStackTrace();
+               listener.warn("An unrecoverable error occurred while restoring\ncollection '" + name + "'. " +
+                       "Aborting restore!");
+               e.printStackTrace();
 					throw new SAXException(e.getMessage(), e);
 				}
 				if(dialog != null)
@@ -252,7 +247,7 @@ public class Restore extends DefaultHandler {
 				if (subbd!=null)
 					stack.push(subbd);
 				else
-					System.err.println(name + " does not exist or is not readable.");
+					listener.warn(name + " does not exist or is not readable.");
             } else if (localName.equals("resource")) {
                 String skip = atts.getValue("skip");
                 if (skip == null || skip.equals("no")) {
@@ -276,10 +271,7 @@ public class Restore extends DefaultHandler {
                     if (filename == null) filename = name;
 
                     if (name == null) {
-                        if (dialog != null)
-                            dialog.displayMessage("Wrong entry in backup descriptor: resource requires a name attribute.");
-                        else
-                            System.err.println("Wrong entry in backup descriptor: resource requires a name attribute.");
+                      listener.warn("Wrong entry in backup descriptor: resource requires a name attribute.");
                     }
                     XmldbURI docUri;
                     if(version >= strictUriVersion) {
@@ -288,11 +280,7 @@ public class Restore extends DefaultHandler {
                         try {
                             docUri = URIUtils.encodeXmldbUriFor(name);
                         } catch (URISyntaxException e) {
-                            String message = "Could not parse document name into a URI: "+e.getMessage();
-                            if (dialog != null)
-                                dialog.displayMessage(message);
-                            else
-                                System.err.println(message);
+                            listener.warn("Could not parse document name into a URI: "+e.getMessage());
                             return;
                         }
                     }
@@ -321,16 +309,16 @@ public class Restore extends DefaultHandler {
 
                         if (created != null)
                             try {
-                                date_created = (Date)(new DateTimeValue(created)).getDate();
+                              date_created = (new DateTimeValue(created)).getDate();
                             } catch (XPathException e2) {
-                                System.err.println("Illegal creation date. Skipping ...");
+                              listener.warn("Illegal creation date. Skipping ...");
                             }
 
                         if (modified != null)
                             try {
                                 date_modified = (Date)(new DateTimeValue(modified)).getDate();
                             } catch (XPathException e2) {
-                                System.err.println("Illegal modification date. Skipping ...");
+                                listener.warn("Illegal modification date. Skipping ...");
                             }
 
                         current.storeResource(res, date_created, date_modified);
@@ -352,26 +340,13 @@ public class Restore extends DefaultHandler {
                         try {
                             service.chown(res, u, group);
                         } catch (XMLDBException e1) {
-                            if(dialog != null) {
-                                dialog.displayMessage("Failed to change owner on document '" + name + "'; skipping ...");
-                            }
+                           listener.warn("Failed to change owner on document '" + name + "'; skipping ...");
                         }
                         service.chmod(res, Integer.parseInt(perms, 8));
-                        if(dialog != null)
-                            dialog.displayMessage("restored " + name);
+                       listener.restored(name);
                     } catch (Exception e) {
-                        if (dialog != null) {
-                            dialog.displayMessage("Failed to restore resource '" + name + "'\nfrom file '" +
-                                    contents.getSymbolicPath(name,false) + "'.\nReason: " + e.getMessage());
-                            showErrorMessage(
-                                    "Failed to restore resource '" + name + "' from file: '" +
-                                            contents.getSymbolicPath(name,false) + "'.\n\nReason: " + e.getMessage()
-                            );
-                        } else {
-                            System.err.println("Failed to restore resource '" + name + "' from file '" +
-                                    contents.getSymbolicPath(name,false) + "'");
-                            e.printStackTrace();
-                        }
+                       listener.warn("Failed to restore resource '" + name + "'\nfrom file '" +
+                               contents.getSymbolicPath(name,false) + "'.\nReason: " + e.getMessage());
                     }
                 }
             } else if (localName.equals("deleted")) {
@@ -386,12 +361,7 @@ public class Restore extends DefaultHandler {
                             cmgt.removeCollection(name);
                         }
                     } catch (XMLDBException e) {
-                        if (dialog != null)
-                            dialog.displayMessage("Failed to remove deleted collection: " +
-                                name + ": " + e.getMessage());
-                        else
-                            System.err.println("Failed to remove deleted collection: " +
-                                name + ": " + e.getMessage());
+                      listener.warn("Failed to remove deleted collection: " + name + ": " + e.getMessage());
                     }
                 } else if (type.equals("resource")) {
                     try {
@@ -399,12 +369,8 @@ public class Restore extends DefaultHandler {
                         if (resource != null)
                             current.removeResource(resource);
                     } catch (XMLDBException e) {
-                        if (dialog != null)
-                            dialog.displayMessage("Failed to remove deleted resource: " + name + ": " +
+                            listener.warn("Failed to remove deleted resource: " + name + ": " +
                                 e.getMessage());
-                        else
-                            System.err.println("Failed to remove deleted resource: " + name + ": " +
-                                    e.getMessage());
                     }
                 }
             }
@@ -469,4 +435,40 @@ public class Restore extends DefaultHandler {
         dialog.setVisible(true);
         return;
     }
+
+   public interface RestoreListener {
+
+      void createCollection(String collection);
+
+      void restored(String resource);
+
+      void info(String message);
+
+      void warn(String message);
+   }
+
+   private class DefaultListener implements RestoreListener {
+
+      public void createCollection(String collection) {
+         info("creating collection " + collection);
+      }
+
+      public void restored(String resource) {
+         info("restored " + resource);
+      }
+
+      public void info(String message) {
+         if (dialog != null)
+            dialog.displayMessage(message);
+         else
+            System.err.println(message);
+      }
+
+      public void warn(String message) {
+         if (dialog != null)
+            dialog.displayMessage(message);
+         else
+            System.err.println(message);
+      }
+   }
 }
