@@ -65,6 +65,7 @@ public class SortedNodeSet extends AbstractNodeSet {
             NodeProxy p = (NodeProxy)i.next();
 			docs.add(p.getDocument());
 		}
+		// TODO(pkaminsk2): why replicate XQuery.compile here?
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
