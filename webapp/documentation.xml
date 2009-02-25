@@ -210,40 +210,7 @@
           </para>
         </listitem>
 
-        <!--listitem>
-          <para><ulink url="http://wiki.exist-db.org/space/NewSchemaValidation"> New Schema
-              Validation</ulink>.</para>
-        </listitem-->
       </itemizedlist>
-    </section>
-
-    <section>
-      <title>Articles</title>
-
-      <para>An up-to-date list of articles can be found <ulink
-          url="http://atomic.exist-db.org/wiki/articles/Articles">on the wiki</ulink>.</para>
-
-      <para>If you would like to know more about the internal workings of eXist, you may read the
-        following introductory article:</para>
-
-      <para>Wolfgang Meier. <ulink url="xmlprague06.xml">Index-Driven XQuery Processing in the eXist
-          XML Database</ulink>. Paper presented at XML Prague 2006. Presentation slides can be found
-          <ulink url="http://atomic.exist-db.org/articles/wolfgangs_talk.pdf">here</ulink>
-        as well.</para>
-
-      <para>An older article is:</para>
-
-      <para>Wolfgang Meier. <ulink url="http://exist-db.org/webdb.pdf">eXist: An Open Source Native
-          XML Database</ulink>. In: Akmal B. Chaudri, Mario Jeckle, Erhard Rahm, Rainer Unland
-        (Eds.): Web, Web-Services, and Database Systems. NODe 2002 Web- and Database-Related
-        Workshops, Erfurt, Germany, October 2002. Springer LNCS Series, 2593.</para>
-
-      <para>A chapter about eXist is also contained in the book:</para>
-
-      <para>Akmal B. Chaudri, Awais Rashid, Roberto Zicari (Eds.): <ulink
-          url="http://www.aw.com/catalog/academic/product/1,4096,0201844524,00.html">XML Data
-          Management: Native XML and XML-Enabled Database Systems</ulink>. ISBN: 0-201-84452-4.
-        Published by Addison Wesley Professional, March, 2003.</para>
     </section>
   </chapter>
 </book>
