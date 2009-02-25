@@ -19,7 +19,14 @@
                 strongly recommended for data protection in the event you experience a system crash
                 or loss of data. Backups are also very useful for exporting data in order to
                 re-import all or parts of the data to a different database, e.g. while upgrading
-                eXist to a newer version. </para>
+                eXist to a newer version.</para>
+
+			<note>
+				<para>Most of the information in this document applies to eXist 1.2.5 and 1.3 (or SVN trunk),
+					but there are a few exceptions: eXist 1.2.5 does not support incremental backups and
+					there's no web interface to trigger or view backups.</para>
+			</note>
+				
         </abstract>
         <section>
             <title>Backup Format</title>
@@ -191,6 +198,12 @@
                     >admin client</ulink>:</para>
 
             <screenshot><graphic fileref="resources/backup4.png"/></screenshot>
+
+			<note>
+				<para>eXist <emphasis>1.2.4</emphasis> and <emphasis>1.2.5</emphasis> do not offer a 
+				web interface for backups yet. However, you can schedule the backup or trigger it 
+				from an XQuery as described below.</para>
+			</note>
 
             <para>Clicking the <guibutton>Trigger</guibutton> button will schedule a single backup
                 task. The server will wait for all running transactions to return before it executes
