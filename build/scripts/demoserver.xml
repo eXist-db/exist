@@ -13,7 +13,9 @@
 	<import file="../../build.xml"/>	
 
     <target depends="jar" name="prepare-docs">
-        <property name="demo.host" value="http://demo.exist-db.org"/>
+        <property name="demo.host" value="http://demo.exist-db.org/exist"/>
+		<property name="webstart.host" value="http://demo.exist-db.org:8098/exist"/>
+
         <delete dir="${build.docs}" failonerror="false"/>
         <mkdir dir="${build.docs}"/>
         <mkdir dir="${build.docs.src}"/>
@@ -92,9 +94,9 @@
 			<replacefilter token="download.xml" value="download.html"/>
 
             <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
-            <replacefilter token="xquery/acronyms.xq" value="${demo.host}/xquery/acronyms.xq"/>
-            <replacefilter token="mods/" value="${demo.host}/mods/"/>
-            <replacefilter token="xquery/xquery.xq" value="${demo.host}/xquery/xquery.xq"/>
+            <replacefilter token="xquery/acronyms.xql" value="${demo.host}/xquery/acronyms.xql"/>
+            <replacefilter token="cocoon/biblio.xq" value="${demo.host}/cocoon/biblio.xq"/>
+            <replacefilter token="xquery/xquery.xql" value="${demo.host}/xquery/xquery.xql"/>
             <replacefilter token="sandbox/sandbox.xql" value="${demo.host}/sandbox/sandbox.xql"/>
             <replacefilter token="search.xql" value="${demo.host}/search.xql"/>
             <replacefilter token="docs.xql" value="${demo.host}/docs.xql"/>
@@ -103,12 +105,13 @@
             <replacefilter token='="admin/admin.xql' value='="${demo.host}/admin/admin.xql'/>
             <replacefilter token='href="status"' value='href="${demo.host}/status"'/>
             <replacefilter token='href="cluster"' value='href="${demo.host}/cluster"'/>
-            <replacefilter token="xquery/functions.xq" value="${demo.host}/xquery/functions.xq"/>
+            <replacefilter token="xquery/functions.xql" value="${demo.host}/xquery/functions.xql"/>
             <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
             <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
             <replacefilter token="apps/applications.xml" value="${demo.host}/apps/applications.xml"/>
-            <replacefilter token="webstart/exist.jnlp" value="${demo.host}:8080/webstart/exist.jnlp"/>
-            	
+			<replacefilter token='url="articles' value='url="${demo.host}/articles'/>
+            <replacefilter token="webstart/exist.jnlp" value="${webstart.host}/webstart/exist.jnlp"/>
+
             <replacefilter token="gsoc/2007/summer.xml" value="${demo.host}/gsoc/2007/summer.html"/>
            	<replacefilter token="gsoc/2007/soc-xqj.xml" value="${demo.host}/gsoc/2007/soc-xqj.html"/>
             <replacefilter token="gsoc/2007/soc-ft.xml" value="${demo.host}/gsoc/2007/soc-ft.html"/>
@@ -216,6 +219,7 @@
 				<uri type="append" src="devguide_xquery.xml"/>
 				<uri type="append" src="jmx.xml"/>
 				<uri type="append" src="download.xml"/>
+				<uri type="append" src="webapp/xquery/exist-articles.xql"/>
             </uris>
         </cocoon>
         
@@ -262,7 +266,7 @@
     	
         <replace dir="${build.docs.src}" summary="true"
             includes="sidebar.xml">
-            <replacefilter token="http://demo.exist-db.org/webstart/exist.jnlp" value="http://demo.exist-db.org:8080/webstart/exist.jnlp"/>
+            <replacefilter token="http://demo.exist-db.org/webstart/exist.jnlp" value="http://demo.exist-db.org:8098/exist/webstart/exist.jnlp"/>
             <replacefilter token="index.xml" value="${host}/index.html"/>
 			<replacefilter token="download.xml" value="${host}/download.html"/>
             <replacefilter token="extensions.xml" value="${host}/extensions.html"/>
@@ -288,7 +292,7 @@
             <include name="apps/sidebar.xml"/>
             <include name="library/sidebar.xml"/>
             <include name="xquery/sidebar.xml"/>
-            <replacefilter token="http://demo.exist-db.org/webstart/exist.jnlp" value="http://demo.exist-db.org:8080/webstart/exist.jnlp"/>
+            <replacefilter token="http://demo.exist-db.org/webstart/exist.jnlp" value="http://demo.exist-db.org:8098/exist/webstart/exist.jnlp"/>
             <replacefilter token="../index.xml" value="${host}/index.html"/>
             <replacefilter token="../extensions.xml" value="${host}/extensions.html"/>
             <replacefilter token="../roadmap.xml" value="${host}/roadmap.html"/>
@@ -381,7 +385,7 @@
             <replacefilter token='&lt;a href="../index.xml">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
             <replacefilter token='&lt;a href="../download.xml">Download&lt;/a>' value='&lt;a href="${host}/download.html">Download&lt;/a>'/>
         </replace>
-        <replace dir="${build.docs.src}/mods" summary="true">
+        <replace dir="${build.docs.src}/cocoon" summary="true">
             <include name="config.xqm"/>
             <include name="login.xhtml"/>
             <include name="mods.xq"/>
