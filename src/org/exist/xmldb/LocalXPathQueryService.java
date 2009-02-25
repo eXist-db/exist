@@ -175,10 +175,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				if(compiled == null)
 				    compiled = xquery.compile(context, source);
 				try {
-				    result = xquery.execute(compiled, null);
-				    // check if serialization options have been set
-				    // via pragma or 'declare option'
-				    checkPragmas(context);
+				    result = xquery.execute(compiled, null, properties);
 				} finally {
 				    pool.returnCompiledXQuery(source, compiled);
 				}
@@ -215,7 +212,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
             XQueryContext context = xquery.newContext(accessCtx);
             setupContext(context);
             CompiledXQuery expr = xquery.compile(context, query);
-            checkPragmas(context);
+//            checkPragmas(context);
             LOG.debug("compilation took "  +  (System.currentTimeMillis() - start));
             return expr;
         } catch (EXistException e) {
@@ -265,24 +262,24 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	/**
 	 * Check if the XQuery contains pragmas that define serialization settings.
 	 * If yes, copy the corresponding settings to the current set of output properties.
-	 * 
+	 *
 	 * @param context
 	 */
-	private void checkPragmas(XQueryContext context) throws XPathException {
-		Option pragma = context.getOption(Option.SERIALIZE_QNAME);
-		if(pragma == null)
-			return;
-		String[] contents = pragma.tokenizeContents();
-		for(int i = 0; i < contents.length; i++) {
-			String[] pair = Option.parseKeyValuePair(contents[i]);
-			if(pair == null)
-				throw new XPathException("Unknown parameter found in " + pragma.getQName().getStringValue() +
-						": '" + contents[i] + "'");
-			LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
-			properties.setProperty(pair[0], pair[1]);
-		}
-	}
-	
+//	private void checkPragmas(XQueryContext context) throws XPathException {
+//		Option pragma = context.getOption(Option.SERIALIZE_QNAME);
+//		if(pragma == null)
+//			return;
+//		String[] contents = pragma.tokenizeContents();
+//		for(int i = 0; i < contents.length; i++) {
+//			String[] pair = Option.parseKeyValuePair(contents[i]);
+//			if(pair == null)
+//				throw new XPathException("Unknown parameter found in " + pragma.getQName().getStringValue() +
+//						": '" + contents[i] + "'");
+//			LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
+//			properties.setProperty(pair[0], pair[1]);
+//		}
+//	}
+
 	private ResourceSet doQuery(
 		String query,
 		XmldbURI[] docs,
@@ -370,10 +367,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
             if (lockedDocuments != null)
                 context.setProtectedDocs(lockedDocuments);
             setupContext(context);
-    		checkPragmas(context);
+//    		checkPragmas(context);
     		    
     		XQuery xquery = broker.getXQueryService();
-    		result = xquery.execute(expr, contextSet);
+    		result = xquery.execute(expr, contextSet, properties);
     	} catch (EXistException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} catch (XPathException e) {

@@ -5,6 +5,8 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.Option;
 import org.exist.xquery.value.Sequence;
 
+import java.util.Properties;
+
 /**
  * Simple container for the results of a query. Used to cache
  * query results that may be retrieved later by the client.
@@ -15,18 +17,18 @@ public class QueryResult {
 	
 	protected long queryTime = 0;
 	protected Sequence result;
-    protected Option serialization = null;
+    protected Properties serialization = null;
 	protected long timestamp = 0;
 	
 	// set upon failure
 	protected XPathException exception = null;
 	
-	public QueryResult(XQueryContext context, Sequence result) {
-		this(context, result, 0);
+	public QueryResult(Sequence result, Properties outputProperties) {
+		this(result, outputProperties, 0);
 	}
 	
-	public QueryResult(XQueryContext context, Sequence result, long queryTime) {
-        this.serialization = context.getOption(Option.SERIALIZE_QNAME);
+	public QueryResult(Sequence result, Properties outputProperties, long queryTime) {
+        this.serialization = outputProperties;
 		this.result = result;
 		this.queryTime = queryTime;
 		this.timestamp = System.currentTimeMillis();

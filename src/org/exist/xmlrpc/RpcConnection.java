@@ -291,11 +291,12 @@ public class RpcConnection implements RpcAPI {
             lockedDocuments = beginProtected(broker, parameters);
             if (lockedDocuments != null)
                 compiled.getContext().setProtectedDocs(lockedDocuments);
-            Sequence result = xquery.execute(compiled, contextSet);
+            Properties outputProperties = new Properties();
+            Sequence result = xquery.execute(compiled, contextSet, outputProperties);
             // pass last modified date to the HTTP response
             HTTPUtils.addLastModifiedHeader( result, compiled.getContext() );
             LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
-            return new QueryResult(compiled.getContext(), result);
+            return new QueryResult(result, outputProperties);
         } catch (XPathException e) {
             return new QueryResult(e);
         } finally {
@@ -2741,8 +2742,7 @@ public class RpcConnection implements RpcAPI {
                 NodeValue nodeValue = (NodeValue)item;
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
-                checkPragmas(qr.serialization, parameters);
-                serializer.setProperties(parameters);
+                serializer.setProperties(qr.serialization);
                 return serializer.serialize(nodeValue);
             } else {
                 return item.getStringValue();
@@ -2787,10 +2787,9 @@ public class RpcConnection implements RpcAPI {
             if (qr == null)
                 throw new EXistException("result set unknown or timed out");
             qr.timestamp = System.currentTimeMillis();
-            checkPragmas(qr.serialization, parameters);
             Serializer serializer = broker.getSerializer();
             serializer.reset();
-            serializer.setProperties(parameters);
+            serializer.setProperties(qr.serialization);
             
             SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
             StringWriter writer = new StringWriter();
