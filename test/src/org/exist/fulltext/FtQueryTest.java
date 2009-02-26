@@ -215,7 +215,7 @@ public class FtQueryTest extends XMLTestCase {
 
 	        query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//mods:title, \'s\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        result = service.query(query);
-	        assertEquals(20, result.getSize());
+	        assertEquals(30, result.getSize());
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
