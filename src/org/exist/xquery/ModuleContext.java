@@ -119,13 +119,23 @@ public class ModuleContext extends XQueryContext {
 		return module;
 	}
 	
-   /**
-	 * @return iterator over all modules registered in the root context
-	 */
+	protected void setRootModule(String namespaceURI, Module module) {
+		allModules.put(namespaceURI, module);
+		parentContext.setRootModule(namespaceURI, module);
+	}
+
 	public Iterator getRootModules() {
 		return parentContext.getRootModules();
 	}
-
+	
+	public Iterator getAllModules() {
+		return allModules.values().iterator();
+	}
+	
+	public Module getRootModule(String namespaceURI) {
+		return parentContext.getRootModule(namespaceURI);
+	}
+	
     /**
      * Overwritten method: the module will be loaded by the parent context, but
      * we need to declare its namespace in the module context. 

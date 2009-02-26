@@ -121,18 +121,14 @@ public class XQueryPool extends Object2ObjectHashMap {
     }
     
     private void returnModules(XQueryContext context, ExternalModule self) {
-   	 for (Iterator it = context.getModules(); it.hasNext(); ) {
+   	 for (Iterator it = context.getRootModules(); it.hasNext(); ) {
    		 Module module = (Module) it.next();
    		 if (module != self && !module.isInternalModule()) {
    			 ExternalModule extModule = (ExternalModule) module;
-   			 returnModule(extModule.getSource(), extModule);
+   			 // Don't return recursively, since all modules are listed in the top-level context
+   			 returnObject(extModule.getSource(), extModule);
    		 }
    	 }
-    }
-    
-    public void returnModule(Source source, ExternalModule module) {
-   	 returnModules(module.getContext(), module);
-   	 returnObject(source, module);
     }
     
     private synchronized void returnObject(Source source, Object o) {
@@ -177,7 +173,7 @@ public class XQueryPool extends Object2ObjectHashMap {
       // it might become invalid if an imported module has changed.
       XQueryContext context = query.getContext();
       context.setBroker(broker);
-      if (!borrowModules(broker, context, null)) {
+      if (!borrowModules(broker, context)) {
           // the compiled query is no longer valid: one of the imported
           // modules may have changed
           remove(source);
@@ -197,17 +193,17 @@ public class XQueryPool extends Object2ObjectHashMap {
       }
     }
     
-    private synchronized boolean borrowModules(DBBroker broker, XQueryContext context, ExternalModule self) {
+    private synchronized boolean borrowModules(DBBroker broker, XQueryContext context) {
    	 Map borrowedModules = new TreeMap();
-   	 for (Iterator it = context.getModules(); it.hasNext(); ) {
+   	 for (Iterator it = context.getRootModules(); it.hasNext(); ) {
    		 Module module = (Module) it.next();
-   		 if (module != self && !module.isInternalModule()) {
+   		 if (!module.isInternalModule()) {
    			 ExternalModule extModule = (ExternalModule) module;
    			 ExternalModule borrowedModule = borrowModule(broker, extModule.getSource());
    			 if (borrowedModule == null) {
    		   	 for (Iterator it2 = borrowedModules.values().iterator(); it2.hasNext(); ) {
    		   		 ExternalModule moduleToReturn = (ExternalModule) it2.next();
-   		   		 returnModule(moduleToReturn.getSource(), moduleToReturn);
+   		   		 returnObject(moduleToReturn.getSource(), moduleToReturn);
    		   	 }
    		   	 return false;
    			 }
@@ -217,6 +213,20 @@ public class XQueryPool extends Object2ObjectHashMap {
    	 for (Iterator it = borrowedModules.entrySet().iterator(); it.hasNext(); ) {
    		 Map.Entry entry = (Map.Entry) it.next();
   			 context.setModule((String) entry.getKey(), (ExternalModule) entry.getValue());
+   	 }
+   	 for (Iterator it = context.getRootModules(); it.hasNext(); ) {
+   		 Module module = (Module) it.next();
+   		 if (!module.isInternalModule()) {
+   			 ExternalModule extModule = (ExternalModule) module;
+   			 List importedModuleNamespaceUris = new ArrayList();
+   			 for (Iterator it2 = extModule.getContext().getModules(); it2.hasNext(); ) {
+   				 importedModuleNamespaceUris.add(((Module) it2.next()).getNamespaceURI());
+   			 }
+   			 for (Iterator it2 = importedModuleNamespaceUris.iterator(); it2.hasNext(); ) {
+   				 String namespaceUri = (String) it2.next();
+   				 extModule.getContext().setModule(namespaceUri, (Module) borrowedModules.get(namespaceUri));
+   			 }
+   		 }
    	 }
    	 return true;
     }
@@ -229,16 +239,13 @@ public class XQueryPool extends Object2ObjectHashMap {
    	 if (!module.moduleIsValid()) {
 			 LOG.debug("Module with URI " + module.getNamespaceURI() + 
 				" has changed and needs to be reloaded");
-			 // fall through
-   	 } else if (!borrowModules(broker, context, module)) {
-   		 // fall through
+	   	 remove(source);
+	   	 return null;
    	 } else {
    		 return module;
    	 }
-   	 remove(source);
-   	 return null;
     }
-
+    
     private void timeoutCheck() {
         final long currentTime = System.currentTimeMillis();
         

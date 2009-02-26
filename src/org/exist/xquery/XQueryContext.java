@@ -203,6 +203,11 @@ public class XQueryContext {
 	protected HashMap modules = new HashMap();
 	
 	/**
+	 * Loaded modules, including ones bubbled up from imported modules.
+	 */
+	protected HashMap allModules = new HashMap();
+	
+	/**
 	 * Whether some modules were rebound to new instances since the last time this context's
 	 * query was analyzed.  (This assumes that each context is attached to at most one query.)
 	 */
@@ -423,6 +428,7 @@ public class XQueryContext {
         this.attributes = from.attributes;
         this.updateListener = from.updateListener;
         this.modules = from.modules;
+        this.allModules = from.allModules;
         this.mappedModules = from.mappedModules;
     }
 
@@ -458,6 +464,11 @@ public class XQueryContext {
             } catch (XPathException e) {
                 // ignore
             }
+        }
+        ctx.allModules = new HashMap();
+        for (Iterator i = this.allModules.values().iterator(); i.hasNext(); ) {
+      	  Module module = (Module) i.next();
+      	  ctx.allModules.put(module.getNamespaceURI(), module);
         }
 
         ctx.watchdog = this.watchdog;
@@ -1241,11 +1252,15 @@ public class XQueryContext {
 		return modules.values().iterator();
 	}
 	
-   /**
-	 * @return iterator over all modules registered in the root context
+	/**
+	 *  @return iterator over all modules registered in the entire context tree
 	 */
 	public Iterator getRootModules() {
-		return getModules();
+		return getAllModules();
+	}
+	
+	public Iterator getAllModules() {
+		return allModules.values().iterator();
 	}
 
 	/**
@@ -1259,12 +1274,21 @@ public class XQueryContext {
 		return (Module) modules.get(namespaceURI);
 	}
 	
+	public Module getRootModule(String namespaceURI) {
+		return (Module) allModules.get(namespaceURI);
+	}
+	
 	public void setModule(String namespaceURI, Module module) {
+		modules.put(namespaceURI, module);
+		setRootModule(namespaceURI, module);
+	}
+	
+	protected void setRootModule(String namespaceURI, Module module) {
 		if (!module.isInternalModule()) {
 			((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(this);
 		}
-		if (modules.get(namespaceURI) != module) setModulesChanged();
-		modules.put(namespaceURI, module);
+		if (allModules.get(namespaceURI) != module) setModulesChanged();
+		allModules.put(namespaceURI, module);
 	}
 	
 	void setModulesChanged() {
@@ -1341,6 +1365,7 @@ public class XQueryContext {
                 declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
 
             modules.put(module.getNamespaceURI(), module);
+            allModules.put(module.getNamespaceURI(), module);
             return module;
         } catch (InstantiationException e) {
             LOG.warn("error while instantiating module class " + mClass.getName(), e);
@@ -2000,15 +2025,11 @@ public class XQueryContext {
 	 * @throws XPathException
 	 */
 	public void importModule(String namespaceURI, String prefix, String location) throws XPathException {
-		Module module = getModule(namespaceURI);
-		// getModule() may call into ModuleContext's overriden version which walks the ancestor
-		// contexts in search of the module, but when importing an external module we need to
-		// make sure it ends up in our own module map.  Yes, this means that if the same
-		// module is imported through multiple dependency paths, each import will get its own
-		// copy. This is necessary anyway since a module context must have a single parent
-		// context.
-		if(module != null && (!(module instanceof ExternalModule) || modules.get(namespaceURI) != null)) {
+		Module module = getRootModule(namespaceURI);
+		if(module != null) {
 			LOG.debug("Module " + namespaceURI + " already present.");
+			// Set locally to remember the dependency in case it was inherited.
+			setModule(namespaceURI, module);
 		} else {
 			if(location == null)
 				location = namespaceURI;
@@ -2081,7 +2102,16 @@ public class XQueryContext {
 	
 	private ExternalModule compileOrBorrowModule(String prefix, String namespaceURI, String location, Source source) throws XPathException {
 		ExternalModule module = broker.getBrokerPool().getXQueryPool().borrowModule(broker, source);
-		if (module == null) module = compileModule(prefix, namespaceURI, location, source);
+		if (module == null) {
+			module = compileModule(prefix, namespaceURI, location, source);
+		} else {
+			for (Iterator it = module.getContext().getAllModules(); it.hasNext(); ) {
+				Module importedModule = (Module) it.next();
+				if (!allModules.containsKey(importedModule.getNamespaceURI())) {
+					setRootModule(importedModule.getNamespaceURI(), importedModule);
+				}
+			}
+		}
      	setModule(module.getNamespaceURI(), module);
       declareModuleVars(module);
       return module;
