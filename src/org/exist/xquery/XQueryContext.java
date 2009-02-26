@@ -1280,13 +1280,13 @@ public class XQueryContext {
 	
 	public void setModule(String namespaceURI, Module module) {
 		modules.put(namespaceURI, module);
+		if (!module.isInternalModule()) {
+			((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(this);
+		}
 		setRootModule(namespaceURI, module);
 	}
 	
 	protected void setRootModule(String namespaceURI, Module module) {
-		if (!module.isInternalModule()) {
-			((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(this);
-		}
 		if (allModules.get(namespaceURI) != module) setModulesChanged();
 		allModules.put(namespaceURI, module);
 	}
