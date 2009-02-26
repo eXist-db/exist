@@ -732,7 +732,7 @@ public interface RpcAPI {
 			String start, String end)
 			throws PermissionDeniedException, EXistException, XPathException;
 	
-	void releaseQueryResult(int handle);
+	boolean releaseQueryResult(int handle);
 
 	int xupdate(String collectionName, byte[] xupdate)
             throws PermissionDeniedException, EXistException, SAXException, XPathException, LockException;
