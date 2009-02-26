@@ -2491,9 +2491,10 @@ public class RpcConnection implements RpcAPI {
      *
      * @param handle an <code>int</code> value
      */
-    public void releaseQueryResult(int handle) {
+    public boolean releaseQueryResult(int handle) {
         factory.resultSets.remove(handle);
         LOG.debug("removed query result with handle " + handle);
+        return true;
     }
     
     /**
@@ -2742,6 +2743,10 @@ public class RpcConnection implements RpcAPI {
                 NodeValue nodeValue = (NodeValue)item;
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
+                for (Iterator i = parameters.entrySet().iterator(); i.hasNext();) {
+                    Map.Entry entry = (Map.Entry) i.next();
+                    qr.serialization.setProperty(entry.getKey().toString(), entry.getValue().toString());
+                }
                 serializer.setProperties(qr.serialization);
                 return serializer.serialize(nodeValue);
             } else {
