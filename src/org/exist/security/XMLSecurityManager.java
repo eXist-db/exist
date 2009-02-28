@@ -113,6 +113,8 @@ public class XMLSecurityManager implements SecurityManager {
           if (sysCollection == null) {
              txn = transact.beginTransaction();
              sysCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
+              if (sysCollection == null)
+                return;
              sysCollection.setPermissions(0770);
              broker.saveCollection(txn, sysCollection);
              transact.commit(txn);
@@ -258,7 +260,7 @@ public class XMLSecurityManager implements SecurityManager {
 	public synchronized User getUser(int uid) {
 		final User user = (User)users.get(uid);
 		if(user == null) {
-			LOG.debug("user with uid " + uid + " not found");
+//			LOG.debug("user with uid " + uid + " not found");
         }
 		return user;
 	}
