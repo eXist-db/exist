@@ -94,7 +94,7 @@ import java.util.Properties;
  *
  * The class should be used in combination with {@link ConsistencyCheck}.
  * The error lists returned by ConsistencyCheck can be passed to
- * {@link #export(String, boolean, boolean, java.util.List)}.
+ * {@link #export(org.exist.collections.Collection, BackupWriter, java.util.Date, BackupDescriptor, java.util.List, org.exist.dom.MutableDocumentSet)}.
  */
 public class SystemExport {
 
@@ -130,6 +130,10 @@ public class SystemExport {
         this.callback = callback;
     }
 
+    public File export(String targetDir, boolean incremental, boolean zip, List errorList) {
+        return export(targetDir, incremental, -1, zip, errorList);
+    }
+
     /**
      * Export the contents of the database, trying to preserve
      * as much data as possible. To be effective, this method
@@ -141,7 +145,7 @@ public class SystemExport {
      * @param errorList a list of {@link ErrorReport} objects as returned by
      *   methods in {@link ConsistencyCheck}.
      */
-    public File export(String targetDir, boolean incremental, boolean zip, List errorList) {
+    public File export(String targetDir, boolean incremental, int maxInc, boolean zip, List errorList) {
         try {
             BackupDirectory directory = new BackupDirectory(targetDir);
             BackupDescriptor prevBackup = null;
@@ -153,9 +157,28 @@ public class SystemExport {
             }
 
             Properties properties = new Properties();
+            int seqNr = 1;
             if (incremental) {
                 properties.setProperty("previous", prevBackup == null ? "" : prevBackup.getName());
+                if (prevBackup != null) {
+                    Properties prevProp = prevBackup.getProperties();
+                    if (prevProp != null) {
+                        String seqNrStr = prevProp.getProperty("nr-in-sequence", "1");
+                        try {
+                            seqNr = Integer.parseInt(seqNrStr);
+                            if (seqNr == maxInc) {
+                                seqNr = 1;
+                                incremental = false;
+                                prevBackup = null;
+                            } else
+                                ++seqNr;
+                        } catch (NumberFormatException e) {
+                            LOG.warn("Bad sequence number in backup descriptor: " + prevBackup.getName());
+                        }
+                    }
+                }
             }
+            properties.setProperty("nr-in-sequence", Integer.toString(seqNr));
             properties.setProperty("incremental", incremental ? "yes" : "no");
             try {
                 properties.setProperty("date", new DateTimeValue(new Date()).getStringValue());
