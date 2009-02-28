@@ -771,10 +771,10 @@ public interface RpcAPI {
 	boolean copyResource(String docPath, String destinationPath, String newName)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 	
-	void reindexCollection(String name)
+	boolean reindexCollection(String name)
 	throws EXistException, PermissionDeniedException, URISyntaxException;
 	
-	void backup(String userbackup, String password, String destcollection, String collection)
+	boolean backup(String userbackup, String password, String destcollection, String collection)
 	throws EXistException, PermissionDeniedException;
 	
 	boolean dataBackup(String dest) throws PermissionDeniedException;

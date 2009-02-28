@@ -3912,8 +3912,9 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public void reindexCollection(String collectionName) throws URISyntaxException, EXistException, PermissionDeniedException {
+    public boolean reindexCollection(String collectionName) throws URISyntaxException, EXistException, PermissionDeniedException {
     	reindexCollection(XmldbURI.xmldbUriFor(collectionName));
+        return true;
     }    
     
     /**
@@ -3946,7 +3947,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    public void backup(String userbackup, String password,
+    public boolean backup(String userbackup, String password,
 	String destcollection, String collection) throws EXistException, PermissionDeniedException {
     	try {
     		   Backup backup = new Backup(
@@ -3958,6 +3959,7 @@ public class RpcConnection implements RpcAPI {
             } catch (Exception e) {
                 handleException(e);
 			}
+        return true;
     }
     
     /**
