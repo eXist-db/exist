@@ -553,7 +553,20 @@ public class BTree extends Paged {
         }
         writer.write(']');
     }
-    
+
+    public void rawScan(IndexQuery query, BTreeCallback callback) throws IOException, TerminatedException {
+        long pages = getFileHeader().getTotalCount();
+        for (int i = 1; i < pages; i++) {
+            Page p = getPage(i);
+            p.read();
+            if (p.getPageHeader().getStatus() == LEAF) {
+                BTreeNode btn = new BTreeNode(p, false);
+                btn.read();
+                btn.scanRaw(query, callback);
+            }
+        }
+    }
+
 	/* ---------------------------------------------------------------------------------
 	 * Methods used by recovery and transaction management
 	 * --------------------------------------------------------------------------------- */
@@ -1802,6 +1815,13 @@ public class BTree extends Paged {
                     default :
                         throw new BTreeException("Invalid Page Type In query");
                 }
+        }
+
+        protected void scanRaw(IndexQuery query, BTreeCallback callback) throws TerminatedException {
+            for (int i = 0; i < nKeys; i++) {
+                if (query.testValue(keys[i]))
+                    callback.indexInfo(keys[i], ptrs[i]);
+            }
         }
 
         protected void scanNextPage(IndexQuery query, Value keyPrefix, BTreeCallback callback) throws TerminatedException {

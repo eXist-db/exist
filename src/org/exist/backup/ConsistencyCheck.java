@@ -67,16 +67,17 @@ public class ConsistencyCheck {
 
     private DBBroker broker;
     private int defaultIndexDepth;
+    private boolean directAccess = false;
 
-    public ConsistencyCheck(DBBroker broker) {
+    public ConsistencyCheck(DBBroker broker, boolean directAccess) {
         this.broker = broker;
         this.defaultIndexDepth = ((NativeBroker) broker).getDefaultIndexDepth();
-        // System.out.println("DefaultIndexDepth = " + this.defaultIndexDepth);
+        this.directAccess = directAccess;
     }
 
     /**
-     * Combines {@link #checkCollectionTree(ConsistencyCheck.ProgressCallback)} and
-     * {@link #checkDocuments(ConsistencyCheck.ProgressCallback)}.
+     * Combines {@link #checkCollectionTree(org.exist.backup.ConsistencyCheck.ProgressCallback)} and
+     * {@link #checkDocuments(org.exist.backup.ConsistencyCheck.ProgressCallback)}.
      * 
      * @param callback the callback object to report to
      * @return a list of {@link ErrorReport} objects or
@@ -139,7 +140,7 @@ public class ConsistencyCheck {
         User.enablePasswordChecks(false);
         try {
             DocumentCallback cb = new DocumentCallback(null, null, false);
-            broker.getResourcesFailsafe(cb);
+            broker.getResourcesFailsafe(cb, directAccess);
             return cb.docCount;
         } finally {
             User.enablePasswordChecks(true);
@@ -173,7 +174,7 @@ public class ConsistencyCheck {
         User.enablePasswordChecks(false);
         try {
             DocumentCallback cb = new DocumentCallback(errorList, progress, true);
-            broker.getResourcesFailsafe(cb);
+            broker.getResourcesFailsafe(cb, directAccess);
         } finally {
             User.enablePasswordChecks(true);
         }
@@ -324,7 +325,7 @@ public class ConsistencyCheck {
                 if (checkDocs) {
                     if (progress != null)
                         progress.startDocument(doc.getFileURI().toString());
-                    if (type == DocumentImpl.XML_FILE) {
+                    if (type == DocumentImpl.XML_FILE && !directAccess) {
                         ErrorReport report = checkXMLTree(doc);
                         if (report != null) {
                             if (report instanceof ErrorReport.ResourceError)

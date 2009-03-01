@@ -799,8 +799,8 @@ public class BrokerPool {
 		//Get a manager to handle further collectios configuration
         try {
             collectionConfigurationManager = new CollectionConfigurationManager(broker);
-        } catch (CollectionConfigurationException e) {
-            throw new DatabaseConfigurationException("Found an error while initializing database: " + e.getMessage(), e);
+        } catch (Exception e) {
+            LOG.error("Found an error while initializing database: " + e.getMessage(), e);
         }
         //If necessary, launch a task to repair the DB
         //TODO : merge this with the recovery process ?
