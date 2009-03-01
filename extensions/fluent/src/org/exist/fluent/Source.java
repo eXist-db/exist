@@ -183,8 +183,7 @@ public abstract class Source {
 	
 	/**
 	 * Create a source of XML data that reads from the given reader.  Note that the
-	 * contents of the reader will need to be read <em>twice</em>, so if the reader is transient
-	 * (i.e., its contents are not available for random access, such as for a socket reader) its
+	 * contents of the reader will need to be read <em>twice</em>, so its
 	 * contents will be automatically saved in memory.  This could be very inefficient if the
 	 * document being streamed is large.
 	 *
@@ -193,22 +192,13 @@ public abstract class Source {
 	 */
 	public static Source.XML xml(final Reader reader) {
 		return new Source.XML() {
-			private Reader markedReader;
+			private char[] contents;
 			@Override InputSource createInputSource() throws IOException {
-				if (markedReader == null) {
-					if (reader.markSupported()) {
-						markedReader = reader;
-					} else {
-						// TODO: if stream size exceeds some threshold, save contents to a temporary file instead
-						markedReader = new CharArrayReader(readReader(reader, null));
-					}
-					markedReader.mark(Integer.MAX_VALUE);
-				}
-				markedReader.reset();
-				return new InputSource(markedReader);
+				if (contents == null) contents = readReader(reader, null);
+				return new InputSource(new CharArrayReader(contents));
 			}
 			@Override public String toString() {
-				return super.toString() + "reader" + (markedReader == reader ? "": " (cached)");
+				return super.toString() + "reader";
 			}
 		};
 	}
@@ -394,7 +384,7 @@ public abstract class Source {
 		chunk = new byte[totalSize];
 		k = 0;
 		for (byte[] a : chunks) {
-			System.arraycopy(a, 0, chunk, k, a.length);
+			System.arraycopy(a, 0, chunk, k, Math.min(totalSize - k, a.length));
 			k += a.length;
 		}
 		return chunk;
@@ -426,7 +416,7 @@ public abstract class Source {
 		chunk = new char[totalSize];
 		k = 0;
 		for (char[] a : chunks) {
-			System.arraycopy(a, 0, chunk, k, a.length);
+			System.arraycopy(a, 0, chunk, k, Math.min(totalSize - k, a.length));
 			k += a.length;
 		}
 		return chunk;

@@ -117,7 +117,9 @@ public class Folder extends NamedResource implements Cloneable {
 		public Folder get(String descendantName) {
 			staleMarker.check();
 			if (descendantName.startsWith("/")) throw new IllegalArgumentException("descendant name starts with '/': " + descendantName);
-			return new Folder(path() + "/" + descendantName, false, Folder.this);
+			String parentPath = path();
+			if (parentPath.equals("/")) parentPath = "";
+			return new Folder(parentPath + "/" + descendantName, false, Folder.this);
 		}
 
 		/**
