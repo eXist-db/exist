@@ -76,7 +76,8 @@ public class ConsistencyCheckTask implements SystemTask {
             if (LOG.isDebugEnabled())
                 LOG.debug("Starting consistency check...");
             boolean doBackup = createBackup;
-            ConsistencyCheck check = new ConsistencyCheck(broker);
+            // TODO: don't use the direct access feature for now. needs more testing
+            ConsistencyCheck check = new ConsistencyCheck(broker, false);
             List errors = check.checkAll(cb);
             if (!errors.isEmpty()) {
                 if (LOG.isDebugEnabled())
@@ -93,7 +94,7 @@ public class ConsistencyCheckTask implements SystemTask {
                 File exportFile = SystemExport.getUniqueFile("data", ".zip", exportDir);
                 if (LOG.isDebugEnabled())
                     LOG.debug("Creating emergency backup to file: " + exportFile.getAbsolutePath());
-                SystemExport sysexport = new SystemExport(broker, null);
+                SystemExport sysexport = new SystemExport(broker, null, false);
                 sysexport.export(exportFile.getAbsolutePath(), errors);
             }
         } finally {
