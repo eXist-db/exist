@@ -1687,13 +1687,16 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    public void getResourcesFailsafe(BTreeCallback callback) {
+    public void getResourcesFailsafe(BTreeCallback callback, boolean fullScan) {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.READ_LOCK);
             Value key = new CollectionStore.DocumentKey();
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
-            collectionsDb.query(query, callback);
+            if (fullScan)
+                collectionsDb.rawScan(query, callback);
+            else
+                collectionsDb.query(query, callback);
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
         } catch (IOException e) {

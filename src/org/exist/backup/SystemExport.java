@@ -68,6 +68,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Embedded database export tool class. Tries to export as much data as
@@ -116,10 +120,12 @@ public class SystemExport {
     
     private DBBroker broker;
     private StatusCallback callback = null;
+    private boolean directAccess = false;
 
-    public SystemExport(DBBroker broker, StatusCallback callback) {
+    public SystemExport(DBBroker broker, StatusCallback callback, boolean direct) {
         this.broker = broker;
         this.callback = callback;
+        this.directAccess = direct;
     }
 
     /**
@@ -225,8 +231,8 @@ public class SystemExport {
             attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", "0771");
             serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
-            DocumentCallback docCb = new DocumentCallback(output, serializer, docs);
-            broker.getResourcesFailsafe(docCb);
+            DocumentCallback docCb = new DocumentCallback(output, serializer, docs, true);
+            broker.getResourcesFailsafe(docCb, directAccess);
 
             serializer.endElement(Namespaces.EXIST_NS, "collection", "collection");
             serializer.endPrefixMapping("");
@@ -365,7 +371,7 @@ public class SystemExport {
         try {
             metadata = doc.getMetadata();
         } catch (Exception e) {
-            LOG.warn(e.getMessage(), e);
+//            LOG.warn(e.getMessage(), e);
         }
 
         try {
@@ -532,13 +538,22 @@ public class SystemExport {
     private class DocumentCallback implements BTreeCallback {
 
         private DocumentSet exportedDocs;
+        private Set writtenDocs = null;
         private SAXSerializer serializer;
         private BackupWriter output;
 
         private DocumentCallback(BackupWriter output, SAXSerializer serializer, DocumentSet exportedDocs) {
+            this(output, serializer, exportedDocs, false);
+        }
+
+        private DocumentCallback(BackupWriter output, SAXSerializer serializer, DocumentSet exportedDocs,
+                                 boolean checkNames) {
             this.exportedDocs = exportedDocs;
             this.serializer = serializer;
             this.output = output;
+            if (checkNames) {
+                writtenDocs = new TreeSet();
+            }
         }
 
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
@@ -555,6 +570,16 @@ public class SystemExport {
                         doc = new DocumentImpl(broker.getBrokerPool());
                     doc.read(istream);
                     reportError("Found an orphaned document: " + doc.getFileURI().toString(), null);
+                    if (writtenDocs != null) {
+                        int count = 1;
+                        String fileURI = doc.getFileURI().toString();
+                        String origURI = fileURI;
+                        while (writtenDocs.contains(fileURI)) {
+                            fileURI = origURI + "." + count++;
+                        }
+                        doc.setFileURI(XmldbURI.createInternal(fileURI));
+                        writtenDocs.add(fileURI);
+                    }
                     exportDocument(output, serializer, 0, 0, doc);
                 } catch (Exception e) {
                     reportError("Caught an exception while scanning documents: " + e.getMessage(), e);
