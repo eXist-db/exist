@@ -43,6 +43,7 @@ public class ExportMain {
     private final static int OUTPUT_DIR_OPT = 'd';
     private final static int CONFIG_OPT = 'c';
     private final static int INCREMENTAL_OPT = 'i';
+    private final static int DIRECT_ACCESS_OPT = 'D';
 
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
@@ -52,6 +53,9 @@ public class ExportMain {
         new CLOptionDescriptor( "config", CLOptionDescriptor.ARGUMENT_REQUIRED,
             CONFIG_OPT, "the database configuration (conf.xml) file to use " +
                 "for launching the db." ),
+        new CLOptionDescriptor( "direct", CLOptionDescriptor.ARGUMENT_DISALLOWED,
+                DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " +
+                    "index structures"),
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED,
             EXPORT_OPT, "export database contents while preserving as much data as possible" ),
         new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED,
@@ -83,6 +87,7 @@ public class ExportMain {
         }
         boolean export = false;
         boolean incremental = false;
+        boolean direct = false;
         String exportTarget = "export/";
         String dbConfig = null;
 
@@ -99,6 +104,9 @@ public class ExportMain {
                     break;
                 case OUTPUT_DIR_OPT :
                     exportTarget = option.getArgument();
+                    break;
+                case DIRECT_ACCESS_OPT :
+                    direct = true;
                     break;
                 case CONFIG_OPT :
                     dbConfig = option.getArgument();
@@ -120,7 +128,7 @@ public class ExportMain {
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            ConsistencyCheck checker = new ConsistencyCheck(broker);
+            ConsistencyCheck checker = new ConsistencyCheck(broker, direct);
             List errors = checker.checkAll(new CheckCallback());
             if (errors.size() > 0) {
                 System.err.println("ERRORS FOUND.");
@@ -132,7 +140,7 @@ public class ExportMain {
                 File dir = new File(exportTarget);
                 if (!dir.exists())
                     dir.mkdirs();
-                SystemExport sysexport = new SystemExport(broker, new Callback());
+                SystemExport sysexport = new SystemExport(broker, new Callback(), direct);
                 sysexport.export(exportTarget, incremental, true, errors);
             }
         } catch (EXistException e) {
@@ -156,7 +164,8 @@ public class ExportMain {
 
         public void error(String message, Throwable exception) {
             System.err.println(message);
-            exception.printStackTrace();
+            if (exception != null)
+                exception.printStackTrace();
         }
     }
 

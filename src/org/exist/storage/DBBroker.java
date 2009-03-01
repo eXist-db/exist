@@ -197,7 +197,7 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs);
 
-    public abstract void getResourcesFailsafe(BTreeCallback callback);
+    public abstract void getResourcesFailsafe(BTreeCallback callback, boolean fullScan);
 
     public abstract void getCollectionsFailsafe(BTreeCallback callback);
 

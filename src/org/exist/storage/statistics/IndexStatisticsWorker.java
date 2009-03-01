@@ -111,7 +111,7 @@ public class IndexStatisticsWorker implements IndexWorker {
     public void updateIndex(DBBroker broker) {
         perDocGuide = new DataGuide();
         DocumentCallback cb = new DocumentCallback(broker);
-        broker.getResourcesFailsafe(cb);
+        broker.getResourcesFailsafe(cb, false);
         index.updateStats(perDocGuide);
     }
 

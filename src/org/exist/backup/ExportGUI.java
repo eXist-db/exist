@@ -75,6 +75,7 @@ public class ExportGUI extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Could not start the database instance. Please remember\n" +
                     "that this tool tries to launch an embedded db instance. No other db instance should\n" +
                     "be running on the same data.", "DB Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
             System.err.println("ERROR: Failed to open database: " + e.getMessage());
         }
         return false;
@@ -97,6 +98,7 @@ public class ExportGUI extends javax.swing.JFrame {
         startBtn = new javax.swing.JButton();
         exportBtn = new javax.swing.JButton();
         incrementalBtn = new JCheckBox("Incremental backup");
+        directAccessBtn = new JCheckBox("Direct access");
         outputDir = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         btnChangeDir = new javax.swing.JButton();
@@ -181,6 +183,7 @@ public class ExportGUI extends javax.swing.JFrame {
         jToolBar1.add(exportBtn);
 
         jToolBar1.add(incrementalBtn);
+        jToolBar1.add(directAccessBtn);
         
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
@@ -380,10 +383,13 @@ public class ExportGUI extends javax.swing.JFrame {
             progress.setMinimum(0);
             progress.setMaximum(documentCount);
 
+            Object[] selected = directAccessBtn.getSelectedObjects();
+            boolean directAccess = selected != null && selected[0] != null;
+
             displayMessage("Starting export ...");
-            Object[] selected = incrementalBtn.getSelectedObjects();
+            selected = incrementalBtn.getSelectedObjects();
             boolean incremental = selected != null && selected[0] != null;
-            SystemExport sysexport = new SystemExport(broker, callback);
+            SystemExport sysexport = new SystemExport(broker, callback, directAccess);
             File file = sysexport.export(exportTarget, incremental, true, errorList);
 
             displayMessage("Export to " + file.getAbsolutePath() + " completed successfully.");
@@ -403,7 +409,9 @@ public class ExportGUI extends javax.swing.JFrame {
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            ConsistencyCheck checker = new ConsistencyCheck(broker);
+            Object[] selected = directAccessBtn.getSelectedObjects();
+            boolean directAccess = selected != null && selected[0] != null;
+            ConsistencyCheck checker = new ConsistencyCheck(broker, directAccess);
             org.exist.backup.ConsistencyCheck.ProgressCallback cb = new ConsistencyCheck.ProgressCallback() {
 
                 public void startDocument(String path) {
@@ -500,6 +508,7 @@ public class ExportGUI extends javax.swing.JFrame {
     private javax.swing.JTextField dbConfig;
     private javax.swing.JButton exportBtn;
     private javax.swing.JCheckBox incrementalBtn;
+    private JCheckBox directAccessBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
