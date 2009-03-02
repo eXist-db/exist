@@ -104,7 +104,8 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(NodeXPath.signature, NodeXPath.class),
         new FunctionDef(Hash.signatures[0], Hash.class),
         new FunctionDef(Hash.signatures[1], Hash.class),
-
+        new FunctionDef(GetFragmentBetween.signature, GetFragmentBetween.class),
+        
         // deprecated functions
         new FunctionDef(GetVersion.deprecated, GetVersion.class),
 		new FunctionDef(FileRead.deprecated[0], FileRead.class),
