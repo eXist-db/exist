@@ -43,6 +43,9 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.functions.response.ResponseModule;
+import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -395,6 +398,19 @@ public class XIncludeFilter implements Receiver {
                     context = xquery.newContext(AccessContext.XINCLUDE);
                 context.declareNamespaces(namespaces);
                 context.declareNamespace("xinclude", XINCLUDE_NS);
+                
+                //setup the http context if known
+                if(serializer.httpContext != null)
+                {
+                	if(serializer.httpContext.getRequest() != null)
+                		context.declareVariable(RequestModule.PREFIX + ":request", serializer.httpContext.getRequest());
+                	
+                	if(serializer.httpContext.getResponse() != null)
+                		context.declareVariable(ResponseModule.PREFIX + ":response", serializer.httpContext.getResponse());
+                	
+                	if(serializer.httpContext.getSession() != null)
+                		context.declareVariable(SessionModule.PREFIX + ":session", serializer.httpContext.getSession());
+                }
                 
                 //TODO: change these to putting the XmldbURI in, but we need to warn users!
                 if(document!=null){

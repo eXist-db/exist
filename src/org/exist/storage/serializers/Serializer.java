@@ -53,6 +53,9 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
+import org.exist.http.servlets.RequestWrapper;
+import org.exist.http.servlets.ResponseWrapper;
+import org.exist.http.servlets.SessionWrapper;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.MatchListener;
 import org.exist.numbering.NodeId;
@@ -169,7 +172,40 @@ public abstract class Serializer implements XMLReader {
     protected SAXSerializer xmlout = null;
     protected LexicalHandler lexicalHandler = null;
     protected User user = null;
-
+    
+    protected HttpContext httpContext = null;
+    public class HttpContext
+    {
+    	private RequestWrapper request = null;
+    	private ResponseWrapper response = null;
+    	private SessionWrapper session = null;
+		
+    	public RequestWrapper getRequest() {
+			return request;
+		}
+		public void setRequest(RequestWrapper request) {
+			this.request = request;
+		}
+		public ResponseWrapper getResponse() {
+			return response;
+		}
+		public void setResponse(ResponseWrapper response) {
+			this.response = response;
+		}
+		public SessionWrapper getSession() {
+			return session;
+		}
+		public void setSession(SessionWrapper session) {
+			this.session = session;
+		}
+    }
+    
+    public void setHttpContext(HttpContext httpContext)
+    {
+    	this.httpContext = httpContext;
+    }
+    
+    
     public Serializer(DBBroker broker, Configuration config) {
 		this.broker = broker;
 		factory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
@@ -391,6 +427,7 @@ public abstract class Serializer implements XMLReader {
 		xslHandler = null;
 		templates = null;
 		outputProperties.clear();
+		httpContext = null;
 	}
 
 	public String serialize(DocumentImpl doc) throws SAXException {
