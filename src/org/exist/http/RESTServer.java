@@ -49,6 +49,7 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.serializers.Serializer.HttpContext;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -335,7 +336,7 @@ public class RESTServer {
 				// file
 				// return regular resource that is not an xquery
 				writeResourceAs(resource, broker, stylesheet, encoding, null,
-						outputProperties, response);
+						outputProperties, request, response);
 				return;
 			}
 			if (resource == null) { // could be request for a Collection
@@ -407,7 +408,7 @@ public class RESTServer {
 					// Show the source of the XQuery
 					writeResourceAs(resource, broker, stylesheet, encoding,
 							MimeType.TEXT_TYPE.getName(), outputProperties,
-							response);
+							request, response);
 				} else {
 					// we are not allowed to show the source - query not
 					// allowed in descriptor.xml
@@ -1192,7 +1193,7 @@ public class RESTServer {
 	// null uses the type of the resource
 	private void writeResourceAs(DocumentImpl resource, DBBroker broker,
 			String stylesheet, String encoding, String asMimeType,
-			Properties outputProperties, HttpServletResponse response)
+			Properties outputProperties, HttpServletRequest request, HttpServletResponse response)
 			throws BadRequestException, PermissionDeniedException, IOException {
 
 		// Do we have permission to read the resource
@@ -1220,6 +1221,14 @@ public class RESTServer {
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
 
+			//setup the http context
+			HttpContext httpContext = serializer.new HttpContext();
+			HttpRequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
+			httpContext.setRequest(reqw);
+			httpContext.setSession(reqw.getSession(false));
+			serializer.setHttpContext(httpContext);
+			
+			
 			// Serialize the document
 			try {
 				sax = (SAXSerializer) SerializerPool.getInstance()
@@ -1261,7 +1270,7 @@ public class RESTServer {
 						.getOutputStream(), encoding);
 				sax.setOutput(writer, outputProperties);
 				serializer.setSAXHandlers(sax, sax);
-
+				
 				serializer.toSAX(resource);
 
 				writer.flush();
