@@ -56,6 +56,24 @@ public class ItemListTest extends DatabaseTestCase {
 		assertEquals(2, doc.query().all("$_1//c", new Object[] { res }).size());
 	}
 	
+	@Test(expected=DatabaseException.class) public void stale1() {
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
+				"<foo><bar1/><bar2/></foo>"));
+		ItemList list = doc.query().all("/foo/*");
+		doc.query().all("//bar1").deleteAllNodes();
+		doc.query().all("$_1", list);
+	}
+	
+	@Test public void stale2() {
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
+				"<foo><bar1/><bar2/></foo>"));
+		ItemList list = doc.query().all("/foo/*");
+		doc.query().all("//bar1").deleteAllNodes();
+		list.removeDeletedNodes();
+		assertEquals(1, list.size());
+		assertEquals(1, doc.query().all("$_1", list).size());
+	}
+		
 	@Test public void deleteAllNodes1() {
 		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
 				"<foo><bar><bar/></bar></foo>"));
