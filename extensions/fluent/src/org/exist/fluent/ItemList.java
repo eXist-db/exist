@@ -2,7 +2,8 @@ package org.exist.fluent;
 
 import java.util.*;
 
-import org.exist.xquery.XPathException;
+import org.exist.dom.AVLTreeNodeSet;
+import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 /**
@@ -194,21 +195,21 @@ public class ItemList extends Resource implements Iterable<Item> {
 	}
 
 	
-	private final Sequence seq;
-	private final List<Item> items;
+	private Sequence seq;
+	private List<Item> items, modifiableItems;
 	private ValuesFacet values;
 	private NodesFacet nodes;
 
 	private ItemList() {
 		super(null, null);
 		this.seq = Sequence.EMPTY_SEQUENCE;
-		this.items = Collections.emptyList();
+		this.items = this.modifiableItems = Collections.emptyList();
 	}
 
 	ItemList(Sequence seq, NamespaceMap namespaceBindings, Database db) {
 		super(namespaceBindings, db);
 		this.seq = seq;
-		List<Item> modifiableItems = new ArrayList<Item>(seq.getItemCount());
+		modifiableItems = new ArrayList<Item>(seq.getItemCount());
 		try {
 			for (SequenceIterator it = seq.iterate(); it.hasNext(); ) {
 				org.exist.xquery.value.Item existItem = it.nextItem();
@@ -222,6 +223,37 @@ public class ItemList extends Resource implements Iterable<Item> {
 			throw new DatabaseException(xpe);
 		}
 		this.items = Collections.unmodifiableList(modifiableItems);
+	}
+	
+	/**
+	 * Remove all deleted nodes from this list.  Trying to access the list in a query
+	 * context when it contains a deleted node will cause a stale reference exception.
+	 * You can call this method whenever you suspect this will be the case, preferably
+	 * just prior to access.  This will also update the results for all direct access methods
+	 * that wouldn't throw an exception, but could return a stale result.
+	 * The updates aren't done automatically since they involve tricky synchronization
+	 * issues and are expensive when not batched up, and since most clients won't need
+	 * this feature.
+	 */
+	public void removeDeletedNodes() {
+		boolean itemsRemoved = false;
+		for (Iterator<Item> it = modifiableItems.iterator(); it.hasNext(); ) {
+			Item item = it.next();
+			if (item instanceof Node && ((Node) item).staleMarker.stale()) {
+				it.remove();
+				itemsRemoved = true;
+			}
+		}
+		if (!itemsRemoved) return;
+		// Code inlined from org.exist.xquery.XPathUtil to avoid creating temporary lists
+		boolean nodesOnly = true;
+		for (Item item : items) if (!(item instanceof Node)) {nodesOnly = false; break;}
+		seq = nodesOnly ? new AVLTreeNodeSet() : new ValueSequence();
+		try {
+			for (Item item : items) seq.add(item.item);
+		} catch (XPathException e) {
+			throw new DatabaseException(e);
+		}
 	}
 	
 	@Override	Sequence convertToSequence() {
