@@ -12,6 +12,10 @@ th {
 	text-align: left;
 }
 
+button {
+    font-size: .75em;
+}
+
 .header {
     margin-bottom: 5px;
     padding-top: 10px;
@@ -85,6 +89,16 @@ th {
   font-size: large;
 }
 
+h1 {
+    font-size: large;
+    font-weight: normal;
+}
+
+h2 {
+    font-size: 1em;
+    font-weight: bold;
+}
+
 .inner-panel {
 	margin-top: 20px;
 }
@@ -101,18 +115,19 @@ th {
 #status td.key {
 }
 
-#browse {
+.browse {
     margin-left: 15px;
     font-size: smaller;
+    padding-bottom: 4px;
     border-bottom: 1px solid black;
 }
 
-#browse th {
+.browse th {
     text-align: left;
     border-bottom: 1px solid black;
 }
 
-#browse td.perm {
+.browse td.perm {
     font-family: Courier, monospace;
 }
 
@@ -196,4 +211,26 @@ td.help {
 
 .high {
     color: #00ff00;
+}
+
+.diffsource {
+	width: 600px;
+	overflow: auto;
+}
+
+.revisions, .backups {
+	width: 620px;
+}
+
+td.last {
+    text-align: right;
+}
+
+.spacing {
+    margin-right: 3em;
+}
+
+.refresh {
+    margin-top: 1em;
+    margin-left: 15px;
 }

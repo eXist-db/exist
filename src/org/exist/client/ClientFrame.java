@@ -1118,8 +1118,8 @@ public class ClientFrame extends JFrame
                 properties.getProperty("uri", "xmldb:exist://"),  
                 properties.getProperty("user", "admin"),  
                 properties.getProperty("password", null), 
-                properties.getProperty("backup-dir", System.getProperty("user.home") 
-                + File.separatorChar + "eXist-backup.zip")); 
+                new File(properties.getProperty("backup-dir", System.getProperty("user.home")
+                + File.separatorChar + "eXist-backup.zip"))); 
         if (JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), 
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, null, null) == JOptionPane.YES_OPTION) {
@@ -1172,8 +1172,8 @@ public class ClientFrame extends JFrame
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter(new BackupContentsFilter());
         // re-enable later
-        //chooser.addChoosableFileFilter(new ZipFilter());
-        //chooser.setSelectedFile(new File("eXist-backup.zip"));
+        chooser.addChoosableFileFilter(new ZipFilter());
+        chooser.setSelectedFile(new File("eXist-backup.zip"));
 
         if (chooser.showDialog(null, Messages.getString("ClientFrame.169")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$
         	JPanel askPass = new JPanel(new BorderLayout());

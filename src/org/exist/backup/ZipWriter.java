@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.Properties;
 
 /**
  * Implementation of BackupWriter that writes to a zip file.
@@ -17,10 +18,14 @@ public class ZipWriter implements BackupWriter {
     private String currentPath;
     private ZipOutputStream out;
     private StringWriter contents;
+    private boolean dataWritten = false;
 
     public ZipWriter(String zipFile, String collection) throws IOException {
-        File file = new File(zipFile);
-        out = new ZipOutputStream(new FileOutputStream(file));
+        this(new File(zipFile), collection);
+    }
+
+    public ZipWriter(File zipFile, String collection) throws IOException {
+        out = new ZipOutputStream(new FileOutputStream(zipFile));
         currentPath = collection;
     }
 
@@ -34,11 +39,13 @@ public class ZipWriter implements BackupWriter {
         out.putNextEntry(entry);
         out.write(contents.toString().getBytes("UTF-8"));
         out.closeEntry();
+        dataWritten = true;
     }
 
     public OutputStream newEntry(String name) throws IOException {
         ZipEntry entry = new ZipEntry(mkRelative(currentPath) + '/' + name);
         out.putNextEntry(entry);
+        dataWritten = true;
         return out;
     }
 
@@ -62,7 +69,16 @@ public class ZipWriter implements BackupWriter {
     public void close() throws IOException {
         out.close();
     }
-    
+
+    public void setProperties(Properties properties) throws IOException {
+        if (dataWritten)
+            throw new IOException("Backup properties need to be set before any backup data is written");
+        ZipEntry entry = new ZipEntry("backup.properties");
+        out.putNextEntry(entry);
+        properties.store(out, "Backup properties");
+        out.closeEntry();
+    }
+
     private String mkRelative(String path) {
     	if (path.length() > 0 && path.charAt(0) == '/')
     		return path.substring(1);

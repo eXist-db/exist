@@ -22,11 +22,7 @@
  */
 package org.exist.xmldb;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.Date;
 
 import org.exist.EXistException;
@@ -42,6 +38,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
+import org.xml.sax.InputSource;
 
 /**
  * @author wolf
@@ -49,7 +46,7 @@ import org.xmldb.api.modules.BinaryResource;
 public class LocalBinaryResource extends AbstractEXistResource implements BinaryResource {
 
 	protected byte[] rawData = null;
-	
+    protected InputSource inputSource = null;	
 	protected Date datecreated= null;
 	protected Date datemodified= null;
 	
@@ -85,6 +82,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	 * @see org.xmldb.api.base.Resource#getContent()
 	 */
 	public Object getContent() throws XMLDBException {
+        if (inputSource != null)
+            return readFile(inputSource);
 		if(rawData == null) {
 			DBBroker broker = null;
 			BinaryDocument blob = null;
@@ -116,6 +115,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 			rawData = (byte[])value;
 		else if(value instanceof String)
 			rawData = ((String)value).getBytes();
+        else if(value instanceof InputSource)
+            inputSource=(InputSource)value;
 		else
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"don't know how to handle value of type " + value.getClass().getName());
@@ -139,6 +140,28 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 				"IO exception while reading file " + file.getAbsolutePath(), e);
 		}
 	}
+
+    private byte[] readFile(InputSource is) throws XMLDBException {
+        return readFile(is.getByteStream());
+    }
+
+    private byte[] readFile(InputStream is) throws XMLDBException {
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
+            byte[] temp = new byte[1024];
+            int count = 0;
+            while((count = is.read(temp)) > -1) {
+                bos.write(temp, 0, count);
+            }
+            return bos.toByteArray();
+        } catch (FileNotFoundException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+                "file could not be found: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+                "IO exception while reading file: " + e.getMessage(), e);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.EXistResource#getCreationTime()

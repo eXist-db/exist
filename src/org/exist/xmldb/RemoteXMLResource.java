@@ -29,6 +29,7 @@ import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
 import org.exist.util.MimeType;
+import org.exist.util.EXistInputSource;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.value.StringValue;
@@ -56,13 +57,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -86,7 +81,8 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     protected RemoteCollection parent;
     protected String content = null;
     protected File file = null;
-	
+    protected InputSource inputSource = null;
+
     protected Permission permissions = null;
     protected int contentLen = 0;
 	
@@ -136,6 +132,9 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
         if (file != null) {
             return file;
         }
+        if (inputSource != null) {
+            return inputSource;
+        }        
         Properties properties = parent.getProperties();
         byte[] data = null;
         if (id == null) {
@@ -288,10 +287,15 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     }
 
     public void setContent(Object value) throws XMLDBException {
-	if (value instanceof File) {
-	    file = (File) value;
-	} else
-	    content = value.toString();
+        file = null;
+        inputSource = null;
+        content = null;
+        if (value instanceof File) {
+	        file = (File) value;
+        } else if (value instanceof InputSource) {
+            inputSource = (InputSource) value;            
+	    } else
+	        content = value.toString();
     }
 
     public void setContentAsDOM(Node root) throws XMLDBException {
@@ -360,41 +364,58 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
      * @throws XMLDBException
      */
     protected byte[] getData() throws XMLDBException {
-	if (file != null) {
-	    if (!file.canRead())
-		throw new XMLDBException(
-					 ErrorCodes.INVALID_RESOURCE,
-					 "failed to read resource content from file " + file.getAbsolutePath());
-	    try {
-		final byte[] chunk = new byte[512];
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		final FileInputStream in = new FileInputStream(file);
-		int l;
-		do {
-		    l = in.read(chunk);
-		    if (l > 0)
-			out.write(chunk, 0, l);
+        if (file != null || inputSource!=null) {
+            final InputStream in;
+            String sourcedesc="<unknown>";
+            if(file!=null) {
+                sourcedesc=file.getAbsolutePath();
+                if (!file.canRead())
+                    throw new XMLDBException(
+                            ErrorCodes.INVALID_RESOURCE,
+                            "failed to read resource content from file " + sourcedesc);
+                try {
+                    in=new BufferedInputStream(new FileInputStream(file));
+                } catch(IOException ioe) {
+                    throw new XMLDBException(
+                            ErrorCodes.INVALID_RESOURCE,
+                            "failed to read resource content from file " + sourcedesc,
+                            ioe);
+                }
+            } else {
+                in=inputSource.getByteStream();
+                if(inputSource instanceof EXistInputSource) {
+                    sourcedesc=((EXistInputSource)inputSource).getSymbolicPath();
+                }
+            }
+            try {
+                final byte[] chunk = new byte[512];
+                final ByteArrayOutputStream out = new ByteArrayOutputStream();
+                int l;
+                do {
+                    l = in.read(chunk);
+                    if (l > 0)
+                        out.write(chunk, 0, l);
 
-		} while (l > -1);
-		in.close();
-		final byte[] data = out.toByteArray();
-		//				content = new String(data);
-		file = null;
-		return data;
-	    } catch (IOException e) {
-		throw new XMLDBException(
-					 ErrorCodes.INVALID_RESOURCE,
-					 "failed to read resource content from file " + file.getAbsolutePath(),
-					 e);
-	    }
-	} else if(content != null)
-	    try {
-		return content.getBytes("UTF-8");
-	    } catch (UnsupportedEncodingException e) {
-	    	LOG.warn(e);
-	    }
-	return null;
-    } 
+                } while (l > -1);
+                in.close();
+                final byte[] data = out.toByteArray();
+                //				content = new String(data);
+                file = null;
+                return data;
+            } catch (IOException e) {
+                throw new XMLDBException(
+                        ErrorCodes.INVALID_RESOURCE,
+                        "failed to read resource content from file " + sourcedesc,
+                        e);
+            }
+        } else if(content != null)
+            try {
+                return content.getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                LOG.warn(e);
+            }
+        return null;
+    }
 
     public void setContentLength(int len) {
 	this.contentLen = len;

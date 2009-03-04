@@ -49,13 +49,18 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Attributes;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
+import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -90,7 +95,8 @@ import java.util.TreeSet;
  * </ul>
  *
  * The class should be used in combination with {@link ConsistencyCheck}.
- * The error lists returned by ConsistencyCheck can be passed to {@link #export(String, java.util.List)}.
+ * The error lists returned by ConsistencyCheck can be passed to
+ * {@link #export(String, boolean, int, boolean, java.util.List)}.
  */
 public class SystemExport {
 
@@ -128,33 +134,81 @@ public class SystemExport {
         this.directAccess = direct;
     }
 
+    public File export(String targetDir, boolean incremental, boolean zip, List errorList) {
+        return export(targetDir, incremental, -1, zip, errorList);
+    }
+
     /**
      * Export the contents of the database, trying to preserve
      * as much data as possible. To be effective, this method
      * should be used in combination with class
      * {@link ConsistencyCheck}.
      *
-     * @param target the output directory or file to which data will be written.
+     * @param targetDir the output directory or file to which data will be written.
      *  Output will be written to a zip file if target ends with .zip.
      * @param errorList a list of {@link ErrorReport} objects as returned by
      *   methods in {@link ConsistencyCheck}.
      */
-    public void export(String target, List errorList) {
+    public File export(String targetDir, boolean incremental, int maxInc, boolean zip, List errorList) {
         try {
+            BackupDirectory directory = new BackupDirectory(targetDir);
+            BackupDescriptor prevBackup = null;
+            
+            if (incremental) {
+                prevBackup = directory.lastBackupFile();
+                LOG.info("Creating incremental backup. Prev backup: " +
+                        (prevBackup == null ? "none" : prevBackup.getSymbolicPath()));
+            }
+
+            Properties properties = new Properties();
+            int seqNr = 1;
+            if (incremental) {
+                properties.setProperty("previous", prevBackup == null ? "" : prevBackup.getName());
+                if (prevBackup != null) {
+                    Properties prevProp = prevBackup.getProperties();
+                    if (prevProp != null) {
+                        String seqNrStr = prevProp.getProperty("nr-in-sequence", "1");
+                        try {
+                            seqNr = Integer.parseInt(seqNrStr);
+                            if (seqNr == maxInc) {
+                                seqNr = 1;
+                                incremental = false;
+                                prevBackup = null;
+                            } else
+                                ++seqNr;
+                        } catch (NumberFormatException e) {
+                            LOG.warn("Bad sequence number in backup descriptor: " + prevBackup.getName());
+                        }
+                    }
+                }
+            }
+            properties.setProperty("nr-in-sequence", Integer.toString(seqNr));
+            properties.setProperty("incremental", incremental ? "yes" : "no");
+            try {
+                properties.setProperty("date", new DateTimeValue(new Date()).getStringValue());
+            } catch (XPathException e) {
+            }
+
+            File backupFile = directory.createBackup(incremental && prevBackup != null, zip);
             BackupWriter output;
-            if (target.endsWith(".zip"))
-                output = new ZipWriter(target, "/db");
+            if (zip)
+                output = new ZipWriter(backupFile, "/db");
             else
-                output = new FileSystemWriter(target + "/db");
-            CollectionCallback cb = new CollectionCallback(output, errorList);
+                output = new FileSystemWriter(new File(backupFile, "db"));
+            output.setProperties(properties);
+
+            Date date = prevBackup == null ? null : prevBackup.getDate();
+            CollectionCallback cb = new CollectionCallback(output, date, prevBackup, errorList);
             broker.getCollectionsFailsafe(cb);
 
             exportOrphans(output, cb.getDocs(), errorList);
 
             output.close();
+            return backupFile;
         } catch (IOException e) {
             reportError("A write error occurred while exporting data: '" + e.getMessage() +
                     "'. Aborting export.", e);
+            return null;
         }
     }
 
@@ -231,7 +285,7 @@ public class SystemExport {
             attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", "0771");
             serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
-            DocumentCallback docCb = new DocumentCallback(output, serializer, docs, true);
+            DocumentCallback docCb = new DocumentCallback(output, serializer, null, null, docs, true);
             broker.getResourcesFailsafe(docCb, directAccess);
 
             serializer.endElement(Namespaces.EXIST_NS, "collection", "collection");
@@ -253,13 +307,13 @@ public class SystemExport {
      *
      * @param current the collection
      * @param output the output writer
-     * @param errorList a list of {@link ErrorReport} objects as returned by
-     *   methods in {@link ConsistencyCheck}
-     * @param docs a document set to keep track of all written documents.
-     * @throws IOException
+     * @param date
+     *@param errorList a list of {@link org.exist.backup.ErrorReport} objects as returned by
+     *   methods in {@link org.exist.backup.ConsistencyCheck}
+     * @param docs a document set to keep track of all written documents. @throws IOException
      * @throws SAXException
      */
-    private void export(Collection current, BackupWriter output, List errorList, DocumentSet docs) throws IOException, SAXException {
+    private void export(Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List errorList, DocumentSet docs) throws IOException, SAXException {
         if (callback != null)
             callback.startCollection(current.getURI().toString());
         
@@ -300,7 +354,7 @@ public class SystemExport {
                 }
                 if (doc.getFileURI().equalsInternal(CONTENTS_URI) || doc.getFileURI().equalsInternal(LOST_URI))
                     continue; // skip __contents__.xml documents
-                exportDocument(output, serializer, docsCount, count, doc);
+                exportDocument(output, date, prevBackup, serializer, docsCount, count, doc);
                 docs.add(doc, false);
             }
 
@@ -319,6 +373,18 @@ public class SystemExport {
                 serializer.startElement(Namespaces.EXIST_NS, "subcollection", "subcollection", attr);
                 serializer.endElement(Namespaces.EXIST_NS, "subcollection", "subcollection");
             }
+
+            if (prevBackup != null) {
+                // Check which collections and resources have been deleted since the
+                // last backup
+                CheckDeletedHandler check = new CheckDeletedHandler(current, serializer);
+                try {
+                    prevBackup.parse(check);
+                } catch (Exception e) {
+                    LOG.error("Caught exception while trying to parse previous backup descriptor: " + prevBackup.getSymbolicPath(), e);
+                }
+            }
+
             // close <collection>
             serializer.endElement(Namespaces.EXIST_NS, "collection", "collection");
             serializer.endPrefixMapping("");
@@ -331,28 +397,33 @@ public class SystemExport {
         }
     }
 
-    private void exportDocument(BackupWriter output, SAXSerializer serializer, int docsCount, int count, DocumentImpl doc) throws IOException, SAXException {
+    private void exportDocument(BackupWriter output, Date date, BackupDescriptor prevBackup, SAXSerializer serializer, int docsCount, int count, DocumentImpl doc) throws IOException, SAXException {
         if (callback != null)
             callback.startDocument(doc.getFileURI().toString(), count, docsCount);
-        OutputStream os = output.newEntry(Backup.encode(URIUtils.urlDecodeUtf8(doc.getFileURI())));
-        try {
-            if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                broker.readBinaryResource((BinaryDocument) doc, os);
-            } else {
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                // write resource to contentSerializer
-                SAXSerializer contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                contentSerializer.setOutput(writer, defaultOutputProperties);
-                writeXML(doc, contentSerializer);
-                SerializerPool.getInstance().returnObject(contentSerializer);
-                writer.flush();
+
+        boolean needsBackup = prevBackup == null || date.getTime() < doc.getMetadata().getLastModified();
+
+        if (needsBackup) {
+            OutputStream os = output.newEntry(Backup.encode(URIUtils.urlDecodeUtf8(doc.getFileURI())));
+            try {
+                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    broker.readBinaryResource((BinaryDocument) doc, os);
+                } else {
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                    // write resource to contentSerializer
+                    SAXSerializer contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                    contentSerializer.setOutput(writer, defaultOutputProperties);
+                    writeXML(doc, contentSerializer);
+                    SerializerPool.getInstance().returnObject(contentSerializer);
+                    writer.flush();
+                }
+            } catch (Exception e) {
+                reportError("A write error occurred while exporting document: '" + doc.getFileURI() +
+                            "'. Continuing with next document.", e);
+                return;
+            } finally {
+                output.closeEntry();
             }
-        } catch (Exception e) {
-            reportError("A write error occurred while exporting document: '" + doc.getFileURI() +
-                        "'. Continuing with next document.", e);
-            return;
-        } finally {
-            output.closeEntry();
         }
 
         //store permissions
@@ -360,6 +431,8 @@ public class SystemExport {
         attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA",
                 doc.getResourceType() == DocumentImpl.BINARY_FILE ? "BinaryResource" : "XMLResource");
         attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", doc.getFileURI().toString());
+        attr.addAttribute(Namespaces.EXIST_NS, "skip", "skip", "CDATA",
+                (needsBackup ? "no" : "yes"));
         attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", doc.getPermissions().getOwner());
         attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", doc.getPermissions().getOwnerGroup());
         attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA",
@@ -423,7 +496,8 @@ public class SystemExport {
             NamespaceSupport nsSupport = new NamespaceSupport();
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                reader = broker.getXMLStreamReader((StoredNode) children.item(i), false);
+                StoredNode child = (StoredNode) children.item(i);
+                reader = broker.getXMLStreamReader(child, false);
                 while (reader.hasNext()) {
                     int status = reader.next();
                     switch (status) {
@@ -467,6 +541,8 @@ public class SystemExport {
                             receiver.processingInstruction(reader.getPITarget(), reader.getPIData());
                             break;
                     }
+                    if (child.getNodeType() == Node.COMMENT_NODE || child.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE)
+                        break;
                 }
                 nsSupport.reset();
             }
@@ -501,12 +577,16 @@ public class SystemExport {
     private class CollectionCallback implements BTreeCallback {
 
         private BackupWriter writer;
+        private BackupDescriptor prevBackup;
+        private Date date;
         private List errors;
         private DocumentSet docs = new DocumentSet();
-        
-        private CollectionCallback(BackupWriter writer, List errorList) {
+
+        private CollectionCallback(BackupWriter writer, Date date, BackupDescriptor prevBackup, List errorList) {
             this.writer = writer;
             this.errors = errorList;
+            this.date = date;
+            this.prevBackup = prevBackup;
         }
 
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
@@ -523,7 +603,10 @@ public class SystemExport {
                 Collection collection = new Collection(XmldbURI.createInternal(uri));
                 VariableByteInput istream = store.getAsStream(pointer);
                 collection.read(broker, istream);
-                export(collection, writer, errors, docs);
+                BackupDescriptor bd = null;
+                if (prevBackup != null)
+                    bd = prevBackup.getBackupDescriptor(uri);
+                export(collection, writer, date, bd, errors, docs);
             } catch (Exception e) {
                 reportError("Caught exception while scanning collections: " + uri, e);
             }
@@ -541,16 +624,16 @@ public class SystemExport {
         private Set writtenDocs = null;
         private SAXSerializer serializer;
         private BackupWriter output;
+        private Date date;
+        private BackupDescriptor prevBackup;
 
-        private DocumentCallback(BackupWriter output, SAXSerializer serializer, DocumentSet exportedDocs) {
-            this(output, serializer, exportedDocs, false);
-        }
-
-        private DocumentCallback(BackupWriter output, SAXSerializer serializer, DocumentSet exportedDocs,
-                                 boolean checkNames) {
+        private DocumentCallback(BackupWriter output, SAXSerializer serializer, Date date,
+                                 BackupDescriptor prevBackup, DocumentSet exportedDocs, boolean checkNames) {
             this.exportedDocs = exportedDocs;
             this.serializer = serializer;
             this.output = output;
+            this.date = date;
+            this.prevBackup = prevBackup;
             if (checkNames) {
                 writtenDocs = new TreeSet();
             }
@@ -580,12 +663,49 @@ public class SystemExport {
                         doc.setFileURI(XmldbURI.createInternal(fileURI));
                         writtenDocs.add(fileURI);
                     }
-                    exportDocument(output, serializer, 0, 0, doc);
+                    exportDocument(output, date, prevBackup, serializer, 0, 0, doc);
                 } catch (Exception e) {
                     reportError("Caught an exception while scanning documents: " + e.getMessage(), e);
                 }
             }
             return true;
+        }
+    }
+
+    private class CheckDeletedHandler extends DefaultHandler {
+
+        private Collection collection;
+        private SAXSerializer serializer;
+
+        private CheckDeletedHandler(Collection collection, SAXSerializer serializer) {
+            this.collection = collection;
+            this.serializer = serializer;
+        }
+
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            if (uri.equals(Namespaces.EXIST_NS)) {
+                if (localName.equals("subcollection")) {
+                    String name = attributes.getValue("filename");
+				    if (name == null)
+					    name = attributes.getValue("name");
+				    if (!collection.hasChildCollection(XmldbURI.create(name))) {
+                        AttributesImpl attr = new AttributesImpl();
+                        attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", name);
+                        attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", "collection");
+                        serializer.startElement(Namespaces.EXIST_NS, "deleted", "deleted", attr);
+                        serializer.endElement(Namespaces.EXIST_NS, "deleted", "deleted");
+                    }
+                } else if (localName.equals("resource")) {
+                    String name = attributes.getValue("name");
+                    if (!collection.hasDocument(XmldbURI.create(name))) {
+                        AttributesImpl attr = new AttributesImpl();
+                        attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", name);
+                        attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", "resource");
+                        serializer.startElement(Namespaces.EXIST_NS, "deleted", "deleted", attr);
+                        serializer.endElement(Namespaces.EXIST_NS, "deleted", "deleted");
+                    }
+                }
+            }
         }
     }
 }
