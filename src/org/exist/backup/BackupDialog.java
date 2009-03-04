@@ -36,7 +36,6 @@ public class BackupDialog extends JDialog {
 	public BackupDialog(Frame owner, boolean modal) throws HeadlessException {
 		super(owner, "Backup", modal);
 		setupComponents();
-		setSize(new Dimension(350, 200));
 		pack();
 	}
 

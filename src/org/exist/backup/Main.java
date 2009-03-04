@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -114,6 +115,8 @@ public class Main {
 		} catch (IOException ioe) {
 		}
 
+        Preferences preferences = Preferences.userNodeForPackage(Main.class);
+        
 		// parse command-line options
 		final CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
 
@@ -204,8 +207,7 @@ public class Main {
 							properties.getProperty("uri", "xmldb:exist://"),
 							properties.getProperty("user", "admin"),
 							properties.getProperty("password",""),
-							properties.getProperty("backup-dir", System.getProperty("user.home") +
-									File.separatorChar + "eXist-backup.zip"));
+                            new File(preferences.get("directory.backup", System.getProperty("user.dir"))));
 					if (JOptionPane
 						.showOptionDialog(
 							null,

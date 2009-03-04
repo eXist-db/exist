@@ -59,8 +59,6 @@ public class ExportGUI extends javax.swing.JFrame {
     protected boolean startDB() {
         if (pool != null)
             return true;
-        progress.setIndeterminate(true);
-        currentTask.setText("Initializing ...");
         File confFile = new File(dbConfig.getText());
         if (!(confFile.exists() && confFile.canRead())) {
             JOptionPane.showMessageDialog(this, "The selected database configuration file " +
@@ -79,9 +77,6 @@ public class ExportGUI extends javax.swing.JFrame {
                     "be running on the same data.", "DB Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             System.err.println("ERROR: Failed to open database: " + e.getMessage());
-        } finally {
-            progress.setIndeterminate(false);
-            currentTask.setText("");
         }
         return false;
     }
@@ -102,6 +97,7 @@ public class ExportGUI extends javax.swing.JFrame {
         jToolBar1 = new javax.swing.JToolBar();
         startBtn = new javax.swing.JButton();
         exportBtn = new javax.swing.JButton();
+        incrementalBtn = new JCheckBox("Incremental backup");
         directAccessBtn = new JCheckBox("Direct access");
         outputDir = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
@@ -186,6 +182,7 @@ public class ExportGUI extends javax.swing.JFrame {
         });
         jToolBar1.add(exportBtn);
 
+        jToolBar1.add(incrementalBtn);
         jToolBar1.add(directAccessBtn);
         
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -390,10 +387,12 @@ public class ExportGUI extends javax.swing.JFrame {
             boolean directAccess = selected != null && selected[0] != null;
 
             displayMessage("Starting export ...");
+            selected = incrementalBtn.getSelectedObjects();
+            boolean incremental = selected != null && selected[0] != null;
             SystemExport sysexport = new SystemExport(broker, callback, directAccess);
-            sysexport.export(SystemExport.getUniqueFile("data", ".zip", exportTarget).getAbsolutePath(), errorList);
+            File file = sysexport.export(exportTarget, incremental, true, errorList);
 
-            displayMessage("Export completed successfully.");
+            displayMessage("Export to " + file.getAbsolutePath() + " completed successfully.");
             progress.setString("");
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
@@ -508,6 +507,7 @@ public class ExportGUI extends javax.swing.JFrame {
     private javax.swing.JLabel currentTask;
     private javax.swing.JTextField dbConfig;
     private javax.swing.JButton exportBtn;
+    private javax.swing.JCheckBox incrementalBtn;
     private JCheckBox directAccessBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

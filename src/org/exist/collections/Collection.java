@@ -895,11 +895,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
             public void run() throws EXistException, SAXException {
                 try {
                     final InputStream is = source.getByteStream();
-                    if (is != null)
+                    if (is != null && is.markSupported())
                         is.reset();
                     else {
                         final Reader cs = source.getCharacterStream();
-                        if (cs != null)
+                        if (cs != null && cs.markSupported())
                             cs.reset();
                     }
                 } catch (IOException e) {
@@ -920,9 +920,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
         });
     }
     
-    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
+    /**
+     * Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
      * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
+     *
      * @param transaction
      * @param broker
      * @param info

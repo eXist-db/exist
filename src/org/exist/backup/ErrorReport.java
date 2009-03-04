@@ -90,8 +90,7 @@ public class ErrorReport {
     public static class ResourceError extends ErrorReport {
 
         private int documentId = -1;
-        private String resourceDesc = null;
-
+        
         public ResourceError(int code, String message) {
             super(code, message);
         }
@@ -108,15 +107,8 @@ public class ErrorReport {
             this.documentId = documentId;
         }
 
-        public void setResourceDesc(String resourceDesc) {
-            this.resourceDesc = resourceDesc;
-        }
-
         public String toString() {
-            if (resourceDesc == null)
-                return super.toString() + "\nDocument ID: " + documentId;
-            else
-                return super.toString() + "\n" + resourceDesc;
+            return super.toString() + "\nDocument ID: " + documentId;
         }
     }
 

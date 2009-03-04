@@ -17,6 +17,7 @@ import module namespace users = "http://exist-db.org/xquery/admin-interface/user
 import module namespace xqueries = "http://exist-db.org/xquery/admin-interface/xqueries" at "xqueries.xqm";
 import module namespace shut = "http://exist-db.org/xquery/admin-interface/shutdown" at "shutdown.xqm";
 import module namespace setup = "http://exist-db.org/xquery/admin-interface/setup" at "setup.xqm";
+import module namespace backup="http://exist-db.org/xquery/admin-interface/backup" at "backup.xqm";
 
 (: 
     Display the version, SVN revision and user info in the top right corner 
@@ -59,6 +60,8 @@ declare function admin:panel() as element()
         (
             setup:main()
         )
+		else if ($panel eq "backup") then
+		    backup:main()
         else
         (
             status:main()
@@ -157,6 +160,7 @@ return
                         <li><a href="{session:encode-url(request:get-uri())}?panel=xqueries">
 						View Running Jobs</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples Setup</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=backup">Backups</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=shutdown">Shutdown</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>
                     </ul>

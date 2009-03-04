@@ -42,6 +42,7 @@ public class ExportMain {
     private final static int EXPORT_OPT = 'x';
     private final static int OUTPUT_DIR_OPT = 'd';
     private final static int CONFIG_OPT = 'c';
+    private final static int INCREMENTAL_OPT = 'i';
     private final static int DIRECT_ACCESS_OPT = 'D';
 
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
@@ -56,7 +57,9 @@ public class ExportMain {
                 DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " +
                     "index structures"),
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            EXPORT_OPT, "export database contents while preserving as much data as possible" )
+            EXPORT_OPT, "export database contents while preserving as much data as possible" ),
+        new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED,
+            INCREMENTAL_OPT, "create incremental backup (use with --export|-x)")
     };
 
     protected static BrokerPool startDB(String configFile) {
@@ -83,6 +86,7 @@ public class ExportMain {
             return;
         }
         boolean export = false;
+        boolean incremental = false;
         boolean direct = false;
         String exportTarget = "export/";
         String dbConfig = null;
@@ -110,6 +114,9 @@ public class ExportMain {
                 case EXPORT_OPT :
                     export = true;
                     break;
+                case INCREMENTAL_OPT :
+                    incremental = true;
+                    break;
             }
         }
 
@@ -133,9 +140,8 @@ public class ExportMain {
                 File dir = new File(exportTarget);
                 if (!dir.exists())
                     dir.mkdirs();
-                File exportFile = SystemExport.getUniqueFile("data", ".zip", dir.getAbsolutePath());
                 SystemExport sysexport = new SystemExport(broker, new Callback(), direct);
-                sysexport.export(exportFile.getAbsolutePath(), errors);
+                sysexport.export(exportTarget, incremental, true, errors);
             }
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
