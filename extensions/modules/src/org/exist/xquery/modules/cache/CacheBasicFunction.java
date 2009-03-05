@@ -21,57 +21,54 @@
  */
 package org.exist.xquery.modules.cache;
 
-import org.exist.dom.QName;
+import java.util.Properties;
+
+import javax.xml.transform.OutputKeys;
+
+import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.SequenceIterator;
+import org.xml.sax.SAXException;
 
 /**
- * Global cache module. Clear function
+ * Global cache module. Get function
  * 
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
  * @version 1.0
  */
-public class ClearFunction extends BasicFunction {
+public abstract class CacheBasicFunction extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = { 
-		new FunctionSignature(
-			new QName("clear", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-			"Clear the global cache",
-			null, 
-	        new SequenceType(Type.EMPTY, Cardinality.EMPTY)
-		), 
-		new FunctionSignature(
-			new QName("clear", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-			"Clear the cache $a",
-			new SequenceType[] { 
-				new SequenceType(Type.ITEM, Cardinality.ONE) 
-			}, 
-	        new SequenceType(Type.EMPTY, Cardinality.EMPTY)
-		) 
-	};
-
-	public ClearFunction(XQueryContext context, FunctionSignature signature) {
+    public CacheBasicFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		if (args.length==0){
-			Cache.clearGlobal();
-		} else {
-			Item item = args[0].itemAt(0);
-			if (item.getType()==Type.STRING){
-				Cache.clear(item.getStringValue());
-			} else {
-				((Cache)item.toJavaObject(Cache.class)).clear();
-			}
-		}
-		return Sequence.EMPTY_SEQUENCE;
+	private final static Properties OUTPUT_PROPERTIES = new Properties();
+    static {
+        OUTPUT_PROPERTIES.setProperty(OutputKeys.INDENT, "no");
+        OUTPUT_PROPERTIES.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+    }
+    
+	protected String serialize(Sequence q) throws SAXException, XPathException {
+		String tmp = "";
+		Serializer serializer = context.getBroker().getSerializer();
+        serializer.reset();
+        serializer.setProperties(OUTPUT_PROPERTIES);
+        for (SequenceIterator i = q.iterate(); i.hasNext();){
+        	Item item = i.nextItem();
+        	try {
+            	NodeValue node = (NodeValue)item;
+            	tmp += serializer.serialize(node);
+        	} catch (ClassCastException e){
+        		tmp += item.getStringValue();
+        	}
+        }
+        return tmp;
 	}
+	
 }

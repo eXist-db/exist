@@ -27,51 +27,36 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * Global cache module. Clear function
+ * Global cache module. Get function
  * 
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
  * @version 1.0
  */
-public class ClearFunction extends BasicFunction {
+public class CacheFunction extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
-			new QName("clear", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-			"Clear the global cache",
-			null, 
-	        new SequenceType(Type.EMPTY, Cardinality.EMPTY)
-		), 
-		new FunctionSignature(
-			new QName("clear", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-			"Clear the cache $a",
-			new SequenceType[] { 
-				new SequenceType(Type.ITEM, Cardinality.ONE) 
-			}, 
-	        new SequenceType(Type.EMPTY, Cardinality.EMPTY)
-		) 
+				new QName("cache", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
+				"Get/create cache named as $a",
+				new SequenceType[] { 
+					new SequenceType(Type.STRING, Cardinality.ONE) 
+				}, 
+		        new SequenceType(Type.JAVA_OBJECT, Cardinality.ONE)
+			) 
 	};
 
-	public ClearFunction(XQueryContext context, FunctionSignature signature) {
+	public CacheFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		if (args.length==0){
-			Cache.clearGlobal();
-		} else {
-			Item item = args[0].itemAt(0);
-			if (item.getType()==Type.STRING){
-				Cache.clear(item.getStringValue());
-			} else {
-				((Cache)item.toJavaObject(Cache.class)).clear();
-			}
-		}
-		return Sequence.EMPTY_SEQUENCE;
+		String name = args[0].itemAt(0).getStringValue();
+		return new JavaObjectValue(Cache.getInstance(name));
 	}
 }

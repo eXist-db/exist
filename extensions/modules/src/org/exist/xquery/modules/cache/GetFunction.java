@@ -22,11 +22,11 @@
 package org.exist.xquery.modules.cache;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -38,15 +38,18 @@ import org.xml.sax.SAXException;
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
  * @version 1.0
  */
-public class GetFunction extends BasicFunction {
+public class GetFunction extends CacheBasicFunction {
 
 	public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
-			new QName("get", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-			"Get data from global cache by key $a",
-			new SequenceType[] { new SequenceType(Type.ANY_TYPE, Cardinality.ONE_OR_MORE) }, 
-	        new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
-		) 
+				new QName("get", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
+				"Get data from global cache $a by key $b",
+				new SequenceType[] { 
+					new SequenceType(Type.ITEM, Cardinality.ONE), 
+					new SequenceType(Type.ANY_TYPE, Cardinality.ONE_OR_MORE) 
+				}, 
+		        new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
+			) 
 	};
 
 	public GetFunction(XQueryContext context, FunctionSignature signature) {
@@ -54,16 +57,17 @@ public class GetFunction extends BasicFunction {
 	}
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		Sequence key = args[0];
-		Sequence value = null;
+		Item item = args[0].itemAt(0);
 		try {
-			value = Cache.get(key, context);
+			String key = serialize(args[1]);
+			if (item.getType()==Type.STRING){
+				return Cache.get(item.getStringValue(), key);
+			} else {
+				return ((Cache)item.toJavaObject(Cache.class)).get(key);
+			}
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}
-		if (value==null){
-			return Sequence.EMPTY_SEQUENCE;
-		}
-		return value;
+		return Sequence.EMPTY_SEQUENCE;
 	}
 }
