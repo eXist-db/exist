@@ -307,10 +307,19 @@
                             
                             <para>Note: you can schedule more than one backup job. For example, an incremental backup
                                 could be done multiple times a day while a full backup is created only once during 
-                                the night.
+                                the night
                             </para>
                         </listitem>
                     </varlistentry>
+                    <varlistentry>
+                        <term>max</term>
+                        <listitem>
+                            <para>If incremental backups are enabled, create a full backup every <option>max</option>
+                                backup runs. If you set the parameter to e.g. 2, you will get a full backup after
+                                two incremental backups.</para>
+                        </listitem>
+                    </varlistentry>
+                    
                 </variablelist>
             </section>
             
