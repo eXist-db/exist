@@ -37,10 +37,13 @@ public class CacheModule extends AbstractInternalModule {
 	public final static String PREFIX = "cache";
 
 	private final static FunctionDef[] functions = {
-			new FunctionDef(PutFunction.signatures[0], PutFunction.class),
-			new FunctionDef(GetFunction.signatures[0], GetFunction.class),
-			new FunctionDef(RemoveFunction.signatures[0], RemoveFunction.class),
-			new FunctionDef(ClearFunction.signatures[0], ClearFunction.class) };
+		new FunctionDef(PutFunction.signatures[0], PutFunction.class),
+		new FunctionDef(GetFunction.signatures[0], GetFunction.class),
+		new FunctionDef(CacheFunction.signatures[0], CacheFunction.class),
+		new FunctionDef(ClearFunction.signatures[0], ClearFunction.class),
+		new FunctionDef(ClearFunction.signatures[1], ClearFunction.class),
+		new FunctionDef(RemoveFunction.signatures[0], RemoveFunction.class)
+	};
 
 	public CacheModule() {
 		super(functions);

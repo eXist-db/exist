@@ -22,11 +22,11 @@
 package org.exist.xquery.modules.cache;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -38,15 +38,18 @@ import org.xml.sax.SAXException;
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
  * @version 1.0
  */
-public class RemoveFunction extends BasicFunction {
+public class RemoveFunction extends CacheBasicFunction {
 
 	public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
-			new QName("remove", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-			"Reove data from global cache by key $a",
-			new SequenceType[] { new SequenceType(Type.ANY_TYPE, Cardinality.ONE_OR_MORE) }, 
-	        new SequenceType(Type.EMPTY, Cardinality.EMPTY)
-		)
+				new QName("remove", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
+				"Reove data from cache $a by key $b. Returns the previous value associated with key",
+				new SequenceType[] { 
+					new SequenceType(Type.ITEM, Cardinality.ONE), 
+					new SequenceType(Type.ANY_TYPE, Cardinality.ONE_OR_MORE) 
+				}, 
+		        new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
+			)
 	};
 
 	public RemoveFunction(XQueryContext context, FunctionSignature signature) {
@@ -54,8 +57,14 @@ public class RemoveFunction extends BasicFunction {
 	}
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+		Item item = args[0].itemAt(0);
 		try {
-			Cache.remove(args[0], context);
+			String key = serialize(args[1]);
+			if (item.getType()==Type.STRING){
+				return Cache.remove(item.getStringValue(), key);
+			} else {
+				return ((Cache)item.toJavaObject(Cache.class)).remove(key);
+			}
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}

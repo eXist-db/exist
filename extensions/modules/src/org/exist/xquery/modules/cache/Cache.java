@@ -1,18 +1,8 @@
 package org.exist.xquery.modules.cache;
 
 import java.util.HashMap;
-import java.util.Properties;
 
-import javax.xml.transform.OutputKeys;
-
-import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.xml.sax.SAXException;
 
 /**
  * Static Global cache model
@@ -20,48 +10,56 @@ import org.xml.sax.SAXException;
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
  * @version 1.0
  */
-public class Cache {
+public class Cache extends HashMap<String, Sequence>{
 	
-	private static HashMap<String, Sequence> cache = new HashMap<String, Sequence>();
+	private static HashMap<String, Cache> globalCache = new HashMap<String, Cache>();
 	
-    private final static Properties OUTPUT_PROPERTIES = new Properties();
-    static {
-        OUTPUT_PROPERTIES.setProperty(OutputKeys.INDENT, "no");
-        OUTPUT_PROPERTIES.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+    public Cache(String name){
+    	super();
+    	globalCache.put(name, this);
     }
     
-	private static String serialize(Sequence q, XQueryContext context) throws SAXException, XPathException {
-		String tmp = "";
-		Serializer serializer = context.getBroker().getSerializer();
-        serializer.reset();
-        serializer.setProperties(OUTPUT_PROPERTIES);
-        for (SequenceIterator i = q.iterate(); i.hasNext();){
-        	Item item = i.nextItem();
-        	try {
-            	NodeValue node = (NodeValue)item;
-            	tmp += serializer.serialize(node);
-        	} catch (ClassCastException e){
-        		tmp += item.getStringValue();
-        	}
-        	
-        }
-        return tmp;
+	public static Cache getInstance(String name){
+		Cache cache = globalCache.get(name);
+		if (cache == null){
+			cache = new Cache(name);
+		}
+		return cache;
 	}
 	
-	public static void put(Sequence key, Sequence value, XQueryContext context) throws XPathException, SAXException{
-		cache.put(serialize(key, context), value);
+	public Sequence put(String key, Sequence value){
+		Sequence v = super.put(key, value); 
+		return (v==null) ? Sequence.EMPTY_SEQUENCE : v;
 	}
 	
-	public static Sequence get(Sequence key, XQueryContext context) throws XPathException, SAXException{
-		return cache.get(serialize(key, context));
+	public static Sequence put(String name, String key, Sequence value){
+		return getInstance(name).put(key, value);
 	}
 	
-	public static void remove(Sequence key, XQueryContext context) throws XPathException, SAXException{
-		cache.get(serialize(key, context));
+	public Sequence get(String key){
+		Sequence v = super.get(key); 
+		return (v==null) ? Sequence.EMPTY_SEQUENCE : v;
 	}
 	
-	public static void clear(){
-		cache.clear();
+	public static Sequence get(String name, String key){
+		return getInstance(name).get(key);
+	}
+	
+	public Sequence remove(String key){
+		Sequence v = super.remove(key); 
+		return (v==null) ? Sequence.EMPTY_SEQUENCE : v;
+	}
+	
+	public static Sequence remove(String name, String key){
+		return getInstance(name).remove(key);
+	}
+	
+	public static void clear(String name){
+		getInstance(name).clear();
+	}
+	
+	public static void clearGlobal(){
+		globalCache.clear();
 	}
 	
 }

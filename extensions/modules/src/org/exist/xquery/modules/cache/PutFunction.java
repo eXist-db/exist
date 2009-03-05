@@ -22,11 +22,11 @@
 package org.exist.xquery.modules.cache;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -38,16 +38,19 @@ import org.xml.sax.SAXException;
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
  * @version 1.0
  */
-public class PutFunction extends BasicFunction {
+public class PutFunction extends CacheBasicFunction {
 
 	public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
-			new QName("put", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-			"Put data in $b with key $b into global cache",
-			new SequenceType[] { new SequenceType(Type.ANY_TYPE, Cardinality.ONE_OR_MORE),
-							     new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE) }, 
-	        new SequenceType(Type.EMPTY, Cardinality.EMPTY)
-		) 
+				new QName("put", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
+				"Put data in $c with key $b into cache $a. Returns the previous value associated with key",
+				new SequenceType[] { 
+					new SequenceType(Type.ITEM, Cardinality.ONE), 
+					new SequenceType(Type.ANY_TYPE, Cardinality.ONE_OR_MORE),
+					new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE) 
+				}, 
+		        new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
+			) 
 	};
 
 	public PutFunction(XQueryContext context, FunctionSignature signature) {
@@ -55,10 +58,15 @@ public class PutFunction extends BasicFunction {
 	}
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		Sequence key = args[0]; 
-		Sequence value = args[1];
+		Item item = args[0].itemAt(0);
+		Sequence value = args[2];
 		try {
-			Cache.put(key, value, context);
+			String key = serialize(args[1]);
+			if (item.getType()==Type.STRING){
+				return Cache.put(item.getStringValue(), key, value);
+			} else {
+				return ((Cache)item.toJavaObject(Cache.class)).put(key, value);
+			}
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}
