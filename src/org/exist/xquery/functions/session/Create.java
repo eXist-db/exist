@@ -25,14 +25,12 @@ package org.exist.xquery.functions.session;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -40,52 +38,40 @@ import org.exist.xquery.value.Type;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class Create extends BasicFunction {
-
+public class Create extends BasicFunction 
+{
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("create", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
+			new QName( "create", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
 			"Initialize an HTTP session if not already present",
 			null,
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+			new SequenceType( Type.ITEM, Cardinality.EMPTY ) );
 
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
-			new QName("create-session", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			new QName( "create-session", RequestModule.NAMESPACE_URI, RequestModule.PREFIX ),
 			"Initialize an HTTP session if not already present",
 			null,
-			new SequenceType(Type.ITEM, Cardinality.EMPTY),
+			new SequenceType( Type.ITEM, Cardinality.EMPTY ),
 			"Moved to the 'session' module. See session:create."
 		);
 	
 	/**
 	 * @param context
 	 */
-	public Create(XQueryContext context) {
-		super(context, signature);
+	public Create( XQueryContext context )
+	{
+		super( context, signature );
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
-		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
+	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
+	{
+		SessionModule.createSession( context, this );
 		
-		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if(var == null || var.getValue() == null)
-			throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
-		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		
-		if(value.getObject() instanceof RequestWrapper) {
-			SessionWrapper session = ((RequestWrapper)value.getObject()).getSession(true);
-			((SessionModule)context.getModule(SessionModule.NAMESPACE_URI)).declareVariable(SessionModule.SESSION_VAR, session);
-		} else
-			throw new XPathException(getASTNode(), "Variable $session is not bound to a Session object.");
-		return Sequence.EMPTY_SEQUENCE;
+		return( Sequence.EMPTY_SEQUENCE );
 	}
 	
 }

@@ -41,54 +41,68 @@ import org.exist.xquery.value.Type;
 /**
  * @author wolf
  */
-public class SetAttribute extends Function {
-
+public class SetAttribute extends Function 
+{
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("set-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
-			"Stores a value in the current session using the supplied attribute name.",
+			new QName( "set-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
+			"Stores a value in the current session using the supplied attribute name. If no session exists, then one will be created.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
+				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )
 			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+			new SequenceType( Type.ITEM, Cardinality.EMPTY ) );
 	
 	
-	public SetAttribute(XQueryContext context) {
-		super(context, signature);
+	public SetAttribute( XQueryContext context ) 
+	{
+		super( context, signature );
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
+	{
+		JavaObjectValue session;
+		
+        if( context.getProfiler().isEnabled() ) {
+            context.getProfiler().start( this );  	
+            context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
+			
+            if( contextSequence != null ) {
+                context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence );
+			}
+
+            if( contextItem != null ) {
+                context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence() );
+			}
         }
         
-		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
+		SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
 
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
-		if(var == null || var.getValue() == null)
-			throw new XPathException(getASTNode(), "Session not set");
-		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(getASTNode(), "Variable $session is not bound to a Java object.");
-		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+		
+		if( var == null || var.getValue() == null ) {
+			// No saved session, so create one
+			session = SessionModule.createSession( context, this );
+		} else if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
+			throw( new XPathException( getASTNode(), "Variable $session is not bound to a Java object." ) );
+		} else {
+			session = (JavaObjectValue)var.getValue().itemAt( 0 );
+		}
 		
 		// get attribute name parameter
-		String attribName = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-		Sequence attribValue = getArgument(1).eval(contextSequence, contextItem);
+		String attribName = getArgument(0).eval( contextSequence, contextItem ).getStringValue();
+		Sequence attribValue = getArgument(1).eval( contextSequence, contextItem) ;
 		
-		if(session.getObject() instanceof SessionWrapper)
-			((SessionWrapper)session.getObject()).setAttribute(attribName, attribValue);
-		else
-			throw new XPathException(getASTNode(), "Type error: variable $session is not bound to a session object");
-		return Sequence.EMPTY_SEQUENCE;
+		if( session.getObject() instanceof SessionWrapper ) {
+			((SessionWrapper)session.getObject()).setAttribute (attribName, attribValue );
+		} else {
+			throw( new XPathException( getASTNode(), "Type error: variable $session is not bound to a session object" ) );
+		}
+
+		return( Sequence.EMPTY_SEQUENCE );
 	}
 }
