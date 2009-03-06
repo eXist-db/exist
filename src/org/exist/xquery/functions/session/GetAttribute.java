@@ -44,65 +44,67 @@ import org.exist.xquery.value.Type;
  * 
  * @author wolf
  */
-public class GetAttribute extends Function {
-	
+public class GetAttribute extends Function 
+{
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
+			new QName( "get-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
 			"Returns an attribute stored in the current session object or an empty sequence " +
 			"if the attribute cannot be found.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE )
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			new SequenceType( Type.STRING, Cardinality.ZERO_OR_MORE ) );
 	
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
-			new QName("get-session-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			new QName( "get-session-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX ),
 			"Returns an attribute stored in the current session object or an empty sequence " +
 			"if the attribute cannot be found.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE )
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
+			new SequenceType( Type.STRING, Cardinality.ZERO_OR_MORE ),
 			"Moved to 'session' module. Renamed to session:get-attribute");
 		
-	public GetAttribute(XQueryContext context) {
-		super(context, signature);
+	public GetAttribute( XQueryContext context ) 
+	{
+		super( context, signature );
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		
+	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
+	{
 		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
-		if(var == null || var.getValue() == null)
-			throw new XPathException(getASTNode(), "Session not set");
-		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(getASTNode(), "Variable $session is not bound to a Java object.");
-		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+		
+		if( var == null || var.getValue() == null ) {
+			// throw( new XPathException( getASTNode(), "Session not set" ) );
+			return( Sequence.EMPTY_SEQUENCE );
+		}
+		
+		if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
+			throw( new XPathException( getASTNode(), "Variable $session is not bound to a Java object." ) );
+		}
+
+		JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
 		
 		// get attribute name parameter
-		String attribName = getArgument(0).eval(contextSequence, contextItem).getStringValue();
+		String attribName = getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
 		
-		if(session.getObject() instanceof SessionWrapper)
-		{
-			try
-			{
-				Object o = ((SessionWrapper)session.getObject()).getAttribute(attribName);
-				if (o == null)
-					return Sequence.EMPTY_SEQUENCE;
-				return XPathUtil.javaObjectToXPath(o, context);
+		if( session.getObject() instanceof SessionWrapper ) {
+			try {
+				Object o = ( (SessionWrapper)session.getObject() ).getAttribute( attribName );
+				if( o == null ) {
+					return( Sequence.EMPTY_SEQUENCE );
+				}
+				return( XPathUtil.javaObjectToXPath( o, context ) );
 			}
-			catch(IllegalStateException ise)
-			{
+			catch( IllegalStateException ise ) {
 				//TODO: if we throw an exception here it means that getAttribute()
 				//cannot be called after invalidate() on the session object. This is the 
 				//way that it works in Java, however this isnt the way it works in xquery currently
@@ -113,10 +115,10 @@ public class GetAttribute extends Function {
 				//log.error(ise.getStackTrace());	
 				//throw new XPathException(getASTNode(), "Session has an IllegalStateException for getAttribute() - " + ise.getStackTrace() + System.getProperty("line.separator") + System.getProperty("line.separator") + "Did you perhaps call session:invalidate() previously?");
 
-				return Sequence.EMPTY_SEQUENCE;
+				return( Sequence.EMPTY_SEQUENCE );
 			}
+		} else {
+			throw( new XPathException( getASTNode(), "Type error: variable $session is not bound to a session object" ) );
 		}
-		else
-			throw new XPathException(getASTNode(), "Type error: variable $session is not bound to a session object");
 	}
 }
