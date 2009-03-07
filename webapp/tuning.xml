@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>eXist - Performance Tuning</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+        </author>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>Performance Tuning</title>
+
+        <section>
+            <title>Configuration</title>
+
+            <section>
+                <title>Disable the default index</title>
+
+                <para>If no other indexes are configured for a database collection, eXist will use
+                    the default settings specified in <filename>conf.xml</filename>. For older eXist
+                    versions, the default is to create a full text index on <emphasis>ALL</emphasis>
+                    elements and attributes in the database. The problem with this is that</para>
+
+                <orderedlist>
+                    <listitem>
+                        <para>maintaining the default index costs performance and memory, which
+                            could be better used for other indexes. The index may generate a heavy
+                            load, which can be a destabilizing factor.</para>
+                    </listitem>
+                    <listitem>
+                        <para>the index is unspecific. The query engine cannot use it as efficiently
+                            as a dedicated index on a set of named elements or attributes.</para>
+                    </listitem>
+                </orderedlist>
+
+                <para>If you experience memory issues or observe a constantly decreasing performance
+                    while loading documents, tuning your indexes should be the first step:</para>
+
+                <itemizedlist>
+                    <listitem>
+                        <para>disable the default full text index:</para>
+
+                        <programlisting language="xquery"><![CDATA[
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index>
+        <fulltext default="none" attributes="false">
+        </fulltext>
+    </index>
+    ...
+</collection>]]></programlisting>
+                    </listitem>
+                    <listitem>
+                        <para>recreate full text indexes only on those elements and attributes you
+                            want to query. Prefer index definitions by qname over a configuration by
+                            path.</para>
+                    </listitem>
+                    <listitem>
+                        <para>if you are using eXist 1.3/SVN trunk, consider <emphasis>switching to
+                                the new Lucene-based index</emphasis>. It provides better
+                            performance and stability.</para>
+                    </listitem>
+                </itemizedlist>
+            </section>
+
+            <section>
+                <title>Prefer simple index definitions</title>
+
+                <para>Keeping your <ulink url="http://exist-db.org/indexing.html#N10422">index
+                        definitions</ulink> simple makes it easier for the query optimizer to
+                    resolve dependencies. In particular, avoid context-dependant index definitions
+                    unless you really have a reason to use them. A context-dependant index is
+                    defined on a path like <code>/book/chapter/title</code>, while general indexes
+                    are defined on a simple element or attribute qname:</para>
+
+                <programlisting language="xquery"><![CDATA[
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index>
+        <!-- Range indexes by qname -->
+        <create qname="title" type="xs:string"/>
+        <create qname="@ID" type="xs:string"/>
+
+        <!-- context-dependant configuration using the path attribute: -->
+        <create path="/book/title" type="xs:string"/>
+    </index>
+</collection>
+]]></programlisting>
+
+                <para>Defining indexes on qnames may result in a larger index, but it also allows
+                    the query engine to apply all available optimization techniques, which can
+                    improve query times by an order of magnitude. Replacing a context-dependant
+                    index by a simple index on qname can thus result in a performance boost, thanks
+                    to eXist's new <ulink url="http://atomic.exist-db.org/blogs/eXist/NewIndexing"
+                        >query-rewriting optimizer</ulink>. Older versions of eXist did not offer
+                    those possibilities.</para>
+            </section>
+            
+            <section>
+                <title>Use range indexes on strongly typed data or short strings</title>
+                
+                <para>Range indexes work with the standard XQuery operators and string functions. Querying for 
+                something like</para>
+                
+                <synopsis language="xquery"><![CDATA[//book[year = 2000]]]></synopsis>
+                
+                <para>will always be slow without an index. As long as no index is defined, eXist has to 
+                    scan over every year element in the db, casting its string value to an integer.</para>
+                    
+                <para>For queries on string content, range indexes work well for exact comparisons 
+                    (<code>author = 'Joe Doe'</code>) or regular expressions (<code>matches(author, "^Joe.*")</code>), 
+                    though you may also consider using a full text index in the latter case. However, please 
+                    note that range indexes on strings are <emphasis>case-sensitive</emphasis> or rather, to use the correct formulation, 
+                    sensitive to the default collation. If you need case-insensitive queries, consider an
+                    ngram index.</para>
+            </section>
+            
+            <section>
+                <title>Consider an n-gram index for exact substring queries on 
+                longer text sequences</title>
+                
+                <para>While range indexes tend to become slow for substring queries (like 
+                    <code>contains(title, "XSLT 2.0")</code>), an n-gram index is nearly as fast as a 
+                    full text index, but it also indexes whitespace and punctuation. 
+                    <code>ngram:contains(title, "XSLT 2.0")</code> will only match titles containing the 
+                    exact phrase "XSLT 2.0". n-gram indexes are <emphasis>case insensitive</emphasis>.</para>
+            </section>
+            
+            <section>
+                <title>Choose a full text index for tokenizable text where whitespace/punctuation is 
+                    mostly irrelevant</title>
+                
+                <para>The full text index is fast and should 
+                    be used whenever you need to query for a sequence of separate words or tokens in 
+                    a longer text. It can sometimes even be faster to post-process the returned node set 
+                    and filter out wrong matches than using a much slower regular expression.</para>
+                
+                <para>eXist 1.3 offers a new full text index which is based on Apache Lucene. It provides
+                    better performance and overall stability than the builtin index.</para>
+            </section>
+        </section>
+        <section>
+            <title>Writing Queries</title>
+
+            <section>
+                <title>Prefer Short Paths</title>
+
+                <para>eXist uses indexes to directly locate an element or attribute by its name. It
+                    doesn't need to traverse the entire document tree. This means that the direct
+                    selection of a node through a single descendant step is
+                        <emphasis>faster</emphasis> than walking down the child axis. For
+                    example:</para>
+
+                <synopsis language="xquery">a/b/c/d/e/f</synopsis>
+
+                <para>will be <emphasis>slower</emphasis> than</para>
+
+                <synopsis language="xquery">a//f</synopsis>
+
+                <para>The first expression requires 6 (!) index lookups while the second just needs
+                    two. The same rules apply to the ancestor axis, e.g. f/ancestor::a.</para>
+            </section>
+
+            <section>
+                <title>Allow eXist to process large node sets in one step</title>
+                
+                <para>The query engine is optimized to process a path expression in one, single operation. 
+                    For instance, the XPath:</para>
+                
+                <synopsis language="xquery">//A/*[B = 'C']</synopsis>
+                
+                <para>is evaluated in a single operation for all context items. It doesn't make a difference 
+                    if the input set comes from a single large document, includes all the documents in a 
+                    specific collection or even the entire database. The logic of the operation remains 
+                    the same.</para>
+                
+                <para>However, "bad" queries can force the query engine to partition the input sequence and
+                    process it in an item-by-item mode. Several examples for bad uses of FLWOR expressions will
+                    be given below. Those should be easy to understand. Other cases are not so obvious. 
+                    For example, most function calls will also force the query engine into item-by-item mode:</para>
+                
+                <synopsis language="xquery">//A/*[f:process(B) = 'C']</synopsis>
+                
+                <para>The function has to be called once for every instance of B. Normally, eXist would
+                    try to evaluate the general comparison in a single step (assuming there's a usable index on B).
+                    However, it now needs to call a (non-optimized) function for each B and will thus need to 
+                    process the entire comparison once for every context item.</para>
+                
+                <para>There are functions to which the above does not apply. This includes most functions
+                    which operate on indexes, e.g. <code>contains</code>, <code>matches</code>, <code>starts-with</code>,
+                    <code>ngram:contains</code>, and the like. They are optimized so eXist only
+                    needs to call them once to process the entire context set. For example, using 
+                    <code>ngram:contains</code> as below is perfectly ok:</para>
+                
+                <synopsis language="xquery">//A/*[ngram:contains(B, 'C')]</synopsis>
+                
+                <para>while</para>
+                
+                <synopsis language="xquery">//A/*[ngram:contains(f:process(B), 'C')]</synopsis>
+                
+                <para>will again force eXist into step-by-step evaluation.</para>
+            </section>
+            
+            <section>
+                <title>Prefer XPath Predicates Over Where Expressions</title>
+
+                <para>This is a variation of the problems discussed above. Many users tend to formulate 
+                    SQL-style queries using an explite "where" clause:</para>
+
+                <example>
+                    <title/>
+                    <programlisting language="xquery"><![CDATA[
+for $e in //entry where $e/@type = 'subject'
+return $e
+]]></programlisting>
+                </example>
+
+                <para>could be rewritten as:</para>
+
+                <example>
+                    <title>Equivalent query using XPath predicate</title>
+                    <programlisting language="xquery"><![CDATA[for $e in //entry[@type = 'subject'] return $e]]></programlisting>
+                </example>
+
+                <para>The "for"..."where" expression forces the query engine into a step-by-step
+                    iteration over the input sequence, testing each instance of $e against the where
+                    expression. Possible optimizations are lost.</para>
+
+                <para>Contrary to this, the XPath predicate expression can be processed in one
+                    single step, making best use of any available indexes. Sure, there are use cases
+                    which cannot be handled without using "where", e.g. joins between multiple
+                    documents. That's ok. However, you shouldn't use "where" if you can replace it
+                    by a simple XPath.</para>
+
+                <para>Internally, the query engine will always try to process a "where" clause like
+                    an equivalent XPath with predicate. However, it only detects the simple
+                    cases.</para>
+            </section>
+
+            <section>
+                <title>Use general comparisons to compare an item to a list of alternatives</title>
+
+                <para>General comparisons are very handy if you need to compare a given item to
+                    several alternative values. For example, you could use an "or" to find all
+                        <sgmltag>b</sgmltag> children whose string value is either "c" or
+                    "d".</para>
+
+                <synopsis language="xquery">//a[b = 'c' or b = 'd']</synopsis>
+
+                <para>A shorter way to express this is:</para>
+
+                <synopsis language="xquery">//a[b = ('c', 'd')]</synopsis>
+
+                <para>The comparison will be true if b's string value matches one of the strings in
+                    the right hand sequence. If an index is defined on <sgmltag>b</sgmltag>, eXist
+                    will need only one index lookup to find all b's matching the comparison. The
+                    equivalent "or" expression needs 2 separate index lookups.</para>
+            </section>
+            
+            <section>
+                <title>Querying Multiple Collections</title>
+
+                <para>If you need to query multiple collections which are on the same level of the
+                    collection hierarchy, you could use a for loop to iterate over the collection
+                    paths. However, this forces the query engine to process the remaining expression
+                    once for each collection. It is thus better to construct the initial node set
+                    once and use it as input for the main expression. For example:</para>
+
+                <example>
+                    <title>Nested for loop</title>
+                    <programlisting language="xquery"><![CDATA[
+for $path in ('/db/a', '/db/b')
+for $result in collection($path)//test[...]
+return
+    ...
+]]></programlisting>
+                </example>
+
+                <para>will be less efficient than:</para>
+
+                <example>
+                    <title>Single loop over initial node set</title>
+                    <programlisting language="xquery"><![CDATA[
+let $docs :=
+    for $path in ('/db/a', '/db/b') return $collection($path)
+for $result in $docs//test[...]
+return
+    ...
+]]></programlisting>
+                </example>
+            </section>
+
+            <section>
+                <title>Use the ancestor or parent axis instead of a top-down approach</title>
+
+                <para>eXist can navigate the ancestor axis as fast as the descendant axis. It can
+                    thus be more efficient to build a query bottom-up instead of top-down. Here's a
+                    top-down example:</para>
+
+                <example>
+                    <title>Top-down query using nested for</title>
+                    <programlisting language="xquery"><![CDATA[
+for $section in collection("/db/articles")//section
+for $match in $section//p[contains(., "XML")]
+return
+    <match>
+        <section>{$section/title/text()}</section>
+        {$match}
+    </match>
+]]></programlisting>
+                </example>
+
+                <para>This query walks through a set of sections and queries each of them for
+                    paragraphs containing the string "XML". It then outputs the title of the
+                    section, followed by the matching paragraphs. Note that it will also return the
+                    title of all sections which do not have any matches.</para>
+
+                <para>The nested for loop again forces the query engine into a step-by-step
+                    iteration over the section elements. We can avoid this by using a bottom-up
+                    approach:</para>
+
+                <example>
+                    <title>Bottom-up query using ancestor axis</title>
+                    <programlisting language="xquery"><![CDATA[
+for $match in collection("/db/articles")//section//p[contains(., "XML")]
+return
+    <match>
+        <section>{$match/ancestor::title/text()}</section>
+        {$match}
+    </match>
+]]></programlisting>
+                </example>
+
+                <para>The second query should be several times faster than the first one.</para>
+            </section>
+        </section>
+    </chapter>
+</book>

@@ -500,9 +500,14 @@
             <xsl:apply-templates/>
         </ol>
     </xsl:template>
-    <xsl:template match="orderedlist/listitem">
+    <xsl:template match="listitem">
         <li>
-            <xsl:apply-templates/>
+            <xsl:choose>
+                <xsl:when test="count(*) = 1">
+                    <xsl:apply-templates select="para/node()"/>
+                </xsl:when>
+                <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
+            </xsl:choose>
         </li>
     </xsl:template>
     <xsl:template match="itemizedlist">
@@ -519,20 +524,10 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="itemizedlist/listitem">
-        <li>
-            <xsl:apply-templates/>
-        </li>
-    </xsl:template>
     <xsl:template match="unorderedlist">
         <ul>
             <xsl:apply-templates/>
         </ul>
-    </xsl:template>
-    <xsl:template match="unorderedlist/listitem">
-        <li>
-            <xsl:apply-templates/>
-        </li>
     </xsl:template>
     <xsl:template match="sgmltag">
         <xsl:choose>
