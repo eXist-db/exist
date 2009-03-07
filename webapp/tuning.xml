@@ -14,15 +14,54 @@
         <title>Performance Tuning</title>
 
         <section>
-            <title>Configuration</title>
+            <title>Cache settings</title>
+            
+            <para>Each of the core database files and indexes has a page cache. The main purpose of
+                this cache is to make sure that the most frequently used pages of the db files are 
+                kept in memory. If a file's cache becomes too small, eXist may start to unload pages
+                just to reload them a few moment later. This "trashing effect" results in an immediate
+                performance drop, in particular while indexing documents.</para>
+            
+            <para>All caches share a single memory pool, whose size is determined by the attribute
+                <option>cacheSize</option> in the <sgmltag>db-connection</sgmltag> section of 
+                <filename>conf.xml</filename>. The global cache manager will dynamically grant 
+                more memory to caches while they are under load and free the memory used by idle caches.</para>
+            
+            <example>
+                <title>cacheSize parameter in conf.xml</title>
+                <programlisting language="xml"><![CDATA[
+<db-connection cacheSize="48M" collectionCache="24M" database="native"
+        files="webapp/WEB-INF/data" pageSize="4096">]]></programlisting>
+            </example>
+            
+                <para>The default <ulink url="http://www.exist-db.org/configuration.html#N101B8">setting</ulink> for <option>cacheSize</option> is very conservative (48M). It will
+                be ok for smaller databases, but you may soon experience a performance drop when
+                indexing more than several 100M of XML data. Consider increasing <option>cacheSize</option> 
+                up to approx. 1/3 of the main memory available to Java (determined by
+                the <option>-Xmx</option> parameter passed to the Java command line). If you are running
+                eXist with other web applications in the same servlet engine, you may need to choose a smaller 
+                setting (running out of memory will crash the database, so please be careful).</para>
+            
+            <para>The <option>cacheSize</option> is mainly relevant when storing/updating data. The effect on
+            query speed should not be that big, unless some of the index caches are really much too small.</para>
+            
+            <para>If you continue to experience performance issues while storing data, you may need to revisit
+                your index configuration. Removing unused indexes will give more room to the other
+                indexes. In particular, the full text index can grow very fast until it becomes a bottleneck.
+                Try to disable the default full text index (see below).</para>
+        </section>
+        
+        <section>
+            <title>Index configuration</title>
 
             <section>
                 <title>Disable the default index</title>
 
-                <para>If no other indexes are configured for a database collection, eXist will use
-                    the default settings specified in <filename>conf.xml</filename>. For older eXist
-                    versions, the default is to create a full text index on <emphasis>ALL</emphasis>
-                    elements and attributes in the database. The problem with this is that</para>
+                <para>If no other indexes are <ulink url="http://exist-db.org/indexing.html"
+                        >configured</ulink> for a database collection, eXist will use the default
+                    settings specified in <filename>conf.xml</filename>. For older eXist versions,
+                    the default is to create a full text index on <emphasis>ALL</emphasis> elements
+                    and attributes in the database. The problem with this is that</para>
 
                 <orderedlist>
                     <listitem>
@@ -96,48 +135,51 @@
                         >query-rewriting optimizer</ulink>. Older versions of eXist did not offer
                     those possibilities.</para>
             </section>
-            
+
             <section>
                 <title>Use range indexes on strongly typed data or short strings</title>
-                
-                <para>Range indexes work with the standard XQuery operators and string functions. Querying for 
-                something like</para>
-                
+
+                <para>Range indexes work with the standard XQuery operators and string functions.
+                    Querying for something like</para>
+
                 <synopsis language="xquery"><![CDATA[//book[year = 2000]]]></synopsis>
-                
-                <para>will always be slow without an index. As long as no index is defined, eXist has to 
-                    scan over every year element in the db, casting its string value to an integer.</para>
-                    
-                <para>For queries on string content, range indexes work well for exact comparisons 
-                    (<code>author = 'Joe Doe'</code>) or regular expressions (<code>matches(author, "^Joe.*")</code>), 
-                    though you may also consider using a full text index in the latter case. However, please 
-                    note that range indexes on strings are <emphasis>case-sensitive</emphasis> or rather, to use the correct formulation, 
-                    sensitive to the default collation. If you need case-insensitive queries, consider an
-                    ngram index.</para>
+
+                <para>will always be slow without an index. As long as no index is defined, eXist
+                    has to scan over every year element in the db, casting its string value to an
+                    integer.</para>
+
+                <para>For queries on string content, range indexes work well for exact comparisons
+                        (<code>author = 'Joe Doe'</code>) or regular expressions
+                        (<code>matches(author, "^Joe.*")</code>), though you may also consider using
+                    a full text index in the latter case. However, please note that range indexes on
+                    strings are <emphasis>case-sensitive</emphasis> or rather, to use the correct
+                    formulation, sensitive to the default collation. If you need case-insensitive
+                    queries, consider an ngram index.</para>
             </section>
-            
+
             <section>
-                <title>Consider an n-gram index for exact substring queries on 
-                longer text sequences</title>
-                
-                <para>While range indexes tend to become slow for substring queries (like 
-                    <code>contains(title, "XSLT 2.0")</code>), an n-gram index is nearly as fast as a 
-                    full text index, but it also indexes whitespace and punctuation. 
-                    <code>ngram:contains(title, "XSLT 2.0")</code> will only match titles containing the 
-                    exact phrase "XSLT 2.0". n-gram indexes are <emphasis>case insensitive</emphasis>.</para>
+                <title>Consider an n-gram index for exact substring queries on longer text
+                    sequences</title>
+
+                <para>While range indexes tend to become slow for substring queries (like
+                        <code>contains(title, "XSLT 2.0")</code>), an n-gram index is nearly as fast
+                    as a full text index, but it also indexes whitespace and punctuation.
+                        <code>ngram:contains(title, "XSLT 2.0")</code> will only match titles
+                    containing the exact phrase "XSLT 2.0". n-gram indexes are <emphasis>case
+                        insensitive</emphasis>.</para>
             </section>
-            
+
             <section>
-                <title>Choose a full text index for tokenizable text where whitespace/punctuation is 
+                <title>Choose a full text index for tokenizable text where whitespace/punctuation is
                     mostly irrelevant</title>
-                
-                <para>The full text index is fast and should 
-                    be used whenever you need to query for a sequence of separate words or tokens in 
-                    a longer text. It can sometimes even be faster to post-process the returned node set 
-                    and filter out wrong matches than using a much slower regular expression.</para>
-                
-                <para>eXist 1.3 offers a new full text index which is based on Apache Lucene. It provides
-                    better performance and overall stability than the builtin index.</para>
+
+                <para>The full text index is fast and should be used whenever you need to query for
+                    a sequence of separate words or tokens in a longer text. It can sometimes even
+                    be faster to post-process the returned node set and filter out wrong matches
+                    than using a much slower regular expression.</para>
+
+                <para>eXist 1.3 offers a new full text index which is based on Apache Lucene. It
+                    provides better performance and overall stability than the builtin index.</para>
             </section>
         </section>
         <section>
@@ -164,49 +206,52 @@
 
             <section>
                 <title>Allow eXist to process large node sets in one step</title>
-                
-                <para>The query engine is optimized to process a path expression in one, single operation. 
-                    For instance, the XPath:</para>
-                
+
+                <para>The query engine is optimized to process a path expression in one, single
+                    operation. For instance, the XPath:</para>
+
                 <synopsis language="xquery">//A/*[B = 'C']</synopsis>
-                
-                <para>is evaluated in a single operation for all context items. It doesn't make a difference 
-                    if the input set comes from a single large document, includes all the documents in a 
-                    specific collection or even the entire database. The logic of the operation remains 
-                    the same.</para>
-                
-                <para>However, "bad" queries can force the query engine to partition the input sequence and
-                    process it in an item-by-item mode. Several examples for bad uses of FLWOR expressions will
-                    be given below. Those should be easy to understand. Other cases are not so obvious. 
-                    For example, most function calls will also force the query engine into item-by-item mode:</para>
-                
+
+                <para>is evaluated in a single operation for all context items. It doesn't make a
+                    difference if the input set comes from a single large document, includes all the
+                    documents in a specific collection or even the entire database. The logic of the
+                    operation remains the same.</para>
+
+                <para>However, "bad" queries can force the query engine to partition the input
+                    sequence and process it in an item-by-item mode. Several examples for bad uses
+                    of FLWOR expressions will be given below. Those should be easy to understand.
+                    Other cases are not so obvious. For example, most function calls will also force
+                    the query engine into item-by-item mode:</para>
+
                 <synopsis language="xquery">//A/*[f:process(B) = 'C']</synopsis>
-                
-                <para>The function has to be called once for every instance of B. Normally, eXist would
-                    try to evaluate the general comparison in a single step (assuming there's a usable index on B).
-                    However, it now needs to call a (non-optimized) function for each B and will thus need to 
-                    process the entire comparison once for every context item.</para>
-                
-                <para>There are functions to which the above does not apply. This includes most functions
-                    which operate on indexes, e.g. <code>contains</code>, <code>matches</code>, <code>starts-with</code>,
-                    <code>ngram:contains</code>, and the like. They are optimized so eXist only
-                    needs to call them once to process the entire context set. For example, using 
-                    <code>ngram:contains</code> as below is perfectly ok:</para>
-                
+
+                <para>The function has to be called once for every instance of B. Normally, eXist
+                    would try to evaluate the general comparison in a single step (assuming there's
+                    a usable index on B). However, it now needs to call a (non-optimized) function
+                    for each B and will thus need to process the entire comparison once for every
+                    context item.</para>
+
+                <para>There are functions to which the above does not apply. This includes most
+                    functions which operate on indexes, e.g. <code>contains</code>,
+                        <code>matches</code>, <code>starts-with</code>, <code>ngram:contains</code>,
+                    and the like. They are optimized so eXist only needs to call them once to
+                    process the entire context set. For example, using <code>ngram:contains</code>
+                    as below is perfectly ok:</para>
+
                 <synopsis language="xquery">//A/*[ngram:contains(B, 'C')]</synopsis>
-                
+
                 <para>while</para>
-                
+
                 <synopsis language="xquery">//A/*[ngram:contains(f:process(B), 'C')]</synopsis>
-                
+
                 <para>will again force eXist into step-by-step evaluation.</para>
             </section>
-            
+
             <section>
                 <title>Prefer XPath Predicates Over Where Expressions</title>
 
-                <para>This is a variation of the problems discussed above. Many users tend to formulate 
-                    SQL-style queries using an explite "where" clause:</para>
+                <para>This is a variation of the problems discussed above. Many users tend to
+                    formulate SQL-style queries using an explite "where" clause:</para>
 
                 <example>
                     <title/>
@@ -257,7 +302,7 @@ return $e
                     will need only one index lookup to find all b's matching the comparison. The
                     equivalent "or" expression needs 2 separate index lookups.</para>
             </section>
-            
+
             <section>
                 <title>Querying Multiple Collections</title>
 
