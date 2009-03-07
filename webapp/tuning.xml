@@ -55,7 +55,22 @@
             <title>Index configuration</title>
 
             <section>
-                <title>Disable the default index</title>
+                <title>Don't rely on the default behaviour</title>
+                
+                <para>eXist does <emphasis>NOT</emphasis> index any element or attribute values by default. 
+                    It may create a full text index (see below), but this won't help with standard comparison
+                    operators or functions. Thus, when evaluating an expression like</para>
+                
+                <synopsis>//SPEECH[SPEAKER = "HAMLET"]</synopsis>
+                
+                <para>the query engine will fall back to a full scan over all <sgmltag>SPEAKER</sgmltag>
+                    elements in the db. This is very slow and limits concurrency. You should at least
+                    create a global index definition (in <filename>/db/system/config/db/collection.xconf</filename>)
+                    and add range indexes for the most frequently used comparisons.</para>
+            </section>
+                    
+            <section>
+                <title>Disable any default indexes</title>
 
                 <para>If no other indexes are <ulink url="http://exist-db.org/indexing.html"
                         >configured</ulink> for a database collection, eXist will use the default
@@ -66,21 +81,23 @@
                 <orderedlist>
                     <listitem>
                         <para>maintaining the default index costs performance and memory, which
-                            could be better used for other indexes. The index may generate a heavy
-                            load, which can be a destabilizing factor.</para>
+                            could be better used for other indexes. The index may grow very fast, 
+                            which can be a destabilizing factor.</para>
                     </listitem>
                     <listitem>
                         <para>the index is unspecific. The query engine cannot use it as efficiently
-                            as a dedicated index on a set of named elements or attributes.</para>
+                            as a dedicated index on a set of named elements or attributes
+                            (<ulink url="#idxdefs">see below</ulink>).</para>
                     </listitem>
                 </orderedlist>
 
                 <para>If you experience memory issues or observe a constantly decreasing performance
-                    while loading documents, tuning your indexes should be the first step:</para>
+                    while loading documents, tuning your indexes should be one of the first steps:</para>
 
                 <itemizedlist>
                     <listitem>
-                        <para>disable the default full text index:</para>
+                        <para>disable the default full text index in your index
+                            <ulink url="http://exist-db.org/indexing.html#N10422">definitions</ulink>:</para>
 
                         <programlisting language="xquery"><![CDATA[
 <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -92,7 +109,7 @@
 </collection>]]></programlisting>
                     </listitem>
                     <listitem>
-                        <para>recreate full text indexes only on those elements and attributes you
+                        <para>recreate full text or other indexes only on those elements and attributes you
                             want to query. Prefer index definitions by qname over a configuration by
                             path.</para>
                     </listitem>
@@ -104,7 +121,7 @@
                 </itemizedlist>
             </section>
 
-            <section>
+            <section id="idxdefs">
                 <title>Prefer simple index definitions</title>
 
                 <para>Keeping your <ulink url="http://exist-db.org/indexing.html#N10422">index
