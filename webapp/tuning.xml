@@ -3,7 +3,7 @@
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>eXist - Performance Tuning</title>
+        <title>eXist - Tuning</title>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -11,8 +11,8 @@
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>Performance Tuning</title>
-
+        <title>Tuning the Database</title>
+                
         <section>
             <title>Cache settings</title>
             
@@ -72,8 +72,8 @@
             <section>
                 <title>Disable any default indexes</title>
 
-                <para>If no other indexes are <ulink url="http://exist-db.org/indexing.html"
-                        >configured</ulink> for a database collection, eXist will use the default
+                <para>If no other index <ulink url="http://exist-db.org/indexing.html"
+                        >index configuration</ulink> is found for a database collection, eXist will use the default
                     settings specified in <filename>conf.xml</filename>. For older eXist versions,
                     the default is to create a full text index on <emphasis>ALL</emphasis> elements
                     and attributes in the database. The problem with this is that</para>
@@ -395,6 +395,52 @@ return
                 </example>
 
                 <para>The second query should be several times faster than the first one.</para>
+            </section>
+        </section>
+        <section>
+            <title>Known Issues in the 1.2.x Series</title>
+            
+            <section>
+                <title>Queries on constructed XML fragments</title>
+                
+                <para>The 1.2.x series has a limitation with respect to queries on constructed,
+                    in-memory XML fragments: before evaluating a path expression on an in-memory node,
+                    the query engine stores the node into a persistent document created in a temporary
+                    collection of the db. A very simple example is the query:</para>
+                
+                <synopsis language="xquery"><![CDATA[(<root><node/></root>)//node]]></synopsis>
+                
+                <para>Executing this expression should leave a log message similar to the following
+                    in your server logs (if you didn't disable debug messages):</para>
+                
+                <screen>06 Mar 2009 16:46:07,786 [main] DEBUG (XQueryContext.java 
+                    [storeTemporaryDoc]:2242) - Stored: 3: /db/system/temp/534d7dd16f9b97e6cb47054140e544a1.xml</screen>
+                
+                <para>The problem with those temporary fragments is that they need to be cleaned up sometimes.
+                    This costs performance and the cleanup process can even block the db for a while. Also,
+                    experience shows that the overall stability of the db suffers if too many temporary fragments
+                    have to be stored/cleaned up in short time.</para>
+                
+                <para>eXist 1.3/SVN trunk fixes those issues completely. It has a redesigned query engine, which is
+                    able to directly operate on in-memory nodes without transforming them into persistent nodes. No
+                    temporary documents need to be stored. As a consequence, queries on in-memory fragments will be
+                    much faster with 1.3 and have no effect on stability.</para>
+                
+                <para>If you experience performance or stability issues with the 1.2.x series, we recommend to
+                    check your log files for messages similar to the one given above. If you see lots of them, there
+                    are two possibilities:</para>
+                
+                <orderedlist>
+                    <listitem>
+                        <para>upgrade to 1.3. Right now, this means building eXist from SVN, but we hope to release
+                            the final 1.3 soon. In general, the code should be in a rather stable state. It has been
+                            in production use at a few sites for a while.</para>
+                    </listitem>
+                    <listitem>
+                        <para>find the XQuery expressions which generate the temporary fragments. In many cases, it is
+                            easily possible to rewrite them. At least try to reduce the amount of temp documents.</para>
+                    </listitem>
+                </orderedlist>
             </section>
         </section>
     </chapter>

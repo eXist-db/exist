@@ -35,7 +35,7 @@
                 <para><ulink url="devguide_xquery.xml">Writing Web Applications using XQuery</ulink></para>
             </listitem>
             <listitem>
-                <para><ulink url="indexing.xml">Configuring Indexes</ulink></para>
+                <para><ulink url="tuning.xml">Performance Tuning</ulink></para>
             </listitem>
         </itemizedlist>
         
@@ -63,6 +63,11 @@
             <tr>
               <td class="doclink"><ulink url="ant-tasks.xml">Ant Tasks</ulink>:</td>
               <td>how to automate tasks with Ant.</td>
+            </tr>
+
+            <tr>
+              <td class="doclink"><ulink url="articles">External Articles</ulink>:</td>
+              <td>Links to external articles, tutorials and blog posts.</td>
             </tr>
 
             <tr>
@@ -149,6 +154,11 @@
               <td>configuration options for the server.</td>
             </tr>
 
+              <tr>
+                  <td class="doclink"><ulink url="tuning.xml">Tuning Guide</ulink>:</td>
+                  <td>provides a few rules to consider when tuning the db and the XQueries</td>
+              </tr>
+              
             <tr>
               <td class="doclink"><ulink url="validation.xml">Validation</ulink>:</td>
               <td>validate xml documents.</td>
