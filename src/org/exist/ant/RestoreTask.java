@@ -36,6 +36,7 @@ import org.exist.backup.Restore;
 public class RestoreTask extends AbstractXMLDBTask
 {
 
+    private File file = null;
   private File dir = null;
   private DirSet dirSet = null;
   private String restorePassword = null;
@@ -47,8 +48,8 @@ public class RestoreTask extends AbstractXMLDBTask
   {
     if (uri == null)
       throw new BuildException("You have to specify an XMLDB collection URI");
-    if (dir == null && dirSet == null)
-      throw new BuildException("Missing required argument: either dir or dirset required");
+    if (dir == null && dirSet == null && file == null)
+      throw new BuildException("Missing required argument: either dir, dirset or file required");
 
     if (dir != null && !dir.canRead())
       throw new BuildException("Cannot read restore file: " + dir.getAbsolutePath());
@@ -66,8 +67,7 @@ public class RestoreTask extends AbstractXMLDBTask
         }
         Restore restore = new Restore(user, password, restorePassword, file, uri);
         restore.restore(false, null);
-      } else if (dirSet != null)
-      {
+      } else if (dirSet != null) {
         DirectoryScanner scanner = dirSet.getDirectoryScanner(getProject());
         scanner.scan();
         String[] files = scanner.getIncludedFiles();
@@ -87,6 +87,12 @@ public class RestoreTask extends AbstractXMLDBTask
           Restore restore = new Restore(user, password, restorePassword, file, uri);
           restore.restore(false, null);
         }
+      } else if (file != null) {
+          log("Restoring from " + file.getAbsolutePath(), Project.MSG_INFO);
+          if (!file.exists())
+              throw new BuildException("File not found: " + file.getAbsolutePath());
+          Restore restore = new Restore(user, password, restorePassword, file, uri);
+          restore.restore(false, null);
       }
     } catch (Exception e)
     {
@@ -108,7 +114,11 @@ public class RestoreTask extends AbstractXMLDBTask
   {
     this.dir = dir;
   }
-  
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+    
   public void setRestorePassword(String pass) {
 	  this.restorePassword = pass;
   }
