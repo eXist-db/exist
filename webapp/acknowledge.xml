@@ -1,5 +1,5 @@
 <book>
-<!-- $Id$ -->    
+    <!-- $Id$ -->
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <title>Open Source Native XML Database</title>
@@ -12,30 +12,18 @@
                 </address>
             </affiliation>
         </author>
-        <style>
-            table { 
-                margin-left: 15px; 
-                margin-right: 15px;
-            }
-            td {
-				margin-bottom: 2em;
-                border-bottom: 1px dotted #C0C0C0;
-            }
-            td.description {
-                padding-right: 3em;
-            }
-            p.ack { margin-top: 1em; }
-            
-        </style>
+        <style> table { margin-left: 15px; margin-right: 15px; } td { margin-bottom: 2em;
+            border-bottom: 1px dotted #C0C0C0; } td.description { padding-right: 3em; } p.ack {
+            margin-top: 1em; } </style>
     </bookinfo>
-    
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Acknowledgements</title>
 
         <section>
             <title>Supporters</title>
-            
+
             <para>We would like to thank the following organizations and corporations for supporting
                 and sponsoring the development of eXist:</para>
 
@@ -78,7 +66,8 @@
                 <tr>
                     <td class="description">The eXist Wiki, the demo server and other vital parts of
                         our project infrastructure are kindly hosted by <a
-                            href="http://www.friprogramvarusyndikatet.se/">Fri programvaru-syndikatet / exist-db.se.</a> in Sweden.</td>
+                            href="http://www.friprogramvarusyndikatet.se/">Fri
+                            programvaru-syndikatet / exist-db.se</a> in Sweden.</td>
                     <td align="center">
                         <a href="http://www.friprogramvarusyndikatet.se/">
                             <img border="0" src="resources/fps-logo.png"/>
@@ -97,10 +86,10 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="description">The versioning extensions, which will be released with
-					eXist 1.3, were kindly sponsored by the 
-					<a href="http://www.bbaw.de/bbaw/Akademie">Berlin-Brandenburg Academy of 
-					Sciences and Humanities</a>.</td>
+                    <td class="description"> The versioning extensions, which will be released with
+                        eXist 1.3, were kindly sponsored by the <a href="http://www.telota.de/"
+                            >Telota Initiative</a> of the <a href="http://www.bbaw.de"
+                            >Berlin-Brandenburg Academy of Sciences and Humanities</a>. </td>
                     <td align="center">
                         <a href="http://www.bbaw.de/bbaw/Akademie/">
                             <img border="0" src="resources/BBAW_Logo.png"/>
