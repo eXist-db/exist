@@ -599,11 +599,17 @@
         <section>
             <title>Restore</title>
 
-            <para>Restores database contents from a backup. The file attribute
-            should point to one of the <filename>__contents__.xml</filename>
-            files created by the backup. The base attribute specifies the base
-            XMLDB URI (i.e. the URI without collections) used for the restore.
-            The collection names will be read from the __contents__.xml file.</para>
+			<para>Restores database contents from a backup. The backup is read
+			from location specified by the <option>dir</option> or
+			<option>file</option> attributes. The <option>dir</option> attribute should point to
+			a directory containing a valid backup, i.e. a directory with a
+			__contents__.xml backup descriptor in it (e.g.
+			<filename>/home/me/Backup/090228/db</filename>). The
+			<option>file</option> attribute should specify a zip archive which
+			contains the backup. The base attribute specifies the base XMLDB
+			URI (i.e. the URI without collections) used for the restore.  The
+			collection names will be read from the __contents__.xml
+			file.</para>
             
             <variablelist>
                 <varlistentry>
@@ -613,6 +619,13 @@
                           for the restore.</para>
                     </listitem>
                 </varlistentry>
+				<varlistentry>
+					<term>file</term>
+					<listitem>
+						<para>A zip file which contains the backup to be restored.
+						</para>
+					</listitem>
+				</varlistentry>
             </variablelist>
             
             <para>The following example restores the /db/home collection:</para>
