@@ -833,19 +833,22 @@ public class NativeBroker extends DBBroker {
 	throws PermissionDeniedException, LockException, IOException {
         pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_MOVE_COLLECTION, collection.getURI());
         try {
-// Need to move each collection in the source tree individually, so recurse.
+            // sourceDir must be known in advance, because once moveCollectionRecursive
+	    // is called, both collection and destination can point to the same resource
+            File sourceDir = getCollectionFile(fsDir,collection.getURI(),false);
+            // Need to move each collection in the source tree individually, so recurse.
             moveCollectionRecursive(transaction, collection, destination, newName);
             // For binary resources, though, just move the top level directory and all descendants come with it.
-            moveBinaryFork(transaction, collection, destination, newName);
+            moveBinaryFork(transaction, sourceDir, destination, newName);
         } finally {
             pool.getProcessMonitor().endJob();
         }
     }
 
-	private void moveBinaryFork(Txn transaction, Collection collection, Collection destination, XmldbURI newName) throws IOException {
-		File sourceDir = getCollectionFile(fsDir,collection.getURI(),false);
+	private void moveBinaryFork(Txn transaction, File sourceDir, Collection destination, XmldbURI newName) throws IOException {
         File targetDir = getCollectionFile(fsDir,destination.getURI().append(newName),false);
         if (sourceDir.exists()) {
+           targetDir.getParentFile().mkdirs();
            if (sourceDir.renameTo(targetDir)) {
               Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
               try {
