@@ -125,23 +125,23 @@ public class GetFragmentBetween extends BasicFunction {
 
   /**
    * Fetch the fragment between two nodes (normally milestones) in an XML document
-   * @param fromNode first node from which down to the node toNode the XML fragment is delivered as a string (e.g. //pb[10])
-   * @param toNode the node to which down the XML fragment is delivered as a string (e.g. //pb[11])
+   * @param node1 first node from which down to the node node2 the XML fragment is delivered as a string
+   * @param node2 the node to which down the XML fragment is delivered as a string
    * @return fragment between the two nodes
    * @throws XPathException
    */
   private StringBuffer getFragmentBetween(Node node1, Node node2) throws XPathException {
     StoredNode storedNode1 = (StoredNode) node1;
     StoredNode storedNode2 = (StoredNode) node2;
-    long node1InternalAddress = storedNode1.getInternalAddress();
-    long node2InternalAddress = -1;
+    String node1NodeId = storedNode1.getNodeId().toString();
+    String node2NodeId = "-1";
     if (! (node2 == null))
-      node2InternalAddress = storedNode2.getInternalAddress();
+      node2NodeId = storedNode2.getNodeId().toString();
     DocumentImpl docImpl = (DocumentImpl) node1.getOwnerDocument();
     BrokerPool brokerPool = null;
     DBBroker dbBroker = null;
     StringBuffer resultFragment = new StringBuffer("");
-    long actualElemId = -2;
+    String actualNodeId = "-2";
     boolean getFragmentMode = false;
     try {
       brokerPool = docImpl.getBrokerPool();
@@ -151,17 +151,17 @@ public class GetFragmentBetween extends BasicFunction {
       for (int i = 0; i < children.getLength(); i++) {
         StoredNode docChildStoredNode = (StoredNode) children.item(i);
         reader = dbBroker.getXMLStreamReader(docChildStoredNode, false);
-        while (reader.hasNext() && node2InternalAddress != actualElemId) {
+        while (reader.hasNext() && ! node2NodeId.equals(actualNodeId)) {
           int status = reader.next();
           switch (status) {
             case XMLStreamReader.START_DOCUMENT:
             case XMLStreamReader.END_DOCUMENT:
               break;
             case XMLStreamReader.START_ELEMENT :
-              actualElemId = reader.getCurrentPosition();
-              if (actualElemId == node1InternalAddress) 
+              actualNodeId = reader.getNode().getNodeId().toString();
+              if (actualNodeId.equals(node1NodeId)) 
                 getFragmentMode = true;
-              if (actualElemId == node2InternalAddress) 
+              if (actualNodeId.equals(node2NodeId)) 
                 getFragmentMode = false;
               if (getFragmentMode) {
                 String startElementTag = getStartElementTag(reader);
