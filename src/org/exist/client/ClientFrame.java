@@ -29,6 +29,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.HeadlessException;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -345,7 +346,8 @@ public class ClientFrame extends JFrame
         menubar.add(fileMenu);
         
         JMenuItem item = new JMenuItem(Messages.getString("ClientFrame.32"), KeyEvent.VK_S); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control S")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 uploadAction(e);
@@ -354,7 +356,8 @@ public class ClientFrame extends JFrame
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.34"), KeyEvent.VK_N); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control N")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 newCollectionAction(e);
@@ -363,7 +366,8 @@ public class ClientFrame extends JFrame
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.36"), KeyEvent.VK_B); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control B")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 //FIXME: Prevent owerwrite. Security?
@@ -390,7 +394,8 @@ public class ClientFrame extends JFrame
         fileMenu.addSeparator();
         
         item = new JMenuItem(Messages.getString("ClientFrame.40")); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control D")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 removeAction(e);
@@ -399,7 +404,8 @@ public class ClientFrame extends JFrame
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.42"), KeyEvent.VK_C); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control C")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 copyAction(e);
@@ -408,7 +414,8 @@ public class ClientFrame extends JFrame
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.44"), KeyEvent.VK_M); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control M")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 moveAction(e);
@@ -417,7 +424,8 @@ public class ClientFrame extends JFrame
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.46"), KeyEvent.VK_R); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control R")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		renameAction(e);
@@ -426,7 +434,8 @@ public class ClientFrame extends JFrame
 		fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.47"), KeyEvent.VK_E);
-        item.setAccelerator(KeyStroke.getKeyStroke("control E"));
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 exportAction(e);
@@ -437,7 +446,8 @@ public class ClientFrame extends JFrame
         fileMenu.addSeparator();
         
         item = new JMenuItem(Messages.getString("ClientFrame.48"), KeyEvent.VK_I); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control I")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 reindexAction(e);
@@ -446,7 +456,8 @@ public class ClientFrame extends JFrame
         fileMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.50")); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control P")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setPermAction(e);
@@ -456,7 +467,8 @@ public class ClientFrame extends JFrame
         
         fileMenu.addSeparator();
         item = new JMenuItem(Messages.getString("ClientFrame.52"), KeyEvent.VK_Q); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control Q")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();
@@ -469,7 +481,8 @@ public class ClientFrame extends JFrame
         menubar.add(toolsMenu);
         
         item = new JMenuItem(Messages.getString("ClientFrame.55"), KeyEvent.VK_F); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control F")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 findAction(e);
@@ -480,7 +493,8 @@ public class ClientFrame extends JFrame
         toolsMenu.addSeparator();
         
         item = new JMenuItem(Messages.getString("ClientFrame.57"), KeyEvent.VK_U); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control U")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 editUsersAction(e);
@@ -488,8 +502,9 @@ public class ClientFrame extends JFrame
         });
         toolsMenu.add(item);
         
-        item = new JMenuItem(Messages.getString("ClientFrame.59"), KeyEvent.VK_U); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control I")); //$NON-NLS-1$
+        item = new JMenuItem(Messages.getString("ClientFrame.59"), KeyEvent.VK_I); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 editIndexesAction(e);
@@ -498,7 +513,8 @@ public class ClientFrame extends JFrame
         toolsMenu.add(item);
         
         item = new JMenuItem("Edit Triggers", KeyEvent.VK_T);
-        item.setAccelerator(KeyStroke.getKeyStroke("control T"));
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 editTriggersAction(e);
@@ -507,7 +523,8 @@ public class ClientFrame extends JFrame
         toolsMenu.add(item);
         
         item = new JMenuItem(Messages.getString("ClientFrame.61"), KeyEvent.VK_O); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control O")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 editPolicies();
