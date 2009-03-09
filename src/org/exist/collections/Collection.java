@@ -903,7 +903,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                             cs.reset();
                     }
                 } catch (IOException e) {
-                    LOG.debug("could not reset input source", e);
+                    // mark is not supported: exception is expected, do nothing
                 }
 
                 XMLReader reader = getReader(broker, info.getCollectionConfig());
