@@ -612,9 +612,9 @@
 
         <unzip src="${lib.endorsed}/saxon.zip" dest="${lib.endorsed}">
             <patternset>
-                <include name="**/saxon8.jar"/>
-                <include name="**/saxon8-dom.jar"/>
-                <include name="**/saxon8-xpath.jar"/>
+                <include name="**/saxon9.jar"/>
+                <include name="**/saxon9-dom.jar"/>
+                <include name="**/saxon9-xpath.jar"/>
             </patternset>
         </unzip>
 
