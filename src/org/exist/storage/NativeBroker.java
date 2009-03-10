@@ -759,15 +759,16 @@ public class NativeBroker extends DBBroker {
             }
             //  check if another collection with the same name exists at the destination
             //TODO : resolve URIs !!! (destination.getURI().resolve(newURI))
-            Collection old = openCollection(destination.getURI().append(newUri), Lock.WRITE_LOCK);
-            if(old != null) {
-                LOG.debug("removing old collection: " + newUri);
-                try {
-                    removeCollection(transaction, old);
-                } finally {
-                    old.release(Lock.WRITE_LOCK);
-                }
-            }
+            //Old collection must be saved!!!
+            //Collection old = openCollection(destination.getURI().append(newUri), Lock.WRITE_LOCK);
+            //if(old != null) {
+            //    LOG.debug("removing old collection: " + newUri);
+            //    try {
+            //        removeCollection(transaction, old);
+            //    } finally {
+            //        old.release(Lock.WRITE_LOCK);
+            //    }
+            //}
             Collection destCollection = null;
             Lock lock = collectionsDb.getLock();
             try {
@@ -776,6 +777,9 @@ public class NativeBroker extends DBBroker {
                 newUri = destination.getURI().append(newUri);
                 LOG.debug("Copying collection to '" + newUri + "'");
                 destCollection = getOrCreateCollection(transaction, newUri);
+            	CollectionConfiguration config = destCollection.getConfiguration(this);
+        		destCollection.setPermissions(collection.getPermissions());
+        		destCollection.getPermissions().setGroup(collection.getPermissions().getOwnerGroup());
                 for(Iterator i = collection.iterator(this); i.hasNext(); ) {
                     DocumentImpl child = (DocumentImpl) i.next();
                     LOG.debug("Copying resource: '" + child.getURI() + "'");
@@ -787,6 +791,8 @@ public class NativeBroker extends DBBroker {
                         copyXMLResource(transaction, child, newDoc);
                         storeXMLResource(transaction, newDoc);
                         destCollection.addDocument(transaction, this, newDoc);
+                		newDoc.setPermissions(child.getPermissions());
+                		newDoc.getPermissions().setGroup(child.getPermissions().getOwnerGroup());
                     } else {
                         BinaryDocument newDoc = new BinaryDocument(pool, destCollection, child.getFileURI());
                         newDoc.copyOf(child);
@@ -800,6 +806,8 @@ public class NativeBroker extends DBBroker {
                         is.close();
                         storeXMLResource(transaction, newDoc);
                         destCollection.addDocument(transaction, this, newDoc);
+                		newDoc.setPermissions(child.getPermissions());
+                		newDoc.getPermissions().setGroup(child.getPermissions().getOwnerGroup());
                     }
                 }
                 saveCollection(transaction, destCollection);
@@ -882,14 +890,15 @@ public class NativeBroker extends DBBroker {
 						destination.getURI());
         
         // check if another collection with the same name exists at the destination
-        Collection old = openCollection(destination.getURI().append(newName), Lock.WRITE_LOCK);
-        if(old != null) {
-            try {
-                removeCollection(transaction, old);
-            } finally {
-                old.release(Lock.WRITE_LOCK);
-            }
-        }
+        //Old collection must be saved!
+        //Collection old = openCollection(destination.getURI().append(newName), Lock.WRITE_LOCK);
+        //if(old != null) {
+        //    try {
+        //        removeCollection(transaction, old);
+        //    } finally {
+        //        old.release(Lock.WRITE_LOCK);
+        //    }
+        //}
 
         XmldbURI uri = collection.getURI();
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -914,6 +923,7 @@ public class NativeBroker extends DBBroker {
                 collection.setCreationTime(System.currentTimeMillis());
                 
                 destination.addCollection(this, collection, false);
+                
                 if(parent != null)
                     saveCollection(transaction, parent);
                 if(parent != destination)
@@ -925,17 +935,19 @@ public class NativeBroker extends DBBroker {
                 lock.release(Lock.WRITE_LOCK);
             }        
 
-            for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-            	XmldbURI childName = (XmldbURI)i.next();
-            	//TODO : resolve URIs !!! name.resolve(childName)
-            	Collection child = openCollection(uri.append(childName), Lock.WRITE_LOCK);
-                if (child == null)
-                    LOG.warn("Child collection " + childName + " not found");
-                else {
-                    try {
-                        moveCollectionRecursive(transaction, child, collection, childName);
-                    } finally {
-                        child.release(Lock.WRITE_LOCK);
+            if (parent!=destination){
+                for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+                	XmldbURI childName = (XmldbURI)i.next();
+                	//TODO : resolve URIs !!! name.resolve(childName)
+                	Collection child = openCollection(uri.append(childName), Lock.WRITE_LOCK);
+                    if (child == null)
+                        LOG.warn("Child collection " + childName + " not found");
+                    else {
+                        try {
+                            moveCollectionRecursive(transaction, child, collection, childName);
+                        } finally {
+                            child.release(Lock.WRITE_LOCK);
+                        }
                     }
                 }
             }
@@ -2021,8 +2033,8 @@ public class NativeBroker extends DBBroker {
             
             lock.acquire(Lock.WRITE_LOCK);
             // check if the move would overwrite a collection
-            if(getCollection(destination.getURI().append(newName)) != null)
-                throw new PermissionDeniedException("A resource can not replace an existing collection");
+            //if(getCollection(destination.getURI().append(newName)) != null)
+            //    throw new PermissionDeniedException("A resource can not replace an existing collection");
             DocumentImpl oldDoc = destination.getDocument(this, newName);
             if(oldDoc != null) {
                 if(doc.getDocId() == oldDoc.getDocId())
@@ -2042,14 +2054,24 @@ public class NativeBroker extends DBBroker {
                     throw new PermissionDeniedException("Insufficient privileges on target collection " +
 							destination.getURI());
             }
+            
+            CollectionConfiguration config = destination.getConfiguration(this);
+            
             if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
                 InputStream is = getBinaryResource((BinaryDocument) doc); 
-                destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
+                BinaryDocument newDoc = destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
+                
+                newDoc.setPermissions(doc.getPermissions());
+                newDoc.getPermissions().setGroup(doc.getPermissions().getOwnerGroup());
+                
             } else {
                 DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
+                
                 newDoc.setPermissions(doc.getPermissions());
+                newDoc.getPermissions().setGroup(doc.getPermissions().getOwnerGroup());
+                
                 newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 try {
 	                copyXMLResource(transaction, doc, newDoc);
@@ -2119,8 +2141,8 @@ public class NativeBroker extends DBBroker {
         try {
             // check if the move would overwrite a collection
         	//TODO : resolve URIs : destination.getURI().resolve(newName)
-            if(getCollection(destination.getURI().append(newName)) != null)
-                throw new PermissionDeniedException("A resource can not replace an existing collection");
+            //if(getCollection(destination.getURI().append(newName)) != null)
+            //    throw new PermissionDeniedException("A resource can not replace an existing collection");
             DocumentImpl oldDoc = destination.getDocument(this, newName);
             if(oldDoc != null) {
                 if (doc.getDocId() == oldDoc.getDocId())
@@ -2144,6 +2166,12 @@ public class NativeBroker extends DBBroker {
             boolean renameOnly = collection.getId() == destination.getId();
             collection.unlinkDocument(doc);
             removeResourceMetadata(transaction, doc);
+
+            if (!renameOnly){
+                CollectionConfiguration config = destination.getConfiguration(this);
+                doc.setPermissions(oldDoc.getPermissions());
+                doc.getPermissions().setGroup(oldDoc.getPermissions().getOwnerGroup());
+            };
             
             doc.setFileURI(newName);
             doc.setCollection(destination);
