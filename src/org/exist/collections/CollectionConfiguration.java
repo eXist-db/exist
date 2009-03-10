@@ -23,6 +23,7 @@ package org.exist.collections;
 import org.apache.log4j.Logger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -58,8 +59,9 @@ public class CollectionConfiguration {
 	/** First level element in a collection configuration document */
 	private final static String INDEX_ELEMENT = "index";
 	private final static String PERMISSIONS_ELEMENT = "default-permissions";
-	private final static String RESOURCE_PERMISSIONS_ATTR = "resource";
-	private final static String COLLECTION_PERMISSIONS_ATTR = "collection";
+	private final static String GROUP_ELEMENT = "default-group";
+	private final static String RESOURCE_ATTR = "resource";
+	private final static String COLLECTION_ATTR = "collection";
     
     private final static String VALIDATION_ELEMENT = "validation";
     private final static String VALIDATION_MODE_ATTR = "mode";
@@ -76,11 +78,15 @@ public class CollectionConfiguration {
 	private int defCollPermissions;
 	private int defResPermissions;
     
+	private String defCollGroup;
+	private String defResGroup;
+    
     private int validationMode=XMLReaderObjectFactory.VALIDATION_UNKNOWN; 
 
     public CollectionConfiguration(BrokerPool pool) {
-    	this.defResPermissions = pool.getSecurityManager().getResourceDefaultPerms();
-		this.defCollPermissions = pool.getSecurityManager().getCollectionDefaultPerms();
+    	SecurityManager sm = pool.getSecurityManager();
+    	this.defResPermissions = sm.getResourceDefaultPerms();
+		this.defCollPermissions = sm.getCollectionDefaultPerms();
     }
     
     
@@ -108,6 +114,8 @@ public class CollectionConfiguration {
             this.srcCollectionURI = srcCollectionURI;
         }
         
+		defCollGroup = defResGroup = broker.getUser().getPrimaryGroup();
+		
         Element root = doc.getDocumentElement();
         if (root == null) {
             throwOrLog("Configuration document can not be parsed", checkOnly);
@@ -154,7 +162,7 @@ public class CollectionConfiguration {
                     
 			    } else if (PERMISSIONS_ELEMENT.equals(node.getLocalName())) {
 			    	Element elem = (Element) node;
-			    	String permsOpt = elem.getAttribute(RESOURCE_PERMISSIONS_ATTR);
+			    	String permsOpt = elem.getAttribute(RESOURCE_ATTR);
 					if (permsOpt != null && permsOpt.length() > 0) {
 						LOG.debug("RESOURCE: " + permsOpt);
 						try {
@@ -168,7 +176,7 @@ public class CollectionConfiguration {
 								    e.getMessage(), e);
                         }
 					}
-					permsOpt = elem.getAttribute(COLLECTION_PERMISSIONS_ATTR);
+					permsOpt = elem.getAttribute(COLLECTION_ATTR);
 					if (permsOpt != null && permsOpt.length() > 0) {
 						LOG.debug("COLLECTION: " + permsOpt);
 						try {
@@ -180,6 +188,35 @@ public class CollectionConfiguration {
                             else
                                 LOG.warn("Ilegal value for permissions in configuration document : " +
 								    e.getMessage(), e);
+						}
+					}
+                    
+			    } else if (GROUP_ELEMENT.equals(node.getLocalName())) {
+			    	Element elem = (Element) node;
+			    	String groupOpt = elem.getAttribute(RESOURCE_ATTR);
+					if (groupOpt != null && groupOpt.length() > 0) {
+						LOG.debug("RESOURCE: " + groupOpt);
+						if (broker.getBrokerPool().getSecurityManager().hasGroup(groupOpt)){
+							defResGroup = groupOpt;
+						} else {
+							defResGroup = broker.getUser().getPrimaryGroup();
+                            if (checkOnly)
+                                throw new CollectionConfigurationException("Ilegal value for group in configuration document : " + groupOpt);
+                            else
+                                LOG.warn("Ilegal value for group in configuration document : " + groupOpt);
+						}
+					}
+					groupOpt = elem.getAttribute(COLLECTION_ATTR);
+					if (groupOpt != null && groupOpt.length() > 0) {
+						LOG.debug("COLLECTION: " + groupOpt);
+						if (broker.getBrokerPool().getSecurityManager().hasGroup(groupOpt)){
+							defCollGroup = groupOpt; 
+						} else {
+							defCollGroup = broker.getUser().getPrimaryGroup();
+                            if (checkOnly)
+                                throw new CollectionConfigurationException("Ilegal value for group in configuration document : " + groupOpt);
+                            else
+                                LOG.warn("Ilegal value for group in configuration document : " + groupOpt);
 						}
 					}
                     
@@ -229,6 +266,14 @@ public class CollectionConfiguration {
     
     public int getDefResPermissions() {
     	return defResPermissions;
+    }
+    
+    public String getDefCollGroup() {
+    	return defCollGroup;
+    }
+    
+    public String getDefResGroup() {
+    	return defResGroup;
     }
     
     public int getValidationMode() {
