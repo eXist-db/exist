@@ -113,7 +113,7 @@ public class SessionModule extends AbstractInternalModule
 		JavaObjectValue value = (JavaObjectValue)var.getValue().itemAt( 0 );
 		
 		if( value.getObject() instanceof RequestWrapper ) {
-			SessionModule  sessionModule 	= (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
+			SessionModule  sessionModule 	= (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
 			SessionWrapper session 			= ((RequestWrapper)value.getObject()).getSession( true );
 			
 			sessionModule.declareVariable( SessionModule.SESSION_VAR, session );

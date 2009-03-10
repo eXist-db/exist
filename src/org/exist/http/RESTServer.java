@@ -1302,6 +1302,10 @@ public class RESTServer {
 			String encoding, String query, String path, XPathException e)
 			throws IOException {
 
+		if( !response.isCommitted() ) {
+			response.reset();
+		}
+			
 		response.setContentType(MimeType.HTML_TYPE.getName() + "; charset="
 				+ encoding);
 
@@ -1316,7 +1320,7 @@ public class RESTServer {
 		writer.write("</a></p>");
 
 		writer.write("<p class=\"errmsg\">");
-		writer.write(e.getMessage());
+		writer.write( ( e.getMessage() == null ? e.toString() : e.getMessage() ) );
 		writer.write("</p>");
 		if (query != null) {
 			writer.write("<p><span class=\"high\">Query</span>:</p><pre>");
@@ -1340,6 +1344,10 @@ public class RESTServer {
 			String encoding, String query, String path, XPathException e)
 			throws IOException {
 
+		if( !response.isCommitted() ) {
+			response.reset();
+		}
+		
 		response.setContentType(MimeType.XML_TYPE.getName() + "; charset="
 				+ encoding);
 
@@ -1351,7 +1359,7 @@ public class RESTServer {
 		writer.write(path);
 		writer.write("</path>");
 		writer.write("<message>");
-		writer.write(e.getMessage());
+		writer.write( ( e.getMessage() == null ? e.toString() : e.getMessage() ) );
 		writer.write("</message>");
 		if (query != null) {
 			writer.write("<query>");
