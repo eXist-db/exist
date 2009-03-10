@@ -182,8 +182,10 @@ public  class Collection extends Observable implements Comparable, Cacheable
             subcollections.add(childName);
         if (isNew) {
             CollectionConfiguration config = getConfiguration(broker);
-            if (config != null)
+            if (config != null){
                 child.permissions.setPermissions(config.getDefCollPermissions());
+                child.permissions.setGroup(config.getDefCollGroup());
+            }
         }
     }
     
@@ -1168,16 +1170,10 @@ public  class Collection extends Observable implements Comparable, Cacheable
 			broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, docUri); 
             getLock().acquire(Lock.WRITE_LOCK);   
             DocumentImpl document = new DocumentImpl(broker.getBrokerPool(), this, docUri);
-            
             oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
-            if (oldDoc == null) {
-                if (config != null) {
-                    document.setPermissions(config.getDefResPermissions());
-                }
-            } else
-                document.setPermissions(oldDoc.getPermissions().getPermissions());
             
             checkPermissions(transaction, broker, oldDoc);
+            
             manageDocumentInformation(broker, oldDoc, document );
             
             Indexer indexer = new Indexer(broker, transaction);
@@ -1297,7 +1293,13 @@ public  class Collection extends Observable implements Comparable, Cacheable
         } else {
             metadata.setCreated(System.currentTimeMillis());
             document.getPermissions().setOwner(broker.getUser());
-            document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
+        	CollectionConfiguration config = getConfiguration(broker); 
+        	if (config!=null){
+                document.setPermissions(config.getDefResPermissions());
+                document.getPermissions().setGroup(config.getDefResGroup());
+        	} else {
+                document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
+        	}
         }
         document.setMetadata(metadata);
     }
@@ -1433,6 +1435,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 */
 	        
 	        manageDocumentInformation(broker, oldDoc, blob );
+	        
 	        DocumentMetadata metadata = blob.getMetadata();
 	        metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
 	        
