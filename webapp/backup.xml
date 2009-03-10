@@ -269,6 +269,7 @@
     <parameter name="output" value="export"/>
     <parameter name="backup" value="yes"/>
     <parameter name="incremental" value="yes"/>
+	<parameter name="incremental-check" value="no"/>
 </job>]]></programlisting>
                 </example>
                 
@@ -311,6 +312,15 @@
                             </para>
                         </listitem>
                     </varlistentry>
+					<varlistentry>
+						<term>incremental-check</term>
+						<listitem>
+							<para>By default, no consistency check will be run during an incremental backup.
+								For big databases, the consistency check may take too long, so it should be
+								done for full backups only. Set <option>incremental-check</option> to
+								"yes" to run a consistency check during incremental backups.</para>
+						</listitem>
+					</varlistentry>
                     <varlistentry>
                         <term>max</term>
                         <listitem>
