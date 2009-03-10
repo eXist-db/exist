@@ -447,7 +447,7 @@ public class XMLSecurityManager implements SecurityManager {
 		broker.setUser(getUser(DBA_USER));
 		Collection home = broker.getOrCreateCollection(transaction, user.getHome());
 		home.getPermissions().setOwner(user.getName());
-		home.getPermissions().setGroup(user.getPrimaryGroup());
+		home.getPermissions().setGroup(home.getConfiguration(broker).getDefCollGroup());
 		broker.saveCollection(transaction, home);
 	}
 }
