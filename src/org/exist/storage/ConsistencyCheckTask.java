@@ -48,6 +48,7 @@ public class ConsistencyCheckTask implements SystemTask {
     private boolean createBackup = false;
     private boolean paused = false;
     private boolean incremental = false;
+    private boolean incrementalCheck = false;
     private int maxInc = -1;
 
     public void configure(Configuration config, Properties properties) throws EXistException {
@@ -65,6 +66,8 @@ public class ConsistencyCheckTask implements SystemTask {
         createBackup = backup.equalsIgnoreCase("YES");
         String inc = properties.getProperty("incremental", "yes");
         incremental = inc.equalsIgnoreCase("YES");
+        String incCheck = properties.getProperty("incremental-check", "no");
+        incrementalCheck = incCheck.equalsIgnoreCase("YES");
         String max = properties.getProperty("max", "-1");
         try {
             maxInc = Integer.parseInt(max);
@@ -80,34 +83,42 @@ public class ConsistencyCheckTask implements SystemTask {
             return;
         }
         long start = System.currentTimeMillis();
-        PrintWriter report = openLog();
-        CheckCallback cb = new CheckCallback(report);
+        PrintWriter report = null;
         try {
-            if (LOG.isDebugEnabled())
-                LOG.debug("Starting consistency check...");
             boolean doBackup = createBackup;
             // TODO: don't use the direct access feature for now. needs more testing
-            ConsistencyCheck check = new ConsistencyCheck(broker, false);
-            List errors = check.checkAll(cb);
-            if (!errors.isEmpty()) {
+            List errors = null;
+            if (!incremental || incrementalCheck) {
                 if (LOG.isDebugEnabled())
-                    LOG.debug("Errors found: " + errors.size());
-                doBackup = true;
-                if (fatalErrorsFound(errors)) {
+                    LOG.debug("Starting consistency check...");
+                report = openLog();
+                CheckCallback cb = new CheckCallback(report);
+
+                ConsistencyCheck check = new ConsistencyCheck(broker, false);
+                errors = check.checkAll(cb);
+                if (!errors.isEmpty()) {
                     if (LOG.isDebugEnabled())
-                        LOG.debug("Fatal errors were found: pausing the consistency check task.");
-                    paused = true;
+                        LOG.debug("Errors found: " + errors.size());
+                    doBackup = true;
+                    if (fatalErrorsFound(errors)) {
+                        if (LOG.isDebugEnabled())
+                            LOG.debug("Fatal errors were found: pausing the consistency check task.");
+                        paused = true;
+                    }
                 }
+                AgentFactory.getInstance().updateErrors(broker.getBrokerPool(), errors, start);
             }
-            AgentFactory.getInstance().updateErrors(broker.getBrokerPool(), errors, start);
             if (doBackup) {
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Starting backup...");
                 SystemExport sysexport = new SystemExport(broker, null, false);
                 File exportFile = sysexport.export(exportDir, incremental, maxInc, true, errors);
                 if (LOG.isDebugEnabled())
                     LOG.debug("Created backup to file: " + exportFile.getAbsolutePath());
             }
         } finally {
-            report.close();
+            if (report != null)
+                report.close();
         }
     }
 
