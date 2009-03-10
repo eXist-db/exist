@@ -38,7 +38,7 @@ if [ -z "$EXIST_BASE" ]; then
 fi
 
 if [ -z "$JAVA_OPTS" ]; then
-    JAVA_OPTS="-Xms64000k -Xmx128000k -Dfile.encoding=UTF-8"
+    JAVA_OPTS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8"
 fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed

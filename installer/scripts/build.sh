@@ -22,4 +22,4 @@ JAVA_OPTS="-Dant.home=$ANT_HOME -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS -Dexist
 echo Starting Ant...
 echo
 
-$JAVA_HOME/bin/java -Xms64m -Xmx512m $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.launch.Launcher $*
+$JAVA_HOME/bin/java -Xms128m -Xmx512m $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.launch.Launcher $*
