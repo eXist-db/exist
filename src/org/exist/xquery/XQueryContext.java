@@ -1279,14 +1279,22 @@ public class XQueryContext {
 	}
 	
 	public void setModule(String namespaceURI, Module module) {
-		modules.put(namespaceURI, module);
-		if (!module.isInternalModule()) {
-			((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(this);
-		}
+        if (module == null) {
+            modules.remove(namespaceURI);   // unbind the module
+        } else {
+            modules.put(namespaceURI, module);
+            if (!module.isInternalModule()) {
+                ((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(this);
+            }
+        }
 		setRootModule(namespaceURI, module);
 	}
 	
 	protected void setRootModule(String namespaceURI, Module module) {
+        if (module == null) {
+            allModules.remove(namespaceURI); // unbind the module
+            return;
+        }
 		if (allModules.get(namespaceURI) != module) setModulesChanged();
 		allModules.put(namespaceURI, module);
 	}
