@@ -186,6 +186,19 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 	
 	
 	/**
+	 * @return returns isCommitted
+	 */
+	public boolean isCommitted() {
+		boolean committed = false;
+		
+		if( response instanceof HttpResponse ) {
+			committed = ((HttpResponse)response).isCommitted();
+		}
+		
+		return( committed );
+	}
+	
+	/**
 	 * @param arg0
 	 * @param arg1
 	 */

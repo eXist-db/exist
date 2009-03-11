@@ -150,6 +150,13 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public Locale getLocale() {
 		return response.getLocale();
 	}
+
+	/**
+	 * @return returns isCommitted
+	 */
+	public boolean isCommitted() {
+		return response.isCommitted();
+	}
 	
 	/**
 	 * @param arg0
