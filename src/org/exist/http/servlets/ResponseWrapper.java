@@ -89,6 +89,11 @@ public interface ResponseWrapper {
 	public Locale getLocale();
 	
 	/**
+	 * @return returns isCommitted
+	 */
+	public boolean isCommitted();
+	
+	/**
 	 * @param contentType Content Type of the response
 	 */
 	public void setContentType(String contentType);
