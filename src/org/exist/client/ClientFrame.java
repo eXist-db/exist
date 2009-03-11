@@ -1270,7 +1270,7 @@ public class ClientFrame extends JFrame
                     resource = collection
                             .getResource(desc.getName().toString());
                     os = new FileOutputStream(file);
-                    if (resource.getResourceType().equals("BinaryResource")) {
+                    if (resource instanceof ExtendedResource) {
                         ((ExtendedResource) resource).getContentIntoAStream(os);
                     } else {
 

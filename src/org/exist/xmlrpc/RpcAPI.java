@@ -286,11 +286,29 @@ public interface RpcAPI {
 	byte[] retrieve(String doc, String id, HashMap parameters)
 		throws EXistException, PermissionDeniedException;
 
+	/**
+	 *  Retrieve a single node from a document. The node is identified by its
+	 *  internal id. It is fetched the first chunk, and the next ones should
+	 *  be fetched using getNextChunk or getNextExtendedChunk
+	 *
+	 *@param  doc                            the document containing the node
+	 *@param  id                             the node's internal id
+	 *@param  parameters                     a <code>HashMap</code> value
+	 *@return                                Description of the Return Value
+	 *@exception  EXistException             Description of the Exception
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	HashMap retrieveFirstChunk(String doc, String id, HashMap parameters)
+		throws EXistException, PermissionDeniedException;
+
 	String retrieveAsString(String doc, String id, HashMap parameters)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	public byte[] retrieveAll(int resultId, HashMap parameters)
 	throws EXistException, PermissionDeniedException;
+	
+	public HashMap retrieveAllFirstChunk(int resultId, HashMap parameters)
+		throws EXistException, PermissionDeniedException;
 	
    HashMap compile(byte[] xquery, HashMap parameters) throws Exception;
    
@@ -670,6 +688,22 @@ public interface RpcAPI {
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
 	byte[] retrieve(int resultId, int num, HashMap parameters)
+		throws EXistException, PermissionDeniedException;
+
+	/**
+	 *  Retrieve a single result from the result-set identified by resultId. The
+	 *  XML fragment at position num in the result set is returned. It is
+	 *  fetched the first chunk, and the next ones should be fetched using
+	 *  getNextChunk or getNextExtendedChunk
+	 *
+	 *@param  resultId                       Description of the Parameter
+	 *@param  num                            Description of the Parameter
+	 *@param  parameters                     a <code>HashMap</code> value
+	 *@return                                Description of the Return Value
+	 *@exception  EXistException             Description of the Exception
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	HashMap retrieveFirstChunk(int resultId, int num, HashMap parameters)
 		throws EXistException, PermissionDeniedException;
 
 	boolean setUser(String name, String passwd, String digestPassword,Vector groups, String home)

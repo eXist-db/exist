@@ -299,25 +299,35 @@ sub process {
                     <listitem>
                         <synopsis format="linespecific">Hashtable getDocumentData(String name, Hashtable parameters)</synopsis>
                         <synopsis>Hashtable getNextChunk(String handle, Int offset)</synopsis>
+                        <synopsis>Hashtable getNextExtendedChunk(String handle, String offset)</synopsis>
                         <para>To retrieve a document from the database, but limit the number of
                             bytes transmitted in one chunk to avoid memory shortage on the server,
                             use the following:</para>
                         <para><methodname>getDocumentData()</methodname> returns a struct containing
                             the following fields: <parameter>data</parameter>,
-                            <parameter>handle</parameter>, <parameter>offset</parameter>.
+                            <parameter>handle</parameter>, <parameter>offset</parameter>, <parameter>supports-long-offset</parameter>.
                                 <parameter>data</parameter> contains the document's data (as
                                 <option>byte[]</option>) or the first chunk of data if the document
                             size exceeds the predefined internal limit.
                             <parameter>handle</parameter> and <parameter>offset</parameter> can be
-                            passed to <methodname>getNextChunk()</methodname> to retrieve the
-                            remaining data chunks.</para>
+                            passed to <methodname>getNextChunk()</methodname> or <methodname>getNextExtendedChunk()</methodname>
+			    to retrieve the remaining data chunks.
+			    <parameter>supports-long-offset</parameter>, when available, tells whether the server understands
+			    <method>getNextExtendedChunk()</method> method.
+			    </para>
                         <para>If <parameter>offset</parameter> is 0, no more chunks are available
                             and all of the data is already contained in the
                             <parameter>data</parameter> field. Otherwise, further chunks can be
                             retrieved by passing the handle and the offset (as returned by the last
-                            call) to <methodname>getNextChunk()</methodname>. Once the last chunk is
-                            read, <parameter>offset</parameter> will be 0 and the handle becomes
+                            call) to <methodname>getNextChunk()</methodname> or <methodname>getNextExtendedChunk()</methodname>.
+			    Once the last chunk is read, <parameter>offset</parameter> will be 0 and the handle becomes
                             invalid.</para>
+			<para><methodname>getNextChunk()</methodname> and <methodname>getNextExtendedChunk()</methodname> do
+			more or less the same, but with the difference that <methodname>getNextExtendedChunk()</methodname>
+			does not have the 2GB limitation in <parameter>offset</parameter>. As previous eXist servers could not
+			implement it, you must take into account the <parameter>supports-long-offset</parameter> parameter from
+			<methodname>getDocumentData()</methodname> returned structure.
+			</para>
                         <variablelist>
                             <title>Parameters:</title>
                             <varlistentry>
@@ -565,6 +575,42 @@ sub process {
                                 <parameter>resultId</parameter>. The result-fragment is identified
                             by its position in the result-set, which is passed in the parameter
                                 <parameter>pos</parameter>.</para>
+                        <variablelist>
+                            <title>Parameters:</title>
+                            <varlistentry>
+                                <term>resultId</term>
+                                <listitem>
+                                    <para>Reference to a result-set as returned by a previous call
+                                        to <methodname>executeQuery</methodname>.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>pos</term>
+                                <listitem>
+                                    <para>The position of the item in the result-sequence, starting
+                                        at 0.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>parameters</term>
+                                <listitem>
+                                    <para>A struct containing <option>key=value</option> pairs to
+                                        configure the output.</para>
+                                </listitem>
+                            </varlistentry>
+                        </variablelist>
+                    </listitem>
+                    <listitem>
+                        <synopsis format="linespecific">Hashtable retrieveFirstChunk(int resultId, int pos, Hashtable parameters)</synopsis>
+                        <para>Retrieves a single result-fragment from the result-set referenced by
+                                <parameter>resultId</parameter>, but limiting the number of
+                            bytes transmitted in one chunk to avoid memory shortage on the server.
+			    The result-fragment is identified by its position in the result-set,
+			    which is passed in the parameter <parameter>pos</parameter>. It returns
+			    the same structure as <methodname>getDocumentData()</methodname>, and its
+			    fields behaves the same, so next chunks must be fetched using either
+			    <methodname>getNextChunk()</methodname> or <methodname>getNextExtendedChunk()</methodname>
+			    (see <methodname>getDocumentData()</methodname> documentation for further details).</para>
                         <variablelist>
                             <title>Parameters:</title>
                             <varlistentry>

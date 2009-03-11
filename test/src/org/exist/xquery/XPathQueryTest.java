@@ -27,7 +27,12 @@ import org.xmldb.api.modules.XQueryService;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.BindException;
 import java.util.Iterator;
 import java.util.regex.Matcher;
@@ -1984,12 +1989,29 @@ public class XPathQueryTest extends XMLTestCase {
             ResourceSet result = service.query("//item/price");
             
             Resource r = result.getMembersAsResource();
-            String content = (String)r.getContent();
+	    Object rawContent = r.getContent();
+	    String content = null;
+	    if(rawContent instanceof File) {
+		FileInputStream fis = new FileInputStream((File)rawContent);
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
+		byte[] temp = new byte[1024];
+		int count = 0;
+		while((count = fis.read(temp)) > -1) {
+			bos.write(temp, 0, count);
+		}
+		content = new String(bos.toByteArray(),"UTF-8");
+	    } else {
+		content = (String)r.getContent();
+	    }
             System.out.println(content);
             
             Pattern p = Pattern.compile( ".*(<price>.*){4}", Pattern.DOTALL);
             Matcher m = p.matcher(content);
             assertTrue( "get whole document numbers.xml", m.matches() );
+	} catch (UnsupportedEncodingException uee) {
+            fail(uee.getMessage());
+	} catch (IOException ioe) {
+            fail(ioe.getMessage());
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }

@@ -25,10 +25,8 @@ import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.Namespaces;
 import org.exist.dom.DocumentTypeImpl;
-import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
-import org.exist.util.EXistInputSource;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -45,7 +43,6 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
-import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
@@ -57,22 +54,25 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
-import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-public class RemoteXMLResource implements XMLResource, EXistResource {
+public class RemoteXMLResource
+	extends AbstractRemoteResource
+	implements XMLResource
+{
 	
     private final static Properties emptyProperties = new Properties();
 	
@@ -82,24 +82,13 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     private XMLReader xmlReader = null;
 	
     protected String id;
-    protected XmldbURI path = null ;
-    private String mimeType = MimeType.XML_TYPE.getName();
     protected int handle = -1;
     protected int pos = -1;
-    protected RemoteCollection parent;
-    protected String content = null;
-    protected File file = null;
-    protected InputSource inputSource = null;
-	
-    protected Permission permissions = null;
-    protected int contentLen = 0;
+    private String content = null;
 	
     protected Properties outputProperties = null;
     protected LexicalHandler lexicalHandler = null;
 	
-    protected Date dateCreated= null;
-    protected Date dateModified= null;
-    
 	private static Logger LOG = Logger.getLogger(RemoteXMLResource.class.getName());
 	
     public RemoteXMLResource(RemoteCollection parent, XmldbURI docId, String id)
@@ -114,74 +103,33 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 			     XmldbURI docId,
 			     String id)
 	throws XMLDBException {
+    	super(parent,docId);
 		this.handle = handle;
 		this.pos = pos;
-		this.parent = parent;
 		this.id = id;
-		if (docId.numSegments()>1) {
-			this.path = docId;
-		} else {
-			this.path = parent.getPathURI().append(docId);
-		}
-    }
-
-    public Date getCreationTime() throws XMLDBException {
-        return dateCreated;
-    }
-
-    public Date getLastModificationTime() throws XMLDBException {
-        return dateModified;
+		this.mimeType=MimeType.XML_TYPE.getName();
     }
 
     public Object getContent() throws XMLDBException {
         if (content != null) {
             return new StringValue(content).getStringValue(true);
         }
-        if (file != null) {
-            return file;
-        }
-        if (inputSource != null) {
-            return inputSource;
-        }
-        Properties properties = parent.getProperties();
-        byte[] data = null;
-        if (id == null) {
-            List params = new ArrayList(1);
-            params.add(path.toString());
-            params.add(properties);
-            try {
-                HashMap table = (HashMap) parent.getClient().execute("getDocumentData", params);
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                int offset = ((Integer)table.get("offset")).intValue();
-                data = (byte[])table.get("data");
-                os.write(data);
-                while(offset > 0) {
-                    params.clear();
-                    params.add(table.get("handle"));
-                    params.add(new Integer(offset));
-                    table = (HashMap) parent.getClient().execute("getNextChunk", params);
-                    offset = ((Integer)table.get("offset")).intValue();
-                    data = (byte[])table.get("data");
-                    os.write(data);
-                }
-                data = os.toByteArray();
-            } catch (XmlRpcException xre) {
-                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-            } catch (IOException ioe) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-            }
-        } else {
-            List params = new ArrayList(1);
-            params.add(new Integer(handle));
-            params.add(new Integer(pos));
-            params.add(properties);
-            try {
-                data = (byte[]) parent.getClient().execute("retrieve", params);
-            } catch (XmlRpcException xre) {
-                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-            }
-        }
+        Object res=super.getContent();
+        if(res!=null) {
+		if(res instanceof byte[]) {
+			try {
+				return new String((byte[])res,"UTF-8");
+			} catch(UnsupportedEncodingException uee) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
+			}
+		} else {
+			return res;
+		}
+	}
+	return null;
         
+        // Backward compatible code (perhaps it is not needed?)
+        /*
         if (properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no").equals("yes")) {
             try {
                 data = Compressor.uncompress(data);
@@ -200,64 +148,53 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
             content = new StringValue(content).getStringValue(true);
         }
         return content;
+	*/
     }
 
-    public Node getContentAsDOM() throws XMLDBException {
+    public Node getContentAsDOM()
+    	throws XMLDBException
+    {
     	InputSource is=null;
 	
-	if (file != null) {
+    	if(content!=null) {
+    		is=new InputSource(new StringReader(content));
+    	} else {
+    		is=new InputSource(getStreamContent());
+    	}
+    	
 		try {
-			is=new InputSource(new BufferedInputStream(new FileInputStream(file)));
+		    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		    factory.setNamespaceAware(true);
+		    factory.setValidating(false);
+		    DocumentBuilder builder = factory.newDocumentBuilder();
+		    Document doc = builder.parse(is);
+	        // <frederic.glorieux@ajlsm.com> return a full DOM doc, with root PI and comments
+		    return doc;
+		} catch (SAXException saxe) {
+		    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
+		} catch (ParserConfigurationException pce) {
+		    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
 		} catch(IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
-	} else if(inputSource!=null) {
-		is=inputSource;
-	} else {
-		if (content == null)
-			getContent();
-		is=new InputSource(new StringReader(content));
-	}
-	
-	try {
-	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	    factory.setNamespaceAware(true);
-	    factory.setValidating(false);
-	    DocumentBuilder builder = factory.newDocumentBuilder();
-	    Document doc = builder.parse(is);
-        // <frederic.glorieux@ajlsm.com> return a full DOM doc, with root PI and comments
-	    return doc;
-	} catch (SAXException saxe) {
-	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
-	} catch (ParserConfigurationException pce) {
-	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
-	} catch(IOException ioe) {
-		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-	}
     }
 
-    public void getContentAsSAX(ContentHandler handler) throws XMLDBException {
+    public void getContentAsSAX(ContentHandler handler)
+    	throws XMLDBException
+    {
     	InputSource is=null;
 	
-	if (file != null) {
-		try {
-			is=new InputSource(new BufferedInputStream(new FileInputStream(file)));
-		} catch(IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-		}
-	} else if(inputSource!=null) {
-		is=inputSource;
-	} else {
-		if (content == null)
-			getContent();
-		is=new InputSource(new StringReader(content));
-	}
-	
+    	if(content!=null) {
+    		is=new InputSource(new StringReader(content));
+    	} else {
+    		is=new InputSource(getStreamContent());
+    	}
+    	
         XMLReader reader = null;
-	if (xmlReader == null) {
-	    SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-	    saxFactory.setNamespaceAware(true);
-	    saxFactory.setValidating(false);
+		if (xmlReader == null) {
+		    SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+		    saxFactory.setNamespaceAware(true);
+		    saxFactory.setValidating(false);
             try {
                 SAXParser sax = saxFactory.newSAXParser();
                 reader = sax.getXMLReader();
@@ -270,12 +207,12 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
         } else {
             reader = xmlReader;
         }
-	try {
-	    reader.setContentHandler(handler);
-	    if(lexicalHandler != null) {
-	    	reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
-        }
-	    reader.parse(is);
+		try {
+		    reader.setContentHandler(handler);
+		    if(lexicalHandler != null) {
+		    	reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
+	        }
+		    reader.parse(is);
         } catch (SAXException saxe) {
             saxe.printStackTrace();
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
@@ -298,10 +235,6 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	return getDocumentId() + '_' + id;
     }
 
-    public Collection getParentCollection() throws XMLDBException {
-	return parent;
-    }
-
     public String getResourceType() throws XMLDBException {
 	return "XMLResource";
     }
@@ -316,65 +249,109 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     }
 
     public void setContent(Object value) throws XMLDBException {
-	file = null;
-	inputSource = null;
 	content = null;
-	if (value instanceof File) {
-	    file = (File) value;
-	} else if (value instanceof InputSource) {
-		inputSource = (InputSource) value;
-	} else {
-	    content = value.toString();
-	}
+    	if(!super.setContentInternal(value)) {
+		if(value instanceof String) {
+			content = new String((String)value);
+		} else if(value instanceof byte[]) {
+			try {
+				content = new String((byte[])value,"UTF-8");
+			} catch(UnsupportedEncodingException uee) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
+			}
+		} else {
+	    		content = value.toString();
+		}
+    	}
     }
 
     public void setContentAsDOM(Node root) throws XMLDBException {
-	StringWriter sout = new StringWriter();
-	DOMSerializer xmlout = new DOMSerializer(sout, getProperties());
-	try {
-	    switch (root.getNodeType()) {
-	    case Node.ELEMENT_NODE :
-		xmlout.serialize((Element) root);
-		break;
-	    case Node.DOCUMENT_FRAGMENT_NODE :
-		xmlout.serialize((DocumentFragment) root);
-		break;
-	    case Node.DOCUMENT_NODE :
-		xmlout.serialize((Document) root);
-		break;
-	    default :
-		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "invalid node type");
-	    }
-	    content = sout.toString();
-	    file = null;
-	    inputSource = null;
-	} catch (TransformerException e) {
-	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-	}
+    	try {
+	    	File tmpfile=File.createTempFile("eXistRXR", ".xml");
+	    	tmpfile.deleteOnExit();
+	    	FileOutputStream fos=new FileOutputStream(tmpfile);
+	    	BufferedOutputStream bos=new BufferedOutputStream(fos);
+	    	OutputStreamWriter osw=new OutputStreamWriter(bos,"UTF-8");
+			DOMSerializer xmlout = new DOMSerializer(osw, getProperties());
+			try {
+			    switch (root.getNodeType()) {
+				    case Node.ELEMENT_NODE :
+						xmlout.serialize((Element) root);
+						break;
+				    case Node.DOCUMENT_FRAGMENT_NODE :
+						xmlout.serialize((DocumentFragment) root);
+						break;
+				    case Node.DOCUMENT_NODE :
+						xmlout.serialize((Document) root);
+						break;
+				    default :
+				    	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "invalid node type");
+				}
+				setContent(tmpfile);
+			} catch (TransformerException e) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+			} finally {
+				try {
+					osw.close();
+				} catch(IOException ioe) {
+					// IgnoreIT(R)
+				}
+				try {
+					bos.close();
+				} catch(IOException ioe) {
+					// IgnoreIT(R)
+				}
+				try {
+					fos.close();
+				} catch(IOException ioe) {
+					// IgnoreIT(R)
+				}
+			}
+    	} catch(IOException ioe) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+    	}
     }
 
-    public ContentHandler setContentAsSAX() throws XMLDBException {
-	file = null;
-	inputSource = null;
-	return new InternalXMLSerializer();
+    public ContentHandler setContentAsSAX()
+    	throws XMLDBException
+    {
+    	freeLocalResources();
+    	content = null;
+    	return new InternalXMLSerializer();
     }
 
-    private class InternalXMLSerializer extends SAXSerializer {
+    private class InternalXMLSerializer
+    	extends SAXSerializer
+    {
+    	File tmpfile=null;
+    	
+		public InternalXMLSerializer() {
+			super();
+			try {
+		    	File tmpfile=File.createTempFile("eXistRXR", ".xml");
+		    	tmpfile.deleteOnExit();
+		    	FileOutputStream fos=new FileOutputStream(tmpfile);
+		    	BufferedOutputStream bos=new BufferedOutputStream(fos);
+		    	OutputStreamWriter writer=new OutputStreamWriter(bos,"UTF-8");
+				setOutput(writer, emptyProperties);
+			} catch(IOException ioe) {
+				// Don't know where to report!!!
+			}
+		}
 
-	StringWriter writer = new StringWriter();
-
-	public InternalXMLSerializer() {
-	    super();
-	    setOutput(writer, emptyProperties);
-	}
-
-	/**
-	 * @see org.xml.sax.DocumentHandler#endDocument()
-	 */
-	public void endDocument() throws SAXException {
-	    super.endDocument();
-	    content = writer.toString();
-	}
+		/**
+		 * @see org.xml.sax.DocumentHandler#endDocument()
+		 */
+		public void endDocument()
+			throws SAXException
+		{
+		    super.endDocument();
+		    try {
+		    	setContent(tmpfile);
+		    } catch(XMLDBException xe) {
+		    	throw new SAXException("Unable to close temp file containing serialized data",xe);
+		    }
+		}
     }
 
     /* (non-Javadoc)
@@ -392,81 +369,6 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	throws SAXNotRecognizedException, SAXNotSupportedException {
     }
 
-    /**
-     * Force content to be loaded into mem
-     * 
-     * @throws XMLDBException
-     */
-    protected byte[] getData() throws XMLDBException {
-	if (file != null || inputSource!=null) {
-		final InputStream in;
-		String sourcedesc="<unknown>";
-		if(file!=null) {
-			sourcedesc=file.getAbsolutePath();
-		    if (!file.canRead())
-				throw new XMLDBException(
-							 ErrorCodes.INVALID_RESOURCE,
-							 "failed to read resource content from file " + sourcedesc);
-		    try {
-		    	in=new BufferedInputStream(new FileInputStream(file));
-		    } catch(IOException ioe) {
-				throw new XMLDBException(
-						 ErrorCodes.INVALID_RESOURCE,
-						 "failed to read resource content from file " + sourcedesc,
-						 ioe);
-		    }
-		} else {
-			in=inputSource.getByteStream();
-			if(inputSource instanceof EXistInputSource) {
-				sourcedesc=((EXistInputSource)inputSource).getSymbolicPath();
-			}
-		}
-	    try {
-		final byte[] chunk = new byte[512];
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		int l;
-		do {
-		    l = in.read(chunk);
-		    if (l > 0)
-			out.write(chunk, 0, l);
-
-		} while (l > -1);
-		in.close();
-		final byte[] data = out.toByteArray();
-		//				content = new String(data);
-		file = null;
-		return data;
-	    } catch (IOException e) {
-		throw new XMLDBException(
-					 ErrorCodes.INVALID_RESOURCE,
-					 "failed to read resource content from file " + sourcedesc,
-					 e);
-	    }
-	} else if(content != null)
-	    try {
-		return content.getBytes("UTF-8");
-	    } catch (UnsupportedEncodingException e) {
-	    	LOG.warn(e);
-	    }
-	return null;
-    } 
-
-    public void setContentLength(int len) {
-	this.contentLen = len;
-    }
-	
-    public int getContentLength() throws XMLDBException {
-	return contentLen;
-    }
-	
-    public void setPermissions(Permission perms) {
-	permissions = perms;
-    }
-
-    public Permission getPermissions() {
-	return permissions;
-    }
-	
     public void setLexicalHandler(LexicalHandler handler) {
 	lexicalHandler = handler;
     }
@@ -478,22 +380,6 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     private Properties getProperties() {
 	return outputProperties == null ? parent.properties : outputProperties;
     }
-
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.EXistResource#setMimeType(java.lang.String)
-     */
-    public void setMimeType(String mime)
-    {
-    	this.mimeType = mime;
-    }
-
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.EXistResource#getMimeType()
-     */
-    public String getMimeType() {
-        return mimeType;
-    }
-
 
     public  DocumentType getDocType() throws XMLDBException {
     	DocumentType result = null;
@@ -532,13 +418,27 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
         }
 		
-}
-
-    protected void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
     }
 
-    protected void setDateModified(Date dateModified) {
-        this.dateModified = dateModified;
-    }
+	public void getContentIntoAStream(OutputStream os)
+		throws XMLDBException
+	{
+		getContentIntoAStreamInternal(os,content,id!=null,handle,pos);
+	}
+
+	public Object getExtendedContent()
+		throws XMLDBException
+	{
+		return getExtendedContentInternal(content,id!=null,handle,pos);
+	}
+
+	public InputStream getStreamContent() throws XMLDBException {
+		return getStreamContentInternal(content,id!=null,handle,pos);
+	}
+
+	public long getStreamLength()
+		throws XMLDBException
+	{
+		return getStreamLengthInternal(content);
+	}
 }
