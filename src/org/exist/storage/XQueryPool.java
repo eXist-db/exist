@@ -194,44 +194,45 @@ public class XQueryPool extends Object2ObjectHashMap {
     }
     
     private synchronized boolean borrowModules(DBBroker broker, XQueryContext context) {
-   	 Map borrowedModules = new TreeMap();
-   	 for (Iterator it = context.getAllModules(); it.hasNext(); ) {
-   		 Module module = (Module) it.next();
-   		 if (!module.isInternalModule()) {
-   			 ExternalModule extModule = (ExternalModule) module;
-   			 ExternalModule borrowedModule = borrowModule(broker, extModule.getSource());
-   			 if (borrowedModule == null) {
-   		   	 for (Iterator it2 = borrowedModules.values().iterator(); it2.hasNext(); ) {
-   		   		 ExternalModule moduleToReturn = (ExternalModule) it2.next();
-   		   		 returnObject(moduleToReturn.getSource(), moduleToReturn);
-   		   	 }
-   		   	 return false;
-   			 }
-   			 borrowedModules.put(extModule.getNamespaceURI(), borrowedModule);
-   		 }
-   	 }
-   	 for (Iterator it = borrowedModules.entrySet().iterator(); it.hasNext(); ) {
-   		 Map.Entry entry = (Map.Entry) it.next();
-   		 String moduleNamespace = (String) entry.getKey();
-   		 ExternalModule module = (ExternalModule) entry.getValue();
-   		 // Modules that don't appear in the root context will be set in context.allModules by
-   		 // calling setModule below on the module that does import them directly.
-   		 if (context.getModule(moduleNamespace) != null) {
-   			 context.setModule(moduleNamespace, module);
-   		 }
-			 List importedModuleNamespaceUris = new ArrayList();
-			 for (Iterator it2 = module.getContext().getModules(); it2.hasNext(); ) {
-				 Module nestedModule = (Module) it2.next();
-				if (!nestedModule.isInternalModule()) {
-					importedModuleNamespaceUris.add(nestedModule.getNamespaceURI());
-				}
-			 }
-			 for (Iterator it2 = importedModuleNamespaceUris.iterator(); it2.hasNext(); ) {
-				 String namespaceUri = (String) it2.next();
-				 module.getContext().setModule(namespaceUri, (Module) borrowedModules.get(namespaceUri));
-			 }
-   	 }
-   	 return true;
+        Map borrowedModules = new TreeMap();
+        for (Iterator it = context.getAllModules(); it.hasNext(); ) {
+            Module module = (Module) it.next();
+            if (module == null || !module.isInternalModule()) {
+                ExternalModule extModule = (ExternalModule) module;
+                ExternalModule borrowedModule = borrowModule(broker, extModule.getSource());
+                if (borrowedModule == null) {
+                    for (Iterator it2 = borrowedModules.values().iterator(); it2.hasNext(); ) {
+                        ExternalModule moduleToReturn = (ExternalModule) it2.next();
+                        returnObject(moduleToReturn.getSource(), moduleToReturn);
+                    }
+                    return false;
+                }
+                borrowedModules.put(extModule.getNamespaceURI(), borrowedModule);
+            }
+        }
+        for (Iterator it = borrowedModules.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) it.next();
+            String moduleNamespace = (String) entry.getKey();
+            ExternalModule module = (ExternalModule) entry.getValue();
+            // Modules that don't appear in the root context will be set in context.allModules by
+            // calling setModule below on the module that does import them directly.
+            if (context.getModule(moduleNamespace) != null) {
+                context.setModule(moduleNamespace, module);
+            }
+            List importedModuleNamespaceUris = new ArrayList();
+            for (Iterator it2 = module.getContext().getModules(); it2.hasNext(); ) {
+                Module nestedModule = (Module) it2.next();
+                if (!nestedModule.isInternalModule()) {
+                    importedModuleNamespaceUris.add(nestedModule.getNamespaceURI());
+                }
+            }
+            for (Iterator it2 = importedModuleNamespaceUris.iterator(); it2.hasNext(); ) {
+                String namespaceUri = (String) it2.next();
+                Module imported = (Module) borrowedModules.get(namespaceUri);
+                module.getContext().setModule(namespaceUri, imported);
+            }
+        }
+        return true;
     }
     
     public synchronized ExternalModule borrowModule(DBBroker broker, Source source) {
