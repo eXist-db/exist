@@ -72,6 +72,7 @@ import javax.xml.transform.OutputKeys;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * This class implements the actual methods defined by
@@ -2681,6 +2682,92 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+	/**
+	 * The method <code>retrieveFirstChunk</code>
+	 *
+	 * @param doc a <code>String</code> value
+	 * @param id a <code>String</code> value
+	 * @param parameters a <code>HashMap</code> value
+	 * @return a <code>HashMap</code> value
+	 * @exception Exception if an error occurs
+	 */
+	public HashMap retrieveFirstChunk(String docName, String id, HashMap parameters)
+		throws EXistException, PermissionDeniedException
+	{
+        	DBBroker broker = null;
+		String encoding = (String) parameters.get(OutputKeys.ENCODING);
+		if (encoding == null)
+			encoding = "UTF-8";
+		String compression = "no";
+		if (((String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
+			compression = (String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT);
+		}
+        	try {
+			XmldbURI docUri=XmldbURI.xmldbUriFor(docName);
+			broker = factory.getBrokerPool().get(user);
+			NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(id);
+			DocumentImpl doc;
+			LOG.debug("loading doc " + docUri);
+			doc = (DocumentImpl) broker.getXMLResource(docUri);
+			NodeProxy node = new NodeProxy(doc, nodeId);
+			
+			Serializer serializer = broker.getSerializer();
+			serializer.reset();
+			serializer.setProperties(parameters);
+			
+                	HashMap result = new HashMap();
+			File tempFile = File.createTempFile("eXistRPCC", ".xml");
+			tempFile.deleteOnExit();
+			LOG.debug("Writing to temporary file: " + tempFile.getName());
+
+			FileOutputStream fos = new FileOutputStream(tempFile);
+			OutputStream os=null;
+			if(compression.equals("yes")) {
+				LOG.debug("get result with compression");
+				os = new DeflaterOutputStream(fos);
+			} else {
+				os = fos;
+			}
+			try {
+				Writer writer = new OutputStreamWriter(os, encoding);
+				try {
+					serializer.serialize(node, writer);
+				} finally {
+					writer.close();
+				}
+			} finally {
+				try {
+					os.close();
+				} catch(IOException ioe) {
+					//IgnoreIT(R)
+				}
+				if(os!=fos)
+					try {
+						fos.close();
+					} catch(IOException ioe) {
+						//IgnoreIT(R)
+					}
+			}
+			
+			byte[] firstChunk = getChunk(tempFile, 0);
+			result.put("data", firstChunk);
+			if(tempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+				result.put("handle", tempFile.getAbsolutePath());
+				result.put("offset", new Integer(firstChunk.length));
+				result.put("supports-long-offset", new Boolean(true));
+                	} else {
+				result.put("offset", new Integer(0));
+				tempFile.delete();
+                	}
+                	return result;
+        	} catch (Exception e) {
+			handleException(e);
+			return null;
+        	} finally {
+			factory.getBrokerPool().release(broker);
+        	}
+	}
+
     public byte[] retrieve(int resultId, int num, HashMap parameters)
             throws EXistException, PermissionDeniedException {
         String compression = "no";
@@ -2756,6 +2843,102 @@ public class RpcConnection implements RpcAPI {
             factory.getBrokerPool().release(broker);
         }
     }
+
+	/**
+	 * The method <code>retrieveFirstChunk</code>
+	 *
+	 * @param resultId an <code>int</code> value
+	 * @param num an <code>int</code> value
+	 * @param parameters a <code>HashMap</code> value
+	 * @return a <code>HashMap</code> value
+	 * @exception Exception if an error occurs
+	 */
+	public HashMap retrieveFirstChunk(int resultId, int num, HashMap parameters)
+		throws EXistException, PermissionDeniedException
+	{
+		String encoding = (String) parameters.get(OutputKeys.ENCODING);
+		if (encoding == null)
+			encoding = "UTF-8";
+		String compression = "no";
+		if (((String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
+			compression = (String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT);
+		}
+        	DBBroker broker = null;
+        	try {
+			broker = factory.getBrokerPool().get(user);
+			QueryResult qr = factory.resultSets.get(resultId);
+			if (qr == null)
+				throw new EXistException("result set unknown or timed out");
+			qr.timestamp = System.currentTimeMillis();
+			Item item = qr.result.itemAt(num);
+			if (item == null)
+				throw new EXistException("index out of range");
+			
+                	HashMap result = new HashMap();
+			File tempFile = File.createTempFile("eXistRPCC", ".xml");
+			tempFile.deleteOnExit();
+			LOG.debug("Writing to temporary file: " + tempFile.getName());
+
+			FileOutputStream fos = new FileOutputStream(tempFile);
+			OutputStream os=null;
+			if(compression.equals("yes")) {
+				LOG.debug("get result with compression");
+				os = new DeflaterOutputStream(fos);
+			} else {
+				os = fos;
+			}
+			try {
+				Writer writer = new OutputStreamWriter(os, encoding);
+				try {
+					if(Type.subTypeOf(item.getType(), Type.NODE)) {
+						NodeValue nodeValue = (NodeValue)item;
+						Serializer serializer = broker.getSerializer();
+						serializer.reset();
+						serializer.setProperties(parameters);
+						serializer.serialize(nodeValue, writer);
+					} else {
+						writer.write(item.getStringValue());
+					}
+				} finally {
+					try {
+						writer.close();
+					} catch(IOException ioe) {
+						//IgnoreIT(R)
+					}
+				}
+			} finally {
+				try {
+					os.close();
+				} catch(IOException ioe) {
+					//IgnoreIT(R)
+				}
+				if(os!=fos)
+					try {
+						fos.close();
+					} catch(IOException ioe) {
+						//IgnoreIT(R)
+					}
+			}
+			
+			byte[] firstChunk = getChunk(tempFile, 0);
+			result.put("data", firstChunk);
+			if(tempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+				result.put("handle", tempFile.getAbsolutePath());
+				result.put("offset", new Integer(firstChunk.length));
+				result.put("supports-long-offset", new Boolean(true));
+                	} else {
+				result.put("offset", new Integer(0));
+				tempFile.delete();
+                	}
+                	return result;
+        	} catch (Exception e) {
+			handleException(e);
+			return null;
+        	} finally {
+			factory.getBrokerPool().release(broker);
+        	}
+	}
+
 
     public byte[] retrieveAll(int resultId, HashMap parameters) throws EXistException,
             PermissionDeniedException {
@@ -2836,6 +3019,120 @@ public class RpcConnection implements RpcAPI {
         }
     }
     
+	/**
+	 * The method <code>retrieveAllFirstChunk</code>
+	 *
+	 * @param resultId an <code>int</code> value
+	 * @param parameters a <code>HashMap</code> value
+	 * @return a <code>String</code> value
+	 * @exception Exception if an error occurs
+	 */
+	public HashMap retrieveAllFirstChunk(int resultId, HashMap parameters)
+		throws EXistException, PermissionDeniedException
+	{
+		String encoding = (String) parameters.get(OutputKeys.ENCODING);
+		if (encoding == null)
+			encoding = "UTF-8";
+		String compression = "no";
+		if (((String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
+			compression = (String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT);
+		}
+        	DBBroker broker = null;
+        	try {
+			broker = factory.getBrokerPool().get(user);
+			QueryResult qr = factory.resultSets.get(resultId);
+			if (qr == null)
+				throw new EXistException("result set unknown or timed out");
+			qr.timestamp = System.currentTimeMillis();
+			Serializer serializer = broker.getSerializer();
+			serializer.reset();
+			serializer.setProperties(parameters);
+			SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+			
+                	HashMap result = new HashMap();
+			File tempFile = File.createTempFile("eXistRPCC", ".xml");
+			tempFile.deleteOnExit();
+			LOG.debug("Writing to temporary file: " + tempFile.getName());
+
+			FileOutputStream fos = new FileOutputStream(tempFile);
+			OutputStream os=null;
+			if(compression.equals("yes")) {
+				LOG.debug("get result with compression");
+				os = new DeflaterOutputStream(fos);
+			} else {
+				os = fos;
+			}
+			try {
+				Writer writer = new OutputStreamWriter(os, encoding);
+				try {
+					handler.setOutput(writer, getProperties(parameters));
+            
+					// serialize results
+					handler.startDocument();
+					handler.startPrefixMapping("exist", Namespaces.EXIST_NS);
+					AttributesImpl attribs = new AttributesImpl();
+					attribs.addAttribute(
+						"",
+						"hitCount",
+						"hitCount",
+						"CDATA",
+						Integer.toString(qr.result.getItemCount()));
+					handler.startElement(
+						Namespaces.EXIST_NS,
+						"result",
+						"exist:result",
+						attribs);
+					Item current;
+					char[] value;
+					for(SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
+						current = i.nextItem();
+						if(Type.subTypeOf(current.getType(), Type.NODE))
+							((NodeValue)current).toSAX(broker, handler, null);
+						else {
+							value = current.toString().toCharArray();
+							handler.characters(value, 0, value.length);
+						}
+					}
+					handler.endElement(Namespaces.EXIST_NS, "result", "exist:result");
+					handler.endPrefixMapping("exist");
+					handler.endDocument();
+					SerializerPool.getInstance().returnObject(handler);
+				} finally {
+					writer.close();
+				}
+			} finally {
+				try {
+					os.close();
+				} catch(IOException ioe) {
+					//IgnoreIT(R)
+				}
+				if(os!=fos)
+					try {
+						fos.close();
+					} catch(IOException ioe) {
+						//IgnoreIT(R)
+					}
+			}
+			
+			byte[] firstChunk = getChunk(tempFile, 0);
+			result.put("data", firstChunk);
+			if(tempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+				result.put("handle", tempFile.getAbsolutePath());
+				result.put("offset", new Integer(firstChunk.length));
+				result.put("supports-long-offset", new Boolean(true));
+                	} else {
+				result.put("offset", new Integer(0));
+				tempFile.delete();
+                	}
+                	return result;
+        	} catch (Exception e) {
+			handleException(e);
+			return null;
+        	} finally {
+			factory.getBrokerPool().release(broker);
+        	}
+	}
+
     /**
      * The method <code>setPermissions</code>
      *

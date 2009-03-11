@@ -462,12 +462,17 @@ public abstract class Serializer implements XMLReader {
 	}
 
 	public String serialize(NodeValue n) throws SAXException {
+		StringWriter out = new StringWriter();
+		serialize(n,out);
+		return out.toString();
+	}
+	
+	public void serialize(NodeValue n, Writer out) throws SAXException {
         try {
             setStylesheetFromProperties(n.getOwnerDocument());
         } catch (TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
-        StringWriter out = new StringWriter();
 		if (templates != null)
 			applyXSLHandler(out);
 		else
@@ -475,7 +480,6 @@ public abstract class Serializer implements XMLReader {
                     n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy)n : null, false); //setPrettyPrinter(out, false);
 		serializeToReceiver(n, true);
 		releasePrettyPrinter();
-		return out.toString();
 	}
 	
 	/**
@@ -486,12 +490,17 @@ public abstract class Serializer implements XMLReader {
 	 *@exception  SAXException  Description of the Exception
 	 */
 	public String serialize(NodeProxy p) throws SAXException {
+		StringWriter out = new StringWriter();
+		serialize(p,out);
+		return out.toString();
+	}
+	
+	public void serialize(NodeProxy p, Writer out) throws SAXException {
         try {
             setStylesheetFromProperties(p.getOwnerDocument());
         } catch (TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
-        StringWriter out = new StringWriter();
 		if (templates != null)
 			applyXSLHandler(out);
 		else
@@ -499,7 +508,6 @@ public abstract class Serializer implements XMLReader {
                     p, false); //setPrettyPrinter(out, false);
 		serializeToReceiver(p, false);
 		releasePrettyPrinter();
-		return out.toString();
 	}
 
 	public void prepareStylesheets(DocumentImpl doc) throws TransformerConfigurationException {

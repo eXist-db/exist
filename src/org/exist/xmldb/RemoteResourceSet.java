@@ -1,16 +1,24 @@
 
 package org.exist.xmldb;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
@@ -64,7 +72,65 @@ public class RemoteResourceSet implements ResourceSet {
         List params = new ArrayList(2);
     	params.add(new Integer(handle));
     	params.add(outputProperties);
+	FileOutputStream fos=null;
+	BufferedOutputStream bos=null;
+		
     	try {
+
+
+
+		try {
+			File tmpfile=File.createTempFile("eXistARR",".xml");
+			tmpfile.deleteOnExit();
+			fos=new FileOutputStream(tmpfile);
+			bos=new BufferedOutputStream(fos);
+			
+			Map table = (Map) collection.getClient().execute("retrieveAllFirstChunk", params);
+			
+			long offset = ((Integer)table.get("offset")).intValue();
+			byte[] data = (byte[])table.get("data");
+			boolean isCompressed=outputProperties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no").equals("yes");
+			// One for the local cached file
+			Inflater dec = null;
+			byte[] decResult = null;
+			int decLength = 0;
+			if(isCompressed) {
+				dec = new Inflater();
+				decResult = new byte[65536];
+				dec.setInput(data);
+				do {
+					decLength = dec.inflate(decResult);
+					bos.write(decResult,0,decLength);
+				} while(decLength==decResult.length || !dec.needsInput());
+			} else {
+				bos.write(data);
+			}
+			while(offset > 0) {
+				params.clear();
+				params.add(table.get("handle"));
+				params.add(Long.toString(offset));
+				table = (Map) collection.getClient().execute("getNextExtendedChunk", params);
+				offset = new Long((String)table.get("offset")).longValue();
+				data = (byte[])table.get("data");
+				// One for the local cached file
+				if(isCompressed) {
+					dec.setInput(data);
+					do {
+						decLength = dec.inflate(decResult);
+						bos.write(decResult,0,decLength);
+					} while(decLength==decResult.length || !dec.needsInput());
+				} else {
+					bos.write(data);
+				}
+			}
+			if(dec!=null)
+				dec.end();
+			
+			RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, XmldbURI.EMPTY_URI, null );
+			res.setContent( tmpfile );
+			res.setProperties(outputProperties);
+			return res;
+		} catch (XmlRpcException xre) {
 			byte[] data = (byte[]) collection.getClient().execute("retrieveAll", params);
 			String content;
 			try {
@@ -78,9 +144,32 @@ public class RemoteResourceSet implements ResourceSet {
 	        res.setContent( content );
 	        res.setProperties(outputProperties);
 	        return res;
-		} catch (XmlRpcException xre) {
-			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+		} catch (IOException ioe) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+		} catch (DataFormatException dfe) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, dfe.getMessage(), dfe);
+		} finally {
+			if(bos!=null) {
+				try {
+					bos.close();
+				} catch(IOException ioe) {
+					//IgnoreIT(R)
+				}
+			}
+			if(fos!=null) {
+				try {
+					fos.close();
+				} catch(IOException ioe) {
+					//IgnoreIT(R)
+				}
+			}
 		}
+
+		
+	
+	} catch (XmlRpcException xre) {
+		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+	}
     }
 
     public Resource getResource( long pos ) throws XMLDBException {

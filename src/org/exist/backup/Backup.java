@@ -272,7 +272,7 @@ public class Backup {
                 }
 
                 os = output.newEntry(encode(URIUtils.urlDecodeUtf8(resources[i])));
-                if(resource.getResourceType().equals("BinaryResource")) {
+                if(resource instanceof ExtendedResource) {
                     ((ExtendedResource)resource).getContentIntoAStream(os);
                 } else {
                     try {
