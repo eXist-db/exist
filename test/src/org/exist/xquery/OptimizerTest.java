@@ -340,6 +340,7 @@ public class OptimizerTest {
                 throw new IOException("Unable to read samples directory");
             File[] files = dir.listFiles(new XMLFilenameFilter());
             for (File file : files) {
+                System.out.println("Create resource from "+file.getAbsolutePath());
                 resource = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
                 resource.setContent(file);
                 testCollection.storeResource(resource);
@@ -350,6 +351,7 @@ public class OptimizerTest {
                 throw new IOException("Unable to read samples directory");
             files = dir.listFiles(new XMLFilenameFilter());
             for (File file : files) {
+                System.out.println("Create resource from "+file.getAbsolutePath());
                 resource = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
                 resource.setContent(file);
                 testCollection.storeResource(resource);
