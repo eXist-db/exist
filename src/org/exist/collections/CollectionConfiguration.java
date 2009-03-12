@@ -78,8 +78,8 @@ public class CollectionConfiguration {
 	private int defCollPermissions;
 	private int defResPermissions;
     
-	private String defCollGroup = "";
-	private String defResGroup = "";
+	private String defCollGroup = SecurityManager.DBA_GROUP;
+	private String defResGroup = SecurityManager.DBA_GROUP;
     
     private int validationMode=XMLReaderObjectFactory.VALIDATION_UNKNOWN; 
 

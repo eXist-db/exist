@@ -94,6 +94,13 @@ public interface Permission {
     public void setGroup(String group);
 
     /**
+     *  Set the owner group
+     *
+     *@param  group  The primary group of user
+     */
+    public void setGroup(User user);
+    
+    /**
      *  Sets permissions for group
      *
      *@param  perm  The new groupPermissions value

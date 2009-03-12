@@ -600,11 +600,9 @@ public class NativeBroker extends DBBroker {
                     LOG.debug("Creating root collection '" + XmldbURI.ROOT_COLLECTION_URI + "'");
                     current = new Collection(XmldbURI.ROOT_COLLECTION_URI);
                     current.getPermissions().setPermissions(0777);
-                    current.getPermissions().setOwner(getUser());
             		User user = getUser();
-            		if (user!=null){
-            			current.getPermissions().setGroup(user.getPrimaryGroup());
-            		}
+                    current.getPermissions().setOwner(user);
+        			current.getPermissions().setGroup(user);
                     current.setId(getNextCollectionId(transaction));
                     current.setCreationTime(System.currentTimeMillis());
                     if (transaction != null)
@@ -629,11 +627,8 @@ public class NativeBroker extends DBBroker {
                         }
                         LOG.debug("Creating collection '" + path + "'...");
                         sub = new Collection(path);
-                        sub.getPermissions().setOwner(getUser());
                 		User user = getUser();
-                		if (user!=null){
-                			current.getPermissions().setGroup(user.getPrimaryGroup());
-                		}
+                        sub.getPermissions().setOwner(user);
                         sub.setId(getNextCollectionId(transaction));
                         sub.setCreationTime(System.currentTimeMillis());
                         if (transaction != null)
@@ -784,9 +779,6 @@ public class NativeBroker extends DBBroker {
                 newUri = destination.getURI().append(newUri);
                 LOG.debug("Copying collection to '" + newUri + "'");
                 destCollection = getOrCreateCollection(transaction, newUri);
-            	CollectionConfiguration config = destCollection.getConfiguration(this);
-        		destCollection.setPermissions(collection.getPermissions());
-        		destCollection.getPermissions().setGroup(collection.getPermissions().getOwnerGroup());
                 for(Iterator i = collection.iterator(this); i.hasNext(); ) {
                     DocumentImpl child = (DocumentImpl) i.next();
                     LOG.debug("Copying resource: '" + child.getURI() + "'");
@@ -798,8 +790,6 @@ public class NativeBroker extends DBBroker {
                         copyXMLResource(transaction, child, newDoc);
                         storeXMLResource(transaction, newDoc);
                         destCollection.addDocument(transaction, this, newDoc);
-                		newDoc.setPermissions(child.getPermissions());
-                		newDoc.getPermissions().setGroup(child.getPermissions().getOwnerGroup());
                     } else {
                         BinaryDocument newDoc = new BinaryDocument(pool, destCollection, child.getFileURI());
                         newDoc.copyOf(child);
@@ -813,8 +803,6 @@ public class NativeBroker extends DBBroker {
                         is.close();
                         storeXMLResource(transaction, newDoc);
                         destCollection.addDocument(transaction, this, newDoc);
-                		newDoc.setPermissions(child.getPermissions());
-                		newDoc.getPermissions().setGroup(child.getPermissions().getOwnerGroup());
                     }
                 }
                 saveCollection(transaction, destCollection);
@@ -2068,11 +2056,7 @@ public class NativeBroker extends DBBroker {
             
             if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
                 InputStream is = getBinaryResource((BinaryDocument) doc); 
-                BinaryDocument newDoc = destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
-                
-                newDoc.setPermissions(doc.getPermissions());
-                newDoc.getPermissions().setGroup(doc.getPermissions().getOwnerGroup());
-                
+				destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
             } else {
                 DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
                 newDoc.copyOf(doc);
@@ -2177,8 +2161,7 @@ public class NativeBroker extends DBBroker {
             collection.unlinkDocument(doc);
             removeResourceMetadata(transaction, doc);
 
-            if (!renameOnly){
-                CollectionConfiguration config = destination.getConfiguration(this);
+            if (!renameOnly && oldDoc!=null){
                 doc.setPermissions(oldDoc.getPermissions());
                 doc.getPermissions().setGroup(oldDoc.getPermissions().getOwnerGroup());
             };
