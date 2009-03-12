@@ -163,6 +163,17 @@ public class UnixStylePermission implements Permission {
     }
 
     /**
+     *  Set the owner group
+     *
+     *@param  group  The new group value
+     */
+    public void setGroup( User user ) {
+    	if (user!=null){
+            this.ownerGroup = user.getPrimaryGroup();
+    	}
+    }
+
+    /**
      *  Sets permissions for group
      *
      *@param  perm  The new groupPermissions value
@@ -342,5 +353,6 @@ public class UnixStylePermission implements Permission {
         perm = perm << 6;
         return ( permissions & perm ) == perm;
     }
+
 }
 

@@ -21,6 +21,20 @@
  */
 package org.exist.collections;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Indexer;
@@ -41,15 +55,14 @@ import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.XMLSecurityManager;
-import org.exist.soap.Permissions;
 import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.ProcessMonitor;
 import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.storage.UpdateListener;
-import org.exist.storage.ProcessMonitor;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
@@ -72,20 +85,6 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.TreeMap;
 
 /**
  * This class represents a collection in the database. A collection maintains a list of
@@ -182,10 +181,14 @@ public  class Collection extends Observable implements Comparable, Cacheable
         if (!subcollections.contains(childName))
             subcollections.add(childName);
         if (isNew) {
+        	User user = broker.getUser();
+            child.permissions.setOwner(user);
             CollectionConfiguration config = getConfiguration(broker);
             if (config != null){
                 child.permissions.setPermissions(config.getDefCollPermissions());
                 child.permissions.setGroup(config.getDefCollGroup());
+            } else {
+                child.permissions.setGroup(user);
             }
         }
     }
@@ -1287,28 +1290,27 @@ public  class Collection extends Observable implements Comparable, Cacheable
      */
     private void manageDocumentInformation(DBBroker broker, DocumentImpl oldDoc,
             DocumentImpl document) {
+    	long time = System.currentTimeMillis();
+    	DocumentMetadata metadata;
         if (oldDoc != null) {
-            oldDoc.getMetadata().setLastModified(System.currentTimeMillis());
+        	metadata = oldDoc.getMetadata(); 
         } else {
-        	long time = System.currentTimeMillis();
-        	Permission permissions = document.getPermissions(); 
-        	DocumentMetadata metadata = new DocumentMetadata();
+        	metadata = new DocumentMetadata();
             metadata.setCreated(time);
-            metadata.setLastModified(time);
-            permissions.setOwner(broker.getUser());
+        	User user = broker.getUser();
+        	Permission permissions = document.getPermissions(); 
+            permissions.setOwner(user);
         	CollectionConfiguration config = getConfiguration(broker); 
         	if (config!=null){
                 permissions.setPermissions(config.getDefResPermissions());
                 permissions.setGroup(config.getDefResGroup());
         	} else {
-        		User user = broker.getUser();
-        		if (user!=null){
-        			permissions.setGroup(user.getPrimaryGroup());
-        		}
+    			permissions.setGroup(user);
         	}
-            document.setMetadata(metadata);
         }
-    }
+        metadata.setLastModified(time);
+        document.setMetadata(metadata);
+}
     
     /**
      * Check Permissions about user and document, and throw exceptions if necessary.

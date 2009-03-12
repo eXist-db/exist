@@ -29,6 +29,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
@@ -446,8 +447,13 @@ public class XMLSecurityManager implements SecurityManager {
 			return;
 		broker.setUser(getUser(DBA_USER));
 		Collection home = broker.getOrCreateCollection(transaction, user.getHome());
-		home.getPermissions().setOwner(user.getName());
-		home.getPermissions().setGroup(home.getConfiguration(broker).getDefCollGroup());
+		home.getPermissions().setOwner(user);
+		CollectionConfiguration config = home.getConfiguration(broker);
+		if (config!=null){
+			home.getPermissions().setGroup(config.getDefCollGroup());
+		} else {
+			home.getPermissions().setGroup(user);
+		}
 		broker.saveCollection(transaction, home);
 	}
 }
