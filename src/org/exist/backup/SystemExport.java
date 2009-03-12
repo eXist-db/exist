@@ -194,9 +194,9 @@ public class SystemExport {
             File backupFile = directory.createBackup(incremental && prevBackup != null, zip);
             BackupWriter output;
             if (zip)
-                output = new ZipWriter(backupFile, "/db");
+                output = new ZipWriter(backupFile, DBBroker.ROOT_COLLECTION);
             else
-                output = new FileSystemWriter(new File(backupFile, "db"));
+                output = new FileSystemWriter(new File(backupFile, DBBroker.ROOT_COLLECTION_NAME));
             output.setProperties(properties);
 
             Date date = prevBackup == null ? null : prevBackup.getDate();
