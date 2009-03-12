@@ -601,7 +601,10 @@ public class NativeBroker extends DBBroker {
                     current = new Collection(XmldbURI.ROOT_COLLECTION_URI);
                     current.getPermissions().setPermissions(0777);
                     current.getPermissions().setOwner(getUser());
-                    current.getPermissions().setGroup(getUser().getPrimaryGroup());
+            		User user = getUser();
+            		if (user!=null){
+            			current.getPermissions().setGroup(user.getPrimaryGroup());
+            		}
                     current.setId(getNextCollectionId(transaction));
                     current.setCreationTime(System.currentTimeMillis());
                     if (transaction != null)
@@ -621,12 +624,16 @@ public class NativeBroker extends DBBroker {
                             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
                         if (!current.getPermissionsNoLock().validate(getUser(), Permission.WRITE)) {
                             LOG.error("Permission denied to create collection '" + path + "'");
-                            throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to write to collection '" + current.getURI() + "'");
+                            //throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to write to collection '" + current.getURI() + "'");
+                            throw new PermissionDeniedException("Write is not allowed for collection '" + current.getURI() + "'");
                         }
                         LOG.debug("Creating collection '" + path + "'...");
                         sub = new Collection(path);
                         sub.getPermissions().setOwner(getUser());
-                        sub.getPermissions().setGroup(getUser().getPrimaryGroup());
+                		User user = getUser();
+                		if (user!=null){
+                			current.getPermissions().setGroup(user.getPrimaryGroup());
+                		}
                         sub.setId(getNextCollectionId(transaction));
                         sub.setCreationTime(System.currentTimeMillis());
                         if (transaction != null)
@@ -956,7 +963,8 @@ public class NativeBroker extends DBBroker {
     
     private void canRemoveCollection(Collection collection) throws PermissionDeniedException {
         if(!collection.getPermissions().validate(getUser(), Permission.WRITE))
-            throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
+            //throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
+        	throw new PermissionDeniedException("Not allowed to remove collection '" + collection.getURI() + "'");
         final XmldbURI uri = collection.getURI();
         for(Iterator i = collection.collectionIterator(); i.hasNext();)
         {
@@ -988,7 +996,8 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 
         if(!collection.getPermissions().validate(getUser(), Permission.WRITE))
-            throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
+            //throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
+        	throw new PermissionDeniedException("Remove is not allowed for collection '" + collection.getURI() + "'");
 
         try {
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_COLLECTION, collection.getURI());
@@ -2129,8 +2138,9 @@ public class NativeBroker extends DBBroker {
 						doc.getFileURI());
       
         User docUser = doc.getUserLock();
+		User user = getUser();
         if (docUser != null) {
-        	if(!(getUser().getName()).equals(docUser.getName()))
+        	if(user==null || user!=null && !(user.getName()).equals(docUser.getName()))
                 throw new PermissionDeniedException("Cannot move '" + doc.getFileURI() + 
 						    " because is locked by getUser() '" + docUser.getName() + "'");
         }

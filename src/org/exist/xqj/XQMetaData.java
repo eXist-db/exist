@@ -2,6 +2,8 @@ package org.exist.xqj;
 
 import javax.xml.xquery.XQException;
 
+import org.exist.security.User;
+
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
  *
@@ -68,8 +70,12 @@ public class XQMetaData implements javax.xml.xquery.XQMetaData {
 	public String getUserName() throws XQException
 	{
 		throwIfClosed();
-		
-		return connection.getBroker().getUser().getName();
+		User user = connection.getBroker().getUser();
+		if (user!=null){
+			return user.getName();
+		}
+		//TODO: may be needs return DBA?
+		return "";
 	}
 
 	public int getXQJMajorVersion() throws XQException

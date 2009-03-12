@@ -41,6 +41,7 @@ import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.XMLSecurityManager;
+import org.exist.soap.Permissions;
 import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.GeneralRangeIndexSpec;
@@ -768,7 +769,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        
 	        if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException(
-	                    "Write access to collection denied; user=" + broker.getUser().getName());
+	                    //"Write access to collection denied; user=" + broker.getUser().getName());
+	        			"Write access to collection denied");
 	        if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException("Permission to remove document denied");
 	        
@@ -823,7 +825,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	                    " is locked for write");
 	        if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException(
-	                    "write access to collection denied; user=" + broker.getUser().getName());
+	                    //"Write access to collection denied; user=" + broker.getUser().getName());
+	        			"Write access to collection denied");
 	        if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException("permission to remove document denied");
 	        
@@ -1284,24 +1287,27 @@ public  class Collection extends Observable implements Comparable, Cacheable
      */
     private void manageDocumentInformation(DBBroker broker, DocumentImpl oldDoc,
             DocumentImpl document) {
-    	DocumentMetadata metadata = new DocumentMetadata();
         if (oldDoc != null) {
-            metadata = oldDoc.getMetadata();
-            metadata.setCreated(oldDoc.getMetadata().getCreated());
-            metadata.setLastModified(System.currentTimeMillis());
-            document.setPermissions(oldDoc.getPermissions());
+            oldDoc.getMetadata().setLastModified(System.currentTimeMillis());
         } else {
-            metadata.setCreated(System.currentTimeMillis());
-            document.getPermissions().setOwner(broker.getUser());
+        	long time = System.currentTimeMillis();
+        	Permission permissions = document.getPermissions(); 
+        	DocumentMetadata metadata = new DocumentMetadata();
+            metadata.setCreated(time);
+            metadata.setLastModified(time);
+            permissions.setOwner(broker.getUser());
         	CollectionConfiguration config = getConfiguration(broker); 
         	if (config!=null){
-                document.setPermissions(config.getDefResPermissions());
-                document.getPermissions().setGroup(config.getDefResGroup());
+                permissions.setPermissions(config.getDefResPermissions());
+                permissions.setGroup(config.getDefResGroup());
         	} else {
-                document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
+        		User user = broker.getUser();
+        		if (user!=null){
+        			permissions.setGroup(user.getPrimaryGroup());
+        		}
         	}
+            document.setMetadata(metadata);
         }
-        document.setMetadata(metadata);
     }
     
     /**
@@ -1335,7 +1341,8 @@ public  class Collection extends Observable implements Comparable, Cacheable
             // do we have write permissions?
         } else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
             throw new PermissionDeniedException(
-                    "User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getURI() + "'");
+                    //"User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getURI() + "'");
+                    "Write is not allowed for collection '" + getURI() + "'");
     }
     
     private DocumentTrigger setupTriggers(DBBroker broker, XmldbURI docUri, boolean update, CollectionConfiguration config) {
