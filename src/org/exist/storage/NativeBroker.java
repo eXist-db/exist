@@ -622,14 +622,10 @@ public class NativeBroker extends DBBroker {
                             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
                         if (!current.getPermissionsNoLock().validate(getUser(), Permission.WRITE)) {
                             LOG.error("Permission denied to create collection '" + path + "'");
-                            //throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to write to collection '" + current.getURI() + "'");
-                            throw new PermissionDeniedException("Write is not allowed for collection '" + current.getURI() + "'");
+                            throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to write to collection '" + current.getURI() + "'");
                         }
                         LOG.debug("Creating collection '" + path + "'...");
                         sub = new Collection(path);
-                		User user = getUser();
-                        sub.getPermissions().setOwner(user);
-                        sub.setId(getNextCollectionId(transaction));
                         sub.setCreationTime(System.currentTimeMillis());
                         if (transaction != null)
                             transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
@@ -951,8 +947,7 @@ public class NativeBroker extends DBBroker {
     
     private void canRemoveCollection(Collection collection) throws PermissionDeniedException {
         if(!collection.getPermissions().validate(getUser(), Permission.WRITE))
-            //throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
-        	throw new PermissionDeniedException("Not allowed to remove collection '" + collection.getURI() + "'");
+            throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
         final XmldbURI uri = collection.getURI();
         for(Iterator i = collection.collectionIterator(); i.hasNext();)
         {
@@ -984,8 +979,7 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 
         if(!collection.getPermissions().validate(getUser(), Permission.WRITE))
-            //throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
-        	throw new PermissionDeniedException("Remove is not allowed for collection '" + collection.getURI() + "'");
+            throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
 
         try {
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_COLLECTION, collection.getURI());
