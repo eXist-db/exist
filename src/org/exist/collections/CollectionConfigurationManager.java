@@ -75,11 +75,11 @@ public class CollectionConfigurationManager {
     private BrokerPool pool;
     
     public CollectionConfigurationManager(DBBroker broker) throws EXistException, CollectionConfigurationException {
-		pool = broker.getBrokerPool();
-        latch = pool.getCollectionsCache();
+		this.pool = broker.getBrokerPool();
+        this.latch = pool.getCollectionsCache();
         checkConfigCollection(broker);
         loadAllConfigurations(broker);
-        defaultConfig = new CollectionConfiguration(broker);
+        defaultConfig = new CollectionConfiguration(broker.getBrokerPool());
         defaultConfig.setIndexConfiguration(broker.getIndexConfiguration());
     }
 
@@ -156,7 +156,7 @@ public class CollectionConfigurationManager {
             reader.parse(src);
 
             Document doc = adapter.getDocument();
-            CollectionConfiguration conf = new CollectionConfiguration(broker);
+            CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
             conf.read(broker, doc, true, null, null);
         } catch (ParserConfigurationException e) {
             throw new CollectionConfigurationException(e.getMessage(), e);
@@ -229,7 +229,7 @@ public class CollectionConfigurationManager {
                 if(confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
                     if (LOG.isTraceEnabled())
                         LOG.trace("Reading collection configuration from '" + confDoc.getURI() + "'");
-                    CollectionConfiguration conf = new CollectionConfiguration(broker);
+                    CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
 
                     // TODO DWES Temporary workaround for bug 
                     // [ 1807744 ] Invalid collection.xconf causes a non startable database

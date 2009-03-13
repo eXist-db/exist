@@ -21,20 +21,6 @@
  */
 package org.exist.collections;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Indexer;
@@ -60,9 +46,9 @@ import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
-import org.exist.storage.ProcessMonitor;
 import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.storage.UpdateListener;
+import org.exist.storage.ProcessMonitor;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
@@ -85,6 +71,20 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.TreeMap;
 
 /**
  * This class represents a collection in the database. A collection maintains a list of
@@ -181,15 +181,9 @@ public  class Collection extends Observable implements Comparable, Cacheable
         if (!subcollections.contains(childName))
             subcollections.add(childName);
         if (isNew) {
-        	User user = broker.getUser();
-            child.permissions.setOwner(user);
             CollectionConfiguration config = getConfiguration(broker);
-            if (config != null){
+            if (config != null)
                 child.permissions.setPermissions(config.getDefCollPermissions());
-                child.permissions.setGroup(config.getDefCollGroup());
-            } else {
-                child.permissions.setGroup(user);
-            }
         }
     }
     
@@ -772,8 +766,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        
 	        if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException(
-	                    //"Write access to collection denied; user=" + broker.getUser().getName());
-	        			"Write access to collection denied");
+	                    "Write access to collection denied; user=" + broker.getUser().getName());
 	        if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException("Permission to remove document denied");
 	        
@@ -828,8 +821,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	                    " is locked for write");
 	        if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException(
-	                    //"Write access to collection denied; user=" + broker.getUser().getName());
-	        			"Write access to collection denied");
+	                    "write access to collection denied; user=" + broker.getUser().getName());
 	        if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException("permission to remove document denied");
 	        
@@ -1176,10 +1168,16 @@ public  class Collection extends Observable implements Comparable, Cacheable
 			broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, docUri); 
             getLock().acquire(Lock.WRITE_LOCK);   
             DocumentImpl document = new DocumentImpl(broker.getBrokerPool(), this, docUri);
+            
             oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
+            if (oldDoc == null) {
+                if (config != null) {
+                    document.setPermissions(config.getDefResPermissions());
+                }
+            } else
+                document.setPermissions(oldDoc.getPermissions().getPermissions());
             
             checkPermissions(transaction, broker, oldDoc);
-            
             manageDocumentInformation(broker, oldDoc, document );
             
             Indexer indexer = new Indexer(broker, transaction);
@@ -1290,27 +1288,19 @@ public  class Collection extends Observable implements Comparable, Cacheable
      */
     private void manageDocumentInformation(DBBroker broker, DocumentImpl oldDoc,
             DocumentImpl document) {
-    	long time = System.currentTimeMillis();
-    	DocumentMetadata metadata;
+    	DocumentMetadata metadata = new DocumentMetadata();
         if (oldDoc != null) {
-        	metadata = oldDoc.getMetadata(); 
+            metadata = oldDoc.getMetadata();
+            metadata.setCreated(oldDoc.getMetadata().getCreated());
+            metadata.setLastModified(System.currentTimeMillis());
+            document.setPermissions(oldDoc.getPermissions());
         } else {
-        	metadata = new DocumentMetadata();
-            metadata.setCreated(time);
-        	User user = broker.getUser();
-        	Permission permissions = document.getPermissions(); 
-            permissions.setOwner(user);
-        	CollectionConfiguration config = getConfiguration(broker); 
-        	if (config!=null){
-                permissions.setPermissions(config.getDefResPermissions());
-                permissions.setGroup(config.getDefResGroup());
-        	} else {
-    			permissions.setGroup(user);
-        	}
+            metadata.setCreated(System.currentTimeMillis());
+            document.getPermissions().setOwner(broker.getUser());
+            document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
         }
-        metadata.setLastModified(time);
         document.setMetadata(metadata);
-}
+    }
     
     /**
      * Check Permissions about user and document, and throw exceptions if necessary.
@@ -1343,8 +1333,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             // do we have write permissions?
         } else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
             throw new PermissionDeniedException(
-                    //"User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getURI() + "'");
-                    "Write is not allowed for collection '" + getURI() + "'");
+                    "User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getURI() + "'");
     }
     
     private DocumentTrigger setupTriggers(DBBroker broker, XmldbURI docUri, boolean update, CollectionConfiguration config) {
@@ -1444,7 +1433,6 @@ public  class Collection extends Observable implements Comparable, Cacheable
 */
 	        
 	        manageDocumentInformation(broker, oldDoc, blob );
-	        
 	        DocumentMetadata metadata = blob.getMetadata();
 	        metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
 	        

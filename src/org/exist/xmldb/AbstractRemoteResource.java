@@ -254,6 +254,8 @@ public abstract class AbstractRemoteResource
 			command = "getDocumentData";
 			params.add(path.toString());
 		}
+        if (properties == null)
+            properties = new Properties();
 		params.add(properties);
 		try {
 			File tmpfile=File.createTempFile("eXistARR",getResourceType().equals("XMLResource")?".xml":".bin");
