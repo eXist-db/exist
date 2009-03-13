@@ -2830,11 +2830,11 @@ public class RpcConnection implements RpcAPI {
                 NodeValue nodeValue = (NodeValue)item;
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
-                for (Iterator i = parameters.entrySet().iterator(); i.hasNext();) {
+                for (Iterator i = qr.serialization.entrySet().iterator(); i.hasNext();) {
                     Map.Entry entry = (Map.Entry) i.next();
-                    qr.serialization.setProperty(entry.getKey().toString(), entry.getValue().toString());
+                    parameters.put(entry.getKey().toString(), entry.getValue().toString());
                 }
-                serializer.setProperties(qr.serialization);
+                serializer.setProperties(parameters);
                 return serializer.serialize(nodeValue);
             } else {
                 return item.getStringValue();
@@ -2894,7 +2894,12 @@ public class RpcConnection implements RpcAPI {
 						NodeValue nodeValue = (NodeValue)item;
 						Serializer serializer = broker.getSerializer();
 						serializer.reset();
+						for (Iterator i = qr.serialization.entrySet().iterator(); i.hasNext();) {
+							Map.Entry entry = (Map.Entry) i.next();
+							parameters.put(entry.getKey().toString(), entry.getValue().toString());
+						}
 						serializer.setProperties(parameters);
+						
 						serializer.serialize(nodeValue, writer);
 					} else {
 						writer.write(item.getStringValue());
@@ -3046,6 +3051,10 @@ public class RpcConnection implements RpcAPI {
 			qr.timestamp = System.currentTimeMillis();
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
+			for (Iterator i = qr.serialization.entrySet().iterator(); i.hasNext();) {
+				Map.Entry entry = (Map.Entry) i.next();
+				parameters.put(entry.getKey().toString(), entry.getValue().toString());
+			}
 			serializer.setProperties(parameters);
 			SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 			

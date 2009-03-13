@@ -377,7 +377,7 @@ public class RemoteXMLResource
 	this.outputProperties = properties;
     }
 	
-    private Properties getProperties() {
+    protected Properties getProperties() {
 	return outputProperties == null ? parent.properties : outputProperties;
     }
 

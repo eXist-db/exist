@@ -74,6 +74,10 @@ public abstract class AbstractRemoteResource
 		isLocal=true;
 	}
 	
+	protected Properties getProperties() {
+		return parent.properties;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.base.Resource#getContent()
 	 */
@@ -239,7 +243,7 @@ public abstract class AbstractRemoteResource
 		FileOutputStream fos=null;
 		BufferedOutputStream bos=null;
 		
-		Properties properties = parent.getProperties();
+		Properties properties = getProperties();
 		String command = null;
 		List params = new ArrayList();
 		if(isRetrieve) {
@@ -496,7 +500,7 @@ public abstract class AbstractRemoteResource
 		} else if(contentFile!=null) {
 			retval=contentFile.length();
 		} else {
-			Properties properties = parent.getProperties();
+			Properties properties = getProperties();
 			List params = new ArrayList();
 			params.add(path.toString());
 			params.add(properties);
