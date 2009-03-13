@@ -70,20 +70,19 @@ import org.w3c.dom.Node;
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @author Robert Walpole <robert.walpole@devon.gov.uk>
- * @serial 2007-10-05
- * @version 1.2
+ * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @serial 2009-03-12
+ * @version 1.3
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
 public class SendEmailFunction extends BasicFunction
 {
-	//TODO: Feature - Add an option to execute the function Asynchronously as Socket operations for SMTP can be slow (Sendmail seems fast enough). Will require placing the SMTP code in a thread.
-	//TODO: Feature - Add a facility for the user to add their own message headers.
-	//TODO: Read the location of sendmail from the configuration file. Can vary from system to system
+	// This function has been deprecated, in favour of using the JavaMail version.
     
     private String charset;
 	
-	public final static FunctionSignature signature =
+	public final static FunctionSignature deprecated =
 		new FunctionSignature(
 			new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
 			"Sends an email $a through the SMTP Server $b, or if $b is () tries to use the local sendmail program. $a is the email in the following format <mail><from/><reply-to/><to/><cc/><bcc/><subject/><message><text/><xhtml/></message><attachment filename=\"\" mimetype=\"\">xs:base64Binary</attachment></mail>. $c defines the charset value used in the \"Content-Type\" message header (Defaults to UTF-8)",
@@ -93,7 +92,9 @@ public class SendEmailFunction extends BasicFunction
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+			"Deprecated. Use the new JavaMail-based send function instead. This function will be removed at some point in the future."
+			);
 
 	/**
 	 * SendEmail Constructor
@@ -102,7 +103,7 @@ public class SendEmailFunction extends BasicFunction
 	 */
 	public SendEmailFunction(XQueryContext context)
 	{
-		super(context, signature);
+		super( context, deprecated );
     }
 
 	/**
