@@ -1234,8 +1234,7 @@ public class BrokerPool {
                     this.checkpoint = false;
 				}				
                 processWaitingTasks(broker);
-        		User user = broker.getUser();
-                if (serviceModeUser != null && user!=null && !user.equals(serviceModeUser)) {
+                if (serviceModeUser != null && !broker.getUser().equals(serviceModeUser)) {
                     inServiceMode = true;
                 }
             }
