@@ -468,7 +468,8 @@ public class XQueryContext {
         ctx.allModules = new HashMap();
         for (Iterator i = this.allModules.values().iterator(); i.hasNext(); ) {
       	  Module module = (Module) i.next();
-      	  ctx.allModules.put(module.getNamespaceURI(), module);
+            if (module != null)
+          	  ctx.allModules.put(module.getNamespaceURI(), module);
         }
 
         ctx.watchdog = this.watchdog;
@@ -2109,17 +2110,18 @@ public class XQueryContext {
 	}
 	
 	private ExternalModule compileOrBorrowModule(String prefix, String namespaceURI, String location, Source source) throws XPathException {
-		ExternalModule module = broker.getBrokerPool().getXQueryPool().borrowModule(broker, source);
+		ExternalModule module = broker.getBrokerPool().getXQueryPool().borrowModule(broker, source, this);
 		if (module == null) {
 			module = compileModule(prefix, namespaceURI, location, source);
 		} else {
-			for (Iterator it = module.getContext().getAllModules(); it.hasNext(); ) {
-				Module importedModule = (Module) it.next();
-				if (!allModules.containsKey(importedModule.getNamespaceURI())) {
-					setRootModule(importedModule.getNamespaceURI(), importedModule);
-				}
-			}
-		}
+            for (Iterator it = module.getContext().getAllModules(); it.hasNext();) {
+                Module importedModule = (Module) it.next();
+                if (importedModule != null && 
+					!allModules.containsKey(importedModule.getNamespaceURI())) {
+                    setRootModule(importedModule.getNamespaceURI(), importedModule);
+                }
+            }
+        }
      	setModule(module.getNamespaceURI(), module);
       declareModuleVars(module);
       return module;

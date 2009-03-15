@@ -199,7 +199,7 @@ public class XQueryPool extends Object2ObjectHashMap {
             Module module = (Module) it.next();
             if (module == null || !module.isInternalModule()) {
                 ExternalModule extModule = (ExternalModule) module;
-                ExternalModule borrowedModule = borrowModule(broker, extModule.getSource());
+                ExternalModule borrowedModule = borrowModule(broker, extModule.getSource(), context);
                 if (borrowedModule == null) {
                     for (Iterator it2 = borrowedModules.values().iterator(); it2.hasNext(); ) {
                         ExternalModule moduleToReturn = (ExternalModule) it2.next();
@@ -235,17 +235,18 @@ public class XQueryPool extends Object2ObjectHashMap {
         return true;
     }
     
-    public synchronized ExternalModule borrowModule(DBBroker broker, Source source) {
+    public synchronized ExternalModule borrowModule(DBBroker broker, Source source, XQueryContext rootContext) {
    	 ExternalModule module = (ExternalModule) borrowObject(broker, source);
    	 if (module == null) return null;
    	 XQueryContext context = module.getContext();
    	 context.setBroker(broker);
    	 if (!module.moduleIsValid()) {
-			 LOG.debug("Module with URI " + module.getNamespaceURI() + 
+			 LOG.debug("Module with URI " + module.getNamespaceURI() +
 				" has changed and needs to be reloaded");
 	   	 remove(source);
 	   	 return null;
    	 } else {
+            ((ModuleContext) module.getContext()).updateModuleRefs(rootContext);
    		 return module;
    	 }
     }

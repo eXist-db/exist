@@ -162,7 +162,7 @@ public class GetData extends BasicFunction {
 				{ 
 					//try and construct xml document from input stream, we use eXist's in-memory DOM implementation
 					SAXParserFactory factory = SAXParserFactory.newInstance();
-					factory.setNamespaceAware(true);	
+					factory.setNamespaceAware(true);
 					//TODO : we should be able to cope with context.getBaseURI()				
 					InputSource src = new InputSource(new ByteArrayInputStream(bufRequestData));
 					SAXParser parser = factory.newSAXParser();
