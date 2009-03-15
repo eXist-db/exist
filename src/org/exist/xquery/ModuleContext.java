@@ -30,6 +30,7 @@ import org.exist.xquery.value.AnyURIValue;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Iterator;
+import java.util.HashMap;
 
 
 /**
@@ -154,6 +155,21 @@ public class ModuleContext extends XQueryContext {
             }
         }
         return module;
+    }
+
+    public void updateModuleRefs(XQueryContext rootContext) {
+        HashMap newModules = new HashMap(modules.size());
+        for (Iterator i = modules.values().iterator(); i.hasNext(); ) {
+            Module module = (Module) i.next();
+            if (module.isInternalModule()) {
+                Module updated = rootContext.getModule(module.getNamespaceURI());
+                if (updated == null)
+                    updated = module;
+                newModules.put(module.getNamespaceURI(), updated);
+            } else
+                newModules.put(module.getNamespaceURI(), module);
+        }
+        modules = newModules;
     }
 
 	/* (non-Javadoc)
