@@ -129,7 +129,7 @@ public class MessageListFunctions extends BasicFunction
 			)
 	};
 	
-	private static final String DATE_FORMAT = "yy/MM/dd hh:mm a";
+	private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 	
 	private static final String PREFETCH_HEADERS[] = {
 		"Return-Path",
@@ -271,7 +271,6 @@ public class MessageListFunctions extends BasicFunction
 	{
 		Message[] 		 msgList;
 		Sequence 		 ret		= Sequence.EMPTY_SEQUENCE;
-		SimpleDateFormat sdf 		= new SimpleDateFormat( DATE_FORMAT );
 		
 		// was a msgList handle specified?
 		if( args[0].isEmpty() ) {
@@ -306,14 +305,14 @@ public class MessageListFunctions extends BasicFunction
 					// Sent Date
 					if( message.getSentDate() != null ) {
 						builder.startElement( new QName( "sent", MailModule.NAMESPACE_URI, MailModule.PREFIX ), null );
-						builder.characters( sdf.format( message.getSentDate() ) );
+						builder.characters( formatDate( message.getSentDate() ) );
 						builder.endElement();
 			        }
 					
 					// Received Date
 					if( message.getReceivedDate() != null ) {
 						builder.startElement( new QName( "received", MailModule.NAMESPACE_URI, MailModule.PREFIX ), null );
-						builder.characters( sdf.format( message.getReceivedDate() ) );
+						builder.characters( formatDate( message.getReceivedDate() ) );
 						builder.endElement();
 			        }
 					
@@ -448,6 +447,19 @@ public class MessageListFunctions extends BasicFunction
 		}
 		
 		return( ret );
+	}
+	
+	private String formatDate( Date date ) 
+	{
+		String formatted = "";
+		
+		SimpleDateFormat sdf = new SimpleDateFormat( DATE_FORMAT );
+		
+		String temp = sdf.format( date );
+		
+		formatted = temp.substring( 0, temp.length() - 2 ) + ":" + temp.substring( temp.length() - 2 );
+		
+		return( formatted );
 	}
 	
 	
