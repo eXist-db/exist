@@ -21,7 +21,6 @@
  */
 package org.exist.management.impl;
 
-import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 /**

@@ -23,13 +23,9 @@
 package org.exist.security.xacml;
 
 import java.net.URI;
-import java.util.HashMap;
 
-import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
-import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
-import org.w3c.dom.Element;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AnyURIAttribute;
