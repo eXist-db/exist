@@ -104,5 +104,8 @@
 	<classpathentry kind="lib" path="lib/core/stax-api-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/onvdl-20070517.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.1.jar"/>
+	<classpathentry kind="lib" path="lib/user/fop.jar"/>
+	<classpathentry kind="lib" path="lib/user/svnkit.jar"/>
+	<classpathentry kind="lib" path="lib/user/mail.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
