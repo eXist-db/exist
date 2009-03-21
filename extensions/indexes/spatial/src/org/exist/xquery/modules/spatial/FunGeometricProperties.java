@@ -312,22 +312,10 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 				}
 		        NodeValue geometryNode = (NodeValue) nodes.itemAt(0);
 				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-					if (propertyName != null) {
-						//The node should be indexed : get its property
-						result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
-						hasUsedIndex = true;
-					} else {
-						//Or, at least, its geometry for further processing
-						if (propertyName.indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
-							geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
-							sourceCRS = "EPSG:4326";
-						} else {
-							geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
-							sourceCRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
-						}
-					}
-				}
-				if (result == null) {
+					//The node should be indexed : get its property
+					result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
+					hasUsedIndex = true;
+				} else {
 		        	//builds the geometry
 					if (geometry == null) {
 						sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
