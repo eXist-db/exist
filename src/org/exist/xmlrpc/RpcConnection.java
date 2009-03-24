@@ -2166,10 +2166,15 @@ public class RpcConnection implements RpcAPI {
      */
     protected String printAll(DBBroker broker, Sequence resultSet, int howmany,
             int start, HashMap properties, long queryTime) throws Exception {
-        if (resultSet.isEmpty())
-            return "<?xml version=\"1.0\"?>\n"
-                    + "<exist:result xmlns:exist=\""+ Namespaces.EXIST_NS + "\" "
-                    + "hitCount=\"0\"/>";
+        if (resultSet.isEmpty()) {
+            StringBuffer buf = new StringBuffer();
+            String opt = (String) properties.get(OutputKeys.OMIT_XML_DECLARATION);
+            if (opt == null || opt.equalsIgnoreCase("no"))
+                buf.append("<?xml version=\"1.0\"?>\n");
+            buf.append("<exist:result xmlns:exist=\"").append(Namespaces.EXIST_NS).append("\" ");
+            buf.append("hitCount=\"0\"/>");
+            return buf.toString();
+        }
         if (howmany > resultSet.getItemCount() || howmany == 0)
             howmany = resultSet.getItemCount();
         
