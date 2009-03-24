@@ -27,11 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -55,7 +51,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     private String formEncoding = null;
     private String containerEncoding = null;
     
-    private Hashtable params = null;
+    private Map params = null;
     private String pathInfo = null;
     private String servletPath = null;
     
@@ -97,9 +93,9 @@ public class HttpRequestWrapper implements RequestWrapper {
         return servletRequest.getCookies();
     }
     
-    private void addParameter(String paramName, Object value)
+    private static void addParameter(Map map, String paramName, Object value)
     {
-    	Object old = params.get(paramName);
+    	Object old = map.get(paramName);
         if(old != null)
         {
             if(old instanceof List)
@@ -111,12 +107,12 @@ public class HttpRequestWrapper implements RequestWrapper {
                 ArrayList list = new ArrayList();
                 list.add(old);
                 list.add(value);
-                params.put(paramName, list);
+                map.put(paramName, list);
             }
         }
         else
         {
-            params.put(paramName, value);
+            map.put(paramName, value);
         }
     }
     
@@ -128,12 +124,12 @@ public class HttpRequestWrapper implements RequestWrapper {
         upload.setSizeThreshold(0);
         try
         {
-            this.params = new Hashtable();
+            this.params = new HashMap();
             List items = upload.parseRequest(this.servletRequest);
             for(Iterator i = items.iterator(); i.hasNext(); )
             {
                 FileItem next = (FileItem) i.next();
-                addParameter(next.getFieldName(), next);
+                addParameter(params, next.getFieldName(), next);
             }
             
             //also get parameters from the querystring
@@ -143,15 +139,18 @@ public class HttpRequestWrapper implements RequestWrapper {
             	String nvps[] = qs.split("&");
             	if(nvps != null && nvps.length > 0)
             	{
+                    HashMap qsParams = new HashMap();
             		for(int i = 0; i < nvps.length; i++)
             		{
             			String nvp[] = nvps[i].split("=");
-            			if(nvp != null && nvp.length == 2)
+            			if(nvp != null && nvp.length == 2 && !params.containsKey(nvp[0]))
             			{
-            				addParameter(nvp[0], nvp[1]);
+            				addParameter(qsParams, nvp[0], nvp[1]);
             			}
             		}
+                    params.putAll(qsParams);
             	}
+                
             }
             
         } catch (FileUploadException e) {
@@ -355,7 +354,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         if(params == null)
             return servletRequest.getParameterNames();
         else {
-            return params.keys();
+            return Collections.enumeration(params.keySet());
         }
     }
     
@@ -374,7 +373,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
         else
         {
-            Object obj = (Object)params.get(key);
+            Object obj = params.get(key);
             if(obj == null)
                 return null;
             String[] values;
