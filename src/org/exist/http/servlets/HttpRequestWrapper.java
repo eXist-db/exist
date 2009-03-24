@@ -386,7 +386,7 @@ public class HttpRequestWrapper implements RequestWrapper {
                 for(Iterator i = list.iterator(); i.hasNext(); j++)
                 {
                 	Object o = i.next();
-                	if(i instanceof FileItem)
+                	if(o instanceof FileItem)
                 	{
                 		FileItem item = (FileItem)o;
                 	
