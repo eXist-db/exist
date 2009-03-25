@@ -43,7 +43,7 @@ public class TwoParamFunctions extends BasicFunction {
     public final static FunctionSignature signature[] = {
         new FunctionSignature(
                 new QName("atan2", MathModule.NAMESPACE_URI),
-                "Returns the angle (radians) from the X axis to a point ($b,$a).",
+                "Returns the angle theta from the conversion of rectangular coordinates (x, y) to polar coordinates (r, theta). $a is y and $b is x.",
                 new SequenceType[] {
                     new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
                     new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
@@ -92,7 +92,7 @@ public class TwoParamFunctions extends BasicFunction {
         NumericValue valueB = (NumericValue)seqB.itemAt(0).convertTo(Type.DOUBLE);
         
         if("atan2".equals(functionName)) {
-            calcValue=Math.atan2(valueB.getDouble(),valueA.getDouble());
+            calcValue = Math.atan2(valueA.getDouble(), valueB.getDouble());
             
         } else if("power".equals(functionName)) {
             calcValue=Math.pow(valueA.getDouble(), valueB.getDouble());
