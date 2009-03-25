@@ -116,7 +116,8 @@ public class ExecuteFunction extends BasicFunction
 		Statement stmt = null;
 		ResultSet rs = null;
 
-		try {
+		try
+		{
 			MemTreeBuilder builder = context.getDocumentBuilder();
 			int iRow = 0;
 
@@ -124,7 +125,8 @@ public class ExecuteFunction extends BasicFunction
 			stmt = con.createStatement();
 
 			// execute the query statement
-			if( stmt.execute( sql ) ) {
+			if(stmt.execute(sql))
+			{
 				/* SQL Query returned results */
 
 				// iterate through the result set building an XML document
@@ -134,24 +136,27 @@ public class ExecuteFunction extends BasicFunction
 				
 				builder.startDocument();
 				
-				builder.startElement( new QName( "result", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
-				builder.addAttribute( new QName( "count", null, null ), String.valueOf( -1 ) );
+				builder.startElement(new QName("result", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+				builder.addAttribute(new QName("count", null, null), String.valueOf(-1 ));
 				
-				while( rs.next() ) {
-					builder.startElement( new QName( "row", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
-        			builder.addAttribute( new QName( "index", null, null ), String.valueOf( rs.getRow() ) );
+				while(rs.next())
+				{
+					builder.startElement(new QName("row", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+        			builder.addAttribute(new QName("index", null, null), String.valueOf(rs.getRow()));
 
 					// get each tuple in the row
-					for( int i = 0; i < iColumns; i++ ) {
-						String columnName = rsmd.getColumnName( i + 1 );
+					for(int i = 0; i < iColumns; i++)
+					{
+						String columnName = rsmd.getColumnLabel(i + 1);
 
-						if( columnName != null ) {
-
-							String colValue = rs.getString( i + 1 );
+						if(columnName != null)
+						{
+							String colValue = rs.getString(i + 1);
 							
 							String colElement = "field";
 
-							if( ((BooleanValue)args[2].itemAt(0)).effectiveBooleanValue() && columnName.length() > 0 ) {
+							if(((BooleanValue)args[2].itemAt(0)).effectiveBooleanValue() && columnName.length() > 0)
+							{
 								// use column names as the XML node
 
 								/**
@@ -159,33 +164,36 @@ public class ExecuteFunction extends BasicFunction
 								 * underscore's
 								 */
 								
-								colElement = escapeXmlAttr( columnName.replace( ' ', '_' ) );
+								colElement = escapeXmlAttr(columnName.replace(' ', '_'));
 							} 
 						
-							builder.startElement( new QName( colElement, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
+							builder.startElement(new QName(colElement, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null);
 							
-							if( !((BooleanValue)args[2].itemAt(0)).effectiveBooleanValue() || columnName.length() <= 0 ) {
+							if(!((BooleanValue)args[2].itemAt(0)).effectiveBooleanValue() || columnName.length() <= 0)
+							{
 								String name;
 								
-								if( columnName.length() > 0 ) {
-									name = escapeXmlAttr( columnName );
+								if(columnName.length() > 0) {
+									name = escapeXmlAttr(columnName);
 								} else {
-									name = "Column: " + String.valueOf( i + 1 );
+									name = "Column: " + String.valueOf(i + 1);
 								}
 								
-								builder.addAttribute( new QName( "name", null, null ), name );
+								builder.addAttribute(new QName("name", null, null), name);
 							}
 							
-							builder.addAttribute( new QName( "type", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), rsmd.getColumnTypeName( i + 1 ) );
-							builder.addAttribute( new QName( "type", Namespaces.SCHEMA_NS, "xs" ), Type.getTypeName( sqlTypeToXMLType( rsmd.getColumnType( i + 1 ) ) ) );
+							builder.addAttribute(new QName("type", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), rsmd.getColumnTypeName(i + 1));
+							builder.addAttribute(new QName("type", Namespaces.SCHEMA_NS, "xs"), Type.getTypeName(sqlTypeToXMLType(rsmd.getColumnType(i + 1))));
 							
-							if( rs.wasNull() ) {
+							if(rs.wasNull())
+							{
 								// Add a null indicator attribute if the value was SQL Null
-								builder.addAttribute( new QName( "null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "true" );
+								builder.addAttribute(new QName("null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), "true");
 							}
 							
-							if( colValue != null ) {
-								builder.characters( escapeXmlText( colValue ) );
+							if(colValue != null)
+							{
+								builder.characters(escapeXmlText(colValue));
 							}
 							
 							builder.endElement();
@@ -199,13 +207,15 @@ public class ExecuteFunction extends BasicFunction
 				
 				builder.endElement();
 		
-			} else {
+			}
+			else
+			{
 				/* SQL Query performed updates */
 				
 				builder.startDocument();
 				
-				builder.startElement( new QName( "result", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
-        		builder.addAttribute( new QName( "updateCount", null, null ), String.valueOf( stmt.getUpdateCount() ) );
+				builder.startElement(new QName("result", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+        		builder.addAttribute(new QName("updateCount", null, null), String.valueOf(stmt.getUpdateCount()));
 
 				builder.endElement();
 			}
@@ -214,21 +224,22 @@ public class ExecuteFunction extends BasicFunction
 			
 			NodeValue node = (NodeValue)builder.getDocument().getDocumentElement();
 
-			Node count = node.getNode().getAttributes().getNamedItem( "count" );
+			Node count = node.getNode().getAttributes().getNamedItem("count");
 			
-			if( count != null ) {
-				count.setNodeValue( String.valueOf( iRow ) );
+			if(count != null)
+			{
+				count.setNodeValue(String.valueOf(iRow));
 			}
 			builder.endDocument();
 			
 			
 			// return the XML result set
-			return( node );
+			return(node);
 			
 		} 
 		catch(SQLException sqle)
 		{
-			LOG.error( "sql:execute() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle );
+			LOG.error("sql:execute() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle);
 			
 			//return details about the SQLException
 			MemTreeBuilder builder = context.getDocumentBuilder();
@@ -279,19 +290,24 @@ public class ExecuteFunction extends BasicFunction
 			
 			return (NodeValue)builder.getDocument().getDocumentElement();
 		} 
-		finally {
+		finally
+		{
 			// close any record set or statement
-			try {
-				if( rs != null ) {
+			try
+			{
+				if(rs != null)
+				{
 					rs.close();
 				}
 
-				if( stmt != null ) {
+				if(stmt != null)
+				{
 					stmt.close();
 				}
 			} 
-			catch( SQLException se ) {
-				LOG.debug( "Unable to cleanup JDBC results", se );
+			catch(SQLException se)
+			{
+				LOG.warn("Unable to cleanup JDBC results", se);
 			}
 
 			// explicitly ready for Garbage Collection
@@ -310,86 +326,89 @@ public class ExecuteFunction extends BasicFunction
 	 */
 	private int sqlTypeToXMLType( int sqlType ) 
 	{
-		switch (sqlType) {
-		case Types.ARRAY:
-			return Type.NODE;
-
-		case Types.BIGINT:
-			return Type.INT;
-
-		case Types.BINARY:
-			return Type.BASE64_BINARY;
-
-		case Types.BIT:
-			return Type.INT;
-
-		case Types.BLOB:
-			return Type.BASE64_BINARY;
-
-		case Types.BOOLEAN:
-			return Type.BOOLEAN;
-
-		case Types.CHAR:
-			return Type.STRING;
-
-		case Types.CLOB:
-			return Type.STRING;
-
-		case Types.DECIMAL:
-			return Type.DECIMAL;
-
-		case Types.DOUBLE:
-			return Type.DOUBLE;
-
-		case Types.FLOAT:
-			return Type.FLOAT;
-
-		case Types.LONGVARCHAR:
-			return Type.STRING;
-
-		case Types.NUMERIC:
-			return Type.NUMBER;
-
-		case Types.SMALLINT:
-			return Type.INT;
-
-		case Types.TINYINT:
-			return Type.INT;
-
-		case Types.INTEGER:
-			return Type.INTEGER;
-
-		case Types.VARCHAR:
-			return Type.STRING;
-
-		default:
-			return Type.ANY_TYPE;
+		switch(sqlType)
+		{
+			case Types.ARRAY:
+				return Type.NODE;
+	
+			case Types.BIGINT:
+				return Type.INT;
+	
+			case Types.BINARY:
+				return Type.BASE64_BINARY;
+	
+			case Types.BIT:
+				return Type.INT;
+	
+			case Types.BLOB:
+				return Type.BASE64_BINARY;
+	
+			case Types.BOOLEAN:
+				return Type.BOOLEAN;
+	
+			case Types.CHAR:
+				return Type.STRING;
+	
+			case Types.CLOB:
+				return Type.STRING;
+	
+			case Types.DECIMAL:
+				return Type.DECIMAL;
+	
+			case Types.DOUBLE:
+				return Type.DOUBLE;
+	
+			case Types.FLOAT:
+				return Type.FLOAT;
+	
+			case Types.LONGVARCHAR:
+				return Type.STRING;
+	
+			case Types.NUMERIC:
+				return Type.NUMBER;
+	
+			case Types.SMALLINT:
+				return Type.INT;
+	
+			case Types.TINYINT:
+				return Type.INT;
+	
+			case Types.INTEGER:
+				return Type.INTEGER;
+	
+			case Types.VARCHAR:
+				return Type.STRING;
+	
+			default:
+				return Type.ANY_TYPE;
 		}
 	}
 
-	private static String escapeXmlText( String text ) 
+	private static String escapeXmlText(String text) 
 	{
 		String work = null;
 
-		if( text != null ) {
+		if(text != null)
+		{
 			work = text.replaceAll( "\\&", "\\&amp;" );
 			work = work.replaceAll( "<", "\\&lt;" );
 			work = work.replaceAll( ">", "\\&gt;" );
 		}
 
-		return( work );
+		return(work);
 	}
 
-	private static String escapeXmlAttr( String attr )
+	private static String escapeXmlAttr(String attr)
 	{
 		String work = null;
 
-		if( attr != null ) {
-			work = escapeXmlText( attr );
-			work = work.replaceAll( "'", "\\&apos;" );
-			work = work.replaceAll( "\"", "\\&quot;" );
+		if(attr != null)
+		{
+			work = escapeXmlText(attr);
+			work = work.replaceAll("'", "\\&apos;");
+			work = work.replaceAll("\"", "\\&quot;");
 		}
 
-		return( work );
+		return(work);
 	}
 }
