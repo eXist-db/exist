@@ -39,23 +39,13 @@
     </propertyfile>
   </target>
 
-  <!-- 
-    Download jar files from maven2 repository. Typically this is an older version
-    of the library, but the download size is significantly smaller.
-  -->
-  <target name="svn-download2" description="Download SVN library from maven.">
-    <get src="http://repo1.maven.org/maven2/com/svnkit/svnkit/1.1.0/svnkit-1.1.0.jar"
-      dest="${svn.svnkit.jar}" verbose="true"/>
-    <get src="http://repo1.maven.org/maven2/com/svnkit/svnkit-cli/1.1.0/svnkit-cli-1.1.0.jar"
-      dest="${svn.svnkitcli.jar}" verbose="true"/>
-  </target>
 
   <!-- 
     Download jar files the author website. This is newest version of the library, 
     if the URL is updated in time. The download size is significantly larger.
   -->
   <target name="svn-download" description="Download latest SVN library.">
-    <get src="http://www.svnkit.com/org.tmatesoft.svn_1.2.2.standalone.zip"
+    <get src="http://www.svnkit.com/org.tmatesoft.svn_1.2.3.standalone.zip"
       dest="${svn.download.zip}" verbose="true"/>
 
     <unzip src="${svn.download.zip}" dest="${tools.ant}/lib">
