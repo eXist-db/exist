@@ -53,7 +53,6 @@ highlight-matches=none
   <xslt in="${src.dir}/conf.xml" out="${dist.minimal}/conf.xml" style="${build.scripts}/minimal-fix-conf.xsl"/>
   <copy file="${src.dir}/descriptor.xml" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist.jar" todir="${dist.minimal}"/>
-  <copy file="${src.dir}/exist-modules.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist-optional.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/LICENSE" todir="${dist.minimal}"/>
   <echo file="${src.dir}/log4j.dtd"/>
@@ -73,18 +72,7 @@ highlight-matches=none
   <mkdir dir="${dist.minimal}/lib"/>
   <copy todir="${dist.minimal}/lib">
     <fileset dir="${src.dir}/lib">
-        <exclude name="**/optional/cocoon*.jar"/>
-        <exclude name="**/optional/excalibur*jar"/>
-        <exclude name="**/optional/avalon*jar"/>
-        <exclude name="**/optional/javac*jar"/>
-        <exclude name="**/optional/logkit*jar"/>
-        <exclude name="**/optional/commons*collection*jar"/>
-        <exclude name="**/optional/commons*discovery*jar"/>
-        <exclude name="**/optional/commons*jexl*jar"/>
-        <exclude name="**/optional/commons*jxpath*jar"/>
-        <exclude name="**/optional/commons*lang*jar"/>
-        <exclude name="**/optional/util.concurrent*jar"/>
-        <exclude name="**/optional/ehcache*jar"/>
+        <exclude name="**/cocoon/*.jar"/>
     </fileset>
   </copy>
   <mkdir dir="${dist.minimal}/tools"/>
