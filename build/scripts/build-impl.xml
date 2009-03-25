@@ -598,12 +598,12 @@
 
         <!-- International Components for Unicode -->
         <!-- http://www.icu-project.org/          -->
-        <get src="http://download.icu-project.org/files/icu4j/3.8.1/icu4j-3_8_1.jar"
-            dest="${lib.user}/icu4j-3_8_1.jar" verbose="true"/>
+        <get src="http://download.icu-project.org/files/icu4j/4.0.1/icu4j-4_0_1.jar"
+            dest="${lib.user}/icu4j-4.0.1.jar" verbose="true"/>
 
         <!-- Saxon XSLT2 Processor                 -->
         <!-- http://sourceforge.net/projects/saxon -->
-        <get src="http://prdownloads.sourceforge.net/saxon/saxonb9-0-0-6j.zip"
+        <get src="http://prdownloads.sourceforge.net/saxon/saxonb9-1-0-6j.zip"
             dest="${lib.endorsed}/saxon.zip" verbose="true"/>
 
         <unzip src="${lib.endorsed}/saxon.zip" dest="${lib.endorsed}">
