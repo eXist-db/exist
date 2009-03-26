@@ -3054,44 +3054,44 @@ public class NativeBroker extends DBBroker {
 	    .run();
     }
 
-    public StoredNode objectWith(final NodeProxy p) {       
-	if (p.getInternalAddress() == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-	    return objectWith(p.getDocument(), p.getNodeId());
-	return (StoredNode) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
-		public Object start() {
-		    // DocumentImpl sets the nodeId to DOCUMENT_NODE when it's trying to find its top-level
-		    // children (for which it doesn't persist the actual node ids), so ignore that.  Nobody else
-		    // should be passing DOCUMENT_NODE into here.
-			boolean fakeNodeId = p.getNodeId().equals(NodeId.DOCUMENT_NODE);
-		    Value val = domDb.get(p.getInternalAddress(), false);
-		    if (val == null) {
-			LOG.debug("Node " + p.getNodeId() + " not found in document " + p.getDocument().getURI() +
-				  "; docId = " + p.getDocument().getDocId() + ": " + StorageAddress.toString(p.getInternalAddress()));
-			//					LOG.debug(domDb.debugPages(p.doc, true));
-			//					return null;
-			if (fakeNodeId) return null;
-		    } else {
-			    StoredNode node = StoredNode.deserialize(val.getData(), 0, val.getLength(), p.getDocument());
-			    node.setOwnerDocument((DocumentImpl)p.getOwnerDocument());
-			    node.setInternalAddress(p.getInternalAddress());
-			    if (fakeNodeId) return node;
-		   	 if (p.getDocument().getDocId() == node.getDocId() && p.getNodeId().equals(node.getNodeId())) {
-					 return node;
-				 } else {
-					 LOG.debug(
-							 "Node " + p.getNodeId() + " not found in document " + p.getDocument().getURI() +
-							 "; docId = " + p.getDocument().getDocId() + ": " + StorageAddress.toString(p.getInternalAddress()) +
-							 "; found node " + node.getNodeId() + " instead"
-					 );
-				 }
-		    }
-		    // retry based on nodeid
-		    StoredNode node = objectWith(p.getDocument(), p.getNodeId());
-		    if (node != null) p.setInternalAddress(node.getInternalAddress());  // update proxy with correct address
-		    return node;
-		}
-	    }
-	    .run();
+    public StoredNode objectWith(final NodeProxy p) {
+        if (p.getInternalAddress() == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+            return objectWith(p.getDocument(), p.getNodeId());
+        return (StoredNode) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
+            public Object start() {
+                // DocumentImpl sets the nodeId to DOCUMENT_NODE when it's trying to find its top-level
+                // children (for which it doesn't persist the actual node ids), so ignore that.  Nobody else
+                // should be passing DOCUMENT_NODE into here.
+                boolean fakeNodeId = p.getNodeId().equals(NodeId.DOCUMENT_NODE);
+                Value val = domDb.get(p.getInternalAddress(), false);
+                if (val == null) {
+                    LOG.debug("Node " + p.getNodeId() + " not found in document " + p.getDocument().getURI() +
+                            "; docId = " + p.getDocument().getDocId() + ": " + StorageAddress.toString(p.getInternalAddress()));
+                    //					LOG.debug(domDb.debugPages(p.doc, true));
+                    //					return null;
+                    if (fakeNodeId) return null;
+                } else {
+                    StoredNode node = StoredNode.deserialize(val.getData(), 0, val.getLength(), p.getDocument());
+                    node.setOwnerDocument((DocumentImpl)p.getOwnerDocument());
+                    node.setInternalAddress(p.getInternalAddress());
+                    if (fakeNodeId) return node;
+                    if (p.getDocument().getDocId() == node.getDocId() && p.getNodeId().equals(node.getNodeId())) {
+                        return node;
+                    } else {
+                        LOG.debug(
+                                "Node " + p.getNodeId() + " not found in document " + p.getDocument().getURI() +
+                                        "; docId = " + p.getDocument().getDocId() + ": " + StorageAddress.toString(p.getInternalAddress()) +
+                                        "; found node " + node.getNodeId() + " instead"
+                        );
+                    }
+                }
+                // retry based on nodeid
+                StoredNode node = objectWith(p.getDocument(), p.getNodeId());
+                if (node != null) p.setInternalAddress(node.getInternalAddress());  // update proxy with correct address
+                return node;
+            }
+        }
+                .run();
     }
     
     public void repair() throws PermissionDeniedException {

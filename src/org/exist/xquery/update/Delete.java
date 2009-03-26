@@ -156,7 +156,6 @@ public class Delete extends Modification {
                     context.getBroker().storeXMLResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
-                checkFragmentation(transaction, modifiedDocuments);
                 finishTriggers(transaction);
                 //commit the transaction
                 commitTransaction(transaction);
