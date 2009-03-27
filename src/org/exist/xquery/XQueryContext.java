@@ -70,6 +70,7 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.pragmas.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.JavaObjectValue;

@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.pragmas.Optimize;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.ContextItem;
