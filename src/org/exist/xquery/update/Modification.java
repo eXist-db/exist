@@ -198,6 +198,7 @@ public abstract class Modification extends AbstractExpression
 		while(iterator.hasNext())
 		{
 			doc = (DocumentImpl) iterator.next();
+            context.addModifiedDoc(doc);
 			finishTrigger(transaction, doc);
 		}
         triggers.clear();
@@ -217,7 +218,15 @@ public abstract class Modification extends AbstractExpression
 	    lockedDocuments.unlock(true);
         lockedDocuments = null;
 	}
-	
+
+    public static void checkFragmentation(XQueryContext context, DocumentSet docs) throws EXistException {
+        int fragmentationLimit = -1;
+        Object property = context.getBroker().getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+        if (property != null)
+            fragmentationLimit = ((Integer)property).intValue();
+        checkFragmentation(context, docs, fragmentationLimit);
+    }
+
 	/**
 	 * Check if any of the modified documents needs defragmentation.
 	 * 
@@ -226,20 +235,32 @@ public abstract class Modification extends AbstractExpression
 	 *  
 	 * @param docs
 	 */
-	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {
-		DBBroker broker = context.getBroker();
-        int fragmentationLimit = -1;
-        Object property = broker.getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
-        if (property != null)
-	        fragmentationLimit = ((Integer)property).intValue();
-	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
-	        DocumentImpl next = (DocumentImpl) i.next();
-	        if(next.getMetadata().getSplitCount() > fragmentationLimit)
-	            broker.defragXMLResource(transaction, next);
-	        broker.checkXMLResourceConsistency(next);
-	    }
-	}
-	
+	public static void checkFragmentation(XQueryContext context, DocumentSet docs, int splitCount) throws EXistException {
+        DBBroker broker = context.getBroker();
+        TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+        Txn transaction = context.getBatchTransaction();
+        //if there is no batch update transaction, start a new individual transaction
+        if(transaction == null)
+            transaction = txnMgr.beginTransaction();
+        try {
+            for (Iterator i = docs.iterator(); i.hasNext(); ) {
+                DocumentImpl next = (DocumentImpl) i.next();
+                if(next.getMetadata().getSplitCount() > splitCount)
+                    try {
+                        next.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                        broker.defragXMLResource(transaction, next);
+                    } finally {
+                        next.getUpdateLock().release(Lock.WRITE_LOCK);
+                    }
+                broker.checkXMLResourceConsistency(next);
+            }
+            if(!context.hasBatchTransaction())
+                txnMgr.commit(transaction);
+        } catch (Exception e) {
+            txnMgr.abort(transaction);
+        }
+    }
+
 	/**
 	 *  Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
 	 *  
