@@ -46,7 +46,7 @@ import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.LocationStep;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.Optimizable;
-import org.exist.xquery.Optimize;
+import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
