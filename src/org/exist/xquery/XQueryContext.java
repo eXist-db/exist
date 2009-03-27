@@ -75,6 +75,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.TimeUtils;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.update.Modification;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -206,8 +207,16 @@ public class XQueryContext {
 	 * The set of statically known documents specified as
 	 * an array of paths to documents and collections.
 	 */
-	protected XmldbURI[] staticCollections = null;	
-	
+	protected XmldbURI[] staticCollections = null;
+
+    /**
+     * A set of documents which were modified during the query,
+     * usually through an XQuery update extension. The documents
+     * will be checked after the query completed to see if a
+     * defragmentation run is needed.
+     */
+    protected DocumentSet modifiedDocuments = null;
+
 	/**
 	 * The main database broker object providing access
 	 * to storage and indexes. Every XQuery has its own
@@ -1116,6 +1125,12 @@ public class XQueryContext {
         isShared = shared;
     }
 
+    public void addModifiedDoc(DocumentImpl document) {
+        if (modifiedDocuments == null)
+            modifiedDocuments = new DocumentSet();
+        modifiedDocuments.add(document);
+    }
+    
     public void reset() {
         reset(false);
     }
@@ -1125,10 +1140,18 @@ public class XQueryContext {
      * called when adding an XQuery to the cache.
 	 */
 	public void reset(boolean keepGlobals) {
+        if (modifiedDocuments != null) {
+            try {
+                Modification.checkFragmentation(this, modifiedDocuments);
+            } catch (EXistException e) {
+                LOG.warn("Error while checking modified documents: " + e.getMessage(), e);
+            }
+            modifiedDocuments = null;
+        }
         calendar = null;
-		implicitTimeZone = null;			
+        implicitTimeZone = null;
         builder = new MemTreeBuilder(this);
-		builder.startDocument();
+        builder.startDocument();
 
         if (!keepGlobals) {
             // do not reset the statically known documents
@@ -1137,27 +1160,27 @@ public class XQueryContext {
         }
         if (!isShared)
             lastVar = null;
-		fragmentStack = new Stack();
-		callStack.clear();
+        fragmentStack = new Stack();
+        callStack.clear();
         protectedDocuments = null;
         if (!keepGlobals)
             globalVariables.clear();
-        
+
         //remove the context-vars, subsequent execution of the query
-		//may generate different values for the vars based on the
-		//content of the db
-		XQueryContextVars.clear();
+        //may generate different values for the vars based on the
+        //content of the db
+        XQueryContextVars.clear();
 
         if (!isShared)
             watchdog.reset();
         profiler.reset();
-		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
-			Module module = (Module)i.next();
-			module.reset(this);
-		}
+        for (Iterator i = modules.values().iterator(); i.hasNext();) {
+            Module module = (Module) i.next();
+            module.reset(this);
+        }
 		clearUpdateListeners();
 	}
-	
+
 	/**
 	 * Returns true if whitespace between constructed element nodes
 	 * should be stripped by default.
