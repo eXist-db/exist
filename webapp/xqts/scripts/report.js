@@ -138,7 +138,7 @@ function loadTests(collection, group) {
 		},
 		failure: requestFailed
 	}
-	YAHOO.util.Connect.asyncRequest('POST', 'report.xql', callback, params);
+	YAHOO.util.Connect.asyncRequest('GET', 'report.xql?'+ params, callback);
 }
 
 function details(testName) {
@@ -147,7 +147,7 @@ function details(testName) {
 		success: detailsLoaded,
 		failure: requestFailed
 	}
-	YAHOO.util.Connect.asyncRequest('POST', 'report.xql', callback, params);
+	YAHOO.util.Connect.asyncRequest('GET', 'report.xql?' + params, callback);
 	displayMessage('Loading test details ...');
 }
 
@@ -193,7 +193,7 @@ function runTest(collection, group) {
 			success: testCompleted,
 			failure: requestFailed
 		}
-		YAHOO.util.Connect.asyncRequest('POST', 'xqts.xql', callback, params);
+		YAHOO.util.Connect.asyncRequest('GET', 'xqts.xql?' + params, callback);
 		timer = setTimeout('reportProgress()', 5000);
 	}
 }
