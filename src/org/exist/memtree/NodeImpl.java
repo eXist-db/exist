@@ -22,9 +22,6 @@
  */
 package org.exist.memtree;
 
-import java.util.Iterator;
-import java.util.Properties;
-
 import org.exist.dom.DocumentSet;
 import org.exist.dom.EmptyNodeSet;
 import org.exist.dom.NodeSet;
@@ -638,10 +635,12 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
             
 			streamer.serialize(this, false);
 		} catch (Exception e) {
-		    SerializerPool.getInstance().returnObject(streamer);
 		    e.printStackTrace();
 			throw new SAXException(e);
-		}
+		} finally {
+            if(streamer != null)
+                SerializerPool.getInstance().returnObject(streamer);
+        }
 	}
 
 	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
