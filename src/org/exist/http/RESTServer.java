@@ -85,8 +85,6 @@ import org.xml.sax.helpers.XMLFilterImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -310,11 +308,10 @@ public class RESTServer {
 						wrap, cache, request, response);
 
 			} catch (XPathException e) {
-				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 				if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-					writeXPathException(response, encoding, query, path, e);
+					writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, e);
 				} else {
-					writeXPathExceptionHtml(response, encoding, query, path, e);
+					writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, e);
 				}
 			}
 			return;
@@ -429,11 +426,10 @@ public class RESTServer {
 				} catch (XPathException e) {
 					if (LOG.isDebugEnabled())
 						LOG.debug(e.getMessage(), e);
-					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 					if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-						writeXPathException(response, encoding, query, path, e);
+						writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, e);
 					} else {
-						writeXPathExceptionHtml(response, encoding, query,
+						writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query,
 								path, e);
 					}
 				}
@@ -574,12 +570,11 @@ public class RESTServer {
 								outputProperties, servletPath.toString(),
 								pathInfo.toString());
 					} catch (XPathException e) {
-						response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 						if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-							writeXPathException(response, encoding, null, path,
+							writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path,
 									e);
 						} else {
-							writeXPathExceptionHtml(response, encoding, null,
+							writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null,
 									path, e);
 						}
 					}
@@ -693,13 +688,12 @@ public class RESTServer {
 								outputProperties, enclose, cache, request,
 								response);
 					} catch (XPathException e) {
-						response.setStatus(HttpServletResponse.SC_ACCEPTED);
 						result = e.getMessage();
                         if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                            writeXPathException(response, encoding, null, path,
+                            writeXPathException(response, HttpServletResponse.SC_ACCEPTED, encoding, null, path,
                                     e);
                         } else {
-                            writeXPathExceptionHtml(response, encoding, null,
+                            writeXPathExceptionHtml(response, HttpServletResponse.SC_ACCEPTED, encoding, null,
                                     path, e);
                         }
 					}
@@ -1298,13 +1292,15 @@ public class RESTServer {
 	 * @param e
 	 * 
 	 */
-	private void writeXPathExceptionHtml(HttpServletResponse response,
+	private void writeXPathExceptionHtml(HttpServletResponse response, int httpStatusCode,
 			String encoding, String query, String path, XPathException e)
 			throws IOException {
 
 		if( !response.isCommitted() ) {
 			response.reset();
 		}
+
+        response.setStatus(httpStatusCode);
 			
 		response.setContentType(MimeType.HTML_TYPE.getName() + "; charset="
 				+ encoding);
@@ -1340,14 +1336,15 @@ public class RESTServer {
 	 * @param path
 	 * @param e
 	 */
-	private void writeXPathException(HttpServletResponse response,
-			String encoding, String query, String path, XPathException e)
+	private void writeXPathException(HttpServletResponse response, int httpStatusCode, String encoding, String query, String path, XPathException e)
 			throws IOException {
 
 		if( !response.isCommitted() ) {
 			response.reset();
 		}
-		
+
+        response.setStatus(httpStatusCode);
+
 		response.setContentType(MimeType.XML_TYPE.getName() + "; charset="
 				+ encoding);
 
