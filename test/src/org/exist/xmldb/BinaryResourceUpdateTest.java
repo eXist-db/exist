@@ -57,19 +57,19 @@ public class BinaryResourceUpdateTest extends TestCase {
         try {
             for (int i = 0; i < REPEAT; i++) {
                 BinaryResource binaryResource = (BinaryResource)
-                        testCollection.createResource("test.xml", "BinaryResource");
+                        testCollection.createResource("test1.xml", "BinaryResource");
                 binaryResource.setContent(binFile);
                 testCollection.storeResource(binaryResource);
 
-                Resource resource = testCollection.getResource("test.xml");
+                Resource resource = testCollection.getResource("test1.xml");
                 assertNotNull(resource);
                 System.out.println("Content:\n" + resource.getContent().toString());
 
-                XMLResource xmlResource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
+                XMLResource xmlResource = (XMLResource) testCollection.createResource("test2.xml", "XMLResource");
                 xmlResource.setContent(xmlFile);
                 testCollection.storeResource(xmlResource);
 
-                resource = testCollection.getResource("test.xml");
+                resource = testCollection.getResource("test2.xml");
                 assertNotNull(resource);
                 System.out.println("Content:\n" + resource.getContent().toString());
             }
