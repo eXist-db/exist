@@ -648,12 +648,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
             ((LocalXMLResource)resource).datecreated =a;
             ((LocalXMLResource)resource).datemodified =b;
             storeXMLResource((LocalXMLResource) resource);
+
         } else if (resource.getResourceType().equals("BinaryResource")) {
             if (LOG.isDebugEnabled())
                 LOG.debug("storing binary resource " + resource.getId());
             ((LocalBinaryResource)resource).datecreated =a;
             ((LocalBinaryResource)resource).datemodified =b;
             storeBinaryResource((LocalBinaryResource) resource);
+            
         } else
             throw new XMLDBException(
                     ErrorCodes.UNKNOWN_RESOURCE_TYPE,
