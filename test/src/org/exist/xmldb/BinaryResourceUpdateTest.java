@@ -79,6 +79,33 @@ public class BinaryResourceUpdateTest extends TestCase {
         }
     }
 
+    // with same docname test fails for windows 
+    public void testUpdateBinary_windows() {
+        try {
+            for (int i = 0; i < REPEAT; i++) {
+                BinaryResource binaryResource = (BinaryResource)
+                        testCollection.createResource("test.xml", "BinaryResource");
+                binaryResource.setContent(binFile);
+                testCollection.storeResource(binaryResource);
+
+                Resource resource = testCollection.getResource("test.xml");
+                assertNotNull(resource);
+                System.out.println("Content:\n" + resource.getContent().toString());
+
+                XMLResource xmlResource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
+                xmlResource.setContent(xmlFile);
+                testCollection.storeResource(xmlResource);
+
+                resource = testCollection.getResource("test.xml");
+                assertNotNull(resource);
+                System.out.println("Content:\n" + resource.getContent().toString());
+            }
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
     protected void setUp() {
 		try {
 			// initialize driver
