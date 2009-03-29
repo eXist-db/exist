@@ -69,10 +69,12 @@ public class ModuleUtils {
 	public static NodeValue stringToXML(XQueryContext context, String xml)
 			throws XPathException, SAXException {
 		context.pushDocumentContext();
+
+        XMLReader reader = null;
 		try {
 			// try and construct xml document from input stream, we use eXist's
 			// in-memory DOM implementation
-                        XMLReader reader= context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
+                        reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
                         LOG.debug("Parsing XML response ...");
 			// TODO : we should be able to cope with context.getBaseURI()
 			InputSource src = new InputSource(new ByteArrayInputStream(xml.getBytes()));
@@ -88,6 +90,9 @@ public class ModuleUtils {
 			throw new XPathException(e.getMessage());
 		} finally {
 			context.popDocumentContext();
+
+            if(reader != null)
+                context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
 		}
 	}
 
