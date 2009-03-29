@@ -218,7 +218,7 @@ public class NodeSetHelper {
      */
     public static NodeSet selectAncestors(NodeSet al, NodeSet dl,
                                           boolean includeSelf, int contextId) {
-        NodeSet result = new ExtArrayNodeSet();
+        NodeSet result = new NewArrayNodeSet();
         for (Iterator i = dl.iterator(); i.hasNext();) {
             NodeProxy descendant = (NodeProxy) i.next();
             NodeSet ancestors = ancestorsForChild(al, descendant, false, includeSelf);
@@ -250,12 +250,12 @@ public class NodeSetHelper {
      */
     private static NodeSet ancestorsForChild(NodeSet ancestors,
                                              NodeProxy child, boolean directParent, boolean includeSelf) {
-        NodeSet result = new ExtArrayNodeSet(5);
+        NodeSet result = new NewArrayNodeSet(5);
         NodeId nodeId = child.getNodeId();
         NodeProxy temp = ancestors.get(child.getDocument(), nodeId);
         if (includeSelf && temp != null)
             result.add(temp);
-        while (nodeId != null) {
+        while (nodeId != null && nodeId != NodeId.DOCUMENT_NODE) {
         	nodeId = nodeId.getParentId();
             temp = ancestors.get(child.getDocument(), nodeId);
             if (temp != null)

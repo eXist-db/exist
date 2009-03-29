@@ -36,6 +36,7 @@ public abstract class Step extends AbstractExpression {
 	protected final static Logger LOG = Logger.getLogger(Step.class);
 	
     protected int axis = Constants.UNKNOWN_AXIS;
+    protected boolean abbreviatedStep = false;
     protected ArrayList predicates = new ArrayList();
     protected NodeTest test;
 	protected boolean inPredicate = false;
@@ -112,6 +113,14 @@ public abstract class Step extends AbstractExpression {
 	public void setPrimaryAxis(int axis) {
 		this.axis = axis;
 	}
+
+    public boolean isAbbreviated() {
+        return abbreviatedStep;
+    }
+
+    public void setAbbreviated(boolean abbrev) {
+        abbreviatedStep = abbrev;
+    }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
