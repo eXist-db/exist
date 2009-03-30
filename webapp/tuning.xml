@@ -12,7 +12,7 @@
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Tuning the Database</title>
-                
+        
         <section>
             <title>Cache settings</title>
             
@@ -49,6 +49,17 @@
                 your index configuration. Removing unused indexes will give more room to the other
                 indexes. In particular, the full text index can grow very fast until it becomes a bottleneck.
                 Try to disable the default full text index (see below).</para>
+        </section>
+        
+        <section>
+            <title>Problems with certain JVMs</title>
+            
+            <para>In some cases, huge differences could be observed between Java virtual machine
+                implementations. In particular, it has been reported that storing the same data
+                on a laptop running Mac OS X could sometimes be up to 15 times slower than on windows 
+                or GNU/Linux. This is just an observation based on the teaching experience of 
+                some users and should not be generalized. However, it might be worth to test 
+                different JVMs.</para>
         </section>
         
         <section>
@@ -395,6 +406,42 @@ return
                 </example>
 
                 <para>The second query should be several times faster than the first one.</para>
+            </section>
+
+			<section>
+				<title>Match regular expressions against the start of a string</title>
+
+				<para>Function fn:matches returns true if any substring of its argument string matches
+					the regular expression. The query engine thus needs to scan all index entries as the match
+					could be at any position of an entry.</para>
+					
+				<para>You can reduce the range of entries to be scanned by anchoring your pattern at the start
+					of a string (where applicable):</para>
+
+				<synopsis language="xquery"><![CDATA[fn:matches($str, "^XQuery")]]></synopsis>
+			</section>
+            
+            <section>
+                <title>Use fn:id to lookup xml:id attributes</title>
+                
+                <para>eXist automatically indexes all xml:id attributes and other attributes
+                with type ID as declared in a DTD (only if validation is enabled). This automatic
+                index is used by the standard id functions and provides a fast way to look up
+                an element. For example,</para>
+                
+                <synopsis language="xquery">id("sect1")/head</synopsis>
+                
+                <para>locates the element with id "sect1" and returns its <sgmltag>head</sgmltag>
+                child. This is done through a fast index lookup. However, please note that
+                the equivalent expression</para>
+                
+                <synopsis language="xquery">//section[@xml:id = 'sect1']/head</synopsis>
+                
+                <para>will <emphasis>NOT</emphasis> use the id index (you will need to declare
+                an extra range index for that).</para>
+                
+                <para>Please be also aware that larger xml:id values cost performance as has been
+                    reported by some users working with large databases.</para>
             </section>
         </section>
         <section>
