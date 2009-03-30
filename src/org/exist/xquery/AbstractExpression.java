@@ -97,7 +97,11 @@ public abstract class AbstractExpression implements Expression {
 	
 	public void setPrimaryAxis(int axis) {
 	}
-	
+
+    public int getPrimaryAxis() {
+        return Constants.UNKNOWN_AXIS;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.DocumentSet)
      */

@@ -6330,7 +6330,8 @@ public XQueryTreeParser() {
 									if(((LocationStep) rightStep).getAxis() == Constants.UNKNOWN_AXIS)
 										((LocationStep) rightStep).setAxis(Constants.CHILD_AXIS);
 								} else {
-									rightStep.setPrimaryAxis(Constants.CHILD_AXIS);
+									if (rightStep.getPrimaryAxis() == Constants.UNKNOWN_AXIS)
+										rightStep.setPrimaryAxis(Constants.CHILD_AXIS);
 									if(rightStep instanceof VariableReference) {
 										rightStep = new SimpleStep(context, Constants.CHILD_AXIS, rightStep);
 										path.replaceLastExpression(rightStep);
@@ -6483,7 +6484,9 @@ public XQueryTreeParser() {
 									if(rightStep instanceof VariableReference) {
 										rightStep = new SimpleStep(context, Constants.DESCENDANT_SELF_AXIS, rightStep);
 										path.replaceLastExpression(rightStep);
-									}
+									} else if (rightStep instanceof FilteredExpression)
+										((FilteredExpression)rightStep).setAbbreviated(true);
+				
 								}
 							
 				break;

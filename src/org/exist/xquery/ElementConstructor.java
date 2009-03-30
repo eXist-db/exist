@@ -344,9 +344,15 @@ public class ElementConstructor extends NodeConstructor {
 	public void setPrimaryAxis(int axis) {
 		if(content != null)
 			content.setPrimaryAxis(axis);
-	} 
+	}
 
-	/* (non-Javadoc)
+    public int getPrimaryAxis() {
+        if (content != null)
+            content.getPrimaryAxis();
+        return Constants.UNKNOWN_AXIS;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState(boolean postOptimization) {
