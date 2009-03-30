@@ -114,6 +114,10 @@ public abstract class Step extends AbstractExpression {
 		this.axis = axis;
 	}
 
+    public int getPrimaryAxis() {
+        return this.axis;
+    }
+
     public boolean isAbbreviated() {
         return abbreviatedStep;
     }

@@ -119,4 +119,8 @@ public class SimpleStep extends Step {
 	public void setPrimaryAxis(int axis) {
 		expression.setPrimaryAxis(axis);
 	}
+
+    public int getPrimaryAxis() {
+        return expression.getPrimaryAxis();
+    }
 }

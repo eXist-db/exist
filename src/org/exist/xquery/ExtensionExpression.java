@@ -148,9 +148,13 @@ public class ExtensionExpression extends AbstractExpression {
         innerExpression.setPrimaryAxis(axis);            
     }
 
+    public int getPrimaryAxis() {
+        return innerExpression.getPrimaryAxis();
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#resetState()
-     */
+    * @see org.exist.xquery.AbstractExpression#resetState()
+    */
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         innerExpression.resetState(postOptimization);

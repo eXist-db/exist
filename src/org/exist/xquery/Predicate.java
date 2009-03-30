@@ -422,6 +422,7 @@ public class Predicate extends PathExpr {
 				    		temp.add(contextNode.getNode());
 				    	contextNode = contextNode.getNextDirect();
 				    }
+                    p.clearContext(getExpressionId());
                     //TODO : understand why we sort here...
 				    temp.sortInDocumentOrder();
 

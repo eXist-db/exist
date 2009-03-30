@@ -435,11 +435,17 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             ((Expression)steps.get(0)).setPrimaryAxis(axis);
     }
 
+    public int getPrimaryAxis() {
+        if (steps.size() > 0)
+            return ((Expression)steps.get(0)).getPrimaryAxis();
+        return Constants.UNKNOWN_AXIS;
+    }
+
     /*
-     * (non-Javadoc)
-     * 
-     * @see org.exist.xquery.AbstractExpression#resetState()
-     */
+    * (non-Javadoc)
+    *
+    * @see org.exist.xquery.AbstractExpression#resetState()
+    */
     public void resetState(boolean postOptimization) {
     	super.resetState(postOptimization);
     	for (int i = 0; i < steps.size(); i++) {

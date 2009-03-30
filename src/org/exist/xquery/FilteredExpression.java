@@ -23,8 +23,10 @@
 package org.exist.xquery;
 
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.*;
+import org.exist.dom.NodeSet;
+import org.exist.memtree.InMemoryNodeSet;
+import org.exist.memtree.NodeImpl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,6 +42,7 @@ import java.util.List;
 public class FilteredExpression extends AbstractExpression {
 
 	final protected Expression expression;
+    protected boolean abbreviated = false;
 	final protected List predicates = new ArrayList(2);
     private Expression parent;
     
@@ -98,13 +101,38 @@ public class FilteredExpression extends AbstractExpression {
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if (seq.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
-        else {            
-//    		seq.setSelfAsContext();
-    		result = seq;           
-    		for (Iterator i = predicates.iterator(); i.hasNext();) {
-                Predicate pred = (Predicate) i.next();
-    			result = pred.evalPredicate(contextSequence, result, Constants.DESCENDANT_SELF_AXIS);
-    		}
+        else {
+            Predicate pred = (Predicate) predicates.get(0);
+            // If the current step is an // abbreviated step, we have to treat the predicate
+            // specially to get the context position right. //a[1] translates to /descendant-or-self::node()/a[1],
+            // so we need to return the 1st a from any parent of a.
+            //
+            // If the predicate is known to return a node set, no special treatment is required.
+            if (abbreviated &&
+                    (pred.getExecutionMode() != Predicate.NODE || !seq.isPersistentSet())) {
+                result = new ValueSequence();
+                if (seq.isPersistentSet()) {
+                    NodeSet contextSet = seq.toNodeSet();
+                    Sequence outerSequence = contextSet.getParents(getExpressionId());
+                    for (SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
+                        NodeValue node = (NodeValue) i.nextItem();
+                        Sequence newContextSeq =
+                                contextSet.selectParentChild((NodeSet) node, NodeSet.DESCENDANT, getExpressionId());
+                        Sequence temp = processPredicate(outerSequence, newContextSeq);
+                        result.addAll(temp);
+                    }
+                } else {
+                    MemoryNodeSet nodes = seq.toMemNodeSet();
+                    Sequence outerSequence = nodes.getParents(new AnyNodeTest());
+                    for (SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
+                        NodeValue node = (NodeValue) i.nextItem();
+                        Sequence newSet = nodes.getChildrenForParent((NodeImpl) node);
+                        Sequence temp = processPredicate(outerSequence, newSet);
+                        result.addAll(temp);
+                    }
+                }
+            } else
+                result = processPredicate(contextSequence, seq);
         }
         
         if (context.getProfiler().isEnabled())           
@@ -113,9 +141,17 @@ public class FilteredExpression extends AbstractExpression {
 		return result;
 	}
 
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-     */
+    private Sequence processPredicate(Sequence contextSequence, Sequence seq) throws XPathException {
+        for (Iterator i = predicates.iterator(); i.hasNext();) {
+            Predicate pred = (Predicate) i.next();
+            seq = pred.evalPredicate(contextSequence, seq, Constants.DESCENDANT_SELF_AXIS);
+        }
+        return seq;
+    }
+
+    /* (non-Javadoc)
+    * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+    */
     public void dump(ExpressionDumper dumper) {
         expression.dump(dumper);
         for (Iterator i = predicates.iterator(); i.hasNext();) {
@@ -157,7 +193,15 @@ public class FilteredExpression extends AbstractExpression {
 	public void setPrimaryAxis(int axis) {
 		expression.setPrimaryAxis(axis);
 	}
-	
+
+    public int getPrimaryAxis() {
+        return expression.getPrimaryAxis();
+    }
+
+    public void setAbbreviated(boolean abbrev) {
+        abbreviated = abbrev;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */

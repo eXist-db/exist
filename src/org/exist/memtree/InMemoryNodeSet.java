@@ -65,6 +65,16 @@ public class InMemoryNodeSet extends ValueSequence {
         return nodes;
     }
 
+    public Sequence getChildrenForParent(NodeImpl parent) {
+        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            if (node.getNodeId().isChildOf(parent.getNodeId()))
+                nodes.add(node);
+        }
+        return nodes;
+    }
+
     public Sequence getDescendants(boolean includeSelf, NodeTest test) throws XPathException {
         InMemoryNodeSet nodes = new InMemoryNodeSet();
         for (int i = 0; i <= size; i++) {

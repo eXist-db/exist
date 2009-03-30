@@ -548,28 +548,28 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param contextId an <code>int</code> value
      */
     public void clearContext(int contextId) {
-        context = null;
-        return;
-	//        if (contextId == Expression.IGNORE_CONTEXT) {
-	//            context = null;
-	//            return;
-	//        }
-	//        ContextItem newContext = null;
-	//        ContextItem last = null;
-	//        ContextItem next = context;
-	//        while (next != null) {
-	//            if (next.getContextId() != contextId) {
-	//                if (newContext == null) {
-	//                    newContext = next;
-	//                } else {
-	//                    last.setNextContextItem(next);
-	//                }
-	//                last = next;
-	//                last.setNextContextItem(null);
-	//            }
-	//            next = next.getNextDirect();
-	//        }
-	//        this.context = newContext;
+//        context = null;
+//        return;
+	        if (contextId == Expression.IGNORE_CONTEXT) {
+	            context = null;
+	            return;
+	        }
+	        ContextItem newContext = null;
+	        ContextItem last = null;
+	        ContextItem next = context;
+	        while (next != null) {
+	            if (next.getContextId() != contextId) {
+	                if (newContext == null) {
+	                    newContext = next;
+	                } else {
+	                    last.setNextContextItem(next);
+	                }
+	                last = next;
+	                last.setNextContextItem(null);
+	            }
+	            next = next.getNextDirect();
+	        }
+	        this.context = newContext;
     }
 
     /**

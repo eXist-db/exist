@@ -2,6 +2,7 @@ package org.exist.xquery.value;
 
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
+import org.exist.memtree.NodeImpl;
 
 
 public interface MemoryNodeSet extends Sequence {
@@ -29,4 +30,6 @@ public interface MemoryNodeSet extends Sequence {
     public Sequence getFollowingSiblings(NodeTest test) throws XPathException;
     
     public Sequence getFollowing(NodeTest test) throws XPathException;
+
+    public Sequence getChildrenForParent(NodeImpl parent);
 }

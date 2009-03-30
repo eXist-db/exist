@@ -141,7 +141,9 @@ public interface Expression {
 		throws XPathException;
 	
 	public void setPrimaryAxis(int axis);
-	
+
+    public int getPrimaryAxis();
+    
 	/**
 	 * The static return type of the expression.
 	 *
