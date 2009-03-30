@@ -90,6 +90,7 @@
 	<classpathentry kind="lib" path="thirdparty/tomcat5/server/lib/catalina-5.0.28.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/junit-4.5.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/svnkit.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/xmlunit-1.2.jar"/>
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/org.mortbay.jetty.jar"/>
@@ -105,7 +106,6 @@
 	<classpathentry kind="lib" path="lib/optional/onvdl-20070517.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/fop.jar"/>
-	<classpathentry kind="lib" path="lib/user/svnkit.jar"/>
-	<classpathentry kind="lib" path="lib/user/mail.jar"/>
+	<classpathentry kind="lib" path="lib/user/mail-1.4.2.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
