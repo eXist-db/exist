@@ -430,8 +430,11 @@ public class Configuration implements ErrorHandler
         LOG.debug(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL + ": " + config.get(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL));
         
         //built-in-modules
-        Map moduleMap = XQueryContext.loadModuleClasses(xquery);
-        config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, moduleMap);
+        Map classMap = new HashMap();
+        Map knownMappings = new HashMap();
+        XQueryContext.loadModuleClasses(xquery, classMap, knownMappings);
+        config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, classMap);
+        config.put(XQueryContext.PROPERTY_STATIC_MODULE_MAP, knownMappings);
     }
     
     public void configureXACML(Element xacml) {

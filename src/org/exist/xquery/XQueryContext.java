@@ -122,7 +122,8 @@ public class XQueryContext {
 	//TODO : move elsewhere ?
 	public static final String CONFIGURATION_MODULE_ELEMENT_NAME = "module";
 	public static final String BUILT_IN_MODULE_URI_ATTRIBUTE = "uri";
-	public static final String BUILT_IN_MODULE_CLASS_ATTRIBUTE = "class";	
+	public static final String BUILT_IN_MODULE_CLASS_ATTRIBUTE = "class";
+    public static final String BUILT_IN_MODULE_SOURCE_ATTRIBUTE = "src";
 
 	public static final String PROPERTY_XQUERY_BACKWARD_COMPATIBLE = "xquery.backwardCompatible";
 	public static final String PROPERTY_ENABLE_QUERY_REWRITING = "xquery.enable-query-rewriting";
@@ -131,6 +132,7 @@ public class XQueryContext {
 
 	//TODO : move elsewhere ?
 	public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
+    public static final String PROPERTY_STATIC_MODULE_MAP = "xquery.modules.static";
 	
 	private static final String JAVA_URI_START = "java:";
     //private static final String XMLDB_URI_START = "xmldb:exist://";
@@ -2064,9 +2066,13 @@ public class XQueryContext {
 			// Set locally to remember the dependency in case it was inherited.
 			setModule(namespaceURI, module);
 		} else {
-			if(location == null)
-				location = namespaceURI;
-			
+			if(location == null) {
+                // check if there's a static mapping in the configuration
+                location = getModuleLocation(namespaceURI);
+                if (location == null)
+				    location = namespaceURI;
+            }
+
 			//Is the module's namespace mapped to a URL ?
 			if (mappedModules.containsKey(location))
 				location = mappedModules.get(location).toString();
@@ -2132,7 +2138,12 @@ public class XQueryContext {
 			prefix = module.getDefaultPrefix();
 		declareNamespace(prefix, namespaceURI);
 	}
-	
+
+    private String getModuleLocation(String namespaceURI) {
+        Map moduleMap = (Map) broker.getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
+        return (String) moduleMap.get(namespaceURI);
+    }
+
 	private ExternalModule compileOrBorrowModule(String prefix, String namespaceURI, String location, Source source) throws XPathException {
 		ExternalModule module = broker.getBrokerPool().getXQueryPool().borrowModule(broker, source, this);
 		if (module == null) {
@@ -2152,10 +2163,6 @@ public class XQueryContext {
 	}
 
     /**
-     * @param namespaceURI
-     * @param location
-     * @param module
-     * @param source
      * @return The compiled module.
      * @throws XPathException
      */
@@ -2682,8 +2689,8 @@ public class XQueryContext {
      * @return class name mapped to Class object.
      * @throws DatabaseConfigurationException
      */
-    public static Map loadModuleClasses(Element xquery) throws DatabaseConfigurationException {
-        Map classMap = new HashMap();
+    public static void loadModuleClasses(Element xquery, Map classMap, Map externalMap)
+        throws DatabaseConfigurationException {
         // add the standard function module
         classMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.ModuleImpl.class);
         // add other modules specified in configuration
@@ -2696,19 +2703,26 @@ public class XQueryContext {
 	                elem = (Element) modules.item(i);
 	                String uri = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE);
 	                String clazz = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE);
+                    String source = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
 	                if (uri == null)
 	                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'uri'");
-	                if (clazz == null)
-	                    throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
-
-                    Class mClass = lookupModuleClass(uri, clazz);
-                    if (mClass != null)
-                        classMap.put(uri, mClass);
-                    LOG.debug("Configured module '" + uri + "' implemented in '" + clazz + "'");
+	                if (clazz == null && source == null)
+	                    throw new DatabaseConfigurationException("element 'module' requires either an attribute " +
+                                "'class' or 'src'");
+                    if (source != null) {
+                        externalMap.put(uri, source);
+                        if (LOG.isDebugEnabled())
+                            LOG.debug("Registered mapping for module '" + uri + "' to '" + source + "'");
+                    } else {
+                        Class mClass = lookupModuleClass(uri, clazz);
+                        if (mClass != null)
+                            classMap.put(uri, mClass);
+                        if (LOG.isDebugEnabled())
+                            LOG.debug("Configured module '" + uri + "' implemented in '" + clazz + "'");
+                    }
                 }
             }
         }
-        return classMap;
     }
 
     private static Class lookupModuleClass(String uri, String clazz) throws DatabaseConfigurationException {
