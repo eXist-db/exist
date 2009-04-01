@@ -277,6 +277,7 @@
                                             <xs:complexType>
                                                 <xs:attribute name="class" type="xs:string"/>
                                                 <xs:attribute name="uri" type="xs:anyURI"/>
+                                                <xs:attribute name="src" type="xs:string"/>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
