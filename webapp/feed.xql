@@ -15,7 +15,7 @@ declare function atom:format-entry($feed as element()) {
                 <p class="date">
                     {substring($entry/atom:published, 1, 10)}
                 </p>
-                <a href="{$atom:server}{$link}">
+                <a href="{$link}">
                     {$entry/atom:title/text()}
                 </a>
             </li>
