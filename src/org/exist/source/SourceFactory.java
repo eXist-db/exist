@@ -62,11 +62,8 @@ public class SourceFactory {
         /* file:// or location without scheme is assumed to be a file */
         if(location.startsWith("file:") || location.indexOf(':') == Constants.STRING_NOT_FOUND)
         {
-        	if(location.startsWith("file:"))
-        	{
-        		location = location.substring("file://".length());
-        	}
-        	
+            location = location.replaceAll("^(file:)?/*(.*)$", "$2");
+
             File f = new File(contextPath + File.separatorChar + location);
             if(!f.canRead())
             {

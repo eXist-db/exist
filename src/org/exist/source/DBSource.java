@@ -117,6 +117,10 @@ public class DBSource extends AbstractSource {
         return new InputStreamReader(bis, encoding);
     }
 
+    public InputStream getInputStream() throws IOException {
+        return broker.getBinaryResource(doc);
+    }
+
     /* (non-Javadoc)
      * @see org.exist.source.Source#getContent()
      */

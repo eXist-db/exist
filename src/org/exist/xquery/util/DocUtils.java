@@ -23,6 +23,7 @@ package org.exist.xquery.util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -43,6 +44,9 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
+import org.exist.source.Source;
+import org.exist.source.SourceFactory;
+import org.exist.source.URLSource;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -76,72 +80,63 @@ public class DocUtils {
 	{	 
 		Sequence document = Sequence.EMPTY_SEQUENCE;	
 
-		if(path.matches("^[a-z]+://.*"))
+		if(path.matches("^[a-z]+:.*") && !path.startsWith("xmldb:"))
 		{
 			/* URL */
-			
-			try
-			{
-				//Basic tests on the URL				
-				URL url = new URL(path);
-				URLConnection con = url.openConnection();
-				if(con instanceof HttpURLConnection)
-				{
-					HttpURLConnection httpConnection = (HttpURLConnection)con;
-					if(httpConnection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND)
-					{
-						// Special case: '404'
+            try {
+                Source source = SourceFactory.getSource(context.getBroker(), "", path, false);
+                InputStream istream = source.getInputStream();
+                if (source instanceof URLSource) {
+                    int responseCode = ((URLSource) source).getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                        // Special case: '404'
                         return Sequence.EMPTY_SEQUENCE;
+                    } else if (responseCode != HttpURLConnection.HTTP_OK) {
+                        throw new PermissionDeniedException("Server returned code " + responseCode);
                     }
-					else if(httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK)
-					{
-						//TODO : return another type 
-                        throw new PermissionDeniedException("Server returned code " + httpConnection.getResponseCode());	
-                    }
-				}
-				
-				//TODO : process pseudo-protocols URLs more efficiently.
-				org.exist.memtree.DocumentImpl memtreeDoc = null;
-				// we use eXist's in-memory DOM implementation
-				SAXParserFactory factory = SAXParserFactory.newInstance();
-				factory.setNamespaceAware(true);				
-				//TODO : we should be able to cope with context.getBaseURI()				
-				InputSource src = new InputSource(con.getInputStream());
-				SAXParser parser = factory.newSAXParser();
-				XMLReader reader = parser.getXMLReader();
-				SAXAdapter adapter = new SAXAdapter();
-				reader.setContentHandler(adapter);
-				reader.parse(src);					
-				Document doc = adapter.getDocument();
-				memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
-				memtreeDoc.setContext(context);
-				memtreeDoc.setDocumentURI(path);
-				document = memtreeDoc;
-			}
-			catch(MalformedURLException e)
-			{
-				throw new XPathException(e.getMessage(), e);					
-			}
-			catch(ParserConfigurationException e)
-			{				
-				throw new XPathException(e.getMessage(), e);		
-			}
-			catch(SAXException e)
-			{
-				throw new XPathException(e.getMessage(), e);	
-			}
-			catch(IOException e)
-			{
-				// Special case: FileNotFoundException
+                }
+
+                //TODO : process pseudo-protocols URLs more efficiently.
+                org.exist.memtree.DocumentImpl memtreeDoc = null;
+                // we use eXist's in-memory DOM implementation
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                //TODO : we should be able to cope with context.getBaseURI()
+                InputSource src = new InputSource(istream);
+                SAXParser parser = factory.newSAXParser();
+                XMLReader reader = parser.getXMLReader();
+                SAXAdapter adapter = new SAXAdapter();
+                reader.setContentHandler(adapter);
+                reader.parse(src);
+                Document doc = adapter.getDocument();
+                memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
+                memtreeDoc.setContext(context);
+                memtreeDoc.setDocumentURI(path);
+                document = memtreeDoc;
+            } catch(MalformedURLException e)
+            {
+                throw new XPathException(e.getMessage(), e);
+            }
+            catch(ParserConfigurationException e)
+            {
+                throw new XPathException(e.getMessage(), e);
+            }
+            catch(SAXException e)
+            {
+                throw new XPathException(e.getMessage(), e);
+            }
+            catch(IOException e)
+            {
+                // Special case: FileNotFoundException
                 if(e instanceof FileNotFoundException)
                 {
-                	return Sequence.EMPTY_SEQUENCE;
+                    return Sequence.EMPTY_SEQUENCE;
                 }
                 else
                 {
-                	throw new XPathException(e.getMessage(), e);	
+                    throw new XPathException(e.getMessage(), e);
                 }
-			}			
+            }
 		}
 		else
 		{

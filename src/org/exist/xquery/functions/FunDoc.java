@@ -56,10 +56,8 @@ public class FunDoc extends Function {
             "standard URLs starting with http://, file://, etc.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
-	
-	private Sequence cached = null;
-	private String cachedPath = null;
-	private UpdateListener listener = null;
+
+    private UpdateListener listener = null;
 	
 	/**
 	 * @param context
@@ -113,13 +111,11 @@ public class FunDoc extends Function {
     			DocumentSet docs = result.getDocumentSet();
     			if (docs != null && DocumentSet.EMPTY_DOCUMENT_SET != docs) {
     				// only cache node sets (which have a non-empty document set)
-    				cachedPath = path;
-    				cached = result;
-    				registerUpdateListener();
+                    registerUpdateListener();
     			}
     		}
     		catch (Exception e) {
-    			throw new XPathException(getASTNode(), e.getMessage());			
+    			throw new XPathException(getASTNode(), e.getMessage(), e);			
     		}
         }
             
@@ -135,8 +131,6 @@ public class FunDoc extends Function {
             listener = new UpdateListener() {
                 public void documentUpdated(DocumentImpl document, int event) {
                     // clear all
-                    cachedPath = null;
-                    cached = null;
                 }
 
                 public void unsubscribe() {
@@ -163,8 +157,6 @@ public class FunDoc extends Function {
 		super.resetState(postOptimization);
 
         if (!postOptimization) {
-            cached = null;
-            cachedPath = null;
             listener = null;
         }
 

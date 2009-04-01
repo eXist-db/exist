@@ -116,6 +116,10 @@ public class CocoonSource extends AbstractSource {
         return new InputStreamReader(is, encoding);
     }
 
+    public InputStream getInputStream() throws IOException {
+        return inputSource.getInputStream();
+    }
+
     public String getContent() throws IOException {
         checkEncoding();
         int len = (int) inputSource.getContentLength();
