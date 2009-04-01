@@ -25,8 +25,10 @@ package org.exist.source;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.HttpURLConnection;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
@@ -43,7 +45,8 @@ public class URLSource extends AbstractSource {
 	private URL url;
 	private URLConnection connection = null;
 	private long lastModified = 0;
-	
+    private int responseCode = HttpURLConnection.HTTP_OK;
+
 	protected URLSource() {   
     }
     
@@ -101,9 +104,14 @@ public class URLSource extends AbstractSource {
 	 */
 	public Reader getReader() throws IOException {
 		try {
-			if(connection == null)
+			if(connection == null) {
 				connection = url.openConnection();
-			Reader reader = new InputStreamReader(connection.getInputStream(), "UTF-8");
+                if (connection instanceof HttpURLConnection)
+                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+            }
+            Reader reader = null;
+            if (responseCode != HttpURLConnection.HTTP_NOT_FOUND)
+			    reader = new InputStreamReader(connection.getInputStream(), "UTF-8");
 			connection = null;
 			return reader;
 		} catch (IOException e) {
@@ -112,13 +120,34 @@ public class URLSource extends AbstractSource {
 		}
 	}
 
-	/* (non-Javadoc)
+    public InputStream getInputStream() throws IOException {
+        try {
+            if(connection == null) {
+                connection = url.openConnection();
+                if (connection instanceof HttpURLConnection)
+                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+            }
+            InputStream is = null;
+            if (responseCode != HttpURLConnection.HTTP_NOT_FOUND)
+                is = connection.getInputStream();
+            connection = null;
+            return is;
+        } catch (IOException e) {
+            LOG.warn("URL could not be opened: " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.source.Source#getContent()
 	 */
 	public String getContent() throws IOException {
 		try {
-			if(connection == null)
+			if(connection == null) {
 				connection = url.openConnection();
+                if (connection instanceof HttpURLConnection)
+                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+            }
 			String content = connection.getContent().toString();
 			connection = null;
 			return content;
@@ -127,7 +156,11 @@ public class URLSource extends AbstractSource {
 			return null;
 		}
 	}
-	
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
 	public String toString() {
 		if (url == null)
 			return "[not set]";

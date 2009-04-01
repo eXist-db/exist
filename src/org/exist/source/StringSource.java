@@ -22,9 +22,7 @@
  */
 package org.exist.source;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 
 import org.exist.storage.DBBroker;
 
@@ -71,6 +69,10 @@ public class StringSource extends AbstractSource {
      */
     public Reader getReader() throws IOException {
         return new StringReader(data);
+    }
+
+    public InputStream getInputStream() throws IOException {
+        return new ByteArrayInputStream(data.getBytes("UTF-8"));
     }
 
     /* (non-Javadoc)

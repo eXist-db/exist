@@ -24,6 +24,7 @@ package org.exist.source;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.InputStream;
 
 import org.exist.storage.DBBroker;
 
@@ -82,7 +83,9 @@ public interface Source {
      * @throws IOException
      */
     public Reader getReader() throws IOException;
-    
+
+    public InputStream getInputStream() throws IOException;
+
     public String getContent() throws IOException;
     
     /**

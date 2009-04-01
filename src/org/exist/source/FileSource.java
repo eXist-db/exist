@@ -22,11 +22,7 @@
  */
 package org.exist.source;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 
 import org.exist.storage.DBBroker;
 
@@ -85,6 +81,10 @@ public class FileSource extends AbstractSource {
     public Reader getReader() throws IOException {
         checkEncoding();
         return new InputStreamReader(new FileInputStream(filePath), encoding);
+    }
+
+    public InputStream getInputStream() throws IOException {
+        return new FileInputStream(filePath);
     }
 
     /* (non-Javadoc)

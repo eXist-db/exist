@@ -32,5 +32,11 @@ public class StringSourceWithMapKey extends AbstractSource {
 	public int isValid(DBBroker broker) {return Source.VALID;}
 	public int isValid(Source other) {return Source.VALID;}
 	public Reader getReader() throws IOException {return new StringReader(map.get("<query>"));}
-	public String getContent() throws IOException {return map.get("<query>");}
+
+    public InputStream getInputStream() throws IOException {
+        // not implemented
+        return null;
+    }
+
+    public String getContent() throws IOException {return map.get("<query>");}
 }
