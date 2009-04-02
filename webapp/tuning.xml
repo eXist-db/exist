@@ -181,8 +181,9 @@
                         (<code>matches(author, "^Joe.*")</code>), though you may also consider using
                     a full text index in the latter case. However, please note that range indexes on
                     strings are <emphasis>case-sensitive</emphasis> or rather, to use the correct
-                    formulation, sensitive to the default collation. If you need case-insensitive
-                    queries, consider an ngram index.</para>
+                    formulation, sensitive to the default 
+                    <ulink url="http://en.wikipedia.org/wiki/Collation">collation</ulink>. 
+                    If you need case-insensitive queries, consider an ngram index.</para>
             </section>
 
             <section>
@@ -217,7 +218,8 @@
                 <title>Prefer Short Paths</title>
 
                 <para>eXist uses indexes to directly locate an element or attribute by its name. It
-                    doesn't need to traverse the entire document tree. This means that the direct
+                    doesn't need to <ulink url="http://en.wikipedia.org/wiki/Tree_traversal">traverse</ulink> 
+                    the entire document tree. This means that the direct
                     selection of a node through a single descendant step is
                         <emphasis>faster</emphasis> than walking down the child axis. For
                     example:</para>
@@ -284,7 +286,8 @@
                 <example>
                     <title/>
                     <programlisting language="xquery"><![CDATA[
-for $e in //entry where $e/@type = 'subject'
+for $e in //entry 
+where $e/@type = 'subject'
 return $e
 ]]></programlisting>
                 </example>
@@ -293,7 +296,10 @@ return $e
 
                 <example>
                     <title>Equivalent query using XPath predicate</title>
-                    <programlisting language="xquery"><![CDATA[for $e in //entry[@type = 'subject'] return $e]]></programlisting>
+                    <programlisting language="xquery"><![CDATA[
+for $e in //entry[@type = 'subject'] 
+return $e
+]]></programlisting>
                 </example>
 
                 <para>The "for"..."where" expression forces the query engine into a step-by-step
@@ -319,7 +325,7 @@ return $e
                         <sgmltag>b</sgmltag> children whose string value is either "c" or
                     "d".</para>
 
-                <synopsis language="xquery">//a[b = 'c' or b = 'd']</synopsis>
+                <synopsis language="xquery">//a[b eq 'c' or b eq 'd']</synopsis>
 
                 <para>A shorter way to express this is:</para>
 
@@ -464,7 +470,7 @@ return
                     [storeTemporaryDoc]:2242) - Stored: 3: /db/system/temp/534d7dd16f9b97e6cb47054140e544a1.xml</screen>
                 
                 <para>The problem with those temporary fragments is that they need to be cleaned up sometimes.
-                    This costs performance and the cleanup process can even block the db for a while. Also,
+                    This has a negative influence on performance and the cleanup process can even block the db for a while. Also,
                     experience shows that the overall stability of the db suffers if too many temporary fragments
                     have to be stored/cleaned up in short time.</para>
                 
