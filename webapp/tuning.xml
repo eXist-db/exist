@@ -164,6 +164,25 @@
                     those possibilities.</para>
             </section>
 
+            <!-- Extend and move to the index configuration guide? -->
+            <!--section>
+                <title>Check if your index is used by the optimizer</title>
+                
+                <para>As said above, simple index definitions allow eXist's query rewriting
+                    optimizer to exploit the available indexes in the best possible way. However,
+                    there are cases for which an index can not be used at all or only in a limited
+                    way. First, a typed range index will not be used if some of the element
+                    or attribute values cannot be cast to valid instances of that type. If you
+                    declare an index on element <sgmltag>year</sgmltag> to be of type 
+                    <option>xs:integer</option>, then all year tags need to contain a valid
+                    integer value. If one or more year elements in the input node set for the query 
+                    contains a string, e.g. "unknown", instead of an integer, the index becomes 
+                    useless. Because relying on the index alone would yield an incorrect result,
+                    eXist has to fall back to a full scan.
+                </para>
+                
+            </section-->
+            
             <section>
                 <title>Use range indexes on strongly typed data or short strings</title>
 
@@ -215,7 +234,7 @@
             <title>Writing Queries</title>
 
             <section>
-                <title>Prefer Short Paths</title>
+                <title>Prefer short paths</title>
 
                 <para>eXist uses indexes to directly locate an element or attribute by its name. It
                     doesn't need to <ulink url="http://en.wikipedia.org/wiki/Tree_traversal">traverse</ulink> 
@@ -233,7 +252,34 @@
                 <para>The first expression requires 6 (!) index lookups while the second just needs
                     two. The same rules apply to the ancestor axis, e.g. f/ancestor::a.</para>
             </section>
+            
+            <section>
+                <title>Always process the most selective filter/expression first</title>
 
+                <para>If you need multiple steps to select certain nodes from a larger node set,
+                    try to process the most selective steps first. The earlier you can reduce
+                    the node set to be processed, the faster your query will run. For example,
+                    assume we have to find publications written by "Bjarne Stroustrup" after the year
+                    2000:</para>
+                
+                <synopsis language="xquery"><![CDATA[/dblp/*[year > 2000][author = 'Bjarne Stroustrup']]]></synopsis>
+                
+                <para>The database has 568824 records matching <code>year &gt; 2000</code>, but only
+                    41 of them were written by Stroustrup. Moving the filter on the
+                    author to the front of the expression should thus result in better performance:</para>
+                
+                <synopsis language="xquery"><![CDATA[/dblp/*[author = 'Bjarne Stroustrup'][year > 2000]]]></synopsis>
+                
+                <para>It would certainly be nice if eXist could do this kind of optimization
+                    automatically. We are working on it. eXist recognizes more and more cases
+                    for intelligent query rewritings. For example, it already transforms the boolean 
+                    expression</para>
+                
+                <synopsis language="xquery"><![CDATA[/dblp/*[author = 'Bjarne Stroustrup' and year > 2000]]]></synopsis>
+                
+                <para>into a multi filter step as shown above.</para>
+            </section>
+            
             <section>
                 <title>Allow eXist to process large node sets in one step</title>
 
