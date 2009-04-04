@@ -621,7 +621,7 @@ public abstract class DBBroker extends Observable {
 	 * @throws PermissionDeniedException
 	 * @throws LockException
 	 */
-	public abstract void copyXMLResource(Txn transaction, DocumentImpl doc,
+	public abstract void copyResource(Txn transaction, DocumentImpl doc,
 			Collection destination, XmldbURI newName)
 			throws PermissionDeniedException, LockException;
 

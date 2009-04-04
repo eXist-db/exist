@@ -663,7 +663,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             else
 // TODO check XML/Binary resource
 //                broker.copyResource(transaction, doc, destination, newName);
-                broker.copyXMLResource(transaction, doc, destination, newName);
+                broker.copyResource(transaction, doc, destination, newName);
             transact.commit(transaction);
 //            documentCache.clear();
             return;

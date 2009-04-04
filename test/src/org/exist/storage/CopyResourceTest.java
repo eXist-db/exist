@@ -80,7 +80,7 @@ public class CopyResourceTest extends TestCase {
 			assertNotNull(info);
 			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
-			broker.copyXMLResource(transaction, info.getDocument(), root, XmldbURI.create("new_test.xml"));
+			broker.copyResource(transaction, info.getDocument(), root, XmldbURI.create("new_test.xml"));
 			broker.saveCollection(transaction, root);
 
 			transact.commit(transaction);
@@ -157,7 +157,7 @@ public class CopyResourceTest extends TestCase {
 			transaction = transact.beginTransaction();
 			System.out.println("Transaction started ...");
 
-			broker.copyXMLResource(transaction, info.getDocument(), root, XmldbURI.create("new_test2.xml"));
+			broker.copyResource(transaction, info.getDocument(), root, XmldbURI.create("new_test2.xml"));
 			broker.saveCollection(transaction, root);
 			
 //			Don't commit...

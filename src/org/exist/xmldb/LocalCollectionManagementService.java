@@ -433,7 +433,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
 	    if (newName == null) {
 		newName = resourcePath.lastSegment();
 	    }
-            broker.copyXMLResource(transaction, doc, destination, newName);
+            broker.copyResource(transaction, doc, destination, newName);
             transact.commit(transaction);
         } catch ( EXistException e ) {
             transact.abort(transaction);
