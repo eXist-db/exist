@@ -1074,7 +1074,7 @@ public class Folder extends NamedResource implements Cloneable {
 			uri = XmldbURI.create(name.get());
 			if (copy) {
 				tx.lockRead(doc);
-				broker.copyXMLResource(tx.tx, doc, handle, uri);
+				broker.copyResource(tx.tx, doc, handle, uri);
 			} else {
 				tx.lockWrite(doc);
 				broker.moveXMLResource(tx.tx, doc, handle, uri);

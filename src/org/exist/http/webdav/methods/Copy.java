@@ -181,7 +181,7 @@ public class Copy extends AbstractWebDAVMethod {
             }
             //TODO : release collection lock here ?
             
-            broker.copyXMLResource(transaction, resource, destCollection, newResourceName);
+            broker.copyResource(transaction, resource, destCollection, newResourceName);
             transact.commit(transaction);
             if(replaced)
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);

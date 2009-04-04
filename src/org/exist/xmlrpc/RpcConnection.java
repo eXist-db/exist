@@ -4121,7 +4121,7 @@ public class RpcConnection implements RpcAPI {
             if(move)
                 broker.moveXMLResource(transaction, doc, destination, newName);
             else
-                broker.copyXMLResource(transaction, doc, destination, newName);
+                broker.copyResource(transaction, doc, destination, newName);
             transact.commit(transaction);
             return true;
         } catch (LockException e) {

@@ -27,7 +27,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.io.StringReader;
-import java.io.IOException;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -41,19 +40,16 @@ import junit.textui.TestRunner;
 import org.exist.Namespaces;
 import org.exist.StandaloneServer;
 import org.exist.memtree.SAXAdapter;
-import org.exist.memtree.ElementImpl;
 import org.exist.storage.DBBroker;
 import org.exist.util.Base64Encoder;
 import org.mortbay.util.MultiException;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.ParserConfigurationException;
 
 /** A test case for accessing a remote server via REST-Style Web API.
  * @author wolf

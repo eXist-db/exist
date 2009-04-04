@@ -87,7 +87,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
    	  		//TODO : how is the transaction handled ? It holds the locks ! 
    	  		Collection destination = broker.getOrCreateCollection(transaction, path);
    	  		broker.saveCollection(transaction, destination);
-   	  		broker.copyXMLResource(transaction, doc, destination, name);
+   	  		broker.copyResource(transaction, doc, destination, name);
    	  	}
    	  	catch(XPathException xpe)
    	  	{

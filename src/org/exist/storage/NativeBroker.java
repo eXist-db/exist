@@ -2001,7 +2001,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    public void copyXMLResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName) 
+    public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName) 
 	throws PermissionDeniedException, LockException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
