@@ -104,8 +104,8 @@ public class FunctionCall extends Function {
                 if (rootModule != null) {
                     UserDefinedFunction replacementFunctionDef =
                             rootModule.getFunction(functionDef.getName(), getArgumentCount());
-                    if (replacementFunctionDef == null) throw new NoSuchElementException("internal error:  unable to rebind cached function reference " + functionDef.getName().getStringValue() + "/" + getArgumentCount() + " to new instance of module");
-                    expression = functionDef = replacementFunctionDef;
+                    if (replacementFunctionDef != null)
+                        expression = functionDef = replacementFunctionDef;
                 }
 			}
 		}
