@@ -101,7 +101,7 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="twitter.xql">Twitter client</link>
+                            <link href="xquery/twitter.xql">Twitter client</link>
                         </td>
                         <td width="70%">A simple twitter client, which demonstrates
                             how to use the http client library to retrieve XML data
