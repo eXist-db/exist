@@ -99,7 +99,7 @@ return
                     </select>
                     <input type="submit" value="Show"/>
                 </form>
-                <p>To view the user timeline, edit twitter.xql and set variable
+                <p>To view the friends timeline, edit twitter.xql and set variable
                     $tc:login to a valid twitter user/password.</p>
                 <ul class="twitter">
                 {
