@@ -101,6 +101,17 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
+                            <link href="twitter.xql">Twitter client</link>
+                        </td>
+                        <td width="70%">A simple twitter client, which demonstrates
+                            how to use the http client library to retrieve XML data
+                            from external data sources. For a more complex twitter example,
+                            see an 
+                            <a href="http://www.devx.com/webdev/Article/41337/0/page/1">article</a> 
+                            published on DevX.</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
                             <link href="xquery/call.xql">First-class functions example</link>
                         </td>
                         <td width="70%"> Demonstrates the use of first-class functions. First-class
