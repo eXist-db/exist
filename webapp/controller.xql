@@ -117,6 +117,14 @@ return
 
 				</view>
 			</dispatch>
+			
+	else if ($name eq 'twitter.xql') then
+	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+	        <view>
+	            <forward url="twitter-view.xql"/>
+            </view>
+	    </dispatch>
+	    
 	else if ($name eq 'applications.xml') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<!-- query results are passed to XSLT servlet via request attribute -->
