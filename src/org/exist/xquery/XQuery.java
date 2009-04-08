@@ -104,7 +104,8 @@ public class XQuery {
         	compiled.setSource(xsource);
             return compiled;
 		} finally {
-        	reader.close();
+            if (reader != null)
+        	    reader.close();
 		}
     }
     
