@@ -9,6 +9,10 @@ if [ -z "$JAVA_HOME" ]; then
     JAVA_HOME="%{JDKPath}"
 fi
 
+if [ ! -d "$JAVA_HOME" ]; then
+    JAVA_HOME="%{JAVA_HOME}"
+fi
+
 JAVA_CMD="$JAVA_HOME/bin/java"
 
 ANT_HOME="$EXIST_HOME/tools/ant"
