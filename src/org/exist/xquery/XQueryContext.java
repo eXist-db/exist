@@ -488,7 +488,9 @@ public class XQueryContext {
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
         ctx.contextStack = this.contextStack;        
-        ctx.mappedModules = new HashMap(this.mappedModules); 
+        ctx.mappedModules = new HashMap(this.mappedModules);
+        ctx.staticNamespaces = new HashMap(this.staticNamespaces);
+        ctx.staticPrefixes = new HashMap(this.staticPrefixes);
     }
     
     /**
