@@ -23,6 +23,7 @@ if not "%EXIST_HOME%" == "" goto gotExistHome
 
 rem try to guess
 set EXIST_HOME=.
+
 if exist %EXIST_HOME%\start.jar goto gotExistHome
 set EXIST_HOME=..
 if exist %EXIST_HOME%\start.jar goto gotExistHome
