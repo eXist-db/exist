@@ -213,12 +213,14 @@ public class EXistServlet extends HttpServlet {
                    BufferedOutputStream os = new BufferedOutputStream(fos);
                    byte[] buffer = new byte[4096];
                    int count, l = 0;
-                   do {
-                      count = is.read(buffer);
-                      if (count > 0)
-                         os.write(buffer, 0, count);
-                      l += count;
-                   } while (l < len);
+				   if (len > 0) {
+					   do {
+						  count = is.read(buffer);
+						  if (count > 0)
+							 os.write(buffer, 0, count);
+						  l += count;
+					   } while (l < len);
+				   }
                    os.close();
                    
                    srvREST.doPut(broker, tempFile, dbpath, request, response);
