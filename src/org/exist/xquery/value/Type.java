@@ -28,6 +28,7 @@ import org.exist.dom.QName;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xquery.XPathException;
+import org.apache.log4j.Logger;
 
 /**
  * Defines all built-in types and their relations.
@@ -36,6 +37,8 @@ import org.exist.xquery.XPathException;
  */
 public class Type {
 
+    private final static Logger LOG = Logger.getLogger(Type.class);
+    
 	public final static String[] NODETYPES =
 		{
 			"node",
@@ -379,7 +382,7 @@ public class Type {
 			return ITEM;
 		Integer i = (Integer)typeHierarchy.get(subtype);
 		if(i == null) {
-			System.err.println("no supertype for " + getTypeName(subtype));
+			LOG.warn("no supertype for " + getTypeName(subtype), new Throwable());
 			return ITEM;
 		}
 		return i.intValue();
