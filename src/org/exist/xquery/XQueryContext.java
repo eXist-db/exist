@@ -1149,6 +1149,10 @@ public class XQueryContext {
         isShared = shared;
     }
 
+    public boolean isShared() {
+        return isShared;
+    }
+    
     public void addModifiedDoc(DocumentImpl document) {
         if (modifiedDocuments == null)
             modifiedDocuments = new DefaultDocumentSet();

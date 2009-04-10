@@ -121,6 +121,10 @@ public class XQueryPool extends Object2ObjectHashMap {
     }
     
     private void returnModules(XQueryContext context, ExternalModule self) {
+        // a shared context - as used by util:eval - may reference modules from other contexts.
+        // don't return those modules to the pool to avoid access conflicts.
+        if (context.isShared())
+            return;
    	 for (Iterator it = context.getRootModules(); it.hasNext(); ) {
    		 Module module = (Module) it.next();
    		 if (module != self && !module.isInternalModule()) {
