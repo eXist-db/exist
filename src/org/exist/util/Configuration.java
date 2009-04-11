@@ -50,6 +50,7 @@ import org.exist.storage.serializers.CustomMatchListenerFactory;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
+import org.exist.xmldb.DatabaseImpl;
 import org.exist.xquery.FunctionFactory;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
@@ -203,7 +204,7 @@ public class Configuration implements ErrorHandler
     }
     
     public Configuration() throws DatabaseConfigurationException {
-        this("conf.xml", null);
+        this(DatabaseImpl.CONF_XML, null);
     }
     
     public Configuration(String configFilename) throws DatabaseConfigurationException {
@@ -216,7 +217,7 @@ public class Configuration implements ErrorHandler
             
             if (configFilename == null) {
                 // Default file name
-                configFilename = "conf.xml";
+                configFilename = DatabaseImpl.CONF_XML;
             }
             
             // firstly, try to read the configuration from a file within the
@@ -233,7 +234,7 @@ public class Configuration implements ErrorHandler
             // otherwise, secondly try to read configuration from file. Guess the
             // location if necessary
             if (is == null) {
-                existHome = (existHomeDirname != null) ? new File(existHomeDirname) : ConfigurationHelper.getExistHome();
+                existHome = (existHomeDirname != null) ? new File(existHomeDirname) : ConfigurationHelper.getExistHome(configFilename);
                 if (existHome == null) {
                     // EB: try to create existHome based on location of config file
                     // when config file points to absolute file location

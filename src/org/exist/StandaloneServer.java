@@ -282,6 +282,13 @@ public class StandaloneServer {
         
         HttpContext context = new HttpContext();
         context.setContextPath("/");
+	
+	// Setting up resourceBase, if it is possible
+	// This one is needed by many Servlets which depend
+	// on a not null context.getResourceBase() value
+	File eXistHome=ConfigurationHelper.getExistHome();
+	if(eXistHome!=null)
+		context.setResourceBase(eXistHome.getAbsolutePath());
         
         WebApplicationHandler webappHandler = new WebApplicationHandler();
                 

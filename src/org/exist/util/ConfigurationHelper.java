@@ -5,6 +5,7 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
+import org.exist.xmldb.DatabaseImpl;
 
 public class ConfigurationHelper {
     private final static Logger LOG = Logger.getLogger(ConfigurationHelper.class); //Logger
@@ -24,6 +25,24 @@ public class ConfigurationHelper {
      * @return the file handle or <code>null</code>
      */
     public static File getExistHome() {
+    	return getExistHome(DatabaseImpl.CONF_XML);
+    }
+
+    /**
+     * Returns a file handle for eXist's home directory.
+     * Order of tests is designed with the idea, the more precise it is,
+     * the more the developper know what he is doing
+     * <ol>
+     *   <li>Brokerpool      : if eXist was already configured.
+     *   <li>exist.home      : if exists
+     *   <li>user.home       : if exists, with a conf.xml file
+     *   <li>user.dir        : if exists, with a conf.xml file
+     *   <li>classpath entry : if exists, with a conf.xml file
+     * </ol>
+     *
+     * @return the file handle or <code>null</code>
+     */
+    public static File getExistHome(String config) {
     	File existHome = null;
     	
     	// If eXist was allready configured, then return 
@@ -32,16 +51,16 @@ public class ConfigurationHelper {
     		BrokerPool broker = BrokerPool.getInstance();
     		if(broker != null) {
     			existHome = broker.getConfiguration().getExistHome();
-                        LOG.debug("Got eXist home from broker: " + existHome);
-    			return existHome;
+			if(existHome!=null) {
+                        	LOG.debug("Got eXist home from broker: " + existHome);
+    				return existHome;
+			}
     		}
     	} catch(Throwable e) {
             // Catch all potential problems
             LOG.debug("Could not retieve instance of brokerpool: " + e.getMessage());
     	}
     	
-    	String config = "conf.xml";
-        
         // try exist.home
         if (System.getProperty("exist.home") != null) {
             existHome = new File(ConfigurationHelper.decodeUserHome(System.getProperty("exist.home")));
