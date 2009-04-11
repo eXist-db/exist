@@ -74,6 +74,8 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.Vector;
+import org.exist.collections.Collection;
+import org.exist.util.LockException;
 /**
  * This class controls all available instances of the database.
  * Use it to configure, start and stop database instances. 
@@ -778,7 +780,10 @@ public class BrokerPool {
             	}
             }
         }
-        
+
+        /* initialise required collections if they dont exist yet */
+        initialiseSystemCollections(broker);
+
         //TODO : from there, rethink the sequence of calls.
         // WM: attention: a small change in the sequence of calls can break
         // either normal startup or recovery.
@@ -882,6 +887,69 @@ public class BrokerPool {
             throw new EXistException("Failed to initialize system maintenance task: " + e.getMessage());
         }
     }*/  	
+
+    /**
+     * Initialise system collections, if it doesnt exist yet
+     *
+     * @param sysBroker The system broker from before the brokerpool is populated
+     * @param txn The transaction
+     * @param sysCollectionUri XmldbURI of the collection to create
+     */
+    private void initialiseSystemCollection(DBBroker sysBroker, Txn txn, XmldbURI sysCollectionUri) throws PermissionDeniedException, LockException, IOException
+    {
+        initialiseSystemCollection(sysBroker, txn, sysCollectionUri, 0770);
+    }
+
+     /**
+     * Initialise system collections, if it doesnt exist yet
+     *
+     * @param sysBroker The system broker from before the brokerpool is populated
+     * @param txn The transaction
+     * @param sysCollectionUri XmldbURI of the collection to create
+     * @param permissions The persmissions to set on the created collection
+     */
+    private void initialiseSystemCollection(DBBroker sysBroker, Txn txn, XmldbURI sysCollectionUri, int permissions) throws PermissionDeniedException, LockException, IOException
+    {
+        //create /db/system
+        Collection sysCollection = sysBroker.getCollection(sysCollectionUri);
+        if (sysCollection == null)
+        {
+            sysCollection = sysBroker.getOrCreateCollection(txn, sysCollectionUri);
+            if (sysCollection == null)
+                throw new IOException("Could not create system collection: " + sysCollectionUri);
+            sysCollection.setPermissions(permissions);
+            sysBroker.saveCollection(txn, sysCollection);
+        }
+    }
+
+    /**
+     * Initialise required system collections, if they dont exist yet
+     *
+     * @param sysBroker - The system broker from before the brokerpool is populated
+     *
+     * @throws EXistException If a system collection cannot be created
+     */
+    private void initialiseSystemCollections(DBBroker sysBroker) throws EXistException
+    {
+        TransactionManager transact = getTransactionManager();
+        Txn txn = transact.beginTransaction();
+
+        try
+        {
+            //create /db/system
+            initialiseSystemCollection(sysBroker, txn, XmldbURI.SYSTEM_COLLECTION_URI);
+
+            transact.commit(txn);
+        }
+        catch(Exception e)
+        {
+            transact.abort(txn);
+            e.printStackTrace();
+            String msg = "Initialisation of system collections failed: " + e.getMessage();
+            LOG.error(msg, e);
+            throw new EXistException(msg, e);
+        }
+    }
 
     public long getReservedMem() {
         return reservedMem - cacheManager.getSizeInBytes();
