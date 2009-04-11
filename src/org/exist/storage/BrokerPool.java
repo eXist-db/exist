@@ -20,23 +20,12 @@
  */
 package org.exist.storage;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.Vector;
+
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionCache;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.SymbolTable;
 import org.exist.indexing.IndexManager;
