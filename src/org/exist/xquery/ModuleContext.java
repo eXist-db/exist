@@ -308,33 +308,33 @@ public class ModuleContext extends XQueryContext {
 		return (String) staticPrefixes.get(uri);
     }
 
-    public String getInScopeNamespace(String prefix) {
-        return parentContext.getInScopeNamespace(prefix);
-    }
-
-    public String getInScopePrefix(String uri) {
-        return parentContext.getInScopePrefix(uri);
-    }
-
-    public String getInheritedNamespace(String prefix) {
-        return parentContext.getInheritedNamespace(prefix);
-    }
-
-    public String getInheritedPrefix(String uri) {
-        return parentContext.getInheritedPrefix(uri);
-    }
-
-    public void declareInScopeNamespace(String prefix, String uri) {
-        parentContext.declareInScopeNamespace(prefix, uri);
-    }
-
-    public void pushInScopeNamespaces() {
-        parentContext.pushInScopeNamespaces();
-    }
-
-    public void popInScopeNamespaces() {
-        parentContext.popInScopeNamespaces();
-    }
+//    public String getInScopeNamespace(String prefix) {
+//        return parentContext.getInScopeNamespace(prefix);
+//    }
+//
+//    public String getInScopePrefix(String uri) {
+//        return parentContext.getInScopePrefix(uri);
+//    }
+//
+//    public String getInheritedNamespace(String prefix) {
+//        return parentContext.getInheritedNamespace(prefix);
+//    }
+//
+//    public String getInheritedPrefix(String uri) {
+//        return parentContext.getInheritedPrefix(uri);
+//    }
+//
+//    public void declareInScopeNamespace(String prefix, String uri) {
+//        parentContext.declareInScopeNamespace(prefix, uri);
+//    }
+//
+//    public void pushInScopeNamespaces() {
+//        parentContext.pushInScopeNamespaces();
+//    }
+//
+//    public void popInScopeNamespaces() {
+//        parentContext.popInScopeNamespaces();
+//    }
 
     public void registerUpdateListener(UpdateListener listener) {
 		parentContext.registerUpdateListener(listener);
