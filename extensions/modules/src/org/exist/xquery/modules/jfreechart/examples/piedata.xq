@@ -1,6 +1,6 @@
 (: Example code for jfreechart module :)
 (: Load the data files into /db :)
-(: $Id :)
+(: $Id$ :)
 declare namespace jfreechart = "http://exist-db.org/xquery/jfreechart";
 
 jfreechart:render("PieChart", 

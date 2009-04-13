@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- A sample pie dataset for JFreeChart. -->
+<!-- 
+    A sample pie dataset for JFreeChart. 
+    $Id$
+-->
 <PieDataset>
   <Item>
     <Key>Java</Key>
