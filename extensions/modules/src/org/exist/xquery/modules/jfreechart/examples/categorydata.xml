@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Sample data for JFreeChart. -->
+<!-- 
+    Sample data for JFreeChart. 
+    $Id$ 
+-->
 <CategoryDataset>
     <Series name="Series 1">
         <Item>
