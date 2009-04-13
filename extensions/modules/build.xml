@@ -46,6 +46,10 @@
     <condition property="include.module.jndi.config">
         <istrue value="${include.module.jndi}"/>
     </condition>
+    
+    <condition property="include.module.jfreechart.config">
+        <istrue value="${include.module.jfreechart}"/>
+    </condition>
 
     <!-- Special targets for XSLFO module -->
     <condition property="libs.available.xslfo">
@@ -123,6 +127,23 @@
         <get src="http://repo1.maven.org/maven2/com/svnkit/svnkit/1.1.0/svnkit-1.1.0.jar"
       		dest="${svn.svnkit.jar}" verbose="true"/>
     </target>
+
+    <!-- Special targets for jfreechart module -->
+    <property name="chart.jfreechart.zip" value="${top.dir}/${lib.user}/jfreechart.zip"/>
+    <available file="${chart.jfreechart.zip}" property="jfreechart-present"/>
+    
+    <target name="prepare-jfreechart" if="include.module.jfreechart.config" unless="jfreechart-present">
+        <get src="http://prdownloads.sourceforge.net/jfreechart/jfreechart-1.0.12.zip"
+      		dest="${chart.jfreechart.zip}" verbose="true"/>
+
+        <unzip src="${top.dir}/${lib.user}/jfreechart.zip" dest="${top.dir}/${lib.user}">
+			<patternset>
+				<include name="**/lib/jfreechart-1.0.12.jar"/>
+                <include name="**/lib/jcommon-*.jar"/>
+			</patternset>
+			<mapper type="flatten"/>
+		</unzip>
+    </target>
     
     <!-- Special targets end -->
     
@@ -148,7 +169,7 @@
 		<pathelement path="${java.class.path}"/>
     </path>
 		
-    <target name="prepare" depends="prepare-svn,prepare-libs-xslfo,prepare-simpleql">
+    <target name="prepare" depends="prepare-svn,prepare-libs-xslfo,prepare-simpleql,prepare-jfreechart">
 		<mkdir dir="${classes}"/>
     </target>
 	
@@ -174,6 +195,7 @@
             <exclude name="org/exist/xquery/modules/file/**" unless="include.module.file.config"/>
             <exclude name="org/exist/xquery/modules/svn/**" unless="include.module.svn.config"/>
             <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
+            <exclude name="org/exist/xquery/modules/jfreechart/**" unless="include.module.jfreechart.config"/>
         </javac>
 	</target>
 	
