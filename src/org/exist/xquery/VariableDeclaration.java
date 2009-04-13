@@ -101,8 +101,8 @@ public class VariableDeclaration extends AbstractExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }            
-        
+        }
+        context.pushInScopeNamespaces(false);
 		QName qn = QName.parse(context, qname, null);
         
 		Module myModule = context.getRootModule(qn.getNamespaceURI());		
@@ -124,7 +124,8 @@ public class VariableDeclaration extends AbstractExpression {
         
         if (context.getProfiler().isEnabled())
             //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
-            context.getProfiler().end(this, "", seq);   
+            context.getProfiler().end(this, "", seq);
+        context.popInScopeNamespaces();
         context.popDocumentContext();
 		return Sequence.EMPTY_SEQUENCE;
 	}

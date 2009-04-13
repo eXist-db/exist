@@ -1931,10 +1931,14 @@ public class XQueryContext {
 		return contextPosition;
 	}
 
+    public void pushInScopeNamespaces() {
+        pushInScopeNamespaces(true);
+    }
+
 	/**
 	 * Push all in-scope namespace declarations onto the stack.
 	 */
-	public void pushInScopeNamespaces() {
+	public void pushInScopeNamespaces(boolean inherit) {
 		//TODO : push into an inheritedInScopeNamespaces HashMap... and return an empty HashMap
 		HashMap m = (HashMap) inScopeNamespaces.clone();
 		HashMap p = (HashMap) inScopePrefixes.clone();
@@ -1943,10 +1947,15 @@ public class XQueryContext {
 		namespaceStack.push(inScopeNamespaces);
 		namespaceStack.push(inScopePrefixes);
 		//Current namespaces now become inherited just like the previous inherited ones
-		inheritedInScopeNamespaces = (HashMap)inheritedInScopeNamespaces.clone();
-		inheritedInScopeNamespaces.putAll(m);	
-		inheritedInScopePrefixes = (HashMap)inheritedInScopePrefixes.clone();
-		inheritedInScopePrefixes.putAll(p);
+        if (inherit) {
+            inheritedInScopeNamespaces = (HashMap)inheritedInScopeNamespaces.clone();
+            inheritedInScopeNamespaces.putAll(m);
+            inheritedInScopePrefixes = (HashMap)inheritedInScopePrefixes.clone();
+            inheritedInScopePrefixes.putAll(p);
+        } else {
+            inheritedInScopeNamespaces = new HashMap();
+            inheritedInScopePrefixes = new HashMap();
+        }
 		//TODO : consider dynamic instanciation
 		inScopeNamespaces = new HashMap();
 		inScopePrefixes = new HashMap();
@@ -2228,7 +2237,8 @@ public class XQueryContext {
             throw new XPathException("Internal error while loading module: " + location, e);
         } finally {
             try {
-                reader.close();
+				if (reader != null)
+                	reader.close();
             } catch (IOException e) {
                 LOG.warn("Error while closing module source: " + e.getMessage(), e);
             }
