@@ -144,7 +144,11 @@ public class JFreeChartFactory {
                     conf.getTitle(), conf.getCategoryAxisLabel(), conf.getValueAxisLabel(), categoryDataset,
                     conf.getOrientation(), conf.isGenerateLegend(), conf.isGenerateTooltips(), conf.isGenerateUrls());
         } else {
-            logger.error("Illegal chartype");
+            logger.error("Illegal chartype. Choose one of " +
+                    "AreaChart BarChart BarChart3D LineChart LineChart3D " +
+                    "MultiplePieChart MultiplePieChart3D PieChart PieChart3D " +
+                    "RingChart StackedAreaChart StackedBarChart " +
+                    "StackedBarChart3D WaterfallChart");
         }
 
         return chart;
