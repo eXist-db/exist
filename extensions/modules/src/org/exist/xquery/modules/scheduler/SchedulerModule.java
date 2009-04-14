@@ -33,8 +33,9 @@ import org.exist.xquery.FunctionDef;
  * Jobs to be Scheduled with eXist's Scheduler  
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-11-15
- * @version 1.0
+ * @author Loren Cahlander <loren.cahlander@gmail.com>
+ * @serial 2009-05-15
+ * @version 1.3
  *
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
  */
@@ -49,6 +50,8 @@ public class SchedulerModule extends AbstractInternalModule
 		new FunctionDef(ScheduleFunctions.signatures[1], ScheduleFunctions.class),
         new FunctionDef(ScheduleFunctions.signatures[2], ScheduleFunctions.class),
         new FunctionDef(ScheduleFunctions.signatures[3], ScheduleFunctions.class),
+        new FunctionDef(ScheduleFunctions.signatures[4], ScheduleFunctions.class),
+        new FunctionDef(ScheduleFunctions.signatures[5], ScheduleFunctions.class),
 		new FunctionDef(GetScheduledJobs.signature, GetScheduledJobs.class),
 		new FunctionDef(DeleteScheduledJob.signature, DeleteScheduledJob.class),
 		new FunctionDef(PauseScheduledJob.signature, PauseScheduledJob.class),

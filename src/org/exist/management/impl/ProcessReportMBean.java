@@ -25,6 +25,8 @@ import javax.management.openmbean.TabularData;
 
 public interface ProcessReportMBean {
 
+    public TabularData getScheduledJobs();
+
     public TabularData getRunningJobs();
 
     public TabularData getRunningQueries();

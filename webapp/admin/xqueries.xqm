@@ -45,6 +45,20 @@ declare function xqueries:main() as element()
 				<input type="submit" value="Refresh"/>
 			</form>
 		</div>
+		
+		{if (util:is-module-registered('http://exist-db.org/xquery/scheduler')) 
+		then
+			<div class="quartz-panel">
+				<div class="panel-head">Scheduled Jobs</div>
+				<div class="scheduled-jobs-container">
+				{
+					xqueries:display-scheduled-processes()
+				}
+				</div>
+			</div>
+		else ()
+		}
+		
     </div>
 };
 
@@ -77,7 +91,48 @@ declare function xqueries:display-process($proc as element(system:job)) {
 		<td>{$proc/@start/string()}</td>
 	</tr>
 };
-(:
+
+declare function xqueries:display-scheduled-processes() {
+	let $processes := system:get-scheduled-jobs()//system:job
+	return
+		if (empty($processes)) then
+			<p>No scheduled jobs are active right now.</p>
+		else
+			<table cellspacing="0" cellpadding="5" width="100%" border="1">
+				<tr>
+					<th>Group</th>
+					<th>Name</th>
+					<th>Start</th>
+					<th>End</th>
+					<th>Current</th>
+					<th>Next</th>
+					<th>Final</th>
+					<th>Expression</th>
+					<th>State</th>
+					<th>Running</th>
+				</tr>
+				{
+					for $proc in $processes
+					return
+						xqueries:display-scheduled-process($proc)
+				}
+			</table>
+};
+
+declare function xqueries:display-scheduled-process($proc as element(system:job)) {
+	<tr>
+        <td>{$proc/@group/string()}</td>
+        <td>{$proc/@name/string()}</td>
+        <td>{$proc/@startTime/string()}</td>
+        <td>{$proc/@endTime/string()}</td>
+        <td>{$proc/@fireTime/string()}</td>
+        <td>{$proc/@nextFireTime/string()}</td>
+        <td>{$proc/@finalFireTime/string()}</td>
+        <td>{$proc/@triggerExpression/string()}</td>
+        <td>{$proc/@triggerState/string()}</td>
+        <td>{$proc/@running/string()}</td>
+	</tr>
+};(:
     Process an action.
 :)
 declare function xqueries:process-action() as element()*

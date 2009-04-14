@@ -21,6 +21,8 @@
  */
 package org.exist.management.impl;
 
+import org.exist.scheduler.ScheduledJobInfo;
+import org.exist.scheduler.Scheduler;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
 import org.exist.xquery.XQueryWatchDog;
@@ -59,8 +61,32 @@ public class ProcessReport implements ProcessReportMBean {
 
     private ProcessMonitor processMonitor;
 
+    private Scheduler scheduler;
+
     public ProcessReport(BrokerPool pool) {
         processMonitor = pool.getProcessMonitor();
+        scheduler = pool.getScheduler();
+    }
+
+    public TabularData getScheduledJobs() {
+        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
+        CompositeType infoType;
+        try {
+            infoType = new CompositeType("scheduledJobs", "Lists currently scheduled jobs in eXist",
+                    pItemNames, pItemDescriptions, itemTypes);
+            TabularType tabularType = new TabularType("jobList", "List of currently scheduled jobs", infoType, pIndexNames);
+            TabularDataSupport data = new TabularDataSupport(tabularType);
+            ScheduledJobInfo[] jobs = scheduler.getScheduledJobs();
+            for (int i = 0; i < jobs.length; i++) {
+                Object[] itemValues = { jobs[i].getName(), jobs[i].getGroup(),
+                        jobs[i].getTriggerExpression() };
+                data.put(new CompositeDataSupport(infoType, pItemNames, itemValues));
+            }
+            return data;
+        } catch (OpenDataException e) {
+            LOG.warn(e.getMessage(), e);
+        }
+        return null;
     }
 
     public TabularData getRunningJobs() {

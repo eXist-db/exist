@@ -49,18 +49,26 @@ import java.util.Properties;
  * Schedules job's with eXist's Scheduler  
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-11-15
- * @version 1.0
+ * @author Loren Cahlander <loren.cahlander@gmail.com>
+ * @serial 2009-05-15
+ * @version 1.3
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
 public class ScheduleFunctions extends BasicFunction
 {	
+	public static final String SCHEDULE_XQUERY_CRON_JOB = "schedule-xquery-cron-job";
+
+	public static final String SCHEDULE_XQUERY_PERIODIC_JOB = "schedule-xquery-periodic-job";
+
+	public static final String SCHEDULE_JAVA_CRON_JOB = "schedule-java-cron-job";
+
+	public static final String SCHEDULE_JAVA_PERIODIC_JOB = "schedule-java-periodic-job";
+
 	private Scheduler scheduler = null;
 	
-	public final static FunctionSignature [] signatures = {
-		new FunctionSignature(
-			new QName("schedule-java-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+	private final static FunctionSignature scheduleJavaCronJobNoParam = new FunctionSignature(
+			new QName(SCHEDULE_JAVA_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
 			"Schedules the Java Class named in $a (the class must extend org.exist.scheduler.UserJob) according " +
             "to the Cron expression in $b. The job will be registered using the name passed in $c.",
 			new SequenceType[]
@@ -69,10 +77,10 @@ public class ScheduleFunctions extends BasicFunction
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)),
-
-        new FunctionSignature(
-            new QName("schedule-java-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+	
+	private final static FunctionSignature scheduleJavaCronJobParam = new FunctionSignature(
+            new QName(SCHEDULE_JAVA_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
             "Schedules the Java Class named in $a (the class must extend org.exist.scheduler.UserJob) according " +
             "to the Cron expression in $b. The job will be registered using the name passed in $c. The final " +
             "argument can be used to specify " +
@@ -86,9 +94,29 @@ public class ScheduleFunctions extends BasicFunction
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE)
             },
-            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)),
-		new FunctionSignature(
-			new QName("schedule-xquery-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+	
+	private final static FunctionSignature scheduleJavaPeriodicParam = new FunctionSignature(
+            new QName(SCHEDULE_JAVA_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+            "Schedules the Java Class named in $a (the class must extend org.exist.scheduler.UserJob) according " +
+            "to the periodic value in $b. The job will be registered using the name passed in $c. The $d " +
+            "argument can be used to specify " +
+            "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
+            "in an XML fragment with the following structure: " +
+			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>,  Given the delay passed in $e and the repeat value in $f",
+            new SequenceType[]
+            {
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+            },
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+	
+	private final static FunctionSignature scheduleXQueryCronJobNoParam = new FunctionSignature(
+			new QName(SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
 			"Schedules the XQuery resource named in $a (e.g. /db/foo.xql) according to the Cron expression in $b. " +
             "The job will be registered using the name passed in $c.",
 			new SequenceType[]
@@ -97,9 +125,10 @@ public class ScheduleFunctions extends BasicFunction
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)),
-        new FunctionSignature(
-            new QName("schedule-xquery-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+	
+	private final static FunctionSignature scheduleXQueryCronJobParam = new FunctionSignature(
+            new QName(SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
             "Schedules the XQuery resource named in $a (e.g. /db/foo.xql) according to the Cron expression in $b. " +
             "The job will be registered using the name passed in $c. The final argument can be used to specify " +
             "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
@@ -112,8 +141,31 @@ public class ScheduleFunctions extends BasicFunction
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE),
             },
-            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE))
-	};
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+	
+	private final static FunctionSignature scheduleXQueryPeriodicParam = new FunctionSignature(
+            new QName(SCHEDULE_XQUERY_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+            "Schedules the XQuery resource named in $a (e.g. /db/foo.xql) according to the periodic in $b. " +
+            "The job will be registered using the name passed in $c. The $d argument can be used to specify " +
+            "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
+            "in an XML fragment with the following structure: " +
+			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" +
+			",  Given the delay passed in $e and the repeat value in $f",
+            new SequenceType[]
+            {
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+            },
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+
+	public final static FunctionSignature[] signatures = {
+			scheduleJavaCronJobNoParam, scheduleJavaCronJobParam,
+			scheduleJavaPeriodicParam, scheduleXQueryCronJobNoParam,
+			scheduleXQueryCronJobParam, scheduleXQueryPeriodicParam };
 	
 	/**
 	 * ScheduleFunctions Constructor
@@ -128,7 +180,7 @@ public class ScheduleFunctions extends BasicFunction
     }
 
 	/**
-	 * evaluate the call to the xquery function,
+	 * evaluate thed call to the xquery function,
 	 * it is really the main entry point of this class
 	 * 
 	 * @param args		arguments from the  function call
@@ -141,13 +193,32 @@ public class ScheduleFunctions extends BasicFunction
 	{
 		String resource = args[0].getStringValue();
 		String cronExpression = args[1].getStringValue();
+		long periodicValue = 0;
+		long delayValue = 0;
+		int repeatValue = -1;
         String jobName = args[2].getStringValue();
+        String delayString = "0";
+        String repeatString = "0";
         Properties properties = null;
-		if (getArgumentCount() == 4) {
+		if (getArgumentCount() >= 4) {
             Node options = ((NodeValue)args[3].itemAt(0)).getNode();
             properties = new Properties();
             parseParameters(options, properties);
         }
+		if (getArgumentCount() >= 5) {
+			delayString = args[4].getStringValue();
+			try {
+				delayValue = Long.parseLong(delayString);
+			} catch (NumberFormatException e) {
+			}
+		}
+		if (getArgumentCount() >= 6) {
+			repeatString = args[5].getStringValue();
+			try {
+				repeatValue = Integer.parseInt(repeatString);
+			} catch (NumberFormatException e) {
+			}
+		}
 
 		User user = context.getUser();
 		
@@ -158,16 +229,26 @@ public class ScheduleFunctions extends BasicFunction
 		}
 		
 		Object job = null;
+		boolean isCron = true;
 		
 		//scheule-xquery-cron-job
-		if(isCalledAs("schedule-xquery-cron-job"))
+		if(isCalledAs(SCHEDULE_XQUERY_CRON_JOB))
 		{
 			job = new UserXQueryJob(jobName, resource, user);
 		}
+		else if(isCalledAs(SCHEDULE_XQUERY_PERIODIC_JOB))
+		{
+			periodicValue = Long.parseLong(cronExpression);
+			job = new UserXQueryJob(jobName, resource, user);
+			isCron = true;
+		}
 		
 		//schedule-java-cron-job
-		else if(isCalledAs("schedule-java-cron-job"))
+		else if(isCalledAs(SCHEDULE_JAVA_CRON_JOB) || isCalledAs(SCHEDULE_JAVA_PERIODIC_JOB))
 		{
+			if (isCalledAs(SCHEDULE_JAVA_PERIODIC_JOB)) {
+				periodicValue = Long.parseLong(cronExpression);
+			}
 			try
 			{
 				//Check if the Class is a UserJob
@@ -199,14 +280,26 @@ public class ScheduleFunctions extends BasicFunction
 		
 		if(job != null)
 		{
-			//schedule the job
-			if(scheduler.createCronJob(cronExpression, (UserJob)job, properties))
-			{
-				return(BooleanValue.TRUE);
-			}
-			else
-			{
-				return(BooleanValue.FALSE);
+			if (isCron) {
+				//schedule the job
+				if(scheduler.createCronJob(cronExpression, (UserJob)job, properties))
+				{
+					return(BooleanValue.TRUE);
+				}
+				else
+				{
+					return(BooleanValue.FALSE);
+				}
+			} else {
+				//schedule the job
+				if(scheduler.createPeriodicJob(periodicValue, (UserJob)job, delayValue, properties, repeatValue))
+				{
+					return(BooleanValue.TRUE);
+				}
+				else
+				{
+					return(BooleanValue.FALSE);
+				}
 			}
 		}
 		else

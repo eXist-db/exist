@@ -15,6 +15,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -33,6 +34,13 @@ public class ModuleInfo extends BasicFunction {
 			"currently known to the system, including built in and imported modules.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
+	
+	public final static FunctionSignature registeredModuleSig =
+		new FunctionSignature(
+			new QName("is-module-registered", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Returns a Boolean value if the module identified by the namespace URI is registered.",
+			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) },
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 	
 	public final static FunctionSignature moduleDescriptionSig =
 		new FunctionSignature(
@@ -60,6 +68,10 @@ public class ModuleInfo extends BasicFunction {
 			if(module == null)
 				throw new XPathException(getASTNode(), "No module found matching namespace URI: " + uri);
 			return new StringValue(module.getDescription());
+		} else if ("is-module-registered".equals(getSignature().getName().getLocalName())) {
+			String uri = args[0].getStringValue();
+			Module module = context.getModule(uri);
+			return new BooleanValue(module != null);
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
 			for(Iterator i = context.getRootModules(); i.hasNext(); ) {
