@@ -23,14 +23,15 @@ package org.exist.xquery.modules.jfreechart;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.apache.log4j.Logger;
+
+import org.exist.xquery.XPathException;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.general.Dataset;
 import org.jfree.data.general.PieDataset;
-import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 import org.jfree.data.xml.DatasetReader;
 
 /**
@@ -51,7 +52,7 @@ public class JFreeChartFactory {
      * @return          Initialized chart or NULL in case of issues.
      * @throws IOException Thrown when a problem is reported while parsing XML data.
      */
-    public static JFreeChart createJFreeChart(String chartType, Configuration conf, InputStream is) throws IOException {
+    public static JFreeChart createJFreeChart(String chartType, Configuration conf, InputStream is) throws XPathException {
 
         logger.debug("Generating "+chartType);
 
@@ -59,15 +60,27 @@ public class JFreeChartFactory {
         CategoryDataset categoryDataset = null;
         PieDataset pieDataset = null;
 
+        try{
+            if ("PieChart".equals(chartType)
+                    || "PieChart3D".equals(chartType)
+                    || "RingChart".equals(chartType)) {
+                logger.debug("Reading XML PieDataset");
+                pieDataset = DatasetReader.readPieDatasetFromXML(is);
 
-        if ("PieChart".equals(chartType) || "PieChart3D".equals(chartType)
-                || "RingChart".equals(chartType)) {
-            logger.debug("Reading XML PieDataset");
-            pieDataset = DatasetReader.readPieDatasetFromXML(is);
+            } else {
+                logger.debug("Reading XML CategoryDataset");
+                categoryDataset = DatasetReader.readCategoryDatasetFromXML(is);
+            }
+            
+        } catch(IOException ex){
+            throw new XPathException(ex.getMessage());
 
-        } else {
-            logger.debug("Reading XML CategoryDataset");
-            categoryDataset = DatasetReader.readCategoryDatasetFromXML(is);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ex) {
+                //
+            }
         }
 
         // Return chart

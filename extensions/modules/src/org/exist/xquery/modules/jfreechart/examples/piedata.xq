@@ -3,7 +3,7 @@
 (: $Id$ :)
 declare namespace jfreechart = "http://exist-db.org/xquery/jfreechart";
 
-jfreechart:render("PieChart", 
+jfreechart:stream-render("PieChart",
 
 <configuration>
     <orientation>Horizontal</orientation>

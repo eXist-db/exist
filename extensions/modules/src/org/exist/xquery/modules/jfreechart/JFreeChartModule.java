@@ -35,10 +35,15 @@ public class JFreeChartModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/jfreechart";
     public final static String PREFIX = "jfreechart";
+
     public final static FunctionDef[] functions = {
-        new FunctionDef(JFreeCharter.signatures[0], JFreeCharter.class),};
+        new FunctionDef(JFreeCharting.signatures[0], JFreeCharting.class),
+        new FunctionDef(JFreeCharting.signatures[1], JFreeCharting.class),
+    };
+
     public final static QName EXCEPTION_QNAME =
             new QName("exception", JFreeChartModule.NAMESPACE_URI, JFreeChartModule.PREFIX);
+    
     public final static QName EXCEPTION_MESSAGE_QNAME =
             new QName("exception-message", JFreeChartModule.NAMESPACE_URI, JFreeChartModule.PREFIX);
 
