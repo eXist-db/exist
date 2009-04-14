@@ -85,7 +85,7 @@ public class JFreeCharting extends BasicFunction {
                 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
             },
-            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+            new SequenceType(Type.EMPTY, Cardinality.EMPTY)
         )
     };
 
