@@ -12,9 +12,9 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
 
-import java.util.Iterator;
 import java.util.Date;
 
 public class GetRunningJobs extends BasicFunction {
@@ -44,7 +44,8 @@ public class GetRunningJobs extends BasicFunction {
         builder.startDocument();
         builder.startElement( new QName( "jobs", NAMESPACE_URI, PREFIX ), null );
 
-        ProcessMonitor monitor = context.getBroker().getBrokerPool().getProcessMonitor();
+        BrokerPool brokerPool = context.getBroker().getBrokerPool();
+		ProcessMonitor monitor = brokerPool.getProcessMonitor();
         ProcessMonitor.JobInfo[] jobs = monitor.runningJobs();
         for (int i = 0; i < jobs.length; i++) {
             Thread process = jobs[i].getThread();

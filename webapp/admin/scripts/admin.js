@@ -3,10 +3,24 @@ var Dom = YAHOO.util.Dom,
 
 Event.onDOMReady(function () {
     if (document.getElementById('xqueries-container')) {
+    	setTimeout('reloadScheduledJobs()', 3000);
     	setTimeout('reloadJobs()', 3000);
     	setTimeout('reloadQueries()', 5000);
 	}
 });
+
+function reloadScheduledJobs() {
+	var pdiv = document.getElementById('scheduled-jobs-container');
+	var callback = {
+		success: function (response) {
+			pdiv.innerHTML = response.responseText;
+			setTimeout('reloadScheduledJobs()', 3000);
+		},
+		failure: function (response) {
+		}
+	};
+	YAHOO.util.Connect.asyncRequest('GET', 'proc.xql?mode=p', callback);
+}
 
 function reloadJobs() {
 	var pdiv = document.getElementById('processes-container');
