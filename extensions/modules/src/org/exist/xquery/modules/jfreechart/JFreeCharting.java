@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.dom.QName;
 
 import org.exist.validation.internal.node.NodeInputStream;
@@ -45,6 +46,7 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 
 import org.exist.http.servlets.ResponseWrapper;
+import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.NodeValue;
 
 
@@ -53,30 +55,51 @@ import org.exist.xquery.value.NodeValue;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class JFreeCharter extends BasicFunction {
+public class JFreeCharting extends BasicFunction {
 
-    private static final String functionTxt =
-            "Render chart using JFreechart. Generate " +
-            "chart of type $a with configuration $b the data" +
-            "in $c.";
+    private static final String function1Txt =
+            "Render chart using JFreechart. Generate chart of type $a " +
+            "with configuration $b the data in $c.";
+
+     private static final String function2Txt = function1Txt +
+             " Output is directly streamed into the servlet output stream.";
+
     public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-        new QName("render", JFreeChartModule.NAMESPACE_URI, JFreeChartModule.PREFIX),
-        functionTxt,
-        new SequenceType[]{
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),},
-        new SequenceType(Type.BOOLEAN, Cardinality.EMPTY)),};
 
-    public JFreeCharter(XQueryContext context, FunctionSignature signature) {
+        new FunctionSignature(
+            new QName("render", JFreeChartModule.NAMESPACE_URI, JFreeChartModule.PREFIX),
+            function1Txt,
+            new SequenceType[]{
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+            },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+        ),
+
+        new FunctionSignature(
+            new QName("stream-render", JFreeChartModule.NAMESPACE_URI, JFreeChartModule.PREFIX),
+            function2Txt,
+            new SequenceType[]{
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+            },
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+        )
+    };
+
+    public JFreeCharting(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        // TODO : check with other functions
+        //was an image and a mime-type speficifed
+		if(args[1].isEmpty() || args[2].isEmpty()){
+			return Sequence.EMPTY_SEQUENCE;
+        }
 
         try {
             // Get chart type
@@ -93,23 +116,30 @@ public class JFreeCharter extends BasicFunction {
             JFreeChart chart = null;
             try {
                 chart = JFreeChartFactory.createJFreeChart(chartType, config, is);
+
             } catch (IllegalArgumentException ex){
-                throw new XPathException(ex.getMessage());
+                throw new XPathException(getASTNode(), ex.getMessage());
             }
+
+            // Verify if chart is present
             if(chart==null){
-               throw new XPathException("Unable to create chart '"+chartType+"'");
+               throw new XPathException(getASTNode(), "Unable to create chart '"+chartType+"'");
             }
 
-            // Generate chart
-            ResponseWrapper response = getResponseWrapper(context);
-            writePNG(config, response, chart);
+            // Render output
+            if(isCalledAs("render")){
+                byte[] image=writePNG(config, chart);
+                return new Base64Binary(image);
 
-            // clean up
-            is.close();
+            } else {
+                ResponseWrapper response = getResponseWrapper(context);
+                writePNGtoResponse(config, response, chart);
+            }
+            
 
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             LOG.error(ex);
-            ex.printStackTrace();
+            throw new XPathException(getASTNode(), ex.getMessage());
         }
 
         return Sequence.EMPTY_SEQUENCE;
@@ -146,7 +176,7 @@ public class JFreeCharter extends BasicFunction {
      *
      * @throws XPathException Thrown when an IO exception is thrown,
      */
-    private void writePNG(Configuration config, ResponseWrapper response, JFreeChart chart) throws XPathException {
+    private void writePNGtoResponse(Configuration config, ResponseWrapper response, JFreeChart chart) throws XPathException {
         OutputStream os = null;
         try {
             response.setContentType("image/png");
@@ -167,5 +197,11 @@ public class JFreeCharter extends BasicFunction {
             }
         }
 
+    }
+
+    private byte[] writePNG(Configuration config, JFreeChart chart) throws IOException{
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ChartUtilities.writeChartAsPNG(os, chart, config.getImageWidth(), config.getImageHeight());
+        return os.toByteArray();
     }
 }
