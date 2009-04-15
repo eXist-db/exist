@@ -1077,7 +1077,7 @@ public class Folder extends NamedResource implements Cloneable {
 				broker.copyResource(tx.tx, doc, handle, uri);
 			} else {
 				tx.lockWrite(doc);
-				broker.moveXMLResource(tx.tx, doc, handle, uri);
+				broker.moveResource(tx.tx, doc, handle, uri);
 			}
 			commit();
 		} catch (PermissionDeniedException e) {

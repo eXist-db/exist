@@ -659,7 +659,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if(move)
 // TODO check XML/Binary resource
 //                broker.moveResource(transaction, doc, destination, newName);
-                broker.moveXMLResource(transaction, doc, destination, newName);
+                broker.moveResource(transaction, doc, destination, newName);
             else
 // TODO check XML/Binary resource
 //                broker.copyResource(transaction, doc, destination, newName);

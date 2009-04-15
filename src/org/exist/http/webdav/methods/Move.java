@@ -219,7 +219,7 @@ public class Move extends AbstractWebDAVMethod {
                 }
                 replaced = true;
             }
-            broker.moveXMLResource(transaction, resource, destCollection, docUri);
+            broker.moveResource(transaction, resource, destCollection, docUri);
             
             // [1509776] After a webDAV MOVE all locks need to be removed.
             resource.setUserLock(null);

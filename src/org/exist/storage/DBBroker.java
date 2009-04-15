@@ -589,7 +589,7 @@ public abstract class DBBroker extends Observable {
 	 *            the new name the resource should have in the destination
 	 *            collection
 	 */
-	public abstract void moveXMLResource(Txn transaction, DocumentImpl doc,
+	public abstract void moveResource(Txn transaction, DocumentImpl doc,
 			Collection destination, XmldbURI newName)
 			throws PermissionDeniedException, LockException, IOException;
 
