@@ -155,6 +155,19 @@ public class XQueryTriggerTest {
     
     private static Collection testCollection;
 
+      /** XQuery module implementing the invalid trigger under test */
+    private final static String INVALID_MODULE =
+    	"module namespace log='log'; " +
+    	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
+    	"declare variable $log:eventType external;" +
+    	"declare variable $log:collectionName external;" +
+    	"declare variable $log:documentName external;" +
+    	"declare variable $log:triggerEvent external;" +
+    	"declare variable $log:document external;" +
+    	"declare function log:log($id as xs:string?) {" +
+    	"   undeclared-function-causes-trigger-error()" +
+        "};";
+
     /** just start the DB and create the test collection */
     @BeforeClass
     public static void startDB() {
@@ -406,7 +419,7 @@ public class XQueryTriggerTest {
     		fail(e.getMessage());    		
     	}
     }
-    
+
     /** test a trigger fired by a Binary Document Delete */
     @Test
     public void deleteBinaryDocument() {
@@ -440,5 +453,54 @@ public class XQueryTriggerTest {
             e.printStackTrace();
     		fail(e.getMessage());    		
     	}
+    }
+
+    @Test
+    public void storeDocument_invalidTriggerForPrepare()
+    {
+        //replace the valid trigger with the invalid trigger
+        try
+        {
+            BinaryResource invalidModule = (BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
+            ((EXistResource)invalidModule).setMimeType("application/xquery");
+            invalidModule.setContent(INVALID_MODULE.getBytes());
+            testCollection.storeResource(invalidModule);
+
+            // configure the Collection with the trigger under test
+            IndexQueryService idxConf = null;
+
+            idxConf = (IndexQueryService)testCollection.getService("IndexQueryService", "1.0");
+			idxConf.configureCollection(COLLECTION_CONFIG);
+        }
+        catch(XMLDBException xdbe)
+        {
+            fail(xdbe.getMessage());
+        }
+
+        
+        final int max_store_attempts = 10;
+        int count_prepare_exceptions = 0;
+        for(int i = 0; i < max_store_attempts; i++)
+        {
+            try
+            {
+                // this will fire the trigger
+                XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource");
+                doc.setContent(DOCUMENT_CONTENT);
+                testCollection.storeResource(doc);
+            }
+            catch(XMLDBException xdbe)
+            {
+               if(xdbe.getCause() instanceof TriggerException)
+               {
+                   if(xdbe.getCause().getMessage().equals(XQueryTrigger.PEPARE_EXCEIPTION_MESSAGE))
+                   {
+                        count_prepare_exceptions++;
+                   }
+               }
+            }
+        }
+
+        assertEquals(max_store_attempts, count_prepare_exceptions);
     }
 }

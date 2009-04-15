@@ -66,7 +66,9 @@ public class XQueryTrigger extends FilteringTrigger
 	private String bindingPrefix = null;
 	private XQuery service;
 	private ContentHandler originalOutputHandler;
-	
+
+    public final static String PEPARE_EXCEIPTION_MESSAGE = "Error during trigger prepare";
+
 	
 	public XQueryTrigger()
 	{
@@ -237,13 +239,13 @@ public class XQueryTrigger extends FilteringTrigger
         {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException("Error during trigger prepare", e);
+        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
 	    }
         catch(IOException e)
         {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException("Error during trigger prepare", e);
+        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
 	    }
 
         //execute the XQuery
@@ -259,7 +261,7 @@ public class XQueryTrigger extends FilteringTrigger
         {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
-        	throw new TriggerException("Error during trigger prepare", e);
+        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
         }
 	}
 	
@@ -347,7 +349,7 @@ public class XQueryTrigger extends FilteringTrigger
         catch (XPathException e)
         {
         	//Should never be reached
-			LOG.error("Error during trigger finish " + e );
+			LOG.error("Error during trigger finish", e);
         }
         
 		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
