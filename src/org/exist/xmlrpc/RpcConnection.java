@@ -4127,7 +4127,7 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Destination collection " + destUri + " not found");
             }
             if(move)
-                broker.moveXMLResource(transaction, doc, destination, newName);
+                broker.moveResource(transaction, doc, destination, newName);
             else
                 broker.copyResource(transaction, doc, destination, newName);
             transact.commit(transaction);

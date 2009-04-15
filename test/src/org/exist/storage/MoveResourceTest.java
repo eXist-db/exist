@@ -83,7 +83,7 @@ public class MoveResourceTest extends TestCase {
 			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
             System.out.println("Moving document test.xml to new_test.xml ...");
-			broker.moveXMLResource(transaction, info.getDocument(), root, XmldbURI.create("new_test.xml"));
+			broker.moveResource(transaction, info.getDocument(), root, XmldbURI.create("new_test.xml"));
 			broker.saveCollection(transaction, root);
 
 			transact.commit(transaction);
@@ -174,7 +174,7 @@ public class MoveResourceTest extends TestCase {
 
 			transaction = transact.beginTransaction();
 
-			broker.moveXMLResource(transaction, info.getDocument(), root,
+			broker.moveResource(transaction, info.getDocument(), root,
 					XmldbURI.create("new_test2.xml"));
 			broker.saveCollection(transaction, root);
 

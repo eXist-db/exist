@@ -2088,7 +2088,7 @@ public class NativeBroker extends DBBroker {
     }
     
     /** move Resource to another collection, with possible rename */
-    public void moveXMLResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName)
+    public void moveResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName)
 	throws PermissionDeniedException, LockException, IOException {
         
         /* Copy reference to original document */
