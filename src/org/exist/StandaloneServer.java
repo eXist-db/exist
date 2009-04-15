@@ -369,7 +369,7 @@ public class StandaloneServer {
         
         if (forwarding.size() > 0) {
             ForwardHandler forward = new ForwardHandler();
-            
+            //forward.setHandleQueries(true); //TODO needed if you wish to pass querystring parameters - should maybe be a server.xml option?
             for (Iterator i = forwarding.keySet().iterator(); i.hasNext(); ) {
                 String path = (String) i.next();
                 String destination = (String) forwarding.get(path);
