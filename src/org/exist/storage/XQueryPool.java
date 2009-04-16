@@ -228,7 +228,7 @@ public class XQueryPool extends Object2ObjectHashMap {
             List importedModuleNamespaceUris = new ArrayList();
             for (Iterator it2 = module.getContext().getModules(); it2.hasNext(); ) {
                 Module nestedModule = (Module) it2.next();
-                if (!nestedModule.isInternalModule()) {
+                 if (!nestedModule.isInternalModule()) {
                     importedModuleNamespaceUris.add(nestedModule.getNamespaceURI());
                 }
             }
@@ -242,19 +242,23 @@ public class XQueryPool extends Object2ObjectHashMap {
     }
     
     public synchronized ExternalModule borrowModule(DBBroker broker, Source source, XQueryContext rootContext) {
-   	 ExternalModule module = (ExternalModule) borrowObject(broker, source);
-   	 if (module == null) return null;
-   	 XQueryContext context = module.getContext();
-   	 context.setBroker(broker);
-   	 if (!module.moduleIsValid()) {
-			 LOG.debug("Module with URI " + module.getNamespaceURI() +
-				" has changed and needs to be reloaded");
-	   	 remove(source);
-	   	 return null;
-   	 } else {
+        ExternalModule module = (ExternalModule) borrowObject(broker, source);
+        if (module == null) return null;
+        XQueryContext context = module.getContext();
+        context.setBroker(broker);
+        if (!module.moduleIsValid()) {
+            LOG.debug("Module with URI " + module.getNamespaceURI() +
+                    " has changed and needs to be reloaded");
+            remove(source);
+            return null;
+        } else {
+            // check all modules imported by the borrowed module and update them
+            if (!borrowModules(broker, context)) {
+                return null;
+            }
             ((ModuleContext) module.getContext()).updateModuleRefs(rootContext);
-   		 return module;
-   	 }
+            return module;
+        }
     }
     
     private void timeoutCheck() {
