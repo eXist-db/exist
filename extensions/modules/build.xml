@@ -127,7 +127,7 @@
     <available file="${svn.svnkit.jar}" property="svn-present"/>
     
     <target name="prepare-svn" if="include.module.svn.config" unless="svn-present">
-        <get src="http://repo1.maven.org/maven2/com/svnkit/svnkit/1.1.0/svnkit-1.1.0.jar"
+        <get src="${include.module.svn.url}"
       		dest="${svn.svnkit.jar}" verbose="true"/>
     </target>
 
