@@ -1,3 +1,6 @@
+<!-- 
+    $Id$
+-->
 <project basedir="." default="jar" name="modules">
 
     <property name="src" value="./src"/>
@@ -133,13 +136,14 @@
     <available file="${chart.jfreechart.zip}" property="jfreechart-present"/>
     
     <target name="prepare-jfreechart" if="include.module.jfreechart.config" unless="jfreechart-present">
-        <get src="http://prdownloads.sourceforge.net/jfreechart/jfreechart-1.0.12.zip"
+        <get src="${include.module.jfreechart.url}"
       		dest="${chart.jfreechart.zip}" verbose="true"/>
 
         <unzip src="${top.dir}/${lib.user}/jfreechart.zip" dest="${top.dir}/${lib.user}">
 			<patternset>
-				<include name="**/lib/jfreechart-1.0.12.jar"/>
+				<include name="**/lib/jfreechart-*.jar"/>
                 <include name="**/lib/jcommon-*.jar"/>
+                <exclude name="**/lib/jfreechart-*-*.jar"/>
 			</patternset>
 			<mapper type="flatten"/>
 		</unzip>
