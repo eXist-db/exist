@@ -25,6 +25,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.util.StringTokenizer;
+
 import org.exist.dom.NodeProxy;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
@@ -39,9 +41,16 @@ import org.exist.xquery.value.Type;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 
 public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	private final boolean errorIfAbsent;
+	
+	private int paramNumber = 0;  //collecton will be passed as parameter number 0 by default  
+	
+	protected void setCollectionParameterNunmer(int paramNumber){
+		this.paramNumber = paramNumber;
+	}
 	
 	public XMLDBAbstractCollectionManipulator(XQueryContext context, FunctionSignature signature) {
 		this(context, signature, true);
@@ -63,13 +72,13 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 		throws XPathException {
         
         if (0 == args.length)
-            throw new XPathException(getASTNode(), "Expected a collection as the first argument.");
+            throw new XPathException(getASTNode(), "Expected a collection as the argument " + (paramNumber + 1) + ".");
         
         boolean collectionNeedsClose = false;
         
         
         Collection collection = null;
-        Item item = args[0].itemAt(0);
+        Item item = args[paramNumber].itemAt(0);
         if(Type.subTypeOf(item.getType(), Type.NODE))
         {
         	NodeValue node = (NodeValue)item;
@@ -96,7 +105,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         if(collection == null)
         {
         	//Otherwise, just extract the name as a string:
-            String collectionURI = args[0].getStringValue();
+            String collectionURI = args[paramNumber].getStringValue();
             if(collectionURI != null)
             {
                 try
@@ -164,4 +173,22 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	}
 
     abstract protected Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence) throws XPathException;
+    
+    protected final Collection createCollection(Collection parentColl, String relPath) throws XMLDBException, XPathException {
+        CollectionManagementService mgtService;
+        Collection current = parentColl, c;
+        String token;
+        StringTokenizer tok = new StringTokenizer(new AnyURIValue(relPath).toXmldbURI().toString(), "/");
+        while (tok.hasMoreTokens()) {
+            token = tok.nextToken();
+            c = current.getChildCollection(token);
+            if (c == null) {
+                mgtService = (CollectionManagementService) current.getService("CollectionManagementService", "1.0");
+                current = mgtService.createCollection(token);
+            } else
+                current = c;
+        }
+        return current;
+    }
+	
 }

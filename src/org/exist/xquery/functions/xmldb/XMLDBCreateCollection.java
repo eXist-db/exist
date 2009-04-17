@@ -75,8 +75,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		
 		try
 		{
-			CollectionManagementService mgtService = (CollectionManagementService)collection.getService("CollectionManagementService", "1.0");
-			Collection newCollection = mgtService.createCollection(new AnyURIValue(collectionName).toXmldbURI().toString());
+			Collection newCollection = createCollection(collection, collectionName);
 			
 			if (newCollection == null)
 				return Sequence.EMPTY_SEQUENCE;

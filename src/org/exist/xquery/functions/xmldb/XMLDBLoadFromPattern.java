@@ -171,7 +171,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 					}
 					
                     if ( keepDirStructure && ( prevDir == null || ( !relDir.equals(prevDir) ) ) ) {
-                        col = makeColl(collection, relDir);
+                        col = createCollection(collection, relDir);
                         prevDir = relDir;
                     }
                     //TODO  : these probably need to be encoded
@@ -190,24 +190,6 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
             }
         }
         return stored;
-    }
-
-    private final Collection makeColl(Collection parentColl, String relPath)
-    throws XMLDBException {
-        CollectionManagementService mgtService;
-        Collection current = parentColl, c;
-        String token;
-        StringTokenizer tok = new StringTokenizer(relPath, "/");
-        while (tok.hasMoreTokens()) {
-            token = tok.nextToken();
-            c = current.getChildCollection(token);
-            if (c == null) {
-                mgtService = (CollectionManagementService) current.getService("CollectionManagementService", "1.0");
-                current = mgtService.createCollection(token);
-            } else
-                current = c;
-        }
-        return current;
     }
 
 }
