@@ -23,7 +23,6 @@
 package org.exist.xquery.functions.xmldb;
 
 import java.io.File;
-import java.util.StringTokenizer;
 
 import org.exist.dom.QName;
 import org.exist.util.DirectoryScanner;
@@ -43,7 +42,6 @@ import org.exist.xquery.value.ValueSequence;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 
 /**
  * @author wolf
