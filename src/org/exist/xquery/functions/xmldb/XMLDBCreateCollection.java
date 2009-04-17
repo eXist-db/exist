@@ -75,7 +75,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		
 		try
 		{
-			Collection newCollection = createCollection(collection, collectionName);
+			Collection newCollection = createCollectionPath(collection, collectionName);
 			
 			if (newCollection == null)
 				return Sequence.EMPTY_SEQUENCE;
