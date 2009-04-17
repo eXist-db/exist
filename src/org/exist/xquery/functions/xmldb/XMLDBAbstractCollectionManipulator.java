@@ -174,19 +174,19 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
     abstract protected Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence) throws XPathException;
     
-    protected final Collection createCollection(Collection parentColl, String relPath) throws XMLDBException, XPathException {
-        CollectionManagementService mgtService;
-        Collection current = parentColl, c;
-        String token;
+    protected final Collection createCollection(Collection parentColl, String name) throws XMLDBException, XPathException {
+        if (parentColl.getChildCollection(name) == null) {
+        	CollectionManagementService mgtService = (CollectionManagementService) parentColl.getService("CollectionManagementService", "1.0");
+            return mgtService.createCollection(name);
+        }
+        return parentColl;
+    }
+    protected final Collection createCollectionPath(Collection parentColl, String relPath) throws XMLDBException, XPathException {
+        Collection current = parentColl;
         StringTokenizer tok = new StringTokenizer(new AnyURIValue(relPath).toXmldbURI().toString(), "/");
         while (tok.hasMoreTokens()) {
-            token = tok.nextToken();
-            c = current.getChildCollection(token);
-            if (c == null) {
-                mgtService = (CollectionManagementService) current.getService("CollectionManagementService", "1.0");
-                current = mgtService.createCollection(token);
-            } else
-                current = c;
+            String token = tok.nextToken();
+            current = createCollection(current, token);
         }
         return current;
     }
