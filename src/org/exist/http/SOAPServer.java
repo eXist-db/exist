@@ -260,12 +260,20 @@ public class SOAPServer
         	Node nSOAPFunctionParam = xqwsSOAPFunctionParams.item(i);
         	if(nSOAPFunctionParam.getNodeType() == Node.ELEMENT_NODE)
         	{
+			// Did we reached the length?
+			if(j == nlInternalFunctionParams.getLength()) {
+				throw new XPathException("Too many input parameters for "+functionName+": expected="+xqwsSOAPFunctionParams.getLength());
+			}
 	        	query.append(writeXQueryFunctionParameter(xqwsDescription.getFunctionParameterType(nlInternalFunctionParams.item(j)), xqwsDescription.getFunctionParameterCardinality(nlInternalFunctionParams.item(j)), nSOAPFunctionParam));
         		query.append(","); //add function seperator
 	        	
 	        	j++;
         	}
         }
+	
+	if(j!=xqwsSOAPFunctionParams.getLength()) {
+		throw new XPathException("Input parameters number mismatch for "+functionName+": expected="+xqwsSOAPFunctionParams.getLength()+" got="+j);
+	}
         
         //remove last superflurous seperator
 		if(query.charAt(query.length()-1) == ',')
