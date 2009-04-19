@@ -76,6 +76,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 import java.util.SimpleTimeZone;
+import org.exist.dom.NodeSet;
 
 /**
  * @author wolf
@@ -139,7 +140,9 @@ public class Eval extends BasicFunction {
 				"\t<current-dateTime value=\"dateTime\"/>\n" +
 				"\t<implicit-timezone value=\"duration\"/>\n" +
 				"\t<variable name=\"qname\">variable value</variable>\n" +
-				"\t<mapModule namespace=\"uri\" uri=\"uri_to_module\"/>\n" +
+				"\t<default-context>explicitly define default context here</default-context>\n" +
+
+                                "\t<mapModule namespace=\"uri\" uri=\"uri_to_module\"/>\n" +
 				"</static-context>.\n" +
 				"The third argument specifies if the compiled query expression " +
 				"should be cached. The cached query will be globally available within the db instance.",
@@ -230,6 +233,7 @@ public class Eval extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
+
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -239,6 +243,7 @@ public class Eval extends BasicFunction {
 
 		int argCount = 0;
 		Sequence exprContext = null;
+                Sequence initContextSequence = null;
 
 		if (isCalledAs("eval-inline")) {
 			// the current expression context
@@ -281,6 +286,7 @@ public class Eval extends BasicFunction {
         // fixme! - hook for debugger here /ljo
 		
 		Sequence sequence = null;
+
 		XQuery xquery = context.getBroker().getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
 		CompiledXQuery compiled = cache ? pool.borrowCompiledXQuery(context.getBroker(), querySource) : null;
@@ -288,10 +294,10 @@ public class Eval extends BasicFunction {
 		if (contextInit != null) {
 			// eval-with-context: initialize a new context
 			innerContext = xquery.newContext(context.getAccessContext());
-			initContext(contextInit.getNode(), innerContext);
+			initContextSequence = initContext(contextInit.getNode(), innerContext);
 		} else {
 			// use the existing outer context
-            // TODO: check if copying the static context would be sufficient???
+            // TODO: check if copying the static context would be sufficient???                    
 			innerContext = context.copyContext();
             innerContext.setShared(true);
             //innerContext = context;
@@ -311,10 +317,16 @@ public class Eval extends BasicFunction {
 					if (exprContext != null)
 						LOG.warn("exprContext and contextItem are not null");
 					exprContext = contextItem.toSequence();
+
 				}
 			}	
 				
-			sequence = xquery.execute(compiled, exprContext, false);
+            if (initContextSequence != null) {
+                LOG.info("there now");
+                exprContext=initContextSequence;                
+            }
+
+            sequence = xquery.execute(compiled, exprContext, false);
             ValueSequence newSeq = new ValueSequence();
             boolean hasSupplements = false;
             for (int i = 0;  i < sequence.getItemCount(); i++) {
@@ -330,6 +342,8 @@ public class Eval extends BasicFunction {
                 sequence = newSeq;
             }
 			return sequence;
+
+
 		} catch (XPathException e) {
 			try {
 				e.prependMessage("Error while evaluating expression: " + querySource.getContent() + ". ");
@@ -425,25 +439,27 @@ public class Eval extends BasicFunction {
 	 * @param innerContext
 	 * @throws XPathException
 	 */
-	private void initContext(Node root, XQueryContext innerContext) throws XPathException {		
-		NodeList cl = root.getChildNodes();
-		for (int i = 0; i < cl.getLength(); i++) {
+	private Sequence initContext(Node root, XQueryContext innerContext) throws XPathException {
+		
+                NodeList cl = root.getChildNodes();
+                Sequence result = null;
+                for (int i = 0; i < cl.getLength(); i++) {
 			Node child = cl.item(i);
 			//TODO : more check on attributes existence and on their values
 			if (child.getNodeType() == Node.ELEMENT_NODE &&	"variable".equals(child.getLocalName())) {
 				Element elem = (Element) child;
-                String qname = elem.getAttribute("name");
-                String source = elem.getAttribute("source");
-                NodeValue value;
-                if (source != null && source.length() > 0) {
-                    // load variable contents from URI
-                    value = loadVarFromURI(source);
-                } else {
-                    value = (NodeValue) elem.getFirstChild();
-                    if (value instanceof ReferenceNode)
-                        value = ((ReferenceNode) value).getReference();
-                }
-                String type = elem.getAttribute("type");
+                                String qname = elem.getAttribute("name");
+                                String source = elem.getAttribute("source");
+                                NodeValue value;
+                                if (source != null && source.length() > 0) {
+                                    // load variable contents from URI
+                                    value = loadVarFromURI(source);
+                                } else {
+                                    value = (NodeValue) elem.getFirstChild();
+                                    if (value instanceof ReferenceNode)
+                                        value = ((ReferenceNode) value).getReference();
+                                }
+                                String type = elem.getAttribute("type");
 				if (type != null && Type.subTypeOf(Type.getType(type), Type.ATOMIC)) {
 					innerContext.declareVariable(qname, value.atomize().convertTo(Type.getType(type)));
 				} else {
@@ -487,8 +503,14 @@ public class Eval extends BasicFunction {
 					innerContext.mapModule(elem.getAttribute("namespace"), 
 							XmldbURI.create(elem.getAttribute("uri")));
 				}				
-			}
+			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"default-context".equals(child.getLocalName())) {
+                        	Element elem = (Element) child;
+                                NodeValue nodevalue = (NodeValue) elem;
+                                result = nodevalue.toSequence();
+                        }
 		}
+                
+            return result;
 	}
 
     private NodeImpl loadVarFromURI(String uri) throws XPathException {
