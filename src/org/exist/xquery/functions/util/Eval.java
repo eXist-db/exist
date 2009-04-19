@@ -140,8 +140,7 @@ public class Eval extends BasicFunction {
 				"\t<current-dateTime value=\"dateTime\"/>\n" +
 				"\t<implicit-timezone value=\"duration\"/>\n" +
 				"\t<variable name=\"qname\">variable value</variable>\n" +
-				"\t<default-context>explicitly define default context here</default-context>\n" +
-
+				"\t<default-context>explicitly provide default context here</default-context>\n" +
                                 "\t<mapModule namespace=\"uri\" uri=\"uri_to_module\"/>\n" +
 				"</static-context>.\n" +
 				"The third argument specifies if the compiled query expression " +
@@ -169,6 +168,7 @@ public class Eval extends BasicFunction {
 				"\t<current-dateTime value=\"dateTime\"/>\n" +
 				"\t<implicit-timezone value=\"duration\"/>\n" +
 				"\t<variable name=\"qname\">variable value</variable>\n" +
+				"\t<default-context>explicitly provide default context here</default-context>\n" +                                
 				"</static-context>.\n" +
 				"The third argument specifies if the compiled query expression " +
 				"should be cached. The cached query will be globally available within the db instance." +
