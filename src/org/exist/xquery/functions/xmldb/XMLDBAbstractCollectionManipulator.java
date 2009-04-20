@@ -48,10 +48,14 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	
 	private int paramNumber = 0;  //collecton will be passed as parameter number 0 by default  
 	
-	protected void setCollectionParameterNunmer(int paramNumber){
+	protected void setCollectionParameterNubmer(int paramNumber){
 		this.paramNumber = paramNumber;
 	}
 	
+	protected int getCollectionParameterNumber() {
+		return paramNumber;
+	}
+
 	public XMLDBAbstractCollectionManipulator(XQueryContext context, FunctionSignature signature) {
 		this(context, signature, true);
 	}
