@@ -73,4 +73,10 @@ public class TestConstants {
 	 * XmldbURI representing the decoded path: binary.txt
 	 */
 	public static final XmldbURI TEST_BINARY_URI = XmldbURI.create("binary.txt");
+	
+	/**
+	 * XmldbURI representing the decoded path: testmodule.xqm
+	 */
+	public static final XmldbURI TEST_MODULE_URI = XmldbURI.create("testmodule.xqm");
+	
 }
