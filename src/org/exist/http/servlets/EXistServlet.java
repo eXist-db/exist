@@ -283,7 +283,7 @@ public class EXistServlet extends HttpServlet {
 		
 		//second, perform descriptor actions
 		Descriptor descriptor = Descriptor.getDescriptorSingleton();
-    	if(descriptor != null)
+    	if(descriptor != null && !descriptor.requestsFiltered())
     	{
     		//logs the request if specified in the descriptor
     		descriptor.doLogRequestInReplayLog(request);
@@ -354,7 +354,7 @@ public class EXistServlet extends HttpServlet {
 		
 		//second, perform descriptor actions
 		Descriptor descriptor = Descriptor.getDescriptorSingleton();
-    	if(descriptor != null)
+    	if(descriptor != null && !descriptor.requestsFiltered())
     	{
     		//logs the request if specified in the descriptor
     		descriptor.doLogRequestInReplayLog(request);
@@ -503,7 +503,7 @@ public class EXistServlet extends HttpServlet {
 		}
 		
 		//second, perform descriptor actions
-    	if(descriptor != null)
+    	if(descriptor != null && !descriptor.requestsFiltered())
     	{
     		//logs the request if specified in the descriptor
     		descriptor.doLogRequestInReplayLog(request);

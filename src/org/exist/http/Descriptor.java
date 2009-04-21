@@ -73,6 +73,7 @@ public class Descriptor implements ErrorHandler
 
 	//Data
 	private BufferedWriter bufWriteReplayLog = null;	//Should a replay log of requests be created
+    private boolean requestsFiltered = false;
 	private String allowSourceXQueryList[] = null; 	//Array of xql files to allow source to be viewed 
 	private String mapList[][] = null;	 				//Array of Mappings
 	  
@@ -137,6 +138,9 @@ public class Descriptor implements ErrorHandler
             {
             	File logFile = new File("request-replay-log.txt");
         		bufWriteReplayLog = new BufferedWriter(new FileWriter(logFile));
+                String attr = doc.getDocumentElement().getAttribute("filtered");
+                if (attr != null)
+                    requestsFiltered = attr.equals("true");
             }
             
             //load <allow-source> settings
@@ -335,6 +339,10 @@ public class Descriptor implements ErrorHandler
     	
     	//no match return the original path
     	return(path);
+    }
+
+    public boolean requestsFiltered() {
+        return requestsFiltered;
     }
     
     /**
