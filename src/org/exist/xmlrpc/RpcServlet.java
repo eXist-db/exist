@@ -45,7 +45,7 @@ public class RpcServlet extends XmlRpcServlet {
         // Request logger
 
         Descriptor descriptor = Descriptor.getDescriptorSingleton();
-        if( descriptor.allowRequestLogging() ) {
+        if( descriptor.allowRequestLogging() && !descriptor.requestsFiltered()) {
             // Wrap HttpServletRequest, because both request Logger and xmlrpc
             // need the request InputStream, which is consumed when read.
             request =

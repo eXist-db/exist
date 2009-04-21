@@ -54,6 +54,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
+import org.exist.http.servlets.HttpServletRequestWrapper;
+import org.exist.http.Descriptor;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
@@ -219,6 +221,19 @@ public class XQueryURLRewrite implements Filter {
         if (LOG.isTraceEnabled())
             LOG.trace(request.getRequestURI());
         
+        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        if(descriptor != null && descriptor.requestsFiltered())
+        {
+            String attr = (String) request.getAttribute("XQueryURLRewrite.forwarded");
+            if (attr == null) {
+//                request = new HttpServletRequestWrapper(request, /*formEncoding*/ "utf-8" );
+                //logs the request if specified in the descriptor
+                descriptor.doLogRequestInReplayLog(request);
+
+                request.setAttribute("XQueryURLRewrite.forwarded", "true");
+            }
+        }
+
         try {
             configure();
 
