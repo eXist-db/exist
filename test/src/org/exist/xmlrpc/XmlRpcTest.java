@@ -39,6 +39,7 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.XmlRpcException;
 import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.util.MimeType;
 import org.exist.StandaloneServer;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.TestConstants;
@@ -54,6 +55,16 @@ public class XmlRpcTest extends XMLTestCase {
 	
 	private static StandaloneServer server = null;
     private final static String URI = "http://localhost:8088/xmlrpc";
+        
+    private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
+    
+    private final static XmldbURI TARGET_RESOURCE = TARGET_COLLECTION.append(TestConstants.TEST_XML_URI);
+    
+    private final static XmldbURI MODULE_RESOURCE = TARGET_COLLECTION.append(TestConstants.TEST_MODULE_URI);
+    
+    private final static XmldbURI SPECIAL_COLLECTION = TARGET_COLLECTION.append(TestConstants.SPECIAL_NAME);
+    
+    private final static XmldbURI SPECIAL_RESOURCE = SPECIAL_COLLECTION.append(TestConstants.SPECIAL_XML_URI);
     
     private final static String XML_DATA =
     	"<test>" +
@@ -70,13 +81,18 @@ public class XmlRpcTest extends XMLTestCase {
 		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
 		"</xsl:stylesheet>";
     
-    private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
+    private final static String MODULE_DATA =
+    	"module namespace tm = \"http://exist-db.org/test/module\"; " +
+    	"declare variable $tm:imported-external-string as xs:string external;";
     
-    private final static XmldbURI TARGET_RESOURCE = TARGET_COLLECTION.append(TestConstants.TEST_XML_URI);
+    private final static String QUERY_MODULE_DATA =
+    	"xquery version \"1.0\";" +
+    	"declare namespace tm-query = \"http://exist-db.org/test/module/query\";" +
+    	"import module namespace tm = \"http://exist-db.org/test/module\" " +
+        "at \"xmldb:exist://" + MODULE_RESOURCE.toString() + "\"; " +
+        "declare variable $tm-query:local-external-string as xs:string external;" +
+        "($tm:imported-external-string, $tm-query:local-external-string)";
     
-    private final static XmldbURI SPECIAL_COLLECTION = TARGET_COLLECTION.append(TestConstants.SPECIAL_NAME);
-    
-    private final static XmldbURI SPECIAL_RESOURCE = SPECIAL_COLLECTION.append(TestConstants.SPECIAL_XML_URI);
     
 	public XmlRpcTest(String name) {
 		super(name);
@@ -90,7 +106,7 @@ public class XmlRpcTest extends XMLTestCase {
     protected void tearDown() {
         XmlRpcClient xmlrpc = getClient();
         try {
-            List params = new ArrayList(1);
+            List<String> params = new ArrayList<String>(1);
             params.add(TARGET_COLLECTION.toString());
             Boolean b = (Boolean) xmlrpc.execute("removeCollection", params);
         } catch (XmlRpcException e) {
@@ -212,7 +228,7 @@ public class XmlRpcTest extends XMLTestCase {
 		try {
 			System.out.println("Creating collection " + TARGET_COLLECTION);
 			XmlRpcClient xmlrpc = getClient();
-			Vector params = new Vector();
+			Vector<Object> params = new Vector<Object>();
 			params.addElement(TARGET_COLLECTION.toString());
 			Boolean result = (Boolean)xmlrpc.execute("createCollection", params);
 			assertTrue(result.booleanValue());
@@ -226,9 +242,18 @@ public class XmlRpcTest extends XMLTestCase {
 			result = (Boolean)xmlrpc.execute("parse", params);
 			assertTrue(result.booleanValue());
 			
+			System.out.println("Storing resource " + XSL_DATA);
 			params.setElementAt(XSL_DATA, 0);
 			params.setElementAt(TARGET_COLLECTION.append("test.xsl").toString(), 1);
 			result = (Boolean)xmlrpc.execute("parse", params);
+			assertTrue(result.booleanValue());
+			
+			System.out.println("Storing resource " + MODULE_DATA);
+			params.setElementAt(MODULE_DATA.getBytes("UTF-8"), 0);
+			params.setElementAt(MODULE_RESOURCE.toString(), 1);
+			params.setElementAt(MimeType.XQUERY_TYPE.getName(), 2);
+			params.addElement(Boolean.TRUE);
+			result = (Boolean)xmlrpc.execute("storeBinary", params);
 			assertTrue(result.booleanValue());
 			
 			System.out.println("Documents stored.");
@@ -414,6 +439,43 @@ public class XmlRpcTest extends XMLTestCase {
 	        params.addElement(new Hashtable());
 	        item = (byte[]) xmlrpc.execute( "retrieve", params );
 	        System.out.println(new String(item, "UTF-8"));
+	    } catch (Exception e) {            
+	        fail(e.getMessage());  
+	    }	        
+	}
+	
+	public void testQueryModuleExternalVar() {
+        storeData();
+		try {
+			System.out.println("Quering with external variable definied in module ...");
+			Vector<Object> params = new Vector<Object>();
+			params.addElement(QUERY_MODULE_DATA.getBytes("UTF-8"));
+			
+			Hashtable<String, Object> qp = new Hashtable<String, Object>();
+			
+			HashMap<String, Object> namespaceDecls = new HashMap<String, Object>();
+			namespaceDecls.put("tm", "http://exist-db.org/test/module");
+			namespaceDecls.put("tm-query", "http://exist-db.org/test/module/query");
+			qp.put(RpcAPI.NAMESPACES, namespaceDecls);
+			
+			HashMap<String, Object> variableDecls = new HashMap<String, Object>();
+			variableDecls.put("tm:imported-external-string", "imported-string-value");
+			variableDecls.put("tm-query:local-external-string", "local-string-value");
+			qp.put(RpcAPI.VARIABLES, variableDecls);
+			
+			params.addElement(qp);
+			
+			XmlRpcClient xmlrpc = getClient();
+			HashMap<String, Object[]> result = (HashMap<String, Object[]>) xmlrpc.execute("queryP", params);
+	        Object[] resources = (Object[]) result.get("results");
+	        assertEquals(resources.length, 2);
+	        String value = (String) resources[0];
+	        assertEquals(value, "imported-string-value");
+	        System.out.println("Imported external: " + value);
+	        value = (String) resources[1];
+	        assertEquals(value, "local-string-value");
+	        System.out.println("Local external: " + value);
+	        
 	    } catch (Exception e) {            
 	        fail(e.getMessage());  
 	    }	        
