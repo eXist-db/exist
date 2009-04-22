@@ -1,21 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-04,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2004-2009 The eXist Project
+ * http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.xmlrpc;
@@ -50,6 +51,7 @@ import org.mortbay.util.MultiException;
  * JUnit test for XMLRPC interface methods.
  * @author wolf
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author ljo
  */
 public class XmlRpcTest extends XMLTestCase {    
 	
@@ -60,7 +62,7 @@ public class XmlRpcTest extends XMLTestCase {
     
     private final static XmldbURI TARGET_RESOURCE = TARGET_COLLECTION.append(TestConstants.TEST_XML_URI);
     
-    private final static XmldbURI MODULE_RESOURCE = TARGET_COLLECTION.append(TestConstants.TEST_MODULE_URI);
+    public final static XmldbURI MODULE_RESOURCE = TARGET_COLLECTION.append(TestConstants.TEST_MODULE_URI);
     
     private final static XmldbURI SPECIAL_COLLECTION = TARGET_COLLECTION.append(TestConstants.SPECIAL_NAME);
     
@@ -81,11 +83,11 @@ public class XmlRpcTest extends XMLTestCase {
 		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
 		"</xsl:stylesheet>";
     
-    private final static String MODULE_DATA =
+    public final static String MODULE_DATA =
     	"module namespace tm = \"http://exist-db.org/test/module\"; " +
     	"declare variable $tm:imported-external-string as xs:string external;";
     
-    private final static String QUERY_MODULE_DATA =
+    public final static String QUERY_MODULE_DATA =
     	"xquery version \"1.0\";" +
     	"declare namespace tm-query = \"http://exist-db.org/test/module/query\";" +
     	"import module namespace tm = \"http://exist-db.org/test/module\" " +
