@@ -33,7 +33,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    DatabaseInsertResources_NoValidation_Test.class
+    DatabaseInsertResources_NoValidation_Test.class,
+    DatabaseInsertResources_WithValidation_Test.class
 })
 public class AllValidationTests
 {
