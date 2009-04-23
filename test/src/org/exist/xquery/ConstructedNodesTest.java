@@ -1,4 +1,27 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2007-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xquery;
+
+import javax.xml.transform.OutputKeys;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -14,6 +37,7 @@ import junit.textui.TestRunner;
 
 /** Tests for various constructed node operations (in-memory nodes)
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author ljo
  */
 public class ConstructedNodesTest extends TestCase
 {
@@ -134,7 +158,7 @@ public class ConstructedNodesTest extends TestCase
 	}
 	
 	/**
-	 * Test retreiving sorted nodes by position
+	 * Test retrieving sorted nodes by position
 	 */
 	public void bugtestConstructedNodesPosition()
 	{
@@ -154,7 +178,7 @@ public class ConstructedNodesTest extends TestCase
 		String expectedResults [] = { 
 				"<option value=\"1\">Fruit</option>",
 				"<option value=\"1\">Fruit</option>"
-		};
+				};
 		
 		ResourceSet result = null;
 		
@@ -172,6 +196,45 @@ public class ConstructedNodesTest extends TestCase
 		catch (XMLDBException e)
 		{
 			System.out.println("testConstructedNodesPosition(): " + e);
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test storing constructed (text) nodes
+	 * Tests absence of bug #2646744 which gave err:XPTY0018 for $hello-text-first
+	 * cf org.exist.xquery.XQueryTest.testXPTY0018_mixedsequences_2429093()
+	 */
+	public void testConstructedTextNodes() {
+		String xquery =
+			"declare variable $hello-text-first := <a>{ \"hello\" }<b>world</b></a>;\n" +
+			"declare variable $hello-text-last := <a><b>world</b>{ \"hello\" }</a>;\n" +
+			"($hello-text-first, $hello-text-last)";
+		
+		String expectedResults [] = { 
+				"<a>hello<b>world</b></a>",
+				"<a><b>world</b>hello</a>"
+				};
+		
+		ResourceSet result = null;
+		try {
+			String oki = service.getProperty(OutputKeys.INDENT);
+			service.setProperty(OutputKeys.INDENT, "no");
+	
+			result = service.query(xquery);
+						
+			assertEquals(expectedResults.length, result.getSize());
+			
+			for(int i = 0; i < result.getSize(); i++)
+			{
+				assertEquals(expectedResults[i], (String)result.getResource(i).getContent());
+			}
+			
+			// Restore indent property to ensure test atomicity
+			service.setProperty(OutputKeys.INDENT, oki);
+			
+		} catch (XMLDBException e) {
+			System.out.println("testConstructedTextNodes(): " + e);
 			fail(e.getMessage());
 		}
 	}
