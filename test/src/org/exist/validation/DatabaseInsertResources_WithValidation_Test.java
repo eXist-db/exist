@@ -29,62 +29,77 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.apache.log4j.Logger;
 
+import org.exist.collections.Collection;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.io.ExistIOException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.XMLReaderObjectFactory;
+import org.exist.xmldb.XmldbURI;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.fail;
 
 /**
  *  Insert documents for validation tests.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class DatabaseInsertResources_WithValidation_Test extends TestCase {
+public class DatabaseInsertResources_WithValidation_Test {
     
     private final static Logger logger = Logger.getLogger(DatabaseInsertResources_WithValidation_Test.class);
     
+    private static String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
     private static BrokerPool pool;
-    private static String eXistHome;
     private static Configuration config;
+
     
-    public DatabaseInsertResources_WithValidation_Test(String testName) {
-        super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DatabaseInsertResources_WithValidation_Test.class);
-        return suite;
-    }
-    
-    protected BrokerPool startDB() {
-        try {
+    @BeforeClass
+    public static void startup()
+    {
+
+        DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn txn = null;
+        try
+        {
             config = new Configuration();
             config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
             BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {
+            pool = BrokerPool.getInstance();
+
+
+            broker = pool.get(User.DEFAULT);
+            transact = pool.getTransactionManager();
+            txn = transact.beginTransaction();
+
+            /** create nessecary collections if they dont exist */
+
+            Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(TestTools.VALIDATION_TMP));
+            broker.saveCollection(txn, col);
+        }
+        catch(Exception e)
+        {
+            if(transact != null && txn != null)
+                transact.abort(txn);
+
             e.printStackTrace();
             fail(e.getMessage());
         }
-        return null;
-    }
-    
-    
-    // ---------------------------------------------------
-    
-    public void testStart() {
-        System.out.println(this.getName());
-        eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
-        pool = startDB();
+        finally
+        {
+            if(broker != null)
+                pool.release(broker);
+        }
     }
     
 
@@ -97,9 +112,9 @@ public class DatabaseInsertResources_WithValidation_Test extends TestCase {
      * needs to be modified into
      *     <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
      */
+    @Test
     public void testValidDocumentSystemCatalog(){
         
-        System.out.println(this.getName());
         try {
             File file = new File(eXistHome, "samples/shakespeare/hamlet.xml");
             InputStream fis = new FileInputStream(file);
@@ -114,13 +129,11 @@ public class DatabaseInsertResources_WithValidation_Test extends TestCase {
             
             // -----
             
-            URL url = new URL("xmldb:exist://"+TestTools.VALIDATION_TMP+"/hamlet_valid.xml");
+            URL url = new URL("xmldb:exist://" + TestTools.VALIDATION_TMP + "/hamlet_valid.xml");
             URLConnection connection = url.openConnection();
             OutputStream os = connection.getOutputStream();
             
             TestTools.copyStream(is, os);
-            
-            os.flush();
             
             is.close();
             os.close();
@@ -148,8 +161,8 @@ public class DatabaseInsertResources_WithValidation_Test extends TestCase {
      *
      * Aditionally all "TITLE" elements are renamed to "INVALIDTITLE"
      */
-    public void testInvalidDocumentSystemCatalog(){
-        System.out.println(this.getName());
+    @Test
+    public void invalidDocumentSystemCatalog(){
         try {
             File file = new File(eXistHome, "samples/shakespeare/hamlet.xml");
             InputStream fis = new FileInputStream(file);
@@ -167,7 +180,7 @@ public class DatabaseInsertResources_WithValidation_Test extends TestCase {
             
             // -----
             
-            URL url = new URL("xmldb:exist://"+TestTools.VALIDATION_TMP+"/hamlet_valid.xml");
+            URL url = new URL("xmldb:exist://" + TestTools.VALIDATION_TMP + "/hamlet_valid.xml");
             URLConnection connection = url.openConnection();
             OutputStream os = connection.getOutputStream();
             
@@ -177,14 +190,11 @@ public class DatabaseInsertResources_WithValidation_Test extends TestCase {
             os.close();
             
         } catch (ExistIOException ex) {
-            
             if(!ex.getCause().getMessage().matches(".*Element type \"INVALIDTITLE\" must be declared.*")){
                 ex.getCause().printStackTrace();
                 logger.error(ex.getCause());
                 fail(ex.getCause().getMessage());
             }
-            
-            
         } catch (Exception ex) {
             ex.printStackTrace();
             logger.error(ex);
@@ -193,13 +203,8 @@ public class DatabaseInsertResources_WithValidation_Test extends TestCase {
     }
     
     
-
-    
-    
-    public void testShutdown() {
-        System.out.println(this.getName());
+    @AfterClass
+    public static void shutdown() {
         BrokerPool.stopAll(true);
-        
     }
-    
 }

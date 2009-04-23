@@ -126,7 +126,7 @@ public class DatabaseInsertResources_NoValidation_Test {
 
             // ----------------------
 
-            String hamlet=eXistHome+"/samples/validation/dtd";
+            String hamlet = eXistHome + "/samples/validation/dtd";
 
             TestTools.insertDocumentToURL(hamlet+"/hamlet.dtd",
                 "xmldb:exist://"+TestTools.VALIDATION_DTD+"/hamlet.dtd");
