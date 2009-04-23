@@ -55,7 +55,7 @@ public class LuceneConfig {
 
     public Analyzer getAnalyzer(QName qname) {
         LuceneIndexConfig config = (LuceneIndexConfig) qnames.get(qname);
-        if (config == null) {
+        if (config == null && paths != null) {
             for (int i = 0; i < paths.length; i++) {
                 LuceneIndexConfig path = paths[i];
                 if (path.getQName().compareTo(qname) == 0) {
