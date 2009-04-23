@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -44,6 +44,8 @@ import java.util.List;
  * step by step.
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author perig
+ * @author ljo
  */
 public class PathExpr extends AbstractExpression implements CompiledXQuery,
         CompiledExpression {
@@ -52,7 +54,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     protected boolean keepVirtual = false;
 
-    protected List steps = new ArrayList();
+    protected List<Expression> steps = new ArrayList<Expression>();
 
     protected boolean staticContext = false;
 
@@ -90,7 +92,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      */
     public void add(PathExpr path) {
         Expression expr;
-        for (Iterator i = path.steps.iterator(); i.hasNext();) {
+        for (Iterator<Expression> i = path.steps.iterator(); i.hasNext();) {
             expr = (Expression) i.next();
             add(expr);
         }
@@ -200,7 +202,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             //TODO : let the parser do it ? -pb
             boolean gotAtomicResult = false;
 
-            for (Iterator iter = steps.iterator(); iter.hasNext();) {
+            for (Iterator<Expression> iter = steps.iterator(); iter.hasNext();) {
                 
                 expr = (Expression) iter.next();
                 
@@ -251,7 +253,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 //TOUNDERSTAND : why did I have to write this test :-) ? -pb
                 //it looks like an empty sequence could be considered as a sub-type of Type.NODE
                 //well, no so stupid I think...    
-                if (steps.size() > 1 && !(result instanceof VirtualNodeSet) && !result.isEmpty() &&
+                if (steps.size() > 1 && !(result instanceof VirtualNodeSet) && !(expr instanceof EnclosedExpr) && !result.isEmpty() &&
                         Type.subTypeOf(result.getItemType(), Type.ATOMIC))
                     gotAtomicResult = true;
 
@@ -318,7 +320,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 //        dumper.startIndent();
         Expression next = null;
         int count = 0;
-        for (Iterator iter = steps.iterator(); iter.hasNext(); count++) {
+        for (Iterator<Expression> iter = steps.iterator(); iter.hasNext(); count++) {
         	next = (Expression) iter.next(); 
         	//Open a first parenthesis
         	if (next instanceof LogicalOp)
@@ -344,7 +346,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         	result.append("()");
         else {
         	int count = 0;
-        	for (Iterator iter = steps.iterator(); iter.hasNext(); count++) {
+        	for (Iterator<Expression> iter = steps.iterator(); iter.hasNext(); count++) {
 	    		next = (Expression) iter.next(); 
 	    		// Open a first parenthesis
 	    		if (next instanceof LogicalOp)
@@ -384,7 +386,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public int getDependencies() {
         Expression next;
         int deps = 0;
-        for (Iterator i = steps.iterator(); i.hasNext();) {
+        for (Iterator<Expression> i = steps.iterator(); i.hasNext();) {
             next = (Expression) i.next();
             deps = deps | next.getDependencies();
         }
