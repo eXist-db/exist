@@ -183,7 +183,7 @@ public class Configuration {
                         } else if ("HORIZONTAL".equalsIgnoreCase(value)) {
                             orientation = PlotOrientation.HORIZONTAL;
 
-                        } else if ("HORIZONTAL".equalsIgnoreCase(value)) {
+                        } else if ("VERTICAL".equalsIgnoreCase(value)) {
                             orientation = PlotOrientation.VERTICAL;
 
                         } else {
