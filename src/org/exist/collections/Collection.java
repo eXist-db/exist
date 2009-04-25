@@ -761,7 +761,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        
 	        doc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
 	        if (doc == null)
-	            return;
+	            return; //TODO should throw an exception!!! Otherwise we dont know if the document was removed
 	        doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
 	        
 	        if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
@@ -837,7 +837,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     throws PermissionDeniedException, LockException, TriggerException {
         
         if (doc == null)
-            return;
+            return;  //TODO should throw an exception!!! Otherwise we dont know if the document was removed
         
         try {
             broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_BINARY, doc.getFileURI());
