@@ -127,6 +127,9 @@
     <available file="${svn.svnkit.jar}" property="svn-present"/>
     
     <target name="prepare-svn" if="include.module.svn.config" unless="svn-present">
+        <echo message="-------------------------------------------------------"/>
+	    <echo message="Downloading libraries required by the subversion module"/>
+	    <echo message="-------------------------------------------------------"/>
         <get src="${include.module.svn.url}"
       		dest="${svn.svnkit.jar}" verbose="true"/>
     </target>
@@ -136,10 +139,14 @@
     <available file="${chart.jfreechart.zip}" property="jfreechart-present"/>
     
     <target name="prepare-jfreechart" if="include.module.jfreechart.config" unless="jfreechart-present">
+        <echo message="-------------------------------------------------------"/>
+	    <echo message="Downloading libraries required by the jfreechart module"/>
+	    <echo message="-------------------------------------------------------"/>
+        
         <get src="${include.module.jfreechart.url}"
       		dest="${chart.jfreechart.zip}" verbose="true"/>
 
-        <unzip src="${top.dir}/${lib.user}/jfreechart.zip" dest="${top.dir}/${lib.user}">
+        <unzip src="${chart.jfreechart.zip}" dest="${top.dir}/${lib.user}">
 			<patternset>
 				<include name="**/lib/jfreechart-*.jar"/>
                 <include name="**/lib/jcommon-*.jar"/>
@@ -147,6 +154,8 @@
 			</patternset>
 			<mapper type="flatten"/>
 		</unzip>
+
+        <!--delete file="${chart.jfreechart.zip}"/-->
     </target>
     
     <!-- Special targets end -->
