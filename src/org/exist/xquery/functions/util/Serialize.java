@@ -171,10 +171,15 @@ public class Serialize extends BasicFunction {
         outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         while(siSerializeParams.hasNext())
         {
-            String opt[] = Option.parseKeyValuePair(siSerializeParams.nextItem().getStringValue());
-            outputProperties.setProperty(opt[0], opt[1]);
+            String serializeParams = siSerializeParams.nextItem().getStringValue();
+            String params[] = serializeParams.split(" ");
+            for(String param : params)
+            {
+                String opt[] = Option.parseKeyValuePair(param);
+                outputProperties.setProperty(opt[0], opt[1]);
+            }
         }
-        
+
         return outputProperties;
     }
     
