@@ -58,6 +58,30 @@ public class SerializeTest {
         root = null;
     }
 
+ 
+    @Test
+    public void testSerialize() throws XPathException {
+
+        ResourceSet result = null;
+        String r = "";
+        try {
+            String query = "let $xml := <test/>\n" +
+                    "return\n" +
+                    "util:serialize($xml,'method=xml')";
+            result = service.query(query);
+            r = (String) result.getResource(0).getContent();
+            assertXMLEqual(r,"<test/>");
+
+        } catch (IOException ioe) {
+                fail(ioe.getMessage());
+        } catch (SAXException sae) {
+                fail(sae.getMessage());
+        } catch (XMLDBException e) {
+            System.out.println("testSerialize(): " + e);
+            fail(e.getMessage());
+        }
+
+    }
     
     @Test
     public void testSerialize2() throws XPathException {
@@ -70,7 +94,6 @@ public class SerializeTest {
                     "util:serialize($xml,'method=xml indent=no')";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
-            System.out.print("here" +r);
             assertXMLEqual(r,"<test><a/><b/></test>");
 
         } catch (IOException ioe) {
@@ -84,4 +107,35 @@ public class SerializeTest {
 
     }
 
+ 
+     
+//        @Test
+//    public void testSerializeMoreOptions() throws XPathException {
+//
+//        ResourceSet result = null;
+//        String r = "";
+//        try {
+//            String query = "let $xml :=<test><a>test1</a></test>" +
+//                    "return\n" +
+//                    "util:serialize($xml,'method=xml media-type=text/xml omit-xml-declaration=no indent=yes')";
+//            result = service.query(query);
+//            r = (String) result.getResource(0).getContent();
+//            System.out.print(r);
+//            assertXMLEqual(r,"<?xml version='1.0' encoding='UTF-8'?>"+
+//                    "<test>"+
+//                    "   <a>test1</a>"+
+//                    "</test>");
+//
+//        } catch (IOException ioe) {
+//                fail(ioe.getMessage());
+//        } catch (SAXException sae) {
+//                fail(sae.getMessage());
+//        } catch (XMLDBException e) {
+//            System.out.println("testSerializeMoreOptions(): " + e);
+//            fail(e.getMessage());
+//        }
+//
+//    }
+        
+    
 }
