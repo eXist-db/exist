@@ -10,6 +10,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import org.xml.sax.SAXException;
 import java.io.IOException;
 
+import org.custommonkey.xmlunit.XMLUnit;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
@@ -107,35 +108,48 @@ public class SerializeTest {
 
     }
 
- 
-     
-//        @Test
-//    public void testSerializeMoreOptions() throws XPathException {
-//
-//        ResourceSet result = null;
-//        String r = "";
-//        try {
-//            String query = "let $xml :=<test><a>test1</a></test>" +
-//                    "return\n" +
-//                    "util:serialize($xml,'method=xml media-type=text/xml omit-xml-declaration=no indent=yes')";
-//            result = service.query(query);
-//            r = (String) result.getResource(0).getContent();
-//            System.out.print(r);
-//            assertXMLEqual(r,"<?xml version='1.0' encoding='UTF-8'?>"+
-//                    "<test>"+
-//                    "   <a>test1</a>"+
-//                    "</test>");
-//
-//        } catch (IOException ioe) {
-//                fail(ioe.getMessage());
-//        } catch (SAXException sae) {
-//                fail(sae.getMessage());
-//        } catch (XMLDBException e) {
-//            System.out.println("testSerializeMoreOptions(): " + e);
-//            fail(e.getMessage());
-//        }
-//
-//    }
-        
-    
+    @Test
+    public void testSerializeText() throws XPathException {
+
+        ResourceSet result = null;
+        String r = "";
+        try {
+            String query = "let $xml := <test><a>test</a></test>\n" +
+                    "return\n" +
+                    "util:serialize($xml,'method=text indent=no')";
+            result = service.query(query);
+            r = (String) result.getResource(0).getContent();
+            assertEquals(r,"test");
+
+        } catch (XMLDBException e) {
+            System.out.println("testSerializeText(): " + e);
+            fail(e.getMessage());
+        }
+
+    } 
+
+    @Test
+    public void testSerializeIndent() throws XPathException {
+
+        ResourceSet result = null;
+        String r = "";
+        try {
+            String query = "let $xml := <test><a/><b/></test>\n" +
+                    "return\n" +
+                    "util:serialize($xml,'method=xml indent=yes')";
+            result = service.query(query);
+            r = (String) result.getResource(0).getContent();
+            XMLUnit.setIgnoreWhitespace(true);
+            assertXMLEqual(r,"<test><a/><b/></test>");
+
+        } catch (IOException ioe) {
+                fail(ioe.getMessage());
+        } catch (SAXException sae) {
+                fail(sae.getMessage());
+        } catch (XMLDBException e) {
+            System.out.println("testSerializeIndent(): " + e);
+            fail(e.getMessage());
+        }
+
+    }
 }
