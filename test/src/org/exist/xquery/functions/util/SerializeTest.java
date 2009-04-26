@@ -58,30 +58,30 @@ public class SerializeTest {
         root = null;
     }
 
+    
     @Test
-    public void testSerialize() throws XPathException {
+    public void testSerialize2() throws XPathException {
 
         ResourceSet result = null;
         String r = "";
         try {
-            String query = "let $r := document{<test/>}'\n" +
+            String query = "let $xml := <test><a/><b/></test>\n" +
                     "return\n" +
-                    "util:serialize($r,'indent=no')";
+                    "util:serialize($xml,'method=xml indent=no')";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
-            assertXMLEqual(r,"<test/>");
+            System.out.print("here" +r);
+            assertXMLEqual(r,"<test><a/><b/></test>");
 
         } catch (IOException ioe) {
-                fail(ioe.getMessage());            
-        } catch (SAXException e) {
-            fail(e.getMessage());
+                fail(ioe.getMessage());
+        } catch (SAXException sae) {
+                fail(sae.getMessage());
         } catch (XMLDBException e) {
-            System.out.println("testSerialize(): " + e);
+            System.out.println("testSerialize2(): " + e);
             fail(e.getMessage());
         }
 
     }
-
-
 
 }
