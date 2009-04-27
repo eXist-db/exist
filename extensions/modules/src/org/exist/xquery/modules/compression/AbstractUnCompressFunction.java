@@ -113,11 +113,11 @@ public abstract class AbstractUnCompressFunction extends XMLDBAbstractCollection
 		MemTreeBuilder builder = context.getDocumentBuilder();
 
 		builder.startDocument();
-		builder.startElement(new QName("entry"), null);
-		builder.addAttribute(new QName("name"), name);
-		builder.addAttribute(new QName("type"), type);
+		builder.startElement(new QName("entry", null, null), null);
+		builder.addAttribute(new QName("name", null, null), name);
+		builder.addAttribute(new QName("type", null, null), type);
 		if (mime != null){
-			builder.addAttribute(new QName("mime-type"), mime.getName());
+			builder.addAttribute(new QName("mime-type", null, null), mime.getName());
 		}
 		if (content != null){
 			if (content instanceof AtomicValue){
@@ -125,14 +125,13 @@ public abstract class AbstractUnCompressFunction extends XMLDBAbstractCollection
 			}
 			else {
 				try {
-					((NodeImpl) content).copyTo(context.getBroker(), new DocumentBuilderReceiver(builder));
+					((NodeImpl) content).copyTo(null, new DocumentBuilderReceiver(builder));
 				} catch (SAXException e) {
 					throw new XPathException(getASTNode(), e.getMessage());
 				}
 			}
 		}
 		builder.endElement();
-		builder.endDocument();
 		
 		return (Item)builder.getDocument().getDocumentElement();
 		
@@ -160,7 +159,7 @@ public abstract class AbstractUnCompressFunction extends XMLDBAbstractCollection
 		
 	protected Item createCollectionEntry(String name) throws XPathException{
 		return createEntry(name, "collection", null, null);
-	}
+	}	
 
 	private Resource createXMLResource(ByteArrayOutputStream baos, Collection collection, String name) throws XMLDBException, XPathException, SAXException{
 		NodeValue content = ModuleUtils.streamToXML(context, new ByteArrayInputStream(baos.toByteArray()));
