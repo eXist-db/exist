@@ -65,6 +65,14 @@ public class LuceneMatchListenerTest {
             "   <para>double match double match</para>" +
             "</root>";
 
+    private static String XML1 =
+            "<article>" +
+            "   <head>The <b>title</b>of it</head>" +
+            "   <p>A simple paragraph with <hi>highlighted</hi> text <note>and a note</note> " +
+            "       in it.</p>" +
+            "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
+            "</article>";
+
     private static String CONF1 =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
             "	<index>" +
@@ -93,6 +101,20 @@ public class LuceneMatchListenerTest {
             "	</index>" +
             "</collection>";
 
+    private static String CONF4 =
+            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
+            "       <fulltext default=\"none\" attributes=\"no\">" +
+            "       </fulltext>" +
+            "       <lucene>" +
+            "           <text qname=\"p\"/>" +
+            "           <text qname=\"head\"/>" +
+            "           <inline qname=\"s\"/>" +
+            "           <ignore qname=\"note\"/>" +
+            "       </lucene>" +
+            "   </index>" +
+            "</collection>";
+
     private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
     private static String MATCH_END = "</exist:match>";
 
@@ -106,7 +128,7 @@ public class LuceneMatchListenerTest {
     public void indexByQName() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF2);
+            configureAndStore(CONF2, XML);
 
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
@@ -168,7 +190,7 @@ public class LuceneMatchListenerTest {
     public void matchInAncestor() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF1);
+            configureAndStore(CONF1, XML);
 
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
@@ -199,7 +221,7 @@ public class LuceneMatchListenerTest {
     public void matchInDescendant() {
         DBBroker broker = null;
         try {
-            configureAndStore(CONF3);
+            configureAndStore(CONF3, XML);
 
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 
@@ -218,6 +240,39 @@ public class LuceneMatchListenerTest {
             result = queryResult2String(broker, seq);
             System.out.println("RESULT: " + result);
             XMLAssert.assertXpathEvaluatesTo("1", "count(//hi/exist:match)", result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
+    public void inlineNodes() {
+        DBBroker broker = null;
+        try {
+            configureAndStore(CONF4, XML1);
+
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq = xquery.execute("//p[ft:query(., 'mixed')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            String result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertEquals("<p>Paragraphs with <s>" + MATCH_START + "mix" + MATCH_END +
+                    "</s><s>ed</s> content are <s>danger</s>ous.</p>", result);
+
+            seq = xquery.execute("//head[ft:query(., 'title')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertEquals("<head>The <b>" + MATCH_START + "title" + MATCH_END + "</b>of it</head>",
+                    result);
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -272,7 +327,7 @@ public class LuceneMatchListenerTest {
         pool = null;
     }
 
-    private void configureAndStore(String config) {
+    private void configureAndStore(String config, String data) {
         DBBroker broker = null;
         TransactionManager transact = null;
         Txn transaction = null;
@@ -291,7 +346,7 @@ public class LuceneMatchListenerTest {
 
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_matches.xml"), XML);
             assertNotNull(info);
-            root.store(transaction, broker, info, XML, false);
+            root.store(transaction, broker, info, data, false);
 
             transact.commit(transaction);
         } catch (Exception e) {

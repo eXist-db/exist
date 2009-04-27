@@ -435,14 +435,18 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         return state;
     }
 
-    public String getText() {
+    public XMLString getXMLText() {
         if (state == CHARACTERS || state == COMMENT || state == CDATA) {
             if (text.length() == 0) {
                 CharacterDataImpl.readData(nodeId, current, text);
             }
-            return text.toString();
+            return text;
         }
-        return "";
+        return new XMLString();
+    }
+
+    public String getText() {
+        return getXMLText().toString();
     }
 
     public char[] getTextCharacters() {
@@ -461,7 +465,12 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     }
 
     public int getTextLength() {
-        throw new UnsupportedOperationException();
+        if (state == CHARACTERS || state == COMMENT || state == CDATA) {
+            if (text.length() == 0)
+                return CharacterDataImpl.getStringLength(nodeId, current);
+            return text.length();
+        }
+        return 0;
     }
 
     public String getEncoding() {

@@ -36,6 +36,7 @@ import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
 import org.exist.util.serializer.AttrList;
 import org.xml.sax.SAXException;
 
@@ -62,6 +63,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     private LuceneIndex index;
 
+    private LuceneConfig config;
+
     private DBBroker broker;
 
     public LuceneMatchListener(LuceneIndex index, DBBroker broker, NodeProxy proxy) {
@@ -84,6 +87,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
         this.broker = broker;
         this.match = proxy.getMatches();
         setNextInChain(null);
+
+        IndexSpec indexConf = proxy.getDocument().getCollection().getIndexConfiguration(broker);
+        if (indexConf != null)
+            config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
 
         getTerms();
         nodesWithMatch = new TreeMap();
@@ -158,23 +165,30 @@ public class LuceneMatchListener extends AbstractMatchListener {
     private void scanMatches(NodeProxy p) {
         // Collect the text content of all descendants of p. Remember the start offsets
         // of the text nodes for later use.
-        StringBuffer buf = new StringBuffer();
+        TextExtractor extractor = new DefaultTextExtractor();
+        extractor.configure(config);
         OffsetList offsets = new OffsetList();
         int level = 0;
         int textOffset = 0;
         try {
-            XMLStreamReader reader = broker.getXMLStreamReader(p, false);
+            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(p, false);
             while (reader.hasNext()) {
                 int ev = reader.next();
-                if (ev == XMLStreamReader.END_ELEMENT && --level < 0)
-                    break;
-                if (ev == XMLStreamReader.START_ELEMENT)
-                    ++level;
-                else if (ev == XMLStreamReader.CHARACTERS) {
-                    NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
-                    offsets.add(textOffset, nodeId);
-                    buf.append(reader.getText());
-                    textOffset += reader.getText().length();
+                switch (ev) {
+                    case XMLStreamReader.END_ELEMENT:
+                        if (--level < 0)
+                            break;
+                        textOffset += extractor.endElement(reader.getQName());
+                        break;
+                    case XMLStreamReader.START_ELEMENT:
+                        ++level;
+                        textOffset += extractor.startElement(reader.getQName());
+                        break;
+                    case XMLStreamReader.CHARACTERS:
+                        NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                        offsets.add(textOffset, nodeId);
+                        textOffset += extractor.characters(reader.getXMLText());
+                        break;
                 }
             }
         } catch (IOException e) {
@@ -183,7 +197,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
         // Use Lucene's analyzer to tokenize the text and find matching query terms
-        TokenStream stream = index.getDefaultAnalyzer().tokenStream(null, new StringReader(buf.toString()));
+        TokenStream stream = index.getDefaultAnalyzer().tokenStream(null, new StringReader(extractor.getText().toString()));
         Token token;
         try {
 

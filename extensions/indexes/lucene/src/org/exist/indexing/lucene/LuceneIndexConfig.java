@@ -19,7 +19,7 @@ public class LuceneIndexConfig {
     private QName qname = null;
 
     private NodePath path = null;
-    
+
     public LuceneIndexConfig(Element config, Map namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
         if (config.hasAttribute(QNAME_ATTR)) {
             qname = parseQName(config, namespaces);
@@ -51,12 +51,16 @@ public class LuceneIndexConfig {
         return path;
     }
 
-    protected QName parseQName(Element config, Map namespaces) throws DatabaseConfigurationException {
+    protected static QName parseQName(Element config, Map namespaces) throws DatabaseConfigurationException {
         String name = config.getAttribute(QNAME_ATTR);
         if (name == null || name.length() == 0)
             throw new DatabaseConfigurationException("Lucene index configuration error: element " + config.getNodeName() +
                     " must have an attribute " + QNAME_ATTR);
 
+        return parseQName(name, namespaces);
+    }
+
+    protected static QName parseQName(String name, Map namespaces) throws DatabaseConfigurationException {
         boolean isAttribute = false;
         if (name.startsWith("@")) {
             isAttribute = true;

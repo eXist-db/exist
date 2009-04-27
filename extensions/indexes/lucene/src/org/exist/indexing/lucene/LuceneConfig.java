@@ -1,9 +1,6 @@
 package org.exist.indexing.lucene;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
@@ -18,10 +15,15 @@ public class LuceneConfig {
     private final static String CONFIG_ROOT = "lucene";
     private final static String INDEX_ELEMENT = "text";
     private final static String ANALYZER_ELEMENT = "analyzer";
+    private static final String INLINE_ELEMENT = "inline";
+    private static final String IGNORE_ELEMENT = "ignore";
 
-    private Map qnames = new TreeMap();
+    private Map<QName, LuceneIndexConfig> qnames = new TreeMap<QName, LuceneIndexConfig>();
     private LuceneIndexConfig paths[] = null;
 
+    private Set<QName> inlineNodes = null;
+    private Set<QName> ignoreNodes = null;
+    
     private AnalyzerConfig analyzers = new AnalyzerConfig();
 
     public LuceneConfig(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
@@ -43,18 +45,20 @@ public class LuceneConfig {
 
     public LuceneIndexConfig getConfig(NodePath path) {
         QName qn = path.getComponent(path.length() - 1);
-        LuceneIndexConfig config = (LuceneIndexConfig) qnames.get(qn);
+        LuceneIndexConfig config = qnames.get(qn);
         if (config == null && paths != null) {
             for (int i = 0; i < paths.length; i++) {
-                if (paths[i].match(path))
-                    return paths[i];
+                if (paths[i].match(path)) {
+                    config = paths[i];
+                    break;
+                }
             }
         }
-        return null;
+        return config;
     }
 
     public Analyzer getAnalyzer(QName qname) {
-        LuceneIndexConfig config = (LuceneIndexConfig) qnames.get(qname);
+        LuceneIndexConfig config = qnames.get(qname);
         if (config == null && paths != null) {
             for (int i = 0; i < paths.length; i++) {
                 LuceneIndexConfig path = paths[i];
@@ -84,6 +88,14 @@ public class LuceneConfig {
         return analyzers.getDefaultAnalyzer();
     }
 
+    public boolean isInlineNode(QName qname) {
+        return inlineNodes != null && inlineNodes.contains(qname);
+    }
+
+    public boolean isIgnoredNode(QName qname) {
+        return ignoreNodes != null && ignoreNodes.contains(qname);
+    }
+    
     public void getDefinedIndexes(List indexes) {
         for (Iterator ci = qnames.keySet().iterator(); ci.hasNext();) {
             QName qn = (QName) ci.next();
@@ -124,9 +136,21 @@ public class LuceneConfig {
                             paths = np;
                         }
                     }
+                } else if (INLINE_ELEMENT.equals(node.getLocalName())) {
+                    Element elem = (Element) node;
+                    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
+                    if (inlineNodes == null)
+                        inlineNodes = new TreeSet<QName>();
+                    inlineNodes.add(qname);
+                } else if (IGNORE_ELEMENT.equals(node.getLocalName())) {
+                    Element elem = (Element) node;
+                    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
+                    if (ignoreNodes == null)
+                        ignoreNodes = new TreeSet<QName>();
+                    ignoreNodes.add(qname);
+
                 }
             }
         }
     }
-
 }
