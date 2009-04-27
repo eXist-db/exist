@@ -921,14 +921,9 @@ public class DocumentImpl extends NodeImpl implements Document {
                 }
                 int ns = document.alphaLen[nr];
                 if (-1 < ns) {
-                	XQueryContext context = receiver.getContext();
                 	while (ns < document.nextNamespace	&& document.namespaceParent[ns] == nr) {
                 		QName nsQName = (QName) document.namePool.get(document.namespaceCode[ns]);
                 		receiver.addNamespaceNode(nsQName);
-                        if ("xmlns".equals(nsQName.getLocalName()))
-                            context.declareInScopeNamespace("", nsQName.getNamespaceURI());
-                        else
-                            context.declareInScopeNamespace(nsQName.getLocalName(), nsQName.getNamespaceURI());
                 		++ns;
                 	}
                 }
