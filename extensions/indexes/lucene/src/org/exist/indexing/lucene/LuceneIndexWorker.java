@@ -619,21 +619,38 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private class LuceneStreamListener extends AbstractStreamListener {
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
-            if (mode == STORE && config != null && config.matches(path)) {
-                if (contentStack == null) contentStack = new Stack();
-                XMLString contentBuf = new XMLString();
-                contentStack.push(contentBuf);
+            if (mode == STORE && config != null) {
+                if (contentStack != null && !contentStack.isEmpty()) {
+                    for (int i = 0; i < contentStack.size(); i++) {
+                        TextExtractor extractor = (TextExtractor) contentStack.get(i);
+                        extractor.startElement(element.getQName());
+                    }
+                }
+                if (config.matches(path)) {
+                    if (contentStack == null) contentStack = new Stack();
+                    TextExtractor extractor = new DefaultTextExtractor();
+                    extractor.configure(config);
+                    contentStack.push(extractor);
+                }
             }
             super.startElement(transaction, element, path);
         }
 
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
-            if (mode != REMOVE_ALL_NODES && config != null && config.matches(path)) {
-                if (mode == REMOVE_SOME_NODES) {
-                    nodesToRemove.add(element.getNodeId());
-                } else {
-                    XMLString content = (XMLString) contentStack.pop();
-                    indexText(element.getNodeId(), element.getQName(), path, content);
+            if (config != null) {
+                if (mode == STORE && contentStack != null && !contentStack.isEmpty()) {
+                    for (int i = 0; i < contentStack.size(); i++) {
+                        TextExtractor extractor = (TextExtractor) contentStack.get(i);
+                        extractor.endElement(element.getQName());
+                    }
+                }
+                if (mode != REMOVE_ALL_NODES && config.matches(path)) {
+                    if (mode == REMOVE_SOME_NODES) {
+                        nodesToRemove.add(element.getNodeId());
+                    } else {
+                        TextExtractor extractor = (TextExtractor) contentStack.pop();
+                        indexText(element.getNodeId(), element.getQName(), path, extractor.getText());
+                    }
                 }
             }
             super.endElement(transaction, element, path);
@@ -655,8 +672,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         public void characters(Txn transaction, TextImpl text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (int i = 0; i < contentStack.size(); i++) {
-                    XMLString next = (XMLString) contentStack.get(i);
-                    next.append(text.getXMLString());
+                    TextExtractor extractor = (TextExtractor) contentStack.get(i);
+                    extractor.characters(text.getXMLString());
                 }
             }
             super.characters(transaction, text, path);

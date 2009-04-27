@@ -79,6 +79,14 @@ public class LuceneIndexTest {
     private static String XML4 =
             "<test><a>A X</a><b><c>B X</c> C</b></test>";
 
+    private static String XML5 =
+            "<article>" +
+            "   <head>The <b>title</b>of it</head>" +
+            "   <p>A simple paragraph with <hi>highlighted</hi> text <note>and a note</note> " +
+            "       in it.</p>" +
+            "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
+            "</article>";
+
     private static String COLLECTION_CONFIG1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
@@ -137,6 +145,22 @@ public class LuceneIndexTest {
             "       </lucene>" +
             "	</index>" +
             "</collection>";
+
+    private static String COLLECTION_CONFIG5 =
+            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
+            "       <fulltext default=\"none\" attributes=\"no\">" +
+            "       </fulltext>" +
+            "       <lucene>" +
+            "           <text qname=\"article\"/>" +
+            "           <text qname=\"p\"/>" +
+            "           <text qname=\"head\"/>" +
+            "           <inline qname=\"s\"/>" +
+            "           <ignore qname=\"note\"/>" +
+            "       </lucene>" +
+            "   </index>" +
+            "</collection>";
+
     private static BrokerPool pool;
     private static Collection root;
     private Boolean savedConfig;
@@ -214,6 +238,82 @@ public class LuceneIndexTest {
             assertEquals(1, seq.getItemCount());
 
             seq = xquery.execute("/test[ft:query(b, 'x')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
+    public void inlineAndIgnore() {
+        System.out.println("Test simple queries ...");
+        DocumentSet docs = configureAndStore(COLLECTION_CONFIG5, XML5, "test.xml");
+        DBBroker broker = null;
+        try {
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+
+            checkIndex(docs, broker, new QName[] { new QName("head", "") }, "title", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "simple", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "mixed", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "dangerous", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "note", 0);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq = xquery.execute("/article[ft:query(head, 'title')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(p, 'highlighted')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(p, 'mixed')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(p, 'mix')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(p, 'dangerous')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(p, 'ous')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(p, 'danger')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(p, 'note')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(., 'highlighted')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(., 'mixed')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(., 'dangerous')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(., 'danger')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute("/article[ft:query(., 'note')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
         } catch (Exception e) {

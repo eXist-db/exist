@@ -339,7 +339,7 @@ public class EXistServlet extends HttpServlet {
                     e.getMessage());
 
         } catch (Throwable e){
-            LOG.error(e);
+            LOG.error(e.getMessage(), e);
             throw new ServletException("An error occurred: " + e.getMessage(), e);
             
 		} finally {

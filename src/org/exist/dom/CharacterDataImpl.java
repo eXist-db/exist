@@ -164,4 +164,9 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
         UTF8.decode(value.data(), value.start() + 3 + nodeIdLen, value.getLength() - 3 - nodeIdLen, string);
         return string;
     }
+
+    public static int getStringLength(NodeId nodeId, Value value) {
+        final int nodeIdLen = nodeId.size();
+        return value.getLength() - 3 - nodeIdLen;
+    }
 }

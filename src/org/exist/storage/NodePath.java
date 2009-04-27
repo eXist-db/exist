@@ -104,7 +104,14 @@ public class NodePath {
             throw new ArrayIndexOutOfBoundsException(at);
         return components[at];
     }
-    
+
+    public QName getLastComponent() {
+        if (pos > 0) {
+            return components[pos - 1];
+        }
+        return null;
+    }
+
     public final boolean match(NodePath other) {
         boolean skip = false;
         int i = 0, j = 0;
