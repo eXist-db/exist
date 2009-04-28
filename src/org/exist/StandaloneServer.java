@@ -120,6 +120,10 @@ public class StandaloneServer {
     
     public StandaloneServer() {
     }
+
+    public void run(String[] args) throws Exception {
+        run(args, null);
+    }
     
     public void run(String[] args, Observer observer) throws Exception {
         printNotice();
