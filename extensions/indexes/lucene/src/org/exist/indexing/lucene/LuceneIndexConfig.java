@@ -13,12 +13,15 @@ public class LuceneIndexConfig {
     private final static String ANALYZER_ID_ATTR = "analyzer";
     private static final String QNAME_ATTR = "qname";
     private static final String MATCH_ATTR = "match";
+    private final static String BOOST_ATTRIB = "boost";
 
     private String analyzerId = null;
 
     private QName qname = null;
 
     private NodePath path = null;
+
+    private float boost = -1;
 
     public LuceneIndexConfig(Element config, Map namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
         if (config.hasAttribute(QNAME_ATTR)) {
@@ -37,6 +40,15 @@ public class LuceneIndexConfig {
                 throw new DatabaseConfigurationException("No analyzer configured for id " + id);
             analyzerId = id;
         }
+        String boostAttr = config.getAttribute(BOOST_ATTRIB);
+        if (boostAttr != null && boostAttr.length() > 0) {
+            try {
+                boost = Float.parseFloat(boostAttr);
+            } catch (NumberFormatException e) {
+                throw new DatabaseConfigurationException("Invalid value for attribute 'boost'. Expected float, " +
+                        "got: " + boostAttr);
+            }
+        }
     }
 
     public String getAnalyzerId() {
@@ -51,6 +63,10 @@ public class LuceneIndexConfig {
         return path;
     }
 
+    public float getBoost() {
+        return boost;
+    }
+    
     protected static QName parseQName(Element config, Map namespaces) throws DatabaseConfigurationException {
         String name = config.getAttribute(QNAME_ATTR);
         if (name == null || name.length() == 0)

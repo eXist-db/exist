@@ -533,10 +533,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param qname
      * @param content
      */
-    protected void indexText(NodeId nodeId, QName qname, NodePath path, CharSequence content) {
+    protected void indexText(NodeId nodeId, QName qname, NodePath path, CharSequence content, float boost) {
         if (path.length() == 0)
             throw new RuntimeException();
-        PendingDoc pending = new PendingDoc(nodeId, content, path, qname);
+        PendingDoc pending = new PendingDoc(nodeId, content, path, qname, boost);
         nodesToWrite.add(pending);
         cachedNodesSize += content.length();
         if (cachedNodesSize > maxCachedNodesSize)
@@ -548,12 +548,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         CharSequence text;
         QName qname;
         Analyzer analyzer;
+        float boost;
 
-        private PendingDoc(NodeId nodeId, CharSequence text, NodePath path, QName qname) {
+        private PendingDoc(NodeId nodeId, CharSequence text, NodePath path, QName qname, float boost) {
             this.nodeId = nodeId;
             this.text = text;
             this.qname = qname;
             this.analyzer = config.getAnalyzer(path);
+            this.boost = boost;
         }
     }
     
@@ -567,7 +569,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 PendingDoc pending = (PendingDoc) nodesToWrite.get(i);
 
                 Document doc = new Document();
-
+                if (pending.boost > 0)
+                    doc.setBoost(pending.boost);
+                else if (config.getBoost() > 0)
+                    doc.setBoost(config.getBoost());
+                LOG.debug("Boost: " + doc.getBoost());
+                
                 // store the node id
                 int nodeIdLen = pending.nodeId.size();
                 byte[] data = new byte[nodeIdLen + 2];
@@ -644,12 +651,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         extractor.endElement(element.getQName());
                     }
                 }
-                if (mode != REMOVE_ALL_NODES && config.matches(path)) {
+                LuceneIndexConfig idxConf = config.getConfig(path);
+                if (mode != REMOVE_ALL_NODES && idxConf != null) {
                     if (mode == REMOVE_SOME_NODES) {
                         nodesToRemove.add(element.getNodeId());
                     } else {
                         TextExtractor extractor = (TextExtractor) contentStack.pop();
-                        indexText(element.getNodeId(), element.getQName(), path, extractor.getText());
+                        indexText(element.getNodeId(), element.getQName(), path,
+                                extractor.getText(), idxConf.getBoost());
                     }
                 }
             }
@@ -662,7 +671,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (mode == REMOVE_SOME_NODES) {
                     nodesToRemove.add(attrib.getNodeId());
                 } else {
-                    indexText(attrib.getNodeId(), attrib.getQName(), path, attrib.getValue());
+                    indexText(attrib.getNodeId(), attrib.getQName(), path, attrib.getValue(),
+                            config.getBoost());
                 }
             }
             path.removeLastComponent();
