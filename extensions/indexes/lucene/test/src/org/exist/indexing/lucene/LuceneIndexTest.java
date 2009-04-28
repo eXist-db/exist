@@ -87,6 +87,13 @@ public class LuceneIndexTest {
             "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
             "</article>";
 
+    private static String XML6 =
+            "<a>" +
+            "   <b>AAA</b>" +
+            "   <c>AAA</c>" +
+            "   <b>AAA</b>" +
+            "</a>";
+    
     private static String COLLECTION_CONFIG1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
@@ -157,6 +164,18 @@ public class LuceneIndexTest {
             "           <text qname=\"head\"/>" +
             "           <inline qname=\"s\"/>" +
             "           <ignore qname=\"note\"/>" +
+            "       </lucene>" +
+            "   </index>" +
+            "</collection>";
+
+    private static String COLLECTION_CONFIG6 =
+            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
+            "       <fulltext default=\"none\" attributes=\"no\">" +
+            "       </fulltext>" +
+            "       <lucene>" +
+            "           <text qname=\"b\"/>" +
+            "           <text qname=\"c\" boost=\"2.0\"/>" +
             "       </lucene>" +
             "   </index>" +
             "</collection>";
@@ -316,6 +335,29 @@ public class LuceneIndexTest {
             seq = xquery.execute("/article[ft:query(., 'note')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
+    public void boosts() {
+        DocumentSet docs = configureAndStore(COLLECTION_CONFIG6, XML6, "test.xml");
+        DBBroker broker = null;
+        try {
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq = xquery.execute("for $a in ft:query((//b|//c), 'AAA') " +
+                    "order by ft:score($a) descending return $a/local-name(.)", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(3, seq.getItemCount());
+            assertEquals("c", seq.getStringValue());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

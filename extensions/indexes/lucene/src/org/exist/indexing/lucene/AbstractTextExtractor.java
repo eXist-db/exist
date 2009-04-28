@@ -34,6 +34,10 @@ public abstract class AbstractTextExtractor implements TextExtractor {
         this.config = config;
     }
 
+    public float getBoost() {
+        return config.getBoost();
+    }
+
     public XMLString getText() {
         return buffer;
     }

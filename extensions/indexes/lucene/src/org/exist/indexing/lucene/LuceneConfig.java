@@ -17,13 +17,16 @@ public class LuceneConfig {
     private final static String ANALYZER_ELEMENT = "analyzer";
     private static final String INLINE_ELEMENT = "inline";
     private static final String IGNORE_ELEMENT = "ignore";
+    private final static String BOOST_ATTRIB = "boost";
 
     private Map<QName, LuceneIndexConfig> qnames = new TreeMap<QName, LuceneIndexConfig>();
     private LuceneIndexConfig paths[] = null;
 
     private Set<QName> inlineNodes = null;
     private Set<QName> ignoreNodes = null;
-    
+
+    private float boost = -1;
+
     private AnalyzerConfig analyzers = new AnalyzerConfig();
 
     public LuceneConfig(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
@@ -103,6 +106,10 @@ public class LuceneConfig {
         }
     }
 
+    public float getBoost() {
+        return boost;
+    }
+    
     /**
      * Parse a configuration entry. The main configuration entries for this index
      * are the &lt;text&gt; elements. They may be enclosed by a &lt;lucene&gt; element.
@@ -116,9 +123,19 @@ public class LuceneConfig {
         for(int i = 0; i < configNodes.getLength(); i++) {
             node = configNodes.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE) {
-                if (CONFIG_ROOT.equals(node.getLocalName()))
+                if (CONFIG_ROOT.equals(node.getLocalName())) {
+                    Element elem = (Element) node;
+                    if (elem.hasAttribute(BOOST_ATTRIB)) {
+                        String value = elem.getAttribute(BOOST_ATTRIB);
+                        try {
+                            boost = Float.parseFloat(value);
+                        } catch (NumberFormatException e) {
+                            throw new DatabaseConfigurationException("Invalid value for 'boost' attribute in " +
+                                    "lucene index config: float expected, got " + value);
+                        }
+                    }
                     parseConfig(node.getChildNodes(), namespaces);
-                else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {
+                } else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {
                     analyzers.addAnalyzer((Element) node);
                 } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
                     Element elem = (Element) node;
