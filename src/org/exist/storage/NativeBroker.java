@@ -1390,6 +1390,8 @@ public class NativeBroker extends DBBroker {
         for(Iterator i = collection.iterator(this); i.hasNext(); ) {
             DocumentImpl next = (DocumentImpl)i.next();
             reindexXMLResource(transaction, next, mode);
+            if (mode == NodeProcessor.MODE_REPAIR)
+                pool.signalSystemStatus(BrokerPool.SIGNAL_STARTUP);
         }
         for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
 	    XmldbURI next = (XmldbURI)i.next();
@@ -3018,6 +3020,8 @@ public class NativeBroker extends DBBroker {
                 }
                 scanNodes(transaction, iterator, child, currentPath, mode, listener);
             }
+            if (mode == NodeProcessor.MODE_REPAIR)
+                pool.signalSystemStatus(BrokerPool.SIGNAL_STARTUP);
         }
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             endElement(node, currentPath, null, mode == NodeProcessor.MODE_REMOVE);

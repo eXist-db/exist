@@ -36,6 +36,8 @@ import org.xmldb.api.base.Database;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Observer;
+
 import org.mortbay.util.MultiException;
 
 /**
@@ -49,7 +51,7 @@ public class JettyStart {
 
 	public static void main(String[] args) {
 		JettyStart start = new JettyStart();
-		start.run(args);
+		start.run(args, null);
 	}
 	
         public JettyStart() {
@@ -57,7 +59,7 @@ public class JettyStart {
     		XmlLibraryChecker.check();
         }
 	
-	public void  run(String[] args) {
+	public void run(String[] args, Observer observer) {
 		if (args.length == 0) {
 			System.out.println("No configuration file specified!");
 			return;
@@ -71,13 +73,16 @@ public class JettyStart {
 		try {
 			// we register our own shutdown hook
 			BrokerPool.setRegisterShutdownHook(false);
-			
+
 			// configure the database instance
 			SingleInstanceConfiguration config;
             if (args.length == 2)
                 config = new SingleInstanceConfiguration(args[1]);
             else
                 config = new SingleInstanceConfiguration();
+
+            if (observer != null)
+                BrokerPool.registerStatusObserver(observer);
             
             BrokerPool.configure(1, 5, config);
 			
