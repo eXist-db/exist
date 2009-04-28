@@ -573,8 +573,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     doc.setBoost(pending.boost);
                 else if (config.getBoost() > 0)
                     doc.setBoost(config.getBoost());
-                LOG.debug("Boost: " + doc.getBoost());
-                
+
                 // store the node id
                 int nodeIdLen = pending.nodeId.size();
                 byte[] data = new byte[nodeIdLen + 2];
