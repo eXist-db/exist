@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.util;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.dom.NodeSet;
 import org.junit.After;
 import org.junit.Before;
@@ -7,9 +8,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import org.xml.sax.SAXException;
 import java.io.IOException;
 
+import org.apache.xmlrpc.client.XmlRpcClient;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -152,4 +155,31 @@ public class SerializeTest {
         }
 
     }
+    
+    @Test
+    public void testSerializeXincludes() throws XPathException, XpathException {
+                        
+        ResourceSet result = null;
+        String r = "";
+        try {
+                                
+            String query = "let $xml := <test xmlns:xi='http://www.w3.org/2001/XInclude'><xi:include href='/db/system/users.xml'/></test>\n" +
+                    "return\n" +
+                    "util:serialize($xml,'enable-xincludes=yes')";
+
+           result = service.query(query);
+           r = (String) result.getResource(0).getContent();
+           //System.out.println(r);
+           assertXpathEvaluatesTo("1.0","/test/auth/@version",r);
+
+        } catch (IOException ioe) {
+                fail(ioe.getMessage());
+        } catch (SAXException sae) {
+                fail(sae.getMessage());
+        } catch (XMLDBException e) {
+            System.out.println("testSerializeIndent(): " + e);
+            fail(e.getMessage());
+        }
+
+    }    
 }
