@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="xprocxq">
+    
+	<property name="xprocxq.dir" value="xprocxq/main"/>
+
+    <target name="all">
+        <echo message="-------------------------------------"/>
+        <echo message="Building XProcXQ"/>
+        <echo message="-------------------------------------"/>
+        <ant dir="${xprocxq.dir}" antfile="build.xml" target="exist-jar" inheritall="false"/>
+        <delete dir="../../lib/user" includes="xprocxq*.jar"/>
+        <copy todir="../../lib/user">
+            <fileset dir="${xprocxq.dir}/dist">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+    </target>
+    
+    <target name="clean">
+        <ant dir="${xprocxq.dir}" antfile="build.xml" target="clean" inheritall="false"/>
+    </target>
+</project>
