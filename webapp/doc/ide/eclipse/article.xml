@@ -11,9 +11,9 @@
     </info>
     <section>
         <title>Overview</title>
-        <para>This article demonstrates how to set up eclipse for developing eXist.  It shows you
-            how to check out the source from the Subversion repository, how to compile eXist and how
-            to setup the debug configuration.</para>
+        <para>This article demonstrates how to set up eclipse for developing eXist. It shows you how
+            to check out the source from the Subversion repository, how to compile eXist and how to
+            setup the debug configuration.</para>
     </section>
     <section>
         <title>Eclipse Setup</title>
@@ -172,8 +172,44 @@
         <para>Enter jetty in the Program arguments field.</para>
         <para>If you wish to run Jetty on another port other than the default of 8080, then enter
             -Djetty.port={port number} in the VM arguments field.</para>
-        <para>Here is a list program arguments that can be used and their descriptions.</para>
-        <para>Here is a list VM arguments that can be used and their descriptions.</para>
+        <table>
+            <title>Here is a list program arguments that can be used and their descriptions.</title>
+            <tgroup cols="2">
+                <colspec colnum="1" colname="col1" colwidth="2*"/>
+                <colspec colnum="2" colname="col2" colwidth="3.5*"/>
+                <thead>
+                    <row>
+                        <entry>Entry</entry>
+                        <entry>Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>jetty</entry>
+                        <entry>Start eXist running within jetty</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <table>
+            <title>Here is a list VM arguments that can be used and their descriptions.</title>
+            <tgroup cols="2">
+                <colspec colnum="1" colname="col1" colwidth="2*"/>
+                <colspec colnum="2" colname="col2" colwidth="3.5*"/>
+                <thead>
+                    <row>
+                        <entry>Entry</entry>
+                        <entry>Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>-Djetty.port={port number}</entry>
+                        <entry>Start jetty on a port number other than 8080</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
         <screenshot>
             <mediaobject>
                 <imageobject>
