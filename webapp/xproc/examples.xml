@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article>
+    <articleinfo>
+        <graphic fileref="../logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>XProc Examples</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation>
+        </author>
+    </articleinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <section>
+        <title>XProc Examples</title>
+        <para>A few examples using the <ulink url="http://code.google.com/p/xprocxq/"
+                >xprocxq</ulink> pure-Query implementation of the XProc standard, which is closely
+                integrated with eXist.</para>
+        
+        <para>To run any of these examples, some files have to be stored into the database. This
+            can be done through the "Examples Setup" page on the <ulink url="../admin/">admin web 
+                application</ulink>.</para>
+        <table frame="void">
+            <caption>Examples</caption>
+            <tbody>
+                <tr>
+                    <td>
+                        <ulink url="hello.xproc">hello.xproc</ulink>
+                    </td>
+                    <td>"Hello world" in XProc</td>
+                </tr>
+                <tr>
+                    <td>
+                        <ulink url="xslt-identity.xproc">xslt-identity.xproc</ulink>
+                    </td>
+                    <td>Pass an XML fragment through an XSLT identity transformation.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</article>

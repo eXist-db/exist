@@ -57,6 +57,18 @@ declare function setup:importLocal() as element()+
         else
         (
             concat($home, $pathSep, "samples")
+        ),
+    $webapp := if (doc-available(concat("file:///", $home, "/webapp/index.xml"))) then
+        (
+            concat($home, $pathSep, "webapp")
+        )
+        else if(ends-with($home, "WEB-INF")) then
+        (
+            substring-before($home, "WEB-INF")
+        )
+        else
+        (
+            concat($home, $pathSep, "webapp")
         )
     return (
                 setup:create-collection("/db", "shakespeare"),
@@ -81,7 +93,11 @@ declare function setup:importLocal() as element()+
                 setup:store-files("/db", $dir, "*.xml", "text/xml"),
                 setup:create-collection("/db/system/config", "db"),
                 setup:create-collection("/db/system/config/db", "mondial"),
-                setup:store-files("/db/system/config/db/mondial", $dir, "mondial.xconf", "text/xml")
+                setup:store-files("/db/system/config/db/mondial", $dir, "mondial.xconf", "text/xml"),
+                setup:create-collection("/db", "xproc"),
+                setup:store-files("/db/xproc", $webapp, "xproc/*.xml", "text/xml"),
+                setup:store-files("/db/xproc", $webapp, "xproc/*.xproc", "text/xml"),
+                setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery")
     )
 };
 

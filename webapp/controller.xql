@@ -164,7 +164,8 @@ return
 		</dispatch>
 
 	(: the following xml files use different stylesheets :)
-	else if ($name = ('index.xml', 'examples.xml', 'roadmap.xml', 'facts.xml', 'biblio.xml')) then
+	else if ($name = ('index.xml', 'roadmap.xml', 'facts.xml', 'biblio.xml')
+	    or $path = '/examples.xml') then
 		let $stylesheet :=
 			if ($name eq 'roadmap.xml') then
 				"stylesheets/roadmap.xsl"
@@ -201,8 +202,27 @@ return
 							value="stylesheets/db2html.xsl"/>
 					</forward>
 				</view>
-            	<cache-control cache="yes"/>
+            	<cache-control cache="no"/>
 			</dispatch>
+	else if ($path = "/xproc") then
+	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    		<redirect url="xproc/examples.xml"/>
+    	</dispatch>
+	else if (ends-with($uri, '.xproc')) then
+	    let $docName := replace($uri, '^.*/([^/]+)$', '$1')
+	    return
+    	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    			<forward url="/rest/db/xproc/run.xql">
+    				<add-parameter name="xproc" value="/db/xproc/{$docName}"/>
+    			</forward>
+    		</dispatch>
+    else if ($name = ('default-style.css', 'niftycube.js', 'niftyCorners.css', 'sh-min.js')) then
+        let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
+        return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+			<forward url="{$newPath}"/>
+			<cache-control cache="yes"/>
+		</dispatch>
 	else
 		<ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>

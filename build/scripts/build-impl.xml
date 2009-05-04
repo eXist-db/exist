@@ -365,7 +365,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-modules,extension-indexes,extension-versioning,extension-fluent,test-compile"
+        depends="jar,wrapper,extension-modules,extension-indexes,extension-versioning,extension-fluent,extension-xprocxq,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -490,6 +490,7 @@
         <ant antfile="build.xml" dir="extensions/indexes" target="clean"/>
         <ant antfile="build.xml" dir="extensions/fluent" target="clean"/>
 		<ant antfile="build.xml" dir="extensions/versioning" target="clean"/>
+        <ant antfile="build.xml" dir="extensions/xprocxq" target="clean"/>
         <antcall target="extensions-xslt"/>
     </target>
 
@@ -541,6 +542,10 @@
     
     <target name="extension-fluent" depends="jar">
         <ant antfile="build.xml" dir="extensions/fluent" inheritall="false"/>
+    </target>
+    
+    <target name="extension-xprocxq" depends="jar">
+        <ant antfile="build.xml" dir="extensions/xprocxq" inheritall="false"/>
     </target>
     
     <target name="samples" depends="jar" description="Build samples">
