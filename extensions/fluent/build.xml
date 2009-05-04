@@ -7,6 +7,7 @@
     <property name="javadoc" value="./javadoc"/>
     <property name="top.dir" value="../.."/>
     <property file="${top.dir}/build.properties" />
+    <property file="../build.properties" />
     <property name="junit.index.reports" value="${top.dir}/test/junit/data"/>
 
     <property name="fluent.jar" value="${top.dir}/exist-fluent.jar"/>
@@ -15,6 +16,10 @@
 
     <condition property="java14-only">
         <equals arg1="${ant.java.version}" arg2="1.4"/>
+    </condition>
+
+    <condition property="include.feature.fluent.config">
+        <istrue value="${include.feature.fluent}"/>
     </condition>
 
     <path id="classpath.core">
@@ -44,14 +49,14 @@
     </path>
 
 
-    <target name="all" depends="jar"/> 
+    <target name="all" depends="jar" if="include.feature.fluent.config"/>
 
-    <target name="prepare">
+    <target name="prepare" if="include.feature.fluent.config">
         <mkdir dir="${classes}"/>
         <mkdir dir="${test}/classes"/>
     </target>
 
-    <target name="compile" depends="prepare" unless="java14-only">
+    <target name="compile" depends="prepare" unless="java14-only" if="include.feature.fluent.config">
         <echo message="---------------------------"/>
         <echo message="Compiling fluent extension"/>
         <echo message="---------------------------"/>
@@ -79,7 +84,7 @@
         </javac>
     </target>
 
-    <target name="jar" depends="compile">
+    <target name="jar" depends="compile" if="include.feature.fluent.config">
         <echo message="Creating exist-fluent.jar ..."/>
         <jar basedir="${classes}" compress="true" jarfile="${top.dir}/exist-fluent.jar" update="true">
             <exclude name="org/exist/fluent/*$*Test*"/>
@@ -92,7 +97,7 @@
         </jar>
     </target>
 
-    <target name="javadoc" unless="java14-only">
+    <target name="javadoc" unless="java14-only" if="include.feature.fluent.config">
         <mkdir dir="${javadoc}"/>
         <javadoc bottom="Copyright (C)  All rights reserved."
                  destdir="${javadoc}" doctitle="eXist Fluent Javadocs"
@@ -111,7 +116,7 @@
 
     </target>
 
-    <target name="test" depends="compile">
+    <target name="test" depends="compile" if="include.feature.fluent.config">
         <echo message="Running fluent extension tests"/>
 
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
