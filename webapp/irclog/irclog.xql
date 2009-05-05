@@ -30,7 +30,7 @@ declare function irc:display-page($channel as xs:string) as element() {
             </div>
             
             <div id="content">
-                <div id="start-chat">Chat in this channel: <a href="irc://irc.freenode.net/existdb">IRC</a> , <a href="index.html">HTML</a>
+                <div id="start-chat">Chat in this channel: <a href="irc://irc.freenode.net/existdb">IRC</a> , <a href="http://widget.mibbit.com/?settings=9188fc6af271f2053efc3ef097e14ac4&amp;server=irc.freenode.net&amp;channel=%23existdb&amp;noServerNotices=true&amp;noServerMotd=true&amp;autoConnect=true">HTML</a>
                 </div>
                 <div id="query-panel">
                     <input type="text" id="query"/>
