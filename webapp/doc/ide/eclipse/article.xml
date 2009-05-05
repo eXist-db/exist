@@ -6,7 +6,12 @@
         <title>Eclipse setup</title>
         <author>
             <personname>Loren Cahlander</personname>
-            <email>loren@syntactica.com</email>
+            <email>loren.cahlander@gmail.com</email>
+            <affiliation>
+                <orgname>
+                    <link xlink:href="http://syntactica.com">Syntactica</link>
+                </orgname>
+            </affiliation>
         </author>
     </info>
     <section>

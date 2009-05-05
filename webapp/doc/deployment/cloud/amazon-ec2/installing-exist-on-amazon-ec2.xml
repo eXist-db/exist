@@ -37,115 +37,66 @@
         <para>Note that you should be aware that by default, eXist allows search engine robots
             access the eXist instance. You will be charged each time a robots file access the files
             unless you change the robots file access.</para>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-start.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-launch-instance.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-launch-instance-2.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-launch-instance-3.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-launch-instance-4.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-view-instance.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-connect.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-elastic-ip-1.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-elastic-ip-2.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-elastic-ip-3.png"/></imageobject></mediaobject></screenshot>
-        <screenshot><mediaobject><imageobject><imagedata fileref="images/amazon-aws-security-group.png"/></imageobject></mediaobject></screenshot>
-        <procedure>
-            <step>
-                <para>Download the Java jvm</para>
-            </step>
-            <step>
-                <para>Download Tomcat Web Server</para>
-            </step>
-            <step>
-                <para>Start Tomcat</para>
-            </step>
-            <step>
-                <para>Download eXist binary</para>
-            </step>
-        </procedure>
-        <programlisting>
-<inlinemediaobject><imageobject><imagedata fileref="images/amazon-aws-start.png"/></imageobject></inlinemediaobject>
-<inlinemediaobject><imageobject><imagedata fileref="images/amazon-aws-view-instance.png"/></imageobject></inlinemediaobject>
-$<emphasis role="bold"> ssh -i Downloads/existdemo.pem root@<emphasis role="italic">hostname</emphasis>.compute-1.amazonaws.com
-</emphasis>
-The authenticity of host '<emphasis role="italic">hostname</emphasis>.amazonaws.com (67.202.8.233)' can't be established.
-RSA key fingerprint is <emphasis role="italic"><emphasis role="italic">finterprint</emphasis></emphasis>
-Are you sure you want to continue connecting (yes/no)? <emphasis role="bold">yes</emphasis>
-Warning: Permanently added '<emphasis role="italic">hostname</emphasis>.amazonaws.com,67.202.8.233' (RSA) to the list of known hosts.
-Last login: Mon Feb  9 19:08:12 2009 from <emphasis role="italic">XX.XX.XX.XX</emphasis>
-        </programlisting>
-        <para> We first will use the UNIX <emphasis role="bold">yum</emphasis> shell command to get
-            all the most recient changes to the yum database. We will use the yum "list" option and
-            see all the libraries in the update libary that have the string "java" in them by piping
-            the output through the grep command.</para>
-        <programlisting>        
--bash-3.2#<emphasis role="bold"> yum update</emphasis>
--bash-3.2#<emphasis role="bold"> yum list | grep java</emphasis>
-java-1.6.0-openjdk.x86_64  1:1.6.0.0-0.30.b09.el5      updates  
-java-1.6.0-openjdk-demo.x86_64 1:1.6.0.0-0.30.b09.el5      updates  
-java-1.6.0-openjdk-devel.x86_641:1.6.0.0-0.30.b09.el5      updates  
-java-1.6.0-openjdk-javadoc.x86_64          1:1.6.0.0-0.30.b09.el5      updates  
-java-1.6.0-openjdk-src.x86_64  1:1.6.0.0-0.30.b09.el5      updates  
-</programlisting>
-        <para> We first will use the yum command to get a list of the Java updates. </para>
-        <programlisting>    
--bash-3.2#<emphasis role="bold"> yum install java-1.6.0-openjdk.x86_64</emphasis>
-
-</programlisting>
-        <para> We can use the UNIX "web get" or <emphasis role="bold">wget</emphasis> command to get
-            the appropriate rpm file from the Centos web site and place it into the /tmp directory.
-            We found the correct file to use from doing a search on the Centos web site.</para>
-        <programlisting>
--bash-3.2#<emphasis role="bold"> cd /tmp</emphasis>    
--bash-3.2#<emphasis role="bold"> wget http://dev.centos.org/centos/5/testing/i386/RPMS/jpackage-utils-1.7.5-1jpp.1.el5.centos.noarch.rpm</emphasis>
---17:42:35--  http://dev.centos.org/centos/5/testing/i386/RPMS/jpackage-utils-1.7.5-1jpp.1.el5.centos.noarch.rpm
-</programlisting>
-        <para> We can use the UNIX <emphasis role="bold">rpm</emphasis> command to unpackage this
-            file. </para>
-        <programlisting>
-
--bash-3.2#<emphasis role="bold"> rpm -Uvh jpackage-utils-1.7.5-1jpp.1.el5.centos.noarch.rpm</emphasis>
- 
-        </programlisting>
-        <para> Next we will need to add the Java runtime library libgcj. The libgcj package includes
-            the Java runtime library, which is needed to run Java programs compiled using the gcc
-            Java compiler (gcj). </para>
-        <programlisting>
-            
--bash-3.2#<emphasis role="bold"> yum list | grep libgcj</emphasis>
-libgcj.i3864.1.2-44.el5base     
-libgcj.x86_64  4.1.2-44.el5base     
-libgcj-devel.i386          4.1.2-44.el5base     
-libgcj-devel.x86_64        4.1.2-44.el5base     
-libgcj-src.x86_64          4.1.2-44.el5base     
--bash-3.2#<emphasis role="bold"> yum install libgcj.x86_64</emphasis>
--bash-3.2#<emphasis role="bold"> yum install rpm-build gcc-java jpackage-utils libXp</emphasis>
-</programlisting>
-        <para> Our next step is install Apache Tomcat on CentOS. A useful link that describes these
-            setps is here: http://lejnieks.com/2008/11/installing-tomcat-on-centos. To see what
-            Tomcat files are installed we can run yum through a grep command to filter out only the
-            lines that have the word topcat in them. </para>
-        <programlisting> 
--bash-3.2#<emphasis role="bold"> yum list | grep tomcat</emphasis>
-tomcat5.x86_64 5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-admin-webapps.x86_64   5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-common-lib.x86_64  5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-jasper.x86_64      5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-jasper-javadoc.x86_64  5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-jsp-2.0-api.x86_64 5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-jsp-2.0-api-javadoc.x86_64         5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-server-lib.x86_64  5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-servlet-2.4-api.x86_64 5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-servlet-2.4-api-javadoc.x86_64     5.5.23-0jpp.7.el5_2.1       base     
-tomcat5-webapps.x86_64     5.5.23-0jpp.7.el5_2.1       base     
--bash-3.2#<emphasis role="bold"> yum install tomcat5.x86_64 tomcat5-webapps.x86_64 tomcat5-admin-webapps.x86_64</emphasis>
-</programlisting>
-        <para>We are now ready to use the "service" UNIX command to restart the Tomcat web
-            server.</para>
-        <programlisting>        
--bash-3.2#<emphasis role="bold"> service tomcat5 restart</emphasis>
--bash-3.2#<emphasis role="bold"> chkconfig tomcat5 on</emphasis>
-
-        </programlisting>
-        <para>Text</para>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-start.png"/></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-launch-instance.png"
+                    /></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-launch-instance-2.png"
+                    /></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-launch-instance-3.png"
+                    /></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-launch-instance-4.png"
+                    /></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-view-instance.png"
+                    /></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-connect.png"/></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-elastic-ip-1.png"/></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-elastic-ip-2.png"/></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-elastic-ip-3.png"/></imageobject>
+            </mediaobject>
+        </screenshot>
+        <screenshot>
+            <mediaobject>
+                <imageobject><imagedata fileref="images/amazon-aws-security-group.png"
+                    /></imageobject>
+            </mediaobject>
+        </screenshot>
     </sect1>
 </article>
