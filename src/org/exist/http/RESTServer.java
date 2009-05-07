@@ -1199,12 +1199,17 @@ public class RESTServer {
 		if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary resource
 
-			if (asMimeType != null) { // was a mime-type specified?
-
-				response.setContentType(asMimeType);
-			} else {
-				response.setContentType(resource.getMetadata().getMimeType());
+			if (asMimeType == null) { // wasn't a mime-type specified?
+				asMimeType = resource.getMetadata().getMimeType();
 			}
+			
+			if (asMimeType.startsWith("text/")){
+				response.setContentType(asMimeType + "; charset="
+						+ encoding);
+			} else {
+				response.setContentType(asMimeType);
+			}
+
 			OutputStream os = response.getOutputStream();
 			broker.readBinaryResource((BinaryDocument) resource, os);
 			os.flush();
@@ -1255,7 +1260,8 @@ public class RESTServer {
 				}
 				if (asMimeType.equals(MimeType.HTML_TYPE.getName())) {
 					outputProperties.setProperty("method", "xhtml");
-					outputProperties.setProperty("media-type", "text/html");
+					outputProperties.setProperty("media-type", "text/html; charset="
+									+ encoding);
 					outputProperties.setProperty("ident", "yes");
 					outputProperties.setProperty("omit-xml-declaration", "no");
 				}
