@@ -2,14 +2,15 @@
 <project basedir="." default="all" name="xprocxq">
     
 	<property name="xprocxq.dir" value="xprocxq/main"/>
+	<property environment="env"/>
 
     <target name="all">
         <echo message="-------------------------------------"/>
         <echo message="Building XProcXQ"/>
         <echo message="-------------------------------------"/>
         <ant dir="${xprocxq.dir}" antfile="build.xml" target="exist-jar" inheritall="false"/>
-        <delete dir="../../lib/user" includes="xprocxq*.jar"/>
-        <copy todir="../../lib/user">
+        <delete dir="${env.EXIST_HOME}/lib/user" includes="xprocxq*.jar"/>
+        <copy todir="${env.EXIST_HOME}/lib/user">
             <fileset dir="${xprocxq.dir}/dist">
                 <include name="*.jar"/>
             </fileset>
