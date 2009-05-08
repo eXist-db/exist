@@ -179,11 +179,12 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
     abstract protected Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence) throws XPathException;
     
     protected final Collection createCollection(Collection parentColl, String name) throws XMLDBException, XPathException {
-        if (parentColl.getChildCollection(name) == null) {
+        Collection child = parentColl.getChildCollection(name);
+        if (child == null) {
         	CollectionManagementService mgtService = (CollectionManagementService) parentColl.getService("CollectionManagementService", "1.0");
             return mgtService.createCollection(name);
         }
-        return parentColl;
+        return child;
     }
     protected final Collection createCollectionPath(Collection parentColl, String relPath) throws XMLDBException, XPathException {
         Collection current = parentColl;
