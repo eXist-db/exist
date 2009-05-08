@@ -21,7 +21,7 @@
                 </orgname>
             </affiliation></author>
     </info>
-    <sect1>
+    <section>
         <title>How to install eXist on the Amazon Elastic Cloud Server</title>
         <subtitle>Overview of steps</subtitle>
         <para>This document describes the steps to get eXist running ont he Amazon Elastic Cloud
@@ -98,5 +98,7 @@
                     /></imageobject>
             </mediaobject>
         </screenshot>
-    </sect1>
+        <para>See <link xlink:href="../../centos/readying-centos-for-exist.xml">Readying CentOS for
+                eXist Development/Deployment</link>.</para>
+    </section>
 </article>
