@@ -14,6 +14,7 @@
             </affiliation>
         </author>
     </info>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../../sidebar.xml"/>
     <section>
         <title>Overview</title>
         <para>This article demonstrates how to set up eclipse for developing eXist. It shows you how
