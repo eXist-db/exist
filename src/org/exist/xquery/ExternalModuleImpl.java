@@ -155,12 +155,22 @@ public class ExternalModuleImpl implements ExternalModule {
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
 		VariableDeclaration decl = (VariableDeclaration)mGlobalVariables.get(qname);
-		if(decl != null && !mStaticVariables.containsKey(qname)) {
+        Variable var = (Variable) mStaticVariables.get(qname);
+		if(decl != null && (var == null || var.getValue() == null)) {
             decl.eval(null);
+            var = (Variable) mStaticVariables.get(qname);
 		}
-		return (Variable) mStaticVariables.get(qname);
+		return var;
 	}
-	
+
+    public void analyzeGlobalVars() throws XPathException {
+        for (Iterator it = mGlobalVariables.values().iterator(); it.hasNext();) {
+            VariableDeclaration decl = (VariableDeclaration) it.next();
+            decl.resetState(false);
+            decl.analyze(new AnalyzeContextInfo());
+        }
+    }
+
 	public Source getSource() {
 		return mSource;
 	}
@@ -184,8 +194,8 @@ public class ExternalModuleImpl implements ExternalModule {
 		return mSource.isValid(mContext.getBroker()) == Source.VALID;
 	}
 	
-	public void reset(XQueryContext xqueryContext) {
-        mContext.reset();
+	public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
+        mContext.reset(keepGlobals);
         mStaticVariables.clear();
     }
 }

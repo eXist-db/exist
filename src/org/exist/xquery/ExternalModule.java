@@ -50,7 +50,9 @@ public interface ExternalModule extends Module {
 	public UserDefinedFunction getFunction(QName qname, int arity);
 	
 	public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
-	
+
+    public void analyzeGlobalVars() throws XPathException;
+    
 	/**
 	 * Get the source object this module has been read from.
 	 *
