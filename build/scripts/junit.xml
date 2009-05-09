@@ -127,6 +127,7 @@
                     <exclude name="**/security/*.java"/>
                     <exclude name="org/exist/*.java"/>
                     <exclude name="**/fulltext/**/*.java"/>
+					<exclude name="org/exist/http/underheavyload/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
