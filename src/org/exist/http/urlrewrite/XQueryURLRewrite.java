@@ -187,7 +187,6 @@ public class XQueryURLRewrite implements Filter {
 
     private User user;
     private BrokerPool pool;
-    private XQueryContext queryContext;
 
     // path to the query
     private String query = null;
@@ -323,7 +322,7 @@ public class XQueryURLRewrite implements Filter {
                 if (modelView.useCache()) {
                     urlCache.put(request.getRequestURI(), modelView);
                 }
-            } 
+            }
             if (LOG.isTraceEnabled())
                 LOG.trace("URLRewrite took " + (System.currentTimeMillis() - start) + "ms.");
 
@@ -358,6 +357,7 @@ public class XQueryURLRewrite implements Filter {
                         wrappedResponse.flushBuffer();
                     }
                 } else {
+                    // HTTP response code indicates an error
                     byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
                     if (data != null) {
                         response.setContentType(wrappedResponse.getContentType());
@@ -449,7 +449,6 @@ public class XQueryURLRewrite implements Filter {
 
     public void destroy() {
         config = null;
-        queryContext = null;
     }
 
     private Sequence runQuery(DBBroker broker, HttpServletRequest request, HttpServletResponse response) throws ServletException, XPathException {
@@ -490,6 +489,7 @@ public class XQueryURLRewrite implements Filter {
         XQuery xquery = broker.getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
+        XQueryContext queryContext;
         if (compiled == null) {
 			queryContext = xquery.newContext(AccessContext.REST);
 		} else {
