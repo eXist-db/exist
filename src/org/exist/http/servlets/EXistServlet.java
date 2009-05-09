@@ -226,6 +226,8 @@ public class EXistServlet extends HttpServlet {
            srvREST.doPut(broker, tempFile, dbpath, request, response);
 
 		} catch (BadRequestException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
 		} catch (PermissionDeniedException e) {
@@ -239,6 +241,8 @@ public class EXistServlet extends HttpServlet {
 			}
             
 		} catch (EXistException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 
         } catch (Throwable e){
@@ -319,6 +323,8 @@ public class EXistServlet extends HttpServlet {
 				srvREST.doGet(broker, request, response, path);
 			}
 		} catch (BadRequestException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
 		} catch (PermissionDeniedException e) {
@@ -332,9 +338,13 @@ public class EXistServlet extends HttpServlet {
 			}
 
 		} catch (NotFoundException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 
 		} catch (EXistException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     e.getMessage());
 
@@ -379,6 +389,8 @@ public class EXistServlet extends HttpServlet {
 			srvREST.doHead(broker, request, response, path);
 
 		} catch (BadRequestException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
 		} catch (PermissionDeniedException e) {
@@ -393,9 +405,13 @@ public class EXistServlet extends HttpServlet {
 			}
 
 		} catch (NotFoundException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 
 		} catch (EXistException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     e.getMessage());
             
@@ -454,6 +470,8 @@ public class EXistServlet extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 
 		} catch (EXistException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
             
         } catch (Throwable e){
@@ -550,13 +568,19 @@ public class EXistServlet extends HttpServlet {
 			}
 
 		} catch (EXistException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e
 					.getMessage());
 
 		} catch (BadRequestException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
 		} catch (NotFoundException e) {
+            if (response.isCommitted())
+                throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 
         } catch (Throwable e){
