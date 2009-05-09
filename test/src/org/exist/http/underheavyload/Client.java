@@ -19,14 +19,17 @@ public class Client implements Runnable {
 
 	private static final Logger LOG = Logger.getLogger(Client.class);
 
-	private ClientsManager clients;
+    private boolean running;
+
+    private ClientsManager manager;
 
 	public Client() {
-		
+		running = true; 
 	}
 
 	public Client(ClientsManager clients) {
-		this.clients = clients;
+		this.manager = clients;
+		running = true; 
 	}
 	
 //	@Override
@@ -50,7 +53,7 @@ public class Client implements Runnable {
                 // The response is invalid and did not provide the new location for
                 // the resource. Report an error or possibly handle the response
                 // like a 404 Not Found error.
-                LOG.info(method.getResponseBodyAsString());
+                //LOG.debug(method.getResponseBodyAsString());
             }
             method.setURI(new URI(redirectLocation, true));
             client.executeMethod(method);
@@ -58,29 +61,37 @@ public class Client implements Runnable {
             // store the session info for the next call
             Header[] headers = method.getResponseHeaders();
             
-            Thread.sleep(1000);
+            //TODO: fetch links
+            
+			while (running) {
+            	Thread.sleep(1000);
 
-            // connect to a page you're interested...
-            PostMethod getMethod = new PostMethod("http://localhost:8080/exist/admin/admin.xql?panel=xqueries");
+            	// connect to a page you're interested...
+            	PostMethod getMethod = new PostMethod("http://localhost:8080/exist/admin/admin.xql?panel=xqueries");
 
-            // ...using the session ID retrieved before
-            for (Header header : headers) {
-                getMethod.setRequestHeader(header);
+            	// ...using the session ID retrieved before
+            	for (Header header : headers) {
+            		getMethod.setRequestHeader(header);
+            	}
+            	client.executeMethod(method);
+
+            	// log the page source
+            	//LOG.info(method.getResponseBodyAsString());
             }
-            client.executeMethod(method);
-
-            // log the page source
-            LOG.info(method.getResponseBodyAsString());
 		} catch (Exception e) {
 			LOG.error(e);
 		}
 	}
+	
+	protected void shutdown() {
+		running = false; 
+	}
 
 	private String getURL() {
-		if (clients == null)
+		if (manager == null)
 			return "http://localhost:8080/exist/admin";
 		else 
-			return clients.getURL();
+			return manager.getURL();
 	}
 
 	public static void main(String[] args) {

@@ -49,6 +49,10 @@ public class ClientsManager implements Runnable {
 
 	public void shutdown() {
 		running = false;
+		
+		for (Client client : list) {
+			client.shutdown();
+		}
 	}
 
 //	@Override
@@ -56,11 +60,7 @@ public class ClientsManager implements Runnable {
 		Client client = null;
 		while (running) {
 			if (list.size() >= number) {
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					running = false;
-				}
+				running = false;
 			} else {
 				client = new Client(this);
 				Thread thread = new Thread(client);
@@ -69,7 +69,7 @@ public class ClientsManager implements Runnable {
 			}
 		}
 	}
-
+	
 	public String getURL() {
 		return url;		
 	}

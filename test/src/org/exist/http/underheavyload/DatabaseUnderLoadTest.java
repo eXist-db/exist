@@ -39,10 +39,10 @@ public class DatabaseUnderLoadTest {
 		database = new org.exist.start.Main("jetty");
 		database.run(new String[]{"jetty"});
 		
-		manager = new ClientsManager(20, "http://localhost:8080/exist/admin");
+		manager = new ClientsManager(5, "http://localhost:8080/exist/admin");
 		
 		try {
-			Thread.sleep(60*1000);
+			Thread.sleep(60*60*1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
