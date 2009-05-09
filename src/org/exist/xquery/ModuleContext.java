@@ -64,19 +64,37 @@ public class ModuleContext extends XQueryContext {
 		parentContext.setModulesChanged();
 	}
 	
-	void setParentContext(XQueryContext parentContext) {
-      this.parentContext = parentContext;
-		this.broker = parentContext.broker;
-		baseURI = parentContext.baseURI;
-		moduleLoadPath = parentContext.moduleLoadPath;
+	public void setParentContext(XQueryContext parentContext) {
+        this.parentContext = parentContext;
+        if (parentContext != null) {
+		    this.broker = parentContext.broker;
+		    baseURI = parentContext.baseURI;
+		    moduleLoadPath = parentContext.moduleLoadPath;
+        }
 	}
-	
-	XQueryContext getParentContext() {
+
+    public void setModule(String namespaceURI, Module module) {
+        if (module == null) {
+            modules.remove(namespaceURI);   // unbind the module
+        } else {
+            modules.put(namespaceURI, module);
+            if (!module.isInternalModule()) {
+                ((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(parentContext);
+            }
+        }
+        setRootModule(namespaceURI, module);
+    }
+
+    XQueryContext getParentContext() {
 		return parentContext;
 	}
 
     public boolean hasParent() {
         return true;
+    }
+
+    public XQueryContext getRootContext() {
+        return parentContext;
     }
 
     public void updateContext(XQueryContext from) {
@@ -94,7 +112,7 @@ public class ModuleContext extends XQueryContext {
         }
         return ctx;
     }
-    
+
 	public void addDynamicOption(String qnameString, String contents) throws XPathException
 	{
 		parentContext.addDynamicOption(qnameString, contents);
@@ -258,6 +276,40 @@ public class ModuleContext extends XQueryContext {
 
     protected Variable resolveLocalVariable(QName qname) throws XPathException {
         return parentContext.resolveLocalVariable(qname);
+    }
+
+    /**
+     * Try to resolve a variable.
+     *
+     * @param qname the qualified name of the variable
+     * @return the declared Variable object
+     * @throws XPathException if the variable is unknown
+     */
+    public Variable resolveVariable(QName qname) throws XPathException {
+        Variable var;
+
+        // check if the variable is declared local
+        var = resolveLocalVariable(qname);
+
+        // check if the variable is declared in a module
+        if (var == null) {
+            Module module;
+            if (moduleNamespace.equals(qname.getNamespaceURI())) {
+                module = getRootModule(moduleNamespace);
+            } else {
+                module = getModule(qname.getNamespaceURI());
+            }
+            if(module != null) {
+                var = module.resolveVariable(qname);
+            }
+        }
+
+        // check if the variable is declared global
+        if (var == null)
+            var = (Variable) globalVariables.get(qname);
+        //if (var == null)
+        //	throw new XPathException("variable $" + qname + " is not bound");
+        return var;
     }
 
     public int getCurrentStackSize() {

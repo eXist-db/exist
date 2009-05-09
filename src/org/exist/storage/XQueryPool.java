@@ -125,6 +125,7 @@ public class XQueryPool extends Object2ObjectHashMap {
    		 Module module = (Module) it.next();
    		 if (module != self && !module.isInternalModule()) {
    			 ExternalModule extModule = (ExternalModule) module;
+//             ((ModuleContext)extModule.getContext()).setParentContext(null);
    			 // Don't return recursively, since all modules are listed in the top-level context
    			 returnObject(extModule.getSource(), extModule);
    		 }
@@ -257,6 +258,11 @@ public class XQueryPool extends Object2ObjectHashMap {
                 return null;
             }
             ((ModuleContext) module.getContext()).updateModuleRefs(rootContext);
+            try {
+                module.analyzeGlobalVars();
+            } catch (XPathException e) {
+                LOG.warn(e.getMessage(), e);
+            }
             return module;
         }
     }

@@ -112,7 +112,7 @@ import java.util.TreeMap;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class XQueryContext {
-	
+
 	public static final String CONFIGURATION_ELEMENT_NAME = "xquery";
 	public static final String CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
 	public static final String ENABLE_QUERY_REWRITING_ATTRIBUTE = "enable-query-rewriting";
@@ -166,12 +166,12 @@ public class XQueryContext {
     private boolean inheritNamespaces = true;	
 
 	// Local namespace stack
-	protected final Stack namespaceStack = new Stack();
+	protected Stack namespaceStack = new Stack();
 
 	// Known user defined functions in the local module
 	protected TreeMap declaredFunctions = new TreeMap();
 
-	// Globally declared variables
+    // Globally declared variables
 	protected TreeMap globalVariables = new TreeMap();
 
 	// The last element in the linked list of local in-scope variables
@@ -179,13 +179,13 @@ public class XQueryContext {
 	
     protected Stack contextStack = new Stack();
     
-    protected final Stack callStack = new Stack();
+    protected Stack callStack = new Stack();
     
 	// The current size of the variable stack
 	protected int variableStackSize = 0;
 	
 	// Unresolved references to user defined functions
-	protected final Stack forwardReferences = new Stack();
+	protected Stack forwardReferences = new Stack();
 	
 	// List of options declared for this query at compile time - i.e. declare option 
 	protected List staticOptions = null;
@@ -413,6 +413,10 @@ public class XQueryContext {
     public boolean hasParent() {
         return false;
     }
+
+    public XQueryContext getRootContext() {
+        return this;
+    }
     
     public XQueryContext copyContext() {
         XQueryContext ctx = new XQueryContext(this);
@@ -514,7 +518,7 @@ public class XQueryContext {
 		return accessCtx;
 	}
 	
-	
+
     /**
      * @return true if profiling is enabled for this context.
      */
@@ -1207,7 +1211,7 @@ public class XQueryContext {
         profiler.reset();
         for (Iterator i = modules.values().iterator(); i.hasNext();) {
             Module module = (Module) i.next();
-            module.reset(this);
+            module.reset(this, keepGlobals);
         }
         if (!keepGlobals)
             mappedModules.clear();
@@ -1337,19 +1341,17 @@ public class XQueryContext {
 	}
 	
 	public void analyzeAndOptimizeIfModulesChanged(PathExpr expr) throws XPathException {
-		if (modulesChanged) {
-         expr.analyze(new AnalyzeContextInfo());
-         if (optimizationsEnabled()) {
-             Optimizer optimizer = new Optimizer(this);
-             expr.accept(optimizer);
-             if (optimizer.hasOptimized()) {
-                 reset(true);
-                 expr.resetState(true);
-                 expr.analyze(new AnalyzeContextInfo());
-             }
-         }
-			modulesChanged = false;
-		}
+        expr.analyze(new AnalyzeContextInfo());
+        if (optimizationsEnabled()) {
+            Optimizer optimizer = new Optimizer(this);
+            expr.accept(optimizer);
+            if (optimizer.hasOptimized()) {
+                reset(true);
+                expr.resetState(true);
+                expr.analyze(new AnalyzeContextInfo());
+            }
+        }
+        modulesChanged = false;
 	}
 	
 	/**
@@ -1968,7 +1970,7 @@ public class XQueryContext {
 		inheritedInScopeNamespaces = (HashMap) namespaceStack.pop();
 	}
 
-	public void pushNamespaceContext() {		
+	public void pushNamespaceContext() {
 		HashMap m = (HashMap) staticNamespaces.clone();
 		HashMap p = (HashMap) staticPrefixes.clone();		
 		namespaceStack.push(staticNamespaces);
@@ -2173,7 +2175,7 @@ public class XQueryContext {
             }
         }
      	setModule(module.getNamespaceURI(), module);
-      declareModuleVars(module);
+        declareModuleVars(module);
       return module;
 	}
 
