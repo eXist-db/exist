@@ -55,8 +55,10 @@ import org.exist.util.Occurrences;
 import org.exist.util.XMLString;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Element;
 
 public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
@@ -67,6 +69,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private IndexController controller;
 
     private LuceneMatchListener matchListener = null;
+
+    private XMLToQuery queryTranslator;
 
     private DBBroker broker;
 
@@ -80,10 +84,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private int cachedNodesSize = 0;
 
     private int maxCachedNodesSize = 4096 * 1024;
+    private Analyzer analyzer;
 
     public LuceneIndexWorker(LuceneIndex parent, DBBroker broker) {
         this.index = parent;
         this.broker = broker;
+        this.queryTranslator = new XMLToQuery(index);
     }
 
     public String getIndexId() {
@@ -313,6 +319,47 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Analyzer analyzer = getAnalyzer(qname, context.getBroker(), docs);
                 QueryParser parser = new QueryParser(field, analyzer);
                 Query query = parser.parse(queryStr);
+                searcher.search(query, new LuceneHitCollector(searcher, contextId, docs, contextSet, resultSet, returnAncestor, query));
+            }
+        } finally {
+            index.releaseSearcher(searcher);
+        }
+        return resultSet;
+    }
+
+    /**
+     * Query the index. Returns a node set containing all matching nodes. Each node
+     * in the node set has a {@link org.exist.indexing.lucene.LuceneIndexWorker.LuceneMatch}
+     * element attached, which stores the score and a link to the query which generated it.
+     *
+     * @param context current XQuery context
+     * @param contextId current context id, identify to track the position inside nested XPath predicates
+     * @param docs query will be restricted to documents in this set
+     * @param contextSet if specified, returned nodes will be descendants of the nodes in this set
+     * @param qnames query will be restricted to nodes with the qualified names given here
+     * @param queryRoot an XML representation of the query, see {@link XMLToQuery}.
+     * @param axis which node is returned: the node in which a match was found or the corresponding ancestor
+     *  from the contextSet
+     * @return node set containing all matching nodes
+     *
+     * @throws IOException
+     * @throws ParseException
+     */
+    public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
+                         List qnames, Element queryRoot, int axis)
+            throws IOException, ParseException, XPathException {
+        if (qnames == null || qnames.isEmpty())
+            qnames = getDefinedIndexes();
+        NodeSet resultSet = new NewArrayNodeSet();
+        boolean returnAncestor = axis == NodeSet.ANCESTOR;
+        IndexSearcher searcher = null;
+        try {
+            searcher = index.getSearcher();
+            for (int i = 0; i < qnames.size(); i++) {
+                QName qname = (QName) qnames.get(i);
+                String field = encodeQName(qname);
+                analyzer = getAnalyzer(qname, context.getBroker(), docs);
+                Query query = queryTranslator.parse(field, queryRoot, analyzer);
                 searcher.search(query, new LuceneHitCollector(searcher, contextId, docs, contextSet, resultSet, returnAncestor, query));
             }
         } finally {

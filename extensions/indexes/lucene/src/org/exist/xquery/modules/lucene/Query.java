@@ -27,10 +27,8 @@ import org.exist.xquery.Optimizable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.lucene.LuceneModule;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Element;
 
 public class Query extends Function implements Optimizable {
 
@@ -40,7 +38,7 @@ public class Query extends Function implements Optimizable {
             "",
             new SequenceType[] {
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
         );
@@ -60,10 +58,8 @@ public class Query extends Function implements Optimizable {
         steps.add(path);
 
         Expression arg = (Expression) arguments.get(1);
-        arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
+        arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
-        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-            arg = new Atomize(context, arg);
         steps.add(arg);
     }
 
@@ -122,12 +118,16 @@ public class Query extends Function implements Optimizable {
         LuceneIndexWorker index = (LuceneIndexWorker)
                 context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         DocumentSet docs = contextSequence.getDocumentSet();
-        String key = getArgument(1).eval(contextSequence).getStringValue();
+        Item key = getKey(contextSequence, null);
         List qnames = new ArrayList(1);
         qnames.add(contextQName);
         try {
-            preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
-                    qnames, key, NodeSet.DESCENDANT);
+            if (Type.subTypeOf(key.getType(), Type.ELEMENT))
+                preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
+                    qnames, (Element) ((NodeValue)key).getNode(), NodeSet.DESCENDANT);
+            else
+                preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
+                    qnames, key.getStringValue(), NodeSet.DESCENDANT);
         } catch (IOException e) {
             throw new XPathException(getASTNode(), "Error while querying full text index: " + e.getMessage(), e);
         } catch (ParseException e) {
@@ -150,14 +150,19 @@ public class Query extends Function implements Optimizable {
                 DocumentSet docs = inNodes.getDocumentSet();
                 LuceneIndexWorker index = (LuceneIndexWorker)
                         context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-                String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+                Item key = getKey(contextSequence, contextItem);
                 List qnames = null;
                 if (contextQName != null) {
                     qnames = new ArrayList(1);
                     qnames.add(contextQName);
                 }
                 try {
-                    result = index.query(context, getExpressionId(), docs, inNodes, qnames, key, NodeSet.ANCESTOR);
+                    if (Type.subTypeOf(key.getType(), Type.ELEMENT))
+                        result = index.query(context, getExpressionId(), docs, inNodes, qnames,
+                                (Element)((NodeValue)key).getNode(), NodeSet.ANCESTOR);
+                    else
+                        result = index.query(context, getExpressionId(), docs, inNodes, qnames,
+                                key.getStringValue(), NodeSet.ANCESTOR);
                 } catch (IOException e) {
                     throw new XPathException(getASTNode(), e.getMessage());
                 } catch (ParseException e) {
@@ -169,6 +174,15 @@ public class Query extends Function implements Optimizable {
             result = getArgument(0).eval(contextSequence).toNodeSet();
         }
         return result;
+    }
+
+    private Item getKey(Sequence contextSequence, Item contextItem) throws XPathException {
+        Sequence keySeq = getArgument(1).eval(contextSequence, contextItem);
+        Item key = keySeq.itemAt(0);
+        if (!(Type.subTypeOf(key.getType(), Type.STRING) || Type.subTypeOf(key.getType(), Type.NODE)))
+            throw new XPathException(getASTNode(), "Second argument to ft:query should either be a query string or " +
+                    "an XML element describing the query. Found: " + Type.getTypeName(key.getType()));
+        return key;
     }
 
     public int getDependencies() {
