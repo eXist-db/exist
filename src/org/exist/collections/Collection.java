@@ -181,9 +181,16 @@ public  class Collection extends Observable implements Comparable, Cacheable
         if (!subcollections.contains(childName))
             subcollections.add(childName);
         if (isNew) {
+        	User user = broker.getUser();
+            child.setCreationTime(System.currentTimeMillis());
+        	child.permissions.setOwner(user);
             CollectionConfiguration config = getConfiguration(broker);
-            if (config != null)
+            String group = null;
+            if (config != null){
+            	group = config.getDefCollGroup(user);
                 child.permissions.setPermissions(config.getDefCollPermissions());
+            }
+            child.permissions.setGroup(group);
         }
     }
     
@@ -1295,9 +1302,12 @@ public  class Collection extends Observable implements Comparable, Cacheable
             metadata.setLastModified(System.currentTimeMillis());
             document.setPermissions(oldDoc.getPermissions());
         } else {
+        	User user = broker.getUser();
             metadata.setCreated(System.currentTimeMillis());
-            document.getPermissions().setOwner(broker.getUser());
-            document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
+            document.getPermissions().setOwner(user);
+            CollectionConfiguration config = getConfiguration(broker);
+            String group = (config != null) ? config.getDefResGroup(user) : user.getPrimaryGroup();
+            document.getPermissions().setGroup(group);
         }
         document.setMetadata(metadata);
     }

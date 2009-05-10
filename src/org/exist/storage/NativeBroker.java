@@ -625,10 +625,7 @@ public class NativeBroker extends DBBroker {
                         }
                         LOG.debug("Creating collection '" + path + "'...");
                         sub = new Collection(path);
-                        sub.getPermissions().setOwner(getUser());
-                        sub.getPermissions().setGroup(getUser().getPrimaryGroup());
                         sub.setId(getNextCollectionId(transaction));
-                        sub.setCreationTime(System.currentTimeMillis());
                         if (transaction != null)
                             transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
                         //TODO : acquire lock manually if transaction is null ?
