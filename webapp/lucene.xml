@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Lucene Index Module</title>
+        <orgname>The eXist Project</orgname>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>New Full Text Indexes Based on Lucene</title>
+        <section>
+            <title>Introduction</title>
+
+            <para>The current SVN trunk version of eXist features a new full text indexing module
+                which will eventually replace eXist's builtin full text index. The new module is
+                faster, better configurable and more feature rich than eXist's old index. It will
+                also be the basis for an implementation of the W3C's fulltext extensions for
+                XQuery.</para>
+
+            <para>The new full text module is based on <ulink url="http://lucene.apache.org">Apache
+                    Lucene</ulink>. It thus benefits from a stable, well-designed and widely-used
+                framework. The module is tightly integrated with eXist's <emphasis>modularized
+                    indexing architecture</emphasis>: the index behaves like a plugin which adds
+                itself to the db's index pipelines. Once configured, the index will be notified of
+                all relevant events, like adding/removing a document, removing a collection or
+                updating single nodes. No manual reindex is required to keep the index up to date.
+                The module also implements common interfaces which are shared with other indexes,
+                e.g. for highlighting matches. It is thus easy to switch between the lucene index
+                and e.g. the ngram index without rewriting too much XQuery code.</para>
+        </section>
+        <section>
+            <title>Enabling the Lucene Module</title>
+
+            <para>We will enable the Lucene index by default in all newer releases of eXist. If it
+                is not enabled in your installation, here's how to get it up and running:</para>
+
+            <procedure>
+                <step>
+                    <para>Before building eXist, you need to enable the Lucene module by editing
+                            <code>extensions/indexes/build.properties</code> (also see the
+                        documentation on <ulink
+                            url="http://www.exist-db.org/indexing.html#moduleconf">index
+                            modules</ulink>):</para>
+
+                    <example>
+                        <title>build.properties</title>
+                        <programlisting><![CDATA[# Lucene integration
+include.index.lucene = true
+]]></programlisting>
+                    </example>
+                </step>
+                <step>
+                    <para>Then <emphasis>(re-)build eXist</emphasis> using the provided
+                            <filename>build.sh</filename> or <filename>build.bat</filename>. The
+                        build process downloads the required Lucene jars automatically. If
+                        everything builds ok, you should find a jar
+                            <filename>exist-lucene-module.jar</filename> in the
+                            <filename>lib/extensions</filename> directory. Next, edit the main
+                        configuration file, <filename>conf.xml</filename> and comment in the two
+                        lucene-related sections:</para>
+
+                    <example>
+                        <title>conf.xml</title>
+                        <programlisting><markup><![CDATA[<modules>
+  <module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"/>
+  ...
+</modules>
+...
+<builtin-modules>
+  <module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"/>
+  ...
+</builtin-modules>
+]]></markup></programlisting>
+                    </example>
+                </step>
+            </procedure>
+        </section>
+        <section>
+            <title>Configuring the Index</title>
+
+            <para>Like other indexes, you create a lucene index by configuring it in a
+                    <filename>collection.xconf</filename> document. If you have never done that
+                before, read the corresponding <ulink
+                    url="http://www.exist-db.org/indexing.html#idxconf">documentation</ulink>. An
+                example <filename>collection.xconf</filename> is shown below:</para>
+
+            <example>
+                <title>collection.xconf</title>
+                <programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index xmlns:atom="http://www.w3.org/2005/Atom"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns:wiki="http://exist-db.org/xquery/wiki">
+	    <!-- Disable the standard full text index -->
+        <fulltext default="none" attributes="no"/>
+	    <!-- Lucene index is configured below -->
+        <lucene>
+	        <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+            <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
+            <text match="//SPEECH//*"/>
+	        <text qname="TITLE" analyzer="ws"/>
+	        
+	        <inline qname="span"/>
+	        <inline qname="b"/>
+	        <ignore qname="footnote"/>
+        </lucene>
+    </index>
+</collection>
+]]></markup></programlisting>
+            </example>
+
+            <para>You can either define a lucene index on a single element or attribute name
+                (qname="...") or a node path with wildcards (match="..."). Please note that the
+                argument to match is a simple path pattern, not an XPath expression. It only allows
+                / and // to denote a child or descendant step, plus the wildcard to match an
+                arbitrary element.</para>
+
+            <synopsis>//SPEECH/*</synopsis>
+
+            <para>will index all child elements of SPEECH, while</para>
+
+            <synopsis>//SPEECH//*</synopsis>
+
+            <para>indexes all descendants.</para>
+
+            <para>Why can't we support full XPath syntax for the index configuration? Well, the
+                query engine often needs to decide at compile time if an index can be used or not,
+                which means that we have to limit the possible configuration choices.</para>
+
+            <section>
+                <title>Whitespace Treatment and Ignored Content</title>
+
+                <para>By default, eXist's indexer assumes that element boundaries break a word or
+                    token. For example, if you have an element:</para>
+
+                <example>
+                    <title>Not a Mixed Content Element</title>
+                    <programlisting><markup><![CDATA[<size><width>12</width><height>8</height></size>]]></markup></programlisting>
+                </example>
+
+                <para>You want "12" and "8" to be indexed as separate tokens, even though there's no
+                    whitespace between the elements. By default, eXist will indeed pass the content
+                    of the two elements to Lucene as separate strings and Lucene will thus see two
+                    tokens instead of just "128".</para>
+
+                <para>However, you usually don't want this behaviour for mixed content nodes. For
+                    example:</para>
+
+                <example>
+                    <title>Mixed Content Node</title>
+                    <programlisting><markup><![CDATA[<p>This is <b>un</b>clear.</p>]]></markup></programlisting>
+                </example>
+
+                <para>In this case, you want "unclear" to be indexed as one word. This can be done
+                    by telling eXist which nodes are "inline" nodes. The example configuration above
+                    defines:</para>
+
+                <synopsis><![CDATA[<inline qname="b"/>]]></synopsis>
+
+                <para>Also, it is sometimes necessary to skip the content of an inlined element,
+                    which can appear in the middle of a text sequence you want to index. Note or
+                    footnotes are a good example:</para>
+
+                <example>
+                    <title>Paragraph With Inline Footnote</title>
+                    <programlisting><markup><![CDATA[<p>This is a paragraph
+                        <footnote>containing an inline footnote</footnote>.</p>]]></markup></programlisting>
+                </example>
+
+                <para>Use an <sgmltag>ignore</sgmltag> element in the collection configuration to
+                    have eXist ignore the footnote:</para>
+
+                <synopsis><![CDATA[<ignore qname="footnote"/>]]></synopsis>
+            </section>
+
+            <section>
+                <title>Analyzers</title>
+
+                <para>One of the strengths of Lucene is that it allows the developer to determine
+                    nearly every aspect of the text analysis. This is mostly done through analyzer
+                    classes, which combine a tokenizer with a chain of filters to post-process the
+                    tokenized text. As shown in the configuration above, eXist's Lucene module does
+                    already allow different analyzers to be used for different indexes. We will
+                    certainly add more features in the future, e.g. a possibility to construct a new
+                    analyzer from a set of filters. For the time being, you can always provide your
+                    own analyzer or use one of those supplied by Lucene or compatible
+                    software.</para>
+            </section>
+        </section>
+
+        <section>
+            <title>Querying the Index</title>
+
+            <para>Querying lucene from XQuery is straightforward. For example:</para>
+
+            <example>
+                <title>A Simple Query</title>
+                <programlisting language="xquery"><![CDATA[for $s in //SPEECH[ft:query(LINE, 'witch*')]
+order by ft:score($s) descending
+return $s
+]]></programlisting>
+            </example>
+
+            <para>The query function takes a query string in Lucene's default <ulink
+                    url="http://lucene.apache.org/java/2_4_0/queryparsersyntax.html">query
+                    syntax</ulink>. It returns a set of nodes which are relevant with respect to the
+                query. Lucene assigns a relevance score or rank to each match. This score is
+                preserved by eXist and can be accessed through the score function, which returns a
+                decimal value. The higher the score, the more relevant is the text.</para>
+
+            <para>The Lucene module is fully supported by eXist's query-rewriting optimizer, which
+                means that the query engine can rewrite the XQuery expression to make best use of
+                the available indexes. All the rules and hints given in the <ulink url="tuning.xml"
+                    >tuning</ulink> guide do fully apply to the Lucene index.</para>
+
+            <section>
+                <title>Describing Queries in XML</title>
+                
+                <para>Lucene's default query syntax does not provide access to all available
+                    features. However, eXist's <function>ft:query</function> function also accepts
+                    a description of the query in XML as an alternative to passing a query string.
+                    The XML description is transformed into an internal tree of query objects, which
+                    is directly passed to Lucene for execution. This has some advantages. For example,
+                    you can specify if the order of terms should be relevant for a phrase query:</para>
+                
+                <example>
+                    <title>Using an XML Definition of the Query</title>
+                    <programlisting language="xquery"><![CDATA[let $query :=
+    <query>
+        <phrase ordered="no" slop="5">scottland king</phrase>
+    </query>
+return
+    //SPEECH[ft:contains(LINE, $query)]]></programlisting>
+                </example>
+                
+            </section>
+        </section>
+    </chapter>
+</book>
