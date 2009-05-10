@@ -38,6 +38,7 @@ import org.exist.util.Occurrences;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.value.Sequence;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -93,7 +94,17 @@ public class LuceneIndexTest {
             "   <c>AAA</c>" +
             "   <b>AAA</b>" +
             "</a>";
-    
+
+    private static String XML7 =
+        "<section>" +
+        "   <head>Query Test</head>" +
+        "   <p>Eine wunderbare Heiterkeit hat meine ganze Seele eingenommen, gleich den " +
+        "   süßen Frühlingsmorgen, die ich mit ganzem Herzen genieße. Ich bin allein und " +
+        "   freue mich meines Lebens in dieser Gegend, die für solche Seelen geschaffen " +
+        "   ist wie die meine. Ich bin so glücklich, mein Bester, so ganz in dem Gefühle " +
+        "   von ruhigem Dasein versunken, daß meine Kunst darunter leidet.</p>" +
+        "</section>";
+
     private static String COLLECTION_CONFIG1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
@@ -358,6 +369,127 @@ public class LuceneIndexTest {
             assertNotNull(seq);
             assertEquals(3, seq.getItemCount());
             assertEquals("c", seq.getStringValue());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
+    public void queryTranslation() {
+        DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML7, "test.xml");
+        DBBroker broker = null;
+        try {
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+
+            XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
+            CompiledXQuery compiled = xquery.compile(context, "declare variable $q external; " +
+                    "ft:query(//p, util:parse($q)/query)");
+
+            context.declareVariable("q", "<query><term>heiterkeit</term></query>");
+            Sequence seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <bool>" +
+                "       <term>heiterkeit</term><term>blablabla</term>" +
+                "   </bool>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <bool>" +
+                "       <term occur='should'>heiterkeit</term><term occur='should'>blablabla</term>" +
+                "   </bool>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <bool>" +
+                "       <term occur='must'>heiterkeit</term><term occur='must'>blablabla</term>" +
+                "   </bool>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <bool>" +
+                "       <term occur='must'>heiterkeit</term><term occur='not'>herzen</term>" +
+                "   </bool>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <bool>" +
+                "       <phrase occur='must'>wunderbare heiterkeit</phrase><term occur='must'>herzen</term>" +
+                "   </bool>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            context.declareVariable("q",
+                    "<query>" +
+                    "   <phrase slop='5'>heiterkeit seele eingenommen</phrase>" +
+                    "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            // phrase with wildcards
+            context.declareVariable("q",
+                "<query>" +
+                "   <phrase slop='5'><term>heiter*</term><term>se?nnnle*</term></phrase>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <wildcard>?eiter*</wildcard>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <fuzzy min-similarity='0.5'>selee</fuzzy>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <bool>" +
+                "       <fuzzy occur='must' min-similarity='0.5'>selee</fuzzy>" +
+                "       <wildcard occur='should'>bla*</wildcard>" +
+                "   </bool>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
