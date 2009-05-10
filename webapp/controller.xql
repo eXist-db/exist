@@ -217,7 +217,11 @@ return
     			</forward>
     		</dispatch>
     else if ($name = ('default-style.css', 'niftycube.js', 'niftyCorners.css', 'sh-min.js')) then
-        let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
+        let $newPath := 
+            if ($name eq 'sh-min.js') then
+                '/scripts/syntax/sh-min.js'
+            else
+                replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
         return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<forward url="{$newPath}"/>

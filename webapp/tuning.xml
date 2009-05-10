@@ -83,7 +83,7 @@
             <section>
                 <title>Disable any default indexes</title>
 
-                <para>If no other index <ulink url="http://exist-db.org/indexing.html"
+                <para>If no other index <ulink url="indexing.xml"
                         >index configuration</ulink> is found for a database collection, eXist will use the default
                     settings specified in <filename>conf.xml</filename>. For older eXist versions,
                     the default is to create a full text index on <emphasis>ALL</emphasis> elements
@@ -108,7 +108,7 @@
                 <itemizedlist>
                     <listitem>
                         <para>disable the default full text index in your index
-                            <ulink url="http://exist-db.org/indexing.html#N10422">definitions</ulink>:</para>
+                            <ulink url="indexing.xml#N10422">definitions</ulink>:</para>
 
                         <programlisting language="xquery"><![CDATA[
 <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -135,7 +135,7 @@
             <section id="idxdefs">
                 <title>Prefer simple index definitions</title>
 
-                <para>Keeping your <ulink url="http://exist-db.org/indexing.html#N10422">index
+                <para>Keeping your <ulink url="indexing.xml#N10422">index
                         definitions</ulink> simple makes it easier for the query optimizer to
                     resolve dependencies. In particular, avoid context-dependant index definitions
                     unless you really have a reason to use them. A context-dependant index is
