@@ -1177,12 +1177,6 @@ public  class Collection extends Observable implements Comparable, Cacheable
             DocumentImpl document = new DocumentImpl(broker.getBrokerPool(), this, docUri);
             
             oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
-            if (oldDoc == null) {
-                if (config != null) {
-                    document.setPermissions(config.getDefResPermissions());
-                }
-            } else
-                document.setPermissions(oldDoc.getPermissions().getPermissions());
             
             checkPermissions(transaction, broker, oldDoc);
             manageDocumentInformation(broker, oldDoc, document );
@@ -1305,8 +1299,14 @@ public  class Collection extends Observable implements Comparable, Cacheable
         	User user = broker.getUser();
             metadata.setCreated(System.currentTimeMillis());
             document.getPermissions().setOwner(user);
+            String group; 
             CollectionConfiguration config = getConfiguration(broker);
-            String group = (config != null) ? config.getDefResGroup(user) : user.getPrimaryGroup();
+            if (config != null) {
+                document.setPermissions(config.getDefResPermissions());
+                group = config.getDefResGroup(user);
+            } else {
+            	group = user.getPrimaryGroup();
+            }
             document.getPermissions().setGroup(group);
         }
         document.setMetadata(metadata);
