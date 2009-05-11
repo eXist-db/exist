@@ -23,20 +23,13 @@ package org.exist.storage;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.Properties;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.SymbolTable;
 import org.exist.management.AgentFactory;
+import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.CollectionConfigurationException;
@@ -64,6 +57,10 @@ import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.NumberFormat;
+
 /**
  * This class controls all available instances of the database.
  * Use it to configure, start and stop database instances. 
@@ -75,12 +72,15 @@ import org.exist.xmldb.XmldbURI;
  *@author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 //TODO : in the future, separate the design between the Map of DBInstances and their non static implementation 
-public class BrokerPool {
+public class BrokerPool extends Observable {
 
 	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
 	
 	private final static TreeMap instances = new TreeMap();
-	
+
+    public final static String SIGNAL_STARTUP = "startup";
+    public final static String SIGNAL_SHUTDOWN = "shutdown";
+    
 	/**
 	 * The name of a default database instance for those who are too lazy to provide parameters ;-). 
 	 */	
@@ -125,11 +125,13 @@ public class BrokerPool {
 	    public void run() {
 	        LOG.info("Executing shutdown thread");
 	        BrokerPool.stopAll(true);
-	    }   
+	    }
     };
 	
 	//TODO : make this defaut value configurable ? useless if we have a registerShutdownHook(Thread aThread) method (null = deregister)
 	private static boolean registerShutdownHook = true;
+
+    private static Observer statusObserver = null;
 
     /**
      * Whether of not the JVM should run the shutdown thread.
@@ -315,8 +317,13 @@ public class BrokerPool {
 		//Clear the living instances container : they are all sentenced to death...
 		instances.clear();
 	}
-	
-	/* END OF STATIC IMPLEMENTATION */	
+
+    public static void registerStatusObserver(Observer observer) {
+        statusObserver = observer;
+        LOG.debug("registering observer: " + observer.getClass().getName());
+    }
+
+	/* END OF STATIC IMPLEMENTATION */
 	
     /**
 	 * Default values
@@ -449,6 +456,8 @@ public class BrokerPool {
      * to document updates.
      */
     private NotificationService notificationService = null;
+
+    private long nextSystemStatus = System.currentTimeMillis();
     
 	/**
 	 * The system maintenance tasks of the database instance.
@@ -523,7 +532,10 @@ public class BrokerPool {
 		Long aLong;
 		Boolean aBoolean;
 		NumberFormat nf = NumberFormat.getNumberInstance();
-		
+
+        if (statusObserver != null)
+            addObserver(statusObserver);
+        
 		//TODO : ensure that the instance name is unique ?
         //WM: needs to be done in the configure method.
 		this.instanceName = instanceName;
@@ -695,7 +707,9 @@ public class BrokerPool {
         
         //Flag to indicate that we are initializing
         status = INITIALIZING;
-        
+
+        signalSystemStatus(SIGNAL_STARTUP);
+
 		//REFACTOR : construct then configure
         cacheManager = new DefaultCacheManager(this);
 
@@ -880,7 +894,15 @@ public class BrokerPool {
     public int getPageSize() {
         return pageSize;
     }
-    
+
+    public void signalSystemStatus(String signal) {
+        if (System.currentTimeMillis() > nextSystemStatus) {
+            setChanged();
+            notifyObservers(signal);
+            nextSystemStatus = System.currentTimeMillis() + 10000;
+        }
+    }
+
     /**
 	 * Whether or not the database instance is being initialized. 
 	 * 
@@ -889,7 +911,7 @@ public class BrokerPool {
 	//	TODO : let's be positive and rename it as isInitialized ? 
 	public boolean isInitializing() {
 		return status == INITIALIZING;
-	}	
+	}
 
     /** Returns the database instance's name.
      * @return The id
@@ -1466,6 +1488,7 @@ public class BrokerPool {
 				wait(250);
 			}
 			catch(InterruptedException e) {}
+            signalSystemStatus(SIGNAL_SHUTDOWN);
 		}
 
 		//Notify all running XQueries that we are shutting down
@@ -1491,6 +1514,7 @@ public class BrokerPool {
                     this.wait(1000);
                 } catch (InterruptedException e) {
                 }
+                signalSystemStatus(SIGNAL_SHUTDOWN);
                 //...or force the shutdown
                 if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait) {
                     LOG.warn("Not all threads returned. Forcing shutdown ...");
@@ -1531,6 +1555,8 @@ public class BrokerPool {
         }
         collectionCacheMgr.deregisterCache(collectionCache);
 
+        signalSystemStatus(SIGNAL_SHUTDOWN);
+        
         if (hangingThreads)
             // do not write a checkpoint if some threads did not return before shutdown
             // there might be dirty transactions

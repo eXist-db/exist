@@ -24,7 +24,8 @@ package org.exist.wrapper;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.Observer;
+import java.util.Observable;
 
 import org.exist.start.Classpath;
 import org.tanukisoftware.wrapper.WrapperListener;
@@ -35,11 +36,11 @@ import org.tanukisoftware.wrapper.WrapperManager;
  * 
  * @author wolf
  */
-public class Main implements WrapperListener {
+public class Main implements WrapperListener, Observer {
 
 	private Class klazz;
 	private Object app;
-	
+
 	private Main() {
 	}
 
@@ -63,7 +64,7 @@ public class Main implements WrapperListener {
 			Classpath classpath = loader.constructClasspath(homeDir, args);
 			ClassLoader cl = classpath.getClassLoader(null);
 			Thread.currentThread().setContextClassLoader(cl);
-			
+
 			// determine class to load
 			if (args[0].equals("jetty"))
 				klazz = cl.loadClass("org.exist.JettyStart");
@@ -71,8 +72,9 @@ public class Main implements WrapperListener {
 				klazz = cl.loadClass("org.exist.StandaloneServer");
 			
 			// find the run() method in the class
-			Class[] methodParamTypes = new Class[1];
+			Class[] methodParamTypes = new Class[2];
 			methodParamTypes[0] = args.getClass();
+            methodParamTypes[1] = Observer.class;
 			Method method = klazz.getDeclaredMethod("run", methodParamTypes);
 			
 			// create a new instance and invoke the run() method
@@ -80,10 +82,11 @@ public class Main implements WrapperListener {
 			String[] myArgs = new String[args.length - 1];
 			for (int i = 1; i < args.length; i++)
 				myArgs[i - 1] = args[i];
-			Object[] params = new Object[1];
+			Object[] params = new Object[2];
 			params[0] = myArgs;
+            params[1] = this;
 			method.invoke(app, params);
-			
+		
 			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -103,8 +106,6 @@ public class Main implements WrapperListener {
 			Method method = klazz.getDeclaredMethod("shutdown", new Class[0]);
 			method.invoke(app, new Object[0]);
 		} catch (Exception e) {
-			WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_FATAL, 
-					"Failed to shutdown the database: " + e.getMessage());
 		}
 		return exitCode;
 	}
@@ -123,6 +124,13 @@ public class Main implements WrapperListener {
 			}
 		}
 	}
+
+    public void update(Observable o, Object arg) {
+        if ("startup".equals(arg))
+            WrapperManager.signalStarting(60000);
+        else
+            WrapperManager.signalStopping(60000);
+    }
 
 	public static void main(String[] args) throws Exception {
 		Main main = new Main();
