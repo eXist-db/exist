@@ -103,7 +103,7 @@ public class FunctionCall extends Function {
                 ExternalModule rootModule = (ExternalModule) context.getRootModule(functionDef.getName().getNamespaceURI());
                 if (rootModule != null) {
                     UserDefinedFunction replacementFunctionDef =
-                            rootModule.getFunction(functionDef.getName(), getArgumentCount());
+                        rootModule.getFunction(functionDef.getName(), getArgumentCount());
                     if (replacementFunctionDef != null)
                         expression = functionDef = replacementFunctionDef;
                 }

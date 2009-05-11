@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.source.Source;
+import org.exist.storage.DBBroker;
 
 /**
  * An external library module implemented in XQuery and loaded
@@ -82,5 +83,5 @@ public interface ExternalModule extends Module {
 	/**
 	 * Is this module still valid or should it be reloaded from its source?
 	 */
-	public boolean moduleIsValid();
+	public boolean moduleIsValid(DBBroker broker);
 }

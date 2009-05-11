@@ -1211,7 +1211,7 @@ public class XQueryContext {
         profiler.reset();
         for (Iterator i = modules.values().iterator(); i.hasNext();) {
             Module module = (Module) i.next();
-            module.reset(this, keepGlobals);
+            module.reset(this);
         }
         if (!keepGlobals)
             mappedModules.clear();
