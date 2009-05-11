@@ -26,6 +26,7 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.journal.JournalReader;
 import org.exist.storage.journal.LogEntryTypes;
@@ -116,6 +117,7 @@ public class RecoveryManager {
 	        			while ((next = reader.nextEntry()) != null) {
 	//                        LOG.debug(next.dump());
 							progress.set(Lsn.getOffset(next.getLsn()));
+                            broker.getBrokerPool().signalSystemStatus(BrokerPool.SIGNAL_STARTUP);
 							if (next.getLogType() == LogEntryTypes.TXN_START) {
 				                // new transaction starts: add it to the transactions table
 				                txnsStarted.put(next.getTransactionId(), next);
@@ -197,6 +199,7 @@ public class RecoveryManager {
                 while ((next = reader.nextEntry()) != null) {
                     SanityCheck.ASSERT(next.getLogType() != LogEntryTypes.CHECKPOINT,
                             "Found a checkpoint during recovery run! This should not ever happen.");
+                    broker.getBrokerPool().signalSystemStatus(BrokerPool.SIGNAL_STARTUP);
                     if (next.getLogType() == LogEntryTypes.TXN_START) {
                         // new transaction starts: add it to the transactions table
                         runningTxns.put(next.getTransactionId(), next);
@@ -252,6 +255,7 @@ public class RecoveryManager {
     //					LOG.debug("Undo: " + next.dump());
                             next.undo();
                         }
+                        broker.getBrokerPool().signalSystemStatus(BrokerPool.SIGNAL_STARTUP);
                     }
                 } catch (Exception e) {
                     LOG.warn("Exception caught while undoing dirty transactions. Remaining transactions " +
@@ -262,6 +266,7 @@ public class RecoveryManager {
                 }
             }
         } finally {
+            broker.getBrokerPool().signalSystemStatus(BrokerPool.SIGNAL_STARTUP);
             broker.sync(Sync.MAJOR_SYNC);
             logManager.setInRecovery(false);
         }

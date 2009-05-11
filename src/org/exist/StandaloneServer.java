@@ -27,16 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -129,8 +120,12 @@ public class StandaloneServer {
     
     public StandaloneServer() {
     }
-    
+
     public void run(String[] args) throws Exception {
+        run(args, null);
+    }
+    
+    public void run(String[] args, Observer observer) throws Exception {
         printNotice();
         
         //set default properties
@@ -179,6 +174,8 @@ public class StandaloneServer {
 
         System.out.println( "Loading configuration ...");
         Configuration config = new Configuration("conf.xml");
+        if (observer != null)
+            BrokerPool.registerStatusObserver(observer);
         BrokerPool.configure( 1, threads, config );
         BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
         initXMLDB();
@@ -589,7 +586,7 @@ public class StandaloneServer {
     public static void main(String[] args) {
         StandaloneServer server = new StandaloneServer();
         try {
-            server.run(args);
+            server.run(args, null);
         } catch (Exception e) {
             System.err.println("An exception occurred while launching the server: " + e.getMessage());
             e.printStackTrace();
