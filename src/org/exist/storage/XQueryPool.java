@@ -247,7 +247,7 @@ public class XQueryPool extends Object2ObjectHashMap {
         if (module == null) return null;
         XQueryContext context = module.getContext();
         context.setBroker(broker);
-        if (!module.moduleIsValid()) {
+        if (!module.moduleIsValid(broker)) {
             LOG.debug("Module with URI " + module.getNamespaceURI() +
                     " has changed and needs to be reloaded");
             remove(source);

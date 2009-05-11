@@ -22,6 +22,7 @@
 package org.exist.xquery.value;
 
 import java.util.HashSet;
+import java.util.Arrays;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -129,7 +130,7 @@ public class Type {
 	 */
 	public final static int IDX_FULLTEXT = 200;
 	
-	private final static Int2ObjectHashMap typeHierarchy = new Int2ObjectHashMap();
+    private final static int[] superTypes = new int[512];
 
 	static {
 		defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
@@ -137,7 +138,6 @@ public class Type {
 
         defineSubType(ANY_SIMPLE_TYPE, ATOMIC);
 
-		defineSubType(ITEM, NODE);
 		defineSubType(NODE, ELEMENT);
 		defineSubType(NODE, ATTRIBUTE);
 		defineSubType(NODE, TEXT);
@@ -345,7 +345,7 @@ public class Type {
 	 * @param subtype
 	 */
 	public final static void defineSubType(int supertype, int subtype) {
-		typeHierarchy.put(subtype, new Integer(supertype));
+        superTypes[subtype] = supertype;
 	}
 
 	/**
@@ -363,12 +363,12 @@ public class Type {
 			return true;
 		//Note that EMPTY is *not* a sub-type of anything else than itself
 		//EmptySequence has to take care of this when it checks its type
-		if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE)
+		if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE || subtype == NODE)
 			return false;
-		if (!typeHierarchy.containsKey(subtype))
+        subtype = superTypes[subtype];
+		if (subtype == 0)
 			throw new IllegalArgumentException(
 				"type " + subtype + " is not a valid type");
-		subtype = ((Integer)typeHierarchy.get(subtype)).intValue();
 		return subTypeOf(subtype, supertype);
 	}
 
@@ -378,14 +378,14 @@ public class Type {
 	 * @param subtype
 	 */
 	public final static int getSuperType(int subtype) {
-		if (subtype == ITEM)
+		if (subtype == ITEM || subtype == NODE)
 			return ITEM;
-		Integer i = (Integer)typeHierarchy.get(subtype);
-		if(i == null) {
+        int supertype = superTypes[subtype];
+		if(supertype == 0) {
 			LOG.warn("no supertype for " + getTypeName(subtype), new Throwable());
 			return ITEM;
 		}
-		return i.intValue();
+		return supertype;
 	}
 
 	/**

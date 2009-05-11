@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import org.exist.dom.QName;
 import org.exist.source.Source;
 import org.exist.xquery.value.Sequence;
+import org.exist.storage.DBBroker;
 
 /**
  * Default implementation of an {@link org.exist.xquery.ExternalModule}.
@@ -190,12 +191,12 @@ public class ExternalModuleImpl implements ExternalModule {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.ExternalModule#moduleIsValid()
 	 */
-	public boolean moduleIsValid() {
-		return mSource.isValid(mContext.getBroker()) == Source.VALID;
+	public boolean moduleIsValid(DBBroker broker) {
+		return mSource.isValid(broker) == Source.VALID;
 	}
 	
-	public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
-        mContext.reset(keepGlobals);
+	public void reset(XQueryContext xqueryContext) {
+        mContext.reset();
         mStaticVariables.clear();
     }
 }
