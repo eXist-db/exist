@@ -116,7 +116,7 @@ public class XQueryPool extends Object2ObjectHashMap {
     }
 
     public void returnCompiledXQuery(Source source, CompiledXQuery xquery) {
-   	 returnModules(xquery.getContext(), null);
+//   	 returnModules(xquery.getContext(), null);
    	 returnObject(source, xquery);
     }
     
