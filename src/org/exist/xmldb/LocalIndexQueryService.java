@@ -78,7 +78,7 @@ public class LocalIndexQueryService implements IndexQueryService {
     }
     
     
-    /* (non-Javadoc)
+    /** (non-Javadoc)
      * @deprecated Use XmldbURI version instead
      * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
      */
