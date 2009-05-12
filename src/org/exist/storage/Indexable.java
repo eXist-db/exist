@@ -48,7 +48,7 @@ public interface Indexable extends Comparable {
     /**
      * Serialize the value plus collection and possibly element information
      * to an array of bytes.
-     * @deprecated use following function instead; this API should be local 
+     * @ deprecated use following function instead; this API should be local
      * to value index class like {@link NativeValueIndex}
      * 
      * The returned byte array has the following format:
@@ -68,7 +68,7 @@ public interface Indexable extends Comparable {
      * 
      * (offset-1 free bytes, byte type, byte[] value)
      * 
-     * @deprecated use following function instead; this API should be local 
+     * @ deprecated use following function instead; this API should be local
      * to value index class like {@link NativeValueIndex}
      * @param offset starting index for writing in array data
      * @return the size actually writen in the array argument
