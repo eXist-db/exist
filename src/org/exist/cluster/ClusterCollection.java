@@ -257,6 +257,7 @@ public final class ClusterCollection extends Collection {
         return collection.getDocument(broker, name);
     }
 
+    /** @deprecated */
     public DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name)
             throws LockException {
         return collection.getDocumentWithLock(broker, name);
@@ -267,7 +268,7 @@ public final class ClusterCollection extends Collection {
         return collection.getDocumentWithLock(broker, name, lockMode);
     }
 
-    /* 
+    /**
      * @deprecated Use other method
      * @see org.exist.collections.Collection#releaseDocument(org.exist.dom.DocumentImpl)
      */

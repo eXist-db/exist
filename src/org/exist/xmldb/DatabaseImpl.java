@@ -312,7 +312,8 @@ public class DatabaseImpl implements Database {
     return "0";
   }
 
-    //WARNING : returning such a default value is dangerous IMHO ? -pb
+  //WARNING : returning such a default value is dangerous IMHO ? -pb
+  /** @deprecated */
   public String getName() throws XMLDBException {
     return (currentInstanceName != null) ? currentInstanceName : "exist";
   }

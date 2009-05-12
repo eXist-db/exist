@@ -26,19 +26,29 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+
 import java.security.Principal;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.fileupload.DefaultFileItem;
-import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
 import org.apache.log4j.Logger;
+
 import org.exist.xquery.Constants;
 
 /** A wrapper for requests processed by a servlet.
@@ -76,7 +86,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         this.pathInfo = servletRequest.getPathInfo();
         this.servletPath = servletRequest.getServletPath();
 
-        if(parseMultipart && FileUpload.isMultipartContent(servletRequest)) {
+        if(parseMultipart && ServletFileUpload.isMultipartContent(servletRequest)) {
             parseMultipartContent();
         }
     }
@@ -120,8 +130,15 @@ public class HttpRequestWrapper implements RequestWrapper {
      * Parses multi-part requests in order to set the parameters. 
      */
     private void parseMultipartContent() {
-        DiskFileUpload upload = new DiskFileUpload();
-        upload.setSizeThreshold(0);
+        // Create a factory for disk-based file items
+        DiskFileItemFactory factory = new DiskFileItemFactory();
+
+        // Dizzzz: Wonder why this should be zero
+        factory.setSizeThreshold(0);
+
+        // Create a new file upload handler
+        ServletFileUpload upload = new ServletFileUpload(factory);
+
         try
         {
             this.params = new HashMap();
@@ -131,7 +148,8 @@ public class HttpRequestWrapper implements RequestWrapper {
                 FileItem next = (FileItem) i.next();
                 addParameter(params, next.getFieldName(), next);
             }
-            
+
+            // Dizzzz: Why not use servletRequest.getParameterMap()
             //also get parameters from the querystring
             String qs = servletRequest.getQueryString();
             if(qs != null && qs.length() > 0)
@@ -160,8 +178,10 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
     
     /**
-     * @param obj
-     * @return
+     * Get file item
+     * 
+     * @param obj List or Fileitem
+     * @return First Fileitem in list or Fileitem.
      */
     private FileItem getFileItem(Object obj) {
         if(obj instanceof List)
@@ -310,7 +330,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         FileItem item = getFileItem(o);
         if(item.isFormField())
             return null;
-        return ((DefaultFileItem)item).getStoreLocation();
+        return ((DiskFileItem)item).getStoreLocation();
     }
     
     /**@see javax.servlet.http.HttpServletRequest#getParameter(String)
