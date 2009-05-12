@@ -69,6 +69,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         this.user = user;
     }
 
+    /**
+     * @deprecated Use XmldbURI version instead
+     */
     public Collection createCollection( String collName ) throws XMLDBException {
         return createCollection (collName, (Date)null);
     }
@@ -77,6 +80,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         return createCollection (collName, (Date)null);
     }
 
+    /**
+     * @deprecated Use XmldbURI version instead
+     */
     public Collection createCollection( String collName, Date created ) throws XMLDBException {
     	try{
     		return createCollection(XmldbURI.xmldbUriFor(collName), created);
@@ -122,6 +128,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
      *  Creates a new collection in the database identified by name and using
      *  the provided configuration.
      *
+     * @deprecated Use XmldbURI version instead
+     *
      *@param  path                the path of the new collection
      *@param  configuration       the XML collection configuration to use for
      *      creating this collection.
@@ -145,6 +153,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         return "1.0";
     }
 
+    /**
+     * @deprecated Use XmldbURI version instead
+     */
     public void removeCollection( String collName ) throws XMLDBException {
     	try{
     		removeCollection(XmldbURI.xmldbUriFor(collName));
@@ -192,6 +203,10 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
     }
 
+    
+    /**
+     * @deprecated Use XmldbURI version instead
+     */
     public void move(String collectionPath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
@@ -256,6 +271,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
     }
     
+    /**
+     * @deprecated Use XmldbURI version instead
+     */
     public void moveResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
@@ -326,7 +344,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
     }
     
-
+    /**
+     * @deprecated Use XmldbURI version instead
+     */
     public void copy(String collectionPath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
@@ -390,6 +410,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
     }
 
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void copyResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
