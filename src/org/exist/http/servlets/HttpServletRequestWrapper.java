@@ -544,7 +544,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	}
 
 	/**
-	 * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromUrl
+	 * @deprecated use isRequestedSessionIdFromURL() instead.
+     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromUrl
 	 */
 	public boolean isRequestedSessionIdFromUrl()
 	{	
@@ -831,6 +832,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	}
 
 	/**
+     * @deprecated use use ServletContext#getRealPath(java.lang.String) instead.
 	 * @see javax.servlet.http.HttpServletRequest#getRealPath
 	 */
 	public String getRealPath(String path)
