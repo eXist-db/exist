@@ -4609,10 +4609,12 @@ public class RpcConnection implements RpcAPI {
         return parse(xmlData, docName, 0);
     }
 
+    /** @deprecated Use XmldbURI version instead */
     public HashMap querySummary(String xquery) throws EXistException, PermissionDeniedException {
         return summary(xquery);
     }
 
+    /** @deprecated Use XmldbURI version instead */
     public byte[] query(byte[] xquery, int howmany, int start, HashMap parameters) throws EXistException, PermissionDeniedException {
         try {
             String result = query(new String(xquery, "UTF-8"), howmany, start, parameters);

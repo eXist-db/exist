@@ -45,6 +45,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         this.parent = parent;
     }
 
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public Collection createCollection( String collName ) throws XMLDBException {
         return createCollection (collName, (Date)null);
     }
@@ -53,6 +56,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         return createCollection (collName, (Date)null);
     }
 
+    /**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public Collection createCollection( String collName, Date created ) throws XMLDBException {
     	try{
     		return createCollection(XmldbURI.xmldbUriFor(collName), created);
@@ -89,6 +95,8 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
      *  Implements createCollection from interface CollectionManager. Gets
      *  called by some applications based on Xindice.
      *
+	 * @deprecated Use XmldbURI version instead
+     *
      *@param  path                Description of the Parameter
      *@param  configuration       Description of the Parameter
      *@return                     Description of the Return Value
@@ -111,6 +119,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         return "1.0";
     }
 
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void removeCollection( String collName ) throws XMLDBException {
     	try{
     		removeCollection(XmldbURI.xmldbUriFor(collName));
@@ -143,6 +154,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
                              String value ) {
     }
 
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void move(String collectionPath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
@@ -175,6 +189,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         }
    }
 
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void moveResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
@@ -207,6 +224,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         }
     }
 
+    /**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void copy(String collectionPath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
@@ -239,7 +259,10 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
                 xre );
         }
     }
-	
+
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void copyResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
