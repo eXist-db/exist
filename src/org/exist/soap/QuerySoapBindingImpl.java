@@ -258,7 +258,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
         }
         return query(sessionId, query);
     }
-    
+
+    /**  @deprecated use {@link #xquery(String, byte[])} instead. */
     public org.exist.soap.QueryResponse query(java.lang.String sessionId, java.lang.String xpath) throws java.rmi.RemoteException {
         Session session = getSession(sessionId);
         

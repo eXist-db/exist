@@ -167,7 +167,7 @@ public class ValueIndexFactory {
 	*/
 
 	/**
-	 * @deprecated
+	 * @ deprecated
 	 * @param value
 	 * @param collectionId
 	 * @param caseSensitive

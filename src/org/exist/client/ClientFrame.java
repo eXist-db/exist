@@ -1334,7 +1334,7 @@ public class ClientFrame extends JFrame
         }
         
         XACMLEditor editor = new XACMLEditor(systemCollection);
-        editor.show();
+        editor.setVisible(true);
     }
     
     private void findAction(ActionEvent ev) {
