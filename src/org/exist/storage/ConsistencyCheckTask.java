@@ -51,11 +51,14 @@ public class ConsistencyCheckTask implements SystemTask {
     private boolean incrementalCheck = false;
     private int maxInc = -1;
 
+    private File lastExportedBackup = null;
+
     public final static String OUTPUT_PROP_NAME = "output";
     public final static String BACKUP_PROP_NAME = "backup";
     public final static String INCREMENTAL_PROP_NAME = "incremental";
     public final static String INCREMENTAL_CHECK_PROP_NAME = "incremental-check";
     public final static String MAX_PROP_NAME = "max";
+
 
     
     public void configure(Configuration config, Properties properties) throws EXistException {
@@ -119,14 +122,22 @@ public class ConsistencyCheckTask implements SystemTask {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Starting backup...");
                 SystemExport sysexport = new SystemExport(broker, null, false);
-                File exportFile = sysexport.export(exportDir, incremental, maxInc, true, errors);
+                lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, true, errors);
                 if (LOG.isDebugEnabled())
-                    LOG.debug("Created backup to file: " + exportFile.getAbsolutePath());
+                    LOG.debug("Created backup to file: " + lastExportedBackup.getAbsolutePath());
             }
         } finally {
             if (report != null)
                 report.close();
         }
+    }
+
+    /**
+     * Gets the last exported backup
+     */
+    public File getLastExportedBackup()
+    {
+        return lastExportedBackup;
     }
 
     private boolean fatalErrorsFound(List errors) {
