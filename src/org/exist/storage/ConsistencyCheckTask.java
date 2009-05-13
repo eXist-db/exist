@@ -51,8 +51,15 @@ public class ConsistencyCheckTask implements SystemTask {
     private boolean incrementalCheck = false;
     private int maxInc = -1;
 
+    public final static String OUTPUT_PROP_NAME = "output";
+    public final static String BACKUP_PROP_NAME = "backup";
+    public final static String INCREMENTAL_PROP_NAME = "incremental";
+    public final static String INCREMENTAL_CHECK_PROP_NAME = "incremental-check";
+    public final static String MAX_PROP_NAME = "max";
+
+    
     public void configure(Configuration config, Properties properties) throws EXistException {
-        exportDir = properties.getProperty("output", "export");
+        exportDir = properties.getProperty(OUTPUT_PROP_NAME, "export");
         File dir = new File(exportDir);
         if (!dir.isAbsolute())
             dir = new File((String)config.getProperty(BrokerPool.PROPERTY_DATA_DIR), exportDir);
@@ -62,13 +69,13 @@ public class ConsistencyCheckTask implements SystemTask {
         if (LOG.isDebugEnabled())
             LOG.debug("Using output directory " + exportDir);
 
-        String backup = properties.getProperty("backup", "no");
+        String backup = properties.getProperty(BACKUP_PROP_NAME, "no");
         createBackup = backup.equalsIgnoreCase("YES");
-        String inc = properties.getProperty("incremental", "yes");
+        String inc = properties.getProperty(INCREMENTAL_PROP_NAME, "yes");
         incremental = inc.equalsIgnoreCase("YES");
-        String incCheck = properties.getProperty("incremental-check", "no");
+        String incCheck = properties.getProperty(INCREMENTAL_CHECK_PROP_NAME, "no");
         incrementalCheck = incCheck.equalsIgnoreCase("YES");
-        String max = properties.getProperty("max", "-1");
+        String max = properties.getProperty(MAX_PROP_NAME, "-1");
         try {
             maxInc = Integer.parseInt(max);
         } catch (NumberFormatException e) {
