@@ -345,7 +345,7 @@ public class XQueryContext {
     /**
      * The profiler instance used by this context.
      */
-    private Profiler profiler = new Profiler();
+    private Profiler profiler;
     
     //For holding XQuery Context variables for general storage in the XQuery Context
     HashMap XQueryContextVars = new HashMap();
@@ -378,12 +378,14 @@ public class XQueryContext {
 		this.accessCtx = accessCtx;
 		builder = new MemTreeBuilder(this);
 		builder.startDocument();
+        profiler = new Profiler(null);
 	}
 	
 	public XQueryContext(DBBroker broker, AccessContext accessCtx) {
 		this(accessCtx);
 		this.broker = broker;
 		loadDefaults(broker.getConfiguration());
+        this.profiler = new Profiler(broker.getBrokerPool());
 	}
 	
 	public XQueryContext(XQueryContext copyFrom) {
@@ -402,6 +404,7 @@ public class XQueryContext {
                 ex.printStackTrace();
             }
         }
+        this.profiler = copyFrom.profiler;
     }
 
     /**
@@ -512,6 +515,7 @@ public class XQueryContext {
 		//Reset current context position
 		setContextPosition(0);	
 		//Note that, for some reasons, an XQueryContext might be used without calling this method
+        profiler.configure();
 	}
 	
 	public AccessContext getAccessContext() {
@@ -1208,7 +1212,6 @@ public class XQueryContext {
 
         if (!isShared)
             watchdog.reset();
-        profiler.reset();
         for (Iterator i = modules.values().iterator(); i.hasNext();) {
             Module module = (Module) i.next();
             module.reset(this);
@@ -1217,6 +1220,8 @@ public class XQueryContext {
             mappedModules.clear();
 
         clearUpdateListeners();
+        
+        profiler.reset();
     }
 	
 	/**
@@ -2220,8 +2225,14 @@ public class XQueryContext {
         		throw new XPathException("source at " + location + " is not a valid module");        	
         	if(!modExternal.getNamespaceURI().equals(namespaceURI))
         		throw new XPathException("namespace URI declared by module (" + modExternal.getNamespaceURI() + 
-        			") does not match namespace URI in import statement, which was: " + namespaceURI);        	
-        	modExternal.setSource(source);
+        			") does not match namespace URI in import statement, which was: " + namespaceURI);
+            // Set source information on module context
+            String sourceClassName = source.getClass().getName();
+            modContext.setSourceKey(source.getKey().toString());
+            // Extract the source type from the classname by removing the package prefix and the "Source" suffix
+            modContext.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );
+            
+            modExternal.setSource(source);
         	modExternal.setContext(modContext);
         	return modExternal;
         } catch (RecognitionException e) {

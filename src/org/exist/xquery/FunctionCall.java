@@ -229,6 +229,8 @@ public class FunctionCall extends Function {
     }
 
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) throws XPathException {
+        if (context.getProfiler().traceFunctions())
+            context.getProfiler().traceFunctionStart(this);
         if (context.isProfilingEnabled()) {
             context.getProfiler().start(this);     
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -271,6 +273,8 @@ public class FunctionCall extends Function {
     			}
                 if (context.isProfilingEnabled())
                     context.getProfiler().end(this, "", returnSeq);
+                if (context.getProfiler().traceFunctions())
+                    context.getProfiler().traceFunctionEnd(this);
     			return returnSeq;
     		} catch(XPathException e) {
     			if(e.getLine() == 0)

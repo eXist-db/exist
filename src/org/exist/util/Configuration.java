@@ -54,6 +54,7 @@ import org.exist.xmldb.DatabaseImpl;
 import org.exist.xquery.FunctionFactory;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
+import org.exist.xquery.Profiler;
 import org.exist.xslt.TransformerFactoryAllocator;
 import org.quartz.SimpleTrigger;
 import org.w3c.dom.Document;
@@ -429,6 +430,9 @@ public class Configuration implements ErrorHandler
         String raiseErrorOnFailedRetrieval = xquery.getAttribute(XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE);      
         config.put(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Configuration.parseBoolean(raiseErrorOnFailedRetrieval, XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT));
         LOG.debug(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL + ": " + config.get(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL));
+
+        String trace = xquery.getAttribute(Profiler.CONFIG_ATTR_TRACE);
+        config.put(Profiler.CONFIG_PROPERTY_TRACE, trace);
         
         //built-in-modules
         Map classMap = new HashMap();
