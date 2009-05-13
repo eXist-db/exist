@@ -32,7 +32,7 @@ declare function sandbox:import-stylesheets() as xs:string* {
 };
 
 (:~ Check for stylesheets required for the application. Try to import them if they could not be found. :)
-declare function sandbox:check-paths() as item()* {
+declare function sandbox:check-paths() as xs:string* {
     if (not(doc-available($sandbox:XML_HIGHLIGHT_STYLE))) then
         let $dummy := sandbox:import-stylesheets()
         return
@@ -40,9 +40,7 @@ declare function sandbox:check-paths() as item()* {
                 concat($sandbox:XML_HIGHLIGHT_STYLE, " not found! Please store this file into ",
                     "the database collection or the application will not work properly.")
             else ()
-    else
-        <span>You can also try out an <a href="../sandbox2/sandbox.xql">updated XQuery sandbox</a>.
-        It does not work with all browsers yet though.</span>
+    else ()
 };
 
 declare function sandbox:init-slots() as element()+ {
@@ -140,16 +138,29 @@ declare function sandbox:display-page() as element() {
         <head>
             <title>XQuery Sandbox</title>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.3.1/build/container/assets/container.css"/>
+            <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.3.1/build/button/assets/button.css"/>
+            <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.3.1/build/datatable/assets/skins/sam/datatable.css"/>
+            <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.3.1/build/menu/assets/skins/sam/menu.css"/>
             <link type="text/css" href="styles/sandbox.css" rel="stylesheet"/>
             <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
-            <script language="Javascript" type="text/javascript" src="scripts/prototype.js"/>
-            <script language="Javascript" type="text/javascript" src="scripts/scriptaculous.js"/>
-            <script language="Javascript" type="text/javascript" src="scripts/behaviour.js"/>
-            <script language="Javascript" type="text/javascript" src="scripts/ajax.js"/>
+            <script src="http://yui.yahooapis.com/2.3.1/build/yahoo/yahoo-min.js"></script>
+            <script src="http://yui.yahooapis.com/2.3.1/build/dom/dom-min.js"></script>
+            <script src="http://yui.yahooapis.com/2.3.1/build/event/event-min.js"></script>
+            <script src="http://yui.yahooapis.com/2.3.1/build/connection/connection-min.js"></script>
+            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/logger/logger-min.js"></script>
+            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/animation/animation-min.js"></script>
+            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/dragdrop/dragdrop-min.js"></script>
+            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/container/container-min.js"></script>
+            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/element/element-beta-min.js"></script>
+            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/datasource/datasource-beta-min.js"></script>
+            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/datatable/datatable-beta-min.js"></script>
+            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/menu/menu-min.js"></script>
+            
             <script language="Javascript" type="text/javascript" src="scripts/sandbox.js"/>
         </head>
-        <body>
+        <body class=" yui-skin-sam">
             <div id="header">
                 <ul id="menu">
                     <li><a href="../index.xml">Home</a></li>
@@ -162,26 +173,83 @@ declare function sandbox:display-page() as element() {
             
             <div id="content">
                 <!--div id="user">Logged in as guest: <a href="#" id="change-user">Change</a></div-->
-                <div id="errors">{sandbox:check-paths()}</div>
+                <div id="mainmenu" class="yuimenubar">
+                    <div class="bd">
+                        <ul class="first-of-type">
+                            <li class="yuimenubaritem first-of-type">
+                                <a class="yuimenubaritemlabel">File</a>
+                                <div id="menu-file" class="yuimenu">
+                                    <div class="bd">
+                                        <ul>
+                                            <li class="yuimenuitem first-of-type">
+                                                <a id="file-open" class="yuimenuitemlabel">Open</a>
+                                            </li>
+                                            <li class="yuimenuitem">
+                                                <a id="file-save-example" class="yuimenuitemlabel">Save As Example</a>
+                                            </li>
+                                            <li class="yuimenuitem">
+                                                <a id="file-save" class="yuimenuitemlabel">Save</a>
+                                            </li>
+                                            <li class="yuimenuitem">
+                                                <a id="file-save-as" class="yuimenuitemlabel">Save As</a>
+                                            </li>
+                                            <li class="yuimenuitem">
+                                                <a id="export" class="yuimenuitemlabel">Export</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </li>
+                            <!-- Syntax highlighting not supported by editor -->
+                            <!--li class="yuimenubaritem">
+                                <a class="yuimenubaritemlabel">Syntax</a>
+                                <div id="menu-syntax" class="yuimenu">
+                                    <div class="bd">
+                                        <ul>
+                                        {
+                                            let $names := ('XQuery', 'XML', 'HTML', 'Javascript', 'CSS')
+                                            for $syntax at $p in ('xquery', 'xml', 'html', 'javascript', 'css')
+                                            return
+                                                <li class="yuimenuitem {if ($p = 0) then 'first-of-type' else ()}">
+                                                    <a onclick="editLanguage('{$syntax}');" class="yuimenuitemlabel">
+                                                        {$names[$p]}
+                                                    </a>
+                                                </li>
+                                        }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </li-->
+                        </ul>
+                    </div>
+                </div>
                 <form name="main">
                     <div id="top-panel">
-                        <div id="slots-panel">
-                            <h2>Slots</h2>
-                            <ul id="slots">
-                                {sandbox:init-slots()}
-                            </ul>
+                        <div id="messages">{sandbox:check-paths()}</div>
+                        <div id="errors" style="display: none">
+                            <div id="error-text"></div>
+                            <a href="#" id="error-close">Close</a>
+                        </div>
+                        <div id="left-panel">
+                            <div id="slots-panel">
+                                <h2>Slots</h2>
+                                <ul id="slots">
+                                    {sandbox:init-slots()}
+                                </ul>
+                            </div>
                         </div>
                         <div id="right-panel">
                             <div id="query-panel">
                                 <a href="#" id="maximize">Maximize</a>
-                                <p id="queries">
-                                    <label for="saved">Paste saved query</label>
+                                <fieldset id="queries">
+                                    <label for="saved">Paste example</label>
                                     <select id="saved" name="saved">
                                         <option></option>
                                     </select>
-                                </p>
-                                <textarea id="query" name="qu" />
-                                <fieldset>
+                                </fieldset>
+                                <textarea id="codeEditor" 
+                                    class="codepress xquery linenumbers-on readonly-off" name="qu"></textarea>
+                                <fieldset class="bottom">
                                     <div id="buttons">
                                         <button type="button" id="submit">Send</button>
                                         <button type="button" id="clear">Clear</button>
@@ -193,26 +261,10 @@ declare function sandbox:display-page() as element() {
                                         <option>50</option>
                                         <option>100</option>
                                     </select>
-                                    <a href="#" id="show-options">More Options</a>
                                 </fieldset>
                             </div>
                         </div>
-                            <div id="save-panel">
-                                <div>
-                                    <h2>Save to examples.xml:</h2>
-                                    <label for="description">Description</label>
-                                    <input type="text" id="description"/>
-                                    <button type="button" id="save">Save</button>
-                                    
-                                    <h2>Export results to new document:</h2>
-                                    <label for="docname">Document path</label>
-                                    <a href="#" id="export-resource">Click to select</a>
-                                    <label for="wrapper">Wrapper element</label>
-                                    <input type="text" id="wrapper"/>
-                                    <button type="button" id="export">Export</button>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
                 </form>
                 <div id="query-output">
                     <div id="query-result"/>
@@ -233,6 +285,7 @@ let $pos := xs:integer(request:get-parameter("num", ()))
 let $save := request:get-parameter("save", ())
 let $query := request:get-parameter("qu", ())
 let $check := request:get-parameter("check", ())
+let $log := util:log("DEBUG", ("$query: ", $query, " $check: ", $check))
 let $export := request:get-parameter("export", ())
 return
     if ($save) then
