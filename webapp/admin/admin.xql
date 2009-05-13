@@ -19,6 +19,7 @@ import module namespace shut = "http://exist-db.org/xquery/admin-interface/shutd
 import module namespace setup = "http://exist-db.org/xquery/admin-interface/setup" at "setup.xqm";
 import module namespace rev="http://exist-db.org/xquery/admin-interface/revisions" at "versions.xqm";
 import module namespace backup="http://exist-db.org/xquery/admin-interface/backup" at "backup.xqm";
+import module namespace prof="http://exist-db.org/xquery/profiling" at "trace.xqm";
 
 declare option exist:serialize "method=xhtml media-type=text/html";
 
@@ -69,6 +70,8 @@ declare function admin:panel() as element()
 		)
 		else if ($panel eq "backup") then
 		    backup:main()
+	    else if ($panel eq "trace") then
+	        prof:main()
         else
         (
             status:main()
@@ -176,6 +179,7 @@ return
 						View Running Jobs</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples Setup</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=backup">Backups</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=trace">Profiling</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=shutdown">Shutdown</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>
                     </ul>

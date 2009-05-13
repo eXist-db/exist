@@ -119,7 +119,7 @@ h2 {
 #status td.key {
 }
 
-.browse {
+.browse, .trace {
     margin-left: 15px;
     font-size: smaller;
     padding-bottom: 4px;
@@ -222,7 +222,7 @@ td.help {
 	overflow: auto;
 }
 
-.revisions, .backups {
+.revisions, .backups, .trace {
 	width: 620px;
 }
 
@@ -237,4 +237,20 @@ td.last {
 .refresh {
     margin-top: 1em;
     margin-left: 15px;
+}
+
+.trace th {
+    border-bottom: 1px solid black;
+}
+
+.trace a, .trace a:link {
+    text-decoration: none;
+}
+
+.trace-calls, td.trace-calls {
+    text-align: right;
+}
+
+.trace-elapsed, td.trace-elapsed {
+    text-align: right;
 }

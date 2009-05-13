@@ -23,6 +23,8 @@ package org.exist.storage;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.PerformanceStats;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
@@ -484,6 +486,12 @@ public class BrokerPool extends Observable {
 	private ProcessMonitor processMonitor;
 
     /**
+     * Global performance stats to gather function execution statistics
+     * from all queries running on this database instance.
+     */
+    private PerformanceStats xqueryStats;
+
+    /**
      * The global manager for accessing collection configuration files from the database instance.
      */
 	private CollectionConfigurationManager collectionConfigurationManager = null;				
@@ -707,6 +715,7 @@ public class BrokerPool extends Observable {
         xQueryPool = new XQueryPool(conf);
         //REFACTOR : construct then... configure
         processMonitor = new ProcessMonitor();
+        xqueryStats = new PerformanceStats();
         //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(conf, new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
@@ -1145,8 +1154,18 @@ public class BrokerPool extends Observable {
      */
     public ProcessMonitor getProcessMonitor() {
     	return processMonitor;
-    }  
-    
+    }
+
+    /**
+     * Returns the global profiler used to gather execution statistics
+     * from all XQueries running on this db instance.
+     *
+     * @return the profiler
+     */
+    public PerformanceStats getPerformanceStats() {
+        return xqueryStats;
+    }
+
 	/**
      * Returns a pool in which the database instance's readers are stored.
      * 

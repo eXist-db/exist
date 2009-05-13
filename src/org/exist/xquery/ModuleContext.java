@@ -197,6 +197,9 @@ public class ModuleContext extends XQueryContext {
 		return parentContext.getWatchDog();
 	}
 
+    public Profiler getProfiler() {
+        return parentContext.getProfiler();
+    }
 
     /* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getCalendar()

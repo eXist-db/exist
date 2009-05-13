@@ -26,6 +26,7 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Sequence;
+import org.exist.storage.BrokerPool;
 
 /**
  * XQuery profiling output. Profiling information is written to a
@@ -39,6 +40,26 @@ import org.exist.xquery.value.Sequence;
  */
 public class Profiler {
 
+    /** value for Verbosity property: basic profiling : just elapsed time */
+    public static int TIME = 1;
+    /** value for Verbosity property: For optimizations */
+    public static int OPTIMIZATIONS = 2;
+    /** For computations that will trigger further optimizations */
+    public static int OPTIMIZATION_FLAGS = 3;
+    /** Indicates the dependencies of the expression */
+    public static int DEPENDENCIES = 4;
+    /** An abstract level for viewing the expression's context sequence/item */
+    public static int START_SEQUENCES = 4;
+    /** Just returns the number of items in the sequence */
+    public static int ITEM_COUNT = 5;
+    /** For a truncated string representation of the context sequence (TODO) */
+    public static int SEQUENCE_PREVIEW = 6;
+    /** For a full representation of the context sequence (TODO) */
+    public static int SEQUENCE_DUMP = 8;
+
+    public static String CONFIG_PROPERTY_TRACE = "xquery.profiling.trace";
+    public static String CONFIG_ATTR_TRACE = "trace";
+    
     /**
      * The logger where all output goes.
      */
@@ -48,30 +69,39 @@ public class Profiler {
     
     private final StringBuffer buf = new StringBuffer(64);
     
-    // never used locally
-    // private long profilingThreshold = 5;
-    
     private boolean enabled = false;
     
-    private int verbosity = 0;   
-    
-    /** value for Verbosity property: basic profiling : just elapsed time */
-    public static int TIME = 1;
-    /** value for Verbosity property: For optimizations */
-    public static int OPTIMIZATIONS = 2;
-    /** For computations that will trigger further optimizations */ 
-    public static int OPTIMIZATION_FLAGS = 3;
-    /** Indicates the dependencies of the expression */
-    public static int DEPENDENCIES = 4;
-    /** An abstract level for viewing the expression's context sequence/item */
-    public static int START_SEQUENCES = 4;  
-    /** Just returns the number of items in the sequence */
-    public static int ITEM_COUNT = 5;    
-    /** For a truncated string representation of the context sequence (TODO) */ 
-    public static int SEQUENCE_PREVIEW = 6;     
-    /** For a full representation of the context sequence (TODO) */
-    public static int SEQUENCE_DUMP = 8;  
-    
+    private int verbosity = 0; 
+
+    private boolean enabledLocal = false;
+
+    private boolean traceFunctionCalls = false;
+
+    private PerformanceStats stats;
+
+    private Stack<Long> functionStack;
+
+    private BrokerPool pool;
+
+    public Profiler(BrokerPool pool) {
+        this.pool = pool;
+    }
+
+    public void configure() {
+        if (!enabledLocal && pool != null) {
+            String trace = (String) pool.getConfiguration().getProperty(CONFIG_PROPERTY_TRACE);
+            if (trace != null)
+                traceFunctionCalls = trace.equals("functions");
+            if (traceFunctionCalls && stats == null) {
+                stats = new PerformanceStats();
+                functionStack = new Stack<Long>();
+            } else if (!traceFunctionCalls) {
+                stats = null;
+                functionStack = null;
+            }
+        }
+    }
+
     /**
      * Configure the profiler from an XQuery pragma.
      * Parameters are:
@@ -89,13 +119,18 @@ public class Profiler {
         for (int i = 0; i < options.length; i++) {
             params = Option.parseKeyValuePair(options[i]);
             if (params != null) {
-                if (params[0].equals("logger"))
+                if (params[0].equals("trace")) {
+                    traceFunctionCalls = params[1].equals("functions");
+                    stats = new PerformanceStats();
+                    functionStack = new Stack<Long>();
+
+                } else if (params[0].equals("logger")) {
                     log = Logger.getLogger(params[1]);
                 
-                else if (params[0].equals("enabled"))
+                } else if (params[0].equals("enabled")) {
                     enabled = params[1].equals("yes");
                 
-                else if ("verbosity".equals(params[0])) {
+                } else if ("verbosity".equals(params[0])) {
                     try {
                         verbosity = Integer.parseInt(params[1]);
                     } catch (NumberFormatException e) {
@@ -103,25 +138,12 @@ public class Profiler {
                     			"should be an integer between 0 and " + 
                     			SEQUENCE_DUMP );                   	
                     }
-                } 
-                
-//                else if("threshold".equals(params[0])) {
-//                    try {
-//                        profilingThreshold = Integer.parseInt(params[1]);
-//                    } catch(NumberFormatException e) {
-//                    }
-//                }
-                
-                else {
-                	log.warn(
-                			"invalid parameter for" +
-                			"  declare option exist:profiling : " +
-                			"should be enabled verbosity , or logger" );                     
                 }
             }
         }
         if (verbosity == 0) 
-            enabled=false; 
+            enabled=false;
+        enabledLocal = true;
     }
     
     /**
@@ -132,6 +154,10 @@ public class Profiler {
     public final boolean isEnabled() {
         return enabled;
     }
+
+    public final boolean traceFunctions() {
+        return traceFunctionCalls;
+    }
     
     /**
      * @return the verbosity of the profiler.
@@ -139,7 +165,23 @@ public class Profiler {
     public final int verbosity() {
         return verbosity;
     }
-    
+
+    public final void traceFunctionStart(FunctionCall function) {
+        functionStack.push(System.currentTimeMillis());
+    }
+
+    public final void traceFunctionEnd(FunctionCall function) {
+        long startTime = functionStack.pop();
+        stats.recordFunctionCall(function.getSignature().getName(), function.getContext().getSourceKey(), 
+            (System.currentTimeMillis() - startTime));
+    }
+
+    private void save() {
+        if (pool != null) {
+            pool.getPerformanceStats().merge(stats);
+        }
+    }
+
     /**
      * Called by an expression to indicate the start of an operation.
      * The profiler registers the start time.
@@ -263,7 +305,7 @@ public class Profiler {
             
             if (stack.size() == 0) {
                 log.debug("QUERY END");                
-            }            
+            }
 		} catch (RuntimeException e) {
 			log.debug("Profiler: could not pop from expression stack - " + expr + " - "+ message + ". Error : "+ e.getMessage());
 		}
@@ -327,15 +369,16 @@ public class Profiler {
         log.debug(buf.toString());
     }    
     
-    public void reset() {        
+    public void reset() {
         if (stack.size() > 0)
             log.debug("QUERY RESET");  
         stack.clear();
+        if (stats != null && stats.hasData()) {
+            save();
+            stats.reset();
+        }
     }
     
-    /**
-     * @param e
-     */
     private void printPosition(Expression expr) {
         XQueryAST ast = expr.getASTNode();       
         if (ast != null) {
@@ -372,7 +415,7 @@ public class Profiler {
         }                  
         return truncation.toString();
     }
-    
+
     private final static class ProfiledExpr {
         long start;
         Expression expr;
