@@ -15,6 +15,11 @@ public interface BackupDescriptor {
 
     public final static String BACKUP_PROPERTIES = "backup.properties";
 
+    public final static String PREVIOUS_PROP_NAME = "previous";
+    public final static String NUMBER_IN_SEQUENCE_PROP_NAME = "nr-in-sequence";
+    public final static String INCREMENTAL_PROP_NAME = "incremental";
+    public final static String DATE_PROP_NAME = "date";
+
 	public EXistInputSource getInputSource();
 	
 	public EXistInputSource getInputSource(String describedItem);

@@ -53,7 +53,6 @@ import org.exist.xquery.value.DateTimeValue;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
@@ -62,7 +61,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -75,8 +73,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -165,11 +161,11 @@ public class SystemExport {
             Properties properties = new Properties();
             int seqNr = 1;
             if (incremental) {
-                properties.setProperty("previous", prevBackup == null ? "" : prevBackup.getName());
+                properties.setProperty(BackupDescriptor.PREVIOUS_PROP_NAME, prevBackup == null ? "" : prevBackup.getName());
                 if (prevBackup != null) {
                     Properties prevProp = prevBackup.getProperties();
                     if (prevProp != null) {
-                        String seqNrStr = prevProp.getProperty("nr-in-sequence", "1");
+                        String seqNrStr = prevProp.getProperty(BackupDescriptor.NUMBER_IN_SEQUENCE_PROP_NAME, "1");
                         try {
                             seqNr = Integer.parseInt(seqNrStr);
                             if (seqNr == maxInc) {
@@ -184,10 +180,10 @@ public class SystemExport {
                     }
                 }
             }
-            properties.setProperty("nr-in-sequence", Integer.toString(seqNr));
-            properties.setProperty("incremental", incremental ? "yes" : "no");
+            properties.setProperty(BackupDescriptor.NUMBER_IN_SEQUENCE_PROP_NAME, Integer.toString(seqNr));
+            properties.setProperty(BackupDescriptor.INCREMENTAL_PROP_NAME, incremental ? "yes" : "no");
             try {
-                properties.setProperty("date", new DateTimeValue(new Date()).getStringValue());
+                properties.setProperty(BackupDescriptor.DATE_PROP_NAME, new DateTimeValue(new Date()).getStringValue());
             } catch (XPathException e) {
             }
 
