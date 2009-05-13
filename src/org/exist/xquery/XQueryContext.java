@@ -515,7 +515,6 @@ public class XQueryContext {
 		//Reset current context position
 		setContextPosition(0);	
 		//Note that, for some reasons, an XQueryContext might be used without calling this method
-        profiler.configure();
 	}
 	
 	public AccessContext getAccessContext() {

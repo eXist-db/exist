@@ -57,9 +57,7 @@ public class Profiler {
     /** For a full representation of the context sequence (TODO) */
     public static int SEQUENCE_DUMP = 8;
 
-    public static String CONFIG_PROPERTY_TRACE = "xquery.profiling.trace";
-    public static String CONFIG_ATTR_TRACE = "trace";
-    
+
     /**
      * The logger where all output goes.
      */
@@ -73,10 +71,6 @@ public class Profiler {
     
     private int verbosity = 0; 
 
-    private boolean enabledLocal = false;
-
-    private boolean traceFunctionCalls = false;
-
     private PerformanceStats stats;
 
     private Stack<Long> functionStack;
@@ -85,21 +79,8 @@ public class Profiler {
 
     public Profiler(BrokerPool pool) {
         this.pool = pool;
-    }
-
-    public void configure() {
-        if (!enabledLocal && pool != null) {
-            String trace = (String) pool.getConfiguration().getProperty(CONFIG_PROPERTY_TRACE);
-            if (trace != null)
-                traceFunctionCalls = trace.equals("functions");
-            if (traceFunctionCalls && stats == null) {
-                stats = new PerformanceStats();
-                functionStack = new Stack<Long>();
-            } else if (!traceFunctionCalls) {
-                stats = null;
-                functionStack = null;
-            }
-        }
+        this.stats = new PerformanceStats(pool);
+        this.functionStack = new Stack<Long>();
     }
 
     /**
@@ -120,9 +101,7 @@ public class Profiler {
             params = Option.parseKeyValuePair(options[i]);
             if (params != null) {
                 if (params[0].equals("trace")) {
-                    traceFunctionCalls = params[1].equals("functions");
-                    stats = new PerformanceStats();
-                    functionStack = new Stack<Long>();
+                    stats.setEnabled(true);
 
                 } else if (params[0].equals("logger")) {
                     log = Logger.getLogger(params[1]);
@@ -143,7 +122,6 @@ public class Profiler {
         }
         if (verbosity == 0) 
             enabled=false;
-        enabledLocal = true;
     }
     
     /**
@@ -156,7 +134,7 @@ public class Profiler {
     }
 
     public final boolean traceFunctions() {
-        return traceFunctionCalls;
+        return stats.isEnabled();
     }
     
     /**
@@ -171,6 +149,8 @@ public class Profiler {
     }
 
     public final void traceFunctionEnd(FunctionCall function) {
+        if (functionStack.isEmpty()) // may happen if profiling was enabled in the middle of a query
+            return;
         long startTime = functionStack.pop();
         stats.recordFunctionCall(function.getSignature().getName(), function.getContext().getSourceKey(), 
             (System.currentTimeMillis() - startTime));
@@ -373,10 +353,11 @@ public class Profiler {
         if (stack.size() > 0)
             log.debug("QUERY RESET");  
         stack.clear();
-        if (stats != null && stats.hasData()) {
+        if (stats.isEnabled() && stats.hasData()) {
             save();
             stats.reset();
         }
+        functionStack.clear();
     }
     
     private void printPosition(Expression expr) {

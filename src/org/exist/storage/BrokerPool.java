@@ -715,7 +715,8 @@ public class BrokerPool extends Observable {
         xQueryPool = new XQueryPool(conf);
         //REFACTOR : construct then... configure
         processMonitor = new ProcessMonitor();
-        xqueryStats = new PerformanceStats();
+        xqueryStats = new PerformanceStats(this);
+
         //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(conf, new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure

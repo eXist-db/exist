@@ -8,10 +8,12 @@ declare function prof:main() as element()
 declare function prof:display-page() as element() {
     let $action := request:get-parameter("action", ())
     let $result :=
-        if ($action eq "Enable") then
-            system:enable-tracing()
+        if ($action eq "Clear") then
+            system:clear-trace()
+        else if ($action eq "Enable") then
+            system:enable-tracing(true())
         else if ($action eq "Disable") then
-            system:disable-tracing()
+            system:enable-tracing(false())
         else
             ()
     let $sort := request:get-parameter("sort", "time")
@@ -74,11 +76,12 @@ declare function prof:sort($function as element(prof:function), $sort as xs:stri
 };
 
 declare function prof:display-form($trace as element(), $sort as xs:string) {
-    let $label := if ($trace/prof:function) then 'Disable' else 'Enable'
+    let $label := if (system:tracing-enabled()) then 'Disable' else 'Enable'
     return
         <form action="{session:encode-url(request:get-uri())}" method="GET">
             <div class="inner-panel">
                 <button type="submit" name="action" value="{$label}">{$label} Tracing</button>
+                <button type="submit" name="action" value="Clear">Clear</button>
                 <button type="submit" name="action" value="refresh">Refresh</button>
                 <input type="hidden" name="panel" value="trace"/>
                 <input type="hidden" name="sort" value="{$sort}"/>
