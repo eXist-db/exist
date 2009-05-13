@@ -23,10 +23,7 @@
 package org.exist.xquery.functions.system;
 
 import org.exist.xquery.*;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.*;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
@@ -36,19 +33,25 @@ public class FunctionTrace extends BasicFunction {
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
                 new QName( "trace", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
-                "Get a list of running jobs (dba role only).",
+                "Returns function call statistics gathered by the trace log.",
                 null,
                 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
         ),
         new FunctionSignature(
                 new QName( "enable-tracing", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
-                "Get a list of running jobs (dba role only).",
-                null,
+                "Enable function tracing on the database instance.",
+                new SequenceType[] { new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE) },
                 new SequenceType(Type.ITEM, Cardinality.EMPTY)
         ),
         new FunctionSignature(
-                new QName( "disable-tracing", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
-                "Get a list of running jobs (dba role only).",
+                new QName( "tracing-enabled", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
+                "Returns true if function tracing is currently enabled on the database instance.",
+                null,
+                new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+        ),
+        new FunctionSignature(
+                new QName( "clear-trace", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
+                "Clear the global trace log.",
                 null,
                 new SequenceType(Type.ITEM, Cardinality.EMPTY)
         )
@@ -59,11 +62,17 @@ public class FunctionTrace extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (isCalledAs("enable-tracing"))
-            context.getBroker().getConfiguration().setProperty(Profiler.CONFIG_PROPERTY_TRACE, "functions");
-        else if (isCalledAs("disable-tracing"))
-            context.getBroker().getConfiguration().setProperty(Profiler.CONFIG_PROPERTY_TRACE, "");
-        else {
+        if (isCalledAs("clear-trace")) {
+            context.getBroker().getBrokerPool().getPerformanceStats().clear();
+
+        } else if (isCalledAs("enable-tracing")) {
+            boolean enable = args[0].effectiveBooleanValue();
+            context.getBroker().getBrokerPool().getPerformanceStats().setEnabled(enable);
+
+        } else if (isCalledAs("tracing-enabled")) {
+            return BooleanValue.valueOf(context.getBroker().getBrokerPool().getPerformanceStats().isEnabled());
+            
+        } else {
             MemTreeBuilder builder = context.getDocumentBuilder();
 
             builder.startDocument();

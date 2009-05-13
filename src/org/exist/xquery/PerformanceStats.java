@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.storage.BrokerPool;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.HashMap;
@@ -37,6 +38,9 @@ public class PerformanceStats {
 
     public final static String XML_NAMESPACE = "http://exist-db.org/xquery/profiling";
     public final static String XML_PREFIX = "stats";
+
+    public static String CONFIG_PROPERTY_TRACE = "xquery.profiling.trace";
+    public static String CONFIG_ATTR_TRACE = "trace";
 
     private static class FunctionStats {
 
@@ -69,6 +73,29 @@ public class PerformanceStats {
     }
 
     private HashMap<QName, FunctionStats> functions = new HashMap<QName, FunctionStats>();
+
+    private boolean enabled = false;
+
+    private BrokerPool pool;
+
+    public PerformanceStats(BrokerPool pool) {
+        this.pool = pool;
+        if (pool != null) {
+            String config = (String) pool.getConfiguration().getProperty(PerformanceStats.CONFIG_PROPERTY_TRACE);
+            if (config != null)
+                enabled = config.equals("functions") || config.equals("yes");
+        }
+    }
+
+    public void setEnabled(boolean enable) {
+        enabled = enable;
+    }
+
+    public boolean isEnabled() {
+        return enabled ||
+                (pool != null && pool.getPerformanceStats() != this &&
+                        pool.getPerformanceStats().isEnabled());
+    }
 
     public void recordFunctionCall(QName qname, String source, long elapsed) {
         FunctionStats stats = functions.get(qname);
@@ -136,7 +163,11 @@ public class PerformanceStats {
         }
         builder.endElement();
     }
-    
+
+    public synchronized void clear() {
+        functions.clear();
+    }
+
     public void reset() {
         functions.clear();
     }
