@@ -234,6 +234,7 @@ function doSave(saveAs) {
             YAHOO.util.Connect.setDefaultPostHeader(false);
             YAHOO.util.Connect.initHeader('Content-Type', currentResource.mimeType);
             YAHOO.util.Connect.asyncRequest('PUT', '/exist/rest' + args[1] + '/' + args[0], callback, code);
+            YAHOO.util.Connect.setDefaultPostHeader(true);
         });
         dialog.show();
     } else {
@@ -248,6 +249,7 @@ function doSave(saveAs) {
         YAHOO.util.Connect.setDefaultPostHeader(false);
         YAHOO.util.Connect.initHeader('Content-Type', currentResource.mimeType);
         YAHOO.util.Connect.asyncRequest('PUT', '/exist/rest' + currentResource.path, callback, code);
+        YAHOO.util.Connect.setDefaultPostHeader(true);
     }
 }
 
@@ -275,6 +277,8 @@ function retrieveStored() {
 function selectStored() {
     var saved = document.getElementById('saved');
     initEditor(saved.options[saved.selectedIndex].value);
+    currentResource = new Resource();
+    currentResource.data = saved.options[saved.selectedIndex].value;
     log('Query examples loaded.');
 }
 
@@ -335,7 +339,12 @@ function compileAndCheck() {
     var params = 'check=' + escapeQuery(code);
     var callback = {
         success: function (response) {
-            var root = response.responseXML.documentElement;
+            var xml = response.responseXML;
+            if (!xml) {
+                error(response.responseText);
+                return;
+            }
+            var root = xml.documentElement;
             if (!root.hasChildNodes())
                 clearErrors();
             else {
@@ -574,8 +583,11 @@ function switchSlot(node) {
 	var id = node.id;
     var currentQuery = document.getElementById('codeEditor').value;
 	var cookie = getCookie(id);
-	if (cookie != null)
+	if (cookie != null) {
         initEditor(cookie, 'xquery');
+        currentResource = new Resource();
+        currentResource.data = cookie;
+    }
 	if (currentQuery.length > 0) {
 		if (cookie != null)
 			deleteCookie(id, cookie);
