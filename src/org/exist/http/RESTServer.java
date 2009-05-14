@@ -1196,6 +1196,7 @@ public class RESTServer {
 			throw new PermissionDeniedException("Not allowed to read resource");
 		}
 
+        response.addDateHeader("Last-Modified", resource.getMetadata().getLastModified());
 		if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary resource
 
