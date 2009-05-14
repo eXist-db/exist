@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="all" name="xprocxq">
+    <!-- $Id -->
+
+    <property name="top.dir" value=".."/>
+    <property file="${top.dir}/build.properties" />
+    <property file="local.build.properties" />
     
-	<property name="xprocxq.dir" value="xprocxq/main"/>
-	<property environment="env"/>
+    <property name="xprocxq.dir" value="xprocxq/main"/>
+
 
     <target name="all">
         <echo message="-------------------------------------"/>
         <echo message="Building XProcXQ"/>
         <echo message="-------------------------------------"/>
         <ant dir="${xprocxq.dir}" antfile="build.xml" target="exist-jar" inheritall="false"/>
-        <delete dir="${env.EXIST_HOME}/lib/user" includes="xprocxq*.jar"/>
-        <copy todir="${env.EXIST_HOME}/lib/user">
+        <delete dir="${top.dir}/lib/user" includes="xprocxq*.jar"/>
+        <copy todir="${top.dir}/lib/user">
             <fileset dir="${xprocxq.dir}/dist">
                 <include name="*.jar"/>
             </fileset>
