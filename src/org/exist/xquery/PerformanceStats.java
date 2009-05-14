@@ -29,7 +29,6 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.HashMap;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Arrays;
 import java.io.StringWriter;
 import java.io.PrintWriter;
@@ -110,8 +109,7 @@ public class PerformanceStats {
     }
 
     public synchronized void merge(PerformanceStats otherStats) {
-        for (Iterator<FunctionStats> i = otherStats.functions.values().iterator(); i.hasNext();) {
-            FunctionStats other = i.next();
+        for (FunctionStats other: otherStats.functions.values()) {
             FunctionStats mine = functions.get(other.qname);
             if (mine == null) {
                 functions.put(other.qname, other);
@@ -140,8 +138,9 @@ public class PerformanceStats {
     private FunctionStats[] sort() {
         FunctionStats stats[] = new FunctionStats[functions.size()];
         int j = 0;
-        for (Iterator<FunctionStats> i = functions.values().iterator(); i.hasNext(); j++) {
-            stats[j] = i.next();
+        for (FunctionStats next: functions.values() ) {
+            stats[j] = next;
+            j++;
         }
         Arrays.sort(stats, new CompareByTime());
         return stats;
