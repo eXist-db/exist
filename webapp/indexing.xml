@@ -49,6 +49,16 @@
                 <listitem>
                     <para>
                         <emphasis>
+                            <ulink url="lucene.xml">New Full Text Indexes</ulink>
+                        </emphasis>: new full text indexing module
+                        which may replace eXist's builtin full text index in the future.
+                        Prefer this index over the old builtin implementation. It is faster and has 
+                        more features.
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>
                             <ulink url="#ngramidx">NGram Indexes</ulink>
                         </emphasis>: These map specific text nodes and attributes of the documents in a collection
                         to splitted tokens of n-characters (where n = 3 by default). Very efficient for exact substring searches and for queries on
@@ -301,6 +311,12 @@
                 </note>
             </section>
 
+            <section id="luceneidx">
+                <title>New Full Text Index</title>
+                
+                <para>Please refer to the <ulink url="lucene.xml">separate documentation</ulink>.</para>
+            </section>
+            
             <section id="ngramidx">
                 <title>NGram Index</title>
 
@@ -799,7 +815,13 @@ include.index.spatial = false
                         settings are ok as they will add a virtual break between the elements.</para>
 
                 </section>
-
+                
+                <section id="luceneidx">
+                    <title>New Full Text Index</title>
+                    
+                    <para>Please refer to the <ulink url="lucene.xml">separate documentation</ulink>.</para>
+                </section>
+                
                 <section>
                     <title>N-gram index configuration</title>
 

@@ -8,7 +8,7 @@
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>New Full Text Indexes Based on Lucene</title>
+        <title>New Full Text Index</title>
         <section>
             <title>Introduction</title>
 
@@ -195,10 +195,9 @@ include.index.lucene = true
 
             <example>
                 <title>A Simple Query</title>
-                <programlisting language="xquery"><![CDATA[for $s in //SPEECH[ft:query(LINE, 'witch*')]
-order by ft:score($s) descending
-return $s
-]]></programlisting>
+                <programlisting language="xquery"><![CDATA[for $m in //SPEECH[ft:query(., "boil bubble")]
+order by ft:score($m) descending
+return $m]]></programlisting>
             </example>
 
             <para>The query function takes a query string in Lucene's default <ulink
@@ -206,8 +205,15 @@ return $s
                     syntax</ulink>. It returns a set of nodes which are relevant with respect to the
                 query. Lucene assigns a relevance score or rank to each match. This score is
                 preserved by eXist and can be accessed through the score function, which returns a
-                decimal value. The higher the score, the more relevant is the text.</para>
+                decimal value. The higher the score, the more relevant is the text. You can use
+                Lucene's features to "boost" a certain term in the query, i.e. give it a higher or
+                lower influence on the final rank.</para>
 
+            <para>Please note that the score is computed relative to the root context of the index.
+                If you created an index on SPEECH, all scores will be computed on basis of the text
+                in the SPEECH nodes, even though your actual query does only search for LINE children of 
+                SPEECH.</para>
+                
             <para>The Lucene module is fully supported by eXist's query-rewriting optimizer, which
                 means that the query engine can rewrite the XQuery expression to make best use of
                 the available indexes. All the rules and hints given in the <ulink url="tuning.xml"
@@ -215,24 +221,163 @@ return $s
 
             <section>
                 <title>Describing Queries in XML</title>
-                
+
                 <para>Lucene's default query syntax does not provide access to all available
-                    features. However, eXist's <function>ft:query</function> function also accepts
-                    a description of the query in XML as an alternative to passing a query string.
-                    The XML description is transformed into an internal tree of query objects, which
-                    is directly passed to Lucene for execution. This has some advantages. For example,
-                    you can specify if the order of terms should be relevant for a phrase query:</para>
-                
+                    features. However, eXist's <function>ft:query</function> function also accepts a
+                    description of the query in XML as an alternative to passing a query string. The
+                    XML description is transformed into an internal tree of query objects, which is
+                    directly passed to Lucene for execution. This has some advantages. For example,
+                    you can specify if the order of terms should be relevant for a phrase
+                    query:</para>
+
                 <example>
                     <title>Using an XML Definition of the Query</title>
                     <programlisting language="xquery"><![CDATA[let $query :=
     <query>
-        <phrase ordered="no" slop="5">scottland king</phrase>
+        <near ordered="no">miserable nation</near>
     </query>
 return
-    //SPEECH[ft:contains(LINE, $query)]]></programlisting>
+    //SPEECH[ft:query(., $query)]]]></programlisting>
                 </example>
+
+                <para>The following elements may occur within a query description:</para>
                 
+                <variablelist>
+                    <varlistentry>
+                        <term><sgmltag>term</sgmltag></term>
+                        <listitem>
+                            <para>Defines a single term to be searched in the index. If the
+                                root query element contains a sequence of term
+                                elements, they will be combined as in a boolean "or" query. For example:
+                            </para>
+                            
+                            <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <term>nation</term><term>miserable</term>
+    </query>
+return
+//SPEECH[ft:query(., $query)]]]></synopsis>
+                            
+                            <para>finds all SPEECH elements containing either "nation" or "miserable" or
+                                both.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term><sgmltag>bool</sgmltag></term>
+                        <listitem>
+                            <para>Constructs a boolean query from its children. Each child element may
+                                have an occurrance indicator, which could be either <option>must</option>,
+                                <option>should</option> or <option>not</option>:</para>
+                            
+                            <variablelist>
+                                <varlistentry>
+                                    <term>must</term>
+                                    <listitem><para>this part of the query <emphasis>must</emphasis>
+                                        be matched</para></listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>should</term>
+                                    <listitem><para>this part of the query <emphasis>should</emphasis>
+                                        be matched, but doesn't need to</para></listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>not</term>
+                                    <listitem><para>this part of the query <emphasis>must not</emphasis>
+                                        be matched</para></listitem>
+                                </varlistentry>
+                            </variablelist>
+                            
+                            <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <bool><term occur="must">boil</term><term occur="should">bubble</term></bool>
+    </query>
+return //SPEECH[ft:query(LINE, $query)]]]></synopsis>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term><sgmltag>phrase</sgmltag></term>
+                        <listitem>
+                            <para>Searches for a group of terms occurring in the correct order.
+                                The element may either contain explicit <sgmltag>term</sgmltag>
+                                elements or text content. Text will be automatically tokenized into 
+                                a sequence of terms. For example:</para>
+                            
+                            <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <phrase>cauldron boil</phrase>
+    </query>
+return //SPEECH[ft:query(., $query)]
+]]></synopsis>
+              
+                            <para>has the same effect as:</para>
+                            
+                            <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <phrase><term>cauldron</term><term>boil</term></phrase>
+    </query>
+return //SPEECH[ft:query(., $query)]
+]]></synopsis>
+                            
+                            <para>Attribute <parameter>slop</parameter> can be used for a
+                                proximity search: Lucene will try to find terms which are within the 
+                                specified distance:</para>
+                            
+                            <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <phrase slop="10"><term>frog</term><term>dog</term></phrase>
+    </query>
+return //SPEECH[ft:query(., $query)]
+]]></synopsis>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term><sgmltag>near</sgmltag></term>
+                        <listitem>
+                            <para><sgmltag>near</sgmltag> is a powerful alternative to <sgmltag>phrase</sgmltag>
+                            and one of the features not available through the standard Lucene query parser.</para>
+                            
+                            <para>If the element has text content only, it will be tokenized into terms and the expression
+                                behaves like <sgmltag>phrase</sgmltag>. Otherwise it may contain any combination of
+                                <sgmltag>term</sgmltag>, <sgmltag>first</sgmltag> and nested <sgmltag>near</sgmltag>
+                                elements. This makes it possible to search for two sequences of terms which are within
+                                a specific distance. For example:</para>
+                            
+                            <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <near slop="20"><term>snake</term><near>tongue dog</near></near>
+    </query>
+return //SPEECH[ft:query(., $query)]]]></synopsis>
+                            
+                            <para>Element <sgmltag>first</sgmltag> matches a span against the start
+                                of the text in the context node. It takes an optional attribute
+                                <parameter>end</parameter> to specify the maximum distance from the
+                                start of the text. For example:</para>
+                                
+                                <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <near slop="50"><first end="2"><near>second witch</near></first><near>tongue dog</near></near>
+    </query>
+    return //SPEECH[ft:query(., $query)]]]></synopsis>
+                            
+                            <para>As shown above, the content of <sgmltag>first</sgmltag> can again
+                                be text, a <sgmltag>term</sgmltag> or <sgmltag>near</sgmltag>.</para>
+                            
+                            <para>Contrary to <sgmltag>phrase</sgmltag>, <sgmltag>near</sgmltag> can
+                                be told to ignore the order of its components. Use parameter
+                                <parameter>ordered="yes|no"</parameter> to change near's behaviour.
+                                For example:</para>
+                            
+                            <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <near slop="100" ordered="no"><term>snake</term><term>bake</term></near>
+    </query>
+return //SPEECH[ft:query(., $query)]]]></synopsis>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                <para>All elements in a query may have an optional <parameter>boost</parameter>
+                    parameter (a float value). The score of the nodes matching the corresponding 
+                    query part will be multiplied by the <emphasis>boost</emphasis>.</para>
             </section>
         </section>
     </chapter>
