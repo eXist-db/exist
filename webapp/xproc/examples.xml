@@ -37,6 +37,12 @@
                     </td>
                     <td>Pass an XML fragment through an XSLT identity transformation.</td>
                 </tr>
+                <tr>
+                    <td>
+                        <ulink url="twitter.xproc">twitter.xproc</ulink>
+                    </td>
+                    <td>Retrieve a feed from twitter in Atom format and display it.</td>
+                </tr>
             </tbody>
         </table>
     </section>
