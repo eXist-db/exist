@@ -219,7 +219,8 @@ public class XQuery {
         
         //do any preparation before execution
         context.prepare();
-        
+
+        context.getProfiler().traceQueryStart();
         broker.getBrokerPool().getProcessMonitor().queryStarted(context.getWatchDog());
         try {
         	Sequence result = expression.eval(contextSequence);
@@ -233,6 +234,7 @@ public class XQuery {
         	
         	return result;
         } finally {
+            context.getProfiler().traceQueryEnd(context);
             expression.reset();
             if (resetContext)
                 context.reset();

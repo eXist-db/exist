@@ -316,7 +316,6 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 if (preselectResult == null)
                     preselectResult = temp;
                 else {
-                    LOG.debug("Union: " + preselectResult.getLength() + " -> " + temp.getLength());
                     preselectResult = preselectResult.union(temp);
                 }
             }
