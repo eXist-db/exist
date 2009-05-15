@@ -75,6 +75,8 @@ public class Profiler {
 
     private Stack<Long> functionStack;
 
+    private long queryStart = 0;
+
     private BrokerPool pool;
 
     public Profiler(BrokerPool pool) {
@@ -142,6 +144,14 @@ public class Profiler {
      */
     public final int verbosity() {
         return verbosity;
+    }
+
+    public final void traceQueryStart() {
+        queryStart = System.currentTimeMillis();
+    }
+
+    public final void traceQueryEnd(XQueryContext context) {
+        stats.recordQuery(context.getSourceKey(), (System.currentTimeMillis() - queryStart));
     }
 
     public final void traceFunctionStart(FunctionCall function) {

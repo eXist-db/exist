@@ -31,18 +31,38 @@ public class TimerPragma extends Pragma {
 
     public  final static QName TIMER_PRAGMA = new QName("timer", Namespaces.EXIST_NS, "exist");
     
-    private final static Logger LOG = Logger.getLogger(TimerPragma.class);
+    private Logger log = null;
     
     private long start;
-    
+    private boolean verbose = true;
+
     public TimerPragma(QName qname, String contents) throws XPathException {
         super(qname, contents);
+        if (contents != null && contents.length() > 0) {
+            String options[] = Option.tokenize(contents);
+            for (int i = 0; i < options.length; i++) {
+                String param[] = Option.parseKeyValuePair(options[i]);
+                if (param == null)
+                    throw new XPathException("Invalid content found for pragma exist:optimize: " + contents);
+                if ("verbose".equals(param[0])) {
+                    verbose = "yes".equals(param[1]);
+                } else if ("logger".equals(param[0])) {
+                    log = Logger.getLogger(param[1]);
+                }
+            }
+        }
+        if (log == null)
+            log = Logger.getLogger(TimerPragma.class);
     }
 
     public void after(XQueryContext context, Expression expression) throws XPathException {
         long elapsed = System.currentTimeMillis() - start;
-        if (LOG.isTraceEnabled())
-            LOG.trace("Elapsed: " + elapsed + "ms. for expression:\n" + ExpressionDumper.dump(expression));
+        if (log.isTraceEnabled()) {
+            if (verbose)
+                log.trace("Elapsed: " + elapsed + "ms. for expression:\n" + ExpressionDumper.dump(expression));
+            else
+                log.trace("Elapsed: " + elapsed + "ms.");
+        }
     }
 
     public void before(XQueryContext context, Expression expression) throws XPathException {

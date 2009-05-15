@@ -30,6 +30,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import java.util.HashMap;
 import java.util.Comparator;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 
@@ -41,20 +42,33 @@ public class PerformanceStats {
     public static String CONFIG_PROPERTY_TRACE = "xquery.profiling.trace";
     public static String CONFIG_ATTR_TRACE = "trace";
 
-    private static class FunctionStats {
+    private static class QueryStats {
 
-        private QName qname;
-        private String source = null;
-        private long executionTime = 0;
-        private int callCount = 1;
+        String source = null;
+        long executionTime = 0;
+        int callCount = 1;
 
-        FunctionStats(QName name) {
-            this.qname = name;
+        QueryStats(String source) {
+            this.source = source;
         }
 
         public void recordCall(long elapsed) {
             executionTime += elapsed;
             callCount++;
+        }
+
+        public int hashCode() {
+            return source.hashCode();
+        }
+    }
+
+    private static class FunctionStats extends QueryStats {
+
+        QName qname;
+
+        FunctionStats(String source, QName name) {
+            super(source);
+            this.qname = name;
         }
 
         public int hashCode() {
@@ -71,6 +85,7 @@ public class PerformanceStats {
         }
     }
 
+    private HashMap<String, QueryStats> queries = new HashMap<String, QueryStats>();
     private HashMap<QName, FunctionStats> functions = new HashMap<QName, FunctionStats>();
 
     private boolean enabled = false;
@@ -96,12 +111,24 @@ public class PerformanceStats {
                         pool.getPerformanceStats().isEnabled());
     }
 
+    public void recordQuery(String source, long elapsed) {
+        if (source == null)
+            return;
+        QueryStats stats = queries.get(source);
+        if (stats == null) {
+            stats = new QueryStats(source);
+            stats.executionTime = elapsed;
+            queries.put(source, stats);
+        } else {
+            stats.recordCall(elapsed);
+        }
+    }
+
     public void recordFunctionCall(QName qname, String source, long elapsed) {
         FunctionStats stats = functions.get(qname);
         if (stats == null) {
-            stats = new FunctionStats(qname);
+            stats = new FunctionStats(source, qname);
             stats.executionTime = elapsed;
-            stats.source = source;
             functions.put(qname, stats);
         } else {
             stats.recordCall(elapsed);
@@ -109,6 +136,15 @@ public class PerformanceStats {
     }
 
     public synchronized void merge(PerformanceStats otherStats) {
+        for (QueryStats other: otherStats.queries.values()) {
+            QueryStats mine = queries.get(other.source);
+            if (mine == null) {
+                queries.put(other.source, other);
+            } else {
+                mine.callCount += other.callCount;
+                mine.executionTime += other.executionTime;
+            }
+        }
         for (FunctionStats other: otherStats.functions.values()) {
             FunctionStats mine = functions.get(other.qname);
             if (mine == null) {
@@ -147,16 +183,23 @@ public class PerformanceStats {
     }
 
     public synchronized void toXML(MemTreeBuilder builder) {
-        FunctionStats[] stats = sort();
         AttributesImpl attrs = new AttributesImpl();
         builder.startElement(new QName("calls", XML_NAMESPACE, XML_PREFIX), null);
-        for (int i = 0; i < stats.length; i++) {
+        for (QueryStats stats : queries.values()) {
             attrs.clear();
-            attrs.addAttribute("", "name", "name", "CDATA", stats[i].qname.toString());
-            attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats[i].executionTime / 1000.0));
-            attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats[i].callCount));
-            if (stats[i].source != null)
-                attrs.addAttribute("", "source", "source", "CDATA", stats[i].source);
+            attrs.addAttribute("", "source", "source", "CDATA", stats.source);
+            attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
+            attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.callCount));
+            builder.startElement(new QName("query", XML_NAMESPACE, XML_PREFIX), attrs);
+            builder.endElement();
+        }
+        for (FunctionStats stats: functions.values()) {
+            attrs.clear();
+            attrs.addAttribute("", "name", "name", "CDATA", stats.qname.toString());
+            attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
+            attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.callCount));
+            if (stats.source != null)
+                attrs.addAttribute("", "source", "source", "CDATA", stats.source);
             builder.startElement(new QName("function", XML_NAMESPACE, XML_PREFIX), attrs);
             builder.endElement();
         }
@@ -164,10 +207,12 @@ public class PerformanceStats {
     }
 
     public synchronized void clear() {
+        queries.clear();
         functions.clear();
     }
 
     public void reset() {
+        queries.clear();
         functions.clear();
     }
 }
