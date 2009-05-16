@@ -57,7 +57,7 @@ declare function tc:set-options($select as xs:string, $options as element(html:o
 };
 
 (: twitter.xql passes the timeline feed in request attribute "twitter.feed" :)
-let $feed := (./atom:feed)
+let $feed := (.//atom:feed)
 return
     <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
