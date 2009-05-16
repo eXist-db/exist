@@ -5,7 +5,11 @@
     xmlns:xproc="http://xproc.net/xproc"
     xmlns:xhtml="http://www.w3.org/1999/xhtml"
     xmlns:atom="http://www.w3.org/2005/Atom">
-    <p:http-request name="http-get">
+    
+    <p:load name="read-from-home" href="/db/twitter/existdb.atom"/>
+    <p:identity/>
+    
+    <!--p:http-request name="http-get">
         <p:input port="source">
             <p:inline>
                 <c:request href="http://twitter.com/statuses/user_timeline/existdb.atom" 
@@ -22,9 +26,9 @@
                 content-type="plain/text" 
                 xproc:escape="false"/>
         </p:input>
-    </p:xquery>
+    </p:xquery-->
     <!-- Doesn't work, complains about undefined namespace xhtml: -->
     <!--p:filter select="/c:result/xhtml:html"/-->
     <!-- Works: -->
-    <p:filter select="/c:result/*"/>
+    <!--p:filter select="/c:result/*"/-->
 </p:pipeline>
