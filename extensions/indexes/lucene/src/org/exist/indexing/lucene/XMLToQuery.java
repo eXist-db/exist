@@ -305,10 +305,14 @@ public class XMLToQuery {
         return query;
     }
 
-    private void setBoost(Element node, Query query) {
+    private void setBoost(Element node, Query query) throws XPathException {
         String boost = node.getAttribute("boost");
         if (boost != null && boost.length() > 0) {
-            query.setBoost(Integer.parseInt(boost));
+            try {
+                query.setBoost(Float.parseFloat(boost));
+            } catch (NumberFormatException e) {
+                throw new XPathException("Bad value for boost in query parameter. Got: " + boost);
+            }
         }
     }
 
