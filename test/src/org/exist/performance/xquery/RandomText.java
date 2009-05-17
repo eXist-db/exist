@@ -78,7 +78,7 @@ public class RandomText extends BasicFunction {
             words = new String[list.size()];
             list.toArray(words);
         } catch (PermissionDeniedException e) {
-			throw new XPathException(getASTNode(), e.getMessage(), e);
+			throw new XPathException(this, e.getMessage(), e);
 		}
     }
 }
