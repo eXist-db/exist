@@ -97,7 +97,7 @@ public class FunError extends BasicFunction {
 			if (args.length == 3)
 				message += ": " + serializeErrorObject(args[2]);
 		}
-		throw new XPathException(getASTNode(), message + " (" +
+		throw new XPathException(this, message + " (" +
 				errQName.getNamespaceURI() + '#' + errQName.getLocalName() + ')');
 	}
 	
@@ -111,7 +111,7 @@ public class FunError extends BasicFunction {
 				try {
 					buf.append(serializer.serialize((NodeValue) next));
 				} catch (SAXException e) {
-					throw new XPathException(getASTNode(), "An exception occurred while serializing node to log: " +
+					throw new XPathException(this, "An exception occurred while serializing node to log: " +
 							"e.getMessage()", e);
 				}
 			} else

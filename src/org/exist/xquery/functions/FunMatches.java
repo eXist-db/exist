@@ -195,7 +195,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                     contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
             hasUsedIndex = true;
         } catch (EXistException e) {
-            throw new XPathException(getASTNode(), "Error during index lookup: " + e.getMessage(), e);
+            throw new XPathException(this, "Error during index lookup: " + e.getMessage(), e);
         }
         return preselectResult;
     }
@@ -360,7 +360,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                     else
                         result = index.match(docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
                 } catch (EXistException e) {
-                    throw new XPathException(getASTNode(), e.getMessage(), e);
+                    throw new XPathException(this, e.getMessage(), e);
                 }
             }
         } else {
@@ -400,7 +400,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         try {
 			pattern = RegexTranslator.translate(pattern, true);
 		} catch (RegexSyntaxException e) {
-			throw new XPathException(getASTNode(), "Conversion from XPath2 to Java regular expression " +
+			throw new XPathException(this, "Conversion from XPath2 to Java regular expression " +
 					"syntax failed: " + e.getMessage(), e);
 		}
 		return pattern;
@@ -444,7 +444,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 			return matcher.find();
 			
 		} catch (PatternSyntaxException e) {
-			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
+			throw new XPathException(this, "Invalid regular expression: " + e.getMessage(), e);
 		}
     }
 

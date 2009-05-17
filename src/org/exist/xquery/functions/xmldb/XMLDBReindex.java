@@ -65,7 +65,7 @@ public class XMLDBReindex extends BasicFunction {
 
         // Check for DBA user
         if (!context.getUser().hasDbaRole()) {
-            throw new XPathException(getASTNode(), "Permission denied, user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
+            throw new XPathException(this, "Permission denied, user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
         }
 
         // Get collection path
@@ -73,7 +73,7 @@ public class XMLDBReindex extends BasicFunction {
 
         // Collection should start with /db
         if (!collectionArg.startsWith(ROOTCOLLECTION)) {
-            throw new XPathException(getASTNode(),
+            throw new XPathException(this,
                     "Collection should start with " + ROOTCOLLECTION + "");
         }
 
@@ -81,7 +81,7 @@ public class XMLDBReindex extends BasicFunction {
         XmldbURI colName = XmldbURI.create(collectionArg);
         Collection coll = context.getBroker().getCollection(colName);
         if (coll == null) {
-            throw new XPathException(getASTNode(),
+            throw new XPathException(this,
                     "Collection " + colName.toString() + " does not exist.");
         }
 
@@ -90,7 +90,7 @@ public class XMLDBReindex extends BasicFunction {
             context.getBroker().reindexCollection(colName);
 
         } catch (PermissionDeniedException ex) {
-            throw new XPathException(getASTNode(), ex.getMessage());
+            throw new XPathException(this, ex.getMessage());
         }
 
         return Sequence.EMPTY_SEQUENCE;

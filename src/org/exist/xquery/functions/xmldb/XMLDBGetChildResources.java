@@ -64,7 +64,7 @@ public class XMLDBGetChildResources extends XMLDBAbstractCollectionManipulator {
 			}
 			return result;
 		} catch (XMLDBException e) {
-			throw new XPathException(getASTNode(), "Failed to retrieve child resources", e);
+			throw new XPathException(this, "Failed to retrieve child resources", e);
 		}
 	}
 }

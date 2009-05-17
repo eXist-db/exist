@@ -87,7 +87,7 @@ public class SimpleStep extends Step {
     				set = set.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);
     				break;
     			default:
-    				throw new XPathException(getASTNode(), "Wrong axis specified");
+    				throw new XPathException(this, "Wrong axis specified");
     		}
             result = set;
         }

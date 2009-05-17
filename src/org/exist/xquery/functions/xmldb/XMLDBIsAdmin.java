@@ -73,7 +73,7 @@ public class XMLDBIsAdmin extends BasicFunction {
 				return Sequence.EMPTY_SEQUENCE;
 			return user.hasDbaRole() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} catch (XMLDBException xe) {
-			throw new XPathException(getASTNode(), "Failed to access user " + userName, xe);
+			throw new XPathException(this, "Failed to access user " + userName, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }

@@ -54,7 +54,7 @@ public class FunctionFactory {
 		try {
 			qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
 		} catch(XPathException e) {
-			e.setASTNode(ast);
+            e.setLocation(ast.getLine(), ast.getColumn());
 			throw e;
 		}
 		String local = qname.getLocalName();
@@ -65,27 +65,27 @@ public class FunctionFactory {
 			// near(node-set, string)
 			if (local.equals("near")) {
 				if (params.size() < 2)
-					throw new XPathException(ast, "XPST0017: Function near() requires two arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function near() requires two arguments");
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
-					throw new XPathException(ast, "Second argument to near is empty");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to near is empty");
 				Expression e1 = p1.getExpression(0);
 				ExtNear near = new ExtNear(context);
-				near.setASTNode(ast);
+                near.setLocation(ast.getLine(), ast.getColumn());
 				near.addTerm(e1);
 				near.setPath((PathExpr) params.get(0));
 
 				if (params.size() > 2) {
 				    p1 = (PathExpr) params.get(2);
 				    if (p1.getLength() == 0) {
-					throw new XPathException(ast, "Max distance argument to near is empty");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "Max distance argument to near is empty");
 				    }
 				    near.setMaxDistance(p1);
 				    
 				    if (params.size() == 4) {
 					p1 = (PathExpr) params.get(3);
 					if (p1.getLength() == 0) {
-					    throw new XPathException(ast, "Min distance argument to near is empty");
+					    throw new XPathException(ast.getLine(), ast.getColumn(), "Min distance argument to near is empty");
 					}
 					near.setMinDistance(p1);
 				    }
@@ -97,13 +97,13 @@ public class FunctionFactory {
 			// phrase(node-set, string)
             if (local.equals("phrase")) {
                 if (params.size() < 2)
-                    throw new XPathException(ast, "XPST0017: Function phrase() requires two arguments");
+                    throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function phrase() requires two arguments");
                 PathExpr p1 = (PathExpr) params.get(1);
                 if (p1.getLength() == 0)
-                    throw new XPathException(ast, "Second argument to phrase is empty");   
+                    throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to phrase is empty");
                 Expression e1 = p1.getExpression(0);
                 ExtPhrase phrase = new ExtPhrase(context);
-                phrase.setASTNode(ast);
+                phrase.setLocation(ast.getLine(), ast.getColumn());
                 phrase.addTerm(e1);
                 phrase.setPath((PathExpr) params.get(0));                                          
                 step = phrase;
@@ -112,16 +112,16 @@ public class FunctionFactory {
 			// starts-with(node-set, string)
 			if (local.equals("starts-with")) {
 				if (params.size() < 2)
-					throw new XPathException(ast, "XPST0017: Function starts-with() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function starts-with() requires two or three arguments");
 				if (params.size() > 3)
-					throw new XPathException(ast, "XPST0017: Function starts-with() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function starts-with() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
-					throw new XPathException(ast, "Second argument to starts-with is empty");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to starts-with is empty");
 				GeneralComparison op = 
-					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_RIGHT);				
-				op.setASTNode(ast);
+					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_RIGHT);
+                op.setLocation(ast.getLine(), ast.getColumn());
 				//TODO : not sure for parent -pb
 	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
 	            "Rewritten start-with as a general comparison with a right truncature");				
@@ -133,19 +133,19 @@ public class FunctionFactory {
 			// ends-with(node-set, string)
 			if (local.equals("ends-with")) {
 				if (params.size() < 2)
-					throw new XPathException(ast, "XPST0017 : Function ends-with() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017 : Function ends-with() requires two or three arguments");
 				if (params.size() > 3)
-					throw new XPathException(ast, "XPST0017 : Function ends-with() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017 : Function ends-with() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
-					throw new XPathException(ast, "Second argument to ends-with is empty");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to ends-with is empty");
 				GeneralComparison op =
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
 				//TODO : not sure for parent -pb
 	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
-	            "Rewritten ends-with as a general comparison with a left truncature");				
-				op.setASTNode(ast);
+	            "Rewritten ends-with as a general comparison with a left truncature");
+                op.setLocation(ast.getLine(), ast.getColumn());
 				if (params.size() == 3)
 					op.setCollation((Expression)params.get(2));
 				step = op;
@@ -154,19 +154,19 @@ public class FunctionFactory {
 			// contains(node-set, string)
 			if (local.equals("contains")) {
 				if (params.size() < 2)
-					throw new XPathException(ast, "XPST0017: Function contains() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function contains() requires two or three arguments");
 				if (params.size() > 3)
-					throw new XPathException(ast, "XPST0017: Function contains() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function contains() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
-					throw new XPathException(ast, "Second argument to contains is empty");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to contains is empty");
 				GeneralComparison op =
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_BOTH);
 				//TODO : not sure for parent -pb
 	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
-	            "Rewritten contains as a general comparison with left and right truncatures");				
-				op.setASTNode(ast);
+	            "Rewritten contains as a general comparison with left and right truncatures");
+                op.setLocation(ast.getLine(), ast.getColumn());
 				if (params.size() == 3)
 					op.setCollation((Expression)params.get(2));
 				step = op;
@@ -175,11 +175,11 @@ public class FunctionFactory {
 		// If yes, the function is a constructor function
 		} else if(uri.equals(Namespaces.SCHEMA_NS) || uri.equals(Namespaces.XPATH_DATATYPES_NS)) {
 			if(params.size() != 1)
-				throw new XPathException(ast, "Wrong number of arguments for constructor function");
+				throw new XPathException(ast.getLine(), ast.getColumn(), "Wrong number of arguments for constructor function");
 			PathExpr arg = (PathExpr)params.get(0);
 			int code= Type.getType(qname);
 			CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
-			castExpr.setASTNode(ast);
+            castExpr.setLocation(ast.getLine(), ast.getColumn());
 			step = castExpr;
 			
 		// Check if the namespace URI starts with "java:". If yes, treat the function call as a call to
@@ -193,18 +193,18 @@ public class FunctionFactory {
 				if(javabinding.equals("yes"))
 				{
 					JavaCall call = new JavaCall(context, qname);
-					call.setASTNode(ast);
+                    call.setLocation(ast.getLine(), ast.getColumn());
 					call.setArguments(params);
 					step = call;
 				}
 				else
 				{
-					throw new XPathException(ast, "Java binding is disabled in the current configuration (see conf.xml). Call to " + qname.getStringValue() + " denied.");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "Java binding is disabled in the current configuration (see conf.xml). Call to " + qname.getStringValue() + " denied.");
 				}
 			}
 			else
 			{
-				throw new XPathException(ast, "Java binding is disabled in the current configuration (see conf.xml). Call to " + qname.getStringValue() + " denied.");
+				throw new XPathException(ast.getLine(), ast.getColumn(), "Java binding is disabled in the current configuration (see conf.xml). Call to " + qname.getStringValue() + " denied.");
 			}
 		}
 		
@@ -220,7 +220,7 @@ public class FunctionFactory {
 					if (def == null) {
 						List funcs = ((InternalModule)module).getFunctionsByName(qname);
 						if (funcs.size() == 0)
-							throw new XPathException(ast, "Function " + qname.getStringValue() + "() " + 
+							throw new XPathException(ast.getLine(), ast.getColumn(), "Function " + qname.getStringValue() + "() " +
 								" is not defined in module namespace: " + qname.getNamespaceURI());
 						else {
 							StringBuffer buf = new StringBuffer();
@@ -232,12 +232,12 @@ public class FunctionFactory {
 								FunctionSignature sig = (FunctionSignature) i.next();
 								buf.append(sig.toString()).append("\r\n");
 							}
-							throw new XPathException(ast, buf.toString());
+							throw new XPathException(ast.getLine(), ast.getColumn(), buf.toString());
 						}
 					}
 					if (((Boolean)context.broker.getConfiguration().getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS)).booleanValue()
 							&& def.getSignature().isDeprecated()) {
-						throw new XPathException(ast, "Access to deprecated functions is not allowed. Call to '" 
+						throw new XPathException(ast.getLine(), ast.getColumn(), "Access to deprecated functions is not allowed. Call to '"
                                 + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
 					}
 					Function func = Function.createFunction(context, ast, def );
@@ -247,11 +247,11 @@ public class FunctionFactory {
                     // function is from an imported XQuery module
 					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname, params.size());
 					if(func == null)
-						throw new XPathException(ast, "Function " + qname.getStringValue() + 
+						throw new XPathException(ast.getLine(), ast.getColumn(), "Function " + qname.getStringValue() +
                                 "() is not defined in namespace '" + qname.getNamespaceURI() + "'");
 					FunctionCall call = new FunctionCall(context, func);
 					call.setArguments(params);
-					call.setASTNode(ast);
+                    call.setLocation(ast.getLine(), ast.getColumn());
 					step = call;
 				}
 			} else {
@@ -259,12 +259,12 @@ public class FunctionFactory {
 				FunctionCall call;
 				if(func != null) {
 					call = new FunctionCall(context, func);
-					call.setASTNode(ast);
+                    call.setLocation(ast.getLine(), ast.getColumn());
 					call.setArguments(params);
 				} else {
 					// create a forward reference which will be resolved later
 					call = new FunctionCall(context, qname, params);
-					call.setASTNode(ast);
+                    call.setLocation(ast.getLine(), ast.getColumn());
 					context.addForwardReference(call);
 				}
 				step = call;

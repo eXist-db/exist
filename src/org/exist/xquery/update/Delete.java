@@ -97,7 +97,7 @@ public class Delete extends Modification {
         	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
-        	XPathException xpe = new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        	XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
         	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
@@ -129,7 +129,7 @@ public class Delete extends Modification {
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.UPDATE)) {
                         //transact.abort(transaction);    
-                        throw new XPathException(getASTNode(), "permission to update document denied");
+                        throw new XPathException(this, "permission to update document denied");
                     }
                     doc.getMetadata().setIndexListener(listener);
                     
@@ -137,13 +137,13 @@ public class Delete extends Modification {
                     parent = (NodeImpl) node.getParentNode();
                     if (parent==null) {
                         LOG.debug("Cannot remove the document element (no parent node)");
-                        throw new XPathException(getASTNode(),
+                        throw new XPathException(this,
                                 "It is not possible to remove the document element.");
 
                     } else if (parent.getNodeType() != Node.ELEMENT_NODE) {
                         LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
                         //transact.abort(transaction);
-                        throw new XPathException(getASTNode(),
+                        throw new XPathException(this,
                                 "you cannot remove the document element. Use update "
                                         + "instead");
                     } else {
@@ -161,13 +161,13 @@ public class Delete extends Modification {
                 commitTransaction(transaction);
             } catch (EXistException e) {
                 //transact.abort(transaction);
-                throw new XPathException(getASTNode(), e.getMessage(), e);
+                throw new XPathException(this, e.getMessage(), e);
     		} catch (PermissionDeniedException e) {
                 //transact.abort(transaction);
-                throw new XPathException(getASTNode(), e.getMessage(), e);
+                throw new XPathException(this, e.getMessage(), e);
     		} catch (LockException e) {
                 //transact.abort(transaction);
-                throw new XPathException(getASTNode(), e.getMessage(), e);
+                throw new XPathException(this, e.getMessage(), e);
     		} finally {
                 unlockDocuments();
             }

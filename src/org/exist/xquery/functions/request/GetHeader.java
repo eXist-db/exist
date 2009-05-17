@@ -73,7 +73,7 @@ public class GetHeader extends BasicFunction {
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null
 				|| var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(getASTNode(),
+			throw new XPathException(this,
 					"Variable $request is not bound to an Java object.");
 
 		// get parameters

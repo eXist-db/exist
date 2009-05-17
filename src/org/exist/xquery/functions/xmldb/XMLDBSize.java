@@ -71,7 +71,7 @@ public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
 			Resource resource = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
 			return new IntegerValue(((EXistResource)resource).getContentLength(), Type.LONG);
 		} catch (XMLDBException e) {
-			throw new XPathException(getASTNode(), "Failed to retrieve size: " + e.getMessage(), e);
+			throw new XPathException(this, "Failed to retrieve size: " + e.getMessage(), e);
 		}
 	}
 }

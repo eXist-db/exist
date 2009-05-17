@@ -5,6 +5,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.ExistPDP;
+import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -42,14 +43,14 @@ public class InternalFunctionCall extends Function
 					pdp.evaluate(request);
 			}
 		} catch (PermissionDeniedException pde) {
-			throw new XPathException(function.getASTNode(), "Access to function '" + functionName + "'  denied.", pde);
+			throw new XPathException(function, "Access to function '" + functionName + "'  denied.", pde);
 		}
 
         try {
             return function.eval(contextSequence, contextItem);
         } catch (XPathException e) {
             if (e.getLine() == 0)
-                e.setASTNode(this.getASTNode());
+                e.setLocation(line, column);
             throw e;
         }
     }
@@ -93,17 +94,24 @@ public class InternalFunctionCall extends Function
 	{
 		return function.getContext();
 	}
-	
-	public void setASTNode(XQueryAST ast)
-	{
-		function.setASTNode(ast);
-	}
-	
-	public XQueryAST getASTNode()
-	{
-		return function.getASTNode();
-	}
-	public void add(Expression s)
+
+    public int getLine() {
+        return function.getLine();
+    }
+
+    public int getColumn() {
+        return function.getColumn();
+    }
+
+    public void setASTNode(XQueryAST ast) {
+        function.setASTNode(ast);
+    }
+
+    public void setLocation(int line, int column) {
+        function.setLocation(line, column);
+    }
+
+    public void add(Expression s)
 	{
 		function.add(s);
 	}

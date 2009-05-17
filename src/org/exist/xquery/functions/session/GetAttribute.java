@@ -83,12 +83,12 @@ public class GetAttribute extends Function
 		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
 		
 		if( var == null || var.getValue() == null ) {
-			// throw( new XPathException( getASTNode(), "Session not set" ) );
+			// throw( new XPathException( this, "Session not set" ) );
 			return( Sequence.EMPTY_SEQUENCE );
 		}
 		
 		if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( getASTNode(), "Variable $session is not bound to a Java object." ) );
+			throw( new XPathException( this, "Variable $session is not bound to a Java object." ) );
 		}
 
 		JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
@@ -113,12 +113,12 @@ public class GetAttribute extends Function
 				// - deliriumsky
 				
 				//log.error(ise.getStackTrace());	
-				//throw new XPathException(getASTNode(), "Session has an IllegalStateException for getAttribute() - " + ise.getStackTrace() + System.getProperty("line.separator") + System.getProperty("line.separator") + "Did you perhaps call session:invalidate() previously?");
+				//throw new XPathException(this, "Session has an IllegalStateException for getAttribute() - " + ise.getStackTrace() + System.getProperty("line.separator") + System.getProperty("line.separator") + "Did you perhaps call session:invalidate() previously?");
 
 				return( Sequence.EMPTY_SEQUENCE );
 			}
 		} else {
-			throw( new XPathException( getASTNode(), "Type error: variable $session is not bound to a session object" ) );
+			throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
 		}
 	}
 }

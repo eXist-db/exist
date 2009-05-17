@@ -52,7 +52,7 @@ public abstract class LockFunction extends Function {
             docs.lock(context.getBroker(), exclusive, false);
             return getArgument(1).eval(contextSequence, contextItem);
         } catch (LockException e) {
-            throw new XPathException(getASTNode(), "Could not lock document set", e);
+            throw new XPathException(this, "Could not lock document set", e);
         } finally {
             docs.unlock(exclusive);
         }

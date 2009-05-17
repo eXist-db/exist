@@ -73,7 +73,7 @@ public class ValueComparison extends GeneralComparison {
             Collator collator = getCollator(contextSequence);
 			return BooleanValue.valueOf(compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, relation));
 		} 
-        throw new XPathException(getASTNode(), "Type error: sequence with more than one item is not allowed here");
+        throw new XPathException(this, "Type error: sequence with more than one item is not allowed here");
 	}
 
 	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {		
@@ -86,13 +86,13 @@ public class ValueComparison extends GeneralComparison {
                 NodeProxy current = (NodeProxy) i.next();
                 ContextItem context = current.getContext();
                 if (context==null) {
-                   throw new XPathException(getASTNode(),"Context is missing for node set comparison");
+                   throw new XPathException(this,"Context is missing for node set comparison");
                 }
                 do {
                     AtomicValue lv = current.atomize();
                     Sequence rs = getRight().eval(context.getNode().toSequence());                    
                     if (!rs.hasOne())
-                        throw new XPathException(getASTNode(),
+                        throw new XPathException(this,
                                 "Type error: sequence with less or more than one item is not allowed here");                    
                     if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), Constants.TRUNC_NONE, relation))
                         result.add(current);
@@ -101,7 +101,7 @@ public class ValueComparison extends GeneralComparison {
         } else {
             Sequence rs = getRight().eval(null);
             if (!rs.hasOne())
-                throw new XPathException(getASTNode(),
+                throw new XPathException(this,
                         "Type error: sequence with less or more than one item is not allowed here");
             AtomicValue rv = rs.itemAt(0).atomize();
             for (Iterator i = nodes.iterator(); i.hasNext();) {

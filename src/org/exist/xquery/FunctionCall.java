@@ -190,10 +190,11 @@ public class FunctionCall extends Function {
                 }
 //			System.out.println("found " + seq[i].getLength() + " for " + getArgument(i).pprint());
             } catch (XPathException e) {
-                if(e.getLine() == 0)
-                    e.setASTNode(getASTNode());
+                if(e.getLine() == 0) {
+                    e.setLocation(line, column);
+                }
                 // append location of the function call to the exception message:
-                e.addFunctionCall(functionDef, getASTNode());
+                e.addFunctionCall(functionDef, this);
                 throw e;
             }
 		}
@@ -211,7 +212,7 @@ public class FunctionCall extends Function {
                 !result.isEmpty())
 				getSignature().getReturnType().checkType(result.getItemType()); 
 		} catch (XPathException e) {
-			throw new XPathException(getASTNode(), "err:XPTY0004: return type of function '" + getSignature().getName() + "'. " + 
+			throw new XPathException(this, "err:XPTY0004: return type of function '" + getSignature().getName() + "'. " +
 					e.getMessage());
 		}
 
@@ -251,8 +252,8 @@ public class FunctionCall extends Function {
 					pdp.evaluate(request);
 			}
 		} catch (PermissionDeniedException pde) {
-			XPathException xe = new XPathException(getASTNode(), "Access to function '" + getName() + "'  denied.", pde);
-			xe.addFunctionCall(functionDef, getASTNode());
+			XPathException xe = new XPathException(this, "Access to function '" + getName() + "'  denied.", pde);
+			xe.addFunctionCall(functionDef, this);
 			throw xe;
 		}
 		
@@ -278,9 +279,9 @@ public class FunctionCall extends Function {
     			return returnSeq;
     		} catch(XPathException e) {
     			if(e.getLine() == 0)
-    				e.setASTNode(getASTNode());
+                    e.setLocation(line, column);
     			// append location of the function call to the exception message:
-    			e.addFunctionCall(functionDef, getASTNode());
+    			e.addFunctionCall(functionDef, this);
     			throw e;
     		} finally {
     			context.popLocalVariables(mark);
@@ -332,9 +333,9 @@ public class FunctionCall extends Function {
                 return returnSeq;
             } catch(XPathException e) {
                 if(e.getLine() == 0)
-                    e.setASTNode(getASTNode());
+                    e.setLocation(line, column);
                 // append location of the function call to the exception message:
-                e.addFunctionCall(functionDef, getASTNode());
+                e.addFunctionCall(functionDef, FunctionCall.this);
                 throw e;
             } finally {
                 context.popLocalVariables(mark);

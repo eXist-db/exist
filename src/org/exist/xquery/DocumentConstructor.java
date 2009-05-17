@@ -95,7 +95,7 @@ public class DocumentConstructor extends NodeConstructor {
 		            if(next.getType() == Type.ATTRIBUTE || 
 	                   next.getType() == Type.NAMESPACE /*||
 		               next.getType() == Type.DOCUMENT*/)
-		                throw new XPathException(getASTNode(), "Found a node of type " + Type.getTypeName(next.getType()) +
+		                throw new XPathException(this, "Found a node of type " + Type.getTypeName(next.getType()) +
 		                        " inside a document constructor");
 		            // if item is an atomic value, collect the string values of all
 					// following atomic values and seperate them by a space. 
@@ -173,7 +173,7 @@ public class DocumentConstructor extends NodeConstructor {
 				}
 	        }
         } catch(SAXException e) {
-			throw new XPathException(getASTNode(),
+			throw new XPathException(this,
 				"Encountered SAX exception while processing document constructor: "
 					+ ExpressionDumper.dump(this));
         }	        

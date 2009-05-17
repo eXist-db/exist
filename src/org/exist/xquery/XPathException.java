@@ -21,19 +21,29 @@ public class XPathException extends Exception {
 		this.message = message;
 	}
 
-	public XPathException(XQueryAST ast, String message) {
-		super();
-		this.message = message;
-		setASTNode(ast);
-	}
-	
-	public XPathException(String message, int line, int column) {
+	public XPathException(int line, int column, String message) {
 		super();
 		this.message = message;
 		this.line = line;
-		this.column = column;
+        this.column = column;
 	}
-	
+
+    public XPathException(Expression expr, String message) {
+        super();
+        this.message = message;
+        this.line = expr.getLine();
+        this.column = expr.getColumn();
+    }
+
+    public XPathException(XQueryAST ast, String message) {
+        super();
+        this.message = message;
+        if (ast != null) {
+            this.line = ast.getLine();
+            this.column = ast.getColumn();
+        }
+    }
+    
 	/**
 	 * @param cause
 	 */
@@ -50,17 +60,28 @@ public class XPathException extends Exception {
 		this.message = message;
 	}
 
-	public XPathException(XQueryAST ast, String message, Throwable cause) {
+    public XPathException(Expression expr, String message, Throwable cause) {
+        this(expr.getLine(), expr.getColumn(), message, cause);
+    }
+
+	public XPathException(int line, int column, String message, Throwable cause) {
 		super(cause);
 		this.message = message;
-		setASTNode(ast);
+        this.line = line;
+        this.column = column;
 	}
     
-	public XPathException(XQueryAST ast, Throwable cause) {
+	public XPathException(int line, int column, Throwable cause) {
 		super(cause);
-		setASTNode(ast);
+        this.line = line;
+        this.column = column;
 	}
-	
+
+    public void setLocation(int line, int column) {
+        this.line = line;
+        this.column = column;
+    }
+    
 	public int getLine() {
 		return line;
 	}
@@ -69,17 +90,10 @@ public class XPathException extends Exception {
 		return column;
 	}
 	
-	public void setASTNode(XQueryAST ast) {
-		if(ast != null) {
-			this.line = ast.getLine();
-			this.column = ast.getColumn();
-		}
-	}
-	
-    public void addFunctionCall(UserDefinedFunction def, XQueryAST ast) {
+    public void addFunctionCall(UserDefinedFunction def, Expression call) {
         if (callStack == null)
             callStack = new ArrayList();
-        callStack.add(new FunctionStackElement(def, ast));
+        callStack.add(new FunctionStackElement(def, call.getLine(), call.getColumn()));
     }
 	
     public void prependMessage(String msg) {
@@ -143,7 +157,7 @@ public class XPathException extends Exception {
             for (Iterator i = callStack.iterator(); i.hasNext(); ) {
                 e = (FunctionStackElement) i.next();
                 buf.append("<tr><td class=\"func\">").append(e.function).append("</td>");
-                buf.append("<td class=\"lineinfo\">").append(e.ast.getLine()).append(':').append(e.ast.getColumn()).append("</td>");
+                buf.append("<td class=\"lineinfo\">").append(e.line).append(':').append(e.column).append("</td>");
                 buf.append("</tr>");
             }
             buf.append("</table>");
@@ -153,18 +167,20 @@ public class XPathException extends Exception {
     
     private static class FunctionStackElement {
         String function;
-        XQueryAST ast;
-        
-        FunctionStackElement(UserDefinedFunction func, XQueryAST ast) {
+        int line;
+        int column;
+
+        FunctionStackElement(UserDefinedFunction func, int line, int column) {
             this.function = func.toString();
-            this.ast = ast;
+            this.line = line;
+            this.column = column;
         }
         
         public String toString() {
             StringBuffer buf = new StringBuffer();
             buf.append(function).append(" [");
-            buf.append(ast.getLine()).append(":");
-            buf.append(ast.getColumn()).append(']');
+            buf.append(line).append(":");
+            buf.append(column).append(']');
             return buf.toString();
         }
     }

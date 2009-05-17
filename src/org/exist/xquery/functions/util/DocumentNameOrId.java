@@ -92,9 +92,9 @@ public class DocumentNameOrId extends BasicFunction {
             try {
                 doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
             } catch (URISyntaxException e) {
-                throw new XPathException(getASTNode(), "Invalid resource uri: " + path,e);
+                throw new XPathException(this, "Invalid resource uri: " + path,e);
             } catch (PermissionDeniedException e) {
-                throw new XPathException(getASTNode(), path + ": permission denied to read resource");
+                throw new XPathException(this, path + ": permission denied to read resource");
             } finally {
                 if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
             }

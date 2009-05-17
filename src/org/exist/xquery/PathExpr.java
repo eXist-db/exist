@@ -210,7 +210,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (gotAtomicResult && !Type.subTypeOf(expr.returnsType(), Type.NODE)
                         //Ugly workaround to allow preceding *text* nodes.
                         && !(expr instanceof EnclosedExpr)) {
-                    throw new XPathException(getASTNode(), "XPTY0019: left operand of '/' must be a node. Got '" + 
+                    throw new XPathException(this, "XPTY0019: left operand of '/' must be a node. Got '" + 
                             Type.getTypeName(result.getItemType()) + Cardinality.toString(result.getCardinality()) + "'");                    
                 }
 
@@ -273,7 +273,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 !(expr instanceof LetExpr) &&
                 !(expr instanceof EnclosedExpr) &&
                 !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
-                throw new XPathException(getASTNode(), "XPTY0018: Cannot mix nodes and atomic values in the result of a path expression.");                    
+                throw new XPathException(this, "XPTY0018: Cannot mix nodes and atomic values in the result of a path expression.");
             }
         }
         
@@ -415,18 +415,18 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         return "";
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.exist.xquery.AbstractExpression#getASTNode()
-     */
-    public XQueryAST getASTNode() {
-        XQueryAST ast = super.getASTNode();
-        if (ast == null && steps.size() == 1)
-            return ((Expression)steps.get(0)).getASTNode();
-        return ast;
+    public int getLine() {
+        if (line < 0 && steps.size() ==1)
+            return steps.get(0).getLine();
+        return line;
     }
 
+    public int getColumn() {
+        if (column < 0 && steps.size() ==1)
+            return steps.get(0).getColumn();
+        return column;
+    }
+    
     /*
      * (non-Javadoc)
      * 

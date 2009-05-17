@@ -87,7 +87,7 @@ public class FunLocalName extends Function {
                 item = seq.itemAt(0);
         } else { 
         	if (contextSequence == null || contextSequence.isEmpty())
-        		throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");        	
+        		throw new XPathException(this, "XPDY0002: Undefined context item");
             item = contextSequence.itemAt(0);
         }
         
@@ -96,7 +96,7 @@ public class FunLocalName extends Function {
             result = StringValue.EMPTY_STRING;
         else {
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-            	throw new XPathException(getASTNode(), "XPTY0004: item is not a node; got '" + Type.getTypeName(item.getType()) + "'");          
+            	throw new XPathException(this, "XPTY0004: item is not a node; got '" + Type.getTypeName(item.getType()) + "'");          
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();
             result = new StringValue(n.getLocalName());

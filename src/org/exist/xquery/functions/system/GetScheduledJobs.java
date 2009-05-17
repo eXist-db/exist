@@ -39,7 +39,7 @@ public class GetScheduledJobs extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if( !context.getUser().hasDbaRole() ) {
-            throw( new XPathException( getASTNode(), "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to get the list of scheduled jobs" ) );
+            throw( new XPathException( this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to get the list of scheduled jobs" ) );
         }
 
         MemTreeBuilder builder = context.getDocumentBuilder();

@@ -193,7 +193,7 @@ public class Transform extends BasicFunction {
             for (int i = 0; i < contents.length; i++) {
                 String[] pair = Option.parseKeyValuePair(contents[i]);
                 if (pair == null)
-                    throw new XPathException(getASTNode(), "Found invalid serialization option: " + pair);
+                    throw new XPathException(this, "Found invalid serialization option: " + pair);
                 LOG.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
                 serializeOptions.setProperty(pair[0], pair[1]);
             }
@@ -232,7 +232,7 @@ public class Transform extends BasicFunction {
                 serializer.setReceiver(receiver);
     			serializer.toSAX((NodeValue)inputNode);
     		} catch (Exception e) {
-    			throw new XPathException(getASTNode(), "Exception while transforming node: " + e.getMessage(), e);
+    			throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
     		}
             errorListener.checkForErrors();
     		Node next = builder.getDocument().getFirstChild();
@@ -251,13 +251,13 @@ public class Transform extends BasicFunction {
             // response object is read from global variable $response
             Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
             if(respVar == null)
-                throw new XPathException(getASTNode(), "No response object found in the current XQuery context.");
+                throw new XPathException(this, "No response object found in the current XQuery context.");
             if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
-                throw new XPathException(getASTNode(), "Variable $response is not bound to an Java object.");
+                throw new XPathException(this, "Variable $response is not bound to an Java object.");
             JavaObjectValue respValue = (JavaObjectValue)
                 respVar.getValue().itemAt(0);
             if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName()))
-                throw new XPathException(getASTNode(), signatures[1].toString() + 
+                throw new XPathException(this, signatures[1].toString() +
                         " can only be used within the EXistServlet or XQueryServlet");
             ResponseWrapper response = (ResponseWrapper) respValue.getObject();
             
@@ -294,7 +294,7 @@ public class Transform extends BasicFunction {
                     serializer.setReceiver(receiver);
                     serializer.toSAX((NodeValue)inputNode);
                 } catch (Exception e) {
-                    throw new XPathException(getASTNode(), "Exception while transforming node: " + e.getMessage(), e);
+                    throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
                 }
                 errorListener.checkForErrors();
                 os.close();
@@ -302,7 +302,7 @@ public class Transform extends BasicFunction {
                 //commit the response
                 response.flushBuffer();
             } catch (IOException e) {
-                throw new XPathException(getASTNode(), "IO exception while transforming node: " + e.getMessage(), e);
+                throw new XPathException(this, "IO exception while transforming node: " + e.getMessage(), e);
             }
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -360,7 +360,7 @@ public class Transform extends BasicFunction {
 		}
 		catch (TransformerConfigurationException e)
 		{
-			throw new XPathException(getASTNode(), "Unable to set up transformer: " + e.getMessage(), e);
+			throw new XPathException(this, "Unable to set up transformer: " + e.getMessage(), e);
 		}
         return handler;
     }
@@ -374,7 +374,7 @@ public class Transform extends BasicFunction {
 					String name = elem.getAttribute("name");
 					String value = elem.getAttribute("value");
 					if(name == null || value == null)
-						throw new XPathException(getASTNode(), "Name or value attribute missing for stylesheet parameter");
+						throw new XPathException(this, "Name or value attribute missing for stylesheet parameter");
                     if (name.equals("exist:stop-on-warn"))
                         stopOnWarn = value.equals("yes");
                     else if (name.equals("exist:stop-on-error"))
@@ -422,9 +422,9 @@ public class Transform extends BasicFunction {
 			return cached.getTemplates();
 		} catch (MalformedURLException e) {
 			LOG.debug(e.getMessage(), e);
-			throw new XPathException(getASTNode(), "Malformed URL for stylesheet: " + stylesheet, e);
+			throw new XPathException(this, "Malformed URL for stylesheet: " + stylesheet, e);
 		} catch (IOException e) {
-			throw new XPathException(getASTNode(), "IO error while loading stylesheet: " + stylesheet, e);
+			throw new XPathException(this, "IO error while loading stylesheet: " + stylesheet, e);
 		}
 	}
 	
@@ -437,7 +437,7 @@ public class Transform extends BasicFunction {
 			handler.endDocument();
 			return handler.getTemplates();
 		} catch (SAXException e) {
-			throw new XPathException(getASTNode(),
+			throw new XPathException(this,
 				"A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
 		}
 	}
@@ -469,7 +469,7 @@ public class Transform extends BasicFunction {
 						templates = getSource(doc);
 					lastModified = doc.getMetadata().getLastModified();
 				} catch (PermissionDeniedException e) {
-					throw new XPathException(getASTNode(), "Permission denied to read stylesheet: " + uri);
+					throw new XPathException(Transform.this, "Permission denied to read stylesheet: " + uri);
 				} finally {
 					doc.getUpdateLock().release(Lock.READ_LOCK);
 				}
@@ -510,7 +510,7 @@ public class Transform extends BasicFunction {
 			} catch (Exception e) {
                 if (e instanceof XPathException)
                     throw (XPathException) e;
-				throw new XPathException(getASTNode(),
+				throw new XPathException(Transform.this,
 					"An exception occurred while compiling the stylesheet: " + e.getMessage(), e);
 			}
 		}

@@ -77,13 +77,13 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 			try {
 				Resource resource = collection.getResource(doc);
 				if (resource == null)
-					throw new XPathException(getASTNode(), "Resource " + doc + " not found");
+					throw new XPathException(this, "Resource " + doc + " not found");
                String newName = args[2].itemAt(0).getStringValue();
 			   CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
 					collection.getService("CollectionManagementService", "1.0");
 				service.moveResource(doc,null,newName);
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "XMLDB exception caught: " + e.getMessage(), e);
+				throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
 			}
 		} else {
 			try {
@@ -92,7 +92,7 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 					collection.getService("CollectionManagementService", "1.0");
 				service.move(collection.getName(),null,newName);
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "Cannot rename collection: " + e.getMessage(), e);
+				throw new XPathException(this, "Cannot rename collection: " + e.getMessage(), e);
 			}
 		}
 		return Sequence.EMPTY_SEQUENCE;

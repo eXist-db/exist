@@ -168,19 +168,12 @@ public class RegexpFilter extends BasicFunction {
         try {
 			pattern = RegexTranslator.translate(pattern, true);
 		} catch (RegexSyntaxException e) {
-			throw new XPathException(getASTNode(), "Conversion from XPath2 to Java regular expression " +
+			throw new XPathException(this, "Conversion from XPath2 to Java regular expression " +
 					"syntax failed: " + e.getMessage(), e);
 		}
 		return pattern;
 	}
 
-    /**
-     * @param contextSequence
-     * @param contextItem
-     * @param stringArg
-     * @return
-     * @throws XPathException
-     */
     private Sequence evalGeneric(Sequence[] args, Sequence stringArg) throws XPathException {
         String string = stringArg.getStringValue();
 		String pattern = translateRegexp(args[1].getStringValue());
@@ -226,7 +219,7 @@ public class RegexpFilter extends BasicFunction {
 				return seq;
 			}
 		} catch (PatternSyntaxException e) {
-			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
+			throw new XPathException(this, "Invalid regular expression: " + e.getMessage(), e);
 		}
     }
 

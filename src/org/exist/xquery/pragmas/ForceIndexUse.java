@@ -50,7 +50,7 @@ public class ForceIndexUse extends Pragma {
     	});
     	
     	if (bailout)
-    		throw new XPathException(expression.getASTNode(), "XQDYxxxx: Can not use index on expression '" + expression + "'");
+    		throw new XPathException(expression, "XQDYxxxx: Can not use index on expression '" + expression + "'");
         	
     	/*
     	if (expression instanceof PathExpr) {
@@ -59,11 +59,11 @@ public class ForceIndexUse extends Pragma {
                 Expression expr = (Expression) i.next();
                 if (expr instanceof GeneralComparison) {
                 	if (!((GeneralComparison)expr).hasUsedIndex())
-                		throw new XPathException(expression.getASTNode(), "XQDYxxxx: Can not use index");                	
+                		throw new XPathException(expression, "XQDYxxxx: Can not use index");
                 }
                 if (expr instanceof FunMatches) {
                 	if (!((FunMatches)expr).hasUsedIndex())
-                		throw new XPathException(expression.getASTNode(), "XQDYxxxx: Can not use index");                	
+                		throw new XPathException(expression, "XQDYxxxx: Can not use index");                	
                 } 
             }
     	}

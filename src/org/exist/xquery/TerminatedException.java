@@ -30,25 +30,21 @@ import org.exist.xquery.parser.XQueryAST;
  */
 public class TerminatedException extends XPathException {
 
-    /**
-     * @param ast
-     * @param message
-     */
-    public TerminatedException(XQueryAST ast, String message) {
-        super(ast, message);
+    public TerminatedException(int line, int column, String message) {
+        super(line, column, message);
     }
 
     public final static class TimeoutException extends TerminatedException {
         
-        public TimeoutException(XQueryAST ast, String message) {
-            super(ast, message);
+        public TimeoutException(int line, int column, String message) {
+            super(line, column, message);
         }
     }
     
     public final static class SizeLimitException extends TerminatedException {
         
-        public SizeLimitException(XQueryAST ast, String message) {
-            super(ast, message);
+        public SizeLimitException(int line, int column, String message) {
+            super(line, column, message);
         }
     }
 }

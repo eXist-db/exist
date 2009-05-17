@@ -105,10 +105,10 @@ public class FunBaseURI extends BasicFunction {
         } else {
             if (args.length == 0) {
                 if (contextSequence == null || contextSequence.isEmpty())
-                    throw new XPathException(getASTNode(), "err:XPDY0002: context sequence is empty and no argument specified");
+                    throw new XPathException(this, "err:XPDY0002: context sequence is empty and no argument specified");
                 Item item = contextSequence.itemAt(0);
                 if (!Type.subTypeOf(item.getType(), Type.NODE))
-                    throw new XPathException(getASTNode(), "err:XPTY0004: context item is not a node");
+                    throw new XPathException(this, "err:XPTY0004: context item is not a node");
                 node = (NodeValue) item;
             } else {
                 if (args[0].isEmpty()) {
@@ -139,7 +139,7 @@ public class FunBaseURI extends BasicFunction {
                         relativeURI = new URI(domNode.getBaseURI());
                         baseURI = new URI(context.getBaseURI() + "/");
                     } catch (URISyntaxException e) {
-                        throw new XPathException(getASTNode(), e.getMessage(), e);
+                        throw new XPathException(this, e.getMessage(), e);
                     }
                     if (!"".equals(relativeURI.toString())) {
                         if (relativeURI.isAbsolute()) {
@@ -166,7 +166,7 @@ public class FunBaseURI extends BasicFunction {
                         relativeURI = new URI(baseNode.getBaseURI());
                         baseURI = new URI(context.getBaseURI() + "/");
                     } catch (URISyntaxException e) {
-                        throw new XPathException(getASTNode(), e.getMessage(), e);
+                        throw new XPathException(this, e.getMessage(), e);
                     }
                     if (relativeURI.isAbsolute()) {
                         result = new AnyURIValue(relativeURI);

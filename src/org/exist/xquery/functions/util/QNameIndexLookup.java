@@ -120,7 +120,7 @@ public class QNameIndexLookup extends Function {
             qval = (QNameValue) item.convertTo(Type.QNAME);
         } catch (XPathException e) {
             // wrong type: generate a diagnostic error
-            throw new XPathException(getASTNode(),
+            throw new XPathException(this,
                     Messages.formatMessage(Error.FUNC_PARAM_TYPE, 
                             new Object[] { "1", mySignature.toString(), null,
                             Type.getTypeName(Type.QNAME), Type.getTypeName(item.getType()) }
@@ -141,7 +141,7 @@ public class QNameIndexLookup extends Function {
             String message = "The comparison criterium must be an Indexable: " +
             	"boolean, numeric, string; instead your criterium has type " +
             	Type.getTypeName(comparisonCriterium.getType());
-        	throw new XPathException(getASTNode(), message);
+        	throw new XPathException(this, message);
         }
         return result;
     }

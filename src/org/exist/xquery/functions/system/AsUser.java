@@ -36,13 +36,13 @@ public class AsUser extends Function {
         Sequence userSeq = getArgument(0).eval(contextSequence, contextItem);
         Sequence passwdSeq = getArgument(1).eval(contextSequence, contextItem);
         if (userSeq.isEmpty())
-            throw new XPathException(getASTNode(), "No user specified");
+            throw new XPathException(this, "No user specified");
         String userName = userSeq.getStringValue();
         String passwd = passwdSeq.getStringValue();
         org.exist.security.SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
         User user = security.getUser(userName);
         if (user == null)
-            throw new XPathException(getASTNode(), "Authentication failed");
+            throw new XPathException(this, "Authentication failed");
         if (user.validate(passwd)) {
             User oldUser = context.getBroker().getUser();
             try {
@@ -52,7 +52,7 @@ public class AsUser extends Function {
                 context.getBroker().setUser(oldUser);
             }
         } else
-            throw new XPathException(getASTNode(), "Authentication failed");
+            throw new XPathException(this, "Authentication failed");
     }
 
     /* (non-Javadoc)

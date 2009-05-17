@@ -75,12 +75,12 @@ public class CollectionName extends BasicFunction {
 		if(item.getType() == Type.JAVA_OBJECT) {
 			Object o = ((JavaObjectValue) item).getObject();
             if (!(o instanceof Collection))
-                throw new XPathException(getASTNode(), "Passed Java object should be of type org.xmldb.api.base.Collection");
+                throw new XPathException(this, "Passed Java object should be of type org.xmldb.api.base.Collection");
             Collection collection = (Collection)o;
             try {
 				return new StringValue(collection.getName());
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "Failed to retrieve collection name", e);
+				throw new XPathException(this, "Failed to retrieve collection name", e);
 			}
         } else if (Type.subTypeOf(item.getType(), Type.STRING)) {
             String path = item.getStringValue();
@@ -88,7 +88,7 @@ public class CollectionName extends BasicFunction {
                 XmldbURI uri = XmldbURI.xmldbUriFor(path).removeLastSegment();
                 return new StringValue(uri.toString());
             } catch (URISyntaxException e) {
-                throw new XPathException(getASTNode(), "Illegal URI for resource path: " + path);
+                throw new XPathException(this, "Illegal URI for resource path: " + path);
             }
         } else if(Type.subTypeOf(item.getType(), Type.NODE)) {
 			NodeValue node = (NodeValue) item;
@@ -98,7 +98,7 @@ public class CollectionName extends BasicFunction {
 				return new StringValue(p.getDocument().getCollection().getURI().toString());	
 			}
 		} else
-			throw new XPathException(getASTNode(), "First argument to util:collection-name should be either " +
+			throw new XPathException(this, "First argument to util:collection-name should be either " +
 				"a Java object of type org.xmldb.api.base.Collection or a node; got: " + 
 				Type.getTypeName(item.getType()));
 		return Sequence.EMPTY_SEQUENCE;

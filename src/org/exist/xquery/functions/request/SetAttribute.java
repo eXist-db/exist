@@ -84,11 +84,11 @@ public class SetAttribute extends Function {
 		Variable var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
 		
 		if( var == null || var.getValue() == null ) {
-			throw( new XPathException( getASTNode(), "Request not set" ) );
+			throw( new XPathException( this, "Request not set" ) );
 		}
 
 		if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( getASTNode(), "Variable $request is not bound to a Java object." ) );
+			throw( new XPathException( this, "Variable $request is not bound to a Java object." ) );
 		}
 
 		JavaObjectValue request = (JavaObjectValue)var.getValue().itemAt( 0 );
@@ -100,7 +100,7 @@ public class SetAttribute extends Function {
 		if( request.getObject() instanceof RequestWrapper ) {
 			((RequestWrapper)request.getObject()).setAttribute( attribName, attribValue );
 		} else {
-			throw(  new XPathException( getASTNode(), "Type error: variable $request is not bound to a request object" ) );
+			throw(  new XPathException( this, "Type error: variable $request is not bound to a request object" ) );
 		}
 
 		return( Sequence.EMPTY_SEQUENCE );

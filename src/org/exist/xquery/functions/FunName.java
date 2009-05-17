@@ -93,7 +93,7 @@ public class FunName extends Function {
 			seq = contextSequence; 
 		
 		if (seq == null)
-			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+			throw new XPathException(this, "XPDY0002: Undefined context item");
 
         if (seq.isEmpty())
         	//Bloody specs !
@@ -101,7 +101,7 @@ public class FunName extends Function {
         else {
             Item item = seq.itemAt(0);
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-            	throw new XPathException(getASTNode(), "XPTY0004: item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
+            	throw new XPathException(this, "XPTY0004: item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();  
             if (n instanceof QNameable)

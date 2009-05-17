@@ -86,7 +86,7 @@ public class Expand extends BasicFunction {
             for (int i = 0; i < contents.length; i++) {
                 String[] pair = Option.parseKeyValuePair(contents[i]);
                 if (pair == null)
-                    throw new XPathException(getASTNode(), "Found invalid serialization option: " + pair);
+                    throw new XPathException(this, "Found invalid serialization option: " + pair);
                 LOG.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
                 serializeOptions.setProperty(pair[0], pair[1]);
             }
@@ -106,7 +106,7 @@ public class Expand extends BasicFunction {
             }
             return result;
         } catch (SAXException e) {
-            throw new XPathException(getASTNode(), e.getMessage());
+            throw new XPathException(this, e.getMessage());
         } finally {
             context.popDocumentContext();
         }

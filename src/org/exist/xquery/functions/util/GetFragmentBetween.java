@@ -91,7 +91,7 @@ public class GetFragmentBetween extends BasicFunction {
     Sequence ms1 = args[0];
     Sequence ms2 = args[1];
     if (ms1.isEmpty()) {
-      throw new XPathException(getASTNode(), "your first argument delivers an empty node (no valid node position in document)");
+      throw new XPathException(this, "your first argument delivers an empty node (no valid node position in document)");
     }
     Node ms1Node = null;
     if (! (ms1.itemAt(0) == null)) 
@@ -202,11 +202,11 @@ public class GetFragmentBetween extends BasicFunction {
         }
       }
     } catch (EXistException e) {
-      throw new XPathException(getASTNode(), "An error occurred while getFragmentBetween: " + e.getMessage(), e);
+      throw new XPathException(this, "An error occurred while getFragmentBetween: " + e.getMessage(), e);
     } catch (XMLStreamException e) {
-      throw new XPathException(getASTNode(), "An error occurred while getFragmentBetween: " + e.getMessage(), e);
+      throw new XPathException(this, "An error occurred while getFragmentBetween: " + e.getMessage(), e);
     } catch (IOException e) {
-      throw new XPathException(getASTNode(), "An error occurred while getFragmentBetween: " + e.getMessage(), e);
+      throw new XPathException(this, "An error occurred while getFragmentBetween: " + e.getMessage(), e);
     } finally {
       if (brokerPool != null)
         brokerPool.release(dbBroker);  

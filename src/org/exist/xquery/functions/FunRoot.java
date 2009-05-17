@@ -101,7 +101,7 @@ public class FunRoot extends Function {
 			seq = contextSequence; 
 		
 		if (seq == null)
-			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+			throw new XPathException(this, "XPDY0002: Undefined context item");
 
         if (seq.isPersistentSet())
             result = new ExtArrayNodeSet(seq.getItemCount());
@@ -111,7 +111,7 @@ public class FunRoot extends Function {
 		for (SequenceIterator i = seq.iterate(); i.hasNext(); j++) {
 			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(getASTNode(), "FOTY0011: item is not a node; got '" + item + "'");
+                throw new XPathException(this, "FOTY0011: item is not a node; got '" + item + "'");
             Sequence s = item.toSequence();
             if (s.isPersistentSet()) {
                 NodeProxy p = s.toNodeSet().get(0);

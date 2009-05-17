@@ -84,7 +84,7 @@ public class UntypedValueCheck extends AbstractExpression {
 				} catch (XPathException e) {
 	                error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),
 	                        Type.getTypeName(item.getType()));
-	                throw new XPathException(expression.getASTNode(), error.toString());
+	                throw new XPathException(expression, error.toString());
 				}
 			}
 			result.add(item);			
@@ -152,14 +152,23 @@ public class UntypedValueCheck extends AbstractExpression {
 		expression.setContextDocSet(contextSet);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getASTNode()
-	 */
-	public XQueryAST getASTNode() {
-		return expression.getASTNode();
-	}
-	
 	public void accept(ExpressionVisitor visitor) {
 		expression.accept(visitor);
 	}
+
+    public void setASTNode(XQueryAST ast) {
+        expression.setASTNode(ast);
+    }
+
+    public void setLocation(int line, int column) {
+        expression.setLocation(line, column);
+    }
+
+    public int getLine() {
+        return expression.getLine();
+    }
+
+    public int getColumn() {
+        return expression.getColumn();
+    }
 }

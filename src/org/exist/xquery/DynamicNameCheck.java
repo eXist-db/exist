@@ -74,13 +74,13 @@ public class DynamicNameCheck extends AbstractExpression {
 			}				
 					
 			if(!Type.subTypeOf(itemType, test.getType())) {				
-				throw new XPathException(expression.getASTNode(), "Type error in expression" +
+				throw new XPathException(expression, "Type error in expression" +
 					": required type is " + Type.getTypeName(test.getType()) +
 					"; got: " + Type.getTypeName(item.getType()) + ": " + item.getStringValue());
 			}
 			Node node = ((NodeValue) item).getNode();
 			if(!test.matchesName(node))
-				throw new XPathException(expression.getASTNode(), "Type error in expression: " +
+				throw new XPathException(expression, "Type error in expression: " +
 						"required node name is " + test.getName() + "; got: " +
 						node.getNodeName());
 		}

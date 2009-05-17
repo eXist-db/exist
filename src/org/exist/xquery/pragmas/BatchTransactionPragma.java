@@ -47,7 +47,7 @@ public class BatchTransactionPragma extends Pragma {
         }
         catch(TransactionException te)
         {
-        	throw new XPathException(expression.getASTNode(), te.getMessage(), te);	
+        	throw new XPathException(expression, te.getMessage(), te);
         }
     }
 
@@ -59,7 +59,7 @@ public class BatchTransactionPragma extends Pragma {
         }
         catch(TransactionException te)
         {
-        	throw new XPathException(expression.getASTNode(), te.getMessage(), te);	
+        	throw new XPathException(expression, te.getMessage(), te);
         }
     }
 }

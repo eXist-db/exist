@@ -84,7 +84,7 @@ public class FunString extends Function {
             if (contextSequence.isEmpty())
                 return StringValue.EMPTY_STRING;
         } else if (contextSequence == null)
-			throw new XPathException(getASTNode(), "err:XPDY0002 : undefined context sequence for '" + this.toString() + "'");
+			throw new XPathException(this, "err:XPDY0002 : undefined context sequence for '" + this.toString() + "'");
         // no argument and the context sequence is empty: return the empty sequence
         else if (contextSequence.isEmpty())
             return Sequence.EMPTY_SEQUENCE;

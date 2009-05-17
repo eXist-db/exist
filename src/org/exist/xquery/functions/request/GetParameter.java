@@ -113,7 +113,7 @@ public class GetParameter extends BasicFunction {
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT) {
 			if( failOnError ) {
-				throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
+				throw new XPathException(this, "Variable $request is not bound to an Java object.");
 			} else {
 				return args[1];
 			}
@@ -135,7 +135,7 @@ public class GetParameter extends BasicFunction {
 			}
 		} else {
 			if( failOnError ) {
-				throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
+				throw new XPathException(this, "Variable $request is not bound to a Request object.");
 			} else {
 				return args[1];				
 			}

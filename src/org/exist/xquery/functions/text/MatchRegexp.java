@@ -404,7 +404,7 @@ public class MatchRegexp extends Function implements Optimizable {
        try {
 			pattern = RegexTranslator.translate(pattern, true);
 		} catch (RegexSyntaxException e) {
-			throw new XPathException(getASTNode(), "Conversion from XPath2 to Java regular expression " +
+			throw new XPathException(this, "Conversion from XPath2 to Java regular expression " +
 					"syntax failed: " + e.getMessage(), e);
 		}
 		return pattern;

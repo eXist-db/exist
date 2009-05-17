@@ -78,7 +78,7 @@ public class Restore extends BasicFunction {
          restore.setListener(new XMLRestoreListener(builder));
          restore.restore(false, null);
       } catch (Exception e) {
-         throw new XPathException(getASTNode(), "restore failed with exception: " + e.getMessage(), e);
+         throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
       }
       builder.endElement();
       builder.endDocument();

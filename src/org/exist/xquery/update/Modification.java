@@ -187,7 +187,7 @@ public abstract class Modification extends AbstractExpression
 			}
 			return out;
 		} catch(SAXException e) {
-			throw new XPathException(getASTNode(), e.getMessage(), e);
+			throw new XPathException(this, e.getMessage(), e);
 		} finally {
 			context.popDocumentContext();
 		}

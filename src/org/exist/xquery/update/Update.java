@@ -84,7 +84,7 @@ public class Update extends Modification {
         
         Sequence contentSeq = value.eval(contextSequence);
         if (contentSeq.isEmpty())
-            throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+            throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         
         Sequence inSeq = select.eval(contextSequence);
         
@@ -100,7 +100,7 @@ public class Update extends Modification {
         	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
-        	XPathException xpe = new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        	XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
         	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
@@ -135,7 +135,7 @@ public class Update extends Modification {
                     DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.UPDATE))
-                            throw new XPathException(getASTNode(),
+                            throw new XPathException(this,
                                     "permission to update document denied");
                     doc.getMetadata().setIndexListener(listener);
                                         
@@ -174,7 +174,7 @@ public class Update extends Modification {
                             parent.updateChild(transaction, node, attribute);
                             break;
                         default:
-                            throw new XPathException(getASTNode(), "unsupported node-type");
+                            throw new XPathException(this, "unsupported node-type");
                     }
                     doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
@@ -186,11 +186,11 @@ public class Update extends Modification {
                 //commit the transaction
                 commitTransaction(transaction);
             } catch (LockException e) {
-                throw new XPathException(getASTNode(), e.getMessage(), e);
+                throw new XPathException(this, e.getMessage(), e);
     		} catch (PermissionDeniedException e) {
-                throw new XPathException(getASTNode(), e.getMessage(), e);
+                throw new XPathException(this, e.getMessage(), e);
     		} catch (EXistException e) {
-                throw new XPathException(getASTNode(), e.getMessage(), e);
+                throw new XPathException(this, e.getMessage(), e);
     		} finally {
                 unlockDocuments();
                 context.popInScopeNamespaces();

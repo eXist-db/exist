@@ -36,7 +36,7 @@ public class GetIndexStatistics extends BasicFunction {
             index.toSAX(adapter);
             adapter.endDocument();
         } catch (SAXException e) {
-            throw new XPathException(getASTNode(), "Error caught while retrieving statistics: " + e.getMessage(), e);
+            throw new XPathException(this, "Error caught while retrieving statistics: " + e.getMessage(), e);
         }
         DocumentImpl doc = (DocumentImpl) adapter.getDocument();
         return (NodeImpl) doc.getFirstChild();

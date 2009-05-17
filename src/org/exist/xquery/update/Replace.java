@@ -95,7 +95,7 @@ public class Replace extends Modification {
         	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
-        	XPathException xpe = new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        	XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
         	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
@@ -115,7 +115,7 @@ public class Replace extends Modification {
 		
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.isEmpty())
-			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+			throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
 		context.pushInScopeNamespaces();
         contentSeq = deepCopy(contentSeq);
         
@@ -141,13 +141,13 @@ public class Replace extends Modification {
                 //update the document
                 parent = (ElementImpl) node.getParentStoredNode();
                 if (parent == null)
-                    throw new XPathException(getASTNode(), "The root element of a document can not be replaced with 'update replace'. " +
+                    throw new XPathException(this, "The root element of a document can not be replaced with 'update replace'. " +
                             "Please consider removing the document or use 'update value' to just replace the children of the root.");
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
                         temp = contentSeq.itemAt(0);
 						if (!Type.subTypeOf(temp.getType(), Type.NODE))
-							throw new XPathException(getASTNode(),
+							throw new XPathException(this,
 									Messages.getMessage(Error.UPDATE_REPLACE_ELEM_TYPE,
 											Type.getTypeName(temp.getType())));
                         parent.replaceChild(transaction, ((NodeValue)temp).getNode(), node);
@@ -176,11 +176,11 @@ public class Replace extends Modification {
             //commit the transaction
             commitTransaction(transaction);
         } catch (LockException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
+            throw new XPathException(this, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
+            throw new XPathException(this, e.getMessage(), e);
 		} catch (EXistException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
+            throw new XPathException(this, e.getMessage(), e);
         } finally {
             unlockDocuments();
             context.popInScopeNamespaces();

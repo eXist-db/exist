@@ -103,11 +103,11 @@ public class FunDoc extends Function {
     		try {
     			result = DocUtils.getDocument(this.context, path);
     			if (result.isEmpty() && context.isRaiseErrorOnFailedRetrieval()) {
-    				throw new XPathException(getASTNode(), "FODC0002: can not access '" + path + "'");
+    				throw new XPathException(this, "FODC0002: can not access '" + path + "'");
     			}
     //			TODO: we still need a final decision about this. Also check base-uri.
     //			if (result == Sequence.EMPTY_SEQUENCE)
-    //				throw new XPathException(getASTNode(), path + " is not an XML document");
+    //				throw new XPathException(this, path + " is not an XML document");
     			DocumentSet docs = result.getDocumentSet();
     			if (docs != null && DocumentSet.EMPTY_DOCUMENT_SET != docs) {
     				// only cache node sets (which have a non-empty document set)
@@ -115,7 +115,7 @@ public class FunDoc extends Function {
     			}
     		}
     		catch (Exception e) {
-    			throw new XPathException(getASTNode(), e.getMessage(), e);			
+    			throw new XPathException(this, e.getMessage(), e);
     		}
         }
             
@@ -142,7 +142,7 @@ public class FunDoc extends Function {
                 }
 
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + getASTNode().getLine() + ": " + FunDoc.this.toString());                	
+                	LOG.debug("UpdateListener: Line: " + getLine() + ": " + FunDoc.this.toString());                	
                 }
             };
             context.registerUpdateListener(listener);

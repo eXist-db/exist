@@ -72,7 +72,7 @@ public class FunPosition extends Function {
         }
 
 		if (contextSequence == null)
-			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+			throw new XPathException(this, "XPDY0002: Undefined context item");
 		
 		Sequence result;
 		if (contextSequence.isEmpty())

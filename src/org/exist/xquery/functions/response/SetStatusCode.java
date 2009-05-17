@@ -79,9 +79,9 @@ public class SetStatusCode extends Function {
 		// response object is read from global variable $response
 		Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException(getASTNode(), "Response not set");
+			throw new XPathException(this, "Response not set");
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(getASTNode(), "Variable $response is not bound to a Java object.");
+			throw new XPathException(this, "Variable $response is not bound to a Java object.");
 		JavaObjectValue response = (JavaObjectValue)var.getValue().itemAt(0);
 		
 		//get parameter
@@ -91,7 +91,7 @@ public class SetStatusCode extends Function {
 		if(response.getObject() instanceof ResponseWrapper)
 			((ResponseWrapper)response.getObject()).setStatusCode(code);
 		else
-			throw new XPathException(getASTNode(), "Type error: variable $response is not bound to a response object");
+			throw new XPathException(this, "Type error: variable $response is not bound to a response object");
 			
 		return Sequence.EMPTY_SEQUENCE;
 	}

@@ -119,7 +119,7 @@ public class LogFunction extends BasicFunction
 		// add line of the log statement
 		StringBuffer buf = new StringBuffer();
 		buf.append("(Line: ");
-		buf.append(getASTNode().getLine());
+		buf.append(this.getLine());
 		buf.append(") ");
 		
 		while(i.hasNext()) {
@@ -131,7 +131,7 @@ public class LogFunction extends BasicFunction
 					buf.append( serializer.serialize( (NodeValue)next ) );
 				} 
 				catch( SAXException e ) {
-					throw( new XPathException(getASTNode(), "An exception occurred while serializing node to log: " + e.getMessage(), e ) );
+					throw( new XPathException(this, "An exception occurred while serializing node to log: " + e.getMessage(), e ) );
 				}
 			} else {
 				buf.append(next.getStringValue());

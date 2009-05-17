@@ -552,7 +552,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
 			} catch(XPathException e) {
 				// throw exception with correct source location
-				e.setASTNode(name);
+				e.setLocation(name.getLine(), name.getColumn());
 				throw e;
 			}
 			FunctionSignature signature= new FunctionSignature(qn);

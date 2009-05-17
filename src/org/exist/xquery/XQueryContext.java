@@ -2235,9 +2235,8 @@ public class XQueryContext {
         	modExternal.setContext(modContext);
         	return modExternal;
         } catch (RecognitionException e) {
-        	throw new XPathException(
-        		"error found while loading module from " + location + ": " + e.getMessage(),
-        		e.getLine(), e.getColumn());
+        	throw new XPathException(e.getLine(), e.getColumn(),
+        		"error found while loading module from " + location + ": " + e.getMessage());
         } catch (TokenStreamException e) {
         	throw new XPathException(
         		"error found while loading module from " + location + ": " + e.getMessage(),
@@ -2288,7 +2287,7 @@ public class XQueryContext {
 			FunctionCall call = (FunctionCall)forwardReferences.pop();
 			UserDefinedFunction func = resolveFunction(call.getQName(), call.getArgumentCount());
 			if(func == null)
-				throw new XPathException(call.getASTNode(), 
+				throw new XPathException(call, 
 					"Call to undeclared function: " + call.getQName().getStringValue());
 			call.resolveForwardReference(func);
 		}

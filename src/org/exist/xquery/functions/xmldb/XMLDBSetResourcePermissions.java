@@ -84,23 +84,23 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
                 int mode = ((IntegerValue) args[4].convertTo(Type.INTEGER)).getInt();
                 
                 if (null == user || 0 == user.length())
-                    throw new XPathException(getASTNode(), "Needs a valid user name, not: "+user);
+                    throw new XPathException(this, "Needs a valid user name, not: "+user);
                 if (null == group || 0 == group.length())
-                    throw new XPathException(getASTNode(), "Needs a valid group name, not: "+group);
+                    throw new XPathException(this, "Needs a valid group name, not: "+group);
     
                 // Must actually get a User object for the Permission...
                 Permission p = PermissionFactory.getPermission(user, group, mode);
                 User u = ums.getUser(user);
                 if (null == u)
-                    throw new XPathException(getASTNode(), "Needs a valid user name, not: "+user);
+                    throw new XPathException(this, "Needs a valid user name, not: "+user);
                 p.setOwner(u);
                 
                 ums.setPermissions(res, p);
             } else {
-                throw new XPathException(getASTNode(), "Unable to locate resource "+args[1].getStringValue());
+                throw new XPathException(this, "Unable to locate resource "+args[1].getStringValue());
             }
         } catch (XMLDBException xe) {
-            throw new XPathException(getASTNode(), "Unable to change resource permissions", xe);
+            throw new XPathException(this, "Unable to change resource permissions", xe);
         }
 
 		return Sequence.EMPTY_SEQUENCE;

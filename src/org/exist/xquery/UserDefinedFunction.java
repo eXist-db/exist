@@ -126,7 +126,7 @@ public class UserDefinedFunction extends Function {
 	        else actualCardinality = Cardinality.ONE;
 	
 			if (!Cardinality.checkCardinality(getSignature().getArgumentTypes()[j].getCardinality(), actualCardinality))
- 				throw new XPathException(getASTNode(), "Invalid cardinality for parameter $" + varName +  
+ 				throw new XPathException(this, "Invalid cardinality for parameter $" + varName +  
  						". Expected " + Cardinality.getDescription(getSignature().getArgumentTypes()[j].getCardinality()) + 
  						", got " + currentArguments[j].getItemCount());
 		}

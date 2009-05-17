@@ -103,11 +103,11 @@ public class SessionModule extends AbstractInternalModule
 		Variable var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
 		
 		if( var == null || var.getValue() == null ) {
-			throw( new XPathException( fn.getASTNode(), "No request object found in the current XQuery context." ) );
+			throw( new XPathException( fn, "No request object found in the current XQuery context." ) );
 		}
 	
 		if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( fn.getASTNode(), "Variable $request is not bound to an Java object." ) );
+			throw( new XPathException( fn, "Variable $request is not bound to an Java object." ) );
 		}
 
 		JavaObjectValue value = (JavaObjectValue)var.getValue().itemAt( 0 );
@@ -119,7 +119,7 @@ public class SessionModule extends AbstractInternalModule
 			sessionModule.declareVariable( SessionModule.SESSION_VAR, session );
 			ret = (JavaObjectValue)sessionModule.resolveVariable( SessionModule.SESSION_VAR ).getValue().itemAt( 0 );
 		} else {
-			throw( new XPathException( fn.getASTNode(), "Variable $request is not bound to a Request object." ) );
+			throw( new XPathException( fn, "Variable $request is not bound to a Request object." ) );
 		}
 		
 		return( ret );

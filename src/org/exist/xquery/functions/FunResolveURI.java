@@ -79,14 +79,14 @@ public class FunResolveURI extends Function {
 		AnyURIValue base;		
 		if (getArgumentCount() == 1) {
 			if (!context.isBaseURIDeclared())
-				throw new XPathException(getASTNode(), "err:FONS0005: base URI of the static context has not been assigned a value.");
+				throw new XPathException(this, "err:FONS0005: base URI of the static context has not been assigned a value.");
 			base = context.getBaseURI();
 		} else {
 			try {
 				Item item = getArgument(1).eval(contextSequence).itemAt(0).convertTo(Type.ANY_URI);
 				base = (AnyURIValue)item;
 			} catch (XPathException e) {
-	        	throw new XPathException(getASTNode(), "err:FORG0002: invalid argument to fn:resolve-uri(): " + e.getMessage(), e);
+	        	throw new XPathException(this, "err:FORG0002: invalid argument to fn:resolve-uri(): " + e.getMessage(), e);
 			}
 		}
 		
@@ -101,7 +101,7 @@ public class FunResolveURI extends Function {
 				Item item = seq.itemAt(0).convertTo(Type.ANY_URI);
 				relative = (AnyURIValue)item;
 			} catch (XPathException e) {				
-	        	throw new XPathException(getASTNode(), "err:FORG0002: invalid argument to fn:resolve-uri(): " + e.getMessage(), e);
+	        	throw new XPathException(this, "err:FORG0002: invalid argument to fn:resolve-uri(): " + e.getMessage(), e);
 			}			
 			URI relativeURI;
 			URI baseURI;
@@ -109,7 +109,7 @@ public class FunResolveURI extends Function {
 				relativeURI = new URI(relative.getStringValue());
 				baseURI = new URI(base.getStringValue() );
 			} catch (URISyntaxException e) {
-				throw new XPathException(getASTNode(), "err:FORG0009: unable to resolve a relative URI against a base URI in fn:resolve-uri(): " + e.getMessage(), e);				
+				throw new XPathException(this, "err:FORG0009: unable to resolve a relative URI against a base URI in fn:resolve-uri(): " + e.getMessage(), e);
 			}
 			if (relativeURI.isAbsolute()) {
 				result = relative;

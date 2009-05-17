@@ -312,7 +312,7 @@ public class LocationStep extends Step {
 //            // }
         if (needsComputation()) {
             if (contextSequence == null)
-                throw new XPathException(getASTNode(), "XPDY0002 : undefined context sequence for '" + this.toString() + "'");
+                throw new XPathException(this, "XPDY0002 : undefined context sequence for '" + this.toString() + "'");
             switch (axis) {
                 case Constants.DESCENDANT_AXIS:
                 case Constants.DESCENDANT_SELF_AXIS:
@@ -341,7 +341,7 @@ public class LocationStep extends Step {
                                           Type.ATOMIC)) {
                     	//This test is copied from the legacy method getSelfAtomic()
                         if (!test.isWildcardTest())
-                            throw new XPathException(getASTNode(), test.toString()
+                            throw new XPathException(this, test.toString()
                                                      + " cannot be applied to an atomic value.");
                         result = contextSequence;
                     } else {

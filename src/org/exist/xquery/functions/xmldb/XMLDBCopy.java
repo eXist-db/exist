@@ -78,12 +78,12 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 			try {
 				Resource resource = collection.getResource(doc);
 				if (resource == null)
-					throw new XPathException(getASTNode(), "Resource " + doc + " not found");
+					throw new XPathException(this, "Resource " + doc + " not found");
 				CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
 					collection.getService("CollectionManagementService", "1.0");
 				service.copyResource(doc,destination,null);
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "XMLDB exception caught: " + e.getMessage(), e);
+				throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
 			}
 		} else {
 			try {
@@ -91,7 +91,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 					collection.getService("CollectionManagementService", "1.0");
 				service.copy(collection.getName(),destination,null);
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "Cannot copy collection: " + e.getMessage(), e);
+				throw new XPathException(this, "Cannot copy collection: " + e.getMessage(), e);
 			}
 		}
 		return Sequence.EMPTY_SEQUENCE;

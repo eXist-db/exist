@@ -76,7 +76,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 		throws XPathException {
         
         if (0 == args.length)
-            throw new XPathException(getASTNode(), "Expected a collection as the argument " + (paramNumber + 1) + ".");
+            throw new XPathException(this, "Expected a collection as the argument " + (paramNumber + 1) + ".");
         
         boolean collectionNeedsClose = false;
         
@@ -99,7 +99,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 				}
         		catch(XMLDBException e)
         		{
-					throw new XPathException(getASTNode(), "Failed to access collection: " + internalCol.getURI(), e);
+					throw new XPathException(this, "Failed to access collection: " + internalCol.getURI(), e);
 				}
         	}
         	else
@@ -144,13 +144,13 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                 catch(XMLDBException xe)
                 {
                     if(errorIfAbsent)
-                        throw new XPathException(getASTNode(), "Could not locate collection: "+collectionURI, xe);
+                        throw new XPathException(this, "Could not locate collection: "+collectionURI, xe);
                     collection = null;
                 }
             }
             if(collection == null && errorIfAbsent)
             {
-                throw new XPathException(getASTNode(), "Unable to find collection: " + collectionURI);
+                throw new XPathException(this, "Unable to find collection: " + collectionURI);
             }
         }
         
@@ -169,7 +169,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
             	}
             	catch(Exception e)
             	{
-            		throw new XPathException(getASTNode(), "Unable to close collection", e);
+            		throw new XPathException(this, "Unable to close collection", e);
         		}
             }
         }
