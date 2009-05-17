@@ -89,7 +89,7 @@ public class HighlightMatches extends BasicFunction {
                 result.add(builder.getDocument().getNode(++nodeNr));
             } catch (SAXException e) {
                 LOG.warn(e.getMessage(), e);
-                throw new XPathException(getASTNode(), e.getMessage());
+                throw new XPathException(this, e.getMessage());
             }
         }
         return result;

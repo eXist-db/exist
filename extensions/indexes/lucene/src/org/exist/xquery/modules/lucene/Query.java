@@ -129,9 +129,9 @@ public class Query extends Function implements Optimizable {
                 preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
                     qnames, key.getStringValue(), NodeSet.DESCENDANT);
         } catch (IOException e) {
-            throw new XPathException(getASTNode(), "Error while querying full text index: " + e.getMessage(), e);
+            throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         } catch (ParseException e) {
-            throw new XPathException(getASTNode(), "Error while querying full text index: " + e.getMessage(), e);
+            throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
         return preselectResult;
     }
@@ -164,9 +164,9 @@ public class Query extends Function implements Optimizable {
                         result = index.query(context, getExpressionId(), docs, inNodes, qnames,
                                 key.getStringValue(), NodeSet.ANCESTOR);
                 } catch (IOException e) {
-                    throw new XPathException(getASTNode(), e.getMessage());
+                    throw new XPathException(this, e.getMessage());
                 } catch (ParseException e) {
-                    throw new XPathException(getASTNode(), e.getMessage());
+                    throw new XPathException(this, e.getMessage());
                 }
             }
         } else {
@@ -180,7 +180,7 @@ public class Query extends Function implements Optimizable {
         Sequence keySeq = getArgument(1).eval(contextSequence, contextItem);
         Item key = keySeq.itemAt(0);
         if (!(Type.subTypeOf(key.getType(), Type.STRING) || Type.subTypeOf(key.getType(), Type.NODE)))
-            throw new XPathException(getASTNode(), "Second argument to ft:query should either be a query string or " +
+            throw new XPathException(this, "Second argument to ft:query should either be a query string or " +
                     "an XML element describing the query. Found: " + Type.getTypeName(key.getType()));
         return key;
     }
