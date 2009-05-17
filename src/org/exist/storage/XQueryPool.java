@@ -180,24 +180,25 @@ public class XQueryPool extends Object2ObjectHashMap {
       // it might become invalid if an imported module has changed.
       XQueryContext context = query.getContext();
       context.setBroker(broker);
-      if (!borrowModules(broker, context)) {
-          // the compiled query is no longer valid: one of the imported
-          // modules may have changed
-          remove(source);
-          return null;
-      } else {
-      	if (query instanceof PathExpr) try {
-      		// This is necessary because eXist performs whole-expression analysis, so a function
-      		// can only be analyzed as part of the expression it's called from.  It might be better
-      		// to make module functions more stand-alone, so they only need to be analyzed
-      		// once.
-      		context.analyzeAndOptimizeIfModulesChanged((PathExpr) query);
-      	} catch (XPathException e) {
-      		remove(source);
-      		return null;
-      	}
-          return query;
-      }
+        return query;
+//      if (!borrowModules(broker, context)) {
+//          // the compiled query is no longer valid: one of the imported
+//          // modules may have changed
+//          remove(source);
+//          return null;
+//      } else {
+//      	if (query instanceof PathExpr) try {
+//      		// This is necessary because eXist performs whole-expression analysis, so a function
+//      		// can only be analyzed as part of the expression it's called from.  It might be better
+//      		// to make module functions more stand-alone, so they only need to be analyzed
+//      		// once.
+//      		context.analyzeAndOptimizeIfModulesChanged((PathExpr) query);
+//      	} catch (XPathException e) {
+//      		remove(source);
+//      		return null;
+//      	}
+//          return query;
+//      }
     }
     
     private synchronized boolean borrowModules(DBBroker broker, XQueryContext context) {
