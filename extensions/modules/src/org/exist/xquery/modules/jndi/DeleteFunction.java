@@ -113,7 +113,7 @@ public class DeleteFunction extends BasicFunction
 			}
 			catch( NamingException ne ) {
 				LOG.error( "jndi:delete() Delete failed for dn [" + dn + "]: ", ne );
-				throw( new XPathException(getASTNode(), "jndi:delete() Delete failed for dn [" + dn + "]: ", ne ) );
+				throw( new XPathException(this, "jndi:delete() Delete failed for dn [" + dn + "]: ", ne ) );
 			}
 		}
 		

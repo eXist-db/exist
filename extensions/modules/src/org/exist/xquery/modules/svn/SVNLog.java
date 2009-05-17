@@ -104,7 +104,7 @@ public class SVNLog extends BasicFunction {
             builder.endElement();
 		    return builder.getDocument().getNode(nodeNr);
         } catch (SVNException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
+            throw new XPathException(this, e.getMessage(), e);
         }
     }
 
