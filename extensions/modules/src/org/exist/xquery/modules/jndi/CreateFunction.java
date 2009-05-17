@@ -124,7 +124,7 @@ public class CreateFunction extends BasicFunction
 			}
 			catch( NamingException ne ) {
 				LOG.error( "jndi:create() Create failed for dn [" + dn + "]: " + ne );
-				throw( new XPathException( getASTNode(), "jndi:create() Create failed for dn [" + dn + "]: " + ne ) );
+				throw( new XPathException( this, "jndi:create() Create failed for dn [" + dn + "]: " + ne ) );
 			}
 		}
 		

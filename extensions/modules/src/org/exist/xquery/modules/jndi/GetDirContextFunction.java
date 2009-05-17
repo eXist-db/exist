@@ -116,7 +116,7 @@ public class GetDirContextFunction extends BasicFunction
 		}
 		catch( NamingException ne ) {
 			LOG.error( "jndi:get-dir-context() Cannot get JNDI directory context: " + ne );
-			throw( new XPathException( getASTNode(), "jndi:get-dir-context() Cannot get JNDI directory context: " + ne ) );
+			throw( new XPathException( this, "jndi:get-dir-context() Cannot get JNDI directory context: " + ne ) );
 		}
 	}
 }

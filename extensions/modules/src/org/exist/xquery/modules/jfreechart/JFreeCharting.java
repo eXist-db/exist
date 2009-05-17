@@ -118,12 +118,12 @@ public class JFreeCharting extends BasicFunction {
                 chart = JFreeChartFactory.createJFreeChart(chartType, config, is);
 
             } catch (IllegalArgumentException ex){
-                throw new XPathException(getASTNode(), ex.getMessage());
+                throw new XPathException(this, ex.getMessage());
             }
 
             // Verify if chart is present
             if(chart==null){
-               throw new XPathException(getASTNode(), "Unable to create chart '"+chartType+"'");
+               throw new XPathException(this, "Unable to create chart '"+chartType+"'");
             }
 
             // Render output
@@ -139,7 +139,7 @@ public class JFreeCharting extends BasicFunction {
 
         } catch (Exception ex) {
             LOG.error(ex);
-            throw new XPathException(getASTNode(), ex.getMessage());
+            throw new XPathException(this, ex.getMessage());
         }
 
         return Sequence.EMPTY_SEQUENCE;
@@ -156,14 +156,14 @@ public class JFreeCharting extends BasicFunction {
         // response object is read from global variable $response
         Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
         if (respVar == null) {
-            throw new XPathException(getASTNode(), "No response object found in the current XQuery context.");
+            throw new XPathException(this, "No response object found in the current XQuery context.");
         }
         if (respVar.getValue().getItemType() != Type.JAVA_OBJECT) {
-            throw new XPathException(getASTNode(), "Variable $response is not bound to an Java object.");
+            throw new XPathException(this, "Variable $response is not bound to an Java object.");
         }
         JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
         if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName())) {
-            throw new XPathException(getASTNode(), signatures[1].toString() +
+            throw new XPathException(this, signatures[1].toString() +
                     " can only be used within the EXistServlet or XQueryServlet");
         }
         ResponseWrapper response = (ResponseWrapper) respValue.getObject();
@@ -186,7 +186,7 @@ public class JFreeCharting extends BasicFunction {
 
         } catch (IOException ex) {
             LOG.error(ex);
-            throw new XPathException(getASTNode(), "IO issue while serializing image. " + ex.getMessage());
+            throw new XPathException(this, "IO issue while serializing image. " + ex.getMessage());
 
         } finally {
             try {

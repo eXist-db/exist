@@ -166,7 +166,7 @@ public class SearchFunction extends BasicFunction
 			}
 			catch( NamingException ne ) {
 				LOG.error( "jndi:search() Search failed for dn [" + dn + "]: " + ne );
-				throw( new XPathException( getASTNode(), "jndi:search() Search failed for dn [" + dn + "]: " + ne ) );
+				throw( new XPathException( this, "jndi:search() Search failed for dn [" + dn + "]: " + ne ) );
 			}
 		}
 		

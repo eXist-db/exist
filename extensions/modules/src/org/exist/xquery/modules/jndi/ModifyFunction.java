@@ -130,7 +130,7 @@ public class ModifyFunction extends BasicFunction
 			}
 			catch( NamingException ne ) {
 				LOG.error( "jndi:modify() Modify failed for dn [" + dn + "]: " + ne );
-				throw( new XPathException( getASTNode(), "jndi:modify() Modify failed for dn [" + dn + "]: " + ne ) );
+				throw( new XPathException( this, "jndi:modify() Modify failed for dn [" + dn + "]: " + ne ) );
 			}
 		}
 		
@@ -180,7 +180,7 @@ public class ModifyFunction extends BasicFunction
 						
 						if( opCode == 0 ) {
 							LOG.error( "jndi:modify() - Invalid operation code: [" + op + "]" );
-							throw( new XPathException( getASTNode(), "jndi:modify() - Invalid operation code: [" + op + "]" ) );
+							throw( new XPathException( this, "jndi:modify() - Invalid operation code: [" + op + "]" ) );
 						}
 						
 						Attribute existingAttr = null;

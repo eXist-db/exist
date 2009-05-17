@@ -115,7 +115,7 @@ public class RenameFunction extends BasicFunction
 			}
 			catch( NamingException ne ) {
 				LOG.error( "jndi:rename() Rename failed for dn [" + dn + "], new dn [" + newDN + "]: " + ne );
-				throw( new XPathException( getASTNode(), "jndi:rename() Rename failed for dn [" + dn + "], new dn [" + newDN + "]: " + ne ) );
+				throw( new XPathException( this, "jndi:rename() Rename failed for dn [" + dn + "], new dn [" + newDN + "]: " + ne ) );
 			}
 		}
 		
