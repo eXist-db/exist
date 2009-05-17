@@ -72,10 +72,10 @@ public class XMLDBChmodResource extends XMLDBAbstractCollectionManipulator {
                 UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
                 ums.chmod(res, ((IntegerValue) args[2].convertTo(Type.INTEGER)).getInt());
             } else {
-                throw new XPathException(getASTNode(), "Unable to locate resource "+args[1].getStringValue());
+                throw new XPathException(this, "Unable to locate resource "+args[1].getStringValue());
             }
         } catch (XMLDBException xe) {
-            throw new XPathException(getASTNode(), "Unable to change resource permissions", xe);
+            throw new XPathException(this, "Unable to change resource permissions", xe);
         }
 
 		return Sequence.EMPTY_SEQUENCE;

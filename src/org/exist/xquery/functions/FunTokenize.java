@@ -103,7 +103,7 @@ public class FunTokenize extends FunMatches {
             	//TODO : make fn:tokenize("Some unparsed <br> HTML <BR> text", "\s*<br>\s*", "") work  
                 String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
                 if (Pattern.matches(pattern, "")) {
-                	throw new XPathException(getASTNode(), "FORX0003: regular expression could match empty string");
+                	throw new XPathException(this, "FORX0003: regular expression could match empty string");
                 }
 		
         		int flags = 0;
@@ -119,7 +119,7 @@ public class FunTokenize extends FunMatches {
         			for (int i = 0; i < tokens.length; i++)
                         result.add(new StringValue(tokens[i]));        			
         		} catch (PatternSyntaxException e) {
-        			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
+        			throw new XPathException(this, "Invalid regular expression: " + e.getMessage(), e);
         		}
             }
         }

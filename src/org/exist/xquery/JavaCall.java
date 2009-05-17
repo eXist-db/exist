@@ -62,7 +62,7 @@ public class JavaCall extends Function {
 		this.qname = qname;
 		String namespaceURI = context.getURIForPrefix(qname.getPrefix());
 		if (!namespaceURI.startsWith("java:"))
-			throw new XPathException(getASTNode(),
+			throw new XPathException(this,
 				"Internal error: prefix "
 					+ qname.getPrefix()
 					+ " does not "
@@ -74,7 +74,7 @@ public class JavaCall extends Function {
 			
 			myClass = Class.forName(namespaceURI);
 		} catch (ClassNotFoundException e) {
-			throw new XPathException(getASTNode(), "Class: " + namespaceURI + " not found", e);
+			throw new XPathException(this, "Class: " + namespaceURI + " not found", e);
 		}
 
 		name = qname.getLocalName();
@@ -136,7 +136,7 @@ public class JavaCall extends Function {
 			}
 			if (candidateMethods.size() == 0) {
 				String message = "no constructor found with " + argCount + " arguments"; 
-				throw new XPathException(getASTNode(),
+				throw new XPathException(this,
 					message,
 					new NoSuchMethodException(message));
 			}
@@ -161,7 +161,7 @@ public class JavaCall extends Function {
 			}
 			if (candidateMethods.size() == 0) {
 				String message = "no method matches " + name + " with " + argCount + " arguments"; 
-				throw new XPathException(getASTNode(),
+				throw new XPathException(this,
 					message,
 					new NoSuchMethodException(message));
 			}
@@ -196,7 +196,7 @@ public class JavaCall extends Function {
 				pdp.evaluate(request);
 			}
 		} catch (PermissionDeniedException pde) {
-			throw new XPathException(getASTNode(), "Access to method '" + name + "' in class '" + myClass.getName() + "' denied.", pde);
+			throw new XPathException(this, "Access to method '" + name + "' in class '" + myClass.getName() + "' denied.", pde);
 		}
         
 		// get the actual arguments
@@ -242,7 +242,7 @@ public class JavaCall extends Function {
 				Object object = ((Constructor) bestMethod).newInstance(params);
                 result = new JavaObjectValue(object);
 			} catch (IllegalArgumentException e) {
-				throw new XPathException(getASTNode(),
+				throw new XPathException(this,
 					"illegal argument to constructor "
 						+ bestMethod.toString()
 						+ ": "
@@ -252,7 +252,7 @@ public class JavaCall extends Function {
 				if (e instanceof XPathException)
 					throw (XPathException) e;
 				else
-					throw new XPathException(getASTNode(),
+					throw new XPathException(this,
 						"exception while calling constructor "
 							+ bestMethod.toString()
 							+ ": "
@@ -272,7 +272,7 @@ public class JavaCall extends Function {
 				}
                 result = XPathUtil.javaObjectToXPath(invocationResult, getContext());
 			} catch (IllegalArgumentException e) {
-				throw new XPathException(getASTNode(),
+				throw new XPathException(this,
 					"illegal argument to method "
 						+ bestMethod.toString()
 						+ ": "
@@ -282,7 +282,7 @@ public class JavaCall extends Function {
 				if (e instanceof XPathException)
 					throw (XPathException) e;
 				else
-					throw new XPathException(getASTNode(),
+					throw new XPathException(this,
 						"exception while calling method "
 							+ bestMethod.toString()
 							+ ": "

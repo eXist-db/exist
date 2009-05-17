@@ -108,7 +108,7 @@ public class FunResolveQName extends BasicFunction {
                 }
 
                 if (uri == null && prefix != null && !"".equals(prefix)) {
-                    throw new XPathException(getASTNode(), "No namespace found for prefix. No binding for prefix '" + prefix
+                    throw new XPathException(this, "No namespace found for prefix. No binding for prefix '" + prefix
                                              + "' was found. err:FONS0004");
                 }
                 String localPart = QName.extractLocalName(qnameString);
@@ -123,7 +123,7 @@ public class FunResolveQName extends BasicFunction {
           
                 return result;
             } else {
-                throw new XPathException(getASTNode(), "Invalid lexical value. '" + qnameString
+                throw new XPathException(this, "Invalid lexical value. '" + qnameString
                                          + "' is not a QName. err:FOCA0002");
             }
         }

@@ -129,11 +129,12 @@ public class Atomize extends AbstractExpression {
 		super.resetState(postOptimization);
 		expression.resetState(postOptimization);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getASTNode()
-	 */
-	public XQueryAST getASTNode() {
-		return expression.getASTNode();
-	}
+
+    public int getLine() {
+        return expression.getLine();
+    }
+
+    public int getColumn() {
+        return expression.getColumn();
+    }
 }

@@ -71,7 +71,7 @@ public class ExtensionExpression extends AbstractExpression {
             Sequence temp = pragma.eval(contextSequence, contextItem);
             if (temp != null) {
                 if (result != null)
-                    throw new XPathException(getASTNode(), "Conflicting pragmas: only one should return a result for eval");
+                    throw new XPathException(this, "Conflicting pragmas: only one should return a result for eval");
                 result = temp;
             }
         }
@@ -112,7 +112,7 @@ public class ExtensionExpression extends AbstractExpression {
     public void dump(ExpressionDumper dumper) {
         for (int i = 0; i < pragmas.size(); i++) {
             Pragma pragma = (Pragma) pragmas.get(i);
-            dumper.display("(# " + pragma.getQName().toString(), getASTNode());
+            dumper.display("(# " + pragma.getQName().toString(), line);
             if (pragma.getContents() != null)
                 dumper.display(' ').display(pragma.getContents());
             dumper.display("#)").nl();

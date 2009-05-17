@@ -79,7 +79,7 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 			Permission perm = getPermissions(collection, args);
 			return new IntegerValue(perm.getPermissions(), Type.INT);
         } catch (XMLDBException xe) {
-            throw new XPathException(getASTNode(), "Unable to retrieve resource permissions", xe);
+            throw new XPathException(this, "Unable to retrieve resource permissions", xe);
         }
 	}
 
@@ -98,7 +98,7 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 		    if (res != null) {
 		        perm = ums.getPermissions(res);
 		    } else {
-		        throw new XPathException(getASTNode(), "Unable to locate resource "+args[1].getStringValue());
+		        throw new XPathException(this, "Unable to locate resource "+args[1].getStringValue());
 		    }
 		} else {
 			perm = ums.getPermissions(collection);

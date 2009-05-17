@@ -79,20 +79,20 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
             int mode = ((IntegerValue) args[3].convertTo(Type.INTEGER)).getInt();
             
             if (null == user || 0 == user.length())
-                throw new XPathException(getASTNode(), "Needs a valid user name, not: "+user);
+                throw new XPathException(this, "Needs a valid user name, not: "+user);
             if (null == group || 0 == group.length())
-                throw new XPathException(getASTNode(), "Needs a valid group name, not: "+group);
+                throw new XPathException(this, "Needs a valid group name, not: "+group);
 
             // Must actually get a User object for the Permission...
             Permission p = PermissionFactory.getPermission(user, group, mode);
             User u = ums.getUser(user);
             if (null == u)
-                throw new XPathException(getASTNode(), "Needs a valid user name, not: "+user);
+                throw new XPathException(this, "Needs a valid user name, not: "+user);
             p.setOwner(u);
             
             ums.setPermissions(collection, p);
         } catch (XMLDBException xe) {
-            throw new XPathException(getASTNode(), "Unable to change collection permissions", xe);
+            throw new XPathException(this, "Unable to change collection permissions", xe);
         }
 
 		return Sequence.EMPTY_SEQUENCE;

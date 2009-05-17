@@ -103,7 +103,7 @@ public class Shutdown extends BasicFunction
 		}
 		else
 		{
-			throw new XPathException(getASTNode(), "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
+			throw new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
 		}
 			
 		return Sequence.EMPTY_SEQUENCE;

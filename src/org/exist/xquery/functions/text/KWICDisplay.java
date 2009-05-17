@@ -147,7 +147,7 @@ public class KWICDisplay extends BasicFunction {
         for (SequenceIterator i = nodes.iterate(); i.hasNext(); ) {
             node = (NodeValue) i.nextItem();
             if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-                throw new XPathException(getASTNode(), "Function kwic-display" + 
+                throw new XPathException(this, "Function kwic-display" +
                         " can not be invoked on constructed nodes");
             NodeProxy proxy = (NodeProxy) node;
             // remember the first node, we need it later
@@ -244,7 +244,7 @@ public class KWICDisplay extends BasicFunction {
 							result.add(builder.getDocument().getNode(++nodeNr));
 							lastNodeNr = nodeNr;
 						} catch (SAXException e) {
-							throw new XPathException(getASTNode(), "Internal error while copying nodes: " + e.getMessage(), e);
+							throw new XPathException(this, "Internal error while copying nodes: " + e.getMessage(), e);
 						}
                 	}
                 }
@@ -290,7 +290,7 @@ public class KWICDisplay extends BasicFunction {
     							result.add(builder.getDocument().getNode(++nodeNr));
     							lastNodeNr = nodeNr;
     						} catch (SAXException e) {
-    							throw new XPathException(getASTNode(), "Internal error while copying nodes: " + e.getMessage(), e);
+    							throw new XPathException(this, "Internal error while copying nodes: " + e.getMessage(), e);
     						}
                     	}
                     }

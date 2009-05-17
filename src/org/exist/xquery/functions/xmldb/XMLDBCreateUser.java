@@ -94,7 +94,7 @@ public class XMLDBCreateUser extends BasicFunction {
         try {
         	userObj.setHome(new AnyURIValue(args[3].getStringValue()).toXmldbURI());
         } catch(XPathException e) {
-        	throw new XPathException(getASTNode(),"Invalid home collection URI",e);
+        	throw new XPathException(this,"Invalid home collection URI",e);
         }
 		}
         Collection collection = null;
@@ -104,7 +104,7 @@ public class XMLDBCreateUser extends BasicFunction {
 			ums.addUser(userObj);
 			
 		} catch (XMLDBException xe) {
-			throw new XPathException(getASTNode(), "Failed to create new user " + user, xe);
+			throw new XPathException(this, "Failed to create new user " + user, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }

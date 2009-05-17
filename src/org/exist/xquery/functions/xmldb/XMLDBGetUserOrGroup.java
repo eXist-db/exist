@@ -104,7 +104,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 			else
 				return new StringValue(perm.getOwnerGroup());
         } catch (XMLDBException xe) {
-            throw new XPathException(getASTNode(), "Unable to retrieve resource permissions", xe);
+            throw new XPathException(this, "Unable to retrieve resource permissions", xe);
         }
 	}
 

@@ -92,11 +92,11 @@ public class BinaryDoc extends BasicFunction {
             } else
                 return BooleanValue.TRUE;
         } catch (URISyntaxException e) {
-            throw new XPathException(getASTNode(), "Invalid resource uri",e);
+            throw new XPathException(this, "Invalid resource uri",e);
         } catch (PermissionDeniedException e) {
-            throw new XPathException(getASTNode(), path + ": permission denied to read resource");
+            throw new XPathException(this, path + ": permission denied to read resource");
         } catch (IOException e) {
-            throw new XPathException(getASTNode(), path + ": I/O error while reading resource",e);
+            throw new XPathException(this, path + ": I/O error while reading resource",e);
         } finally {
             if (doc != null)
                 doc.getUpdateLock().release(Lock.READ_LOCK);

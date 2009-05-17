@@ -133,7 +133,7 @@ public class FunDocument extends Function {
 						String next = (String)args.get(i);
 						XmldbURI nextUri = new AnyURIValue(next).toXmldbURI();
 						if(nextUri.getCollectionPath().length() == 0) {
-							throw new XPathException(getASTNode(), "Invalid argument to " + XMLDBModule.PREFIX + ":document() function: empty string is not allowed here.");
+							throw new XPathException(this, "Invalid argument to " + XMLDBModule.PREFIX + ":document() function: empty string is not allowed here.");
 						}
 	                    if(nextUri.numSegments()==1) {                     
 	                    	nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
@@ -141,18 +141,18 @@ public class FunDocument extends Function {
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(nextUri);
 						if(doc == null) { 
 							if (context.isRaiseErrorOnFailedRetrieval()) {
-			    				throw new XPathException(getASTNode(), "FODC0002: can not access '" + nextUri + "'");
+			    				throw new XPathException(this, "FODC0002: can not access '" + nextUri + "'");
 			    			}						
 						}else {
 						    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
-							    throw new XPathException(getASTNode(), "Insufficient privileges to read resource " + next);
+							    throw new XPathException(this, "Insufficient privileges to read resource " + next);
 							mdocs.add(doc);
 						}
 			        } catch (XPathException e) { //From AnyURIValue constructor
-			        	e.setASTNode(getASTNode());
+                        e.setLocation(line, column);
 			            throw e;
 			        } catch (PermissionDeniedException e) {
-						throw new XPathException(getASTNode(), "Permission denied: unable to load document " + (String)args.get(i));
+						throw new XPathException(this, "Permission denied: unable to load document " + (String)args.get(i));
 					}
 				}
                 docs = mdocs;
@@ -176,7 +176,7 @@ public class FunDocument extends Function {
 				}
 			}
 	    } catch (LockException e) {
-            throw new XPathException(getASTNode(), "Could not acquire lock on document set.");
+            throw new XPathException(this, "Could not acquire lock on document set.");
         } finally {
             if(!(cacheIsValid || lockOnLoad))
                 // release all locks
@@ -232,7 +232,7 @@ public class FunDocument extends Function {
                 }
 
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + getASTNode().getLine() + ": " + FunDocument.this.toString());                	
+                	LOG.debug("UpdateListener: Line: " + getLine() + ": " + FunDocument.this.toString());
                 }
             };
             context.registerUpdateListener(listener);

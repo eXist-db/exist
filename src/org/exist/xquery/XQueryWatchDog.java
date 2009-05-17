@@ -112,7 +112,7 @@ public class XQueryWatchDog {
     		if(expr == null)
     			expr = context.getRootExpression();
     		cleanUp();
-    		throw new TerminatedException(expr.getASTNode(),
+    		throw new TerminatedException(expr.getLine(), expr.getColumn(),
     				"The query has been killed by the server.");
     	}
         final long elapsed = System.currentTimeMillis() - startTime;
@@ -123,7 +123,7 @@ public class XQueryWatchDog {
             LOG.warn("Query exceeded predefined timeout (" + nf.format(elapsed) + " ms.): " + 
                     ExpressionDumper.dump(expr));
             cleanUp();
-            throw new TerminatedException.TimeoutException(expr.getASTNode(),
+            throw new TerminatedException.TimeoutException(expr.getLine(), expr.getColumn(),
                     "The query exceeded the predefined timeout and has been killed.");
         }
     }
@@ -137,7 +137,7 @@ public class XQueryWatchDog {
             LOG.warn("Query exceeded predefined output-size-limit (" +  nf.format(maxNodesLimit) + ") for document fragments: " + 
                     ExpressionDumper.dump(expr));
             cleanUp();
-            throw new TerminatedException.SizeLimitException(expr.getASTNode(),
+            throw new TerminatedException.SizeLimitException(expr.getLine(), expr.getColumn(),
                     "The constructed document fragment exceeded the predefined output-size-limit (current: " +
                     nf.format(builder.getSize()) + "; allowed: " + nf.format(maxNodesLimit) +
                     "). The query has been killed.");

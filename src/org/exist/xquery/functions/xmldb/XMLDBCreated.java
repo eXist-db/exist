@@ -107,7 +107,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
             }
 			return new DateTimeValue(date);
 		} catch(XMLDBException e) {
-			throw new XPathException(getASTNode(), "Failed to retrieve creation date: " + e.getMessage(), e);
+			throw new XPathException(this, "Failed to retrieve creation date: " + e.getMessage(), e);
 		}
 	}
 

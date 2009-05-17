@@ -70,7 +70,7 @@ public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator
         }
         catch(XMLDBException xe)
         {
-            throw new XPathException(getASTNode(), "Unable to change collection mode", xe);
+            throw new XPathException(this, "Unable to change collection mode", xe);
         }
 
 		return Sequence.EMPTY_SEQUENCE;

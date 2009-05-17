@@ -198,15 +198,12 @@ public interface Expression {
     public int getContextId();
 	
 	public DocumentSet getContextDocSet();
-	
-	/**
-	 * Returns the {@link XQueryAST} node from which this expression
-	 * has been constructed by the parser. This node contains location information
-	 * (line number and column) important for error reports.
-	 * 
-	 * @return XQueryAST node
-	 */
-	public XQueryAST getASTNode();
-	
-	public void setASTNode(XQueryAST ast);
+
+    public void setASTNode(XQueryAST ast);
+
+    public void setLocation(int line, int column);
+
+    public int getLine();
+
+    public int getColumn();
 }

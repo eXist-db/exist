@@ -75,7 +75,7 @@ public class TextRank extends BasicFunction {
 			NodeValue val = (NodeValue)args[0].itemAt(0);
 			// Ranking cannot be applied to constructed nodes
 			if(val.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-				throw new XPathException(getASTNode(), getName() + " cannot be applied to in-memory nodes.");
+				throw new XPathException(this, getName() + " cannot be applied to in-memory nodes.");
 			NodeProxy proxy = (NodeProxy)val;	// this is a persistent node, so casting is safe
 	
 			int freq = 0;

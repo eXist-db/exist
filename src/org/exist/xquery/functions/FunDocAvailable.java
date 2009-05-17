@@ -82,7 +82,7 @@ public class FunDocAvailable extends Function {
     			result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
     		}
     		catch (Exception e) {
-    			throw new XPathException(getASTNode(), e.getMessage(), e);			
+    			throw new XPathException(this, e.getMessage(), e);			
     		}            
         }
         

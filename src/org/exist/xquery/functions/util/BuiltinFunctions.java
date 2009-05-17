@@ -78,7 +78,7 @@ public class BuiltinFunctions extends BasicFunction {
 			String uri = args[0].getStringValue();
 			Module module = context.getModule(uri);
 			if(module == null)
-				throw new XPathException(getASTNode(), "No module found matching namespace URI: " + uri);
+				throw new XPathException(this, "No module found matching namespace URI: " + uri);
 			addFunctionsFromModule(resultSeq, module);
 		} else {
 			for(Iterator i = context.getModules(); i.hasNext(); ) {
@@ -95,11 +95,6 @@ public class BuiltinFunctions extends BasicFunction {
 		return resultSeq;
 	}
 
-	/**
-	 * @param set
-	 * @param resultSeq
-	 * @param module
-	 */
 	private void addFunctionsFromModule(ValueSequence resultSeq, Module module) {
 		Set set = new TreeSet();
 		FunctionSignature signatures[] = module.listFunctions();

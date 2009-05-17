@@ -73,13 +73,13 @@ public class VariableDeclaration extends AbstractExpression {
             if(myModule != null) {
 // WM: duplicate var declaration is now caught in the XQuery tree parser
                 if (myModule.isVarDeclared(qn))
-                    throw new XPathException(getASTNode(), "err:XQST0049: It is a static error if more than one " +
+                    throw new XPathException(this, "err:XQST0049: It is a static error if more than one " +
                             "variable declared or imported by a module has the same expanded QName. Variable: " + qn);
                 myModule.declareVariable(var);
             } else {
 // WM: duplicate var declaration is now caught in the XQuery tree parser
                 if(context.isVarDeclared(qn)) {
-                    throw new XPathException(getASTNode(), "err:XQST0049: It is a static error if more than one " +
+                    throw new XPathException(this, "err:XQST0049: It is a static error if more than one " +
                             "variable declared or imported by a module has the same expanded QName. Variable: " + qn);
                 }
                 context.declareGlobalVariable(var);
@@ -134,7 +134,7 @@ public class VariableDeclaration extends AbstractExpression {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.nl().display("declare variable $").display(qname, getASTNode());
+        dumper.nl().display("declare variable $").display(qname, line);
         if(sequenceType != null) {
             dumper.display(" as ").display(sequenceType.toString());
         }

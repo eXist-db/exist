@@ -103,7 +103,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
 
             Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
             if(!nameSeq.hasOne())
-            throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
+            throw new XPathException(this, "The name expression should evaluate to a single value");
 
             Item qnItem = nameSeq.itemAt(0);
             QName qn;
@@ -114,7 +114,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
 
             //Not in the specs but... makes sense
             if(!XMLChar.isValidName(qn.getLocalName()))
-			throw new XPathException(getASTNode(), "XPTY0004 '" + qn.getLocalName() + "' is not a valid attribute name");
+			throw new XPathException(this, "XPTY0004 '" + qn.getLocalName() + "' is not a valid attribute name");
 
             String value;
             Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
@@ -135,7 +135,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
                 int nodeNr = builder.addAttribute(qn, value);
                 node = builder.getDocument().getAttribute(nodeNr);
             } catch (DOMException e) {
-                throw new XPathException(getASTNode(), "Error XQDY0025: element has more than one attribute '" + qn + "'");
+                throw new XPathException(this, "Error XQDY0025: element has more than one attribute '" + qn + "'");
             } 
         } finally {
             if (newDocumentContext)

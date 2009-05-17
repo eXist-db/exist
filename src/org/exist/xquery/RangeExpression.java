@@ -61,13 +61,13 @@ public class RangeExpression extends PathExpr {
     	//TODO : static checks ?
     	/*
     	if (!Cardinality.checkCardinality(Cardinality.ZERO_OR_ONE, start.getCardinality()))
-		    throw new XPathException(getASTNode(), "Invalid cardinality for 1st argument");
+		    throw new XPathException(this, "Invalid cardinality for 1st argument");
     	if (!Cardinality.checkCardinality(Cardinality.ZERO_OR_ONE, end.getCardinality()))
-		    throw new XPathException(getASTNode(), "Invalid cardinality for 2nd argument");
+		    throw new XPathException(this, "Invalid cardinality for 2nd argument");
     	if (start.returnsType() != Type.INTEGER)
-		    throw new XPathException(getASTNode(), "Invalid type for 1st argument");
+		    throw new XPathException(this, "Invalid type for 1st argument");
     	if (end.returnsType() != Type.INTEGER)
-		    throw new XPathException(getASTNode(), "Invalid type for 2nd argument");
+		    throw new XPathException(this, "Invalid type for 2nd argument");
         */
     	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
     	contextId = contextInfo.getContextId();
@@ -89,9 +89,9 @@ public class RangeExpression extends PathExpr {
 		else if (endSeq.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
 		else if (startSeq.hasMany())
-			throw new XPathException(getASTNode(), "XPTY0004: the first operand must have at most one item");
+			throw new XPathException(this, "XPTY0004: the first operand must have at most one item");
 		else if (endSeq.hasMany())
-			throw new XPathException(getASTNode(), "XPTY0004: the second operand must have at most one item");
+			throw new XPathException(this, "XPTY0004: the second operand must have at most one item");
         else {
         	if (context.isBackwardsCompatible()) {
 	        	NumericValue valueStart;
@@ -99,7 +99,7 @@ public class RangeExpression extends PathExpr {
 	        		//Currently breaks 1e3 to 3
 	        		valueStart = (NumericValue)startSeq.itemAt(0).convertTo(Type.NUMBER);
 	        	} catch (XPathException e) {
-					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+					throw new XPathException(this, "FORG0006: Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
 							startSeq.itemAt(0).getStringValue() + ")'");
 	        	}
@@ -108,19 +108,19 @@ public class RangeExpression extends PathExpr {
 	        		//Currently breaks 3 to 1e3
 	        		valueEnd = (NumericValue)endSeq.itemAt(0).convertTo(Type.NUMBER);
 	        	} catch (XPathException e) {
-					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+					throw new XPathException(this, "FORG0006: Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
 							endSeq.itemAt(0).getStringValue() + ")'");
 	        	}
 	        	//Implied by previous conversion
 	        	if (valueStart.hasFractionalPart()) {
-					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+					throw new XPathException(this, "FORG0006: Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
 							startSeq.itemAt(0).getStringValue() + ")'");
 				}
 	        	//Implied by previous conversion
 	        	if (valueEnd.hasFractionalPart()) {
-					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+					throw new XPathException(this, "FORG0006: Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
 							startSeq.itemAt(0).getStringValue() + ")'");
 	        	}        	
@@ -133,13 +133,13 @@ public class RangeExpression extends PathExpr {
 	        	//Quite unusual test : we accept integers but no other *typed* type 
 	        	if (!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
 	        		!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
-					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+					throw new XPathException(this, "FORG0006: Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
 							startSeq.itemAt(0).getStringValue() + ")'");
 	        	//Quite unusual test : we accept integers but no other *typed* type 
 	        	if (!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
 	        		!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
-					throw new XPathException(getASTNode(), "FORG0006: Required type is " + 
+					throw new XPathException(this, "FORG0006: Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
 							endSeq.itemAt(0).getStringValue() + ")'");
 	        	IntegerValue valueStart = (IntegerValue)startSeq.itemAt(0).convertTo(Type.INTEGER);

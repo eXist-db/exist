@@ -76,10 +76,10 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 			    String lockUser = ums.hasUserLock(res);
 			    return lockUser == null ? Sequence.EMPTY_SEQUENCE : new StringValue(lockUser);
 			} else {
-			    throw new XPathException(getASTNode(), "Unable to locate resource "+args[1].getStringValue());
+			    throw new XPathException(this, "Unable to locate resource "+args[1].getStringValue());
 			}
 		} catch (XMLDBException e) {
-			throw new XPathException(getASTNode(), "Failed to retrieve user lock", e);
+			throw new XPathException(this, "Failed to retrieve user lock", e);
 		}
 	}
 

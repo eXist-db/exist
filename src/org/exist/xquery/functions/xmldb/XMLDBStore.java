@@ -141,14 +141,14 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			if(Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
 				Object obj = ((JavaObjectValue)item).getObject();
 				if(!(obj instanceof File))
-					throw new XPathException(getASTNode(), "Passed java object should be a File");
+					throw new XPathException(this, "Passed java object should be a File");
 				resource = loadFromFile(collection, (File)obj, docName, binary, mimeType);
 			} else if(Type.subTypeOf(item.getType(), Type.ANY_URI)) {
 				try {
 					URI uri = new URI(item.getStringValue());
 					resource = loadFromURI(collection, uri, docName, binary, mimeType);
 				} catch (URISyntaxException e) {
-					throw new XPathException(getASTNode(), "Invalid URI: " + item.getStringValue(), e);
+					throw new XPathException(this, "Invalid URI: " + item.getStringValue(), e);
 				}
 			} else {
 				if(binary) {
@@ -174,15 +174,15 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 						handler.endDocument();
 					}
 				} else
-					throw new XPathException(getASTNode(), "Data should be either a node or a string");
+					throw new XPathException(this, "Data should be either a node or a string");
 				collection.storeResource(resource);
 			}
 		} catch (XMLDBException e) {
-			throw new XPathException(getASTNode(), 
+			throw new XPathException(this,
 				"XMLDB reported an exception while storing document" + e,
 				e);
 		} catch (SAXException e) {
-			throw new XPathException(getASTNode(), 
+			throw new XPathException(this,
 				"SAX reported an exception while storing document",
 				e);
 		}
@@ -193,7 +193,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                 //TODO : use dedicated function in XmldbURI
 				return new StringValue(collection.getName() + "/" + resource.getId());
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "XMLDB reported an exception while retrieving the " +
+				throw new XPathException(this, "XMLDB reported an exception while retrieving the " +
 						"stored document", e);
 			}
 	}
@@ -204,10 +204,10 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		if("file".equals(uri.getScheme())) {
 			String path = uri.getPath();
             if(path == null)
-                throw new XPathException(getASTNode(), "Cannot read from URI: " + uri.toASCIIString());
+                throw new XPathException(this, "Cannot read from URI: " + uri.toASCIIString());
 			File file = new File(path);
 			if(!file.canRead())
-				throw new XPathException(getASTNode(), "Cannot read path: " + path);
+				throw new XPathException(this, "Cannot read path: " + path);
 			resource = loadFromFile(collection, file, docName, binary, mimeType);
 		} else {
 			try {
@@ -226,9 +226,9 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 				resource = loadFromFile(collection, temp, docName, binary, mimeType);
 				temp.delete();
 			} catch (MalformedURLException e) {
-				throw new XPathException(getASTNode(), "Malformed URL: " + uri.toString(), e);
+				throw new XPathException(this, "Malformed URL: " + uri.toString(), e);
 			} catch (IOException e) {
-				throw new XPathException(getASTNode(), "IOException while reading from URL: " +
+				throw new XPathException(this, "IOException while reading from URL: " +
 						uri.toString(), e);
 			}
 		}
@@ -251,10 +251,10 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 				collection.storeResource(resource);
 				return resource;
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "Could not store file " + file.getAbsolutePath() + 
+				throw new XPathException(this, "Could not store file " + file.getAbsolutePath() +
 						": " + e.getMessage(), e);
 			}
 		} else
-			throw new XPathException(getASTNode(), file.getAbsolutePath() + " does not point to a file");
+			throw new XPathException(this, file.getAbsolutePath() + " does not point to a file");
 	}
 }

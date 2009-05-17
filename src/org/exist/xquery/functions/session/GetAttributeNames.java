@@ -85,9 +85,9 @@ public class GetAttributeNames extends BasicFunction {
 		// session object is read from global variable $session
 		Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException(getASTNode(), "Session not set");
+			throw new XPathException(this, "Session not set");
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(getASTNode(), "Variable $session is not bound to an Java object.");
+			throw new XPathException(this, "Variable $session is not bound to an Java object.");
 		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		if(session.getObject() instanceof SessionWrapper)
@@ -102,6 +102,6 @@ public class GetAttributeNames extends BasicFunction {
 			return result;
 		}
 		else
-			throw new XPathException(getASTNode(), "Type error: variable $session is not bound to a session object");
+			throw new XPathException(this, "Type error: variable $session is not bound to a session object");
 	}
 }

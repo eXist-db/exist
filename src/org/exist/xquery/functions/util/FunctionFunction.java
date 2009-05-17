@@ -85,7 +85,7 @@ public class FunctionFunction extends BasicFunction {
 	    try {
 	        qname = QName.parse(context, funcName, context.getDefaultFunctionNamespace());
 	    } catch(XPathException e) {
-	        e.setASTNode(getASTNode());
+            e.setLocation(line, column);
 	        throw e;
 	    }
 	    
@@ -95,14 +95,14 @@ public class FunctionFunction extends BasicFunction {
 	    if(module == null) {
 	        func = context.resolveFunction(qname, arity);
 			if (func == null)
-				throw new XPathException(getASTNode(), Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));
+				throw new XPathException(this, Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));
 	    } else {
 	        if(module.isInternalModule())
-	            throw new XPathException(getASTNode(), "Cannot create a reference to an internal Java function");
+	            throw new XPathException(this, "Cannot create a reference to an internal Java function");
 	        func = ((ExternalModule)module).getFunction(qname, arity);
 	    }
 	    FunctionCall funcCall = new FunctionCall(context, func);
-	    funcCall.setASTNode(getASTNode());
+        funcCall.setLocation(line, column);
 	    return funcCall;
 	}
     

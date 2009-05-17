@@ -149,7 +149,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 			Collection root = DatabaseManager.getCollection( targetColl.toString(), userName, password );
 			
             if( root == null ) {
-                throw( new XPathException( getASTNode(), "Unable to authenticate user: target collection " + targetColl + " does not exist" ) );
+                throw( new XPathException( this, "Unable to authenticate user: target collection " + targetColl + " does not exist" ) );
 			}
 			
             if( isCalledAs( "login" ) ) {
@@ -212,10 +212,10 @@ public class XMLDBAuthenticate extends BasicFunction {
 			Variable reqVar = reqModule.resolveVariable( RequestModule.REQUEST_VAR );
 			
 			if( reqVar == null || reqVar.getValue() == null ) {
-				throw( new XPathException( getASTNode(), "No request object found in the current XQuery context." ) );
+				throw( new XPathException( this, "No request object found in the current XQuery context." ) );
 			}
 			if( reqVar.getValue().getItemType() != Type.JAVA_OBJECT ) {
-				throw( new XPathException( getASTNode(), "Variable $request is not bound to an Java object." ) );
+				throw( new XPathException( this, "Variable $request is not bound to an Java object." ) );
 			}
 			
 			JavaObjectValue reqValue = (JavaObjectValue)reqVar.getValue().itemAt( 0) ;

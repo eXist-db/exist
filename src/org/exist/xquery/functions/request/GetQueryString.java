@@ -70,7 +70,7 @@ public class GetQueryString extends BasicFunction {
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
+			throw new XPathException(this, "Variable $request is not bound to an Java object.");
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 
@@ -87,6 +87,6 @@ public class GetQueryString extends BasicFunction {
 			}
 		}
 		else
-			throw new XPathException(getASTNode(), "Variable $request is not bound to a Request object.");
+			throw new XPathException(this, "Variable $request is not bound to a Request object.");
 	}
 }

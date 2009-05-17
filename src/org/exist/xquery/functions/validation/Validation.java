@@ -164,7 +164,7 @@ public class Validation extends BasicFunction  {
 
             } else {
                 LOG.error("Wrong item type " + Type.getTypeName(args[0].getItemType()));
-                throw new XPathException(getASTNode(), "wrong item type " + Type.getTypeName(args[0].getItemType()));
+                throw new XPathException(this, "wrong item type " + Type.getTypeName(args[0].getItemType()));
             }
 
 
@@ -186,15 +186,15 @@ public class Validation extends BasicFunction  {
 
         } catch (MalformedURLException ex) {
             LOG.error(ex);
-            throw new XPathException(getASTNode(), "Invalid resource URI", ex);
+            throw new XPathException(this, "Invalid resource URI", ex);
 
         } catch (ExistIOException ex) {
             LOG.error(ex.getCause());
-            throw new XPathException(getASTNode(), "eXistIOexception", ex.getCause());
+            throw new XPathException(this, "eXistIOexception", ex.getCause());
 
         } catch (Exception ex) {
             LOG.error(ex);
-            throw new XPathException(getASTNode(), "exception", ex);
+            throw new XPathException(this, "exception", ex);
 
         } finally {
             // Force release stream
@@ -221,7 +221,7 @@ public class Validation extends BasicFunction  {
 
         // Oops
         LOG.error("invoked with wrong function name");
-        throw new XPathException(getASTNode(), "unknown function");
+        throw new XPathException(this, "unknown function");
     }
 
     private NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {

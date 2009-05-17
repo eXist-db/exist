@@ -66,7 +66,7 @@ public class ModuleInfo extends BasicFunction {
 			String uri = args[0].getStringValue();
 			Module module = context.getModule(uri);
 			if(module == null)
-				throw new XPathException(getASTNode(), "No module found matching namespace URI: " + uri);
+				throw new XPathException(this, "No module found matching namespace URI: " + uri);
 			return new StringValue(module.getDescription());
 		} else if ("is-module-registered".equals(getSignature().getName().getLocalName())) {
 			String uri = args[0].getStringValue();

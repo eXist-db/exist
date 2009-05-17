@@ -288,7 +288,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     if (LOG.isTraceEnabled())
                     	LOG.trace("Cannot convert key: " + Type.getTypeName(key.getType()) + " to required index type: " + Type.getTypeName(indexType));
 
-                    throw new XPathException(getASTNode(), "Cannot convert key to required index type");
+                    throw new XPathException(this, "Cannot convert key to required index type");
                 }
             }
 
@@ -310,7 +310,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                                 contextQName, DBBroker.MATCH_REGEXP);
                         hasUsedIndex = true;
                     } catch (EXistException e) {
-                        throw new XPathException(getASTNode(), "Error during index lookup: " + e.getMessage(), e);
+                        throw new XPathException(this, "Error during index lookup: " + e.getMessage(), e);
                     }
                 }
                 if (preselectResult == null)
@@ -476,7 +476,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 				NodeProxy item = (NodeProxy) i1.next();
 				ContextItem context = item.getContext();
 				if (context == null)
-					throw new XPathException(getASTNode(), "Internal error: context node missing");
+					throw new XPathException(this, "Internal error: context node missing");
 				AtomicValue lv = item.atomize();
 				do
 				{
@@ -665,7 +665,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 									result = result.union(ns);
 
 							} catch (EXistException e) {
-								throw new XPathException(getASTNode(), e.getMessage(), e);
+								throw new XPathException(this, e.getMessage(), e);
 							}
 						}
 			        } else {
@@ -798,7 +798,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 					return lv.compareTo(collator, relation, rv);
 			}			
 		} catch (XPathException e) {
-			e.setASTNode(getASTNode());
+            e.setLocation(e.getLine(), e.getColumn());
 			throw e;
 		}
 	}

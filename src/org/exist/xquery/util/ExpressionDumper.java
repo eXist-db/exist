@@ -89,12 +89,12 @@ public class ExpressionDumper {
         return this;
     }
     
-    public ExpressionDumper display(String s, XQueryAST ast) {
+    public ExpressionDumper display(String s, int line) {
         out.print(s);
         out.print(' ');
-        if(ast != null && ast.getLine() > -1) {
+        if(line > -1) {
 	        out.print('<');
-	        out.print(ast.getLine());
+	        out.print(line);
 	        out.print("> ");
         }
         return this;

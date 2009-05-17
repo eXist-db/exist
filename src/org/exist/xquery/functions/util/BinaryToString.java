@@ -78,7 +78,7 @@ public class BinaryToString extends BasicFunction {
             try {
                 return new StringValue(new String(data, encoding));
             } catch (UnsupportedEncodingException e) {
-                throw new XPathException(getASTNode(), "Unsupported encoding: " + encoding);
+                throw new XPathException(this, "Unsupported encoding: " + encoding);
             }
         } else {
             String str = args[0].getStringValue();
@@ -86,7 +86,7 @@ public class BinaryToString extends BasicFunction {
                 byte[] data = str.getBytes(encoding);
                 return new Base64Binary(data);
             } catch (UnsupportedEncodingException e) {
-                throw new XPathException(getASTNode(), "Unsupported encoding: " + encoding);
+                throw new XPathException(this, "Unsupported encoding: " + encoding);
             }
         }
     }

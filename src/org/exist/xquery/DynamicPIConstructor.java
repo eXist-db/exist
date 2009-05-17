@@ -89,21 +89,21 @@ public class DynamicPIConstructor extends NodeConstructor {
             Sequence nameSeq = name.eval(contextSequence, contextItem);
             //TODO : get rid of getLength()
             if(!nameSeq.hasOne())
-            throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
+            throw new XPathException(this, "The name expression should evaluate to a single value");
 
             Item nameItem = nameSeq.itemAt(0);
             if(!(nameItem.getType() == Type.STRING || nameItem.getType() == Type.NCNAME ||
                     nameItem.getType() == Type.UNTYPED_ATOMIC))
-                throw new XPathException(getASTNode(), "The name expression should evaluate to a " +
+                throw new XPathException(this, "The name expression should evaluate to a " +
                         Type.getTypeName(Type.STRING) + " or a " + Type.getTypeName(Type.NCNAME) +
                         " or a " + Type.getTypeName(Type.UNTYPED_ATOMIC) + ". Got: " +
                         Type.getTypeName(nameItem.getType()));
 
             if(!XMLChar.isValidNCName(nameSeq.getStringValue()))
-			throw new XPathException(getASTNode(), "XQDY0041 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
+			throw new XPathException(this, "XQDY0041 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
 
             if (nameSeq.getStringValue().equalsIgnoreCase("XML"))
-throw new XPathException(getASTNode(), "XQDY0064 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
+                throw new XPathException(this, "XQDY0064 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
 
             String contentString;
             Sequence contentSeq = content.eval(contextSequence, contextItem);
@@ -124,7 +124,7 @@ throw new XPathException(getASTNode(), "XQDY0064 '" + nameSeq.getStringValue() +
             }
 
             if (contentString.indexOf("?>") != Constants.STRING_NOT_FOUND)
-throw new XPathException(getASTNode(), "XQDY0026 '" + contentString + "' is not a valid processing intruction content");
+                throw new XPathException(this, "XQDY0026 '" + contentString + "' is not a valid processing intruction content");
 
             int nodeNr = builder.processingInstruction(nameSeq.getStringValue(), contentString);
 

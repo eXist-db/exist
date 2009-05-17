@@ -82,7 +82,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		}
 		catch(XMLDBException e)
 		{
-			throw new XPathException(getASTNode(), "failed to create new collection " + collectionName + ": " + e.getMessage(), e);
+			throw new XPathException(this, "failed to create new collection " + collectionName + ": " + e.getMessage(), e);
 		}
 	}
 }

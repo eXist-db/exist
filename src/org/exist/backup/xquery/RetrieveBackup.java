@@ -74,15 +74,15 @@ public class RetrieveBackup extends BasicFunction {
         if (!backupFile.canRead())
             return Sequence.EMPTY_SEQUENCE;
         if (!name.endsWith(".zip"))
-            throw new XPathException(getASTNode(), "for security reasons, the function only allows " +
+            throw new XPathException(this, "for security reasons, the function only allows " +
                     "reading zipped backup archives");
         try {
             ZipArchiveBackupDescriptor descriptor = new ZipArchiveBackupDescriptor(backupFile);
             Properties properties = descriptor.getProperties();
             if (properties == null || properties.size() == 0)
-                throw new XPathException(getASTNode(), "the file does not see to be a valid backup archive");
+                throw new XPathException(this, "the file does not see to be a valid backup archive");
         } catch (IOException e) {
-            throw new XPathException(getASTNode(), "the file does not see to be a valid backup archive");
+            throw new XPathException(this, "the file does not see to be a valid backup archive");
         }
 
         // directly stream the backup contents to the HTTP response
@@ -90,13 +90,13 @@ public class RetrieveBackup extends BasicFunction {
         // response object is read from global variable $response
         Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
         if(respVar == null)
-            throw new XPathException(getASTNode(), "No response object found in the current XQuery context.");
+            throw new XPathException(this, "No response object found in the current XQuery context.");
         if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
-            throw new XPathException(getASTNode(), "Variable $response is not bound to an Java object.");
+            throw new XPathException(this, "Variable $response is not bound to an Java object.");
         JavaObjectValue respValue = (JavaObjectValue)
                 respVar.getValue().itemAt(0);
         if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName()))
-            throw new XPathException(getASTNode(), signature.toString() +
+            throw new XPathException(this, signature.toString() +
                     " can only be used within the EXistServlet or XQueryServlet");
         ResponseWrapper response = (ResponseWrapper) respValue.getObject();
 
@@ -113,7 +113,7 @@ public class RetrieveBackup extends BasicFunction {
             os.close();
             response.flushBuffer();
         } catch (IOException e) {
-            throw new XPathException(getASTNode(), "An IO error occurred while reading the backup archive");
+            throw new XPathException(this, "An IO error occurred while reading the backup archive");
         }
         return Sequence.EMPTY_SEQUENCE;
     }

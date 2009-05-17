@@ -181,7 +181,7 @@ public class TypeswitchExpression extends AbstractExpression {
     }
     
     public void dump(ExpressionDumper dumper) {
-        dumper.display("typeswitch(", getASTNode());
+        dumper.display("typeswitch(", line);
         operand.dump(dumper);
         dumper.display(')');
         dumper.startIndent();

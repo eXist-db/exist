@@ -106,14 +106,14 @@ public class CatchFunction extends Function {
                     if (e2 instanceof XPathException) {
                         throw (XPathException) e2;
 					} else {
-	                    throw new XPathException(getASTNode(), "Error in exception handler: " + e2.getMessage(), e);
+	                    throw new XPathException(this, "Error in exception handler: " + e2.getMessage(), e);
 					}
                 }
             }
             // this type of exception is not caught: throw again
             if(e instanceof XPathException)
                 throw (XPathException)e;
-            throw new XPathException(getASTNode(), e);
+            throw new XPathException(this, e.getMessage(), e);
         }
     }
 

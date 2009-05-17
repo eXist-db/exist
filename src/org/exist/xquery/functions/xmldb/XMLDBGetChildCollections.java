@@ -65,7 +65,7 @@ public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator
 			}
 			return result;
 		} catch (XMLDBException e) {
-			throw new XPathException(getASTNode(), "Failed to retrieve child collections", e);
+			throw new XPathException(this, "Failed to retrieve child collections", e);
 		}
 	}
 }

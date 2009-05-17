@@ -83,7 +83,7 @@ public class MatchCount extends BasicFunction {
 			    if(Type.subTypeOf(next.getType(), Type.NODE)) {
 			        NodeValue nv = (NodeValue)next;
 			        if(nv.getImplementationType() != NodeValue.PERSISTENT_NODE)
-			        	throw new XPathException(getASTNode(), getName() + " cannot be applied to in-memory nodes.");
+			        	throw new XPathException(this, getName() + " cannot be applied to in-memory nodes.");
 			        NodeProxy np = (NodeProxy)nv;
 			        Match match = np.getMatches();
 			        while (match != null) {

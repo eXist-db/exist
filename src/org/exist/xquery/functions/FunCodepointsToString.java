@@ -72,7 +72,7 @@ public class FunCodepointsToString extends BasicFunction {
     		for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                 long next = ((NumericValue)i.nextItem()).getLong();
     			if (next < 0 || next > Integer.MAX_VALUE || !XMLChar.isValid((int)next)) {
-    				throw new XPathException(getASTNode(), "err:FOCH0001: Codepoint " + next + 
+    				throw new XPathException(this, "err:FOCH0001: Codepoint " + next + 
                             " is not a valid character.");
     			}
     			if (next < 65536) {

@@ -180,16 +180,16 @@ public class GrammarTooling extends BasicFunction  {
                         allGrammars.add(schema);
 
                     } else {
-                        throw new XPathException(getASTNode(), "Only XMLSchemas can be preparsed.");
+                        throw new XPathException(this, "Only XMLSchemas can be preparsed.");
                     }
 
                 } catch(ExistIOException ex) {
                     LOG.debug(ex.getCause());
-                    throw new XPathException(getASTNode(), ex.getCause());
+                    throw new XPathException(this, ex.getMessage(), ex.getCause());
                     
                 } catch(Exception ex) {
                     LOG.debug(ex);
-                    throw new XPathException(getASTNode(), ex);
+                    throw new XPathException(this, ex.getMessage(), ex);
                 }
                 
                 
@@ -214,7 +214,7 @@ public class GrammarTooling extends BasicFunction  {
         } else {
             // oh oh
             LOG.error("function not found error");
-            throw new XPathException(getASTNode(), "function not found");
+            throw new XPathException(this, "function not found");
         }
 
     }

@@ -77,7 +77,7 @@ public class FunStrLength extends Function {
 			contextSequence = getArgument(0).eval(contextSequence);
 		
 		if (contextSequence == null)
-			throw new XPathException(getASTNode(), "err:XPDY0002: Undefined context item");
+			throw new XPathException(this, "err:XPDY0002: Undefined context item");
 		
 		String strval = contextSequence.getStringValue();
 

@@ -78,7 +78,7 @@ public class XMLDBChangeUser extends BasicFunction {
 			User oldUser = ums.getUser(userName);
 			User user = new User(oldUser.getName());
 			if(user == null)
-				throw new XPathException(getASTNode(), "User " + userName + " not found");
+				throw new XPathException(this, "User " + userName + " not found");
 			if(!args[1].isEmpty()) {
 				// set password
 				user.setPassword(args[1].getStringValue());
@@ -101,13 +101,13 @@ public class XMLDBChangeUser extends BasicFunction {
 		        try {
 		        	user.setHome(XmldbURI.xmldbUriFor(args[3].getStringValue()));
 		        } catch(URISyntaxException e) {
-		        	throw new XPathException(getASTNode(),"Invalid home collection URI",e);
+		        	throw new XPathException(this,"Invalid home collection URI",e);
 		        }
 			} else
 				user.setHome(oldUser.getHome());
 			ums.updateUser(user);
 		} catch (XMLDBException xe) {
-			throw new XPathException(getASTNode(), "Failed to update user " + userName, xe);
+			throw new XPathException(this, "Failed to update user " + userName, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }

@@ -88,7 +88,7 @@ public class SetAttribute extends Function
 			// No saved session, so create one
 			session = SessionModule.createSession( context, this );
 		} else if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( getASTNode(), "Variable $session is not bound to a Java object." ) );
+			throw( new XPathException( this, "Variable $session is not bound to a Java object." ) );
 		} else {
 			session = (JavaObjectValue)var.getValue().itemAt( 0 );
 		}
@@ -100,7 +100,7 @@ public class SetAttribute extends Function
 		if( session.getObject() instanceof SessionWrapper ) {
 			((SessionWrapper)session.getObject()).setAttribute (attribName, attribValue );
 		} else {
-			throw( new XPathException( getASTNode(), "Type error: variable $session is not bound to a session object" ) );
+			throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
 		}
 
 		return( Sequence.EMPTY_SEQUENCE );

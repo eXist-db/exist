@@ -230,14 +230,14 @@ public class LetExpr extends BindingExpression {
                     else actualCardinality = Cardinality.ONE;                	
                 	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
             		if (!Cardinality.checkCardinality(sequenceType.getCardinality(), actualCardinality))
-        				throw new XPathException(getASTNode(), "XPTY0004: Invalid cardinality for variable $" + varName +
+        				throw new XPathException(this, "XPTY0004: Invalid cardinality for variable $" + varName +
         						". Expected " +
         						Cardinality.getDescription(sequenceType.getCardinality()) +
         						", got " + Cardinality.getDescription(actualCardinality));
             		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
             		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
     	        		if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType()))
-    	    				throw new XPathException(getASTNode(), "XPTY0004: Invalid type for variable $" + varName +
+    	    				throw new XPathException(this, "XPTY0004: Invalid type for variable $" + varName +
     	    						". Expected " +
     	    						Type.getTypeName(sequenceType.getPrimaryType()) +
     	    						", got " +Type.getTypeName(var.getValue().getItemType()));
@@ -245,7 +245,7 @@ public class LetExpr extends BindingExpression {
             		} else {
             			//Same as above : we probably may factorize 
     	        		if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType()))
-    	    				throw new XPathException(getASTNode(), "XPTY0004: Invalid type for variable $" + varName +
+    	    				throw new XPathException(this, "XPTY0004: Invalid type for variable $" + varName +
     	    						". Expected " +
     	    						Type.getTypeName(sequenceType.getPrimaryType()) +
     	    						", got " +Type.getTypeName(var.getValue().getItemType()));            			
@@ -315,7 +315,7 @@ public class LetExpr extends BindingExpression {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("let ", getASTNode());
+        dumper.display("let ", line);
         dumper.startIndent();
         dumper.display("$").display(varName);
         dumper.display(" := ");

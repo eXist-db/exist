@@ -94,7 +94,7 @@ public class RootNode extends Step {
 	        cached = result;
 	        cachedDocs = ds;
         } catch (LockException e) {
-            throw new XPathException(getASTNode(), "Failed to acquire lock on the context document set");
+            throw new XPathException(this, "Failed to acquire lock on the context document set");
         } finally {
             // release all locks
             if (!context.inProtectedMode())

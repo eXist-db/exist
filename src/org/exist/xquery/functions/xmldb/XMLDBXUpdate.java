@@ -82,7 +82,7 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 		catch(TransformerException e)
 		{
 			LOG.debug("Exception while serializing XUpdate document", e);
-			throw new XPathException(getASTNode(), "Exception while serializing XUpdate document: " + e.getMessage(), e);
+			throw new XPathException(this, "Exception while serializing XUpdate document: " + e.getMessage(), e);
 		}
 		String xupdate = writer.toString();
 
@@ -95,7 +95,7 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 		}
 		catch(XMLDBException e)
 		{
-			throw new XPathException(getASTNode(), "Exception while processing xupdate: " + e.getMessage(), e);
+			throw new XPathException(this, "Exception while processing xupdate: " + e.getMessage(), e);
 		}
 		
 		context.getRootExpression().resetState(false);

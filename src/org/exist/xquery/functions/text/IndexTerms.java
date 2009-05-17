@@ -157,7 +157,7 @@ public class IndexTerms extends BasicFunction {
                 LOG.debug("Returning: " + result.getItemCount());
             return result;
         } catch (PermissionDeniedException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
+            throw new XPathException(this, e.getMessage(), e);
         }
     }
 

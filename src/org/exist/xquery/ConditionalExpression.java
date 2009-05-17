@@ -102,7 +102,7 @@ public class ConditionalExpression extends AbstractExpression {
     		}
         } catch (XPathException e) {
             if (e.getLine() == 0)
-                e.setASTNode(getASTNode());
+                e.setLocation(line, column);
             throw e;
         }
 	}

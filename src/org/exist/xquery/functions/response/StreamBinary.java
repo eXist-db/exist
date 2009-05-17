@@ -96,13 +96,13 @@ public class StreamBinary extends BasicFunction {
         // request object is read from global variable $response
         Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
         if(respVar == null || respVar.getValue() == null)
-            throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
+            throw new XPathException(this, "No request object found in the current XQuery context.");
         if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
-            throw new XPathException(getASTNode(), "Variable $response is not bound to an Java object.");
+            throw new XPathException(this, "Variable $response is not bound to an Java object.");
         JavaObjectValue respValue = (JavaObjectValue)
             respVar.getValue().itemAt(0);
         if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName()))
-            throw new XPathException(getASTNode(), signature.toString() + 
+            throw new XPathException(this, signature.toString() +
                     " can only be used within the EXistServlet or XQueryServlet");
         ResponseWrapper response = (ResponseWrapper) respValue.getObject();
         response.setHeader("Content-Type", contentType);
@@ -117,7 +117,7 @@ public class StreamBinary extends BasicFunction {
             //commit the response
             response.flushBuffer();
         } catch (IOException e) {
-            throw new XPathException(getASTNode(), "IO exception while streaming data: " + e.getMessage(), e);
+            throw new XPathException(this, "IO exception while streaming data: " + e.getMessage(), e);
         }
         return Sequence.EMPTY_SEQUENCE;
     }

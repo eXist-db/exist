@@ -87,12 +87,12 @@ public class FunNormalizeSpace extends Function {
 		String value = null;
 		if (getSignature().getArgumentCount() == 0) {
 			if (contextSequence == null)
-				throw new XPathException(getASTNode(), "err:XPDY0002: Undefined context item");			
+				throw new XPathException(this, "err:XPDY0002: Undefined context item");
 			value = !contextSequence.isEmpty() ? contextSequence.itemAt(0).getStringValue() : "";
 		} else {
 			Sequence seq = getArgument(0).eval(contextSequence);
 			if (seq == null)
-				throw new XPathException(getASTNode(), "err:XPDY0002: Undefined context item");			
+				throw new XPathException(this, "err:XPDY0002: Undefined context item");			
 			if (!seq.isEmpty())
                 value = seq.getStringValue();
 		}

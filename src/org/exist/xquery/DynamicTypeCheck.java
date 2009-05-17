@@ -77,7 +77,7 @@ public class DynamicTypeCheck extends AbstractExpression {
 						item = item.convertTo(requiredType);
 					//No way
 					} catch (XPathException e) {
-						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+						throw new XPathException(expression, "FOCH0002: Required type is " +
 								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 								item.getStringValue() + ")'");
 					}
@@ -88,7 +88,7 @@ public class DynamicTypeCheck extends AbstractExpression {
 						item = item.convertTo(requiredType);
 					//No way
 					} catch (XPathException e) {
-						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+						throw new XPathException(expression, "FOCH0002: Required type is " +
 								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 								item.getStringValue() + ")'");
 					}
@@ -101,7 +101,7 @@ public class DynamicTypeCheck extends AbstractExpression {
 						item = item.convertTo(requiredType);
 					//No way
 					} catch (XPathException e) {
-						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+						throw new XPathException(expression, "FOCH0002: Required type is " +
 								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 								item.getStringValue() + ")'");
 					}
@@ -113,7 +113,7 @@ public class DynamicTypeCheck extends AbstractExpression {
 						item = item.convertTo(requiredType);
 					//No way
 					} catch (XPathException e) {
-						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+						throw new XPathException(expression, "FOCH0002: Required type is " +
 								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 								item.getStringValue() + ")'");
 					}					
@@ -126,12 +126,12 @@ public class DynamicTypeCheck extends AbstractExpression {
 						type = Type.STRING;
 				} else {
 					if (!(Type.subTypeOf(type, requiredType))) {
-						throw new XPathException(expression.getASTNode(), "FORG0001: " + 
+						throw new XPathException(expression, "FORG0001: " +
 								Type.getTypeName(item.getType()) + "(" + item.getStringValue() + 
 								") is not a sub-type of " + Type.getTypeName(requiredType));
 						
 					} else
-						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+						throw new XPathException(expression, "FOCH0002: Required type is " +
 							Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 							item.getStringValue() + ")'");
 				}
@@ -192,15 +192,16 @@ public class DynamicTypeCheck extends AbstractExpression {
 		super.setContextDocSet(contextSet);
 		expression.setContextDocSet(contextSet);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getASTNode()
-	 */
-	public XQueryAST getASTNode() {
-		return expression.getASTNode();
-	}
-	
-	public void accept(ExpressionVisitor visitor) {
+
+    public int getLine() {
+        return expression.getLine();
+    }
+
+    public int getColumn() {
+        return expression.getColumn();
+    }
+
+    public void accept(ExpressionVisitor visitor) {
 		expression.accept(visitor);
 	}
 }

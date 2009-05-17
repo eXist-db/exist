@@ -172,7 +172,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 		Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
 		int line = lineInt == null ? 0 : lineInt.intValue();
 		int column = columnInt == null ? 0 : columnInt.intValue();
-		XPathException cause = new XPathException(message, line, column);
+		XPathException cause = new XPathException(line, column, message);
 		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, message, cause);
 	}
 
@@ -188,7 +188,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
         int line = lineInt == null ? 0 : lineInt.intValue();
         int column = columnInt == null ? 0 : columnInt.intValue();
-        throw new XPathException(message, line, column);
+        throw new XPathException(line, column, message);
     }
     
 	/* (non-Javadoc)

@@ -82,11 +82,11 @@ public class CastExpression extends AbstractExpression {
         }
 		//Should be handled by the parser
         if (requiredType == Type.ATOMIC || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
-			throw new XPathException(getASTNode(), "err:XPST0080: cannot cast to " +
+			throw new XPathException(this, "err:XPST0080: cannot cast to " +
 					Type.getTypeName(requiredType));
         }
         if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED) {
-			throw new XPathException(getASTNode(), "err:XPST0051: cannot cast to " +
+			throw new XPathException(this, "err:XPST0051: cannot cast to " +
 					Type.getTypeName(requiredType));
         }
 
@@ -94,14 +94,14 @@ public class CastExpression extends AbstractExpression {
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if (seq.isEmpty()) {
 			if ((cardinality & Cardinality.ZERO) == 0)
-				throw new XPathException(getASTNode(), "Type error: empty sequence is not allowed here");
+				throw new XPathException(this, "Type error: empty sequence is not allowed here");
 			else
                 result = Sequence.EMPTY_SEQUENCE;
 		} else {        
             Item item = seq.itemAt(0);
 
             if (seq.hasMany() && Type.subTypeOf(requiredType, Type.ATOMIC))
-				throw new XPathException(getASTNode(), "err:XPTY0004: cardinality error: sequence with more than one item is not allowed here");
+				throw new XPathException(this, "err:XPTY0004: cardinality error: sequence with more than one item is not allowed here");
             try {
                 // casting to QName needs special treatment
                 if(requiredType == Type.QNAME) {
@@ -110,15 +110,15 @@ public class CastExpression extends AbstractExpression {
                     else if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
                         result = new QNameValue(context, item.getStringValue());
                     } else {
-                        throw new XPathException(getASTNode(), "Cannot cast " + Type.getTypeName(item.getType()) + 
+                        throw new XPathException(this, "Cannot cast " + Type.getTypeName(item.getType()) +
                                 " to xs:QName");
                     }
                 } else
                     result = item.convertTo(requiredType);
     		} catch(XPathException e) {
-    			e.setASTNode(getASTNode());
-    			throw e;
-    		}            
+                e.setLocation(e.getLine(), e.getColumn());
+                throw e;
+            }
         }
 
         if (context.getProfiler().isEnabled())           

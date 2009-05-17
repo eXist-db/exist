@@ -111,7 +111,7 @@ public class XMLDBUserAccess extends BasicFunction {
 				return null == user ? BooleanValue.FALSE : BooleanValue.TRUE;
 			
 			if(user == null)
-				throw new XPathException(getASTNode(), "User not found: " + userName);
+				throw new XPathException(this, "User not found: " + userName);
 			if(isCalledAs("get-user-groups")) {
 				ValueSequence groups = new ValueSequence();
 				String[] gl = user.getGroups();
@@ -125,7 +125,7 @@ public class XMLDBUserAccess extends BasicFunction {
 				return null == home ? Sequence.EMPTY_SEQUENCE : new AnyURIValue(home);
 			}
 		} catch (XMLDBException xe) {
-			throw new XPathException(getASTNode(), "Failed to query user " + userName, xe);
+			throw new XPathException(this, "Failed to query user " + userName, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }

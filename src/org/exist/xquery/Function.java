@@ -112,7 +112,7 @@ public abstract class Function extends PathExpr {
 		FunctionDef def) throws XPathException {
 		Class fclass = def.getImplementingClass();
 		if (def == null || fclass == null)
-			throw new XPathException(ast, "Class for function is null");
+			throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
 		try {
 			Object initArgs[] = { context };
 			Class constructorArgs[] = { XQueryContext.class }; 
@@ -128,20 +128,20 @@ public abstract class Function extends PathExpr {
 				constructorArgs[1] = FunctionSignature.class;
 				construct = fclass.getConstructor(constructorArgs);
 				if(construct == null)
-					throw new XPathException(ast, "Constructor not found");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "Constructor not found");
 				initArgs = new Object[2];
 				initArgs[0] = context;
 				initArgs[1] = def.getSignature();
 			}
 			Object obj = construct.newInstance(initArgs);
 			if (obj instanceof Function) {
-				((Function)obj).setASTNode(ast);
+				((Function)obj).setLocation(ast.getLine(), ast.getColumn());
 				return (Function) obj;
 			} else
-				throw new XPathException(ast, "Function object does not implement interface function");
+				throw new XPathException(ast.getLine(), ast.getColumn(), "Function object does not implement interface function");
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
-			throw new XPathException(ast, "Function implementation class " + fclass.getName() + " not found");
+			throw new XPathException(ast.getLine(), ast.getColumn(), "Function implementation class " + fclass.getName() + " not found");
 		}
 	}
 
@@ -175,7 +175,7 @@ public abstract class Function extends PathExpr {
 	public void setArguments(List arguments) throws XPathException {
 		if ((!mySignature.isOverloaded())
 			&& arguments.size() != mySignature.getArgumentCount())
-			throw new XPathException(getASTNode(),
+			throw new XPathException(this,
 				"number of arguments to function "
 					+ getName()
 					+ " doesn't match function signature (expected "
@@ -228,7 +228,7 @@ public abstract class Function extends PathExpr {
 			if (!cardinalityMatches) {
 				if(expr.getCardinality() == Cardinality.ZERO
 				&& (type.getCardinality() & Cardinality.ZERO) == 0)
-				    throw new XPathException(getASTNode(), 
+				    throw new XPathException(this,
 				            Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED, 
 				                    new Integer(argPosition), ExpressionDumper.dump(expr)));
 			}
@@ -303,7 +303,7 @@ public abstract class Function extends PathExpr {
 					//because () is seen as a node					
 					(type.getPrimaryType() == Type.EMPTY && returnType == Type.NODE))) {
                 LOG.debug(ExpressionDumper.dump(expr));
-                throw new XPathException(getASTNode(),
+                throw new XPathException(this,
                         Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC, 
                                 String.valueOf(argPosition), mySignature,
                                 type.toString(), Type.getTypeName(returnType)));
@@ -432,14 +432,6 @@ public abstract class Function extends PathExpr {
         return result.toString();
     }
     
-	public void setASTNode(XQueryAST ast) {
-		this.astNode = ast;
-	}
-	
-	public XQueryAST getASTNode() {
-		return astNode;
-	}
-
     public void accept(ExpressionVisitor visitor) {
         visitor.visitBuiltinFunction(this);
     }

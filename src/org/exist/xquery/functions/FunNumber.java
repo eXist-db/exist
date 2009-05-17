@@ -84,7 +84,7 @@ public class FunNumber extends Function {
 			arg = contextSequence;
 		
 		if (arg == null)
-			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+			throw new XPathException(this, "XPDY0002: Undefined context item");
 		        
 		if(arg.isEmpty())
 			result = DoubleValue.NaN;

@@ -32,8 +32,9 @@ public abstract class AbstractExpression implements Expression {
 		
 	protected XQueryContext context;
 
-	protected XQueryAST astNode = null;
-	
+    protected int line = -1;
+    protected int column = -1;
+    
 	protected DocumentSet contextDocSet = null;
     
 	/**
@@ -118,10 +119,22 @@ public abstract class AbstractExpression implements Expression {
     }
     
 	public void setASTNode(XQueryAST ast) {
-		this.astNode = ast;
+        if (ast != null) {
+            line = ast.getLine();
+            column = ast.getColumn();
+        }
 	}
-	
-	public XQueryAST getASTNode() {
-		return astNode;
-	}
+
+    public void setLocation(int line, int column) {
+        this.line = line;
+        this.column = column;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public int getColumn() {
+        return column;
+    }
 }

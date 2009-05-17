@@ -371,12 +371,11 @@ public class Profiler {
     }
     
     private void printPosition(Expression expr) {
-        XQueryAST ast = expr.getASTNode();       
-        if (ast != null) {
+        if (expr.getLine() > -1) {
             buf.append('[');
-            buf.append(ast.getColumn());
+            buf.append(expr.getLine());
             buf.append(',');
-            buf.append(ast.getLine());
+            buf.append(expr.getColumn());
             buf.append("]\t");
         }
         else

@@ -82,7 +82,7 @@ public class XMLDBDeleteUser extends BasicFunction {
             if (null != userObj)
                 ums.removeUser(userObj);
 		} catch (XMLDBException xe) {
-			throw new XPathException(getASTNode(), "Failed to remove user " + user, xe);
+			throw new XPathException(this, "Failed to remove user " + user, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }

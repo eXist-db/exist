@@ -316,7 +316,7 @@ public class ExtRegexp extends Function implements Optimizable {
 
     protected List getSearchTerms(Sequence contextSequence) throws XPathException {
 		if(getArgumentCount() < 2)
-			throw new XPathException(getASTNode(), "function requires at least 2 arguments");
+			throw new XPathException(this, "function requires at least 2 arguments");
 		List terms = new ArrayList();
 		Expression next;
 		Sequence seq;
@@ -363,7 +363,7 @@ public class ExtRegexp extends Function implements Optimizable {
        try {
 			pattern = RegexTranslator.translate(pattern, true);
 		} catch (RegexSyntaxException e) {
-			throw new XPathException(getASTNode(), "Conversion from XPath2 to Java regular expression " +
+			throw new XPathException(this, "Conversion from XPath2 to Java regular expression " +
 					"syntax failed: " + e.getMessage(), e);
 		}
 		return pattern;

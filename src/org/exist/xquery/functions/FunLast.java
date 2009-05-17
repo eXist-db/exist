@@ -80,7 +80,7 @@ public class FunLast extends Function {
         
         Sequence result;
 		if (contextSequence == null)
-			throw new XPathException(getASTNode(), "FONC0001: undefined context item");
+			throw new XPathException(this, "FONC0001: undefined context item");
         else if (contextSequence.isEmpty())
         	result = Sequence.EMPTY_SEQUENCE;
         else
@@ -96,7 +96,7 @@ public class FunLast extends Function {
 	/*public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
 		Item contextItem) throws XPathException {
 			if(!Type.subTypeOf(contextItem.getType(), Type.NODE))
-				throw new XPathException(getASTNode(), "last() can only be applied to nodes");
+				throw new XPathException(this, "last() can only be applied to nodes");
 			NodeProxy contextNode = (NodeProxy)contextItem;
 	   DocumentImpl doc = contextNode.getDoc();
 	   int level = doc.getTreeLevel(contextNode.getGID());

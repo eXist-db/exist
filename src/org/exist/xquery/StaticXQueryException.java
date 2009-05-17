@@ -8,12 +8,8 @@ public class StaticXQueryException extends XPathException
 		super(message);
 	}
 
-	public StaticXQueryException(XQueryAST ast, String message) {
-		super(ast, message);
-	}
-	
-	public StaticXQueryException(String message, int line, int column) {
-		super(message, line, column);
+	public StaticXQueryException(int line, int column, String message) {
+		super(line, column, message);
 	}
 	
 	public StaticXQueryException(Throwable cause) {
@@ -24,7 +20,7 @@ public class StaticXQueryException extends XPathException
 		super(message, cause);
 	}
 
-	public StaticXQueryException(XQueryAST ast, String message, Throwable cause) {
-		super(ast, message, cause);
+	public StaticXQueryException(int line, int column, String message, Throwable cause) {
+		super(line, column, message, cause);
 	}
 }
