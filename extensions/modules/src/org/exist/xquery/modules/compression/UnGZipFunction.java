@@ -81,7 +81,7 @@ public class UnGZipFunction extends BasicFunction {
 			baos.close();
 			return new Base64Binary(baos.toByteArray());
 		} catch (IOException ioe) {
-			throw new XPathException(getASTNode(), ioe.getMessage());
+			throw new XPathException(this, ioe.getMessage());
 		}
 	}
 }

@@ -127,7 +127,7 @@ public abstract class AbstractUnCompressFunction extends XMLDBAbstractCollection
 				try {
 					((NodeImpl) content).copyTo(null, new DocumentBuilderReceiver(builder));
 				} catch (SAXException e) {
-					throw new XPathException(getASTNode(), e.getMessage());
+					throw new XPathException(this, e.getMessage());
 				}
 			}
 		}
