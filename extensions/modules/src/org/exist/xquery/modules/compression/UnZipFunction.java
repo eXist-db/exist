@@ -90,9 +90,9 @@ public class UnZipFunction extends AbstractUnCompressFunction {
 				}
 			}
 		} catch (IOException e) {
-			throw new XPathException(getASTNode(), e.getMessage());
+			throw new XPathException(this, e.getMessage());
 		} catch (XMLDBException e) {
-			throw new XPathException(getASTNode(), e.getMessage());
+			throw new XPathException(this, e.getMessage());
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}
@@ -112,7 +112,7 @@ public class UnZipFunction extends AbstractUnCompressFunction {
 				}
 			}
 		} catch (IOException e) {
-			throw new XPathException(getASTNode(), e.getMessage());
+			throw new XPathException(this, e.getMessage());
 		}
 		return result;
 	}

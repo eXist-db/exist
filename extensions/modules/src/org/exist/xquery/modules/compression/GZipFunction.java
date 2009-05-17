@@ -74,7 +74,7 @@ public class GZipFunction extends BasicFunction {
 			gzos.close();
 			return new Base64Binary(baos.toByteArray());
 		} catch (IOException ioe) {
-			throw new XPathException(getASTNode(), ioe.getMessage());
+			throw new XPathException(this, ioe.getMessage());
 		}
 	}
 }

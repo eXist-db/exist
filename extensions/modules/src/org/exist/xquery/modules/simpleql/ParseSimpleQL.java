@@ -62,9 +62,9 @@ public class ParseSimpleQL extends BasicFunction {
         try {
             return new StringValue(parser.expr());
         } catch (RecognitionException e) {
-            throw new XPathException(getASTNode(), "An error occurred while parsing the query expression: " + e.getMessage(), e);
+            throw new XPathException(this, "An error occurred while parsing the query expression: " + e.getMessage(), e);
         } catch (TokenStreamException e) {
-            throw new XPathException(getASTNode(), "An error occurred while parsing the query expression: " + e.getMessage(), e);
+            throw new XPathException(this, "An error occurred while parsing the query expression: " + e.getMessage(), e);
         }
     }
 }

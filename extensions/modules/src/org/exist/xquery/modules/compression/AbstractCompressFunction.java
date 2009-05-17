@@ -118,7 +118,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
 							compressCollection(os, col, useHierarchy, stripOffset);
 						} else {
 							// no doc or collection
-							throw new XPathException(getASTNode(), "Invalid URI: " + uri.toString());
+							throw new XPathException(this, "Invalid URI: " + uri.toString());
 						}
 					} else {
 						// got a doc
@@ -126,13 +126,13 @@ public abstract class AbstractCompressFunction extends BasicFunction {
 					}
 				}
 			} catch (PermissionDeniedException pde) {
-				throw new XPathException(getASTNode(), pde.getMessage());
+				throw new XPathException(this, pde.getMessage());
 			} catch (IOException ioe) {
-				throw new XPathException(getASTNode(), ioe.getMessage());
+				throw new XPathException(this, ioe.getMessage());
 			} catch (SAXException se) {
-				throw new XPathException(getASTNode(), se.getMessage());
+				throw new XPathException(this, se.getMessage());
 			} catch (LockException le) {
-				throw new XPathException(getASTNode(), le.getMessage());
+				throw new XPathException(this, le.getMessage());
 			} finally {
 				if (doc != null) {
 					doc.getUpdateLock().release(Lock.READ_LOCK);
@@ -142,7 +142,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
 		try {
 			os.close();
 		} catch (IOException ioe) {
-			throw new XPathException(getASTNode(), ioe.getMessage());
+			throw new XPathException(this, ioe.getMessage());
 		}
 		return new Base64Binary(baos.toByteArray());
 	}
@@ -177,7 +177,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
 				Object entry = newEntry(name);
 				putEntry(os, entry);
 				if (element.getChildNodes().getLength()>1){
-					throw new XPathException(getASTNode(), "Entry content is not valid XML fragment.");
+					throw new XPathException(this, "Entry content is not valid XML fragment.");
 				} else {
 					if (!name.endsWith("/")){
 						byte[] value;
@@ -206,10 +206,10 @@ public abstract class AbstractCompressFunction extends BasicFunction {
 				}
 				closeEntry(os);
 			} else {
-				throw new XPathException(getASTNode(), "Entry must have name attribute.");
+				throw new XPathException(this, "Entry must have name attribute.");
 			}
 		} else {
-			throw new XPathException(getASTNode(), "Item must be type of xs:anyURI or element enry.");
+			throw new XPathException(this, "Item must be type of xs:anyURI or element enry.");
 		}
 	}
 
