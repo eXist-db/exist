@@ -273,18 +273,14 @@ public class ExecuteFunction extends BasicFunction
 			builder.characters(escapeXmlText(sql));
 			builder.endElement();
 			
-			XQueryAST astNode = getASTNode();
-			if(astNode != null)
-			{
-				int line = astNode.getLine();
-				int column = astNode.getColumn();
+				int line = getLine();
+				int column = getColumn();
 				
 				builder.startElement(new QName("xquery", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
 				builder.addAttribute(new QName("line", null, null), String.valueOf(line));
 				builder.addAttribute(new QName("column", null, null), String.valueOf(column));
 				builder.endElement();
-			}
-			
+
 			builder.endElement();
 			builder.endDocument();
 			
