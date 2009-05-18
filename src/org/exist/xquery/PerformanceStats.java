@@ -44,12 +44,13 @@ public class PerformanceStats {
 
     private static class QueryStats {
 
-        String source = null;
+        String source = "";
         long executionTime = 0;
         int callCount = 1;
 
         QueryStats(String source) {
-            this.source = source;
+            if (source != null)
+                this.source = source;
         }
 
         public void recordCall(long elapsed) {
@@ -59,6 +60,10 @@ public class PerformanceStats {
 
         public int hashCode() {
             return source.hashCode();
+        }
+
+        public boolean equals(Object obj) {
+            return ((QueryStats)obj).source.equals(source);
         }
     }
 
@@ -72,7 +77,13 @@ public class PerformanceStats {
         }
 
         public int hashCode() {
-            return qname.hashCode();
+            return 31 * qname.hashCode() + source.hashCode();
+        }
+
+        public boolean equals(Object obj) {
+            FunctionStats ostats = (FunctionStats) obj;
+            return qname.equalsSimple(ostats.qname) &&
+                    source.equals(ostats.source);
         }
     }
 
@@ -86,7 +97,7 @@ public class PerformanceStats {
     }
 
     private HashMap<String, QueryStats> queries = new HashMap<String, QueryStats>();
-    private HashMap<QName, FunctionStats> functions = new HashMap<QName, FunctionStats>();
+    private HashMap<String, FunctionStats> functions = new HashMap<String, FunctionStats>();
 
     private boolean enabled = false;
 
@@ -125,11 +136,12 @@ public class PerformanceStats {
     }
 
     public void recordFunctionCall(QName qname, String source, long elapsed) {
-        FunctionStats stats = functions.get(qname);
+        String key = createKey(qname, source);
+        FunctionStats stats = functions.get(key);
         if (stats == null) {
             stats = new FunctionStats(source, qname);
             stats.executionTime = elapsed;
-            functions.put(qname, stats);
+            functions.put(key, stats);
         } else {
             stats.recordCall(elapsed);
         }
@@ -146,9 +158,10 @@ public class PerformanceStats {
             }
         }
         for (FunctionStats other: otherStats.functions.values()) {
-            FunctionStats mine = functions.get(other.qname);
+            String key = createKey(other.qname, other.source);
+            FunctionStats mine = functions.get(key);
             if (mine == null) {
-                functions.put(other.qname, other);
+                functions.put(key, other);
             } else {
                 mine.callCount += other.callCount;
                 mine.executionTime += other.executionTime;
@@ -156,8 +169,12 @@ public class PerformanceStats {
         }
     }
 
+    private String createKey(QName qname, String source) {
+        return qname.getNamespaceURI() + ":" + qname.getLocalName() + ":" + source;
+    }
+
     public boolean hasData() {
-        return !functions.isEmpty();
+        return !(functions.isEmpty() && queries.isEmpty());
     }
     
     public synchronized String toString() {
