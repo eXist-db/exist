@@ -97,7 +97,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                     String value = ((Element)header).getAttribute( "value" );
                     
                     if( name == null || value == null ) {
-                        throw( new XPathException(getASTNode(), "Name or value attribute missing for request header parameter" ) );
+                        throw( new XPathException(this, "Name or value attribute missing for request header parameter" ) );
                     }
                     
                     method.addRequestHeader( new Header( name, value ) );
@@ -274,7 +274,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
 			
 			long contentLength = ((HttpMethodBase)method).getResponseContentLength();
             if( contentLength > Integer.MAX_VALUE ) { //guard from overflow
-                throw( new XPathException( getASTNode(), "HTTPClient response too large to be buffered: " + contentLength + " bytes" ) );
+                throw( new XPathException( this, "HTTPClient response too large to be buffered: " + contentLength + " bytes" ) );
             }
 				
 			ByteArrayOutputStream outstream = new ByteArrayOutputStream();
@@ -314,7 +314,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                         responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );                  
                     }
                     catch( URIException ue ) {
-                        throw( new XPathException (getASTNode(), ue ) );
+                        throw( new XPathException (this, ue.getMessage(), ue ) );
                     }
                     catch( SAXException se ) {
                         //could not parse to xml(html)

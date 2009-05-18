@@ -93,7 +93,7 @@ public class PUTFunction extends BaseHTTPClientFunction
         try {
             osw = new OutputStreamWriter( baos, "UTF-8" );
         } catch (UnsupportedEncodingException e) {
-            throw new XPathException(getASTNode(), "Internal error");
+            throw new XPathException(this, "Internal error");
         }
         XMLWriter xmlWriter         = new XMLWriter( osw );
         SAXSerializer sax           = new SAXSerializer();
@@ -126,7 +126,7 @@ public class PUTFunction extends BaseHTTPClientFunction
 
         }
         catch( IOException ioe ) {
-            throw( new XPathException(getASTNode(), ioe ) );
+            throw( new XPathException(this, ioe.getMessage(), ioe ) );
         }
         finally {
             put.releaseConnection();

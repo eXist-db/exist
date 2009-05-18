@@ -106,7 +106,7 @@ public class SerializeToFile extends BasicFunction
 					os = new FileOutputStream( file );
 				}
 				catch( IOException e ) {
-					throw( new XPathException( getASTNode(), "A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
+					throw( new XPathException( this, "A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
 				}
 				
 				//do the serialization
@@ -160,10 +160,10 @@ public class SerializeToFile extends BasicFunction
 			writer.close();
 		}
 		catch( SAXException e ) {
-			throw( new XPathException( getASTNode(), "A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
+			throw( new XPathException( this, "A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
 		}
 		catch ( IOException e ) {
-			throw( new XPathException(getASTNode(), "A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
+			throw( new XPathException(this, "A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
 		}
 		finally {
 			SerializerPool.getInstance().returnObject( sax );

@@ -84,15 +84,15 @@ public class FileReadBinary extends BasicFunction {
 		} 
 		
 		catch( MalformedURLException e ) {
-			throw( new XPathException( getASTNode(), e.getMessage() ) );	
+			throw( new XPathException( this, e.getMessage() ) );
 		} 
 		
 		catch( URISyntaxException e ) {
-			throw( new XPathException( getASTNode(), e.getMessage() ) );	
+			throw( new XPathException( this, e.getMessage() ) );	
 		} 
 		
 		catch( IOException e ) {
-			throw( new XPathException( getASTNode(), e.getMessage() ) );	
+			throw( new XPathException( this, e.getMessage() ) );
 		}
 
 		return( new Base64Binary( buffer ) );

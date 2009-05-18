@@ -63,7 +63,7 @@ public class MetadataFunction extends BasicFunction {
 		//must be a context to act on
 		if(contextSequence == null)
 		{
-			throw new XPathException(getASTNode(), "FONC0001: undefined context item");
+			throw new XPathException(this, "FONC0001: undefined context item");
 		}
 		
 		//iterate through the source documents

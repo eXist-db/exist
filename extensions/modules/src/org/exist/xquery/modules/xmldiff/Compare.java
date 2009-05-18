@@ -114,7 +114,7 @@ public class Compare extends Function {
             }
             result = new BooleanValue(identical);
         } catch (Exception e) {
-			throw new XPathException(getASTNode(), "An exception occurred while serializing node " +
+			throw new XPathException(this, "An exception occurred while serializing node " +
 					"for comparison: " + e.getMessage(), e);
 		}
 

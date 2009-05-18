@@ -134,7 +134,7 @@ public class ScaleFunction extends BasicFunction
 		}
 		catch(Exception e)
 		{
-			throw new XPathException(getASTNode(), e.getMessage());
+			throw new XPathException(this, e.getMessage());
 		}
 	}
 }
