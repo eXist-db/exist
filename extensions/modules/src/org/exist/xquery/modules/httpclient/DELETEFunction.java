@@ -92,7 +92,7 @@ public class DELETEFunction extends BaseHTTPClientFunction {
             response = doRequest( context, delete, persistCookies );	
         }
         catch( IOException ioe ) {
-            throw( new XPathException( getASTNode(), ioe ) );
+            throw( new XPathException( this, ioe.getMessage(), ioe ) );
         }
         finally {
             delete.releaseConnection();

@@ -103,11 +103,11 @@ public class FileRead extends BasicFunction {
 		} 
 		
 		catch( MalformedURLException e ) {
-			throw( new XPathException( getASTNode(), e.getMessage() ) );	
+			throw( new XPathException( this, e.getMessage() ) );
 		} 
 		
 		catch( IOException e ) {
-			throw( new XPathException( getASTNode(), e.getMessage() ) );	
+			throw( new XPathException( this, e.getMessage() ) );	
 		}
 		
 		//TODO : return an *Item* built with sw.toString()

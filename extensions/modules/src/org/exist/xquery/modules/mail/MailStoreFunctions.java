@@ -108,7 +108,7 @@ public class MailStoreFunctions extends BasicFunction
 			return( closeMailStore( args, contextSequence ) );
 		}
 	
-		throw( new XPathException( getASTNode(), "Invalid function name" ) );	
+		throw( new XPathException( this, "Invalid function name" ) );
 	}
 
 		
@@ -118,14 +118,14 @@ public class MailStoreFunctions extends BasicFunction
 		
 		// was a session handle specified?
 		if( args[0].isEmpty() ) {
-			throw( new XPathException( getASTNode(), "Session handle not specified" ) );
+			throw( new XPathException( this, "Session handle not specified" ) );
 		}
 
 		// get the Session
 		long sessionHandle = ((IntegerValue)args[0].itemAt(0)).getLong();
 		Session session = MailModule.retrieveSession( context, sessionHandle );
 		if( session == null ) {
-			throw( new XPathException( getASTNode(), "Invalid Session handle specified" ) );
+			throw( new XPathException( this, "Invalid Session handle specified" ) );
 		}
 		
 		try {
@@ -140,7 +140,7 @@ public class MailStoreFunctions extends BasicFunction
 			store.connect( null, null, password );
 		}
 		catch( MessagingException me ) {
-			throw( new XPathException( getASTNode(), "Failed to open mail store", me ) );
+			throw( new XPathException( this, "Failed to open mail store", me ) );
 		}
 		
 		// save the store and return the handle of the store
@@ -153,21 +153,21 @@ public class MailStoreFunctions extends BasicFunction
 	{
 		// was a store handle specified?
 		if( args[0].isEmpty() ) {
-			throw( new XPathException( getASTNode(), "Store handle not specified" ) );
+			throw( new XPathException( this, "Store handle not specified" ) );
 		}
 
 		// get the Store
 		long storeHandle = ((IntegerValue)args[0].itemAt(0)).getLong();
 		Store store = MailModule.retrieveStore( context, storeHandle );
 		if( store == null ) {
-			throw( new XPathException( getASTNode(), "Invalid Store handle specified" ) );
+			throw( new XPathException( this, "Invalid Store handle specified" ) );
 		}
 		
 		try {
 			store.close();
 		}
 		catch( MessagingException me ) {
-			throw( new XPathException( getASTNode(), "Failed to close mail store", me ) );
+			throw( new XPathException( this, "Failed to close mail store", me ) );
 		}
 		finally {
 			MailModule.removeStore( context, storeHandle );

@@ -123,7 +123,7 @@ public class POSTFunction extends BaseHTTPClientFunction
     	        }
     	        catch(UnsupportedEncodingException e)
     	        {
-    	            throw new XPathException(getASTNode(), e.getMessage());
+    	            throw new XPathException(this, e.getMessage());
     	        }
     	        
     	        SAXSerializer sax = new SAXSerializer(osw, new Properties());
@@ -136,7 +136,7 @@ public class POSTFunction extends BaseHTTPClientFunction
     	        }
     	        catch(Exception e)
     	        {
-    	        	throw new XPathException(getASTNode(), e.getMessage());
+    	        	throw new XPathException(this, e.getMessage());
     	        } 
     			
     			byte reqPayload[] = baos.toByteArray();
@@ -166,7 +166,7 @@ public class POSTFunction extends BaseHTTPClientFunction
 			}
 			else
 			{
-				throw new XPathException(getASTNode(), "fields must be provided");
+				throw new XPathException(this, "fields must be provided");
 			}
 
         }
@@ -190,7 +190,7 @@ public class POSTFunction extends BaseHTTPClientFunction
         }
         catch(IOException ioe)
         {
-            throw new XPathException(getASTNode(), ioe);
+            throw new XPathException(this, ioe.getMessage(), ioe);
         }
         finally
         {

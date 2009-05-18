@@ -317,7 +317,7 @@ public class ScheduleFunctions extends BasicFunction
                     String name = elem.getAttribute("name");
                     String value = elem.getAttribute("value");
                     if(name == null || value == null)
-                        throw new XPathException(getASTNode(), "Name or value attribute missing for stylesheet parameter");
+                        throw new XPathException(this, "Name or value attribute missing for stylesheet parameter");
                     properties.setProperty(name, value);
                 }
                 child = child.getNextSibling();
