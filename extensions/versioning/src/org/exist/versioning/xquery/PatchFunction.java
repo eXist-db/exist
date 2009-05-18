@@ -107,11 +107,11 @@ public class PatchFunction extends BasicFunction {
             NodeValue result = (NodeValue) builder.getDocument().getDocumentElement();
             return result == null ? Sequence.EMPTY_SEQUENCE : result;
         } catch (IOException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
+            throw new XPathException(this, e.getMessage(), e);
         } catch (XMLStreamException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
+            throw new XPathException(this, e.getMessage(), e);
         } catch (DiffException e) {
-            throw new XPathException(getASTNode(), e.getMessage(), e);
+            throw new XPathException(this, e.getMessage(), e);
         } finally {
             context.popDocumentContext();
         }
