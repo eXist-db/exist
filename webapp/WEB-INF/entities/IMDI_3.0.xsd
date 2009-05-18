@@ -1,0 +1,1738 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	XML Schema for IMDI
+	
+	Version 3.0.9
+	
+	Max-Planck Institute for Psycholinguistics
+-->
+<!-- 
+	04-03-08 - Jacquelijn Ringersma 
+	In lexicon resource bundle 
+	MediaResourceLink vervangen door ReferenceResourceLink
+	en Multiple schemareferences mogelijk gemaakt 	
+	
+	2008-08-05 Daan Broeder
+	In lexicon resource  en lexicon component
+	removed schema reference 
+	made description in Lexiconresource optional
+	made description in MetaLanguages optional
+	made language in MetaLanguages optional
+
+	2009-04-17
+	made ISO-3 language codes possible
+-->
+<xsd:schema targetNamespace="http://www.mpi.nl/IMDI/Schema/IMDI" xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1">
+	<!-- 
+		Main schema
+	-->
+	<xsd:element name="METATRANSCRIPT" type="imdi:METATRANSCRIPT_Type">
+		<xsd:annotation>
+			<xsd:documentation>The root element for IMDI descriptions</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!-- 
+		Schema for vocabulary definition
+	-->
+	<xsd:element name="VocabularyDef" type="imdi:VocabularyDef_Type">
+		<xsd:annotation>
+			<xsd:documentation>Instantiation of a VocabularyDef_Type</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!-- 
+		METATRANSCRIPT
+	-->
+	<xsd:complexType name="METATRANSCRIPT_Type">
+		<xsd:sequence>
+			<xsd:element name="History" type="imdi:String_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Revision history of the metadata description</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice>
+				<xsd:element name="Session" type="imdi:Session_Type" maxOccurs="unbounded"/>
+				<xsd:element name="Corpus" type="imdi:Corpus_Type" maxOccurs="unbounded"/>
+				<xsd:element name="Catalogue" type="imdi:Catalogue_Type"/>
+			</xsd:choice>
+		</xsd:sequence>
+		<xsd:attribute name="Profile" type="xsd:string" use="optional"/>
+		<xsd:attribute name="Date" type="xsd:date" use="required"/>
+		<xsd:attribute name="Originator" type="xsd:string" use="optional"/>
+		<xsd:attribute name="Version" type="xsd:string" use="required"/>
+		<xsd:attribute name="FormatId" type="xsd:string" use="required"/>
+		<xsd:attribute name="History" type="xsd:anyURI" use="optional"/>
+		<xsd:attribute name="Type" type="imdi:Metatranscript_Value_Type" use="required"/>
+		<xsd:attribute name="ArchiveHandle" type="xsd:string" use="optional"/>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Location
+	-->
+	<xsd:complexType name="Location_Type">
+		<xsd:annotation>
+			<xsd:documentation>Information on creation location for this data</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Continent" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The name of a continent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Country" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The name of a country</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Region" type="imdi:String_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>The name of a geographic region</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Address" type="imdi:String_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>The address</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!--
+		Key
+	-->
+	<xsd:complexType name="Key_Type">
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:Vocabulary_Type">
+				<xsd:attribute name="Name" type="xsd:string" use="required"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Keys
+	-->
+	<xsd:complexType name="Keys_Type">
+		<xsd:annotation>
+			<xsd:documentation>List of a number of key name value pairs. Should be used to add information that is not covered by other metadata elements at this level</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Key" type="imdi:Key_Type" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Languages
+	-->
+	<xsd:complexType name="Languages_Type" mixed="false">
+		<xsd:annotation>
+			<xsd:documentation>Groups information about the languages used in the session</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Description for the list of languages spoken by this participant</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Language" type="imdi:Language_Type" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!--
+		Access
+	-->
+	<xsd:complexType name="Access_Type">
+		<xsd:annotation>
+			<xsd:documentation>Groups information about access rights for this data</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Availability" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>Availability of the data</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Date" type="imdi:Date_Type">
+				<xsd:annotation>
+					<xsd:documentation>Date when access rights were evaluated</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Owner" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Name of owner resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Publisher" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Publisher responsible for distribution of this data</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Contact" type="imdi:Contact_Type"/>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		External Resource Reference
+	-->
+	<xsd:complexType name="ExternalResourceReference_Type">
+		<xsd:annotation>
+			<xsd:documentation>Resource is preferably a metadata resource. In the case of a well-defined merged metadata/content format such as TEI or legacy resources for which no further metadata is available it is the resource itself. If the external resource is an IMDI session with written resources Type &amp; SubType will be the same as the Type &amp; SubType of the primary written resource in that session. If it is a session with IMDI multi-media resources the Type of the Media
+				File will designate it. SubType is used only for written resources. Non-IMDI metadata resource types need to be mapped to IMDI types</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Type" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The type of the external (metadata) resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="SubType" type="imdi:Vocabulary_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>The sub type of the external (metadata) resource. Only used in case its metadata for a written resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Format" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The metadata format</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Link" type="xsd:anyURI">
+				<xsd:annotation>
+					<xsd:documentation>The URL of the external metadata record</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Project
+	-->
+	<xsd:complexType name="Project_Type">
+		<xsd:annotation>
+			<xsd:documentation>Project Information</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Name" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>A short name or abbreviation for the project</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Title" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>The full title of the project</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Id" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>A unique identifier for the project</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Contact" type="imdi:Contact_Type">
+				<xsd:annotation>
+					<xsd:documentation>Contact information for this project</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Description for this project</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Metadata Group
+	-->
+	<xsd:complexType name="MDGroupType">
+		<xsd:annotation>
+			<xsd:documentation>Type for group of metadata pertaining to a session</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Location" type="imdi:Location_Type">
+				<xsd:annotation>
+					<xsd:documentation>Groups information about the location where the session was created</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Project" type="imdi:Project_Type" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Groups information about the project for which the session was (originally) created</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Keys" type="imdi:Keys_Type">
+				<xsd:annotation>
+					<xsd:documentation>Project keys</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Content" type="imdi:Content_Type">
+				<xsd:annotation>
+					<xsd:documentation>Groups information about the content of the session. The content description takes place in several (overlapping) dimensions</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Actors" type="imdi:Actors_Type">
+				<xsd:annotation>
+					<xsd:documentation>Groups information about all actors in the session</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Content
+	-->
+	<xsd:complexType name="Content_Type">
+		<xsd:sequence>
+			<xsd:element name="Genre" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>Major genre classification</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="SubGenre" type="imdi:Vocabulary_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Sub genre classification</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Task" type="imdi:Vocabulary_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>List of he major tasks carried out in the session</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Modalities" type="imdi:Vocabulary_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>List of modalities used in the session</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Subject" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Classifies the subject of the session. Uses preferably an existing library classification scheme such as LCSH. The element has a scheme attribute that indicates what scheme is used. Comments: The element can be repeated but the user should guarantee consistency</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="imdi:Vocabulary_Type">
+							<!-- what is this? -->
+							<xsd:attribute name="Encoding" type="xsd:string" use="optional"/>
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="CommunicationContext">
+				<xsd:annotation>
+					<xsd:documentation>This groups information concerning the context of communication</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Interactivity" type="imdi:Vocabulary_Type" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>degree of interactivity</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="PlanningType" type="imdi:Vocabulary_Type" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Degree of planning of the event</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Involvement" type="imdi:Vocabulary_Type" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Indicates in how far the researcher was involved in the linguistic event</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="SocialContext" type="imdi:Vocabulary_Type" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Indicates the social context the event took place in</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="EventStructure" type="imdi:Vocabulary_Type" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Indicates the structure of the communication event</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Channel" type="imdi:Vocabulary_Type" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Indicates the channel of the communication</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Languages" type="imdi:Languages_Type"/>
+			<xsd:element name="Keys" type="imdi:Keys_Type"/>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Description for the content of this session</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Actors
+	-->
+	<xsd:complexType name="Actors_Type">
+		<xsd:sequence>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Description about the actors as a group</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Actor" type="imdi:Actor_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Group of actors</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Actor
+	-->
+	<xsd:complexType name="Actor_Type">
+		<xsd:sequence>
+			<xsd:element name="Role" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>Functional role of the actor e.g. consultant, contributor, interviewer, researcher, publisher, collector, translator</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Name" type="imdi:String_Type" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Name of the actor as used by others in the transcription</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="FullName" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Official name of the actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Code" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Short unique code to identify the actor as used in the transcription</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="FamilySocialRole" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The family social role of the actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Languages" type="imdi:Languages_Type">
+				<xsd:annotation>
+					<xsd:documentation>The actor languages</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="EthnicGroup" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The ethnic groups of the actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Age" type="imdi:AgeRange_Type">
+				<xsd:annotation>
+					<xsd:documentation>The age of the actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="BirthDate" type="imdi:Date_Type">
+				<xsd:annotation>
+					<xsd:documentation>The birthdate of the actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Sex" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The sex of the actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Education" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>The education of the actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element type="imdi:Boolean_Type" name="Anonymized">
+				<xsd:annotation>
+					<xsd:documentation>Indicates if real names or anonymized codes are used to identify the actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Contact" type="imdi:Contact_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Contact information of the actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Keys" type="imdi:Keys_Type">
+				<xsd:annotation>
+					<xsd:documentation>Actor keys</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Description for this individual actor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="ResourceRef" type="xsd:string" use="optional"/>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Corpus
+	-->
+	<xsd:complexType name="Corpus_Type">
+		<xsd:annotation>
+			<xsd:documentation>Type for a corpus that points to either other corpora or sessions</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Name" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Name of the (sub-)corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Title" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Title for the (sub-)corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Description" type="imdi:Description_Type" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Description of the (sub-)corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MDGroup" type="imdi:MDGroupType" minOccurs="0"/>
+			<xsd:element name="CorpusLink" type="imdi:CorpusLink_Type" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="SearchService" type="xsd:anyURI" use="optional"/>
+		<xsd:attribute name="CorpusStructureService" type="xsd:anyURI" use="optional"/>
+		<xsd:attribute name="CatalogueLink" type="xsd:anyURI" use="optional"/>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Corpus Link
+	-->
+	<xsd:complexType name="CorpusLink_Type">
+		<xsd:annotation>
+			<xsd:documentation>Link to other resource. Attribute name is for the benefit of browsing</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:ResourceLink_Type">
+				<xsd:attribute name="Name" type="xsd:string" use="required"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!--
+		Catalogue
+	-->
+	<xsd:complexType name="Catalogue_Type">
+		<xsd:annotation>
+			<xsd:documentation>Type for group metadata pertaining to published corpora</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Name" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Name of the published corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Title" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Title of the published corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Id" type="imdi:String_Type" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Identifier of the published corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Description" type="imdi:Description_Type" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Description of the published corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="DocumentLanguages">
+				<xsd:annotation>
+					<xsd:documentation>The languages used for documentation of the corpus</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType mixed="false">
+					<xsd:sequence>
+						<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>Description for the list of languages</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Language" type="imdi:SimpleLanguageType" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+					<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="SubjectLanguages">
+				<xsd:annotation>
+					<xsd:documentation>The languages in the corpus that are subject of analysis</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType mixed="false">
+					<xsd:sequence>
+						<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>Description for the list of languages</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Language" type="imdi:SubjectLanguageType" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+					<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				</xsd:complexType>
+			</xsd:element>
+			<!-- allow more than one location here? -->
+			<xsd:element name="Location" type="imdi:Location_Type"/>
+			<xsd:element name="ContentType" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>Content type of the published corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Format">
+				<xsd:complexType>
+					<xsd:all>
+						<xsd:element name="Text" type="imdi:Vocabulary_Type" minOccurs="0"/>
+						<xsd:element name="Audio" type="imdi:Vocabulary_Type" minOccurs="0"/>
+						<xsd:element name="Video" type="imdi:Vocabulary_Type" minOccurs="0"/>
+					</xsd:all>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Quality">
+				<xsd:complexType>
+					<xsd:all>
+						<xsd:element name="Audio" type="imdi:Quality_Value_Type" minOccurs="0"/>
+						<xsd:element name="Video" type="imdi:Quality_Value_Type" minOccurs="0"/>
+					</xsd:all>
+					<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="SmallestAnnotationUnit" type="imdi:Vocabulary_Type"/>
+			<xsd:element name="Applications" type="imdi:Vocabulary_Type"/>
+			<xsd:element name="Date" type="imdi:Date_Type"/>
+			<xsd:element name="Project" type="imdi:Project_Type"/>
+			<xsd:element name="Publisher" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Publisher responsible for distribution of the published corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Authors" type="imdi:CommaSeparatedString_Type">
+				<xsd:annotation>
+					<xsd:documentation>Authors for the resources</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Size" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Human readabusle string that indicates total size of corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="DistributionForm" type="imdi:Vocabulary_Type"/>
+			<xsd:element name="Access" type="imdi:Access_Type"/>
+			<xsd:element name="Pricing" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Pricing info of the corpus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Keys" type="imdi:Keys_Type"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Session
+	-->
+	<xsd:complexType name="Session_Type">
+		<xsd:sequence>
+			<xsd:element name="Name" type="imdi:String_Type"/>
+			<xsd:element name="Title" type="imdi:String_Type"/>
+			<xsd:element name="Date" type="imdi:DateRange_Type"/>
+			<xsd:element name="ExternalResourceReference" type="imdi:ExternalResourceReference_Type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="MDGroup" type="imdi:MDGroupType"/>
+			<xsd:element name="Resources">
+				<xsd:annotation>
+					<xsd:documentation>Groups information of language resources connected to the session</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="MediaFile" type="imdi:MediaFile_Type" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>Groups all media resources</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="WrittenResource" type="imdi:WrittenResource_Type" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>Groups information about a Written Resource</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="LexiconResource" type="imdi:LexiconResource_Type" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>Groups information only pertaining to a Lexical resource</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="LexiconComponent" type="imdi:LexiconComponent_Type" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>Groups information only pertaining to a lexiconComponent</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Source" type="imdi:Source_Type" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>Groups information about the source; e.g. media-carrier, book, newspaper archive etc.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Anonyms" type="imdi:Anonyms_Type" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Groups data about name conversions for persons who are anonymised</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="References" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Groups information about external documentation associated with this session</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>Every description is a reference</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		MediaFile
+	-->
+	<xsd:complexType name="MediaFile_Type">
+		<xsd:annotation>
+			<xsd:documentation>Groups information about the media file</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ResourceLink" type="imdi:ResourceLink_Type">
+				<xsd:annotation>
+					<xsd:documentation>URL to media file</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Type" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>Major part of mime-type</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Format" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>Minor part of mime-type</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Size" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Size of media file</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Quality" type="imdi:Quality_Type">
+				<xsd:annotation>
+					<xsd:documentation>Quality of the recording</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="RecordingConditions" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>describes technical conditions of recording</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TimePosition" type="imdi:TimePositionRange_Type"/>
+			<xsd:element name="Access" type="imdi:Access_Type"/>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Keys" type="imdi:Keys_Type"/>
+		</xsd:sequence>
+		<xsd:attribute name="ResourceId" type="xsd:string" use="optional"/>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Written Resource
+	-->
+	<xsd:complexType name="WrittenResource_Type">
+		<xsd:annotation>
+			<xsd:documentation>Groups information about a Written Resource</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ResourceLink" type="imdi:ResourceLink_Type">
+				<xsd:annotation>
+					<xsd:documentation>URL to file containing the annotations/transcription</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MediaResourceLink" type="imdi:ResourceLink_Type">
+				<xsd:annotation>
+					<xsd:documentation>URL to media file from which the annotations/transcriptions originate </xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Date">
+				<xsd:annotation>
+					<xsd:documentation>Date when Written Resource was created</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="imdi:Date_Type"/>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Type" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The type of the WrittenResource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="SubType" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The subtype of the WrittenResource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Format" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>File format used for Written Resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Size" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The size of the Written Resource file. Integer value with addition of M (mega) or K (kilo)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Validation" type="imdi:Validation_Type"/>
+			<xsd:element name="Derivation" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>How this document relates to another resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="CharacterEncoding" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Character encoding used in the written resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ContentEncoding" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>Content encoding used in the written resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="LanguageId" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>Language used in the resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Anonymized" type="imdi:Boolean_Type">
+				<xsd:annotation>
+					<xsd:documentation>Indicates if data has been anonymised. CV boolean</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Access" type="imdi:Access_Type"/>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Keys" type="imdi:Keys_Type"/>
+		</xsd:sequence>
+		<xsd:attribute name="ResourceId" type="xsd:string" use="optional"/>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Lexicon Resource
+	-->
+	<xsd:complexType name="LexiconResource_Type">
+		<xsd:annotation>
+			<xsd:documentation>Groups information only pertaining to a Lexical resource</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ResourceLink" type="imdi:ResourceLink_Type">
+				<xsd:annotation>
+					<xsd:documentation>URL to lexical resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Date" type="imdi:Date_Type">
+				<xsd:annotation>
+					<xsd:documentation>Date when lexical resource was created</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Type" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The type of the WrittenResource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Format" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The format of the LexicalResource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="CharacterEncoding" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>The character encoding of the LexicalResource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Size">
+				<xsd:annotation>
+					<xsd:documentation>The size of the LexicalResource in bytes</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="xsd:string">
+							<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="NoHeadEntries" type="imdi:Integer_Type">
+				<xsd:annotation>
+					<xsd:documentation>The number of head entries of the LexicalResource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="NoSubEntries" type="imdi:Integer_Type">
+				<xsd:annotation>
+					<xsd:documentation>The number of sub entries of the LexicalResource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="LexicalEntry" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="HeadWordType" type="imdi:Vocabulary_Type">
+							<xsd:annotation>
+								<xsd:documentation>OCV: Sentence, Phrase, Wordform, Lemma, ...</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Orthography" type="imdi:Vocabulary_Type">
+							<xsd:annotation>
+								<xsd:documentation>OCV: HyphenatedSpelling, SyllabifiedSpelling, ...</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Morphology" type="imdi:Vocabulary_Type">
+							<xsd:annotation>
+								<xsd:documentation>OCV: Stem,StemALlomorphy, Segmentation, ...</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="MorphoSyntax" type="imdi:Vocabulary_Type">
+							<xsd:annotation>
+								<xsd:documentation>OCV: POS, Inflexion, Countability, ...</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Syntax" type="imdi:Vocabulary_Type">
+							<xsd:annotation>
+								<xsd:documentation>OCV: Complementation, Alternation, Modification, ...</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Phonology" type="imdi:Vocabulary_Type">
+							<xsd:annotation>
+								<xsd:documentation>OCV: Transcription, IPA Transcription, CV pattern, ...</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Semantics" type="imdi:Vocabulary_Type">
+							<xsd:annotation>
+								<xsd:documentation>OCV: Sense dstinction</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Etymology" type="imdi:Vocabulary_Type"/>
+						<xsd:element name="Usage" type="imdi:Vocabulary_Type"/>
+						<xsd:element name="Frequency" type="imdi:String_Type"/>
+					</xsd:sequence>
+					<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="MetaLanguages">
+				<xsd:annotation>
+					<xsd:documentation>A block to describe the languages that are used to define terms, to describe meaning</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Language" type="imdi:Vocabulary_Type" minOccurs="0" maxOccurs="unbounded"/>
+						<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+					<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Access" type="imdi:Access_Type"/>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Keys" type="imdi:Keys_Type"/>
+		</xsd:sequence>
+		<xsd:attribute name="ResourceId" type="xsd:string" use="optional"/>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- LMF compliant Lexicon component -->
+	<xsd:complexType name="LexiconComponent_Type">
+		<xsd:annotation>
+			<xsd:documentation>Groups information only pertaining to a lexiconComponent</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ResourceLink" type="imdi:ResourceLink_Type">
+				<xsd:annotation>
+					<xsd:documentation>URL to lexiconComponent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Date" type="imdi:Date_Type">
+				<xsd:annotation>
+					<xsd:documentation>Date when lexiconComponent was created</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Type" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The type of the lexiconComponent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<!-- Type element is not very relevant for lexiconComponent, since the IMDI type will be 'unspecified' -->
+			<xsd:element name="Format" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>The format of the lexiconComponent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="CharacterEncoding" type="imdi:String_Type">
+				<xsd:annotation>
+					<xsd:documentation>The character encoding of the lexiconComponent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Size">
+				<xsd:annotation>
+					<xsd:documentation>The size of the lexiconComponent in bytes</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="xsd:string">
+							<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Component" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Describes the tree in which the component can be embedded</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="possibleParents" type="imdi:Vocabulary_Type">
+							<xsd:annotation>
+								<xsd:documentation>Describes the possible parents of the lexiconComponent in the schema tree</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="preferredParent" type="imdi:Vocabulary_Type" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>Descibes the preferred parent of the lexiconComponent in the schema tree</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="childNodes" minOccurs="0" maxOccurs="1">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="childComponents" type="imdi:Vocabulary_Type" minOccurs="0" maxOccurs="1">
+										<xsd:annotation>
+											<xsd:documentation>Describes the possible component children of the lexiconComponent in the schema tree</xsd:documentation>
+										</xsd:annotation>
+									</xsd:element>
+									<xsd:element name="childCategories" type="imdi:Vocabulary_Type" minOccurs="0" maxOccurs="1">
+										<xsd:annotation>
+											<xsd:documentation>Describes the possible category children of the lexiconComponent in the schema tree</xsd:documentation>
+										</xsd:annotation>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="LexicalInfo" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Gives information on the lexical applications of the lexiconComponent</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Orthography" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>Describes whether the lexiconComponent can be used to add orthography to the lexicon schema</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Morphology" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>Describes whether the lexiconComponent can be used to add morphology to the lexicon schema.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="MorphoSyntax" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>Describes whether the lexiconComponent can be used to add morphosyntactic features to the lexicon schema</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Syntax" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>Describes whether the lexiconComponent can be used to add syntactic features to the lexicon schema</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Phonology" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>Describes whether the lexiconComponent can be used to add phonology to the lexicon schema.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Semantics" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>Describes whether the lexiconComponent can be used to add a semantic element to the lexicon schema</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Etymology" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+						<xsd:element name="Usage" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+						<xsd:element name="Frequency" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="MetaLanguages">
+				<xsd:annotation>
+					<xsd:documentation>A block to describe the languages that are used to define terms, to describe meaning</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Language" type="imdi:Vocabulary_Type"/>
+						<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+					<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Access" type="imdi:Access_Type"/>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Keys" type="imdi:Keys_Type"/>
+		</xsd:sequence>
+		<xsd:attribute name="ResourceId" type="xsd:string" use="optional"/>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!--
+		Source
+	-->
+	<xsd:complexType name="Source_Type">
+		<xsd:annotation>
+			<xsd:documentation>Groups information about the original source; e.g. media-carrier, book, newspaper archive etc.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Id">
+				<xsd:annotation>
+					<xsd:documentation>Unique code to identify the original source</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="xsd:string">
+							<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Format" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>Physical storage format of the source</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Quality" type="imdi:Quality_Type">
+				<xsd:annotation>
+					<xsd:documentation>Quality of original recording</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="CounterPosition" type="imdi:CounterPosition_Type" minOccurs="0"/>
+			<xsd:element name="TimePosition" type="imdi:TimePositionRange_Type" minOccurs="0"/>
+			<xsd:element name="Access" type="imdi:Access_Type"/>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Description for the original source</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Keys" type="imdi:Keys_Type"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+		<xsd:attribute name="ResourceRefs" type="xsd:string" use="optional"/>
+	</xsd:complexType>
+	<!-- 
+		Anonyms
+	-->
+	<xsd:complexType name="Anonyms_Type">
+		<xsd:annotation>
+			<xsd:documentation>Groups data about name conversions for persons who are anonymised</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ResourceLink" type="imdi:ResourceLink_Type">
+				<xsd:annotation>
+					<xsd:documentation>URL to information to convert pseudo named to real-names</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Access" type="imdi:Access_Type"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- 
+		Vocabulary Definition
+	-->
+	<xsd:complexType name="VocabularyDef_Type" mixed="false">
+		<xsd:annotation>
+			<xsd:documentation>The definition of a vocabulary. Attributes: Date of creattion, Link to origin. Contails a Description be element to descr+++ ibe the domain of the vocabulary and a (unspecified) number of value enries</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Description" type="imdi:Description_Type" maxOccurs="unbounded"/>
+			<xsd:element name="Entry" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="xsd:string">
+							<xsd:attribute name="Tag" type="xsd:string" use="optional"/>
+							<xsd:attribute name="Value" type="xsd:string" use="required"/>
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="Name" type="xsd:string" use="required"/>
+		<xsd:attribute name="Date" type="xsd:date" use="required"/>
+		<xsd:attribute name="Tag" type="xsd:date" use="optional"/>
+		<xsd:attribute name="Link" type="imdi:Link_Value_Type" use="required"/>
+	</xsd:complexType>
+	<!-- 
+		Description
+	-->
+	<xsd:complexType name="Description_Type">
+		<xsd:annotation>
+			<xsd:documentation>Human readable description in the form of a text with language id specification and/or a link to a file with a description and language id specification. The name attribute is to name the link (if present)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="LanguageId" type="imdi:LanguageId_Value_Type" use="optional"/>
+				<xsd:attribute name="Name" type="xsd:string" use="optional"/>
+				<xsd:attribute name="ArchiveHandle" type="xsd:string" use="optional"/>
+				<xsd:attribute name="Link" type="xsd:anyURI" use="optional"/>
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!--
+		Contact
+	-->
+	<xsd:complexType name="Contact_Type">
+		<xsd:annotation>
+			<xsd:documentation>Contact information for this data</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Name" type="imdi:String_Type" minOccurs="0"/>
+			<xsd:element name="Address" type="imdi:String_Type" minOccurs="0"/>
+			<xsd:element name="Email" type="imdi:String_Type" minOccurs="0"/>
+			<xsd:element name="Organisation" type="imdi:String_Type" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- 
+		Validation
+	-->
+	<xsd:complexType name="Validation_Type">
+		<xsd:annotation>
+			<xsd:documentation>The validation used for the resource</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Type" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>CV: content, type, manual, automatic, semi-automatic</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Methodology" type="imdi:Vocabulary_Type">
+				<xsd:annotation>
+					<xsd:documentation>Validation methodology</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Level" minOccurs="0" type="imdi:Integer_Type">
+				<xsd:annotation>
+					<xsd:documentation>Percentage of resource validated</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Age
+	-->
+	<xsd:complexType name="Age_Type">
+		<xsd:annotation>
+			<xsd:documentation>Specifies age of a person with differerent counting methods</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:Age_Value_Type">
+				<xsd:attribute name="AgeCountingMethod" type="imdi:AgeCountingMethod_Value_Type" default="SinceBirth"/>
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Age Range
+	-->
+	<xsd:complexType name="AgeRange_Type">
+		<xsd:annotation>
+			<xsd:documentation>Specifies age of a person in the form of a range</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:AgeRange_Value_Type">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Language Types
+	-->
+	<xsd:complexType name="Language_Type" mixed="false">
+		<xsd:annotation>
+			<xsd:documentation>An element from a set of languages used in the session</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Id" type="imdi:LanguageId_Type">
+				<xsd:annotation>
+					<xsd:documentation>Unique code to identify a language</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Name" type="imdi:LanguageName_Type" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Name of the language</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MotherTongue" type="imdi:Boolean_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Is it the speakers mother tongue. Only applicable if used in the context of a speakers language</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="PrimaryLanguage" type="imdi:Boolean_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Is it the speakers primary language. Only applicable if used in the context of a speakers language</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Dominant" type="imdi:Boolean_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Is it the most frequently used language in the document. Only applicable if used in the context of the resource's language</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="SourceLanguage" type="imdi:Boolean_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Direction of translation. Only applicable in case it is the context of a lexicon resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TargetLanguage" type="imdi:Boolean_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Direction of translation. Only applicable in case it is the context of a lexicon resource</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Description for this particular language</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="ResourceRef" type="xsd:string" use="optional"/>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Subject Language
+	-->
+	<xsd:complexType name="SubjectLanguageType">
+		<xsd:complexContent>
+			<xsd:extension base="imdi:SimpleLanguageType">
+				<xsd:sequence>
+					<xsd:element name="Dominant" type="imdi:Boolean_Type" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Indicates if language is dominant language</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="SourceLanguage" type="imdi:Boolean_Type" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Indicates if language is source language</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="TargetLanguage" type="imdi:Boolean_Type" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Indicates if language is target language</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="Description" type="imdi:Description_Type" minOccurs="0" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation>Description of the language</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- 
+		Simple Language
+	-->
+	<xsd:complexType name="SimpleLanguageType">
+		<xsd:annotation>
+			<xsd:documentation>Information on language name and id</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Id" type="imdi:LanguageId_Type">
+				<xsd:annotation>
+					<xsd:documentation>Unique code to identify a language</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Name" type="imdi:LanguageName_Type">
+				<xsd:annotation>
+					<xsd:documentation>The name of the language</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!--
+		Language Id
+	-->
+	<xsd:complexType name="LanguageId_Type">
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:LanguageId_Value_Type">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!--
+		Language Name
+	-->
+	<xsd:complexType name="LanguageName_Type">
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:Vocabulary_Type"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!--
+		Basic Types 
+	-->
+	<!-- 
+		Boolean
+	-->
+	<xsd:complexType name="Boolean_Type">
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:Boolean_Value_Type">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		String
+	-->
+	<xsd:complexType name="String_Type">
+		<xsd:annotation>
+			<xsd:documentation>String type for single spaced, single line strings</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Comma Separated String
+	-->
+	<xsd:complexType name="CommaSeparatedString_Type">
+		<xsd:annotation>
+			<xsd:documentation>Comma separated string</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:CommaSeparatedString_Value_Type">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Integer
+	-->
+	<xsd:complexType name="Integer_Type">
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:Integer_Value_Type">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!--
+		Date
+	-->
+	<xsd:complexType name="Date_Type">
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:Date_Value_Type">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Date Range
+	-->
+	<xsd:complexType name="DateRange_Type">
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:DateRange_Value_Type">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Age Value
+	-->
+	<xsd:simpleType name="Age_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>The age of a person</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="([0-9]+)*(;[0-9]+)*(.[0-9]+)*|Unknown|Unspecified"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- 
+		Age Range Value
+	-->
+	<xsd:simpleType name="AgeRange_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>The age of a person given as a range</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="([0-9]+)?(;[0-9]+)?(.[0-9]+)?(/([0-9]+)?(;[0-9]+)?(.[0-9]+)?)?|Unknown|Unspecified"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- 
+		Age Counting Method Value
+	-->
+	<xsd:simpleType name="AgeCountingMethod_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>The age counting method</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="SinceConception"/>
+			<xsd:enumeration value="SinceBirth"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--
+		Resource Link
+	-->
+	<xsd:complexType name="ResourceLink_Type">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:anyURI">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+				<xsd:attribute name="ArchiveHandle" type="xsd:string" use="optional"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Vocabulary
+	-->
+	<xsd:complexType name="Vocabulary_Type">
+		<xsd:annotation>
+			<xsd:documentation>Vocabulary content and attributes</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:CommaSeparatedString_Value_Type">
+				<xsd:attribute name="Type" type="imdi:VocabularyType_Value_Type" default="OpenVocabulary"/>
+				<xsd:attribute name="DefaultLink" type="imdi:Link_Value_Type" use="optional"/>
+				<xsd:attribute name="Link" type="imdi:Link_Value_Type" use="optional">
+					<xsd:annotation>
+						<xsd:documentation>Link to a vocabulary definition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Counter Position
+	-->
+	<xsd:complexType name="CounterPosition_Type" mixed="false">
+		<xsd:annotation>
+			<xsd:documentation>Position (start (+end) ) on a old fashioned tape without time indication</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Start" type="imdi:Integer_Type"/>
+			<xsd:element name="End" minOccurs="0" type="imdi:Integer_Type"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Time Position
+	-->
+	<xsd:complexType name="TimePosition_Type">
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:TimePosition_Value_Type">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- 
+		Time Position Range
+	-->
+	<xsd:complexType name="TimePositionRange_Type" mixed="false">
+		<xsd:annotation>
+			<xsd:documentation>Position in a media file or modern tape</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Start" type="imdi:TimePosition_Type">
+				<xsd:annotation>
+					<xsd:documentation>The start time position of a recording</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="End" type="imdi:TimePosition_Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>The end time position of a recording</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+	</xsd:complexType>
+	<!-- 
+		Quality
+	-->
+	<xsd:complexType name="Quality_Type">
+		<xsd:annotation>
+			<xsd:documentation>Quality indication</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="imdi:Quality_Value_Type">
+				<xsd:attributeGroup ref="imdi:ProfileAttributes"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!--
+		Value Types
+	-->
+	<!-- 
+		Empty Value
+	-->
+	<xsd:simpleType name="Empty_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>Unspecified is a non-existing (null) value. Unknown is a informational value indicating that the real value is not known</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Unknown"/>
+			<xsd:enumeration value="Unspecified"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- 
+		Empty String Value
+	-->
+	<xsd:simpleType name="EmptyString_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>empty string definition</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="0"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- 
+		Comma Separated String Value
+	-->
+	<xsd:simpleType name="CommaSeparatedString_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>Comma seperated string</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[^,]*(,[^,]+)*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- 
+		Boolean Value
+	-->
+	<xsd:simpleType name="Boolean_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>Loose boolean value where empty values are allowed</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:boolean imdi:Empty_Value_Type"/>
+	</xsd:simpleType>
+	<!--
+		Integer Value
+	-->
+	<xsd:simpleType name="Integer_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>integer + Unspecified and Unknown</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:unsignedInt imdi:Empty_Value_Type"/>
+	</xsd:simpleType>
+	<!-- 
+		Date Value
+	-->
+	<xsd:simpleType name="Date_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>Defines a date that can also be empty or Unknown or Unspecified</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="imdi:DateRange_Value_Type imdi:EmptyString_Value_Type imdi:Empty_Value_Type"/>
+	</xsd:simpleType>
+	<!-- 
+		Date Range Value
+	-->
+	<xsd:simpleType name="DateRange_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>Defines a date range that can also be Unspecified or Unknown</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="([0-9]+)((-[0-9]+)(-[0-9]+)?)?(/([0-9]+)((-[0-9]+)(-[0-9]+)?)?)?|Unknown|Unspecified"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- 
+		LanguageId Value
+	-->
+	<xsd:simpleType name="LanguageId_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>Language identifiers</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:pattern value="(ISO639(-1|-2|-3)?:.*)?"/>
+			<xsd:pattern value="(RFC3066:.*)?"/>
+			<xsd:pattern value="(RFC1766:.*)?"/>
+			<xsd:pattern value="(SIL:.*)?"/>
+			<xsd:pattern value="Unknown"/>
+			<xsd:pattern value="Unspecified"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--
+		TimePosition Value
+	-->
+	<xsd:simpleType name="TimePosition_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>Time position in the hh:mm:ss:ff format</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9][0-9]:[0-9][0-9]:[0-9][0-9]:?[0-9]*|Unknown|Unspecified"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- 
+		Quality Value
+	-->
+	<xsd:simpleType name="Quality_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>Quality values (1 .. 5) also allows empty values</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:unsignedInt">
+					<xsd:enumeration value="1"/>
+					<xsd:enumeration value="2"/>
+					<xsd:enumeration value="3"/>
+					<xsd:enumeration value="4"/>
+					<xsd:enumeration value="5"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType>
+				<xsd:restriction base="imdi:Empty_Value_Type"/>
+			</xsd:simpleType>
+		</xsd:union>
+	</xsd:simpleType>
+	<!-- 
+		Vocabulary Type Value
+	-->
+	<xsd:simpleType name="VocabularyType_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>All possible vocabulary type values</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="ClosedVocabulary"/>
+			<xsd:enumeration value="ClosedVocabularyList"/>
+			<xsd:enumeration value="OpenVocabulary"/>
+			<xsd:enumeration value="OpenVocabularyList"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- 
+		Link Value
+	-->
+	<xsd:simpleType name="Link_Value_Type">
+		<xsd:restriction base="xsd:anyURI"/>
+	</xsd:simpleType>
+	<!--
+		Metatranscript Value
+	-->
+	<xsd:simpleType name="Metatranscript_Value_Type">
+		<xsd:annotation>
+			<xsd:documentation>Allowed values for metadata transcripts</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="SESSION"/>
+			<xsd:enumeration value="SESSION.Profile"/>
+			<xsd:enumeration value="LEXICON_RESOURCE_BUNDLE"/>
+			<xsd:enumeration value="LEXICON_RESOURCE_BUNDLE.Profile"/>
+			<xsd:enumeration value="CATALOGUE"/>
+			<xsd:enumeration value="CATALOGUE.Profile"/>
+			<xsd:enumeration value="CORPUS"/>
+			<xsd:enumeration value="CORPUS.Profile"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- 
+		Special attributes for profiles
+	-->
+	<xsd:attributeGroup name="ProfileAttributes">
+		<xsd:annotation>
+			<xsd:documentation>Attributes allowed for profiles</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="XXX-Type" type="xsd:string" use="optional"/>
+		<xsd:attribute name="XXX-Multiple" type="xsd:boolean" use="optional"/>
+		<xsd:attribute name="XXX-Visible" type="xsd:boolean" use="optional"/>
+		<xsd:attribute name="XXX-Tag" type="xsd:string" use="optional"/>
+		<xsd:attribute name="XXX-HelpText" type="xsd:string" use="optional"/>
+		<xsd:attribute name="XXX-FollowUpDepend" type="xsd:string" use="optional"/>
+	</xsd:attributeGroup>
+</xsd:schema>
+
