@@ -22,4 +22,5 @@
 	<uri name="http://www.w3.org/2001/XMLSchema" uri="entities/XMLSchema.xsd"/>
 	
     <uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" />
+    <uri name="http://www.mpi.nl/IMDI/Schema/IMDI" uri="entities/IMDI_3.0.xsd"/>
 </catalog>
