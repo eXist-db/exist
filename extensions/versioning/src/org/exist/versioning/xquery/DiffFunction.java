@@ -70,7 +70,7 @@ public class DiffFunction extends BasicFunction {
         NodeValue nv2 = (NodeValue) args[1].itemAt(0);
         if (nv1.getImplementationType() != NodeValue.PERSISTENT_NODE ||
                 nv2.getImplementationType() != NodeValue.PERSISTENT_NODE)
-            throw new XPathException(getASTNode(), "diff function only works on persistent documents stored in the db");
+            throw new XPathException(this, "diff function only works on persistent documents stored in the db");
         DocumentImpl doc1 = ((NodeProxy)nv1).getDocument();
         DocumentImpl doc2 = ((NodeProxy)nv2).getDocument();
 
@@ -94,9 +94,9 @@ public class DiffFunction extends BasicFunction {
             builder.endElement();
             return builder.getDocument().getNode(nodeNr);
         } catch (SAXException e) {
-            throw new XPathException(getASTNode(), "Caugt error while generating diff: " + e.getMessage(), e);
+            throw new XPathException(this, "Caugt error while generating diff: " + e.getMessage(), e);
         } catch (DiffException e) {
-            throw new XPathException(getASTNode(), "Caugt error while generating diff: " + e.getMessage(), e);
+            throw new XPathException(this, "Caugt error while generating diff: " + e.getMessage(), e);
         } finally {
             context.popDocumentContext();
         }
