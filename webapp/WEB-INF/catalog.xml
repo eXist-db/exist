@@ -15,6 +15,7 @@
 	<system systemId="xhtml-symbol.ent" uri="entities/xhtml-symbol.ent"/> 
 	<public publicId="-//W3C//ENTITIES Special for XHTML//EN" uri="entities/xhtml-special.ent"/>
 	<system systemId="xhtml-special.ent" uri="entities/xhtml-special.ent"/>
+
 	
     <uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/>
     
@@ -22,5 +23,7 @@
 	<uri name="http://www.w3.org/2001/XMLSchema" uri="entities/XMLSchema.xsd"/>
 	
     <uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" />
+
     <uri name="http://www.mpi.nl/IMDI/Schema/IMDI" uri="entities/IMDI_3.0.xsd"/>
+    <system systemId="standard-session.cfg" uri="entities/imdi-standard-session.cfg"/>
 </catalog>
