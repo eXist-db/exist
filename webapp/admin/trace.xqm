@@ -20,36 +20,66 @@ declare function prof:display-page() as element() {
     let $trace := system:trace()
     return
 	<div class="panel">
-		<div class="panel-head">Function Profiling</div>
+		<div class="panel-head">Query Profiling</div>
 		{ prof:display-form($trace, $sort) }
-		<div class="inner-panel">
-            <h2>Function Call Stats</h2>
-        	<table cellspacing="0" cellpadding="5" class="trace">
-        		<tr>
-        			<th>
-        			    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=name">
-        			        Function
-        		        </a>
-        	        </th>
-        	        <th>Source</th>
-        			<th class="trace-calls">
-        			    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=calls">
-        			        Calls
-        		        </a>
-        			</th>
-        			<th class="trace-elapsed">
-        			    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=time">
-        			        Elapsed time in sec.
-        		        </a>
-        		    </th>
-        		</tr>
-        		{prof:display($trace, $sort)}
-        	</table>
-        </div>
+		{ prof:queries($trace, $sort), prof:functions($trace, $sort) }
 	</div>
 };
 
-declare function prof:display($trace as element(), $sort as xs:string) as element()+ {
+declare function prof:functions($trace as element(), $sort as xs:string) as element() {
+    <div class="inner-panel">
+        <h2>Function Call Stats</h2>
+        <table cellspacing="0" cellpadding="5" class="trace">
+        	<tr>
+        		<th>
+        		    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=name">
+        		        Function
+        	        </a>
+                </th>
+                <th>Source</th>
+        		<th class="trace-calls">
+        		    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=calls">
+        		        Calls
+        	        </a>
+        		</th>
+        		<th class="trace-elapsed">
+        		    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=time">
+        		        Elapsed time in sec.
+        	        </a>
+        	    </th>
+        	</tr>
+        	{prof:display-functions($trace, $sort)}
+        </table>
+	</div>
+};
+
+declare function prof:queries($trace as element(), $sort as xs:string) as element() {
+    <div class="inner-panel">
+        <h2>Main Query Stats</h2>
+        <table cellspacing="0" cellpadding="5" class="trace">
+        	<tr>
+        		<th>
+        		    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=name">
+        		        Source
+        	        </a>
+                </th>
+        		<th class="trace-calls">
+        		    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=calls">
+        		        Calls
+        	        </a>
+        		</th>
+        		<th class="trace-elapsed">
+        		    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=time">
+        		        Elapsed time in sec.
+        	        </a>
+        	    </th>
+        	</tr>
+        	{prof:display-queries($trace, $sort)}
+        </table>
+    </div>
+};
+
+declare function prof:display-functions($trace as element(), $sort as xs:string) as element()+ {
     if ($trace/prof:function) then
         for $func in $trace/prof:function
         order by prof:sort($func, $sort) descending
@@ -66,11 +96,31 @@ declare function prof:display($trace as element(), $sort as xs:string) as elemen
         </tr>
 };
 
-declare function prof:sort($function as element(prof:function), $sort as xs:string) {
+declare function prof:display-queries($trace as element(), $sort as xs:string) as element()+ {
+    let $sort := if ($sort eq "name") then "source" else $sort
+    return
+        if ($trace/prof:query) then
+            for $query in $trace/prof:query
+            order by prof:sort($query, $sort) descending
+            return
+                <tr>
+                    <td>{replace($query/@source, "^.*/([^/]+)$", "$1")}</td>
+                    <td class="trace-calls">{$query/@calls/string()}</td>
+                    <td class="trace-elapsed">{$query/@elapsed/string()}</td>
+                </tr>
+        else
+            <tr>
+                <td colspan="3">No statistics available or tracing not enabled.</td>
+            </tr>
+    };
+
+declare function prof:sort($function as element(), $sort as xs:string) {
     if ($sort eq "name") then
         $function/@name
     else if ($sort eq "calls") then
         xs:int($function/@calls)
+    else if ($sort eq "source") then
+        $function/@source
     else
         xs:double($function/@elapsed)
 };
