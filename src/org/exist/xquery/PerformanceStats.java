@@ -44,13 +44,14 @@ public class PerformanceStats {
 
     private static class QueryStats {
 
-        String source = "";
+        String source;
         long executionTime = 0;
         int callCount = 1;
 
         QueryStats(String source) {
-            if (source != null)
-                this.source = source;
+            this.source = source;
+            if (this.source == null)
+                this.source = "";
         }
 
         public void recordCall(long elapsed) {
@@ -97,7 +98,7 @@ public class PerformanceStats {
     }
 
     private HashMap<String, QueryStats> queries = new HashMap<String, QueryStats>();
-    private HashMap<String, FunctionStats> functions = new HashMap<String, FunctionStats>();
+    private HashMap<FunctionStats, FunctionStats> functions = new HashMap<FunctionStats, FunctionStats>();
 
     private boolean enabled = false;
 
@@ -136,12 +137,11 @@ public class PerformanceStats {
     }
 
     public void recordFunctionCall(QName qname, String source, long elapsed) {
-        String key = createKey(qname, source);
-        FunctionStats stats = functions.get(key);
+        FunctionStats newStats = new FunctionStats(source, qname);
+        FunctionStats stats = functions.get(newStats);
         if (stats == null) {
-            stats = new FunctionStats(source, qname);
-            stats.executionTime = elapsed;
-            functions.put(key, stats);
+            newStats.executionTime = elapsed;
+            functions.put(newStats, newStats);
         } else {
             stats.recordCall(elapsed);
         }
@@ -158,10 +158,9 @@ public class PerformanceStats {
             }
         }
         for (FunctionStats other: otherStats.functions.values()) {
-            String key = createKey(other.qname, other.source);
-            FunctionStats mine = functions.get(key);
+            FunctionStats mine = functions.get(other);
             if (mine == null) {
-                functions.put(key, other);
+                functions.put(other, other);
             } else {
                 mine.callCount += other.callCount;
                 mine.executionTime += other.executionTime;
