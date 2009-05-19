@@ -20,10 +20,12 @@
         file="jgoethe.xml" filepath="${benchmark.data}/jgoethe"/>
     <available property="benchmark.dblp.available"
         file="dblp.xml" filepath="${benchmark.data}/dblp"/>
+    <available property="benchmark.imdi.available"
+        file="01_Content.imdi" filepath="${benchmark.data}/imdi"/>
 
     <target name="benchmark" depends="run-benchmark, post-process-benchmark"/>
 
-    <target name="run-benchmark" depends="test-compile, install-data-goethe, install-data-dblp"
+    <target name="run-benchmark" depends="test-compile, install-data-goethe, install-data-dblp, install-data-imdi"
             xmlns:test="http://exist-db.org/test">
         <typedef resource="org/exist/performance/ant/antlib.xml" uri="http://exist-db.org/test">
             <classpath>
@@ -99,5 +101,20 @@
         <delete file="${benchmark.data}/dblp.xml.gz" failonerror="false"/>
         <available property="benchmark.dblp.available"
             file="dblp.xml" filepath="${benchmark.data}/dblp"/>
+    </target>
+
+    <target name="install-data-imdi" unless="benchmark.imdi.available">
+        <echo>Installing Test Data: "IMDI metadata snapshot from corpus1.mpi.nl"</echo>
+        <echo>-------------------------</echo>
+        <echo>Downloading XML data: this may take a few minutes ...</echo>
+        <mkdir dir="${benchmark.data}"/>
+        <mkdir dir="${benchmark.data}/imdi"/>
+        <get src="http://spraakdata.gu.se/sveljo/exist-db.org/data/imdi-snapshot.tar.bz2"
+            dest="${benchmark.data}/imdi-snapshot.tar.bz2" verbose="on"/>
+        <untar src="${benchmark.data}/imdi-snapshot.tar.bz2"
+            dest="${benchmark.data}/imdi" compression="bzip2" />
+        <delete file="${benchmark.data}/imdi-snapshot.tar.bz2" failonerror="false"/>
+        <available property="benchmark.imdi.available"
+            file="01_Content.imdi" filepath="${benchmark.data}/imdi"/>
     </target>
 </project>
