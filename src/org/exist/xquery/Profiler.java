@@ -73,8 +73,6 @@ public class Profiler {
 
     private PerformanceStats stats;
 
-    private Stack<Long> functionStack;
-
     private long queryStart = 0;
 
     private BrokerPool pool;
@@ -82,7 +80,6 @@ public class Profiler {
     public Profiler(BrokerPool pool) {
         this.pool = pool;
         this.stats = new PerformanceStats(pool);
-        this.functionStack = new Stack<Long>();
     }
 
     /**
@@ -154,18 +151,11 @@ public class Profiler {
         stats.recordQuery(context.getSourceKey(), (System.currentTimeMillis() - queryStart));
     }
 
-    public final void traceFunctionStart(FunctionCall function) {
-        functionStack.push(System.currentTimeMillis());
+    public final void traceFunctionEnd(FunctionCall function, long elapsed) {
+        stats.recordFunctionCall(function.getSignature().getName(), function.getContext().getSourceKey(),
+                elapsed);
     }
-
-    public final void traceFunctionEnd(FunctionCall function) {
-        if (functionStack.isEmpty()) // may happen if profiling was enabled in the middle of a query
-            return;
-        long startTime = functionStack.pop();
-        stats.recordFunctionCall(function.getSignature().getName(), function.getContext().getSourceKey(), 
-            (System.currentTimeMillis() - startTime));
-    }
-
+    
     private void save() {
         if (pool != null) {
             pool.getPerformanceStats().merge(stats);
@@ -367,7 +357,6 @@ public class Profiler {
             save();
             stats.reset();
         }
-        functionStack.clear();
     }
     
     private void printPosition(Expression expr) {

@@ -230,8 +230,6 @@ public class FunctionCall extends Function {
     }
 
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) throws XPathException {
-        if (context.getProfiler().traceFunctions())
-            context.getProfiler().traceFunctionStart(this);
         if (context.isProfilingEnabled()) {
             context.getProfiler().start(this);     
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -266,16 +264,17 @@ public class FunctionCall extends Function {
             context.functionStart(functionDef.getSignature());
             LocalVariable mark = context.markLocalVariables(true);
             try {
+                long start = System.currentTimeMillis();
     			Sequence returnSeq = expression.eval(contextSequence, contextItem);
-    			while (returnSeq instanceof DeferredFunctionCall && 
+    			while (returnSeq instanceof DeferredFunctionCall &&
     					functionDef.getSignature().equals(((DeferredFunctionCall)returnSeq).getSignature())) {
 //    				 LOG.debug("Executing function: " + functionDef.getSignature());
     				returnSeq = ((DeferredFunctionCall) returnSeq).execute();
     			}
+                if (context.getProfiler().traceFunctions())
+                    context.getProfiler().traceFunctionEnd(this, (System.currentTimeMillis() - start));
                 if (context.isProfilingEnabled())
                     context.getProfiler().end(this, "", returnSeq);
-                if (context.getProfiler().traceFunctions())
-                    context.getProfiler().traceFunctionEnd(this);
     			return returnSeq;
     		} catch(XPathException e) {
     			if(e.getLine() == 0)
