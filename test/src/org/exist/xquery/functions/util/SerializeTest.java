@@ -169,7 +169,7 @@ public class SerializeTest {
 
            result = service.query(query);
            r = (String) result.getResource(0).getContent();
-           //System.out.println(r);
+           System.out.println(r);
            assertXpathEvaluatesTo("1.0","/test/auth/@version",r);
 
         } catch (IOException ioe) {
@@ -177,7 +177,7 @@ public class SerializeTest {
         } catch (SAXException sae) {
                 fail(sae.getMessage());
         } catch (XMLDBException e) {
-            System.out.println("testSerializeIndent(): " + e);
+            System.out.println("testSerializeXincludes(): " + e);
             fail(e.getMessage());
         }
 

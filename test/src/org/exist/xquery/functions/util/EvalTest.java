@@ -90,7 +90,7 @@ public class EvalTest {
             assertEquals("3", r);
 
         } catch (XMLDBException e) {
-            System.out.println("testEvalWithContext(): " + e);
+            System.out.println("testEvalInline(): " + e);
             fail(e.getMessage());
         }
 
@@ -114,7 +114,7 @@ public class EvalTest {
             assertEquals("true", r);
 
         } catch (XMLDBException e) {
-            System.out.println("testEvalWithContext(): " + e);
+            System.out.println("testEvalWithContextVariable(): " + e);
             fail(e.getMessage());
         }
 
@@ -140,7 +140,7 @@ public class EvalTest {
 
 
         } catch (XMLDBException e) {
-            System.out.println("testEvalWithContext(): " + e);
+            System.out.println("testEvalSupplyingContext(): " + e);
             fail(e.getMessage());
         }
 
@@ -167,7 +167,7 @@ public class EvalTest {
 
 
         } catch (XMLDBException e) {
-            System.out.println("testEvalWithContext(): " + e);
+            System.out.println("testEvalSupplyingContextAndVariable(): " + e);
             fail(e.getMessage());
         }
 
