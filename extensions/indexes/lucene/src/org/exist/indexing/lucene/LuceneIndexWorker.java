@@ -612,6 +612,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
+            // by default, Lucene only indexes the first 10,000 terms in a field
+            writer.setMaxFieldLength(Integer.MAX_VALUE);
             for (int i = 0; i < nodesToWrite.size(); i++) {
                 PendingDoc pending = (PendingDoc) nodesToWrite.get(i);
 
