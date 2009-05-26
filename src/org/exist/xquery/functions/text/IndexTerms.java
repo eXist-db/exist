@@ -27,6 +27,7 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
+import org.exist.storage.FulltextIndexSpec;
 import org.exist.util.Occurrences;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -175,7 +176,8 @@ public class IndexTerms extends BasicFunction {
             final org.exist.collections.Collection collection = (org.exist.collections.Collection) i.next();
             final IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
-                final List qnames = idxConf.getIndexedQNames();
+                FulltextIndexSpec fIdxConf = idxConf.getFulltextIndexSpec();
+                final List qnames = fIdxConf.getIndexedQNames();
                 for (int j = 0; j < qnames.size(); j++) {
                     final QName qName = (QName) qnames.get(j);
                     indexes.add(qName);
