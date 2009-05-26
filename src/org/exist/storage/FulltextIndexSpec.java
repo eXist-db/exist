@@ -165,6 +165,15 @@ public class FulltextIndexSpec {
         mixedPath = (NodePath[]) mixedList.toArray(ARRAY_TYPE); 
     }
 
+    public List getIndexedQNames() {
+        ArrayList qnames = new ArrayList(qnameSpecs.size());
+        for (Iterator i = qnameSpecs.keySet().iterator(); i.hasNext(); ) {
+            QName qname = (QName) i.next();
+            qnames.add(qname);
+        }
+        return qnames;
+    }
+
 	/**
 	 * @return False if all elements are indexed, True if indexation is selective.
 	 */
