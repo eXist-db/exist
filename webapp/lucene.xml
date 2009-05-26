@@ -8,7 +8,7 @@
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>New Full Text Index</title>
+        <title>Lucene-based Full Text Index</title>
         <section>
             <title>Introduction</title>
 
@@ -115,6 +115,11 @@ include.index.lucene = true
                 / and // to denote a child or descendant step, plus the wildcard to match an
                 arbitrary element.</para>
 
+            <synopsis>//SPEECH/LINE</synopsis>
+
+            <para>only indexes <sgmltag>LINE</sgmltag> children of <sgmltag>SPEECH</sgmltag>
+                parents.</para>
+
             <synopsis>//SPEECH/*</synopsis>
 
             <para>will index all child elements of SPEECH, while</para>
@@ -127,10 +132,49 @@ include.index.lucene = true
                 query engine often needs to decide at compile time if an index can be used or not,
                 which means that we have to limit the possible configuration choices.</para>
 
+            <para>It is important to <emphasis>choose the right context</emphasis> for your index,
+                which has to be the same as in your query. In the two examples above, the index will
+                be created on the children or descendants of <sgmltag>SPEECH</sgmltag>, not the
+                SPEECH tag itself. This means you can query for the LINE, SPEAKER or STAGEDIR
+                children of SPEECH, but if you search for SPEECH, you won't get any results.</para>
+
+            <para>However, it is possible to define indexes on nested elements. For example, assume
+                you have a document with encoded place names:</para>
+
+            <example>
+                <title>Paragraph with place name</title>
+                <programlisting><markup><![CDATA[<p>He loves <placeName>Paris</placeName>.</p>]]></markup></programlisting>
+            </example>
+
+            <para>For a general query you probably want to search through all paragraphs. However,
+                you may also want to provide an advanced search option, which allows the user to
+                restrict his query to place names. To make this possible, simply define an index on
+                placeName as well:</para>
+
+            <example>
+                <title>collection.xconf fragment</title>
+                <programlisting><markup><![CDATA[<lucene>
+    <text qname="p"/>
+    <text qname="placeName"/>
+</lucene>]]></markup></programlisting>
+            </example>
+
+            <para>Based on this setup, you'll be able to query for the word 'Paris' anywhere in a
+                paragraph:</para>
+
+            <synopsis language="xquery">//p[ft:query(., 'paris')]</synopsis>
+
+            <para>as well as 'Paris' occurring within a <sgmltag>placeName</sgmltag>:</para>
+
+            <synopsis language="xquery">//p[ft:query(placeName, 'paris')]</synopsis>
+
             <section>
                 <title>Whitespace Treatment and Ignored Content</title>
 
-                <para>By default, eXist's indexer assumes that element boundaries break a word or
+                <section>
+                    <title>Inlined elements</title>
+                    
+                    <para>By default, eXist's indexer assumes that element boundaries break a word or
                     token. For example, if you have an element:</para>
 
                 <example>
@@ -155,22 +199,52 @@ include.index.lucene = true
                     by telling eXist which nodes are "inline" nodes. The example configuration above
                     defines:</para>
 
-                <synopsis><![CDATA[<inline qname="b"/>]]></synopsis>
+                <synopsis><![CDATA[<inline qname="b"/>]]></synopsis></section>
 
-                <para>Also, it is sometimes necessary to skip the content of an inlined element,
-                    which can appear in the middle of a text sequence you want to index. Note or
-                    footnotes are a good example:</para>
+                <section>
+                    <title>Ignored elements</title>
+                    
+                    <para>Also, it is sometimes necessary to skip the content of an inlined element,
+                    which can appear in the middle of a text sequence you want to index. Notes or
+                    are a good example:</para>
 
                 <example>
-                    <title>Paragraph With Inline Footnote</title>
+                    <title>Paragraph With Inline Note</title>
                     <programlisting><markup><![CDATA[<p>This is a paragraph
-                        <footnote>containing an inline footnote</footnote>.</p>]]></markup></programlisting>
+<note>containing an inline note</note>.</p>]]></markup></programlisting>
                 </example>
 
                 <para>Use an <sgmltag>ignore</sgmltag> element in the collection configuration to
-                    have eXist ignore the footnote:</para>
+                    have eXist ignore the note:</para>
 
-                <synopsis><![CDATA[<ignore qname="footnote"/>]]></synopsis>
+                <synopsis><![CDATA[<ignore qname="note"/>]]></synopsis>
+
+                <para>The <sgmltag>ignore</sgmltag> only applies to descendants of an indexed
+                    element. You can still create another index on the ignored element itself. For
+                    example, you can have index definitions for <sgmltag>p</sgmltag> and
+                        <sgmltag>note</sgmltag>:</para>
+
+                <example>
+                    <title>collection.xconf fragment</title>
+                    <programlisting><markup><![CDATA[<lucene>
+    <text qname="p"/>
+    <text qname="note"/>
+    <ignore qname="note"/>
+</lucene>]]></markup></programlisting>
+                </example>
+
+                <para>If <sgmltag>note</sgmltag> appears within <sgmltag>p</sgmltag>, it will not be
+                    added to the index on <sgmltag>p</sgmltag>, but only to the index on
+                        <sgmltag>note</sgmltag>. This means that the query</para>
+
+                <synopsis language="xquery">//p[ft:query(., "note")]</synopsis>
+
+                <para>may not return a hit if "note" occurs within a <sgmltag>note</sgmltag>,
+                    while</para>
+
+                <synopsis language="xquery">//p[ft:query(note, "note")] </synopsis>
+
+                <para>may still find a match.</para></section>
             </section>
 
             <section>
@@ -179,12 +253,37 @@ include.index.lucene = true
                 <para>One of the strengths of Lucene is that it allows the developer to determine
                     nearly every aspect of the text analysis. This is mostly done through analyzer
                     classes, which combine a tokenizer with a chain of filters to post-process the
-                    tokenized text. As shown in the configuration above, eXist's Lucene module does
-                    already allow different analyzers to be used for different indexes. We will
-                    certainly add more features in the future, e.g. a possibility to construct a new
-                    analyzer from a set of filters. For the time being, you can always provide your
-                    own analyzer or use one of those supplied by Lucene or compatible
-                    software.</para>
+                    tokenized text. eXist's Lucene module does already allow different analyzers to
+                    be used for different indexes.</para>
+
+                <example>
+                    <title/>
+                    <programlisting><markup><![CDATA[<lucene>
+    <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+    <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
+    <text match="//SPEECH//*"/>
+    <text qname="TITLE" analyzer="ws"/>
+</lucene>]]></markup></programlisting>
+                </example>
+
+                <para>In the example above, we define that Lucene's <ulink
+                        url="http://lucene.apache.org/java/2_4_1/api/org/apache/lucene/analysis/standard/StandardAnalyzer.html"
+                        >StandardAnalyzer</ulink> should be used by default (the
+                        <sgmltag>analyzer</sgmltag> element without <option>id</option> attribute).
+                    We provide an additional analyzer and assign it the id <option>ws</option>, by
+                    which the analyzer can be referenced in the actual index definitions.</para>
+
+                <para>The <ulink
+                        url="http://lucene.apache.org/java/2_4_1/api/org/apache/lucene/analysis/WhitespaceAnalyzer.html"
+                        >whitespace analyzer</ulink> is the most basic one. As the name says, it
+                    tokenizes the text at white space characters, but treats all other characters -
+                    including punctuation - as part of the token. The tokens are not converted to
+                    lower case and there's no stopword filter applied.</para>
+
+                <para>We will certainly add more features in the future, e.g. a possibility to
+                    construct a new analyzer from a set of filters. For the time being, you can
+                    always provide your own analyzer or use one of those supplied by Lucene or
+                    compatible software.</para>
             </section>
         </section>
 
@@ -211,9 +310,9 @@ return $m]]></programlisting>
 
             <para>Please note that the score is computed relative to the root context of the index.
                 If you created an index on SPEECH, all scores will be computed on basis of the text
-                in the SPEECH nodes, even though your actual query does only search for LINE children of 
+                in the SPEECH nodes, even though your actual query may only return LINE children of
                 SPEECH.</para>
-                
+
             <para>The Lucene module is fully supported by eXist's query-rewriting optimizer, which
                 means that the query engine can rewrite the XQuery expression to make best use of
                 the available indexes. All the rules and hints given in the <ulink url="tuning.xml"
@@ -225,10 +324,10 @@ return $m]]></programlisting>
                 <para>Lucene's default query syntax does not provide access to all available
                     features. However, eXist's <function>ft:query</function> function also accepts a
                     description of the query in XML as an alternative to passing a query string. The
-                    XML description is transformed into an internal tree of query objects, which is
-                    directly passed to Lucene for execution. This has some advantages. For example,
-                    you can specify if the order of terms should be relevant for a phrase
-                    query:</para>
+                    XML description closely mirrors Lucene's query API. It is transformed into an
+                    internal tree of query objects, which is directly passed to Lucene for
+                    execution. This has some advantages. For example, you can specify if the order
+                    of terms should be relevant for a phrase query:</para>
 
                 <example>
                     <title>Using an XML Definition of the Query</title>
@@ -241,52 +340,62 @@ return
                 </example>
 
                 <para>The following elements may occur within a query description:</para>
-                
+
                 <variablelist>
                     <varlistentry>
-                        <term><sgmltag>term</sgmltag></term>
+                        <term>
+                            <sgmltag>term</sgmltag>
+                        </term>
                         <listitem>
-                            <para>Defines a single term to be searched in the index. If the
-                                root query element contains a sequence of term
-                                elements, they will be combined as in a boolean "or" query. For example:
-                            </para>
-                            
+                            <para>Defines a single term to be searched in the index. If the root
+                                query element contains a sequence of term elements, they will be
+                                combined as in a boolean "or" query. For example: </para>
+
                             <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <term>nation</term><term>miserable</term>
     </query>
 return
 //SPEECH[ft:query(., $query)]]]></synopsis>
-                            
-                            <para>finds all SPEECH elements containing either "nation" or "miserable" or
-                                both.</para>
+
+                            <para>finds all SPEECH elements containing either "nation" or
+                                "miserable" or both.</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term><sgmltag>bool</sgmltag></term>
+                        <term>
+                            <sgmltag>bool</sgmltag>
+                        </term>
                         <listitem>
-                            <para>Constructs a boolean query from its children. Each child element may
-                                have an occurrance indicator, which could be either <option>must</option>,
-                                <option>should</option> or <option>not</option>:</para>
-                            
+                            <para>Constructs a boolean query from its children. Each child element
+                                may have an occurrance indicator, which could be either
+                                    <option>must</option>, <option>should</option> or
+                                    <option>not</option>:</para>
+
                             <variablelist>
                                 <varlistentry>
                                     <term>must</term>
-                                    <listitem><para>this part of the query <emphasis>must</emphasis>
-                                        be matched</para></listitem>
+                                    <listitem>
+                                        <para>this part of the query <emphasis>must</emphasis> be
+                                            matched</para>
+                                    </listitem>
                                 </varlistentry>
                                 <varlistentry>
                                     <term>should</term>
-                                    <listitem><para>this part of the query <emphasis>should</emphasis>
-                                        be matched, but doesn't need to</para></listitem>
+                                    <listitem>
+                                        <para>this part of the query <emphasis>should</emphasis> be
+                                            matched, but doesn't need to</para>
+                                    </listitem>
                                 </varlistentry>
                                 <varlistentry>
                                     <term>not</term>
-                                    <listitem><para>this part of the query <emphasis>must not</emphasis>
-                                        be matched</para></listitem>
+                                    <listitem>
+                                        <para>this part of the query <emphasis>must not</emphasis>
+                                            be matched</para>
+                                    </listitem>
                                 </varlistentry>
                             </variablelist>
-                            
+
                             <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <bool><term occur="must">boil</term><term occur="should">bubble</term></bool>
@@ -295,33 +404,35 @@ return //SPEECH[ft:query(LINE, $query)]]]></synopsis>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term><sgmltag>phrase</sgmltag></term>
+                        <term>
+                            <sgmltag>phrase</sgmltag>
+                        </term>
                         <listitem>
-                            <para>Searches for a group of terms occurring in the correct order.
-                                The element may either contain explicit <sgmltag>term</sgmltag>
-                                elements or text content. Text will be automatically tokenized into 
-                                a sequence of terms. For example:</para>
-                            
+                            <para>Searches for a group of terms occurring in the correct order. The
+                                element may either contain explicit <sgmltag>term</sgmltag> elements
+                                or text content. Text will be automatically tokenized into a
+                                sequence of terms. For example:</para>
+
                             <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <phrase>cauldron boil</phrase>
     </query>
 return //SPEECH[ft:query(., $query)]
 ]]></synopsis>
-              
+
                             <para>has the same effect as:</para>
-                            
+
                             <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <phrase><term>cauldron</term><term>boil</term></phrase>
     </query>
 return //SPEECH[ft:query(., $query)]
 ]]></synopsis>
-                            
-                            <para>Attribute <parameter>slop</parameter> can be used for a
-                                proximity search: Lucene will try to find terms which are within the 
-                                specified distance:</para>
-                            
+
+                            <para>Attribute <parameter>slop</parameter> can be used for a proximity
+                                search: Lucene will try to find terms which are within the specified
+                                distance:</para>
+
                             <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <phrase slop="10"><term>frog</term><term>dog</term></phrase>
@@ -331,42 +442,47 @@ return //SPEECH[ft:query(., $query)]
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term><sgmltag>near</sgmltag></term>
+                        <term>
+                            <sgmltag>near</sgmltag>
+                        </term>
                         <listitem>
-                            <para><sgmltag>near</sgmltag> is a powerful alternative to <sgmltag>phrase</sgmltag>
-                            and one of the features not available through the standard Lucene query parser.</para>
-                            
-                            <para>If the element has text content only, it will be tokenized into terms and the expression
-                                behaves like <sgmltag>phrase</sgmltag>. Otherwise it may contain any combination of
-                                <sgmltag>term</sgmltag>, <sgmltag>first</sgmltag> and nested <sgmltag>near</sgmltag>
-                                elements. This makes it possible to search for two sequences of terms which are within
-                                a specific distance. For example:</para>
-                            
+                            <para><sgmltag>near</sgmltag> is a powerful alternative to
+                                    <sgmltag>phrase</sgmltag> and one of the features not available
+                                through the standard Lucene query parser.</para>
+
+                            <para>If the element has text content only, it will be tokenized into
+                                terms and the expression behaves like <sgmltag>phrase</sgmltag>.
+                                Otherwise it may contain any combination of <sgmltag>term</sgmltag>,
+                                    <sgmltag>first</sgmltag> and nested <sgmltag>near</sgmltag>
+                                elements. This makes it possible to search for two sequences of
+                                terms which are within a specific distance. For example:</para>
+
                             <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <near slop="20"><term>snake</term><near>tongue dog</near></near>
     </query>
 return //SPEECH[ft:query(., $query)]]]></synopsis>
-                            
+
                             <para>Element <sgmltag>first</sgmltag> matches a span against the start
                                 of the text in the context node. It takes an optional attribute
-                                <parameter>end</parameter> to specify the maximum distance from the
-                                start of the text. For example:</para>
-                                
-                                <synopsis language="xquery"><![CDATA[let $query :=
+                                    <parameter>end</parameter> to specify the maximum distance from
+                                the start of the text. For example:</para>
+
+                            <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <near slop="50"><first end="2"><near>second witch</near></first><near>tongue dog</near></near>
     </query>
     return //SPEECH[ft:query(., $query)]]]></synopsis>
-                            
+
                             <para>As shown above, the content of <sgmltag>first</sgmltag> can again
-                                be text, a <sgmltag>term</sgmltag> or <sgmltag>near</sgmltag>.</para>
-                            
+                                be text, a <sgmltag>term</sgmltag> or
+                                <sgmltag>near</sgmltag>.</para>
+
                             <para>Contrary to <sgmltag>phrase</sgmltag>, <sgmltag>near</sgmltag> can
                                 be told to ignore the order of its components. Use parameter
-                                <parameter>ordered="yes|no"</parameter> to change near's behaviour.
-                                For example:</para>
-                            
+                                    <parameter>ordered="yes|no"</parameter> to change near's
+                                behaviour. For example:</para>
+
                             <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <near slop="100" ordered="no"><term>snake</term><term>bake</term></near>
@@ -376,7 +492,7 @@ return //SPEECH[ft:query(., $query)]]]></synopsis>
                     </varlistentry>
                 </variablelist>
                 <para>All elements in a query may have an optional <parameter>boost</parameter>
-                    parameter (a float value). The score of the nodes matching the corresponding 
+                    parameter (a float value). The score of the nodes matching the corresponding
                     query part will be multiplied by the <emphasis>boost</emphasis>.</para>
             </section>
         </section>
