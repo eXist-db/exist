@@ -60,7 +60,11 @@ public class XMLDBMoveTask extends AbstractXMLDBTask
       Collection base = DatabaseManager.getCollection(uri, user, password);
 
       if(base==null){
-         throw new BuildException("Collection " + uri + " could not be found.");
+    	  String msg="Collection " + uri + " could not be found.";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
       }
 
       log("Create collection management service for collection " + base.getName(), Project.MSG_DEBUG);
@@ -69,9 +73,15 @@ public class XMLDBMoveTask extends AbstractXMLDBTask
       {
         log("Moving resource: " + resource, Project.MSG_INFO);
         Resource res = base.getResource(resource);
-        if (res == null)
-          throw new BuildException("Resource " + resource + " not found.");
-        service.moveResource(resource, destination, name);
+        if (res == null) {
+      	  String msg="Resource " + resource + " not found.";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
+        } else {
+        	service.moveResource(resource, destination, name);
+        }
       } else
       {
         log("Moving collection: " + collection, Project.MSG_INFO);
@@ -79,7 +89,11 @@ public class XMLDBMoveTask extends AbstractXMLDBTask
       }
     } catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception during remove: " + e.getMessage(), e);
+  	  String msg="XMLDB exception during move: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 

@@ -23,6 +23,7 @@
 package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.exist.backup.Backup;
 import org.exist.xmldb.XmldbURI;
 
@@ -54,7 +55,11 @@ public class BackupTask extends AbstractXMLDBTask
     } catch (Exception e)
     {
       e.printStackTrace();
-      throw new BuildException("Exception during backup: " + e.getMessage(), e);
+	  String msg="Exception during backup: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 

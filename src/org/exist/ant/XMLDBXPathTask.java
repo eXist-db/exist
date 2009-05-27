@@ -90,67 +90,75 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
         .getCollection(uri, user, password);
 
       if (base == null){
-        throw new BuildException("Collection " + uri + " could not be found.");
-      }
-
-      XPathQueryService service = (XPathQueryService) base.getService(
-        "XPathQueryService", "1.0");
-      // set pretty-printing on
-      service.setProperty(OutputKeys.INDENT, "yes");
-      service.setProperty(OutputKeys.ENCODING, "UTF-8");
-
-      if (namespace != null) {
-        log("Using namespace: " + namespace, Project.MSG_DEBUG);
-        service.setNamespace("ns", namespace);
-      }
-
-      ResourceSet results = null;
-      if (resource != null) {
-        log("Query resource: " + resource, Project.MSG_DEBUG);
-        results = service.queryResource(resource, query);
+    	  String msg="Collection " + uri + " could not be found.";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
       } else {
-        log("Query collection", Project.MSG_DEBUG);
-        results = service.query(query);
-      }
-      log("Found " + results.getSize() + " results", Project.MSG_INFO);
-
-      if (destDir != null && results != null) {
-        log("write results to directory " + destDir.getAbsolutePath(),
-          Project.MSG_INFO);
-        ResourceIterator iter = results.getIterator();
-        XMLResource res = null;
-
-        log(
-          "Writing results to directory "
-            + destDir.getAbsolutePath(), Project.MSG_DEBUG);
-        while (iter.hasMoreResources()) {
-          res = (XMLResource) iter.nextResource();
-          log("Writing resource " + res.getId(), Project.MSG_DEBUG);
-          writeResource(res, destDir);
-        }
-      } else if (outputproperty != null) {
-        if (count) {
-          getProject().setNewProperty(outputproperty,
-            String.valueOf(results.getSize()));
-        } else {
-          ResourceIterator iter = results.getIterator();
-          XMLResource res = null;
-          String result = null;
-          while (iter.hasMoreResources()) {
-            res = (XMLResource) iter.nextResource();
-            result = res.getContent().toString();
-          }
-          getProject().setNewProperty(outputproperty, result);
-        }
+	      XPathQueryService service = (XPathQueryService) base.getService(
+	        "XPathQueryService", "1.0");
+	      // set pretty-printing on
+	      service.setProperty(OutputKeys.INDENT, "yes");
+	      service.setProperty(OutputKeys.ENCODING, "UTF-8");
+	
+	      if (namespace != null) {
+	        log("Using namespace: " + namespace, Project.MSG_DEBUG);
+	        service.setNamespace("ns", namespace);
+	      }
+	
+	      ResourceSet results = null;
+	      if (resource != null) {
+	        log("Query resource: " + resource, Project.MSG_DEBUG);
+	        results = service.queryResource(resource, query);
+	      } else {
+	        log("Query collection", Project.MSG_DEBUG);
+	        results = service.query(query);
+	      }
+	      log("Found " + results.getSize() + " results", Project.MSG_INFO);
+	
+	      if (destDir != null && results != null) {
+	        log("write results to directory " + destDir.getAbsolutePath(),
+	          Project.MSG_INFO);
+	        ResourceIterator iter = results.getIterator();
+	        XMLResource res = null;
+	
+	        log(
+	          "Writing results to directory "
+	            + destDir.getAbsolutePath(), Project.MSG_DEBUG);
+	        while (iter.hasMoreResources()) {
+	          res = (XMLResource) iter.nextResource();
+	          log("Writing resource " + res.getId(), Project.MSG_DEBUG);
+	          writeResource(res, destDir);
+	        }
+	      } else if (outputproperty != null) {
+	        if (count) {
+	          getProject().setNewProperty(outputproperty,
+	            String.valueOf(results.getSize()));
+	        } else {
+	          ResourceIterator iter = results.getIterator();
+	          XMLResource res = null;
+	          String result = null;
+	          while (iter.hasMoreResources()) {
+	            res = (XMLResource) iter.nextResource();
+	            result = res.getContent().toString();
+	          }
+	          getProject().setNewProperty(outputproperty, result);
+	        }
+	      }
       }
     } catch (XMLDBException e) {
-      throw new BuildException(
-        "XMLDB exception caught while executing query: "
-          + e.getMessage(), e);
+  	  String msg="XMLDB exception caught while executing query: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     } catch (IOException e) {
-      throw new BuildException(
-        "XMLDB exception caught while writing destination file: "
-          + e.getMessage(), e);
+  	  String msg="XMLDB exception caught while writing destination file: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 
@@ -185,7 +193,11 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
 
       SerializerPool.getInstance().returnObject(serializer);
     } else {
-      throw new BuildException("Destionation target does not exist.");
+    	  String msg="Destination target does not exist.";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
     }
   }
 

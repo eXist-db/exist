@@ -48,10 +48,18 @@ public class AddUserTask extends UserTask
       log("Adding user " + name, Project.MSG_INFO);
       service.addUser(usr);
     } catch (XMLDBException e) {
-      throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
+  	  String msg="XMLDB exception caught: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     } catch (URISyntaxException e) {
-    throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
-  }
+  	  String msg="URI syntax exception caught: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
+	}
   }
 
   public void setName(String name)

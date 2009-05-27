@@ -23,6 +23,7 @@
 package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -65,16 +66,23 @@ public class XMLDBQueryTask extends AbstractXMLDBTask {
 			Collection collection = DatabaseManager.getCollection(uri, user, password);
 
             if(collection==null){
-               throw new BuildException("Collection " + uri + " could not be found.");
+          	  String msg="Collection " + uri + " could not be found.";
+        	  if(failonerror)
+        		  throw new BuildException(msg);
+        	  else
+        		  log(msg,Project.MSG_ERR);
+            } else {
+	            XPathQueryService service = (XPathQueryService)
+					collection.getService("XPathQueryService", "1.0");
+				ResourceSet results = service.query(query);
+				log("Found " + results.getSize());
             }
-
-            XPathQueryService service = (XPathQueryService)
-				collection.getService("XPathQueryService", "1.0");
-			ResourceSet results = service.query(query);
-			log("Found " + results.getSize());
 		} catch (XMLDBException e) {
-			throw new BuildException("XMLDB exception caught while executing query: " + e.getMessage(),
-				e);
+	    	  String msg="XMLDB exception caught while executing query: " + e.getMessage();
+	    	  if(failonerror)
+	    		  throw new BuildException(msg,e);
+	    	  else
+	    		  log(msg,e,Project.MSG_ERR);
 		}
 	}
 

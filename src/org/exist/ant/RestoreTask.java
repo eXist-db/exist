@@ -51,53 +51,78 @@ public class RestoreTask extends AbstractXMLDBTask
     if (dir == null && dirSet == null && file == null)
       throw new BuildException("Missing required argument: either dir, dirset or file required");
 
-    if (dir != null && !dir.canRead())
-      throw new BuildException("Cannot read restore file: " + dir.getAbsolutePath());
-
-    registerDatabase();
-    try
-    {
-      if (dir != null)
-      {
-        log("Restoring from " + dir.getAbsolutePath(), Project.MSG_INFO);
-        File file = new File(dir, "__contents__.xml");
-        if (!file.exists())
-        {
-          throw new BuildException("Did not found file "+file.getAbsolutePath());
-        }
-        Restore restore = new Restore(user, password, restorePassword, file, uri);
-        restore.restore(false, null);
-      } else if (dirSet != null) {
-        DirectoryScanner scanner = dirSet.getDirectoryScanner(getProject());
-        scanner.scan();
-        String[] files = scanner.getIncludedFiles();
-        log("Found " + files.length + " files.\n");
-
-        File file = null;
-        for (int i = 0; i < files.length; i++)
-        {
-          dir = new File(scanner.getBasedir() + File.separator + files[i]);
-          file = new File(dir, "__contents__.xml");
-          if (!file.exists())
-          {
-            throw new BuildException("Did not found file "+file.getAbsolutePath());
-          }
-          log("Restoring from " + file.getAbsolutePath() + " ...\n");
-          // TODO subdirectories as sub-collections?
-          Restore restore = new Restore(user, password, restorePassword, file, uri);
-          restore.restore(false, null);
-        }
-      } else if (file != null) {
-          log("Restoring from " + file.getAbsolutePath(), Project.MSG_INFO);
-          if (!file.exists())
-              throw new BuildException("File not found: " + file.getAbsolutePath());
-          Restore restore = new Restore(user, password, restorePassword, file, uri);
-          restore.restore(false, null);
-      }
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      throw new BuildException("Exception during restore: " + e.getMessage(), e);
+    if (dir != null && !dir.canRead()) {
+  	  String msg="Cannot read restore file: " + dir.getAbsolutePath();
+	  if(failonerror)
+		  throw new BuildException(msg);
+	  else
+		  log(msg,Project.MSG_ERR);
+    } else {
+	    registerDatabase();
+	    try
+	    {
+	      if (dir != null)
+	      {
+	        log("Restoring from " + dir.getAbsolutePath(), Project.MSG_INFO);
+	        File file = new File(dir, "__contents__.xml");
+	        if (!file.exists())
+	        {
+	      	  String msg="Did not found file "+file.getAbsolutePath();
+	    	  if(failonerror)
+	    		  throw new BuildException(msg);
+	    	  else
+	    		  log(msg,Project.MSG_ERR);
+	        } else {
+		        Restore restore = new Restore(user, password, restorePassword, file, uri);
+		        restore.restore(false, null);
+	        }
+	      } else if (dirSet != null) {
+	        DirectoryScanner scanner = dirSet.getDirectoryScanner(getProject());
+	        scanner.scan();
+	        String[] files = scanner.getIncludedFiles();
+	        log("Found " + files.length + " files.\n");
+	
+	        File file = null;
+	        for (int i = 0; i < files.length; i++)
+	        {
+	          dir = new File(scanner.getBasedir() + File.separator + files[i]);
+	          file = new File(dir, "__contents__.xml");
+	          if (!file.exists())
+	          {
+	        	  String msg="Did not found file "+file.getAbsolutePath();
+	        	  if(failonerror)
+	        		  throw new BuildException(msg);
+	        	  else
+	        		  log(msg,Project.MSG_ERR);
+	          } else {
+		          log("Restoring from " + file.getAbsolutePath() + " ...\n");
+		          // TODO subdirectories as sub-collections?
+		          Restore restore = new Restore(user, password, restorePassword, file, uri);
+		          restore.restore(false, null);
+	          }
+	        }
+	      } else if (file != null) {
+	          log("Restoring from " + file.getAbsolutePath(), Project.MSG_INFO);
+	          if (!file.exists()) {
+	        	  String msg="File not found: " + file.getAbsolutePath();
+	        	  if(failonerror)
+	        		  throw new BuildException(msg);
+	        	  else
+	        		  log(msg,Project.MSG_ERR);
+	          } else {
+		          Restore restore = new Restore(user, password, restorePassword, file, uri);
+		          restore.restore(false, null);
+	          }
+	      }
+	    } catch (Exception e)
+	    {
+	      e.printStackTrace();
+    	  String msg="Exception during restore: " + e.getMessage();
+    	  if(failonerror)
+    		  throw new BuildException(msg,e);
+    	  else
+    		  log(msg,e,Project.MSG_ERR);
+	    }
     }
   }
 

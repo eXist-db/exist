@@ -59,8 +59,11 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
           XMLResource res = (XMLResource) base.getResource(resource);
           if (res == null)
           {
-            if (failonerror)
-              throw new BuildException("Resource " + resource + " not found.");
+        	  String msg="Resource " + resource + " not found.";
+        	  if(failonerror)
+        		  throw new BuildException(msg);
+        	  else
+        		  log(msg,Project.MSG_ERR);
           } else
           {
             writeResource(res, destFile);
@@ -75,12 +78,18 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
         }
       } catch (XMLDBException e)
       {
-        if (failonerror)
-          throw new BuildException("XMLDB exception caught while executing query: " + e.getMessage(), e);
+    	  String msg="XMLDB exception caught while executing query: " + e.getMessage();
+    	  if(failonerror)
+    		  throw new BuildException(msg,e);
+    	  else
+    		  log(msg,e,Project.MSG_ERR);
       } catch (IOException e)
       {
-        if (failonerror)
-          throw new BuildException("XMLDB exception caught while writing destination file: " + e.getMessage(), e);
+    	  String msg="XMLDB exception caught while writing destination file: " + e.getMessage();
+    	  if(failonerror)
+    		  throw new BuildException(msg,e);
+    	  else
+    		  log(msg,e,Project.MSG_ERR);
       }
     }
   }
@@ -148,7 +157,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
 
   private void writeResource(XMLResource resource, File dest) throws IOException, XMLDBException
   {
-    if (dest != null || !dest.exists())
+    if (dest != null && !dest.exists())
     {
       Properties outputProperties = new Properties();
       outputProperties.setProperty(OutputKeys.INDENT, "yes");
@@ -177,7 +186,11 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
       writer.close();
     } else
     {
-      throw new BuildException("Destionation target does not exist.");
+  	  String msg="Destination target "+((dest!=null)?(dest.getAbsolutePath()+" "):"")+"does not exist.";
+	  if(failonerror)
+		  throw new BuildException(msg);
+	  else
+		  log(msg,Project.MSG_ERR);
     }
   }
 

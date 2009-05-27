@@ -98,88 +98,107 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
         root = DatabaseManager.getCollection(uri, user, password);
 
       if(root==null){
-         throw new BuildException("Collection " + uri + " could not be found.");
-      }
-
-      MimeType mime = null;
-      if (type != null) {
-          if (type.equals("xml"))
-              mime = MimeType.XML_TYPE;
-          else if (type.equals("binary"))
-              mime = MimeType.BINARY_TYPE;
-          else {
-              mime = MimeTable.getInstance().getContentType(type);
-          }
-      }
-      
-      Resource res;
-      File file;
-      Collection col = root;
-      String relDir, prevDir = null, resourceType = "XMLResource";
-      if (srcFile != null)
-      {
-        log("Storing single file " + srcFile.getAbsolutePath(), Project.MSG_DEBUG);
-        // single file
-        if (mime == null)
-            mime = MimeTable.getInstance().getContentTypeFor(srcFile.getName());
-        if (mime == null)
-        	throw new BuildException("Cannot find mime-type for " + srcFile.getName());
-        
-        resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
-        if (targetFile == null)
-            targetFile = srcFile.getName();
-        log("Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
-        res = col.createResource(targetFile, resourceType);
-        res.setContent(srcFile);
-        ((EXistResource) res).setMimeType(mime.getName());
-        col.storeResource(res);
-      } else
-      {
-        log("Storing fileset", Project.MSG_DEBUG);
-        // using fileset
-        DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
-        scanner.scan();
-        String[] files = scanner.getIncludedFiles();
-        log("Found " + files.length + " files.\n");
- 
-        MimeType currentMime = mime;
-        for (int i = 0; i < files.length; i++)
-        {
-          file = new File(scanner.getBasedir() + File.separator + files[i]);
-          log("Storing " + files[i] + " ...\n");
-          //TODO : use dedicated function in XmldbURI
-          // check whether the relative file path contains file seps
-          p = files[i].lastIndexOf(File.separatorChar);          
-          if (p != Constants.STRING_NOT_FOUND)
-          {
-            relDir = files[i].substring(0, p);
-            // It's necessary to do this translation on Windows, and possibly MacOS:
-            relDir = relDir.replace(File.separatorChar, '/');
-            if (createSubcollections && (prevDir == null || (!relDir.equals(prevDir))))
-            {
-              //TODO : use dedicated function in XmldbURI
-              col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
-              prevDir = relDir;
-            }
-          } else {
-        	 // No file separator found in resource name, reset col to the root collection
-        	 col = root;
-          }
-          if (mime == null)
-              currentMime = MimeTable.getInstance().getContentTypeFor(file.getName());
-          if (currentMime == null)
-        	  throw new BuildException("Cannot find mime-type for " + file.getName());
-          resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
-          log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
-          res = col.createResource(file.getName(), resourceType);
-          res.setContent(file);
-          ((EXistResource) res).setMimeType(currentMime.getName());
-          col.storeResource(res);
-        }
+    	  String msg="Collection " + uri + " could not be found.";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
+      } else {
+	      MimeType mime = null;
+	      if (type != null) {
+	          if (type.equals("xml"))
+	              mime = MimeType.XML_TYPE;
+	          else if (type.equals("binary"))
+	              mime = MimeType.BINARY_TYPE;
+	          else {
+	              mime = MimeTable.getInstance().getContentType(type);
+	          }
+	      }
+	      
+	      Resource res;
+	      File file;
+	      Collection col = root;
+	      String relDir, prevDir = null, resourceType = "XMLResource";
+	      if (srcFile != null)
+	      {
+	        log("Storing single file " + srcFile.getAbsolutePath(), Project.MSG_DEBUG);
+	        // single file
+	        if (mime == null)
+	            mime = MimeTable.getInstance().getContentTypeFor(srcFile.getName());
+	        if (mime == null) {
+	      	  String msg="Cannot find mime-type for " + srcFile.getName();
+	    	  if(failonerror)
+	    		  throw new BuildException(msg);
+	    	  else
+	    		  log(msg,Project.MSG_ERR);
+	        } else {
+		        resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
+		        if (targetFile == null)
+		            targetFile = srcFile.getName();
+		        log("Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
+		        res = col.createResource(targetFile, resourceType);
+		        res.setContent(srcFile);
+		        ((EXistResource) res).setMimeType(mime.getName());
+		        col.storeResource(res);
+	        }
+	      } else
+	      {
+	        log("Storing fileset", Project.MSG_DEBUG);
+	        // using fileset
+	        DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
+	        scanner.scan();
+	        String[] files = scanner.getIncludedFiles();
+	        log("Found " + files.length + " files.\n");
+	 
+	        MimeType currentMime = mime;
+	        for (int i = 0; i < files.length; i++)
+	        {
+	          file = new File(scanner.getBasedir() + File.separator + files[i]);
+	          log("Storing " + files[i] + " ...\n");
+	          //TODO : use dedicated function in XmldbURI
+	          // check whether the relative file path contains file seps
+	          p = files[i].lastIndexOf(File.separatorChar);          
+	          if (p != Constants.STRING_NOT_FOUND)
+	          {
+	            relDir = files[i].substring(0, p);
+	            // It's necessary to do this translation on Windows, and possibly MacOS:
+	            relDir = relDir.replace(File.separatorChar, '/');
+	            if (createSubcollections && (prevDir == null || (!relDir.equals(prevDir))))
+	            {
+	              //TODO : use dedicated function in XmldbURI
+	              col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
+	              prevDir = relDir;
+	            }
+	          } else {
+	        	 // No file separator found in resource name, reset col to the root collection
+	        	 col = root;
+	          }
+	          if (mime == null)
+	              currentMime = MimeTable.getInstance().getContentTypeFor(file.getName());
+	          if (currentMime == null) {
+		      	  String msg="Cannot find mime-type for " + file.getName();
+		    	  if(failonerror)
+		    		  throw new BuildException(msg);
+		    	  else
+		    		  log(msg,Project.MSG_ERR);
+	          } else {
+		          resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
+		          log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
+		          res = col.createResource(file.getName(), resourceType);
+		          res.setContent(file);
+		          ((EXistResource) res).setMimeType(currentMime.getName());
+		          col.storeResource(res);
+	          }
+	        }
+	      }
       }
     } catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
+    	  String msg="XMLDB exception caught: " + e.getMessage();
+    	  if(failonerror)
+    		  throw new BuildException(msg,e);
+    	  else
+    		  log(msg,e,Project.MSG_ERR);
     }
   }
 
