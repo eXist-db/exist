@@ -8,6 +8,7 @@
 package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
@@ -40,7 +41,11 @@ public class ChmodTask extends UserTask
       }
     } catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
+  	  String msg="XMLDB exception caught: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 

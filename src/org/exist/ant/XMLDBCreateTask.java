@@ -56,25 +56,37 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
       Collection base = DatabaseManager.getCollection(uri, user, password);
 
       if(base==null){
-         throw new BuildException("Collection " + uri + " could not be found.");
+    	  String msg="Collection " + uri + " could not be found.";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
+      } else {
+	      Collection root = null;
+	      if (collection != null)
+	      {
+	        log("Creating collection " + collection + " in base collection " + uri, Project.MSG_DEBUG);
+	        root = mkcol(base, uri, collection);
+	      } else
+	      {
+	        root = base;
+	      }
+	      log("Created collection " + root.getName(), Project.MSG_INFO);
       }
-
-      Collection root = null;
-      if (collection != null)
-      {
-        log("Creating collection " + collection + " in base collection " + uri, Project.MSG_DEBUG);
-        root = mkcol(base, uri, collection);
-      } else
-      {
-        root = base;
-      }
-      log("Created collection " + root.getName(), Project.MSG_INFO);
     } catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
+  	  String msg="XMLDB exception caught: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     } catch (URISyntaxException e)
     {
-    	throw new BuildException("URISyntaxException: " + e.getMessage(), e);
+  	  String msg="URISyntaxException: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 

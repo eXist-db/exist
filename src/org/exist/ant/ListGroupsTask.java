@@ -50,7 +50,11 @@ public class ListGroupsTask extends UserTask
       }
     } catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
+  	  String msg="XMLDB exception caught: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 

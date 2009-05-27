@@ -68,9 +68,15 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
       {
         log("Removing resource: " + resource, Project.MSG_INFO);
         Resource res = base.getResource(resource);
-        if (res == null)
-          throw new BuildException("Resource " + resource + " not found.");
-        base.removeResource(res);
+        if (res == null) {
+      	  String msg="Resource " + resource + " not found.";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
+        } else {
+        	base.removeResource(res);
+        }
       } else
       {
         log("Removing collection: " + collection, Project.MSG_INFO);
@@ -79,7 +85,11 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
       }
     } catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception during remove: " + e.getMessage(), e);
+  	  String msg="XMLDB exception during remove: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 

@@ -39,13 +39,21 @@ public abstract class UserTask extends AbstractXMLDBTask
       base = DatabaseManager.getCollection(uri, user, password);
         
       if(base==null){
-         throw new BuildException("Collection " + uri + " could not be found.");
+    	  String msg="Collection " + uri + " could not be found.";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
+      } else {
+    	  service = (UserManagementService) base.getService("UserManagementService", "1.0");
       }
-
-      service = (UserManagementService) base.getService("UserManagementService", "1.0");
     } catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
+  	  String msg="XMLDB exception caught: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 }

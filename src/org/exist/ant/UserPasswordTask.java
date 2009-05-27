@@ -22,7 +22,7 @@ public class UserPasswordTask extends UserTask
   {
     super.execute();
     if (name == null)
-      throw new BuildException("Must specify at leat a user name");
+      throw new BuildException("Must specify at least a user name");
 
     try
     {
@@ -36,12 +36,20 @@ public class UserPasswordTask extends UserTask
       }
       else
       {
-        throw new BuildException("user " + name + " not found");
+    	  String msg="user " + name + " not found";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
       }
     }
     catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
+  	  String msg="XMLDB exception caught: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 

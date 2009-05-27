@@ -60,26 +60,40 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
       Collection base = DatabaseManager.getCollection(uri, user, password);
 
       if(base==null){
-         throw new BuildException("Collection " + uri + " could not be found.");
-      }
-
-      log("Create collection management service for collection " + base.getName(), Project.MSG_DEBUG);
-      CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) base.getService("CollectionManagementService", "1.0");
-      if (resource != null)
-      {
-        log("Copying resource: " + resource, Project.MSG_INFO);
-        Resource res = base.getResource(resource);
-        if (res == null)
-          throw new BuildException("Resource " + resource + " not found.");
-        service.copyResource(resource, destination, name);
-      } else
-      {
-        log("Copying collection: " + collection, Project.MSG_INFO);
-        service.copy(collection, destination, name);
+    	  String msg="Collection " + uri + " could not be found.";
+    	  if(failonerror)
+    		  throw new BuildException(msg);
+    	  else
+    		  log(msg,Project.MSG_ERR);
+      } else {
+	      log("Create collection management service for collection " + base.getName(), Project.MSG_DEBUG);
+	      CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) base.getService("CollectionManagementService", "1.0");
+	      if (resource != null)
+	      {
+	        log("Copying resource: " + resource, Project.MSG_INFO);
+	        Resource res = base.getResource(resource);
+	        if (res == null) {
+	      	  String msg="Resource " + resource + " not found.";
+	    	  if(failonerror)
+	    		  throw new BuildException(msg);
+	    	  else
+	    		  log(msg,Project.MSG_ERR);
+	        } else {
+	        	service.copyResource(resource, destination, name);
+	        }
+	      } else
+	      {
+	        log("Copying collection: " + collection, Project.MSG_INFO);
+	        service.copy(collection, destination, name);
+	      }
       }
     } catch (XMLDBException e)
     {
-      throw new BuildException("XMLDB exception during remove: " + e.getMessage(), e);
+  	  String msg="XMLDB exception during copy: " + e.getMessage();
+	  if(failonerror)
+		  throw new BuildException(msg,e);
+	  else
+		  log(msg,e,Project.MSG_ERR);
     }
   }
 
