@@ -253,6 +253,8 @@ public class XQueryURLRewrite implements Filter {
                 }
             }
 
+            if (LOG.isTraceEnabled())
+                LOG.trace("Processing request URI: " + request.getRequestURI());
             RequestWrapper modifiedRequest = new RequestWrapper(request);
             // check if the request URI is already in the url cache
             ModelAndView modelView = (ModelAndView) urlCache.get(request.getRequestURI());
