@@ -32,4 +32,12 @@ public interface MemoryNodeSet extends Sequence {
     public Sequence getFollowing(NodeTest test) throws XPathException;
 
     public Sequence getChildrenForParent(NodeImpl parent);
+
+    public Sequence selectDescendants(MemoryNodeSet descendants);
+
+    public Sequence selectChildren(MemoryNodeSet children);
+    
+    public int size();
+
+    public NodeImpl get(int which);
 }

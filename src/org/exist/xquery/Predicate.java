@@ -175,7 +175,7 @@ public class Predicate extends PathExpr {
 	            	innerSeq = inner.eval(contextSequence);
 	            	//Try to promote a boolean evaluation to a nodeset one
 	            	//We are now sure of the inner sequence return type
-	            	 if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)) {
+	            	 if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE) && innerSeq.isPersistentSet()) {
 		        		recomputedExecutionMode = NODE;
 			        //Try to promote a boolean evaluation to a positional one
 		            //Only if we have an actual *singleton* of numeric items
