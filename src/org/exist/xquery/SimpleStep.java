@@ -26,6 +26,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.MemoryNodeSet;
 
 /**
  * Represents a primary expression in a simple path step like
@@ -73,23 +74,35 @@ public class SimpleStep extends Step {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
         
-        Sequence result;
-		NodeSet set = expression.eval(contextSequence).toNodeSet();
+        Sequence result = Sequence.EMPTY_SEQUENCE;
+	    Sequence set = expression.eval(contextSequence);
 
-		if(set.isEmpty())
-			result = Sequence.EMPTY_SEQUENCE;
-        else {        
-    		switch(axis) {
-    			case Constants.DESCENDANT_SELF_AXIS:
-    				set = set.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, contextId);
-    				break;
-    			case Constants.CHILD_AXIS:
-    				set = set.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);
-    				break;
-    			default:
-    				throw new XPathException(this, "Wrong axis specified");
-    		}
-            result = set;
+        if (!set.isEmpty()) {
+            if (set.isPersistentSet()) {
+                NodeSet nodeSet = set.toNodeSet();
+                switch(axis) {
+                    case Constants.DESCENDANT_SELF_AXIS:
+                        result = nodeSet.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, contextId);
+                        break;
+                    case Constants.CHILD_AXIS:
+                        result = nodeSet.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);
+                        break;
+                    default:
+                        throw new XPathException(this, "Wrong axis specified");
+                }
+            } else {
+                MemoryNodeSet ctxNodes = contextSequence.toMemNodeSet();
+                MemoryNodeSet nodes = set.toMemNodeSet();
+                switch(axis) {
+                    case Constants.DESCENDANT_SELF_AXIS:
+                        result = ctxNodes.selectDescendants(nodes);
+                        break;
+                    case Constants.CHILD_AXIS:
+                        result = ctxNodes.selectChildren(nodes);
+                        break;
+                }
+
+            }
         }
 
         if (context.getProfiler().isEnabled()) 
