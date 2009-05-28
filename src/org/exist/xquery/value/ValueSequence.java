@@ -77,7 +77,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     private Variable holderVar = null;
 
     private int state = 0;
-    
+
     public ValueSequence() {
 		this(false);
 	}
@@ -577,6 +577,42 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             node.selectFollowing(test, nodes);
         }
         return nodes;
+    }
+
+    public Sequence selectDescendants(MemoryNodeSet descendants) {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            for (int j = 0; j < descendants.size(); j++) {
+                NodeImpl descendant = descendants.get(j);
+                if (descendant.getNodeId().isDescendantOrSelfOf(node.getNodeId()))
+                    nodes.add(node);
+            }
+        }
+        return nodes;
+    }
+
+    public Sequence selectChildren(MemoryNodeSet children) {
+        sortInDocumentOrder();
+        ValueSequence nodes = new ValueSequence(true);
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            for (int j = 0; j < children.size(); j++) {
+                NodeImpl descendant = children.get(j);
+                if (descendant.getNodeId().isChildOf(node.getNodeId()))
+                    nodes.add(node);
+            }
+        }
+        return nodes;
+    }
+
+    public int size() {
+        return size + 1;
+    }
+
+    public NodeImpl get(int which) {
+        return (NodeImpl) values[which];
     }
 
     /* END methods of MemoryNodeSet */
