@@ -172,6 +172,8 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                             </table>
                             <input type="hidden" name="prev" value="{$action}"/>
                         </form>
+                        <p class="f-reload"><a href="?action=reload">Reload documentation</a>
+                            (click here if you enabled/disabled additional modules)</p>
                         <p class="f-info">(<b>eXist version: {util:system-property("product-version")}, 
                         build: {util:system-property("product-build")},
                         functions: {count(//xqdoc:function)}</b>). Modules have to be enabled 
@@ -221,10 +223,11 @@ declare function xqdoc:debug-parameters() {
     already been extracted. If not, ask for the admin password and
     call xqdoc:setup() to generate the documentation. 
 :)
+let $action := request:get-parameter("action", "Search")
+let $generate := request:get-parameter("generate", ())
 let $askPass :=
-    if (empty(//xqdoc:module)) then
+    if (empty(//xqdoc:module) or $generate) then
         let $adminPass := request:get-parameter("pass", ())
-        let $generate := request:get-parameter("generate", ())
         return
             if ($generate) then
                 let $dummy := setup:setup($adminPass)
@@ -232,9 +235,8 @@ let $askPass :=
             else
                 true()
     else
-        false()
+        $action eq 'reload'
 let $log := xqdoc:debug-parameters()
-let $action := request:get-parameter("action", "Search")
 let $query := request:get-parameter("q", ())
 let $type := request:get-parameter("type", "name")
 let $mode := request:get-parameter("mode", ())
