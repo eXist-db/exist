@@ -185,7 +185,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             child.setCreationTime(System.currentTimeMillis());
         	child.permissions.setOwner(user);
             CollectionConfiguration config = getConfiguration(broker);
-            String group = null;
+            String group = user.getPrimaryGroup();
             if (config != null){
             	group = config.getDefCollGroup(user);
                 child.permissions.setPermissions(config.getDefCollPermissions());
