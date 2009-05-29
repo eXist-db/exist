@@ -285,6 +285,9 @@ public class Restore extends DefaultHandler {
                         }
                     }
                     EXistInputSource is=contents.getInputSource(filename);
+		    if(is==null)
+                       listener.warn("Failed to restore resource '" + name + "'\nfrom file '" +
+                               contents.getSymbolicPath(name,false) + "'.\nReason: Unable to obtain its EXistInputSource");
                     try {
                         if (dialog != null && current instanceof Observable) {
                             ((Observable) current).addObserver(dialog.getObserver());
