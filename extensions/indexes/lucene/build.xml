@@ -4,20 +4,7 @@
 
     <property name="lib.dir" value="./lib"/>
 
-      <condition property="libs.available">
-        <available file="${lib.dir}/lucene-core-2.3.2.jar"/>
-      </condition>
-    
-    <target name="prepare-libs" unless="libs.available">
-        <mkdir dir="${lib.dir}"/>
-        <echo message="-----------------------------------------------------"/>
-        <echo message="Downloading libraries required by the Lucene index..."/>
-        <echo message="-----------------------------------------------------"/>
-        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-core/2.3.2/lucene-core-2.3.2.jar" 
-            dest="${lib.dir}/lucene-core-2.3.2.jar" verbose="true" usetimestamp="true" />
-    </target>
-
-    <target name="jar" depends="prepare-libs, compile">
+    <target name="jar" depends="compile">
         <jar destfile="${top.dir}/${lib.extensions}/exist-lucene-module.jar" basedir="${module.classes}">   
 	        <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
