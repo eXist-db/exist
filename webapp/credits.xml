@@ -77,13 +77,22 @@
                     <para>Pierrick Brihaye (developer)</para>
                 </listitem>
                 <listitem>
+                    <para>Loren Cahlander (developer)</para>
+                </listitem>
+                <listitem>
                     <para>Mark R. Diggory (tomcat realm)</para>
+                </listitem>
+                <listitem>
+                    <para>James R. Fuller (developer, XProc support)</para>
+                </listitem>
+                <listitem>
+                    <para>José María Fernández González (patches)</para>
                 </listitem>
                 <listitem>
                     <para>Mark Harrah (XACML)</para>
                 </listitem>
                 <listitem>
-                    <para>Piotr Kaminski (patches)</para>
+                    <para>Piotr Kaminski (patches, fluent interfaces)</para>
                 </listitem>
                 <listitem>
                     <para>Stephan Körnig (hashtables)</para>
@@ -92,13 +101,16 @@
                     <para>Igor Abade V. Leite (patches)</para>
                 </listitem>
                 <listitem>
+                    <para>Evgeny Gazdovsky (developer)</para>
+                </listitem>
+                <listitem>
                     <para>Chris Marasti-Georg (developer)</para>
                 </listitem>
                 <listitem>
                     <para>Wolfgang Meier (main developer)</para>
                 </listitem>
                 <listitem>
-                    <para>Alex Milowski (patches; LDAP security manager)</para>
+                    <para>Alex Milowski (patches; LDAP security manager, Atom interface)</para>
                 </listitem>
                 <listitem>
                     <para>Per Nyfelt (JBoss integration)</para>
@@ -108,6 +120,9 @@
                 </listitem>
                 <listitem>
                     <para>Adam Retter (developer)</para>
+                </listitem>
+                <listitem>
+                    <para>Dmitriy Shabanov (developer)</para>
                 </listitem>
                 <listitem>
                     <para>Giulio Valentino (developer)</para>
