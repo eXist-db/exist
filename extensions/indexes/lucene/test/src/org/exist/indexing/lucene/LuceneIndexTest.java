@@ -6,10 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.exist.Indexer;
 import org.exist.collections.Collection;
@@ -86,6 +83,7 @@ public class LuceneIndexTest {
             "   <p>A simple paragraph with <hi>highlighted</hi> text <note>and a note</note> " +
             "       in it.</p>" +
             "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
+            "   <p><note1>ignore</note1> <s2>warn</s2>ings</p>" +
             "</article>";
 
     private static String XML6 =
@@ -170,11 +168,17 @@ public class LuceneIndexTest {
             "       <fulltext default=\"none\" attributes=\"no\">" +
             "       </fulltext>" +
             "       <lucene>" +
-            "           <text qname=\"article\"/>" +
-            "           <text qname=\"p\"/>" +
+            "           <text qname=\"article\">" +
+            "               <ignore qname=\"note\"/>" +
+            "               <inline qname=\"s\"/>" +
+            "           </text>" +
+            "           <text qname=\"p\">" +
+            "               <ignore qname=\"note\"/>" +
+            "               <inline qname=\"s\"/>" +
+            "           </text>" +
             "           <text qname=\"head\"/>" +
-            "           <inline qname=\"s\"/>" +
-            "           <ignore qname=\"note\"/>" +
+            "           <ignore qname=\"note1\"/>" +
+            "           <inline qname=\"s2\"/>" +
             "       </lucene>" +
             "   </index>" +
             "</collection>";
@@ -292,6 +296,8 @@ public class LuceneIndexTest {
             checkIndex(docs, broker, new QName[] { new QName("p", "") }, "mixed", 1);
             checkIndex(docs, broker, new QName[] { new QName("p", "") }, "dangerous", 1);
             checkIndex(docs, broker, new QName[] { new QName("p", "") }, "note", 0);
+            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "ignore", 0);
+            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "warnings", 1);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -339,11 +345,19 @@ public class LuceneIndexTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
+            seq = xquery.execute("/article[ft:query(., 'warnings')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
             seq = xquery.execute("/article[ft:query(., 'danger')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
 
             seq = xquery.execute("/article[ft:query(., 'note')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+            
+            seq = xquery.execute("/article[ft:query(., 'ignore')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
         } catch (Exception e) {
@@ -1219,15 +1233,14 @@ public class LuceneIndexTest {
         if (term != null)
             hints.put(OrderedValuesIndex.START_VALUE, term);
         if (qn != null && qn.length > 0) {
-            List qnames = new ArrayList();
-            for (int i = 0; i < qn.length; i++) {
-                qnames.add(qn[i]);
-            }
-            hints.put(QNamedKeysIndex.QNAMES_KEY, qnames);
+            List<QName> qnlist = new ArrayList<QName>(qn.length);
+            for (int i = 0; i < qn.length; i++)
+                qnlist.add(qn[i]);
+            hints.put(QNamedKeysIndex.QNAMES_KEY, qnlist);
         }
         XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
         Occurrences[] occur = index.scanIndex(context, docs, docs.docsToNodeSet(), hints);
-        if (expected != occur.length) {
+        if (occur != null && expected != occur.length) {
             for (int i = 0; i < occur.length; i++) {
                 System.out.println("term: " + occur[i].getTerm());              
             }

@@ -681,10 +681,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         extractor.startElement(element.getQName());
                     }
                 }
-                if (config.matches(path)) {
+                LuceneIndexConfig idxConf = config.getConfig(path);
+                if (idxConf != null) {
                     if (contentStack == null) contentStack = new Stack();
                     TextExtractor extractor = new DefaultTextExtractor();
-                    extractor.configure(config);
+                    extractor.configure(config, idxConf);
                     contentStack.push(extractor);
                 }
             }

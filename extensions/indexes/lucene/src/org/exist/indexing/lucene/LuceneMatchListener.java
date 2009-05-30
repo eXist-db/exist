@@ -27,16 +27,13 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.exist.dom.Match;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
+import org.exist.storage.NodePath;
 import org.exist.util.serializer.AttrList;
 import org.xml.sax.SAXException;
 
@@ -165,8 +162,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
     private void scanMatches(NodeProxy p) {
         // Collect the text content of all descendants of p. Remember the start offsets
         // of the text nodes for later use.
+        NodePath path = getPath(p);
+        LuceneIndexConfig idxConf = config.getConfig(path);
         TextExtractor extractor = new DefaultTextExtractor();
-        extractor.configure(config);
+        extractor.configure(config, idxConf);
         OffsetList offsets = new OffsetList();
         int level = 0;
         int textOffset = 0;
@@ -218,6 +217,21 @@ public class LuceneMatchListener extends AbstractMatchListener {
         } catch (IOException e) {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
+    }
+
+    private NodePath getPath(NodeProxy proxy) {
+        NodePath path = new NodePath();
+        StoredNode node = (StoredNode) proxy.getNode();
+        walkAncestor(node, path);
+        return path;
+    }
+
+    private void walkAncestor(StoredNode node, NodePath path) {
+        if (node == null)
+            return;
+        StoredNode parent = node.getParentStoredNode();
+        walkAncestor(parent, path);
+        path.addComponent(node.getQName());
     }
 
     /**

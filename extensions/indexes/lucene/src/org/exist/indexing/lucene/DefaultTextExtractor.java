@@ -29,9 +29,9 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
     private int stack = 0;
 
     public int startElement(QName name) {
-        if (config.isIgnoredNode(name))
+        if (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)))
             stack++;
-        else if (!config.isInlineNode(name)) {
+        else if (!(config.isInlineNode(name) || (idxConfig != null && idxConfig.isInlineNode(name)))) {
             buffer.append(' ');
             return 1;
         }
@@ -39,9 +39,9 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
     }
 
     public int endElement(QName name) {
-        if (config.isIgnoredNode(name))
+        if (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)))
             stack--;
-        else if (!config.isInlineNode(name)) {
+        else if (!(config.isInlineNode(name) || (idxConfig != null && idxConfig.isInlineNode(name)))) {
             buffer.append(' ');
             return 1;
         }

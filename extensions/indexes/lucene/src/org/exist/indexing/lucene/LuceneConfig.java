@@ -165,7 +165,6 @@ public class LuceneConfig {
                     if (ignoreNodes == null)
                         ignoreNodes = new TreeSet<QName>();
                     ignoreNodes.add(qname);
-
                 }
             }
         }

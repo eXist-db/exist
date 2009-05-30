@@ -31,7 +31,7 @@ import org.exist.util.XMLString;
  */
 public interface TextExtractor {
 
-    public void configure(LuceneConfig config);
+    public void configure(LuceneConfig config, LuceneIndexConfig idxConfig);
 
     public int startElement(QName name);
 

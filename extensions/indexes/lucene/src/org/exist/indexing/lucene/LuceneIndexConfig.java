@@ -5,15 +5,23 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 public class LuceneIndexConfig {
+
+    private final static String N_INLINE = "inline";
+    private final static String N_IGNORE = "ignore";
 
     private final static String ANALYZER_ID_ATTR = "analyzer";
     private static final String QNAME_ATTR = "qname";
     private static final String MATCH_ATTR = "match";
     private final static String BOOST_ATTRIB = "boost";
+
+    private final static String IGNORE_ELEMENT = "ignore";
+    private final static String INLINE_ELEMENT = "inline";
 
     private String analyzerId = null;
 
@@ -22,6 +30,8 @@ public class LuceneIndexConfig {
     private NodePath path = null;
 
     private float boost = -1;
+
+    private Map<QName, String> specialNodes = null;
 
     public LuceneIndexConfig(Element config, Map namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
         if (config.hasAttribute(QNAME_ATTR)) {
@@ -49,6 +59,31 @@ public class LuceneIndexConfig {
                         "got: " + boostAttr);
             }
         }
+        parse(config, namespaces);
+    }
+
+    private void parse(Element root, Map namespaces) throws DatabaseConfigurationException {
+        Node child = root.getFirstChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                if (IGNORE_ELEMENT.equals(child.getLocalName())) {
+                    String qnameAttr = ((Element) child).getAttribute(QNAME_ATTR);
+                    if (qnameAttr == null || qnameAttr.length() == 0)
+                        throw new DatabaseConfigurationException("Lucene configuration element 'ignore' needs an attribute 'qname'");
+                    if (specialNodes == null)
+                        specialNodes = new TreeMap<QName, String>();
+                    specialNodes.put(parseQName(qnameAttr, namespaces), N_IGNORE);
+                } else if (INLINE_ELEMENT.equals(child.getLocalName())) {
+                    String qnameAttr = ((Element) child).getAttribute(QNAME_ATTR);
+                    if (qnameAttr == null || qnameAttr.length() == 0)
+                        throw new DatabaseConfigurationException("Lucene configuration element 'inline' needs an attribute 'qname'");
+                    if (specialNodes == null)
+                        specialNodes = new TreeMap<QName, String>();
+                    specialNodes.put(parseQName(qnameAttr, namespaces), N_INLINE);
+                }
+            }
+            child = child.getNextSibling();
+        }
     }
 
     public String getAnalyzerId() {
@@ -66,7 +101,15 @@ public class LuceneIndexConfig {
     public float getBoost() {
         return boost;
     }
-    
+
+    public boolean isIgnoredNode(QName qname) {
+        return specialNodes != null && specialNodes.get(qname) == N_IGNORE;
+    }
+
+    public boolean isInlineNode(QName qname) {
+        return specialNodes != null && specialNodes.get(qname) == N_INLINE;
+    }
+
     protected static QName parseQName(Element config, Map namespaces) throws DatabaseConfigurationException {
         String name = config.getAttribute(QNAME_ATTR);
         if (name == null || name.length() == 0)
