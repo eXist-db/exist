@@ -9,13 +9,14 @@ declare variable $kwic:CHARS_KWIC := 40;
 	@param $match the text node containing the match
 	@param $mode the selection mode: either "previous" or "following"
 :)
-declare function kwic:get-context($match as element(exist:match), $mode as xs:string) as node()* {
+declare function kwic:get-context($root as element(), $match as element(exist:match), $mode as xs:string) as node()* {
 	let $sibs := 
 		if ($mode eq 'previous') then 
 			$match/preceding::text()
 		else
 			$match/text()/following::text()
 	for $sib in $sibs
+	where exists($root[.//$sib])
 	return
 		if ($sib/parent::exist:match) then
 			<span class="hi">{$sib}</span>
@@ -97,8 +98,8 @@ declare function kwic:string-length($nodes as item()*) as xs:integer {
 	Print a summary of the match in $node. Output a predefined amount of text to
 	the left and the right of the match.
 
-	@param $root the root element containing the match. This is the original element
-		   stored in the database.
+	@param $root root element which should be used as context for the match. It defines the
+	    boundaries for the text extraction. Text will be taken from this context. 
 	@param $node the exist:match element to process.
 	@param $config configuration element which determines the behaviour of the function
 :)
@@ -106,14 +107,14 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 	$config as element(config)) as element() {
 	let $chars := xs:int($config/@width)
 	let $table := $config/@table = ('yes', 'true')
-	let $prev := kwic:get-context($node, 'previous')
+	let $prev := kwic:get-context($root, $node, 'previous')
 	let $prevTrunc := kwic:truncate-previous($prev, (), $chars, 0)
 	let $remain := 
 		if (not($table)) then 
 			$chars * 2 - kwic:string-length($prevTrunc)
 		else
 			$chars
-	let $following := kwic:get-context($node, 'following')
+	let $following := kwic:get-context($root, $node, 'following')
 	let $followingTrunc := kwic:truncate-following($following, (), $remain, 0)
 	return
 		if (not($table)) then
@@ -143,6 +144,19 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 };
 
 (:~
+    Return all matches within the specified element, $hit. Matches are returned as
+    exist:match elements. The returned nodes are part of a new document whose
+    root element is a copy of the specified $hit element.
+    
+    @param $hit an arbitrary XML element which has been selected by one of the full text
+		operations or an ngram search.
+:)
+declare function kwic:get-matches($hit as element()) as element(exist:match)* {
+    let $expanded := util:expand($hit)
+	return $expanded//exist:match
+};
+
+(:~
 	Main function of the KWIC module: takes the passed element and returns an 
 	XHTML fragment containing a chunk of text before and after the first full text
 	match in the node.
@@ -168,8 +182,7 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 :)
 declare function kwic:summarize($hit as element(), $config as element(config))
 as element()* {
-	let $expanded := util:expand($hit)
-	for $match in $expanded//exist:match[1]
+	for $match in kwic:get-matches($hit)
 	return
-		kwic:get-summary($hit, $match, $config)
+		kwic:get-summary($expanded, $match, $config)
 };

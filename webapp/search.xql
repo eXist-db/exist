@@ -1,5 +1,8 @@
 xquery version "1.0";
 
+(:~ ================================================
+    Implements the documentation search.
+    ================================================ :)
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 import module namespace kwic="http://exist-db.org/xquery/kwic" at "kwic.xql";
@@ -14,8 +17,8 @@ declare variable $dq:COLLECTION := "xqdocs";
 
 declare variable $dq:FIELDS :=
 	<fields>
-		<field name="title">section/title</field>
-		<field>para</field>
+		<field name="title">section[ft:query(.//title, "$q")]</field>
+		<field>section[ft:query(., "$q")]</field>
 	</fields>;
 
 declare variable $dq:CHARS_SUMMARY := 120;
@@ -25,10 +28,9 @@ declare variable $dq:CHARS_KWIC := 40;
 	Display the hits: this function iterates through all hits and calls
 	kwic:summarize to print out a summary of each match.
 :)
-declare function dq:print($hits as element()+, $docXPath as xs:string, $mode as xs:string)
+declare function dq:print($hit as element(), $docXPath as xs:string, $mode as xs:string)
 as element()* {
-	for $hit in $hits
-	let $nodeId := util:node-id($hit)
+    let $nodeId := util:node-id($hit)
 	let $uri := concat(
 		util:document-name(root($hit)), "?q=",
 		(: "docs.xql?path=", document-uri(root($hit)), "&amp;q=", :)
@@ -38,8 +40,11 @@ as element()* {
 		<config xmlns="" width="{if ($mode eq 'summary') then $dq:CHARS_SUMMARY else $dq:CHARS_KWIC}"
 			table="{if ($mode eq 'summary') then 'no' else 'yes'}"
 			link="{$uri}"/>
-	return
-		kwic:summarize($hit, $config) 
+			
+    let $matches := kwic:get-matches($hit)
+    for $ancestor in $matches/ancestor::para | $matches/ancestor::title | $matches/ancestor::td
+    return
+        kwic:get-summary($ancestor, ($ancestor//exist:match)[1], $config) 
 };
 
 (:~
@@ -50,7 +55,6 @@ declare function dq:print-headings($section as element(section)*, $docXPath as x
 	for $s at $p in $section/ancestor-or-self::section
 	let $nodeId := util:node-id($s)
 	let $uri := concat(
-		(: "docs.xql?path=", document-uri(root($s)), "&amp;q=", :)
 		util:document-name(root($s)), "?q=",
 		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
 	)
@@ -63,31 +67,32 @@ declare function dq:print-headings($section as element(section)*, $docXPath as x
 :)
 declare function dq:print-results($hits as element()*, $docXPath as xs:string) {
 	let $mode := request:get-parameter("view", "summary")
-	let $sections := $hits/ancestor::section[1]
 	return
 		<div id="f-results">
-			<p id="f-results-heading">Found: {count($hits)} in {count($sections)} sections.</p>
+			<p id="f-results-heading">Found: {count($hits)}.</p>
 			{
 				if ($mode eq 'summary') then
-					for $section in $sections
-					let $hitsInSect := $section//$hits
+					for $section in $hits
+					let $score := ft:score($section)
+					order by $score descending
 					return
-						<div class="section">
+					    <div class="section">
+					        <span class="score">Score: {round-half-to-even($score, 2)}</span>
 							<div class="headings">{ dq:print-headings($section, $docXPath) }</div>
-							{ dq:print($hitsInSect, $docXPath, $mode) }
+							{ dq:print($section, $docXPath, $mode) }
 						</div>
 				else
 					<table class="kwic">
 					{
-						for $section in $sections
-						let $hitsInSect := $section//$hits
+						for $section in $hits
+						order by ft:score($section) descending
 						return (
 							<tr>
 								<td class="headings" colspan="3">
 								{dq:print-headings($section, $docXPath)}
 								</td>
 							</tr>,
-							dq:print($hitsInSect, $docXPath, $mode)
+							dq:print($section, $docXPath, $mode)
 						)
 					}
 					</table>
@@ -102,7 +107,7 @@ declare function dq:print-results($hits as element()*, $docXPath as xs:string) {
 declare function dq:create-query($fields as element(field)*, $query as xs:string) {
 	for $field in $fields
 	return
-		concat($field/string(), "[. &amp;= '",	$query, "']")
+		concat($field/string(), "[ft:contains(., '",	$query, "')]")
 };
 
 (:~
@@ -115,7 +120,9 @@ declare function dq:query() {
 		if ($query) then
 			let $fields := 
 				if ($field ne "all") then $dq:FIELDS/field[@name = $field] else $dq:FIELDS/field
-			let $queryParts := dq:create-query($fields, $query)
+			let $queryParts := 
+			    for $f in $fields return 
+			        replace($f, "\$q", $query)
 			let $xpath := string-join(
 				for $p in $queryParts return
 					concat("collection('/db/", $dq:COLLECTION, "')/book//", $p),
