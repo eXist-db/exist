@@ -62,8 +62,7 @@ public class Score extends BasicFunction {
         while (match != null) {
             if (match.getIndexId() == LuceneIndex.ID) {
                 float currentScore = ((LuceneIndexWorker.LuceneMatch)match).getScore();
-                if (currentScore > score)
-                    score = currentScore;
+                score += currentScore;
             }
             match = match.getNextMatch();
         }
