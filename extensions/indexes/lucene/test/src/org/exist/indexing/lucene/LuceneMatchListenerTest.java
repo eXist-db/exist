@@ -68,8 +68,7 @@ public class LuceneMatchListenerTest {
     private static String XML1 =
             "<article>" +
             "   <head>The <b>title</b>of it</head>" +
-            "   <p>A simple paragraph with <hi>highlighted</hi> text <note>and a note</note> " +
-            "       in it.</p>" +
+            "   <p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be ignored.</p>" +
             "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
             "</article>";
 
@@ -107,10 +106,11 @@ public class LuceneMatchListenerTest {
             "       <fulltext default=\"none\" attributes=\"no\">" +
             "       </fulltext>" +
             "       <lucene>" +
-            "           <text qname=\"p\"/>" +
+            "           <text qname=\"p\">" +
+            "               <ignore qname=\"note\"/>" +
+            "           </text>" +
             "           <text qname=\"head\"/>" +
             "           <inline qname=\"s\"/>" +
-            "           <ignore qname=\"note\"/>" +
             "       </lucene>" +
             "   </index>" +
             "</collection>";
@@ -266,6 +266,30 @@ public class LuceneMatchListenerTest {
             XMLAssert.assertEquals("<p>Paragraphs with <s>" + MATCH_START + "mix" + MATCH_END +
                     "</s><s>ed</s> content are <s>danger</s>ous.</p>", result);
 
+            seq = xquery.execute("//p[ft:query(., 'ignored')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertEquals("<p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be " +
+                    MATCH_START + "ignored" + MATCH_END + ".</p>", result);
+
+            seq = xquery.execute("//p[ft:query(., 'highlighted')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertEquals("<p>A simple<note>sic</note> paragraph with <hi>" + MATCH_START +
+                    "highlighted" + MATCH_END + "</hi> text <note>and a note</note> to be " +
+                    "ignored.</p>", result);
+
+            seq = xquery.execute("//p[ft:query(., 'highlighted')]/hi", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            result = queryResult2String(broker, seq);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertEquals("<hi>" + MATCH_START + "highlighted" + MATCH_END + "</hi>", result);
+            
             seq = xquery.execute("//head[ft:query(., 'title')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());

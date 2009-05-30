@@ -27,11 +27,13 @@ import org.exist.util.XMLString;
 public abstract class AbstractTextExtractor implements TextExtractor {
 
     protected LuceneConfig config;
+    protected LuceneIndexConfig idxConfig;
 
     protected XMLString buffer = new XMLString();
 
-    public void configure(LuceneConfig config) {
+    public void configure(LuceneConfig config, LuceneIndexConfig idxConfig) {
         this.config = config;
+        this.idxConfig = idxConfig;
     }
 
     public float getBoost() {
