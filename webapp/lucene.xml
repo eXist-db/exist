@@ -99,10 +99,13 @@ include.index.lucene = true
             <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
             <text match="//SPEECH//*"/>
 	        <text qname="TITLE" analyzer="ws"/>
-	        
-	        <inline qname="span"/>
+	        <text qname="p">
+	            <inline qname="em"/>
+            </text>
+            <!-- "inline" and "ignore" can be specified globally or per-index as
+                 shown above -->
 	        <inline qname="b"/>
-	        <ignore qname="footnote"/>
+	        <ignore qname="note"/>
         </lucene>
     </index>
 </collection>
@@ -201,6 +204,13 @@ include.index.lucene = true
 
                 <synopsis><![CDATA[<inline qname="b"/>]]></synopsis></section>
 
+                <para>The <sgmltag>inline</sgmltag> option can be specified globally, which means it will
+                    be applied to all <sgmltag>b</sgmltag> elements, or per-index:</para>
+                
+                <synopsis language="xml"><![CDATA[<text qname="p">
+    <inline qname="em"/>
+</text>]]></synopsis>
+
                 <section>
                     <title>Ignored elements</title>
                     
@@ -219,6 +229,9 @@ include.index.lucene = true
 
                 <synopsis><![CDATA[<ignore qname="note"/>]]></synopsis>
 
+                <para>Like the <sgmltag>inline</sgmltag> tag, <sgmltag>ignore</sgmltag> may appear
+                    globally or within a single index definition.</para>
+                
                 <para>The <sgmltag>ignore</sgmltag> only applies to descendants of an indexed
                     element. You can still create another index on the ignored element itself. For
                     example, you can have index definitions for <sgmltag>p</sgmltag> and
@@ -245,8 +258,46 @@ include.index.lucene = true
                 <synopsis language="xquery">//p[ft:query(note, "note")] </synopsis>
 
                 <para>may still find a match.</para></section>
+            
             </section>
 
+            <section>
+                <title>Boost</title>
+                
+                <para>A boost value can be assigned to an index to give it a higher
+                    score. The score for each match will be multiplied by the boost
+                    factor (default is: 1.0). For example, you may want to rank
+                    matches in titles higher than other matches. Here's how we configure
+                    the documentation search indexes in eXist:</para>
+                
+                <example>
+                    <title>collection.xconf using boost</title>
+                    <programlisting><markup><![CDATA[<lucene>
+    <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+    <text qname="section">
+        <ignore qname="title"/>
+        <ignore qname="programlisting"/>
+        <ignore qname="screen"/>
+        <ignore qname="synopsis"/>
+    </text>
+    <text qname="title" boost="2.0"/>
+</lucene>]]></markup></programlisting>
+                </example>
+                
+                <para>The title index gets a boost of 2.0 to make sure that title matches
+                    get a higher score. Since the <sgmltag>title</sgmltag> element does occur
+                    within <sgmltag>section</sgmltag>, we add an ignore rule to the index definition
+                    on the section and create a separate index on title. Without this, title would
+                    be matched two times.</para>
+                
+                <para>Because the title is now indexed separately, we also need to query it explicitely.
+                    For example, to search the section and the title at the same time, the documentation
+                    search interface issues the following query:</para>
+                
+                <synopsis language="xquery">for $sect in /book//section[ft:query(., "ngram")] | /book//section[ft:query(title, "ngram")]
+order by ft:score($sect) descending return $sect</synopsis>
+            </section>
+        
             <section>
                 <title>Analyzers</title>
 
