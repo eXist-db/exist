@@ -11,10 +11,17 @@ declare variable $setup:COLLECTION := "/db/xqdocs";
 declare variable $setup:config :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xqdoc="http://www.xqdoc.org/1.0">
-            <fulltext default="none" attributes="no">
-				<create qname="title"/>
-				<create qname="para"/>
-            </fulltext>
+            <fulltext default="none" attributes="no"/>
+            <lucene>
+                <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                <text qname="section">
+                    <ignore qname="title"/>
+                    <ignore qname="programlisting"/>
+                    <ignore qname="screen"/>
+                    <ignore qname="synopsis"/>
+                </text>
+                <text qname="title" boost="2.0"/>
+            </lucene>
             <ngram qname="xqdoc:name"/>
             <ngram qname="xqdoc:description"/>
         </index>
