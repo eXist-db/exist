@@ -94,15 +94,15 @@ public class LuceneIndex extends AbstractIndex {
     }
 
     public void remove() throws DBException {
-        close();
         try {
             String[] files = directory.list();
             for (int i = 0; i < files.length; i++) {
                 String file = files[i];
                 directory.deleteFile(file);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            close();
+        } catch (Exception e) {
+            LOG.warn(e.getMessage(), e);
         }
     }
 
