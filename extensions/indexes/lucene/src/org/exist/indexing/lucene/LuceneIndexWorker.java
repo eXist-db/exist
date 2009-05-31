@@ -229,6 +229,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWritingReader(reader);
+            mode = StreamListener.STORE;
         }
     }
 
