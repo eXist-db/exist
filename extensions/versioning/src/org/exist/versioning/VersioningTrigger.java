@@ -316,9 +316,12 @@ public class VersioningTrigger extends FilteringTrigger {
                 }
             }
             if (documentKey != null && documentRev != null) {
+                LOG.debug("v:key = " + documentKey + "; v:revision = " + documentRev);
                 try {
                     long rev = Long.parseLong(documentRev);
                     if (VersioningHelper.newerRevisionExists(broker, documentPath, rev, documentKey)) {
+                        long baseRev = VersioningHelper.getBaseRevision(broker, documentPath, rev, documentKey);
+                        LOG.debug("base revision: " + baseRev);
                         throw new TriggerException("Possible version conflict detected for document: " + documentPath);
                     }
                 } catch (XPathException e) {
@@ -331,6 +334,8 @@ public class VersioningTrigger extends FilteringTrigger {
             }
         }
         if (elementStack == 0) {
+            // Remove the versioning attributes which were inserted during serialization. We don't want
+            // to store them in the db
             AttributesImpl nattrs = new AttributesImpl();
             for (int i = 0; i < attributes.getLength(); i++) {
                 if (!StandardDiff.NAMESPACE.equals(attributes.getURI(i)))
@@ -346,5 +351,11 @@ public class VersioningTrigger extends FilteringTrigger {
     public void endElement(String namespaceURI, String localName, String qname) throws SAXException {
         elementStack--;
         super.endElement(namespaceURI, localName, qname);
+    }
+
+    public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
+        if (StandardDiff.NAMESPACE.equals(namespaceURI))
+            return;
+        super.startPrefixMapping(prefix, namespaceURI);
     }
 }
