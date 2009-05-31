@@ -133,11 +133,13 @@ declare function v:annotate($doc as node(), $rev as xs:integer) {
 					doc(concat($vCollection, "/", $docName, ".base"))
 				else
 					v:doc($doc, $revisions[$p - 1])
+			let $diff := collection($vCollection)/v:version[
+							v:properties[v:document = $docName]
+							[v:revision = $rev]
+						]			
 			return
 				version:annotate(
-					$previous, 
-					collection($vCollection)/v:version[v:properties[v:document = $docName]
-						[v:revision = $rev]]
+					$previous, $diff 
 				)
 };
 

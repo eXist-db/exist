@@ -59,6 +59,23 @@ public class VersioningHelper {
 
     private final static StringSource GET_CONFLICTING_REV_SOURCE = new StringSource(GET_CONFLICTING_REV);
 
+    private final static String GET_BASE_REV_FOR_KEY =
+            "declare namespace v=\"http://exist-db.org/versioning\";\n" +
+            "declare variable $collection external;\n" +
+            "declare variable $document external;\n" +
+            "declare variable $base external;\n" +
+            "declare variable $key external;\n" +
+            "let $p := collection($collection)//v:properties[v:document = $document]\n" +
+            "let $withKey := for $r in $p[v:revision > $base][v:key = $key] " +
+            "                   order by $r/v:revision descending return $r\n" +
+            "return\n" +
+            "   if ($withKey) then\n" +
+            "       xs:long($withKey[1]/v:revision)\n" +
+            "   else\n" +
+            "       xs:long($p[v:revision = $base]/v:revision)";
+    
+    private final static StringSource GET_BASE_REV_FOR_KEY_SOURCE = new StringSource(GET_BASE_REV_FOR_KEY);
+    
     public static long getCurrentRevision(DBBroker broker, XmldbURI docPath) throws XPathException, IOException {
         String docName = docPath.lastSegment().toString();
         XmldbURI collectionPath = docPath.removeLastSegment();
@@ -109,6 +126,37 @@ public class VersioningHelper {
             return !s.isEmpty();
         } finally {
             pool.returnCompiledXQuery(GET_CONFLICTING_REV_SOURCE, compiled);
+        }
+    }
+
+    public static long getBaseRevision(DBBroker broker, XmldbURI docPath, long baseRev, String sessionKey) throws XPathException, IOException {
+        String docName = docPath.lastSegment().toString();
+        XmldbURI collectionPath = docPath.removeLastSegment();
+        XmldbURI path = VersioningTrigger.VERSIONS_COLLECTION.append(collectionPath);
+        XQuery xquery = broker.getXQueryService();
+        XQueryPool pool = xquery.getXQueryPool();
+        XQueryContext context;
+        CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, GET_BASE_REV_FOR_KEY_SOURCE);
+        if(compiled == null)
+            context = xquery.newContext(AccessContext.VALIDATION_INTERNAL);
+        else
+            context = compiled.getContext();
+        context.declareVariable("collection", path.toString());
+        context.declareVariable("document", docName);
+        context.declareVariable("base", new IntegerValue(baseRev));
+        context.declareVariable("key", sessionKey);
+
+        if(compiled == null)
+            compiled = xquery.compile(context, GET_BASE_REV_FOR_KEY_SOURCE);
+        try {
+            Sequence s = xquery.execute(compiled, Sequence.EMPTY_SEQUENCE);
+            if (s.isEmpty())
+                return 0;
+
+            IntegerValue iv = (IntegerValue) s.itemAt(0);
+            return iv.getLong();
+        } finally {
+            pool.returnCompiledXQuery(GET_BASE_REV_FOR_KEY_SOURCE, compiled);
         }
     }
 }
