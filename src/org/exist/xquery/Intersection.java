@@ -105,5 +105,9 @@ public class Intersection extends CombiningExpression {
         result.append(" intersect ");
         result.append(right.toString());
         return result.toString();
-    }    
+    }
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitIntersectionExpr(this);
+    }
 }

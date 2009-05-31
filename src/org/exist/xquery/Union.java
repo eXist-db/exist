@@ -97,5 +97,9 @@ public class Union extends CombiningExpression {
     	result.append(" union ");
     	result.append(right.toString());
     	return result.toString();
-    }    
+    }
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitUnionExpr(this);
+    }
 }

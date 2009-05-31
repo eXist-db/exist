@@ -36,6 +36,8 @@ public interface ExpressionVisitor {
 
     public void visitUnionExpr(Union union);
 
+    public void visitIntersectionExpr(Intersection intersect);
+    
     public void visitAndExpr(OpAnd and);
 
     public void visitOrExpr(OpOr or);
