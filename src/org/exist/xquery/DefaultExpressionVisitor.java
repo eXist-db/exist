@@ -114,4 +114,14 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         if (constructor.getContentExpr() != null)
             constructor.getContentExpr().accept(this);
     }
+
+    public void visitUnionExpr(Union union) {
+        union.left.accept(this);
+        union.right.accept(this);
+    }
+
+    public void visitIntersectionExpr(Intersection intersect) {
+        intersect.left.accept(this);
+        intersect.right.accept(this);
+    }
 }

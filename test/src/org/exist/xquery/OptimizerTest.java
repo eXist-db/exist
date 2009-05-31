@@ -212,6 +212,9 @@ public class OptimizerTest {
         r = execute("//mods:mods[*/mods:title &= 'ethnic']", false);
         execute("//mods:mods[*/mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
 
+        r = execute("//mods:mods[.//mods:title &= 'ethnic']", false);
+        execute("//mods:mods[.//mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
+
         r = execute("//mods:mods[mods:physicalDescription/mods:internetMediaType = 'text/html']", false);
         execute("//mods:mods[mods:physicalDescription/mods:internetMediaType = 'text/html']", true, MSG_OPT_ERROR, r);
 
