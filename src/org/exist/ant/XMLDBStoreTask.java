@@ -126,21 +126,18 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 	        if (mime == null)
 	            mime = MimeTable.getInstance().getContentTypeFor(srcFile.getName());
 	        if (mime == null) {
-	      	  String msg="Cannot find mime-type for " + srcFile.getName();
-	    	  if(failonerror)
-	    		  throw new BuildException(msg);
-	    	  else
-	    		  log(msg,Project.MSG_ERR);
-	        } else {
-		        resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
-		        if (targetFile == null)
-		            targetFile = srcFile.getName();
-		        log("Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
-		        res = col.createResource(targetFile, resourceType);
-		        res.setContent(srcFile);
-		        ((EXistResource) res).setMimeType(mime.getName());
-		        col.storeResource(res);
-	        }
+	      	  String msg="Cannot find mime-type for " + srcFile.getName() + ". Treating it as a binary.";
+    		  log(msg,Project.MSG_ERR);
+		  mime = MimeType.BINARY_TYPE;
+		}
+		resourceType = mime.isXMLType() ? "XMLResource" : "BinaryResource";
+		if (targetFile == null)
+		    targetFile = srcFile.getName();
+		log("Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
+		res = col.createResource(targetFile, resourceType);
+		res.setContent(srcFile);
+		((EXistResource) res).setMimeType(mime.getName());
+		col.storeResource(res);
 	      } else
 	      {
 	        log("Storing fileset", Project.MSG_DEBUG);
@@ -176,19 +173,16 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 	          if (mime == null)
 	              currentMime = MimeTable.getInstance().getContentTypeFor(file.getName());
 	          if (currentMime == null) {
-		      	  String msg="Cannot find mime-type for " + file.getName();
-		    	  if(failonerror)
-		    		  throw new BuildException(msg);
-		    	  else
-		    		  log(msg,Project.MSG_ERR);
-	          } else {
-		          resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
-		          log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
-		          res = col.createResource(file.getName(), resourceType);
-		          res.setContent(file);
-		          ((EXistResource) res).setMimeType(currentMime.getName());
-		          col.storeResource(res);
+		      	  String msg="Cannot find mime-type for " + file.getName()+". Treating it as a binary.";
+	    		  log(msg,Project.MSG_ERR);
+			  currentMime = MimeType.BINARY_TYPE;
 	          }
+		  resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
+		  log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
+		  res = col.createResource(file.getName(), resourceType);
+		  res.setContent(file);
+		  ((EXistResource) res).setMimeType(currentMime.getName());
+		  col.storeResource(res);
 	        }
 	      }
       }
