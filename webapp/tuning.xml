@@ -52,17 +52,6 @@
         </section>
         
         <section>
-            <title>Problems with certain JVMs</title>
-            
-            <para>In some cases, huge differences could be observed between Java virtual machine
-                implementations. In particular, it has been reported that storing the same data
-                on a laptop running Mac OS X could sometimes be up to 15 times slower than on windows 
-                or GNU/Linux. This is just an observation based on the teaching experience of 
-                some users and should not be generalized. However, it might be worth to test 
-                different JVMs.</para>
-        </section>
-        
-        <section>
             <title>Index configuration</title>
 
             <section>
