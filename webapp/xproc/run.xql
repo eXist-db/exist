@@ -10,5 +10,9 @@ declare option exist:serialize "method=xhtml media-type=html";
 let $pipeline := request:get-parameter("xproc", ())
 let $stdin := request:get-parameter("stdin", ())
 let $indoc := if ($stdin) then doc($stdin) else ()
+let $debug := if(request:get-parameter("debug", ())) then
+					request:get-parameter("debug", ())
+				 else
+					'0'
 return
-     xproc:run(doc($pipeline), $indoc, "0")
+     xproc:run(doc($pipeline), $indoc, $debug)
