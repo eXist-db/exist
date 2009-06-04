@@ -210,6 +210,13 @@
                 </xs:element>
                 <xs:element name="serializer">
                     <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="custom-filter" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:attribute name="class" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
                         <xs:attribute name="add-exist-id" default="none">
                             <xs:simpleType>
                                 <xs:restriction base="xs:string">
