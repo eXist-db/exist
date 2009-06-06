@@ -57,7 +57,9 @@ public class Variable {
 	
     // the sequence type of this variable if known
     private SequenceType type = null;
-    
+
+    private int staticType = Type.ITEM;
+
     private boolean initialized = true;
     
 	/**
@@ -133,6 +135,14 @@ public class Variable {
     
     public SequenceType getSequenceType() {
         return type;
+    }
+
+    public void setStaticType(int type) {
+        staticType = type;
+    }
+
+    public int getStaticType() {
+        return staticType;
     }
     
     public boolean isInitialized() {

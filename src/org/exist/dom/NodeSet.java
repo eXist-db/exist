@@ -207,9 +207,13 @@ public interface NodeSet extends Sequence, NodeList {
      */    
     public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId);
 	
-    public NodeSet selectPreceding(NodeSet preceding) throws XPathException;
-    
-    public NodeSet selectFollowing(NodeSet following) throws XPathException;
+    public NodeSet selectPreceding(NodeSet preceding, int contextId) throws XPathException;
+
+    public NodeSet selectPreceding(NodeSet preceding, int position, int contextId) throws XPathException, UnsupportedOperationException;
+
+    public NodeSet selectFollowing(NodeSet following, int contextId) throws XPathException;
+
+    public NodeSet selectFollowing(NodeSet following, int position, int contextId) throws XPathException;
     
 	/**
 	 * Check if the node identified by its node id has an ancestor contained in this node set

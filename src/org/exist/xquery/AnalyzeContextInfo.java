@@ -39,6 +39,7 @@ public class AnalyzeContextInfo {
 	private int contextId = Expression.NO_CONTEXT_ID;
 	
 	private int staticType = Type.ITEM;
+    private int staticReturnType = Type.ITEM;
 
     private Expression contextStep = null;
 
@@ -132,6 +133,14 @@ public class AnalyzeContextInfo {
 		this.staticType = staticType;
 	}
 
+    public int getStaticReturnType() {
+        return staticReturnType;
+    }
+
+    public void setStaticReturnType(int type) {
+        this.staticReturnType = type;
+    }
+    
     public void setContextStep(Expression step) {
         this.contextStep = step;
     }

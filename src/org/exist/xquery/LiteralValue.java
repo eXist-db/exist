@@ -56,6 +56,7 @@ public class LiteralValue extends AbstractExpression {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setStaticReturnType(value.getType());
     }
     
 	/* (non-Javadoc)

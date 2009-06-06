@@ -65,15 +65,16 @@ public class ExtNear extends ExtFulltext {
 	 * @see org.exist.xquery.functions.ExtFulltext#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		super.analyze(new AnalyzeContextInfo(contextInfo));
+        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        super.analyze(newContextInfo);
 
-		if (maxDistance != null) {
-			maxDistance.analyze(contextInfo);
-		}
-		if (minDistance != null) {
-			minDistance.analyze(contextInfo);
-		}
-	}
+        if (maxDistance != null) {
+            maxDistance.analyze(newContextInfo);
+        }
+        if (minDistance != null) {
+            minDistance.analyze(newContextInfo);
+        }
+    }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
         // the expression can be called multiple times, so we need to clear the previous preselectResult

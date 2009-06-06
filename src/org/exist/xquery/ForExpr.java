@@ -90,15 +90,17 @@ public class ForExpr extends BindingExpression {
 		LocalVariable mark = context.markLocalVariables(false);
 		
 		contextInfo.setParent(this);
-		inputSequence.analyze(contextInfo);
+        AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
+		inputSequence.analyze(varContextInfo);
 		
 		// Declare the iteration variable
         LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
         inVar.setSequenceType(sequenceType);
+        inVar.setStaticType(varContextInfo.getStaticReturnType());
 		context.declareVariableBinding(inVar);
 		
 		// Declare positional variable
-		if(positionalVariable != null) {
+		if (positionalVariable != null) {
 			//could probably be detected by the parser
 			if (varName.equals(positionalVariable))
 				throw new XPathException(this, "XQST0089: bound variable and positional variable have the same name");

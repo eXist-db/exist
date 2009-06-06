@@ -36,12 +36,19 @@ public abstract class Step extends AbstractExpression {
 	protected final static Logger LOG = Logger.getLogger(Step.class);
 	
     protected int axis = Constants.UNKNOWN_AXIS;
+
     protected boolean abbreviatedStep = false;
+
     protected ArrayList predicates = new ArrayList();
+
     protected NodeTest test;
-	protected boolean inPredicate = false;
-	protected int staticReturnType = Type.ITEM;
-	
+
+    protected boolean inPredicate = false;
+
+    protected int staticReturnType = Type.ITEM;
+
+    protected boolean hasPositionalPredicate = false;
+
     public Step( XQueryContext context, int axis ) {
         super(context);
         this.axis = axis;
@@ -94,6 +101,8 @@ public abstract class Step extends AbstractExpression {
             for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
 	            ((Predicate) i.next()).analyze(newContext);
 	        }
+            if (predicates.size() == 1 && (newContext.getFlags() & POSITIONAL_PREDICATE) != 0)
+                hasPositionalPredicate = true;
     	}
         // if we are on the self axis, remember the static return type given in the context
         if (this.axis == Constants.SELF_AXIS)

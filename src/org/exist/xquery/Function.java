@@ -330,10 +330,10 @@ public abstract class Function extends PathExpr {
     	contextId = contextInfo.getContextId();
     	contextInfo.setParent(this);
         for(int i = 0; i < getArgumentCount(); i++) {
-            getArgument(i).analyze(contextInfo);
+            AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+            getArgument(i).analyze(argContextInfo);
         }
     }
-    
 	public abstract Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)

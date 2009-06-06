@@ -288,12 +288,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	
 	protected final static void clearContext(int contextId, Sequence seq) throws XPathException {
 		if (seq != null && !(seq instanceof VirtualNodeSet)) {
-			Item next;
-			for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
-				next = i.nextItem();
-				if (next instanceof NodeProxy)
-					((NodeProxy)next).clearContext(contextId);
-			}
+            seq.clearContext(contextId);
 		}
 	}
 

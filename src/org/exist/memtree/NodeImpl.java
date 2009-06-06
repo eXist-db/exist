@@ -976,7 +976,6 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
     }
 
     public void clearContext(int contextId) {
-		throw new RuntimeException("Can not call clearContext() on node type " + this.getNodeType());
 	}
 
     public int getState() {

@@ -1286,8 +1286,12 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectFollowing(org.exist.dom.NodeSet)
      */
-    public NodeSet selectPreceding(NodeSet preceding) throws XPathException {
+    public NodeSet selectPreceding(NodeSet preceding, int contextId) throws XPathException {
         return NodeSetHelper.selectPreceding(this, preceding);
+    }
+
+    public NodeSet selectPreceding(NodeSet preceding, int position, int contextId) throws XPathException, UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1297,8 +1301,12 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>NodeSet</code> value
      * @exception XPathException if an error occurs
      */
-    public NodeSet selectFollowing(NodeSet following) throws XPathException {
+    public NodeSet selectFollowing(NodeSet following, int contextId) throws XPathException {
         return NodeSetHelper.selectFollowing(this, following);
+    }
+
+    public NodeSet selectFollowing(NodeSet following, int position, int contextId) throws XPathException {
+        throw new UnsupportedOperationException();
     }
 
     /**
