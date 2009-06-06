@@ -957,6 +957,86 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
         return super.selectFollowingSiblings(siblings, contextId);
     }
 
+    public NodeSet selectFollowing(NodeSet fl, int contextId) throws XPathException {
+        return selectFollowing(fl, -1, contextId);
+    }
+
+    public NodeSet selectFollowing(NodeSet pl, int position, int contextId) throws XPathException, UnsupportedOperationException {
+        sort();
+        NodeSet result = new NewArrayNodeSet();
+        for (Iterator it = pl.iterator(); it.hasNext(); ) {
+            NodeProxy reference = (NodeProxy) it.next();
+            int idx = findDoc(reference.getDocument());
+            if (idx < 0)
+                continue;
+            int i = documentOffsets[idx];
+            for (; i < size; i++) {
+                if (nodes[i].getDocument().getDocId() != reference.getDocument().getDocId() ||
+                        (nodes[i].compareTo(reference) > 0 && !nodes[i].getNodeId().isDescendantOf(reference.getNodeId())))
+                    break;
+            }
+            int n = 0;
+            for (int j = i; j < size; j++) {
+                if (nodes[j].getDocument().getDocId() != reference.getDocument().getDocId())
+                    break;
+                if (!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
+                    if (position < 0 || ++n == position) {
+                        if (Expression.IGNORE_CONTEXT != contextId) {
+                            if (Expression.NO_CONTEXT_ID == contextId) {
+                                nodes[j].copyContext(reference);
+                            } else {
+                                nodes[j].addContextNode(contextId, reference);
+                            }
+                        }
+                        result.add(nodes[j]);
+                    }
+                    if (n == position)
+                        break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public NodeSet selectPreceding(NodeSet pl, int contextId) throws XPathException {
+        return selectPreceding(pl, -1, contextId);
+    }
+
+    public NodeSet selectPreceding(NodeSet pl, int position, int contextId) throws XPathException, UnsupportedOperationException {
+        sort();
+        NodeSet result = new NewArrayNodeSet();
+        for (Iterator it = pl.iterator(); it.hasNext(); ) {
+            NodeProxy reference = (NodeProxy) it.next();
+            int idx = findDoc(reference.getDocument());
+            if (idx < 0)
+                continue;
+            int i = documentOffsets[idx];
+            // TODO: check document id
+            for (; i < size; i++) {
+                if (nodes[i].compareTo(reference) >= 0)
+                    break;
+            }
+            --i;
+            int n = 0;
+            for (int j = i; j >= documentOffsets[idx]; j--) {
+                if (!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
+                    if (position < 0 || ++n == position) {
+                        if (Expression.IGNORE_CONTEXT != contextId) {
+                            if (Expression.NO_CONTEXT_ID == contextId) {
+                                nodes[j].copyContext(reference);
+                            } else {
+                                nodes[j].addContextNode(contextId, reference);
+                            }
+                        }
+                        result.add(nodes[j]);
+                    }
+                    if (n == position)
+                        break;
+                }
+            }
+        }
+        return result;
+    }
 
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#selectAncestors(org.exist.dom.NodeSet, boolean, boolean)
@@ -1063,6 +1143,12 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
             }
         }
         return indexType;
+    }
+
+    public void clearContext(int contextId) throws XPathException {
+        for (int i = 0; i < size; i++) {
+            nodes[i].clearContext(contextId);
+        }
     }
 
     /**

@@ -52,6 +52,7 @@ public class VariableReference extends AbstractExpression {
         if (!var.isInitialized())
             throw new XPathException(this, "XQST0054: variable declaration of '$" + qname + "' cannot " +
             "be executed because of a circularity.");
+        contextInfo.setStaticReturnType(var.getStaticType());
     }
     
 	/* (non-Javadoc)

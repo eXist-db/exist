@@ -67,6 +67,8 @@ public interface Expression {
     public final static int NEED_INDEX_INFO = 16;
 
     public final static int USE_TREE_TRAVERSAL = 32;
+
+    public final static int POSITIONAL_PREDICATE = 64;
     
     public final static int DOT_TEST = 128;
 

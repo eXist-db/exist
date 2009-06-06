@@ -48,12 +48,19 @@ public class SequenceConstructor extends PathExpr {
         contextInfo.setParent(this);
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         contextId = contextInfo.getContextId();
-        
+
+        int staticType = Type.ANY_TYPE;
         for (int i = 0; i < steps.size(); i++) {
-            Expression expr = (Expression) steps.get(i);
-            //Create a new context info because each sequence expression could modify it (add/remove flags...)            
-            expr.analyze(new AnalyzeContextInfo(contextInfo));
+            Expression expr = steps.get(i);
+            //Create a new context info because each sequence expression could modify it (add/remove flags...)
+            AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
+            expr.analyze(info);
+            if (staticType == Type.ANY_TYPE)
+                staticType = info.getStaticReturnType();
+            else if (staticType != Type.ITEM && staticType != info.getStaticReturnType())
+                staticType = Type.ITEM;
         }
+        contextInfo.setStaticReturnType(staticType);
     }
     
 	/* (non-Javadoc)

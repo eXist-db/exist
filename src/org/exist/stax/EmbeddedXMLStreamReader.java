@@ -31,6 +31,7 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.StreamFilter;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.AttrImpl;
@@ -108,6 +109,14 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         this.iterator = iterator;
         this.reportAttribs = reportAttributes;
         this.origin = origin;
+    }
+
+    public void filter(StreamFilter filter) throws XMLStreamException {
+        while (hasNext()) {
+            next();
+            if (!filter.accept(this))
+                break;
+        }
     }
 
     /**

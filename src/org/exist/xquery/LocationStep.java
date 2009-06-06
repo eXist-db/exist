@@ -37,9 +37,15 @@ import org.exist.storage.UpdateListener;
 import org.exist.xquery.value.*;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.InMemoryNodeSet;
+import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.StaXUtil;
 import org.w3c.dom.Node;
 
+import javax.xml.stream.StreamFilter;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamException;
 import java.util.Iterator;
+import java.io.IOException;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
@@ -76,7 +82,9 @@ public class LocationStep extends Step {
     protected boolean useDirectAttrSelect = true;
 
     protected boolean useDirectChildSelect = false;
-    
+
+    protected boolean applyPredicate = true;
+
     // Cache for the current NodeTest type
     private Integer nodeTestType = null;
 
@@ -177,7 +185,7 @@ public class LocationStep extends Step {
                                       Sequence contextSequence) throws XPathException {
         if (contextSequence == null)
             return Sequence.EMPTY_SEQUENCE;
-        if (predicates.size() == 0)
+        if (predicates.size() == 0 || !applyPredicate)
             // Nothing to apply
             return contextSequence;
         Sequence result;
@@ -833,6 +841,17 @@ public class LocationStep extends Step {
             return nodes.getPreceding(test);
         }
         NodeSet contextSet = contextSequence.toNodeSet();
+        int position = -1;
+        if (hasPositionalPredicate) {
+            Predicate pred = (Predicate) predicates.get(0);
+            Sequence seq = pred.preprocess();
+
+            NumericValue v = (NumericValue)seq.itemAt(0);
+            //Non integers return... nothing, not even an error !
+            if (!v.hasFractionalPart() && !v.isZero()) {
+                position = v.getInt();
+            }
+        }
         //TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
@@ -840,8 +859,21 @@ public class LocationStep extends Step {
             return vset;
         }
         if (test.isWildcardTest()) {
-            // TODO : throw an exception here ! Don't let this pass through
-            return NodeSet.EMPTY_SET;
+            try {
+                NodeSet result = new NewArrayNodeSet();
+                for (Iterator i = contextSet.iterator(); i.hasNext();) {
+                    NodeProxy next = (NodeProxy) i.next();
+                    NodeProxy root = new NodeProxy(next.getDocument(), NodeId.ROOT_NODE);
+                    PrecedingFilter filter = new PrecedingFilter(test, next, result, contextId);
+                    EmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(root, false);
+                    reader.filter(filter);
+                }
+                return result;
+            } catch (XMLStreamException e) {
+                throw new XPathException(this, e.getMessage(), e);
+            } catch (IOException e) {
+                throw new XPathException(this, e.getMessage(), e);
+            }
         } else {
         	//TODO : no test on preloaded data ?
             DocumentSet docs = getDocumentSet(contextSet);
@@ -858,7 +890,15 @@ public class LocationStep extends Step {
                     currentDocs = docs;
                     registerUpdateListener();
                 }
-                return currentSet.selectPreceding(contextSet);
+                if (hasPositionalPredicate) {
+                    try {
+                        applyPredicate = false;
+                        return currentSet.selectPreceding(contextSet, position, contextId);
+                    } catch (UnsupportedOperationException e) {
+                        return currentSet.selectPreceding(contextSet, contextId);
+                    }
+                } else
+                    return currentSet.selectPreceding(contextSet, contextId);
             }
         }
     }
@@ -878,6 +918,17 @@ public class LocationStep extends Step {
             return nodes.getFollowing(test);
         }
         NodeSet contextSet = contextSequence.toNodeSet();
+        int position = -1;
+        if (hasPositionalPredicate) {
+            Predicate pred = (Predicate) predicates.get(0);
+            Sequence seq = pred.preprocess();
+
+            NumericValue v = (NumericValue)seq.itemAt(0);
+            //Non integers return... nothing, not even an error !
+            if (!v.hasFractionalPart() && !v.isZero()) {
+                position = v.getInt();
+            }
+        }
         //TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
@@ -885,8 +936,22 @@ public class LocationStep extends Step {
             return vset;
         }
         if (test.isWildcardTest() && test.getType() != Type.PROCESSING_INSTRUCTION) {
-            // TODO : throw an exception here ! Don't let this pass through
-            return NodeSet.EMPTY_SET;
+            // handle wildcard steps like following::node()
+            try {
+                NodeSet result = new NewArrayNodeSet();
+                for (Iterator i = contextSet.iterator(); i.hasNext();) {
+                    NodeProxy next = (NodeProxy) i.next();
+                    NodeProxy root = new NodeProxy(next.getDocument(), NodeId.ROOT_NODE);
+                    FollowingFilter filter = new FollowingFilter(test, next, result, contextId);
+                    EmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(root, false);
+                    reader.filter(filter);
+                }
+                return result;
+            } catch (XMLStreamException e) {
+                throw new XPathException(this, e.getMessage(), e);
+            } catch (IOException e) {
+                throw new XPathException(this, e.getMessage(), e);
+            }
         } else {
         	//TODO : no test on preloaded data ?
             DocumentSet docs = getDocumentSet(contextSet);
@@ -903,7 +968,15 @@ public class LocationStep extends Step {
                     currentDocs = docs;
                     registerUpdateListener();
                 }
-                return currentSet.selectFollowing(contextSet);
+                if (hasPositionalPredicate) {
+                    try {
+                        applyPredicate = false;
+                        return currentSet.selectFollowing(contextSet, position, contextId);
+                    } catch (UnsupportedOperationException e) {
+                        return currentSet.selectFollowing(contextSet, contextId);
+                    }
+                } else
+                    return currentSet.selectFollowing(contextSet, contextId);
             }
         }
     }
@@ -1173,4 +1246,80 @@ public class LocationStep extends Step {
         }
     }
 
+    private static class FollowingFilter implements StreamFilter {
+
+        private NodeTest test;
+        private NodeProxy referenceNode;
+        private NodeSet result;
+        private int contextId;
+        private boolean isAfter = false;
+
+        private FollowingFilter(NodeTest test, NodeProxy referenceNode, NodeSet result, int contextId) {
+            this.test = test;
+            this.referenceNode = referenceNode;
+            this.result = result;
+            this.contextId = contextId;
+        }
+
+        public boolean accept(XMLStreamReader reader) {
+            if (reader.getEventType() == XMLStreamReader.END_ELEMENT)
+                return true;
+            NodeId refId = referenceNode.getNodeId();
+            NodeId currentId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+            if (!isAfter)
+                isAfter = currentId.compareTo(refId) > 0 && !currentId.isDescendantOf(refId);
+            if (isAfter && !refId.isDescendantOf(currentId) && test.matches(reader)) {
+                NodeProxy proxy = new NodeProxy(referenceNode.getDocument(), currentId,
+                        StaXUtil.streamType2DOM(reader.getEventType()),
+                        ((EmbeddedXMLStreamReader)reader).getCurrentPosition());
+                if (Expression.IGNORE_CONTEXT != contextId) {
+                    if (Expression.NO_CONTEXT_ID == contextId) {
+                        proxy.copyContext(referenceNode);
+                    } else {
+                        proxy.addContextNode(contextId, referenceNode);
+                    }
+                }
+                result.add(proxy);
+            }
+            return true;
+        }
+    }
+
+    private static class PrecedingFilter implements StreamFilter {
+
+        private NodeTest test;
+        private NodeProxy referenceNode;
+        private NodeSet result;
+        private int contextId;
+
+        private PrecedingFilter(NodeTest test, NodeProxy referenceNode, NodeSet result, int contextId) {
+            this.test = test;
+            this.referenceNode = referenceNode;
+            this.result = result;
+            this.contextId = contextId;
+        }
+
+        public boolean accept(XMLStreamReader reader) {
+            if (reader.getEventType() == XMLStreamReader.END_ELEMENT)
+                return true;
+            NodeId refId = referenceNode.getNodeId();
+            NodeId currentId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+            if (currentId.compareTo(refId) >= 0)
+                return false;
+            if (!refId.isDescendantOf(currentId) && test.matches(reader)) {
+                NodeProxy proxy = new NodeProxy(referenceNode.getDocument(), currentId,
+                        StaXUtil.streamType2DOM(reader.getEventType()),
+                        ((EmbeddedXMLStreamReader)reader).getCurrentPosition());
+                if (Expression.IGNORE_CONTEXT != contextId) {
+                    if (Expression.NO_CONTEXT_ID == contextId) {
+                        proxy.copyContext(referenceNode);
+                    } else {
+                        proxy.addContextNode(contextId, referenceNode);
+                    }
+                }
+                result.add(proxy);
+            }
+            return true;
+        }
+    }
 }

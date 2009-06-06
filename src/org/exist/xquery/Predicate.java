@@ -87,7 +87,10 @@ public class Predicate extends PathExpr {
 
         Expression inner = getExpression(0);
 
-        final int innerType = inner.returnsType();
+        final int staticReturnType = newContextInfo.getStaticReturnType();
+        final int innerType = staticReturnType != Type.ITEM ?
+                staticReturnType : inner.returnsType();
+
         // Case 1: predicate expression returns a node set.
         // Check the returned node set against the context set
         // and return all nodes from the context, for which the
@@ -108,6 +111,10 @@ public class Predicate extends PathExpr {
             newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
             super.analyze(newContextInfo);
 		}
+
+        if (executionMode == POSITIONAL && staticReturnType != Type.ITEM && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
+            contextInfo.addFlag(POSITIONAL_PREDICATE);
+        }
     }
 
     private AnalyzeContextInfo createContext(AnalyzeContextInfo contextInfo) {
@@ -123,7 +130,12 @@ public class Predicate extends PathExpr {
         return newContextInfo;
     }
 
-    public Sequence evalPredicate(Sequence outerSequence, Sequence contextSequence,	int mode)
+    public Sequence preprocess() throws XPathException {
+        Expression inner = steps.size() == 1 ? getExpression(0) : this;
+        return inner.eval(null);
+    }
+
+    public Sequence evalPredicate(Sequence outerSequence, Sequence contextSequence, int mode)
 		    throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
@@ -463,7 +475,7 @@ public class Predicate extends PathExpr {
                         temp = p.getParents(Expression.NO_CONTEXT_ID);
                         break;
                     case Constants.PRECEDING_AXIS:
-                        temp = contextSet.selectPreceding(p);
+                        temp = contextSet.selectPreceding(p, Expression.IGNORE_CONTEXT);
                         break;
                     case Constants.PRECEDING_SIBLING_AXIS:
                         temp = contextSet.selectPrecedingSiblings(p, Expression.IGNORE_CONTEXT);
@@ -473,7 +485,7 @@ public class Predicate extends PathExpr {
                         reverseAxis = false;
                         break;
                     case Constants.FOLLOWING_AXIS:
-                        temp = contextSet.selectFollowing(p);
+                        temp = contextSet.selectFollowing(p, Expression.IGNORE_CONTEXT);
                         reverseAxis = false;
                         break;
                     case Constants.SELF_AXIS:

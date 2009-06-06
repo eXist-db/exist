@@ -495,7 +495,7 @@ public class NodeSetHelper {
         throws XPathException {
         if (candidates.isEmpty() || references.isEmpty())
             return NodeSet.EMPTY_SET;
-        NodeSet result = new ExtArrayNodeSet();
+        NodeSet result = new NewArrayNodeSet();
         for (Iterator iReferences = references.iterator(); iReferences
                  .hasNext();) {
             NodeProxy reference = (NodeProxy) iReferences.next();

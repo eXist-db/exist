@@ -24,6 +24,7 @@ package org.exist.xquery;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Type;
+import org.exist.stax.StaXUtil;
 import org.w3c.dom.Node;
 
 import javax.xml.stream.XMLStreamReader;
@@ -83,27 +84,7 @@ public class TypeTest implements NodeTest {
     protected boolean isOfEventType(int type) {
         if (nodeType == Type.NODE)
             return true;
-        int xpathType;
-        switch (type) {
-            case XMLStreamReader.START_ELEMENT :
-                xpathType = Type.ELEMENT;
-                break;
-            case XMLStreamReader.ATTRIBUTE :
-                xpathType = Type.ATTRIBUTE;
-                break;
-            case XMLStreamReader.CHARACTERS :
-            case XMLStreamReader.CDATA :
-                xpathType = Type.TEXT;
-                break;
-            case XMLStreamReader.COMMENT :
-                xpathType = Type.COMMENT;
-                break;
-            case XMLStreamReader.PROCESSING_INSTRUCTION :
-                xpathType = Type.PROCESSING_INSTRUCTION;
-                break;
-            default:
-                return false;
-        }
+        int xpathType = StaXUtil.streamType2Type(type);
         return xpathType == nodeType;
     }
 

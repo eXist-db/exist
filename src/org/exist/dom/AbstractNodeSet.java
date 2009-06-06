@@ -271,12 +271,20 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return NodeSetHelper.selectAncestors(this, descendants, includeSelf, contextId);
     }
 
-    public NodeSet selectFollowing(NodeSet fl) throws XPathException {
+    public NodeSet selectFollowing(NodeSet fl, int contextId) throws XPathException {
         return NodeSetHelper.selectFollowing(fl, this);
     }
 
-    public NodeSet selectPreceding(NodeSet pl) throws XPathException {
+    public NodeSet selectFollowing(NodeSet following, int position, int contextId) throws XPathException {
+        throw new UnsupportedOperationException();
+    }
+
+    public NodeSet selectPreceding(NodeSet pl, int contextId) throws XPathException {
         return NodeSetHelper.selectPreceding(pl, this);
+    }
+
+    public NodeSet selectPreceding(NodeSet preceding, int nth, int contextId) throws XPathException, UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 
     /**

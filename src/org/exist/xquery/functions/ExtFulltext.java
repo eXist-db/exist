@@ -105,9 +105,10 @@ public class ExtFulltext extends Function implements Optimizable {
      * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
-        path.analyze(contextInfo);
-        searchTerm.analyze(contextInfo);
+        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        newContextInfo.setParent(this);
+        path.analyze(newContextInfo);
+        searchTerm.analyze(newContextInfo);
 
         List steps = BasicExpressionVisitor.findLocationSteps(path);
         if (!steps.isEmpty()) {
