@@ -98,6 +98,7 @@
             
             <formatter type="plain"/>
             <formatter type="xml"/>
+            <test fork="yes" name="xquery.RunTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xmldb.XmldbLocalTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xupdate.AllXupdateTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
@@ -128,6 +129,7 @@
                     <exclude name="org/exist/*.java"/>
                     <exclude name="**/fulltext/**/*.java"/>
 					<exclude name="org/exist/http/underheavyload/*.java"/>
+                    <exclude name="xquery/**/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
