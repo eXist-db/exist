@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>Following and preceding axis tests</testName>
+    <description>
+        <p>Test the following and preceding XPath axes</p>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="axes1.xml">
+            <test>
+                <line>
+                    <word>XPath</word>
+                    <word>developers</word>
+                    <word>enjoy</word>
+                </line>
+                <line>
+                    <word>working</word>
+                    <word>with</word>
+                </line>
+                <line>
+                    <word>the</word>
+                    <word>following</word>
+                    <word>axis</word>
+                </line>
+            </test>
+        </store>
+        <store collection="/db/test" name="axes2.xml">
+            <test>
+                <a>
+                    <b>
+                        <c>C1</c>
+                    </b>
+                    <c>C2</c>
+                    <e>E1</e>
+                    <d>
+                        <e>
+                            <c>C3</c>
+                        </e>
+                    </d>
+                    <c>C4</c>
+                </a>
+            </test>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/test"/>
+    </tearDown>
+    <test output="text">
+        <task>Simple following axis test</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word</code>
+        <expected>with the following axis</expected>
+    </test>
+    <test output="text">
+        <task>Empty following axis</task>
+        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'axis']/following::word)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Following axis test: element()</task>
+        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'working']/following::element())</code>
+        <expected>5</expected>
+    </test>
+    <test output="text">
+        <task>Following axis test: text()</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::text()</code>
+        <expected>with the following axis</expected>
+    </test>
+    <test output="text">
+        <task>Following axis test: node()</task>
+        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'working']/following::node())</code>
+        <expected>9</expected>
+    </test>
+    <test output="text">
+        <task>Nested following axis test 1</task>
+        <code>doc("/db/test/axes2.xml")//e/following::c/text()</code>
+        <expected>C3 C4</expected>
+    </test>
+    <test output="text">
+        <task>Nested following axis test 2</task>
+        <code>count(doc("/db/test/axes2.xml")//a/following::c)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Nested following axis test 3</task>
+        <code>count(doc("/db/test/axes2.xml")//c[. = 'C1']/following::*)</code>
+        <expected>6</expected>
+    </test>
+    <test output="text">
+        <task>Nested following axis test 4</task>
+        <code>count(doc("/db/test/axes2.xml")//a/following::*)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Following axis predicate test</task>
+        <code>doc("/db/test/axes2.xml")//e[following::e]</code>
+        <expected>E1</expected>
+    </test>
+    <test output="text">
+        <task>Following axis predicate test</task>
+        <code>doc("/db/test/axes2.xml")//c[following::c]</code>
+        <expected>C1 C2 C3</expected>
+    </test>
+    <test output="text">
+        <task>Following axis predicate test</task>
+        <code>doc("/db/test/axes2.xml")//c[following::c = 'C2']</code>
+        <expected>C1</expected>
+    </test>
+    <test output="text">
+        <task>Following axis predicate test 2</task>
+        <code>doc("/db/test/axes2.xml")//c[following::* = 'C2']</code>
+        <expected>C1</expected>
+    </test>
+    <test output="text">
+        <task>Following axis with positional predicate test</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word[2]</code>
+        <expected>the</expected>
+    </test>
+    <test output="text">
+        <task>Following axis with positional predicate test 2</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word[2]/text()</code>
+        <expected>the</expected>
+    </test>
+    <test output="text">
+        <task>Following axis with positional predicate test 3</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word[last()]</code>
+        <expected>axis</expected>
+    </test>
+    <test output="text">
+        <task>Following axis with positional predicate test 4</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word[position() = 2]</code>
+        <expected>the</expected>
+    </test>
+    <!-- Preceding axis tests -->
+    <test output="text">
+        <task>Simple preceding axis test</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'with']/preceding::word</code>
+        <expected>XPath developers enjoy working</expected>
+    </test>
+    <test output="text">
+        <task>Simple preceding axis test 2</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'the']/preceding::word</code>
+        <expected>XPath developers enjoy working with</expected>
+    </test>
+    <test output="text">
+        <task>Empty preceding axis</task>
+        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'XPath']/preceding::word)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis test: element()</task>
+        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::element())</code>
+        <expected>4</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis test: text()</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'with']/preceding::text()</code>
+        <expected>XPath developers enjoy working</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis test: node()</task>
+        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'working']/following::node())</code>
+        <expected>9</expected>
+    </test>
+    <test output="text">
+        <task>Nested preceding axis test 1</task>
+        <code>doc("/db/test/axes2.xml")//e/preceding::c/text()</code>
+        <expected>C1 C2</expected>
+    </test>
+    <test output="text">
+        <task>Nested preceding axis test 2</task>
+        <code>count(doc("/db/test/axes2.xml")//b/preceding::c)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Nested preceding axis test 3</task>
+        <code>count(doc("/db/test/axes2.xml")//c[. = 'C1']/preceding::*)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Nested preceding axis test 4</task>
+        <code>count(doc("/db/test/axes2.xml")//c[. = 'C2']/preceding::*)</code>
+        <expected>2</expected>
+    </test>
+    <test output="text">
+        <task>Nested preceding axis test 5</task>
+        <code>count(doc("/db/test/axes2.xml")//b/preceding::*)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis predicate test</task>
+        <code>doc("/db/test/axes2.xml")//e[preceding::e]//text()</code>
+        <expected>C3</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis predicate test</task>
+        <code>doc("/db/test/axes2.xml")//c[preceding::c]</code>
+        <expected>C2 C3 C4</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis predicate test 2</task>
+        <code>doc("/db/test/axes2.xml")//c[preceding::* = 'C3']</code>
+        <expected>C4</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis with positional predicate test</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::word[2]</code>
+        <expected>developers</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis with positional predicate test 2</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::word[2]/text()</code>
+        <expected>developers</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis with positional predicate test 3</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::word[last()]</code>
+        <expected>XPath</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis with positional predicate test 4</task>
+        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::word[position() = 2]</code>
+        <expected>developers</expected>
+    </test>
+</TestSet>
