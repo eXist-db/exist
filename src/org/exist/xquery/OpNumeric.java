@@ -88,7 +88,11 @@ public class OpNumeric extends BinaryOp {
 		return returnType;
 	}
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setStaticReturnType(returnType);
+    }
+
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
