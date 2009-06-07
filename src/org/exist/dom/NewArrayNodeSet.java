@@ -827,134 +827,124 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      */
     public NodeSet selectPrecedingSiblings(NodeSet contextSet, int contextId) {
         sort();
-        return super.selectPrecedingSiblings(contextSet, contextId);
-
-//        if (isEmpty() || contextSet.isEmpty()) {
-//            return NodeSet.EMPTY_SET;
-//        }
-//        NewArrayNodeSet result = new NewArrayNodeSet();
-//        NodeSetIterator iReferences = contextSet.iterator();
-//        int idxCandidates = 0;
-//        NodeProxy reference = (NodeProxy) iReferences.next();
-//        NodeProxy candidate = nodes[idxCandidates];
-//        int firstCandidate = -1;
-//        while (true) {
-//            // first, try to find nodes belonging to the same doc
-//            if (reference.getDocument().getDocId() < candidate.getDocument()
-//                .getDocId()) {
-//                firstCandidate = -1;
-//                if (iReferences.hasNext())
-//                    reference = (NodeProxy) iReferences.next();
-//                else
-//                    break;
-//            } else if (reference.getDocument().getDocId() > candidate
-//                       .getDocument().getDocId()) {
-//                firstCandidate = -1;
-//                if (idxCandidates < size)
-//                    candidate = nodes[++idxCandidates];
-//                else
-//                    break;
-//            } else {
-//                // same document: check if the nodes have the same parent
-//                int cmp = candidate.getNodeId().getParentId().compareTo(reference.getNodeId().getParentId());
-//                if (cmp > 0 && candidate.getNodeId().getTreeLevel() <= reference.getNodeId().getTreeLevel()) {
-//                    // wrong parent: proceed
-//                    firstCandidate = -1;
-//                    if (iReferences.hasNext())
-//                        reference = (NodeProxy) iReferences.next();
-//                    else
-//                        break;
-//                } else if (cmp < 0  || (cmp > 0 && candidate.getNodeId().getTreeLevel() >= reference.getNodeId().getTreeLevel())) {
-//                	//Why did I have to invert the test ? ----------------------------^^^^^
-//                    // wrong parent: proceed
-//                    firstCandidate = -1;
-//                    if (idxCandidates < size)
-//                        candidate = nodes[++idxCandidates];
-//                    else
-//                        break;
-//                } else {
-//                    if (firstCandidate < 0)
-//                        firstCandidate = idxCandidates;
-//
-//                    // found two nodes with the same parent
-//                    // now, compare the ids: a node is a following sibling
-//                    // if its id is greater than the id of the other node
-//                    cmp = candidate.getNodeId().compareTo(reference.getNodeId());
-//                    if (cmp < 0) {
-//                        // found a preceding sibling
-//                        NodeProxy t = result.get(candidate);
-//                        if (t == null) {
-//                            if (Expression.IGNORE_CONTEXT != contextId) {
-//                                if (Expression.NO_CONTEXT_ID == contextId) {
-//                                    candidate.copyContext(reference);
-//                                } else {
-//                                    candidate.addContextNode(contextId,
-//                                                             reference);
-//                                }
-//                            }
-//                            result.add(candidate);
-//                        } else if (contextId > Expression.NO_CONTEXT_ID){
-//                            t.addContextNode(contextId, reference);
-//                        }
-//                        if (idxCandidates < size)
-//                            candidate = nodes[++idxCandidates];
-//                        else
-//                            break;
-//                    } else if (cmp > 0) {
-//                        // found a following sibling
-//                        if (idxCandidates < size)
-//                            candidate = nodes[++idxCandidates];
-//                        else
-//                            break;
-//                        // equal nodes: proceed with next node
-//                    } else {
-//                        if (iReferences.hasNext()) {
-//                            reference = (NodeProxy) iReferences.next();
-//                            idxCandidates = firstCandidate;
-//                            candidate = nodes[++idxCandidates];
-//                        } else
-//                            break;
-//                    }
-//                }
-//            }
-//        }
-//        for (Iterator i = contextSet.iterator(); i.hasNext(); ) {
-//            NodeProxy reference = (NodeProxy) i.next();
-//            int docId = reference.getDocument().getDocId();
-//            int docIdx = findDoc(docId);
-//            if (docIdx > -1) {
-//                NodeId referenceId = reference.getNodeId();
-//                NodeId parentId = referenceId.getParentId();
-//                for (int j = 0; j < documentLengths[docIdx]; j++) {
-//                    NodeProxy candidate = nodes[documentOffsets[docIdx] + j];
-//                    if (candidate.getNodeId().compareTo(referenceId) > 0)
-//                        break;
-//                    if (candidate.getNodeId().isChildOf(parentId)) {
-//                        if (Expression.IGNORE_CONTEXT != contextId) {
-//                            if (Expression.NO_CONTEXT_ID == contextId) {
-//                                candidate.copyContext(reference);
-//                            } else {
-//                                candidate.addContextNode(contextId, reference);
-//                            }
-//                        }
-//                        result.add(candidate);
-//                    }
-//                }
-//            }
-//        }
-//        return result;
+        NodeSet result = new NewArrayNodeSet();
+        for (Iterator it = contextSet.iterator(); it.hasNext();) {
+            NodeProxy reference = (NodeProxy) it.next();
+            NodeId parentId = reference.getNodeId().getParentId();
+            int docIdx = findDoc(reference.getDocument());
+            if (docIdx < 0)
+                return null;
+            // do a binary search to pick some node in the range of valid
+            // child ids
+            int low = documentOffsets[docIdx];
+            int high = low + (documentLengths[docIdx] - 1);
+            int end = low + documentLengths[docIdx];
+            int mid = low;
+            int cmp;
+            NodeProxy p;
+            while (low <= high) {
+                mid = (low + high) / 2;
+                p = nodes[mid];
+                if (p.getNodeId().isDescendantOf(parentId)) {
+                    break;	// found a child node, break out.
+                }
+                cmp = p.getNodeId().compareTo(parentId);
+                if (cmp > 0) {
+                    high = mid - 1;
+                } else {
+                    low = mid + 1;
+                }
+            }
+            if (low > high) {
+                continue; // no node found
+            }
+            // find the first child node in the range
+            while (mid < end && nodes[mid].getNodeId().isDescendantOf(parentId)) {
+                ++mid;
+            }
+            --mid;
+            NodeId refId = reference.getNodeId();
+            for (int i = mid; i >= documentOffsets[docIdx]; i--) {
+                NodeId currentId = nodes[i].getNodeId();
+                if (!currentId.isDescendantOf(parentId))
+                    break;
+                if (currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) < 0) {
+                    if (Expression.IGNORE_CONTEXT != contextId) {
+                        if (Expression.NO_CONTEXT_ID == contextId) {
+                            nodes[i].copyContext(reference);
+                        } else {
+                            nodes[i].addContextNode(contextId, reference);
+                        }
+                    }
+                    result.add(nodes[i]);
+                }
+            }
+        }
+        return result;
     }
 
     /**
      * The method <code>selectFollowingSiblings</code>
      *
-     * @param siblings a <code>NodeSet</code> value
+     * @param contextSet a <code>NodeSet</code> value
      * @param contextId an <code>int</code> value
      * @return a <code>NodeSet</code> value
      */
-    public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId) {
+    public NodeSet selectFollowingSiblings(NodeSet contextSet, int contextId) {
         sort();
-        return super.selectFollowingSiblings(siblings, contextId);
+        NodeSet result = new NewArrayNodeSet();
+        for (Iterator it = contextSet.iterator(); it.hasNext();) {
+            NodeProxy reference = (NodeProxy) it.next();
+            NodeId parentId = reference.getNodeId().getParentId();
+            int docIdx = findDoc(reference.getDocument());
+            if (docIdx < 0)
+                return null;
+            // do a binary search to pick some node in the range of valid
+            // child ids
+            int low = documentOffsets[docIdx];
+            int high = low + (documentLengths[docIdx] - 1);
+            int end = low + documentLengths[docIdx];
+            int mid = low;
+            int cmp;
+            NodeProxy p;
+            while (low <= high) {
+                mid = (low + high) / 2;
+                p = nodes[mid];
+                if (p.getNodeId().isDescendantOf(parentId)) {
+                    break;	// found a child node, break out.
+                }
+                cmp = p.getNodeId().compareTo(parentId);
+                if (cmp > 0) {
+                    high = mid - 1;
+                } else {
+                    low = mid + 1;
+                }
+            }
+            if (low > high) {
+                continue; // no node found
+            }
+            // find the first child node in the range
+            while (mid > documentOffsets[docIdx] && nodes[mid - 1].getNodeId().compareTo(parentId) > -1) {
+                --mid;
+            }
+            NodeId refId = reference.getNodeId();
+            for (int i = mid; i < end; i++) {
+                NodeId currentId = nodes[i].getNodeId();
+                if (!currentId.isDescendantOf(parentId))
+                    break;
+                if (currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) > 0) {
+                    if (Expression.IGNORE_CONTEXT != contextId) {
+                        if (Expression.NO_CONTEXT_ID == contextId) {
+                            nodes[i].copyContext(reference);
+                        } else {
+                            nodes[i].addContextNode(contextId, reference);
+                        }
+                    }
+                    result.add(nodes[i]);
+                }
+            }
+        }
+        return result;
     }
 
     public NodeSet selectFollowing(NodeSet fl, int contextId) throws XPathException {

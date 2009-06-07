@@ -42,9 +42,15 @@
                 </a>
             </test>
         </store>
+        <store collection="/db/test" name="axes3.xml">
+            <test>
+                <c>C5</c>
+                <c>C6</c>
+            </test>
+        </store>
     </setup>
     <tearDown>
-        <remove-collection collection="/db/test"/>
+        <!--remove-collection collection="/db/test"/-->
     </tearDown>
     <test output="text">
         <task>Simple following axis test</task>
@@ -221,5 +227,239 @@
         <task>Preceding axis with positional predicate test 4</task>
         <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::word[position() = 2]</code>
         <expected>developers</expected>
+    </test>
+    <test output="text">
+        <task>FLWOR with at and positional predicate</task>
+        <code>
+            let $word := doc("/db/test/axes1.xml")//line/word[. = 'working']
+            for $i at $p in (1 to 3) 
+            return
+                $word/preceding::word[$p]
+        </code>
+        <expected>enjoy developers XPath</expected>
+    </test>
+	<!-- following-sibling axis -->
+    <test output="text">
+        <task>Following sibling axis 1</task>
+        <code>
+			doc("/db/test/axes1.xml")//line/word[. = 'working']/following-sibling::word
+		</code>
+        <expected>with</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 2</task>
+        <code>
+			doc("/db/test/axes1.xml")//line[3]/word[1]/following-sibling::word
+		</code>
+        <expected>following axis</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 3</task>
+        <code>
+			count(doc("/db/test/axes1.xml")//line[1]/following-sibling::word)
+		</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 4</task>
+        <code>
+			count(doc("/db/test/axes1.xml")//line[1]/word[3]/following-sibling::word)
+		</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 5</task>
+        <code>
+			count(doc("/db/test/axes1.xml")//line[1]/following-sibling::line)
+		</code>
+        <expected>2</expected>
+    </test>
+    <test output="xml">
+        <task>Following sibling axis 6</task>
+        <code>
+			doc("/db/test/axes1.xml")//line[2]/following-sibling::line
+		</code>
+        <expected>
+			<line>
+				<word>the</word>
+				<word>following</word>
+				<word>axis</word>
+			</line>
+		</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 7</task>
+        <code>
+			doc("/db/test/axes2.xml")//b/following-sibling::c
+		</code>
+        <expected>C2 C4</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 8</task>
+        <code>
+			doc("/db/test/axes2.xml")//b/following-sibling::c
+		</code>
+        <expected>C2 C4</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 9</task>
+        <code>
+			doc("/db/test/axes2.xml")//c[following-sibling::c]
+		</code>
+        <expected>C2</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 10</task>
+        <code>
+			doc("/db/test/axes2.xml")//c[following-sibling::c]
+		</code>
+        <expected>C2</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 11</task>
+        <code>
+            doc("/db/test/axes2.xml")//e[following-sibling::c]
+        </code>
+        <expected>E1</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 12</task>
+        <code>
+            doc("/db/test/axes2.xml")//b/following-sibling::c[2]
+        </code>
+        <expected>C4</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 12a</task>
+        <code>
+            doc("/db/test/axes2.xml")//b/following-sibling::c[last()]
+        </code>
+        <expected>C4</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 13</task>
+        <code>
+            doc("/db/test/axes2.xml")//b/following-sibling::c[1]
+        </code>
+        <expected>C2</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 14</task>
+        <code>
+            (doc("/db/test/axes2.xml"), doc("/db/test/axes3.xml"))//b/following-sibling::c[1]
+        </code>
+        <expected>C2</expected>
+    </test>
+    <test output="text">
+        <task>Following sibling axis 15</task>
+        <code>
+            (doc("/db/test/axes2.xml"), doc("/db/test/axes3.xml"))//c[following-sibling::c]
+        </code>
+        <expected>C2 C5</expected>
+    </test>
+    <!-- preceding-sibling axis -->
+    <test output="text">
+        <task>Preceding sibling axis 1</task>
+        <code>
+            doc("/db/test/axes1.xml")//line/word[. = 'following']/preceding-sibling::word
+        </code>
+        <expected>the</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 2</task>
+        <code>
+            doc("/db/test/axes1.xml")//line[3]/word[3]/preceding-sibling::word
+        </code>
+        <expected>the following</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 3</task>
+        <code>
+            count(doc("/db/test/axes1.xml")//line[3]/preceding-sibling::word)
+        </code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 4</task>
+        <code>
+            count(doc("/db/test/axes1.xml")//line[1]/word[1]/preceding-sibling::word)
+        </code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 5</task>
+        <code>
+            count(doc("/db/test/axes1.xml")//line[3]/preceding-sibling::line)
+        </code>
+        <expected>2</expected>
+    </test>
+    <test output="xml">
+        <task>Preceding sibling axis 6</task>
+        <code>
+            doc("/db/test/axes1.xml")//line[2]/preceding-sibling::line
+        </code>
+        <expected>
+            <line>
+                <word>XPath</word>
+                <word>developers</word>
+                <word>enjoy</word>
+            </line>
+        </expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 7</task>
+        <code>
+            doc("/db/test/axes2.xml")//d/preceding-sibling::c
+        </code>
+        <expected>C2</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 8</task>
+        <code>
+            doc("/db/test/axes2.xml")//c/preceding-sibling::c
+        </code>
+        <expected>C2</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 9</task>
+        <code>
+            doc("/db/test/axes2.xml")//c[preceding-sibling::c]
+        </code>
+        <expected>C4</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 11</task>
+        <code>
+            doc("/db/test/axes2.xml")//e[preceding-sibling::c]
+        </code>
+        <expected>E1</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 12</task>
+        <code>
+            doc("/db/test/axes2.xml")//c/preceding-sibling::c[1]
+        </code>
+        <expected>C2</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 13</task>
+        <code>
+            doc("/db/test/axes2.xml")//c/preceding-sibling::c[last()]
+        </code>
+        <expected>C2</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 14</task>
+        <code>
+            (doc("/db/test/axes2.xml"), doc("/db/test/axes3.xml"))//d/preceding-sibling::c[1]
+        </code>
+        <expected>C2</expected>
+    </test>
+    <test output="text">
+        <task>Preceding sibling axis 15</task>
+        <code>
+            (doc("/db/test/axes2.xml"), doc("/db/test/axes3.xml"))//c[preceding-sibling::c]
+        </code>
+        <expected>C4 C6</expected>
     </test>
 </TestSet>
