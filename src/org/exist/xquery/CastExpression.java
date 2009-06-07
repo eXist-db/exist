@@ -65,6 +65,7 @@ public class CastExpression extends AbstractExpression {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
         expression.analyze(contextInfo);
+        contextInfo.setStaticReturnType(requiredType);
     }
     
 	/* (non-Javadoc)
@@ -155,6 +156,7 @@ public class CastExpression extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
+//        return expression.getDependencies();
 		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
 	}
 	

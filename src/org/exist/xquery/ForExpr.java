@@ -106,6 +106,7 @@ public class ForExpr extends BindingExpression {
 				throw new XPathException(this, "XQST0089: bound variable and positional variable have the same name");
 			LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
             posVar.setSequenceType(POSITIONAL_VAR_TYPE);
+            posVar.setStaticType(Type.INTEGER);
             context.declareVariableBinding(posVar);
         }
         
