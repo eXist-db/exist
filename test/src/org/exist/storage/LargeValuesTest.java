@@ -17,6 +17,7 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.TestUtils;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -210,6 +211,7 @@ public class LargeValuesTest {
 
     @After
     public void closeDB() {
+        TestUtils.cleanupDB();
         BrokerPool.stopAll(false);
     }
 
