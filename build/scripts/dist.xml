@@ -60,7 +60,11 @@
             <lib dir="${lib.endorsed}">
                 <include name="*.jar"/>
             </lib>
-            
+           	<!-- Include lucene jar, needed for documentation search -->
+			<lib dir="extensions/indexes/lucene/lib">
+				<include name="*.jar"/>
+			</lib>
+
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
                 <include name="client.properties"/>
