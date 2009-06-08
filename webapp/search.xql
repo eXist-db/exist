@@ -17,8 +17,8 @@ declare variable $dq:COLLECTION := "xqdocs";
 
 declare variable $dq:FIELDS :=
 	<fields>
-		<field name="title">section[ft:query(.//title, "$q")]</field>
-		<field>section[ft:query(., "$q")]</field>
+		<field name="title">section[ft:query(.//title, '$q')]</field>
+		<field>section[ft:query(., '$q')]</field>
 	</fields>;
 
 declare variable $dq:CHARS_SUMMARY := 120;
@@ -100,15 +100,6 @@ declare function dq:print-results($hits as element()*, $docXPath as xs:string) {
 		</div>
 };
 
-(:~
-	Create and return XPath expressions corresponding to the fields to
-	be queried.
-:)
-declare function dq:create-query($fields as element(field)*, $query as xs:string) {
-	for $field in $fields
-	return
-		concat($field/string(), "[ft:contains(., '",	$query, "')]")
-};
 
 (:~
 	Process the query.
@@ -125,9 +116,10 @@ declare function dq:query() {
 			        replace($f, "\$q", $query)
 			let $xpath := string-join(
 				for $p in $queryParts return
-					concat("collection('/db/", $dq:COLLECTION, "')/book//", $p),
+					concat("collection('/db/", $dq:COLLECTION, "')//", $p),
 				" | "
 			)
+			let $log := util:log("DEBUG", ("Query: ", $xpath))
 			let $docXPath := string-join(for $p in $queryParts return concat(".//", $p), " or ")
 			let $hits := util:eval($xpath)
 			return

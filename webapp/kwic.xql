@@ -10,7 +10,7 @@ declare variable $kwic:CHARS_KWIC := 40;
 	@param $mode the selection mode: either "previous" or "following"
 :)
 declare function kwic:get-context($root as element(), $match as element(exist:match), $mode as xs:string) as node()* {
-	let $sibs := 
+	let $sibs :=
 		if ($mode eq 'previous') then 
 			$match/preceding::text()
 		else
@@ -38,6 +38,13 @@ declare function kwic:substring($node as node(), $start as xs:int, $count as xs:
 			$str
 };
 
+declare function kwic:display-text($text as text()?) as node()? {
+    if ($text/parent::exist:match) then
+    	<span class="hi">{$text}</span>
+    else
+        $text
+};
+
 (:~
 	Generate the left-hand context of the match. Returns a sequence of nodes
 	and strings, whose total string length is less than or equal to $max characters.
@@ -45,17 +52,19 @@ declare function kwic:substring($node as node(), $start as xs:int, $count as xs:
 	Note: this function calls itself recursively until $nodes is empty or
 	the returned sequence has the desired total string length.
 :)
-declare function kwic:truncate-previous($nodes as node()*, $truncated as item()*, 
+declare function kwic:truncate-previous($root as node(), $node as node()?, $truncated as item()*, 
 	$max as xs:int, $chars as xs:int) {
-	if ($nodes) then
-		let $next := $nodes[last()]
+	if ($node) then
+		let $next := kwic:display-text($node/preceding::text()[1])
 		return
-			if ($chars + string-length($next) gt $max) then
+			if (empty($root//$next)) then
+				$truncated
+			else if ($chars + string-length($next) gt $max) then
 				let $remaining := $max - $chars
 				return
 					("...", kwic:substring($next, string-length($next) - $remaining, $remaining), $truncated)
 			else
-				kwic:truncate-previous(subsequence($nodes, 1, count($nodes) - 1), ($next, $truncated),
+				kwic:truncate-previous($root, $next, ($next, $truncated),
 					$max, $chars + string-length($next))
 	else
 		$truncated
@@ -68,17 +77,19 @@ declare function kwic:truncate-previous($nodes as node()*, $truncated as item()*
 	Note: this function calls itself recursively until $nodes is empty or
 	the returned sequence has the desired total string length.
 :)
-declare function kwic:truncate-following($nodes as node()*, $truncated as item()*, 
+declare function kwic:truncate-following($root as node(), $node as node()?, $truncated as item()*, 
 	$max as xs:int, $chars as xs:int) {
-	if ($nodes) then
-		let $next := $nodes[1]
+	if ($node) then
+		let $next := kwic:display-text($node/text()/following::text()[1])
 		return
-			if ($chars + string-length($next) gt $max) then
+			if (empty($root//$next)) then
+				$truncated
+			else if ($chars + string-length($next) gt $max) then
 				let $remaining := $max - $chars
 				return
 					($truncated, kwic:substring($next, 1, $remaining), "...")
 			else
-				kwic:truncate-following(subsequence($nodes, 2), ($truncated, $next),
+				kwic:truncate-following($root, $next, ($truncated, $next),
 					$max, $chars + string-length($next))
 	else
 		$truncated
@@ -107,15 +118,13 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 	$config as element(config)) as element() {
 	let $chars := xs:int($config/@width)
 	let $table := $config/@table = ('yes', 'true')
-	let $prev := kwic:get-context($root, $node, 'previous')
-	let $prevTrunc := kwic:truncate-previous($prev, (), $chars, 0)
+	let $prevTrunc := kwic:truncate-previous($root, $node, (), $chars, 0)
 	let $remain := 
 		if (not($table)) then 
 			$chars * 2 - kwic:string-length($prevTrunc)
 		else
 			$chars
-	let $following := kwic:get-context($root, $node, 'following')
-	let $followingTrunc := kwic:truncate-following($following, (), $remain, 0)
+	let $followingTrunc := kwic:truncate-following($root, $node, (), $remain, 0)
 	return
 		if (not($table)) then
 			<p>
@@ -182,7 +191,8 @@ declare function kwic:get-matches($hit as element()) as element(exist:match)* {
 :)
 declare function kwic:summarize($hit as element(), $config as element(config))
 as element()* {
-	for $match in kwic:get-matches($hit)
+    let $expanded := util:expand($hit)
+	for $match in $expanded//exist:match
 	return
 		kwic:get-summary($expanded, $match, $config)
 };

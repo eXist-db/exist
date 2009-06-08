@@ -311,6 +311,9 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
 
         void add(int offset, int endOffset) {
+            if (startOffset == offset)
+                // duplicate match starts at same offset. ignore.
+                return;
             Offset next = this;
             while (next.next != null) {
                 next = next.next;
