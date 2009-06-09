@@ -7,6 +7,19 @@
 
     <target name="setup">
         <echo>startup eXist</echo>
+        
+       <xdb:create xmlns:xdb="http://exist-db.org/ant"  
+       uri="${test.coll}" collection="antunit"/>  
+       
+        <xdb:store xmlns:xdb="http://exist-db.org/ant"  
+           uri="${test.coll}/antunit"
+           createcollection="true" srcfile="test.xml"/>
+        <xdb:store xmlns:xdb="http://exist-db.org/ant"  
+           uri="${test.coll}/antunit"
+           createcollection="true" srcfile="test1.xml"/>
+        <xdb:store xmlns:xdb="http://exist-db.org/ant"  
+           uri="${test.coll}/antunit"
+           createcollection="true" srcfile="common.xml"/>
     </target>
 
 
@@ -16,19 +29,15 @@
             <file file="user.xml"/>
             <file file="file.xml"/>
             <file file="xmldb.xml"/>
-            <file file="server.xml"/>
+            <!--file file="server.xml"/-->
             <au:plainlistener/>
         </au:antunit>
     </target>
 
     <target name="teardown">
-        <xdb:remove uri="${test.coll}" user="admin" password="" resource="test1.xml"/>
-
         <xdb:remove uri="${test.coll}" user="admin" password="" collection="antunit"/>
-        <xdb:remove uri="${test.coll}" user="admin" password="" resource="common.xml"/>
 
-        <delete file="extract-test.xml"/>
-        <delete file="xpath-result-test.xml"/>
+        <delete file="/tmp/test.xml"/>
 
         <!-- remove testtest user //-->
         <xdb:rmuser uri="${exist.uri}/db" user="admin" password="" name="testtest"/>

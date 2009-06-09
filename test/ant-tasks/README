@@ -1,4 +1,3 @@
-------------------------
 eXist AntUnit testcases
 ------------------------
 
@@ -6,21 +5,17 @@ These testcases contain integration/functional/regression
 tests of eXists Ant tasks. It uses the Apache antunit library.
 
 
-------------------------
-Dependencies
-------------------------
+Deps
+----
 
 * Ant 1.7.0 Beta 2 or later.
 http://ant.apache.org
 
-* antunit.jar (easy to just put in ant /lib)
+* antunit.jar (placed in ant /lib)
 https://svn.apache.org/repos/asf/ant/antlibs/antunit/trunk/
 
-* eXist's /db/test collection, which is installed by default 
-
-------------------------
-Organisation
-------------------------
+Layout
+------
 
 exist.properties contains configurable parameters
 
@@ -39,29 +34,21 @@ user.xml: tests user functions
 xmldb.xml: tests xmldb functions
 
 
-------------------------
-Setting up and Running
-------------------------
+Installation
+------------
 
-Step 1) adjust exist.properties to reflect your test instance of eXist
+1) adjust exist.properties to reflect your test instance of eXist
 
-Step 2) startup eXist (easy to automate this as well, but I left it)
+2) manually startup eXist
 
-Step 3) ensure antunit.jar is in Ant lib directory are accessible to Ant
+3) ensure antunit.jar is in Ant lib directory are accessible to Ant
 
-Step 4) run ant on antunit.xml with All target e.g.
+4) run ant on antunit.xml with default Target ('run')
 
-ant -f antunit.xml All
+ant
 
-
-------------------------
 Rationale
-------------------------
-
-If one looks at these tests and thinks 'these are not unit tests'...I would agree
-which is why I described them more as functional tests...note they are still useful
-as unit tests in a regression sense which is where I think there is value with respect
-to the eXist XMLDB project.
+---------
 
 A good (and short) arguement for using antunit can be found here; 
 http://stefan.samaflost.de/blog/en/Apache/Ant/AntUnit
