@@ -138,26 +138,12 @@ declare function sandbox:display-page() as element() {
         <head>
             <title>XQuery Sandbox</title>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-            <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.3.1/build/container/assets/container.css"/>
-            <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.3.1/build/button/assets/button.css"/>
-            <link type="text/css" rel="stylesheet" href="http://yui.yahooapis.com/2.3.1/build/datatable/assets/skins/sam/datatable.css"/>
-            <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.3.1/build/menu/assets/skins/sam/menu.css"/>
+			<link rel="stylesheet" type="text/css" href="../scripts/yui/yui-skin.css"/>
             <link type="text/css" href="styles/sandbox.css" rel="stylesheet"/>
             <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
-            <script src="http://yui.yahooapis.com/2.3.1/build/yahoo/yahoo-min.js"></script>
-            <script src="http://yui.yahooapis.com/2.3.1/build/dom/dom-min.js"></script>
-            <script src="http://yui.yahooapis.com/2.3.1/build/event/event-min.js"></script>
-            <script src="http://yui.yahooapis.com/2.3.1/build/connection/connection-min.js"></script>
-            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/logger/logger-min.js"></script>
-            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/animation/animation-min.js"></script>
-            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/dragdrop/dragdrop-min.js"></script>
-            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/container/container-min.js"></script>
-            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/element/element-beta-min.js"></script>
-            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/datasource/datasource-beta-min.js"></script>
-            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/datatable/datatable-beta-min.js"></script>
-            <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/menu/menu-min.js"></script>
-            
+
+			<script src="../scripts/yui/yui-combined2.7.0.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/sandbox.js"/>
         </head>
         <body class=" yui-skin-sam">
