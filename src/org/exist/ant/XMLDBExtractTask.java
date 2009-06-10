@@ -227,7 +227,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
   }
 
   
- private void writeBinaryResource(Resource resource, File dest) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException  {             
+ private void writeBinaryResource(Resource resource, File dest) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException  {
 
     if (dest != null && !dest.exists())
     {
