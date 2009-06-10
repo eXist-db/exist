@@ -53,7 +53,7 @@ public interface RpcAPI {
 	public static final String COLUMN = "column";
 	
 	/**
-	 * Shut down the database immediately.
+	 * Shut down the database immediatelye
 	 * 
 	 * @return true if the shutdown succeeded, false otherwise
 	 */
@@ -730,7 +730,7 @@ public interface RpcAPI {
 			String start, String end)
 			throws PermissionDeniedException, EXistException, XPathException;
 	
-	void releaseQueryResult(int handle);
+	boolean releaseQueryResult(int handle);
 
 	int xupdate(String collectionName, byte[] xupdate)
             throws PermissionDeniedException, EXistException, SAXException, XPathException, LockException;
@@ -769,10 +769,10 @@ public interface RpcAPI {
 	boolean copyResource(String docPath, String destinationPath, String newName)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 	
-	void reindexCollection(String name)
+	boolean reindexCollection(String name)
 	throws EXistException, PermissionDeniedException, URISyntaxException;
 	
-	void backup(String userbackup, String password, String destcollection, String collection)
+	boolean backup(String userbackup, String password, String destcollection, String collection)
 	throws EXistException, PermissionDeniedException;
 	
 	boolean dataBackup(String dest) throws PermissionDeniedException;
