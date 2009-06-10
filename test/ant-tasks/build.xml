@@ -14,6 +14,11 @@
         <xdb:store xmlns:xdb="http://exist-db.org/ant"  
            uri="${test.coll}/antunit"
            createcollection="true" srcfile="test.xml"/>
+
+        <xdb:store xmlns:xdb="http://exist-db.org/ant"  
+           uri="${test.coll}/antunit"
+           createcollection="true" srcfile="logo.jpg"/>
+
         <xdb:store xmlns:xdb="http://exist-db.org/ant"  
            uri="${test.coll}/antunit"
            createcollection="true" srcfile="test1.xml"/>
@@ -29,7 +34,7 @@
             <file file="user.xml"/>
             <file file="file.xml"/>
             <file file="xmldb.xml"/>
-            <!--file file="server.xml"/-->
+            <file file="server.xml"/>
             <au:plainlistener/>
         </au:antunit>
     </target>
@@ -37,7 +42,8 @@
     <target name="teardown">
         <xdb:remove uri="${test.coll}" user="admin" password="" collection="antunit"/>
 
-        <delete file="/tmp/test.xml"/>
+        <delete file="test-logo.jpg"/>
+        <delete file="test-output.xml"/>
 
         <!-- remove testtest user //-->
         <xdb:rmuser uri="${exist.uri}/db" user="admin" password="" name="testtest"/>
