@@ -89,6 +89,7 @@ public class OpNumeric extends BinaryOp {
 	}
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        super.analyze(contextInfo);
         contextInfo.setStaticReturnType(returnType);
     }
 
