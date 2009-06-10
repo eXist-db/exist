@@ -2089,7 +2089,8 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
             }
             // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            if (transaction != null)
+                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             if (overwrite == 0) {
                 DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
                 if (old != null) {
@@ -2525,7 +2526,8 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
             }
             // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            if (transaction != null)
+                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
 
             DocumentImpl doc = collection.getDocument(broker, docUri.lastSegment());
             if (doc == null) {
@@ -2579,7 +2581,8 @@ public class RpcConnection implements RpcAPI {
                 return false;
             }
             // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            if (transaction != null)
+                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             LOG.debug("removing collection " + collURI);
             boolean removed = broker.removeCollection(transaction, collection);
             transact.commit(transaction);
@@ -2904,7 +2907,8 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("not allowed to change permissions");
             } else {
                 // keep the write lock in the transaction
-                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);            
+                if (transaction != null)
+                    transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);            
                 LOG.debug("changing permissions on collection " + uri);
                 Permission perm = collection.getPermissions();
                 if (perm.validate(user, Permission.WRITE)
@@ -3013,7 +3017,8 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("not allowed to change permissions");
             }
             //keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            if (transaction != null)
+                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             LOG.debug("changing permissions on collection " + uri);
             Permission perm = collection.getPermissions();
             if (perm.validate(user, Permission.WRITE)
