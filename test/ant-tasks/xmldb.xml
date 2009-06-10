@@ -39,9 +39,18 @@
     <target name="test_XMLDBExtract" description="test extraction of XML into files and collections">
 
         <!-- destfile attribute is actually file //-->
-        <xdb:extract uri="${test.coll}/antunit" resource="test.xml" destfile="/tmp/test.xml"/>
+        <xdb:extract uri="${test.coll}/antunit" type="xml" resource="test.xml" destfile="test-output.xml"/>
 
-        <au:assertFileExists file="/tmp/test.xml"/>
+        <au:assertFileExists file="test-output.xml"/>
+
+    </target>
+
+    <target name="test_binary_XMLDBExtract" description="test extraction of XML into files and collections">
+
+        <!-- destfile attribute is actually file //-->
+        <xdb:extract uri="${test.coll}/antunit" type="binary" resource="logo.jpg" destfile="test-logo.jpg"/>
+
+        <au:assertFileExists file="test-logo.jpg"/>
 
     </target>
 
