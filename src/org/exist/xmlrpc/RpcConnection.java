@@ -2489,9 +2489,10 @@ public class RpcConnection implements RpcAPI {
      *
      * @param handle an <code>int</code> value
      */
-    public void releaseQueryResult(int handle) {
+    public boolean releaseQueryResult(int handle) {
         factory.resultSets.remove(handle);
         LOG.debug("removed query result with handle " + handle);
+        return true;
     }
     
     /**
@@ -3907,8 +3908,8 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public void reindexCollection(String collectionName) throws URISyntaxException, EXistException, PermissionDeniedException {
-    	reindexCollection(XmldbURI.xmldbUriFor(collectionName));
+    public boolean reindexCollection(String collectionName) throws URISyntaxException, EXistException, PermissionDeniedException {
+    	return reindexCollection(XmldbURI.xmldbUriFor(collectionName));
     }    
     
     /**
@@ -3918,7 +3919,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private void reindexCollection(XmldbURI collUri) throws EXistException, PermissionDeniedException {
+    private boolean reindexCollection(XmldbURI collUri) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
@@ -3929,6 +3930,7 @@ public class RpcConnection implements RpcAPI {
         } finally {
             factory.getBrokerPool().release(broker);
         }
+        return true;
     }
     
     /**
@@ -3941,7 +3943,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    public void backup(String userbackup, String password,
+    public boolean backup(String userbackup, String password,
 	String destcollection, String collection) throws EXistException, PermissionDeniedException {
     	try {
     		   Backup backup = new Backup(
@@ -3953,6 +3955,7 @@ public class RpcConnection implements RpcAPI {
             } catch (Exception e) {
                 handleException(e);
 			}
+        return true;
     }
     
     /**
