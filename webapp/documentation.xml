@@ -38,6 +38,9 @@
             <listitem>
                 <para><ulink url="indexing.xml">Configuring Indexes</ulink></para>
             </listitem>
+            <listitem>
+                <para><ulink url="tuning.xml">Performance Tuning</ulink></para>
+            </listitem>
         </itemizedlist>
         
         <para>Also, there are some <ulink url="articles">articles, tutorials and blog posts</ulink>
