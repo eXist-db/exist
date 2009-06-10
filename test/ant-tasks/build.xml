@@ -8,21 +8,24 @@
     <target name="setup">
         <echo>startup eXist</echo>
         
-       <xdb:create xmlns:xdb="http://exist-db.org/ant"  
+       <xdb:create user="admin" password=""
        uri="${test.coll}" collection="antunit"/>  
-       
-        <xdb:store xmlns:xdb="http://exist-db.org/ant"  
+
+       <xdb:create user="admin" password=""
+       uri="${test.coll}/antunit" collection="test"/>
+
+       <xdb:store user="admin" password=""
            uri="${test.coll}/antunit"
            createcollection="true" srcfile="test.xml"/>
 
-        <xdb:store xmlns:xdb="http://exist-db.org/ant"  
+        <xdb:store user="admin" password=""
            uri="${test.coll}/antunit"
-           createcollection="true" srcfile="logo.jpg"/>
+           createcollection="true" type="binary" srcfile="logo.jpg"/>
 
-        <xdb:store xmlns:xdb="http://exist-db.org/ant"  
+        <xdb:store user="admin" password=""
            uri="${test.coll}/antunit"
            createcollection="true" srcfile="test1.xml"/>
-        <xdb:store xmlns:xdb="http://exist-db.org/ant"  
+        <xdb:store user="admin" password=""
            uri="${test.coll}/antunit"
            createcollection="true" srcfile="common.xml"/>
     </target>
@@ -50,5 +53,6 @@
 
     </target>
 
-    <target name="run" depends="setup, alltests, teardown"/>
+    <target name="run" depends="teardown,setup, alltests, teardown"/>
+
 </project>
