@@ -285,7 +285,10 @@ public class FunctionCall extends Function {
 
     public void accept(ExpressionVisitor visitor) {
         // forward to the called function
-        functionDef.accept(visitor);
+        for(int i = 0; i < getArgumentCount(); i++) {
+        	getArgument(i).accept(visitor);
+		}
+		functionDef.accept(visitor);
     }
 
     private class DeferredFunctionCallImpl extends DeferredFunctionCall {
