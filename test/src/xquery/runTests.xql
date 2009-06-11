@@ -4,12 +4,20 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 declare namespace t="http://exist-db.org/xquery/testing";
 
+declare variable $t:doc external;
+
 declare function t:setup-action($action) {
     typeswitch ($action)
         case element(create-collection) return
             xdb:create-collection($action/@parent, $action/@name)
         case element(store) return
-            xdb:store($action/@collection, $action/@name, $action/*[1], "text/xml")
+			let $data :=
+				if ($action/*) then
+					$action/*[1]
+				else
+					$action/string()
+			return
+            	xdb:store($action/@collection, $action/@name, $data, "text/xml")
         case element(remove-collection) return
             xdb:remove($action/@collection)
         default return
@@ -29,7 +37,19 @@ declare function t:tearDown($tearDown as element(tearDown)) {
 };
 
 declare function t:run-test($test as element(test), $count as xs:integer) {
-    let $output := util:catch("*", util:eval($test/code/string()), <error>Compilation error: {$util:exception-message}</error>)
+		
+	let $context :=
+	    string-join(
+        	for $var in $test/../variable
+        	return
+        	    concat("declare variable $", $var/@name, " := ", util:serialize($var/*, ()), ";"),
+            ""
+        )
+    let $output := 
+		util:catch("*", 
+			util:eval(concat($context, $test/code/string())),
+			<error>Compilation error: {$util:exception-message}</error>
+		)
     let $expected := 
         if ($test/@output eq 'text') then 
             data($test/expected)
@@ -63,4 +83,4 @@ declare function t:run-testSet($set as element(TestSet)) {
     return $result
 };
 
-t:run-testSet(doc("/db/test/axes.xml")/TestSet)
+t:run-testSet(doc($doc)/TestSet)

@@ -48,10 +48,44 @@
                 <c>C6</c>
             </test>
         </store>
+        <store collection="/db/test" name="axes4.xml"><![CDATA[
+            <?foo dummmy-processing-instruction?>
+            <!-- Comment -->
+            <test>
+                <a>A1</a>
+            </test>
+        ]]></store>
     </setup>
+	<variable name="input1">
+		<test>
+			<line>
+				<word>XPath</word>
+				<word>developers</word>
+				<word>enjoy</word>
+			</line>
+			<line>
+				<word>working</word>
+				<word>with</word>
+			</line>
+			<line>
+				<word>the</word>
+				<word>following</word>
+				<word>axis</word>
+			</line>
+		</test>
+	</variable>
+    <variable name="input2">
+        <test>
+            <a>
+                <b>B1</b>
+            </a>
+            <b>B2</b>
+        </test>
+    </variable>
     <tearDown>
         <!--remove-collection collection="/db/test"/-->
     </tearDown>
+	<!-- Following axis tests -->
     <test output="text">
         <task>Simple following axis test</task>
         <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word</code>
@@ -137,7 +171,49 @@
         <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word[position() = 2]</code>
         <expected>the</expected>
     </test>
-    <!-- Preceding axis tests -->
+
+	<!-- Following axis tests on in-memory fragment -->
+    <test output="text">
+        <task>Simple following axis test on in-memory doc</task>
+        <code>$input1//line/word[. = 'working']/following::word</code>
+        <expected>with the following axis</expected>
+    </test>
+    <test output="text">
+        <task>Empty following axis (in-memory)</task>
+        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'axis']/following::word)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Following axis test: element()</task>
+        <code>count($input1//line/word[. = 'working']/following::element())</code>
+        <expected>5</expected>
+    </test>
+    <test output="text">
+        <task>Simple following axis test on in-memory doc2</task>
+        <code>for $i in (1 to 5) return $input1//line/word[. = 'working']/following::word[$i]</code>
+        <expected>with the following axis</expected>
+    </test>
+    <test output="text">
+        <task>Simple following axis test on in-memory doc2</task>
+        <code>$input2//a/following::*</code>
+        <expected>B2</expected>
+    </test>
+    <test output="text">
+        <task>Simple following axis test on in-memory doc2</task>
+        <code>$input2//b/following::*</code>
+        <expected>B2</expected>
+    </test>
+    <test output="text">
+        <task>Simple following axis test on in-memory doc2</task>
+        <code>$input2//b/following::b</code>
+        <expected>B2</expected>
+    </test>
+    <test output="xml">
+        <task>Simple following axis test on in-memory doc2</task>
+        <code>$input2//b/following::node()</code>
+        <expected><b>B2</b>B2</expected>
+    </test>
+    
     <test output="text">
         <task>Simple preceding axis test</task>
         <code>doc("/db/test/axes1.xml")//line/word[. = 'with']/preceding::word</code>
@@ -238,8 +314,51 @@
         </code>
         <expected>enjoy developers XPath</expected>
     </test>
-	<!-- following-sibling axis -->
+    
+    <!-- Preceding axis tests on in-memory fragment -->
     <test output="text">
+        <task>Simple preceding axis test on in-memory doc</task>
+        <code>$input1//line/word[. = 'working']/preceding::word</code>
+        <expected>XPath developers enjoy</expected>
+    </test>
+    <test output="text">
+        <task>Empty preceding axis (in-memory)</task>
+        <code>count($input1//line/word[. = 'XPath']/preceding::word)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Preceding axis test: element()</task>
+        <code>count($input1//line/word[. = 'working']/preceding::element())</code>
+        <expected>4</expected>
+    </test>
+    <test output="text">
+        <task>Simple preceding axis test on in-memory doc 1</task>
+        <code>for $i in (1 to 5) return $input1//line/word[. = 'working']/preceding::word[$i]</code>
+        <expected>XPath developers enjoy</expected>
+    </test>
+    <test output="xml">
+        <task>Simple preceding axis test on in-memory doc 2</task>
+        <code>$input2//b/preceding::*</code>
+        <expected>
+            <a>
+                <b>B1</b>
+            </a>
+            <b>B1</b>
+        </expected>
+    </test>
+    <test output="text">
+        <task>Simple preceding axis test on in-memory doc 3</task>
+        <code>count($input2/a/b/preceding::*)</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>Simple following axis test on in-memory doc 4</task>
+        <code>$input2//b/preceding::b</code>
+        <expected>B1</expected>
+    </test>
+    
+    <!-- Following sibling axis tests -->
+	<test output="text">
         <task>Following sibling axis 1</task>
         <code>
 			doc("/db/test/axes1.xml")//line/word[. = 'working']/following-sibling::word
@@ -357,7 +476,6 @@
         </code>
         <expected>C2 C5</expected>
     </test>
-    <!-- preceding-sibling axis -->
     <test output="text">
         <task>Preceding sibling axis 1</task>
         <code>
@@ -461,5 +579,19 @@
             (doc("/db/test/axes2.xml"), doc("/db/test/axes3.xml"))//c[preceding-sibling::c]
         </code>
         <expected>C4 C6</expected>
+    </test>
+    <test output="text">
+        <task>Sibling axis comments and pis 1</task>
+        <code>
+            count(doc("/db/test/axes4.xml")/*/preceding::node())
+        </code>
+        <expected>2</expected>
+    </test>
+    <test output="text">
+        <task>Sibling axis comments and pis 2</task>
+        <code>
+            doc("/db/test/axes4.xml")/node()[1]/following::text()
+        </code>
+        <expected>A1</expected>
     </test>
 </TestSet>

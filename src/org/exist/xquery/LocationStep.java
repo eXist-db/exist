@@ -40,6 +40,7 @@ import org.exist.memtree.InMemoryNodeSet;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.StaXUtil;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLStreamReader;
@@ -836,11 +837,6 @@ public class LocationStep extends Step {
      */
     protected Sequence getPreceding(XQueryContext context, Sequence contextSequence)
         throws XPathException {
-        if (!contextSequence.isPersistentSet()) {
-            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
-            return nodes.getPreceding(test);
-        }
-        NodeSet contextSet = contextSequence.toNodeSet();
         int position = -1;
         if (hasPositionalPredicate) {
             Predicate pred = (Predicate) predicates.get(0);
@@ -852,6 +848,13 @@ public class LocationStep extends Step {
                 position = v.getInt();
             }
         }
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            if (hasPositionalPredicate && position > -1)
+                applyPredicate = false;
+            return nodes.getPreceding(test, position);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         //TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
@@ -863,10 +866,14 @@ public class LocationStep extends Step {
                 NodeSet result = new NewArrayNodeSet();
                 for (Iterator i = contextSet.iterator(); i.hasNext();) {
                     NodeProxy next = (NodeProxy) i.next();
-                    NodeProxy root = new NodeProxy(next.getDocument(), NodeId.ROOT_NODE);
-                    PrecedingFilter filter = new PrecedingFilter(test, next, result, contextId);
-                    EmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(root, false);
-                    reader.filter(filter);
+                    NodeList cl = next.getDocument().getChildNodes();
+                    for (int j = 0; j < cl.getLength(); j++) {
+                        StoredNode node = (StoredNode) cl.item(j);
+                        NodeProxy root = new NodeProxy(node);
+                        PrecedingFilter filter = new PrecedingFilter(test, next, result, contextId);
+                        EmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(root, false);
+                        reader.filter(filter);
+                    }
                 }
                 return result;
             } catch (XMLStreamException e) {
@@ -913,11 +920,6 @@ public class LocationStep extends Step {
      */
     protected Sequence getFollowing(XQueryContext context, Sequence contextSequence)
         throws XPathException {
-        if (!contextSequence.isPersistentSet()) {
-            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
-            return nodes.getFollowing(test);
-        }
-        NodeSet contextSet = contextSequence.toNodeSet();
         int position = -1;
         if (hasPositionalPredicate) {
             Predicate pred = (Predicate) predicates.get(0);
@@ -929,6 +931,13 @@ public class LocationStep extends Step {
                 position = v.getInt();
             }
         }
+        if (!contextSequence.isPersistentSet()) {
+            MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+            if (hasPositionalPredicate && position > -1)
+                applyPredicate = false;
+            return nodes.getFollowing(test, position);
+        }
+        NodeSet contextSet = contextSequence.toNodeSet();
         //TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
@@ -941,10 +950,14 @@ public class LocationStep extends Step {
                 NodeSet result = new NewArrayNodeSet();
                 for (Iterator i = contextSet.iterator(); i.hasNext();) {
                     NodeProxy next = (NodeProxy) i.next();
-                    NodeProxy root = new NodeProxy(next.getDocument(), NodeId.ROOT_NODE);
-                    FollowingFilter filter = new FollowingFilter(test, next, result, contextId);
-                    EmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(root, false);
-                    reader.filter(filter);
+                    NodeList cl = next.getDocument().getChildNodes();
+                    for (int j = 0; j < cl.getLength(); j++) {
+                        StoredNode node = (StoredNode) cl.item(j);
+                        NodeProxy root = new NodeProxy(node);
+                        FollowingFilter filter = new FollowingFilter(test, next, result, contextId);
+                        EmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(root, false);
+                        reader.filter(filter);
+                    }
                 }
                 return result;
             } catch (XMLStreamException e) {
