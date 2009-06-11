@@ -116,7 +116,7 @@ public class FunDoc extends Function {
     			}
     		}
     		catch (Exception e) {
-    			throw new XPathException(getASTNode(), e.getMessage());			
+    			throw new XPathException(getASTNode(), e.getMessage(), e);			
     		}
         }
             
