@@ -43,6 +43,8 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
+import org.exist.util.XMLReaderObjectFactory;
+import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -79,7 +81,7 @@ public class DocUtils {
 		if(path.matches("^[a-z]+://.*"))
 		{
 			/* URL */
-			
+			XMLReader reader = null;
 			try
 			{
 				//Basic tests on the URL				
@@ -107,11 +109,10 @@ public class DocUtils {
 				factory.setNamespaceAware(true);				
 				//TODO : we should be able to cope with context.getBaseURI()				
 				InputSource src = new InputSource(con.getInputStream());
-				SAXParser parser = factory.newSAXParser();
-				XMLReader reader = parser.getXMLReader();
-				SAXAdapter adapter = new SAXAdapter();
+                SAXAdapter adapter = new SAXAdapter();
+                reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
 				reader.setContentHandler(adapter);
-				reader.parse(src);					
+				reader.parse(src);
 				Document doc = adapter.getDocument();
 				memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
 				memtreeDoc.setContext(context);
@@ -122,11 +123,7 @@ public class DocUtils {
 			{
 				throw new XPathException(e.getMessage(), e);					
 			}
-			catch(ParserConfigurationException e)
-			{				
-				throw new XPathException(e.getMessage(), e);		
-			}
-			catch(SAXException e)
+            catch(SAXException e)
 			{
 				throw new XPathException(e.getMessage(), e);	
 			}
@@ -141,7 +138,9 @@ public class DocUtils {
                 {
                 	throw new XPathException(e.getMessage(), e);	
                 }
-			}			
+            } finally {
+                context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
+            }
 		}
 		else
 		{
