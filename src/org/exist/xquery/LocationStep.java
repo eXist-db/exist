@@ -750,15 +750,22 @@ public class LocationStep extends Step {
         }
         if (test.isWildcardTest()) {
             NewArrayNodeSet result = new NewArrayNodeSet(contextSet.getLength());
-            SiblingVisitor visitor = new SiblingVisitor(result);
-            for (Iterator i = contextSet.iterator(); i.hasNext();) {
-                NodeProxy current = (NodeProxy) i.next();
-                NodeId parentId = current.getNodeId().getParentId();
-                if(parentId.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())
-                    continue;
-                StoredNode parentNode = context.getBroker().objectWith(current.getOwnerDocument(), parentId);
-            	visitor.setContext(current);
-            	parentNode.accept(visitor);
+            try {
+                for (Iterator i = contextSet.iterator(); i.hasNext();) {
+                    NodeProxy current = (NodeProxy) i.next();
+                    NodeProxy parent = new NodeProxy(current.getDocument(), current.getNodeId().getParentId());
+                    StreamFilter filter;
+                    if (axis == Constants.PRECEDING_SIBLING_AXIS)
+                        filter = new PrecedingSiblingFilter(test, current, result, contextId);
+                    else
+                        filter = new FollowingSiblingFilter(test, current, result, contextId);
+                    EmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(parent, false);
+                    reader.filter(filter);
+                }
+            } catch (IOException e) {
+                throw new XPathException(this, e.getMessage(), e);
+            } catch (XMLStreamException e) {
+                throw new XPathException(this, e.getMessage(), e);
             }
             return result;
         } else {
@@ -1256,6 +1263,95 @@ public class LocationStep extends Step {
             optimized = false;
             cached = null;
             listener = null;
+        }
+    }
+
+    private static class FollowingSiblingFilter implements StreamFilter {
+
+        private NodeTest test;
+        private NodeProxy referenceNode;
+        private NodeSet result;
+        private int contextId;
+        private boolean isAfter = false;
+
+        private FollowingSiblingFilter(NodeTest test, NodeProxy referenceNode, NodeSet result, int contextId) {
+            this.test = test;
+            this.referenceNode = referenceNode;
+            this.result = result;
+            this.contextId = contextId;
+        }
+
+        public boolean accept(XMLStreamReader reader) {
+            if (reader.getEventType() == XMLStreamReader.END_ELEMENT) {
+                return true;
+            }
+            NodeId refId = referenceNode.getNodeId();
+            NodeId currentId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+            if (!isAfter) {
+                isAfter = currentId.equals(refId);
+            } else if (currentId.getTreeLevel() == refId.getTreeLevel() && test.matches(reader)) {
+                NodeProxy sibling = result.get(referenceNode.getDocument(), currentId);
+                if (sibling == null) {
+                    sibling = new NodeProxy(referenceNode.getDocument(), currentId,
+                            StaXUtil.streamType2DOM(reader.getEventType()),
+                            ((EmbeddedXMLStreamReader) reader).getCurrentPosition());
+
+                    if (Expression.IGNORE_CONTEXT != contextId) {
+                        if (Expression.NO_CONTEXT_ID == contextId) {
+                            sibling.copyContext(referenceNode);
+                        } else {
+                            sibling.addContextNode(contextId, referenceNode);
+                        }
+                    }
+                    result.add(sibling);
+                } else if (Expression.NO_CONTEXT_ID != contextId)
+                    sibling.addContextNode(contextId, referenceNode);
+            }
+            return true;
+        }
+    }
+
+    private static class PrecedingSiblingFilter implements StreamFilter {
+
+        private NodeTest test;
+        private NodeProxy referenceNode;
+        private NodeSet result;
+        private int contextId;
+
+        private PrecedingSiblingFilter(NodeTest test, NodeProxy referenceNode, NodeSet result, int contextId) {
+            this.test = test;
+            this.referenceNode = referenceNode;
+            this.result = result;
+            this.contextId = contextId;
+        }
+
+        public boolean accept(XMLStreamReader reader) {
+            if (reader.getEventType() == XMLStreamReader.END_ELEMENT) {
+                return true;
+            }
+            NodeId refId = referenceNode.getNodeId();
+            NodeId currentId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+            if (currentId.equals(refId)) {
+                return false;
+            } else if (currentId.getTreeLevel() == refId.getTreeLevel() && test.matches(reader)) {
+                NodeProxy sibling = result.get(referenceNode.getDocument(), currentId);
+                if (sibling == null) {
+                    sibling = new NodeProxy(referenceNode.getDocument(), currentId,
+                        StaXUtil.streamType2DOM(reader.getEventType()),
+                        ((EmbeddedXMLStreamReader)reader).getCurrentPosition());
+                    if (Expression.IGNORE_CONTEXT != contextId) {
+                        if (Expression.NO_CONTEXT_ID == contextId) {
+                            sibling.copyContext(referenceNode);
+                        } else {
+                            sibling.addContextNode(contextId, referenceNode);
+                        }
+                    }
+                    result.add(sibling);
+                } else if (Expression.NO_CONTEXT_ID != contextId)
+                    sibling.addContextNode(contextId, referenceNode);
+
+            }
+            return true;
         }
     }
 
