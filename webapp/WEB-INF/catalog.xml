@@ -4,12 +4,18 @@
     <public publicId="-//PLAY//EN" uri="entities/play.dtd"/>
     <system systemId="play.dtd" uri="entities/play.dtd"/>
     <system systemId="mondial.dtd" uri="entities/mondial.dtd"/>    
-   	<system 
-   		systemId="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
+   	<system systemId="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
 		uri="entities/xhtml1-strict.dtd"/>
-    <system systemId="-//W3C//DTD XHTML 1.0 Transitional//EN"
+   	<system publicId="-//W3C//DTD XHTML 1.0 Strict//EN"
+		uri="entities/xhtml1-strict.dtd"/>
+    <system systemId="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
 		uri="entities/xhtml1-transitional.dtd"/>
-		
+    <system publicId="-//W3C//DTD XHTML 1.0 Transitional//EN"
+		uri="entities/xhtml1-transitional.dtd"/>
+	<system publicId="-//W3C//ENTITIES Latin 1 for XHTML//EN" uri="xhtml-lat1.ent"/>
+	<system publicId="-//W3C//ENTITIES Symbols for XHTML//EN" uri="xhtml-symbol.ent"/>
+	<system publicId="-//W3C//ENTITIES Special for XHTML//EN" uri="xhtml-special.ent"/>
+
     <uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/>
     
     <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
