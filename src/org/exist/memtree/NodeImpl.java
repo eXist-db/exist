@@ -838,11 +838,16 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         }
     }
 
-    public void selectPreceding(NodeTest test, Sequence result) throws XPathException {
+    public void selectPreceding(NodeTest test, Sequence result, int position) throws XPathException {
+        NodeId myNodeId = getNodeId();
+        int count = 0;
         for (int i = nodeNumber - 1; i > 0; i--) {
             NodeImpl n = document.getNode(i);
-            if (test.matches(n))
+            if (!myNodeId.isDescendantOf(n.getNodeId()) && test.matches(n)) {
                 result.add(n);
+                if (-1 < position && ++count == position)
+                    break;
+            }
         }
     }
 
@@ -871,7 +876,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         }
     }
 
-    public void selectFollowing(NodeTest test, Sequence result) throws XPathException {
+    public void selectFollowing(NodeTest test, Sequence result, int position) throws XPathException {
         int parent = document.getParentNodeFor(nodeNumber);
         if (parent == 0) {
             // parent is the document node
@@ -886,11 +891,16 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
                 next = (NodeImpl) next.getNextSibling();
             }
         } else {
-            int nextNode = document.getFirstChildFor(parent);
+            NodeId myNodeId = getNodeId();
+            int count = 0;
+            int nextNode = nodeNumber + 1;
             while (nextNode < document.size) {
                 NodeImpl n = document.getNode(nextNode);
-                if (nextNode > nodeNumber && test.matches(n))
+                if (!n.getNodeId().isDescendantOf(myNodeId) && test.matches(n)) {
                     result.add(n);
+                    if (-1 < position && ++count == position)
+                        break;
+                }
                 nextNode++;
             }
         }

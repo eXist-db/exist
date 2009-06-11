@@ -549,12 +549,12 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         return nodes;
     }
 
-    public Sequence getPreceding(NodeTest test) throws XPathException {
+    public Sequence getPreceding(NodeTest test, int position) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
-            node.selectPreceding(test, nodes);
+            node.selectPreceding(test, nodes, position);
         }
         return nodes;
     }
@@ -569,12 +569,12 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         return nodes;
     }
 
-    public Sequence getFollowing(NodeTest test) throws XPathException {
+    public Sequence getFollowing(NodeTest test, int position) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
-            node.selectFollowing(test, nodes);
+            node.selectFollowing(test, nodes, position);
         }
         return nodes;
     }

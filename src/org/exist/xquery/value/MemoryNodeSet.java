@@ -25,11 +25,11 @@ public interface MemoryNodeSet extends Sequence {
 
     public Sequence getPrecedingSiblings(NodeTest test) throws XPathException;
 
-    public Sequence getPreceding(NodeTest test) throws XPathException;
+    public Sequence getPreceding(NodeTest test, int position) throws XPathException;
 
     public Sequence getFollowingSiblings(NodeTest test) throws XPathException;
     
-    public Sequence getFollowing(NodeTest test) throws XPathException;
+    public Sequence getFollowing(NodeTest test, int position) throws XPathException;
 
     public Sequence getChildrenForParent(NodeImpl parent);
 
