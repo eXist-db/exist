@@ -106,7 +106,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
             <link rel="stylesheet" type="text/css" href="styles/fundocs.css"/>
             <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
-            <script type="text/javascript" src="../scripts/yui/utilities.js"/>
+            <script type="text/javascript" src="../scripts/yui/utilities2.7.0.js"/>
             <script type="text/javascript" src="scripts/fundocs.js"/>
         </bookinfo>
         

@@ -143,7 +143,7 @@ as element() {
             <productname>Open Source Native XML Database</productname>
             <title>Documentation Search</title>
             <link rel="stylesheet" type="text/css" href="styles/docsearch.css"/>
-            <script type="text/javascript" src="scripts/yui/utilities.js"/>
+            <script type="text/javascript" src="scripts/yui/utilities2.7.0.js"/>
         </bookinfo>
         
     	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>

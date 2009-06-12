@@ -71,6 +71,10 @@ declare function setup:importLocal() as element()+
             concat($home, $pathSep, "webapp")
         )
     return (
+                setup:create-collection("/db/system/config", "db"),
+                setup:create-collection("/db/system/config/db", "shakespeare"),
+                setup:store-files("/db/system/config/db/shakespeare", $dir, 
+                    "shakespeare/collection.xconf", "text/xml"),
                 setup:create-collection("/db", "shakespeare"),
                 setup:create-collection("/db/shakespeare", "plays"),
                 setup:store-files("/db/shakespeare/plays", $dir,  "shakespeare/*.xml", "text/xml"),
@@ -91,7 +95,6 @@ declare function setup:importLocal() as element()+
                 setup:create-collection("/db", "mods"),
                 setup:store-files("/db/mods", $dir, "mods/*.xml", "text/xml"),
                 setup:store-files("/db", $dir, "*.xml", "text/xml"),
-                setup:create-collection("/db/system/config", "db"),
                 setup:create-collection("/db/system/config/db", "mondial"),
                 setup:store-files("/db/system/config/db/mondial", $dir, "mondial.xconf", "text/xml"),
                 setup:create-collection("/db", "xproc"),

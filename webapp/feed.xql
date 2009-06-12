@@ -2,13 +2,15 @@ xquery version "1.0";
 
 declare namespace atom="http://www.w3.org/2005/Atom";
 
+declare option exist:serialize "method=text media-type=application/json";
+
 declare variable $atom:server := "http://atomic.exist-db.org";
 declare variable $atom:uri := concat($atom:server, "/atom/summary/wiki/blogs/eXist/");
 
 declare function atom:format-entry($feed as element()) {
     <ul>
     {
-        for $entry in $feed//atom:entry
+        for $entry in subsequence($feed//atom:entry, 1, 4)
         let $link := $entry/atom:link[@rel = 'alternate'][@type = 'text/html']/@href
         return
             <li>
@@ -25,5 +27,7 @@ declare function atom:format-entry($feed as element()) {
 
 let $uri := xs:anyURI($atom:uri)
 let $response := doc($uri)
+let $output :=
+    util:serialize(atom:format-entry($response/atom:feed), "indent=no")
 return
-    atom:format-entry($response/atom:feed)
+	concat("atomCallback('", $output, "');")

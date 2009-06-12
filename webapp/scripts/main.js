@@ -8,18 +8,25 @@ YAHOO.util.Event.onDOMReady(function () {
     Nifty("div.block ul", "bottom");
 
     loadRss();
+	loadTwitter();
 });
 
+function loadTwitter() {
+	var script = document.createElement("script");
+	script.setAttribute('src', 'xquery/twitter.xql?mode=json&user=existdb&max=3');
+    document.getElementsByTagName('head')[0].appendChild(script);
+}
+
 function loadRss() {
-    var div = document.getElementById('news_content');
-	if (!div) return;
-    var callback = {
-        success: function (response) {
-            div.innerHTML = response.responseText;
-        },
-        failure: function (response) {
-			div.innerHTML = 'Failed to load news.';
-		}
-    }
-    YAHOO.util.Connect.asyncRequest('GET', 'feed.xql', callback);
+    var script = document.createElement("script");
+    script.setAttribute('src', 'feed.xql');
+    document.getElementsByTagName('head')[0].appendChild(script);
+}
+
+function atomCallback(html) {
+	document.getElementById('news_content').innerHTML = html;
+}
+
+function twitterCallback(html) {
+	document.getElementById('twitter_content').innerHTML = html;
 }

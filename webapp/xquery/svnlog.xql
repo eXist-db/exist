@@ -115,7 +115,7 @@ declare function svnu:print-by-category($log as element(log)) as item()* {
         <productname>Open Source Native XML Database</productname>
         <title>SVN Log</title>
         <link rel="stylesheet" type="text/css" href="styles/svn.css"/>
-        <script type="text/javascript" src="../scripts/yui/utilities.js"/>
+        <script type="text/javascript" src="../scripts/yui/utilities2.7.0.js"/>
         <script type="text/javascript" src="scripts/svnlog.js"/>
         <author>
             <firstname>Wolfgang M.</firstname>
