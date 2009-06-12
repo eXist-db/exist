@@ -191,23 +191,35 @@ public class BrokerPool extends Observable {
 		BrokerPool instance = (BrokerPool) instances.get(instanceName);
 		if (instance == null) {
 			LOG.debug("configuring database instance '" + instanceName + "'...");
-			//Create the instance
-			instance = new BrokerPool(instanceName, minBrokers, maxBrokers, config);
-			//Add it to the pool
-			instances.put(instanceName, instance);
-			//We now have at least an instance...
-			if(instances.size() == 1) {	
-				//... so a ShutdownHook may be interesting
-				if(registerShutdownHook) {		
-					try {
-						//... currently an eXist-specific one. TODO : make it configurable ?
-						Runtime.getRuntime().addShutdownHook(shutdownHook);
-						LOG.debug("shutdown hook registered");						
-					} catch(IllegalArgumentException e) {
-						LOG.warn("shutdown hook already registered");
-					}
-				}
-			}
+			
+            try {
+                //Create the instance
+                instance = new BrokerPool(instanceName, minBrokers, maxBrokers, config);
+
+                //Add it to the pool
+                instances.put(instanceName, instance);
+
+                //We now have at least an instance...
+                if(instances.size() == 1) {
+                    //... so a ShutdownHook may be interesting
+                    if(registerShutdownHook) {
+                        try {
+                            //... currently an eXist-specific one. TODO : make it configurable ?
+                            Runtime.getRuntime().addShutdownHook(shutdownHook);
+                            LOG.debug("shutdown hook registered");
+                            
+                        } catch(IllegalArgumentException e) {
+                            LOG.warn("shutdown hook already registered");
+                        }
+                    }
+                }
+                
+            } catch (Throwable ex){
+                // Catch all possible issues and report.
+                LOG.error("Unable to initialialize database instance '" + instanceName
+                        + "': "+ex.getMessage(), ex);
+            }
+
 		//TODO : throw an exception here rather than silently ignore an *explicit* parameter ?
         // WM: maybe throw an exception. Users can check if a db is already configured.
 		} else
