@@ -51,7 +51,8 @@
                     <xsl:copy-of select="header/script"/>
                 </xsl:if>
                 <script type="text/javascript" src="styles/niftycube.js"></script>
-                <script language="Javascript" type="text/javascript" src="scripts/yui/utilities.js"/>
+                <script language="Javascript" type="text/javascript" 
+					src="scripts/yui/yahoo-dom-event2.7.0.js"/>
                 <script language="Javascript" type="text/javascript" src="scripts/main.js"/>
             </head>
 
@@ -438,11 +439,17 @@
     <xsl:template match="newsblock">
         <div id="news">
             <div class="block">
-                <div class="head"><h3>News</h3></div>
+                <div class="head"><h3>Blog Feed</h3></div>
                 <div id="news_content" class="news_content">
                     Loading News ...
                 </div>
             </div>
+			<div class="block">
+				<div class="head"><h3><a href="http://twitter.com/existdb">Twitter Feed</a></h3></div>
+				<div id="twitter_content" class="news_content">
+					Loading Twitter Feed ...
+				</div>
+			</div>
             <xsl:apply-templates/>
         </div>
     </xsl:template>

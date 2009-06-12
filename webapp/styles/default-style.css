@@ -109,7 +109,7 @@ a, a:visited {
 
 #sidebar {
     position: absolute;
-    width: 160px;
+    width: 180px;
     left: 50px;
     top: 215px;
     display: block;
@@ -121,7 +121,7 @@ a, a:visited {
 /*        left: 220px;
         right: 50px;
         top: 215px; */
-        margin-left: 220px;
+        margin-left: 240px;
         margin-right: 50px;
         display: block;
         overflow: visible;
@@ -130,8 +130,8 @@ a, a:visited {
     
     #content {
         position: absolute;
-        left: 220px;
-        right: 220px;
+        left: 240px;
+        right: 240px;
         top: 215px;
         display: block;
         overflow: visible;
@@ -141,7 +141,7 @@ a, a:visited {
 
 #news {
     position: absolute;
-    width: 160px;
+    width: 180px;
     top: 215px;
     right: 50px;
     display: block;
@@ -171,7 +171,7 @@ a, a:visited {
     background-color: #f6f6f6;
 }
 
-.block .news_content {
+.block .news_content, .block .twitter_content {
     margin: 0;
     padding: 3px 0 5px 0;
     background-color: #fef7d6;
@@ -187,17 +187,19 @@ a, a:visited {
     margin: 0;
     line-height: 1.5em;
 }
-.block p.date {
+.block p.date, .block .tw-date {
+	display: block;
     text-align: right;
     font-size: .875em;
     font-style: italic;
     margin: 0 5px 0;
     border-bottom: 1px solid #999;
 }
+
 .block .headline {
     margin-bottom: 10px;
 }
-.block a {
+.block a, .block .tw-body {
     display: block;
     padding: 0 10px 3px 10px;
     color: #666;
@@ -211,6 +213,10 @@ a, a:visited {
 .block a:visited {
     color: #666;
     font-weight: normal;
+}
+.block .tw-body a {
+	display: inline;
+	padding: 0;
 }
 #quotes {
     text-align: center;
