@@ -170,7 +170,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	isDocumentGMLAware = false;
     	documentDeleted= false;
     	if (document != null) {
-	    	IndexSpec idxConf = document.getCollection().getIndexConfiguration(document.getBroker());
+	    	IndexSpec idxConf = document.getCollection().getIndexConfiguration(broker);
 	    	if (idxConf != null) {
 	            Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
 	            if (collectionConfig != null) {
@@ -747,7 +747,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 		        		//Mmmh... doesn't flush since it is currently dependant from the
 		        		//number of nodes in the DOM file ; would need refactorings
 		        		//currentDoc.getBroker().checkAvailableMemory();
-		        		currentDoc.getBroker().flush();
+		        		broker.flush();
 		        		///Aaaaaargl !
 		        		final double percent = ((double) Runtime.getRuntime().freeMemory() / (double) Runtime.getRuntime().maxMemory()) * 100;
 		                if (percent < 30) {			        		
