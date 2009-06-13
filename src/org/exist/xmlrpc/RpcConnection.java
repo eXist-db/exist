@@ -2405,13 +2405,21 @@ public class RpcConnection implements RpcAPI {
     /**
      * The method <code>execute</code>
      *
-     * @param xpath a <code>String</code> value
+     * @param pathToQuery database path pointing to a stored XQuery
      * @param parameters a <code>HashMap</code> value
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    public HashMap execute(String xpath, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public HashMap execute(String pathToQuery, HashMap parameters) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
+        byte[] doc = getBinaryResource(XmldbURI.createInternal(pathToQuery));
+        String xpath = null;
+        try {
+            xpath = new String(doc, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new EXistException("Character encoding issue while reading stored XQuery: " + e.getMessage());
+        }
+        
         String sortBy = (String) parameters.get(RpcAPI.SORT_EXPR);
         
         HashMap ret = new HashMap();
