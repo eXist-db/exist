@@ -830,6 +830,8 @@ public class BrokerPool extends Observable {
         // remove temporary docs
 		broker.cleanUpTempResources(true);
 
+        sync(broker, Sync.MAJOR_SYNC);
+        
 		//Create a default configuration file for the root collection
 		//TODO : why can't we call this from within CollectionConfigurationManager ?
 		//TODO : understand why we get a test suite failure
