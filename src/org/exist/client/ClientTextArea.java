@@ -25,6 +25,7 @@ package org.exist.client;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -48,10 +49,6 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 	public final static String COPY = "Copy";
 	public final static String PASTE = "Paste";
 	
-	private CopyAction copy = new CopyAction();
-	private CutAction cut = new CutAction();
-	private PasteAction paste = new PasteAction();
-	
 	private JTextField txtPositionOutput = null;
 	
 	protected Font textFont = new Font("Monospaced", Font.PLAIN, 10);
@@ -70,10 +67,14 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		setDocument(doc);
 		setElectricScroll(2);
 		
+		ClientInputHandler inputHandler = new ClientInputHandler();
+		inputHandler.addDefaultKeyBindings();
+		setInputHandler(inputHandler);
+		
 		popup = new JPopupMenu("Edit Menu");
-		popup.add(new JMenuItem(CUT)).addActionListener(cut);
-		popup.add(new JMenuItem(COPY)).addActionListener(copy);
-		popup.add(new JMenuItem(PASTE)).addActionListener(paste);
+		popup.add(new JMenuItem(CUT)).addActionListener(inputHandler.CLIP_CUT);
+		popup.add(new JMenuItem(COPY)).addActionListener(inputHandler.CLIP_COPY);
+		popup.add(new JMenuItem(PASTE)).addActionListener(inputHandler.CLIP_PASTE);
 		
 		if(mode.equals("XML"))
 			setTokenMarker(new XMLTokenMarker());
@@ -87,13 +88,6 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		painter.setStyles(styles);
 		painter.setEOLMarkersPainted(true);
 		painter.setBracketHighlightEnabled(true);
-		
-		InputHandler inputHandler = new DefaultInputHandler();
-		inputHandler.addDefaultKeyBindings();
-		inputHandler.addKeyBinding("C+c", copy);
-		inputHandler.addKeyBinding("C+v", paste);
-		inputHandler.addKeyBinding("C+x", cut);
-		setInputHandler(inputHandler);
 	}
 	
 	public void setPositionOutputTextArea(JTextField txtPositionOutput)
@@ -105,44 +99,7 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
 	public void actionPerformed(ActionEvent e) {
-		String cmd = e.getActionCommand();
-		if(cmd.equals(CUT))
-			cut();
-		else if(cmd.equals(COPY))
-			copy();
-		else if(cmd.equals(PASTE))
-			paste();
-		else
-			System.out.println("event: " + cmd);
-	}
-	
-	private class CopyAction implements ActionListener {
-		
-		/* (non-Javadoc)
-		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-		 */
-		public void actionPerformed(ActionEvent e) {
-			copy();
-		}
-	}
-	
-	private class PasteAction implements ActionListener {
-		
-		/* (non-Javadoc)
-		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-		 */
-		public void actionPerformed(ActionEvent e) {
-			paste();
-		}
-	}
-	
-	private class CutAction implements ActionListener {
-		/* (non-Javadoc)
-		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-		 */
-		public void actionPerformed(ActionEvent e) {
-			cut();
-		}
+		System.out.println("event: " + e.getActionCommand());
 	}
 	
 	private class CaretListener implements javax.swing.event.CaretListener
