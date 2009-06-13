@@ -35,9 +35,8 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
 import org.exist.storage.UpdateListener;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+import org.exist.memtree.NodeImpl;
 import org.w3c.dom.Node;
 
 import java.util.Iterator;
@@ -189,6 +188,31 @@ public class LocationStep extends Step {
         if (predicates.size() == 0)
             // Nothing to apply
             return contextSequence;
+        Sequence result;
+        Predicate pred = (Predicate) predicates.get(0);
+        // If the current step is an // abbreviated step, we have to treat the predicate
+        // specially to get the context position right. //a[1] translates to /descendant-or-self::node()/a[1],
+        // so we need to return the 1st a from any parent of a.
+        //
+        // If the predicate is known to return a node set, no special treatment is required.
+        if (abbreviatedStep &&
+                (pred.getExecutionMode() != Predicate.NODE || !contextSequence.isPersistentSet())) {
+            result = new ValueSequence();
+            NodeSet contextSet = contextSequence.toNodeSet();
+            outerSequence = contextSet.getParents(getExpressionId());
+            for (SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
+                NodeValue node = (NodeValue) i.nextItem();
+                Sequence newContextSeq =
+                        contextSet.selectParentChild((NodeSet) node, NodeSet.DESCENDANT, getExpressionId());
+                Sequence temp = processPredicate(outerSequence, newContextSeq);
+                result.addAll(temp);
+            }
+        } else
+            result = processPredicate(outerSequence, contextSequence);
+        return result;
+    }
+
+    private Sequence processPredicate(Sequence outerSequence, Sequence contextSequence) throws XPathException {
         Predicate pred;
         Sequence result = contextSequence;
         for (Iterator i = predicates.iterator(); i.hasNext();) {

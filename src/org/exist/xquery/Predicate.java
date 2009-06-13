@@ -48,10 +48,10 @@ import java.util.TreeSet;
  */
 public class Predicate extends PathExpr {
 
-	private final static int UNKNOWN = -1;
-	private final static int NODE = 0;
-    private final static int BOOLEAN = 1;
-    private final static int POSITIONAL = 2;
+	public final static int UNKNOWN = -1;
+	public final static int NODE = 0;
+    public final static int BOOLEAN = 1;
+    public final static int POSITIONAL = 2;
     
 	private CachedResult cached = null;
 	
@@ -386,24 +386,26 @@ public class Predicate extends PathExpr {
         		
         		if (outerSequence instanceof VirtualNodeSet) {
 
-        			outerNodeSet = new NewArrayNodeSet();
-        			for (int i = 0 ; i < outerSequence.getItemCount() ; i++) {
-        				outerNodeSet.add(outerSequence.itemAt(i));
-        			}
-        			
-        		} else outerNodeSet = outerSequence.toNodeSet();       		
-        		
+                    // Looks like we don't need to treat VirtualNodeSet specially here.
+                    outerNodeSet = outerSequence.toNodeSet();
+//        			outerNodeSet = new NewArrayNodeSet();
+//        			for (int i = 0 ; i < outerSequence.getItemCount() ; i++) {
+//        				outerNodeSet.add(outerSequence.itemAt(i));
+//        			}
+        		} else outerNodeSet = outerSequence.toNodeSet();
+
         		//Comment the line below if you have uncommented the lines above :-)
             	
             	//TODO: in some cases, especially with in-memory nodes, 
             	//outerSequence.toNodeSet() will generate a document
             	//which will be different from the one(s) in contextSet
             	//ancestors will thus be empty :-(
-            	if (outerSequence instanceof VirtualNodeSet)
-            		((VirtualNodeSet)outerSequence).realize();
-//                Sequence ancestors = outerNodeSet.selectAncestors(contextSet, true, getExpressionId());
-                Sequence ancestors = contextSet.selectAncestorDescendant(outerNodeSet,
-						NodeSet.ANCESTOR, true, getExpressionId());
+
+                // A special treatment of VirtualNodeSet does not seem to be required
+                // anymore, at least for trunk:
+//            	if (outerSequence instanceof VirtualNodeSet)
+//            		((VirtualNodeSet)outerSequence).realize();
+                Sequence ancestors = outerNodeSet.selectAncestors(contextSet, true, getExpressionId());
 				if (contextSet.getDocumentSet().intersection(outerNodeSet.getDocumentSet()).getLength() == 0)
 					LOG.info("contextSet and outerNodeSet don't share any document");
 				NewArrayNodeSet temp = new NewArrayNodeSet(100);
@@ -531,7 +533,11 @@ public class Predicate extends PathExpr {
 		if (getLength() > 0)
 			getExpression(0).setContextDocSet(contextSet);
 	}
-	
+
+    public int getExecutionMode() {
+        return executionMode;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */

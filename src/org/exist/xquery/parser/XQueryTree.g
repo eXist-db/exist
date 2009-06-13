@@ -1364,8 +1364,10 @@ throws PermissionDeniedException, EXistException, XPathException
 						s.getTest().getType() == Type.ATTRIBUTE)
 						// combines descendant-or-self::node()/attribute:*
 						s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
-					else
+					else {
 						s.setAxis(Constants.DESCENDANT_SELF_AXIS);
+						s.setAbbreviated(true);
+					}
 				} else
 					step.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
 			}
@@ -1700,10 +1702,11 @@ throws PermissionDeniedException, EXistException, XPathException
 						rs.getTest().getType() == Type.ATTRIBUTE) {
 						rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 					} else if (rs.getAxis() == Constants.CHILD_AXIS && rs.getTest().isWildcardTest()) {
-                                                rs.setAxis(Constants.DESCENDANT_AXIS);
-                                        } else {
-			                        rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
-                                        }
+						rs.setAxis(Constants.DESCENDANT_AXIS);
+					} else {
+						rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
+						rs.setAbbreviated(true);
+					}
 
 				} else {
 					rightStep.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
@@ -1716,8 +1719,10 @@ throws PermissionDeniedException, EXistException, XPathException
 		)?
 	)
 	{
-		if (step instanceof LocationStep && ((LocationStep) step).getAxis() == Constants.UNKNOWN_AXIS)
+		if (step instanceof LocationStep && ((LocationStep) step).getAxis() == Constants.UNKNOWN_AXIS) {
 			 ((LocationStep) step).setAxis(Constants.DESCENDANT_SELF_AXIS);
+			 ((LocationStep) step).setAbbreviated(true);
+		}
 	}
 	;
 
