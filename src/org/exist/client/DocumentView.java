@@ -23,6 +23,7 @@ package org.exist.client;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -214,9 +215,11 @@ class DocumentView extends JFrame {
         JMenuItem item;
         // Save to database
         item = new JMenuItem(Messages.getString("DocumentView.17"), KeyEvent.VK_S); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke("control S")); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+            	System.out.println("SAVE");
                 save();
             }
         });
@@ -224,7 +227,8 @@ class DocumentView extends JFrame {
         /*
         // Refresh
         item = new JMenuItem("Refresh", KeyEvent.VK_R);
-        item.setAccelerator(KeyStroke.getKeyStroke("control R"));
+        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,
+        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {

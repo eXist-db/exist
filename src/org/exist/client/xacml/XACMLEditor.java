@@ -2,6 +2,7 @@ package org.exist.client.xacml;
 
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -191,13 +192,15 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 		
 		JMenuItem saveItem = new JMenuItem(SAVE,KeyEvent.VK_S);
 		saveItem.setActionCommand(SAVE);
-        saveItem.setAccelerator(KeyStroke.getKeyStroke("ctrl S"));
+		saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
+				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		saveItem.addActionListener(this);
 		file.add(saveItem);
 
 		JMenuItem closeItem = new JMenuItem(CLOSE,KeyEvent.VK_W);
 		closeItem.setActionCommand(CLOSE);
-		closeItem.setAccelerator(KeyStroke.getKeyStroke("ctrl W"));
+		closeItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W,
+				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		closeItem.addActionListener(this);
 		file.add(closeItem);
 	}
