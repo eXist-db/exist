@@ -23,24 +23,32 @@ declare variable $CATEGORIES :=
         <cat abbrev="\[test.*\]">Test Suite</cat>
         <cat abbrev="\[general\]">General</cat>
         <cat abbrev="\[build.*\]">Build</cat>
+		<cat abbrev="\[website\]">Website</cat>
+		<cat abbrev="\[library\]">Libraries</cat>
     </messages>
 ;
  
 declare variable $URIS :=
-    <uris>
-        <uri description="1.2 stable branch">https://exist.svn.sourceforge.net/svnroot/exist/branches/eXist-stable-1.2</uri>
-        <uri description="1.3 development branch">https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist</uri>
-    </uris>
+    <branches>
+		<branch description="1.2 stable branch"
+			start-revision="8668" version="1.2.5">
+        	<uri>https://exist.svn.sourceforge.net/svnroot/exist/branches/eXist-stable-1.2</uri>
+		</branch>
+		<branch description="1.3 development branch"
+			start-revision="7233" version="1.2">
+        	<uri>https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist</uri>
+		</branch>
+    </branches>
 ;
 
 declare variable $IGNORE := ('[ignore]', '[ingnore]', '[bugtest]', '[comment]', 
     '[improvement]', '[unchecked]', '[cosmetic]');
 
-declare function svnu:translate-category($abbrev as xs:string) as xs:string {
+declare function svnu:translate-category($abbrev as xs:string) as xs:string? {
     let $verbose := $CATEGORIES/cat[matches($abbrev, @abbrev)]/text()
     return
         if ($verbose) then string($verbose[1])
-        else $abbrev
+        else ()
 };
 
 declare function svnu:to-html($entries as element(entry)*) as element() {
@@ -66,7 +74,7 @@ declare function svnu:to-html($entries as element(entry)*) as element() {
                         {
                             let $file := $path/text()
                             return
-                                <a href="http://exist.svn.sourceforge.net/viewvc/exist{$file}?view=markup&amp;pathrev={$entry/@rev}">
+                                <a href="http://exist.svn.sourceforge.net/viewvc/exist{$file}?view=log&amp;pathrev={$entry/@rev}">
                                 {$file}
                                 </a>
                         }
@@ -78,10 +86,10 @@ declare function svnu:to-html($entries as element(entry)*) as element() {
     </div>
 };
 
-declare function svnu:print-by-category($log as element(log)) as item()* {
+declare function svnu:print-by-category($entries as element(entry)*) as item()* {
     let $categories :=
         distinct-values(
-            for $message in $log/entry/message
+            for $message in $entries/message
             return
                 if ($message/text()) then text:groups($message/text(), "^(\[[^\]]+\])")[2] else ()
         )
@@ -103,8 +111,8 @@ declare function svnu:print-by-category($log as element(log)) as item()* {
         let $regex := concat('^', $CATEGORIES/cat[. = $cat]/@abbrev)
         return
             <div class="svncat">
-                <h1><a name="c{$pos}">{svnu:translate-category($cat)}</a></h1>
-                {svnu:to-html($log/entry[matches(message, $regex)])}
+                <h1><a name="c{$pos}">{$cat}</a></h1>
+                {svnu:to-html($entries[matches(message, $regex)])}
             </div>
     )
 };
@@ -127,7 +135,7 @@ declare function svnu:print-by-category($log as element(log)) as item()* {
     
     {
         let $sortby := request:get-parameter("sort", "category")
-        let $uri := request:get-parameter("uri", $URIS/uri[1]/text())
+        let $uri := request:get-parameter("uri", $URIS/branch[1]/uri/string())
         return
             <chapter>
                 <title>SVN Log for trunk</title>
@@ -136,10 +144,10 @@ declare function svnu:print-by-category($log as element(log)) as item()* {
                     <form action="svnlog.xql" method="GET">
                         <select name="uri">
                         {
-                            for $u in $URIS/uri
+                            for $u in $URIS/branch
                             return
-                                <option value="{$u}">
-                                { if ($u eq $uri) then attribute selected { "true" } else () }
+                                <option value="{$u/uri}">
+                                { if ($u/uri/string() eq $uri) then attribute selected { "true" } else () }
                                 {
                                     string($u/@description)
                                 }
@@ -161,13 +169,17 @@ declare function svnu:print-by-category($log as element(log)) as item()* {
                     </form>
                 </div>
                 {
+					let $branch := $URIS/branch[uri = $uri]
+					let $start := xs:integer($branch/@start-revision)
                     let $log := collection("/db/svn")/log[@uri = $uri]
                     return (
-                        <h2>{string($URIS/uri[. = $uri]/@description)}</h2>,
+                        <h2>{string($branch/@description)}</h2>,
+						<h3>Changes since revision <b>{$start}</b>, 
+							eXist version <b>{$branch/@version/string()}</b>:</h3>,
                         if ($sortby eq "category") then
-                            svnu:print-by-category($log)
+                            svnu:print-by-category($log/entry[@rev > $start])
                         else
-                            svnu:to-html($log/entry)
+                            svnu:to-html($log/entry[@rev > $start])
                     )
                 }
             </chapter>
