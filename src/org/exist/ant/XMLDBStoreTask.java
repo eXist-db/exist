@@ -23,6 +23,7 @@
 package org.exist.ant;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.tools.ant.BuildException;
@@ -61,11 +62,11 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 {
   private File srcFile = null;
   private String targetFile = null;
-  private FileSet fileSet = null;
+  private ArrayList<FileSet> fileSetList = null;
   private boolean createCollection = false;
   private boolean createSubcollections = false;
   private String type = null;
-  
+
   /* (non-Javadoc)
    * @see org.apache.tools.ant.Task#execute()
    */
@@ -73,7 +74,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
   {
     if (uri == null)
       throw new BuildException("you have to specify an XMLDB collection URI");
-    if (fileSet == null && srcFile == null)
+    if (fileSetList == null && srcFile == null)
       throw new BuildException("no file set specified");
 
     registerDatabase();
@@ -140,50 +141,51 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 		col.storeResource(res);
 	      } else
 	      {
-	        log("Storing fileset", Project.MSG_DEBUG);
-	        // using fileset
-	        DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
-	        scanner.scan();
-	        String[] files = scanner.getIncludedFiles();
-	        log("Found " + files.length + " files.\n");
-	 
-	        MimeType currentMime = mime;
-	        for (int i = 0; i < files.length; i++)
-	        {
-	          file = new File(scanner.getBasedir() + File.separator + files[i]);
-	          log("Storing " + files[i] + " ...\n");
-	          //TODO : use dedicated function in XmldbURI
-	          // check whether the relative file path contains file seps
-	          p = files[i].lastIndexOf(File.separatorChar);          
-	          if (p != Constants.STRING_NOT_FOUND)
-	          {
-	            relDir = files[i].substring(0, p);
-	            // It's necessary to do this translation on Windows, and possibly MacOS:
-	            relDir = relDir.replace(File.separatorChar, '/');
-	            if (createSubcollections && (prevDir == null || (!relDir.equals(prevDir))))
-	            {
-	              //TODO : use dedicated function in XmldbURI
-	              col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
-	              prevDir = relDir;
-	            }
-	          } else {
-	        	 // No file separator found in resource name, reset col to the root collection
-	        	 col = root;
-	          }
-	          if (mime == null)
-	              currentMime = MimeTable.getInstance().getContentTypeFor(file.getName());
-	          if (currentMime == null) {
-		      	  String msg="Cannot find mime-type for " + file.getName()+". Treating it as a binary.";
-	    		  log(msg,Project.MSG_ERR);
-			  currentMime = MimeType.BINARY_TYPE;
-	          }
-		  resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
-		  log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
-		  res = col.createResource(file.getName(), resourceType);
-		  res.setContent(file);
-		  ((EXistResource) res).setMimeType(currentMime.getName());
-		  col.storeResource(res);
-	        }
+		for(FileSet fileSet: fileSetList) {
+			log("Storing fileset", Project.MSG_DEBUG);
+			// using fileset
+			DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
+			scanner.scan();
+			String[] files = scanner.getIncludedFiles();
+			log("Found " + files.length + " files.\n");
+
+			MimeType currentMime = mime;
+			File baseDir=scanner.getBasedir();
+			for (int i = 0; i < files.length; i++) {
+				file = new File(baseDir , files[i]);
+				log("Storing " + files[i] + " ...\n");
+				//TODO : use dedicated function in XmldbURI
+				// check whether the relative file path contains file seps
+				p = files[i].lastIndexOf(File.separatorChar);          
+				if (p != Constants.STRING_NOT_FOUND) {
+					relDir = files[i].substring(0, p);
+					// It's necessary to do this translation on Windows, and possibly MacOS:
+					relDir = relDir.replace(File.separatorChar, '/');
+					if (createSubcollections && (prevDir == null || (!relDir.equals(prevDir)))) {
+						//TODO : use dedicated function in XmldbURI
+						col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
+						prevDir = relDir;
+					}
+				} else {
+					// No file separator found in resource name, reset col to the root collection
+					col = root;
+				}
+				if (mime == null)
+					currentMime = MimeTable.getInstance().getContentTypeFor(file.getName());
+				
+				if (currentMime == null) {
+					String msg="Cannot find mime-type for " + file.getName()+". Treating it as a binary.";
+					log(msg,Project.MSG_ERR);
+					currentMime = MimeType.BINARY_TYPE;
+				}
+				resourceType = currentMime.isXMLType() ? "XMLResource" : "BinaryResource";
+				log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
+				res = col.createResource(file.getName(), resourceType);
+				res.setContent(file);
+				((EXistResource) res).setMimeType(currentMime.getName());
+				col.storeResource(res);
+			}
+		}
 	      }
       }
     } catch (XMLDBException e)
@@ -196,6 +198,17 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
     }
   }
 
+	/**
+		This method allows more than one Fileset per store task!
+	 */
+	public void addFileset(FileSet set) {
+		if(fileSetList==null) {
+			fileSetList=new ArrayList<FileSet>();
+		}
+		
+		fileSetList.add(set);
+	}
+	
   public void setSrcFile(File file)
   {
     this.srcFile = file;
@@ -204,12 +217,6 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
     public void setTargetFile(String name) {
         this.targetFile = name;
     }
-
-  public FileSet createFileSet()
-  {
-    this.fileSet = new FileSet();
-    return fileSet;
-  }
 
   public void setCreatecollection(boolean create)
   {
