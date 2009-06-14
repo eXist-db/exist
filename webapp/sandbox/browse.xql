@@ -10,17 +10,36 @@ declare option exist:serialize "media-type=text/xml";
 
 declare function ajax:display-collection($collection as xs:string) as element()* {
     (
+        if ($collection ne '/db') then
+            <item>
+                <name>..</name>
+                <type>collection</type>
+                <path>{replace($collection, "/[^/]*$", "")}</path>
+            </item>
+        else (),
         for $child in xdb:get-child-collections($collection) order by $child return
-            <collection name="{$child}" path="{concat($collection, '/', $child)}"/>,
+            <item>
+                <name>{$child}</name>
+                <type>collection</type>
+                <path>{concat($collection, '/', $child)}</path>
+                <mime></mime>
+                <size></size>
+            </item>,
             
         for $child in xdb:get-child-resources($collection) order by $child return
-            <resource name="{$child}" path="{concat($collection, '/', $child)}"/>
+            <item>
+                <name>{$child}</name>
+                <type>resource</type>
+                <path>{concat($collection, '/', $child)}</path>
+                <mime>{xdb:get-mime-type(xs:anyURI(concat($collection, '/', $child)))}</mime>
+                <size>{fn:ceiling(xdb:size($collection, $child) div 1024)}</size>
+            </item>
     )
 };
 
 let $collection := request:get-parameter("collection", ())
 return
-    <ajax-response root="{replace($collection, '/[^/]*$', '', 'mx')}">
+    <ajax-response>
     { 
         ajax:display-collection($collection)
     }

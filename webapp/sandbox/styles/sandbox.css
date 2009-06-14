@@ -48,10 +48,13 @@ body {
 	float: right;
 }
 
-#errors {
-	height: 3em;
-	margin-bottom: 3px;
-	color: #AF0024;
+#top-panel {
+    margin-top: 4px;
+}
+
+#left-panel {
+    float: left;
+    width: 140px;
 }
 
 button {
@@ -64,9 +67,7 @@ h2 {
 }
 
 #slots-panel {
-	float: left;
-	width: 140px;
-	height: 216px;
+	height: 233px;
 	background-color: #FFE;
 	border: 1px solid #FFB900;
 	padding: 5px 2px 5px 2px;
@@ -101,7 +102,36 @@ h2 {
 #slots .used {
 	background-color: #FEFFAF;
 }
-	
+
+#messages {
+    height: 1.5em;
+}
+
+#errors {
+    position: relative;
+    margin-top: 5px;
+    color: #AF0024;
+    overflow: auto;
+    padding: 3px;
+    border: 1px solid #AF0024;
+    margin-bottom: 4px;
+}
+
+#error-close {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    background-color: #AF0024;
+    color: white;
+    padding: 4px;
+    text-decoration: none;
+}
+
+.errors-found {
+    color: #AF0024;
+    font-weight: bold;
+}
+
 #right-panel {
 	margin-left: 150px;
 	border: 1px solid #FFB900;
@@ -116,8 +146,13 @@ h2 {
 	padding: 3px 3px 3px 5px;
 }
 
-p {
-	margin-bottom: 3px;
+fieldset {
+	margin: 5px 0;
+    border: 0;
+}
+
+#open {
+    margin-right: 10px;
 }
 
 label:after {
@@ -128,15 +163,11 @@ label {
 	padding-right: 7px;
 }
 
-#query {
-    height: 170px;
-}
-
 #saved {
 	width: 200px;
 }
 
-fieldset {
+fieldset.bottom {
 	border: 0;
 	text-align: right;
 	margin-top: 3px;
@@ -159,6 +190,7 @@ fieldset select {
 	margin-top: 5px;
 	background-color: #FFE;
 	border: 1px solid #FFB900;
+    margin-left: 150px;
 }
 
 #save-panel h2 {
@@ -186,6 +218,7 @@ fieldset select {
 #query-output {
 	background-color: #FC6;
 	margin-top: 5px;
+	margin-left: 150px;
 	padding: 0 3px 3px 5px;
 	border: 1px solid #FFD100;
 }
@@ -244,42 +277,32 @@ fieldset select {
 	margin-right: 5px;
 }
 
-#xmldb-open {
-	width: 40%;
-	background-color: white;
-	font-size: 75%;
-	border: 5px solid #DAD6D6;
+.yui-skin-sam .yui-dt-body { cursor:pointer; } /* when rows are selectable */
+
+.is-collection {
+    font-weight: bold;
+    color: #0044FF;
 }
 
-#xmldb-open h1 {
-	font-size: 85%;
-	color: white;
-	padding: 5px 5px;
-	background-color: #3366CC;
+.file-dialog {
+    font-size: 75%;
 }
 
-#xmldb-inner {
-	padding: 7px;
+.file-dialog label {
+    width: 130px;
+    float: left;
 }
 
-#xmldb-collections {
-	margin-top: 5px;
+.file-dialog .wrapper-select {
+    border-top: 1px solid black;
+    padding-top: 10px;
 }
 
-#xmldb-close {
-	float: right;
-	color: #CCCCCC;
-	font-size: 75%;
+.dbbrowser-table {
+    height: 15em;
+    overflow: auto;
 }
 
-#xmldb-open li {
-	list-style: none;
-}
-
-#xmldb-submit {
-	float: right;
-}
-
-#xmldb-open input {
-	width: 100%;
+.dbbrowser-table .yui-dt-table {
+    width: 100%;
 }
