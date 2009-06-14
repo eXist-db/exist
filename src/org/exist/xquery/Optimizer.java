@@ -33,7 +33,7 @@ import org.exist.xquery.util.ExpressionDumper;
  * Analyzes the query and marks optimizable expressions for the query engine.
  * This class just searches for potentially optimizable expressions in the query tree and
  * encloses those expressions with an (#exist:optimize#) pragma. The real optimization
- * work is not done by this class but by the pragma (see {@link org.exist.xquery.Optimize}).
+ * work is not done by this class but by the pragma (see {@link Optimize}).
  * The pragma may also decide that the optimization is not applicable and just execute
  * the expression without any optimization.
  *
@@ -184,7 +184,6 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
-
     public void visitPredicate(Predicate predicate) {
         ++predicates;
         super.visitPredicate(predicate);
@@ -197,7 +196,8 @@ public class Optimizer extends DefaultExpressionVisitor {
             int axis = optimizable.getOptimizeAxis();
             if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
                     axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
-					axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
+                    axis == Constants.DESCENDANT_ATTRIBUTE_AXIS || axis == Constants.SELF_AXIS
+            )) {
                 return false;
             }
         }
