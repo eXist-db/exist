@@ -642,7 +642,8 @@ public class RemoteCollection implements CollectionImpl {
 				rpcClient.execute("parseLocalExt", paramsEx);
 			} catch(XmlRpcException e) {
 				// Identifying old versions
-				if(e.getMessage().contains("No such handler")) {
+				String excMsg=e.getMessage();
+				if(excMsg.contains("No such handler") || excMsg.contains("No method matching")) {
 					rpcClient.execute("parseLocal", params);
 				} else {
 					throw e;
