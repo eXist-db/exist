@@ -2913,10 +2913,8 @@ public class DOMFile extends BTree implements Lockable {
     protected void undoUpdateHeader(UpdateHeaderLoggable loggable) {
         final DOMPage page = getCurrentPage(loggable.pageNum);
         final DOMFilePageHeader ph = page.getPageHeader();
-        if (loggable.oldPrev != Page.NO_PAGE)
-            ph.setPrevDataPage(loggable.oldPrev);
-        if (loggable.oldNext != Page.NO_PAGE)
-            ph.setNextDataPage(loggable.oldNext);
+		ph.setPrevDataPage(loggable.oldPrev);
+		ph.setNextDataPage(loggable.oldNext);
         ph.setLsn(loggable.getLsn());
         page.setDirty(true);
         dataCache.add(page, 2);
