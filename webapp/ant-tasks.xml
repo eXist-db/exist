@@ -127,7 +127,7 @@
             <title>Storing Documents</title>
 
           <para>The store task uploads and stores the specified documents into
-           the database. Documents are specified through a fileset or as single source file.
+           the database. Documents are specified through one or more filesets or as single source file.
            The following attributes are recognized:
           </para>
             <example>
@@ -166,13 +166,37 @@
                     <term>type</term>
                     <listitem>
                         <para>The type of the resource: either "xml" or "binary". If
-                        "binary", documents will be stored as binary resources.</para>
+                        "binary", documents will be stored as binary resources. If it
+			is unset, it will be guessed from identified MIME type</para>
+                    </listitem>
+                </varlistentry>
+              <varlistentry>
+                  <term>defaultmimetype</term>
+                  <listitem>
+                      <para>The default MIME type to use when the resource MIME type cannot be identified. If
+                      it is not set, binary one (application/octet-stream) is the default.</para>
+                  </listitem>
+              </varlistentry>
+              <varlistentry>
+                  <term>forcemimetype</term>
+                  <listitem>
+                      <para>Use this attribute when you want to force an specific MIME type. You should also set
+		      'type' attribute, because resource kind guessing is disabled in this mode.</para>
+                  </listitem>
+              </varlistentry>
+                <varlistentry>
+                    <term>mimetypesfile</term>
+                    <listitem>
+                        <para>The mime-types.xml file used by Ant eXist extension to identify the resource kind
+			("binary" or "xml") and MIME type of the documents to store. If it is not set,
+			it will used a default one which is either at eXist HOME installation or bundled
+			inside the Ant eXist extension</para>
                     </listitem>
                 </varlistentry>
               <varlistentry>
                   <term>srcfile</term>
                   <listitem>
-                      <para>a single source file to store, use instead of a fileset</para>
+                      <para>a single source file to store, use instead of filesets</para>
                   </listitem>
               </varlistentry>
             </variablelist>

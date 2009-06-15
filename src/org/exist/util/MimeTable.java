@@ -78,6 +78,25 @@ public class MimeTable {
         return instance;
     }
     
+    /**
+     * Returns the singleton, using a custom mime-types.xml file
+     */
+    public static MimeTable getInstance(File f) {
+        if (instance == null)
+            instance = new MimeTable(f);
+        return instance;
+    }
+    
+    /**
+     * Returns the singleton, using a custom mime-types.xml stream,
+     * like for instance an internal database resource.
+     */
+    public static MimeTable getInstance(InputStream stream,String src) {
+        if (instance == null)
+            instance = new MimeTable(stream,src);
+        return instance;
+    }
+    
     private Map mimeTypes = new TreeMap();
     private Map extensions = new TreeMap();
     private Map preferredExtension = new TreeMap();
@@ -85,6 +104,15 @@ public class MimeTable {
     public MimeTable() {
         load();
     }
+    
+    public MimeTable(File f) {
+        load(f);
+    }
+    
+    public MimeTable(InputStream stream,String src) {
+        load(stream,src);
+    }
+    
     /**
      * Inform from where a mime-table is loaded
      */
@@ -162,8 +190,44 @@ public class MimeTable {
     }
     
     private void load() {
+        load(ConfigurationHelper.lookup(MIME_TYPES_XML));
+    }
+    
+    private void load(InputStream stream,String src) {
         boolean loaded = false;
-        File f = ConfigurationHelper.lookup(MIME_TYPES_XML);
+        System.out.println("Loading mime table from stream "+src);
+        try {
+        	loadMimeTypes(stream);
+        	this.src=src;
+        } catch (ParserConfigurationException e) {
+            System.err.println(LOAD_FAILED_ERR);
+        } catch (SAXException e) {
+            System.err.println(LOAD_FAILED_ERR);
+        } catch (IOException e) {
+            System.err.println(LOAD_FAILED_ERR);
+        }
+    	
+        if (!loaded) {
+            ClassLoader cl = MimeTable.class.getClassLoader();
+            InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
+            if (is == null) {
+                System.err.println(LOAD_FAILED_ERR);
+            }
+            try {
+                loadMimeTypes(is);
+                this.src="resource://"+MIME_TYPES_XML_DEFAULT;
+            } catch (ParserConfigurationException e) {
+                System.err.println(LOAD_FAILED_ERR);
+            } catch (SAXException e) {
+                System.err.println(LOAD_FAILED_ERR);
+            } catch (IOException e) {
+                System.err.println(LOAD_FAILED_ERR);
+            }
+        }
+    }
+    
+    private void load(File f) {
+        boolean loaded = false;
         if (f.canRead()) {
             try {
                 System.out.println("Loading mime table from file " + f.getAbsolutePath());
