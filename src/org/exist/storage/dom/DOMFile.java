@@ -636,91 +636,91 @@ public class DOMFile extends BTree implements Lockable {
      * @param rec
      */
     private RecordPos splitDataPage(Txn transaction, DocumentImpl doc, final RecordPos rec) {
-	if (currentDocument != null)
-	    currentDocument.getMetadata().incSplitCount();
-	// check if a split is really required. A split is not required if all
-	// records following the split point are already links to other pages. In this
-	// case, the new record is just appended to a new page linked to the old one.
-	boolean requireSplit = false;
-	for (int pos = rec.offset; pos < rec.getPage().len;) {
-	    final short tid = ByteConversion.byteToShort(rec.getPage().data, pos);
-	    pos += LENGTH_TID;
-	    if (!ItemId.isLink(tid)) {
-		requireSplit = true;
-		break;
-	    }
-	    pos += LENGTH_FORWARD_LOCATION;
-	}
-	if (!requireSplit) {
-	    LOG.debug("page " + rec.getPage().getPageNum() + ": no split required. Next :" + rec.getPage().getPageHeader().getNextDataPage() + " Previous :" +rec.getPage().getPageHeader().getPrevDataPage());
-	    rec.offset = rec.getPage().len;
-	    return rec;
-	}
+        if (currentDocument != null)
+            currentDocument.getMetadata().incSplitCount();
+        // check if a split is really required. A split is not required if all
+        // records following the split point are already links to other pages. In this
+        // case, the new record is just appended to a new page linked to the old one.
+        boolean requireSplit = false;
+        for (int pos = rec.offset; pos < rec.getPage().len;) {
+            final short tid = ByteConversion.byteToShort(rec.getPage().data, pos);
+            pos += LENGTH_TID;
+            if (!ItemId.isLink(tid)) {
+                requireSplit = true;
+                break;
+            }
+            pos += LENGTH_FORWARD_LOCATION;
+        }
+        if (!requireSplit) {
+            LOG.debug("page " + rec.getPage().getPageNum() + ": no split required. Next :" + rec.getPage().getPageHeader().getNextDataPage() + " Previous :" +rec.getPage().getPageHeader().getPrevDataPage());
+            rec.offset = rec.getPage().len;
+            return rec;
+        }
 
-	final DOMFilePageHeader ph = rec.getPage().getPageHeader();
-		
-	// copy the old data up to the split point into a new array
+        final DOMFilePageHeader ph = rec.getPage().getPageHeader();
+
+        // copy the old data up to the split point into a new array
         final int oldDataLen = ph.getDataLength();
         final byte[] oldData = rec.getPage().data;
-        
+
         if (isTransactional && transaction != null) {
             Loggable loggable = new SplitPageLoggable(transaction, rec.getPage().getPageNum(), rec.offset,
-						      oldData, oldDataLen);
+                oldData, oldDataLen);
             writeToLog(loggable, rec.getPage().page);
         }
-        
-	rec.getPage().data = new byte[fileHeader.getWorkSize()];
-	System.arraycopy(oldData, 0, rec.getPage().data, 0, rec.offset);
 
-	// the old rec.page now contains a copy of the data up to the split
-	// point
-	rec.getPage().len = rec.offset;
-	ph.setDataLength(rec.getPage().len);	
-	rec.getPage().setDirty(true);
-        
-	// create a first split page
-	DOMPage firstSplitPage = new DOMPage();
-        
+        rec.getPage().data = new byte[fileHeader.getWorkSize()];
+        System.arraycopy(oldData, 0, rec.getPage().data, 0, rec.offset);
+
+        // the old rec.page now contains a copy of the data up to the split
+        // point
+        rec.getPage().len = rec.offset;
+        ph.setDataLength(rec.getPage().len);
+        rec.getPage().setDirty(true);
+
+        // create a first split page
+        DOMPage firstSplitPage = new DOMPage();
+
         if (isTransactional && transaction != null) {
             Loggable loggable = new CreatePageLoggable(
-						       transaction, rec.getPage().getPageNum(), firstSplitPage.getPageNum(), Page.NO_PAGE,
-						       ph.getCurrentTID());
+                transaction, rec.getPage().getPageNum(), firstSplitPage.getPageNum(), Page.NO_PAGE,
+                ph.getCurrentTID());
             writeToLog(loggable, firstSplitPage.page);
         }
-        
-	DOMPage nextSplitPage = firstSplitPage;
-	nextSplitPage.getPageHeader().setNextTID(ph.getCurrentTID());
-	long backLink;
-	short splitRecordCount = 0;
-	LOG.debug("splitting " + rec.getPage().getPageNum() + " at " + rec.offset
-		  + ": new: " + nextSplitPage.getPageNum() + "; next: "
-		  + ph.getNextDataPage());
 
-	// start copying records from rec.offset to the new split pages
-	for (int pos = rec.offset; pos < oldDataLen; splitRecordCount++) {
-	    // read the current id
-	    final short tid = ByteConversion.byteToShort(oldData, pos);
-	    pos += LENGTH_TID;
-	    /* This is already a link, so we just copy it */
-	    if (ItemId.isLink(tid)) {
-		/* no room in the old page, append a new one */
-		if (rec.getPage().len + LENGTH_TID + LENGTH_FORWARD_LOCATION > fileHeader.getWorkSize()) {
-                    
+        DOMPage nextSplitPage = firstSplitPage;
+        nextSplitPage.getPageHeader().setNextTID(ph.getCurrentTID());
+        long backLink;
+        short splitRecordCount = 0;
+        LOG.debug("splitting " + rec.getPage().getPageNum() + " at " + rec.offset
+            + ": new: " + nextSplitPage.getPageNum() + "; next: "
+            + ph.getNextDataPage());
+
+        // start copying records from rec.offset to the new split pages
+        for (int pos = rec.offset; pos < oldDataLen; splitRecordCount++) {
+            // read the current id
+            final short tid = ByteConversion.byteToShort(oldData, pos);
+            pos += LENGTH_TID;
+            /* This is already a link, so we just copy it */
+            if (ItemId.isLink(tid)) {
+                /* no room in the old page, append a new one */
+                if (rec.getPage().len + LENGTH_TID + LENGTH_FORWARD_LOCATION > fileHeader.getWorkSize()) {
+
                     final DOMPage newPage = new DOMPage();
                     final DOMFilePageHeader newph = newPage.getPageHeader();
-                    
+
                     if (isTransactional && transaction != null) {
                         Loggable loggable = new CreatePageLoggable(
-								   transaction, rec.getPage().getPageNum(), newPage.getPageNum(),
-								   ph.getNextDataPage(), ph.getCurrentTID());
+                            transaction, rec.getPage().getPageNum(), newPage.getPageNum(),
+                            ph.getNextDataPage(), ph.getCurrentTID());
                         writeToLog(loggable, firstSplitPage.page);
-                        
-                        loggable = new UpdateHeaderLoggable(transaction, ph.getPrevDataPage(), 
-							    rec.getPage().getPageNum(), newPage.getPageNum(), 
-							    ph.getPrevDataPage(), ph.getNextDataPage());
+
+                        loggable = new UpdateHeaderLoggable(transaction, ph.getPrevDataPage(),
+                            rec.getPage().getPageNum(), newPage.getPageNum(),
+                            ph.getPrevDataPage(), ph.getNextDataPage());
                         writeToLog(loggable, nextSplitPage.page);
                     }
-                    
+
                     newph.setNextTID(ph.getCurrentTID());
                     newph.setPrevDataPage(rec.getPage().getPageNum());
                     newph.setNextDataPage(ph.getNextDataPage());
@@ -742,247 +742,247 @@ public class DOMFile extends BTree implements Lockable {
                     Loggable loggable = new AddLinkLoggable(transaction, rec.getPage().getPageNum(), ItemId.getId(tid), oldLink);
                     writeToLog(loggable, rec.getPage().page);
                 }
-                
-		ByteConversion.shortToByte(tid, rec.getPage().data, rec.getPage().len);
-		rec.getPage().len += LENGTH_TID;
-		System.arraycopy(oldData, pos, rec.getPage().data, rec.getPage().len, LENGTH_FORWARD_LOCATION);
-		rec.getPage().len += LENGTH_FORWARD_LOCATION;
-		pos += LENGTH_FORWARD_LOCATION;
-		continue;
-	    }
-	    // read data length
-	    final short vlen = ByteConversion.byteToShort(oldData, pos);
-	    pos += LENGTH_DATA_LENGTH;
-	    // if this is an overflow page, the real data length is always LENGTH_LINK
-	    // byte for the page number of the overflow page
-	    final short realLen = (vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen);
 
-	    // check if we have room in the current split page
-	    if (nextSplitPage.len + LENGTH_TID + LENGTH_DATA_LENGTH + LENGTH_ORIGINAL_LOCATION + realLen > fileHeader.getWorkSize()) {
-		// not enough room in the split page: append a new page
-		final DOMPage newPage = new DOMPage();
-		final DOMFilePageHeader newph = newPage.getPageHeader();
-                
+                ByteConversion.shortToByte(tid, rec.getPage().data, rec.getPage().len);
+                rec.getPage().len += LENGTH_TID;
+                System.arraycopy(oldData, pos, rec.getPage().data, rec.getPage().len, LENGTH_FORWARD_LOCATION);
+                rec.getPage().len += LENGTH_FORWARD_LOCATION;
+                pos += LENGTH_FORWARD_LOCATION;
+                continue;
+            }
+            // read data length
+            final short vlen = ByteConversion.byteToShort(oldData, pos);
+            pos += LENGTH_DATA_LENGTH;
+            // if this is an overflow page, the real data length is always LENGTH_LINK
+            // byte for the page number of the overflow page
+            final short realLen = (vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen);
+
+            // check if we have room in the current split page
+            if (nextSplitPage.len + LENGTH_TID + LENGTH_DATA_LENGTH + LENGTH_ORIGINAL_LOCATION + realLen > fileHeader.getWorkSize()) {
+                // not enough room in the split page: append a new page
+                final DOMPage newPage = new DOMPage();
+                final DOMFilePageHeader newph = newPage.getPageHeader();
+
                 if (isTransactional && transaction != null) {
                     Loggable loggable = new CreatePageLoggable(
-							       transaction, nextSplitPage.getPageNum(), newPage.getPageNum(), Page.NO_PAGE,
-							       ph.getCurrentTID());
+                        transaction, nextSplitPage.getPageNum(), newPage.getPageNum(), Page.NO_PAGE,
+                        ph.getCurrentTID());
                     writeToLog(loggable, firstSplitPage.page);
-                    
-                    loggable = new UpdateHeaderLoggable(transaction, nextSplitPage.getPageHeader().getPrevDataPage(), 
-							nextSplitPage.getPageNum(), newPage.getPageNum(),
-							nextSplitPage.getPageHeader().getPrevDataPage(), nextSplitPage.getPageHeader().getNextDataPage());
+
+                    loggable = new UpdateHeaderLoggable(transaction, nextSplitPage.getPageHeader().getPrevDataPage(),
+                        nextSplitPage.getPageNum(), newPage.getPageNum(),
+                        nextSplitPage.getPageHeader().getPrevDataPage(), nextSplitPage.getPageHeader().getNextDataPage());
                     writeToLog(loggable, nextSplitPage.page);
                 }
-                
+
                 newph.setNextTID(ph.getCurrentTID());
                 newph.setPrevDataPage(nextSplitPage.getPageNum());
                 //No next page ?
-                
+
                 LOG.debug("creating new split page: " + newPage.getPageNum());
                 nextSplitPage.getPageHeader().setNextDataPage(newPage.getPageNum());
-		nextSplitPage.getPageHeader().setDataLength(nextSplitPage.len);
-		nextSplitPage.getPageHeader().setRecordCount(splitRecordCount);
-		nextSplitPage.cleanUp();
-		nextSplitPage.setDirty(true);
-		dataCache.add(nextSplitPage);
-		dataCache.add(newPage);
-		nextSplitPage = newPage;
-		splitRecordCount = 0;
-	    }
+                nextSplitPage.getPageHeader().setDataLength(nextSplitPage.len);
+                nextSplitPage.getPageHeader().setRecordCount(splitRecordCount);
+                nextSplitPage.cleanUp();
+                nextSplitPage.setDirty(true);
+                dataCache.add(nextSplitPage);
+                dataCache.add(newPage);
+                nextSplitPage = newPage;
+                splitRecordCount = 0;
+            }
 
-	    /*
-	     * if the record has already been relocated, read the original
-	     * storage address and update the link there.
-	     */
-	    if (ItemId.isRelocated(tid)) {
-		backLink = ByteConversion.byteToLong(oldData, pos);
-		pos += LENGTH_ORIGINAL_LOCATION;
-		RecordPos origRec = findRecord(backLink, false);
-                final long oldLink = ByteConversion.byteToLong(origRec.getPage().data, origRec.offset);                
-		final long forwardLink = StorageAddress.createPointer(
-								      (int) nextSplitPage.getPageNum(), ItemId.getId(tid));
-                
+            /*
+            * if the record has already been relocated, read the original
+            * storage address and update the link there.
+            */
+            if (ItemId.isRelocated(tid)) {
+                backLink = ByteConversion.byteToLong(oldData, pos);
+                pos += LENGTH_ORIGINAL_LOCATION;
+                RecordPos origRec = findRecord(backLink, false);
+                final long oldLink = ByteConversion.byteToLong(origRec.getPage().data, origRec.offset);
+                final long forwardLink = StorageAddress.createPointer(
+                    (int) nextSplitPage.getPageNum(), ItemId.getId(tid));
+
                 if (isTransactional && transaction != null) {
-                    Loggable loggable = new UpdateLinkLoggable(transaction, origRec.getPage().getPageNum(), origRec.offset, 
-							       forwardLink, oldLink);
+                    Loggable loggable = new UpdateLinkLoggable(transaction, origRec.getPage().getPageNum(), origRec.offset,
+                        forwardLink, oldLink);
                     writeToLog(loggable, origRec.getPage().page);
                 }
-                
-		ByteConversion.longToByte(forwardLink, origRec.getPage().data, origRec.offset);
-		origRec.getPage().setDirty(true);
-		dataCache.add(origRec.getPage());
-	    } else
-		backLink = StorageAddress.createPointer((int) rec.getPage().getPageNum(), ItemId.getId(tid));
 
-	    /*
-             * save the record to the split page:
-	     */
+                ByteConversion.longToByte(forwardLink, origRec.getPage().data, origRec.offset);
+                origRec.getPage().setDirty(true);
+                dataCache.add(origRec.getPage());
+            } else
+                backLink = StorageAddress.createPointer((int) rec.getPage().getPageNum(), ItemId.getId(tid));
+
+            /*
+                * save the record to the split page:
+            */
 
             if (isTransactional && transaction != null) {
                 byte[] logData = new byte[realLen];
                 System.arraycopy(oldData, pos, logData, 0, realLen);
                 Loggable loggable = new AddMovedValueLoggable(transaction, nextSplitPage.getPageNum(),
-							      tid, logData, backLink);
+                    tid, logData, backLink);
                 writeToLog(loggable, nextSplitPage.page);
             }
-            
-	    // set the relocated flag and save the item id
-	    ByteConversion.shortToByte(ItemId.setIsRelocated(tid), nextSplitPage.data, nextSplitPage.len);
-	    nextSplitPage.len += LENGTH_TID;
-	    // save length field
-	    ByteConversion.shortToByte(vlen, nextSplitPage.data, nextSplitPage.len);
-	    nextSplitPage.len += LENGTH_DATA_LENGTH;
-	    // save link to the original page
-	    ByteConversion.longToByte(backLink, nextSplitPage.data,	nextSplitPage.len);
-	    nextSplitPage.len += LENGTH_ORIGINAL_LOCATION;
 
-	    // now save the data
-	    try {
-		System.arraycopy(oldData, pos, nextSplitPage.data, nextSplitPage.len, realLen);
-	    } catch (ArrayIndexOutOfBoundsException e) {
-		SanityCheck.TRACE("pos = " + pos + "; len = "
-				  + nextSplitPage.len + "; currentLen = " + realLen
-				  + "; tid = " + tid + "; page = "
-				  + rec.getPage().getPageNum());
-		throw e;
-	    }
-	    nextSplitPage.len += realLen;
-	    pos += realLen;
+            // set the relocated flag and save the item id
+            ByteConversion.shortToByte(ItemId.setIsRelocated(tid), nextSplitPage.data, nextSplitPage.len);
+            nextSplitPage.len += LENGTH_TID;
+            // save length field
+            ByteConversion.shortToByte(vlen, nextSplitPage.data, nextSplitPage.len);
+            nextSplitPage.len += LENGTH_DATA_LENGTH;
+            // save link to the original page
+            ByteConversion.longToByte(backLink, nextSplitPage.data,	nextSplitPage.len);
+            nextSplitPage.len += LENGTH_ORIGINAL_LOCATION;
 
-	    // save a link pointer in the original page if the record has not
-	    // been relocated before.
-	    if (!ItemId.isRelocated(tid)) {
-		// the link doesn't fit into the old page. Append a new page
-		if (rec.getPage().len + LENGTH_TID + LENGTH_FORWARD_LOCATION > fileHeader.getWorkSize()) {
-		    final DOMPage newPage = new DOMPage();
-		    final DOMFilePageHeader newph = newPage.getPageHeader();
+            // now save the data
+            try {
+                System.arraycopy(oldData, pos, nextSplitPage.data, nextSplitPage.len, realLen);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                SanityCheck.TRACE("pos = " + pos + "; len = "
+                    + nextSplitPage.len + "; currentLen = " + realLen
+                    + "; tid = " + tid + "; page = "
+                    + rec.getPage().getPageNum());
+                throw e;
+            }
+            nextSplitPage.len += realLen;
+            pos += realLen;
+
+            // save a link pointer in the original page if the record has not
+            // been relocated before.
+            if (!ItemId.isRelocated(tid)) {
+                // the link doesn't fit into the old page. Append a new page
+                if (rec.getPage().len + LENGTH_TID + LENGTH_FORWARD_LOCATION > fileHeader.getWorkSize()) {
+                    final DOMPage newPage = new DOMPage();
+                    final DOMFilePageHeader newph = newPage.getPageHeader();
 
                     if (isTransactional && transaction != null) {
                         Loggable loggable = new CreatePageLoggable(
-								   transaction, rec.getPage().getPageNum(), newPage.getPageNum(),
-								   ph.getNextDataPage(), ph.getCurrentTID());
+                            transaction, rec.getPage().getPageNum(), newPage.getPageNum(),
+                            ph.getNextDataPage(), ph.getCurrentTID());
                         writeToLog(loggable, firstSplitPage.page);
-                        
-                        loggable = new UpdateHeaderLoggable(transaction, ph.getPrevDataPage(), 
-							    rec.getPage().getPageNum(), newPage.getPageNum(), 
-							    ph.getPrevDataPage(), ph.getNextDataPage());
+
+                        loggable = new UpdateHeaderLoggable(transaction, ph.getPrevDataPage(),
+                            rec.getPage().getPageNum(), newPage.getPageNum(),
+                            ph.getPrevDataPage(), ph.getNextDataPage());
                         writeToLog(loggable, nextSplitPage.page);
                     }
-                    
+
                     newph.setNextTID(ph.getCurrentTID());
                     newph.setPrevDataPage(rec.getPage().getPageNum());
                     newph.setNextDataPage(ph.getNextDataPage());
-		    LOG.debug("creating new page after split: "	+ newPage.getPageNum());
-		    ph.setNextDataPage(newPage.getPageNum());
-		    ph.setDataLength(rec.getPage().len);
-		    ph.setRecordCount(countRecordsInPage(rec.getPage()));
-		    rec.getPage().cleanUp();
-		    rec.getPage().setDirty(true);
-		    dataCache.add(rec.getPage());
-		    //switch record to new page...
-		    rec.setPage(newPage);
-		    rec.getPage().len = 0;
-		    dataCache.add(newPage);
-		}
-                
+                    LOG.debug("creating new page after split: "	+ newPage.getPageNum());
+                    ph.setNextDataPage(newPage.getPageNum());
+                    ph.setDataLength(rec.getPage().len);
+                    ph.setRecordCount(countRecordsInPage(rec.getPage()));
+                    rec.getPage().cleanUp();
+                    rec.getPage().setDirty(true);
+                    dataCache.add(rec.getPage());
+                    //switch record to new page...
+                    rec.setPage(newPage);
+                    rec.getPage().len = 0;
+                    dataCache.add(newPage);
+                }
+
                 final long forwardLink = StorageAddress.createPointer(
-								      (int) nextSplitPage.getPageNum(), ItemId.getId(tid));
-                
+                    (int) nextSplitPage.getPageNum(), ItemId.getId(tid));
+
                 if (isTransactional && transaction != null) {
-                    Loggable loggable = new AddLinkLoggable(transaction, rec.getPage().getPageNum(), tid, 
-							    forwardLink);
+                    Loggable loggable = new AddLinkLoggable(transaction, rec.getPage().getPageNum(), tid,
+                        forwardLink);
                     writeToLog(loggable, rec.getPage().page);
                 }
-                
-		ByteConversion.shortToByte(ItemId.setIsLink(tid), rec.getPage().data, rec.getPage().len);
-		rec.getPage().len += LENGTH_TID;
-		ByteConversion.longToByte(forwardLink, rec.getPage().data, rec.getPage().len);
-		rec.getPage().len += LENGTH_FORWARD_LOCATION;
-	    }
-	} // end of for loop: finished copying data
 
-	// link the split pages to the original page
+                ByteConversion.shortToByte(ItemId.setIsLink(tid), rec.getPage().data, rec.getPage().len);
+                rec.getPage().len += LENGTH_TID;
+                ByteConversion.longToByte(forwardLink, rec.getPage().data, rec.getPage().len);
+                rec.getPage().len += LENGTH_FORWARD_LOCATION;
+            }
+        } // end of for loop: finished copying data
 
-	if (nextSplitPage.len == 0) {
-	    LOG.warn("page " + nextSplitPage.getPageNum()
-		     + " is empty. Remove it");
-	    // if nothing has been copied to the last split page,
-	    // remove it
-	    //dataCache.remove(nextSplitPage);
-	    if (nextSplitPage == firstSplitPage)
-		firstSplitPage = null;
-	    try {
-		unlinkPages(nextSplitPage.page);
-	    } catch (IOException e) {
-		LOG.warn("Failed to remove empty split page: " + e.getMessage(), e);
-	    }
-	    nextSplitPage.setDirty(true);
-	    dataCache.remove(nextSplitPage);
-	    nextSplitPage = null;
-	} else {
+        // link the split pages to the original page
 
-	    if (isTransactional && transaction != null) {
+        if (nextSplitPage.len == 0) {
+            LOG.warn("page " + nextSplitPage.getPageNum()
+                + " is empty. Remove it");
+            // if nothing has been copied to the last split page,
+            // remove it
+            //dataCache.remove(nextSplitPage);
+            if (nextSplitPage == firstSplitPage)
+                firstSplitPage = null;
+            try {
+                unlinkPages(nextSplitPage.page);
+            } catch (IOException e) {
+                LOG.warn("Failed to remove empty split page: " + e.getMessage(), e);
+            }
+            nextSplitPage.setDirty(true);
+            dataCache.remove(nextSplitPage);
+            nextSplitPage = null;
+        } else {
+
+            if (isTransactional && transaction != null) {
                 Loggable loggable = new UpdateHeaderLoggable(transaction, nextSplitPage.getPageHeader().getPrevDataPage(),
-							     nextSplitPage.getPageNum(), ph.getNextDataPage(),
-							     nextSplitPage.getPageHeader().getPrevDataPage(), nextSplitPage.getPageHeader().getNextDataPage());
-                writeToLog(loggable, nextSplitPage.page);
-            }
-            
-	    nextSplitPage.getPageHeader().setDataLength(nextSplitPage.len);
-	    nextSplitPage.getPageHeader().setNextDataPage(ph.getNextDataPage());
-	    nextSplitPage.getPageHeader().setRecordCount(splitRecordCount);
-	    nextSplitPage.cleanUp();
-	    nextSplitPage.setDirty(true);
-	    dataCache.add(nextSplitPage);
-            
-	    if (isTransactional && transaction != null) {
-		DOMFilePageHeader ph1 = firstSplitPage.getPageHeader();
-                Loggable loggable = new UpdateHeaderLoggable(transaction, rec.getPage().getPageNum(),
-							     firstSplitPage.getPageNum(), ph1.getNextDataPage(), ph1.getPrevDataPage(), 
-							     ph1.getNextDataPage());
+                    nextSplitPage.getPageNum(), ph.getNextDataPage(),
+                    nextSplitPage.getPageHeader().getPrevDataPage(), nextSplitPage.getPageHeader().getNextDataPage());
                 writeToLog(loggable, nextSplitPage.page);
             }
 
-	    firstSplitPage.getPageHeader().setPrevDataPage(rec.getPage().getPageNum());
-	    if (nextSplitPage != firstSplitPage) {
-		firstSplitPage.setDirty(true);
-		dataCache.add(firstSplitPage);
-	    }
-	}
-		
-	long nextPageNr = ph.getNextDataPage();
-	if (Page.NO_PAGE != nextPageNr) {
-	    final DOMPage nextPage = getCurrentPage(nextPageNr);
-			
+            nextSplitPage.getPageHeader().setDataLength(nextSplitPage.len);
+            nextSplitPage.getPageHeader().setNextDataPage(ph.getNextDataPage());
+            nextSplitPage.getPageHeader().setRecordCount(splitRecordCount);
+            nextSplitPage.cleanUp();
+            nextSplitPage.setDirty(true);
+            dataCache.add(nextSplitPage);
+
+            if (isTransactional && transaction != null) {
+                DOMFilePageHeader ph1 = firstSplitPage.getPageHeader();
+                Loggable loggable = new UpdateHeaderLoggable(transaction, rec.getPage().getPageNum(),
+                    firstSplitPage.getPageNum(), ph1.getNextDataPage(), ph1.getPrevDataPage(),
+                    ph1.getNextDataPage());
+                writeToLog(loggable, nextSplitPage.page);
+            }
+
+            firstSplitPage.getPageHeader().setPrevDataPage(rec.getPage().getPageNum());
+            if (nextSplitPage != firstSplitPage) {
+                firstSplitPage.setDirty(true);
+                dataCache.add(firstSplitPage);
+            }
+        }
+
+        long nextPageNr = ph.getNextDataPage();
+        if (Page.NO_PAGE != nextPageNr) {
+            final DOMPage nextPage = getCurrentPage(nextPageNr);
+
             if (isTransactional && transaction != null) {
                 Loggable loggable = new UpdateHeaderLoggable(transaction, nextSplitPage.getPageNum(),
-							     nextPage.getPageNum(), Page.NO_PAGE, nextPage.getPageHeader().getPrevDataPage(), 
-							     nextPage.getPageHeader().getNextDataPage());
+                    nextPage.getPageNum(), Page.NO_PAGE, nextPage.getPageHeader().getPrevDataPage(),
+                    nextPage.getPageHeader().getNextDataPage());
                 writeToLog(loggable, nextPage.page);
             }
-            
-	    nextPage.getPageHeader().setPrevDataPage(nextSplitPage.getPageNum());
-	    nextPage.setDirty(true);
-	    dataCache.add(nextPage);
-	}
-	rec.setPage(getCurrentPage(rec.getPage().getPageNum()));
-	if (firstSplitPage != null) {
-            
-	    if (isTransactional && transaction != null) {
+
+            nextPage.getPageHeader().setPrevDataPage(nextSplitPage.getPageNum());
+            nextPage.setDirty(true);
+            dataCache.add(nextPage);
+        }
+        rec.setPage(getCurrentPage(rec.getPage().getPageNum()));
+        if (firstSplitPage != null) {
+
+            if (isTransactional && transaction != null) {
                 Loggable loggable = new UpdateHeaderLoggable(transaction, ph.getPrevDataPage(),
-							     rec.getPage().getPageNum(), firstSplitPage.getPageNum(),
-							     ph.getPrevDataPage(), ph.getNextDataPage());
+                    rec.getPage().getPageNum(), firstSplitPage.getPageNum(),
+                    ph.getPrevDataPage(), ph.getNextDataPage());
                 writeToLog(loggable, rec.getPage().page);
             }
-			
-	    ph.setNextDataPage(firstSplitPage.getPageNum());
-	}
-	ph.setDataLength(rec.getPage().len);
-	ph.setRecordCount(countRecordsInPage(rec.getPage()));
-	rec.getPage().cleanUp();
-	rec.offset = rec.getPage().len;
-	return rec;
+
+            ph.setNextDataPage(firstSplitPage.getPageNum());
+        }
+        ph.setDataLength(rec.getPage().len);
+        ph.setRecordCount(countRecordsInPage(rec.getPage()));
+        rec.getPage().cleanUp();
+        rec.offset = rec.getPage().len;
+        return rec;
     }
 
     /**
@@ -1877,41 +1877,41 @@ public class DOMFile extends BTree implements Lockable {
      * @param p
      */
     public void removeAll(Txn transaction, long p) {
-	if (!lock.isLockedForWrite())
-	    LOG.warn("the file doesn't own a write lock");
-	//		 StringBuffer debug = new StringBuffer();
-	//		 debug.append("Removed pages: ");
-	long pnum = StorageAddress.pageFromPointer(p);
-	if (Page.NO_PAGE == pnum)
-	    LOG.warn("tried to remove unknown page. p = " + pnum);
-	while (Page.NO_PAGE != pnum) {
-	    final DOMPage page = getCurrentPage(pnum);
-	    final DOMFilePageHeader ph = page.getPageHeader();
+        if (!lock.isLockedForWrite())
+            LOG.warn("the file doesn't own a write lock");
+//        		 StringBuffer debug = new StringBuffer();
+//        		 debug.append("Removed pages: ");
+        long pnum = StorageAddress.pageFromPointer(p);
+        if (Page.NO_PAGE == pnum)
+            LOG.warn("tried to remove unknown page. p = " + pnum);
+        while (Page.NO_PAGE != pnum) {
+            final DOMPage page = getCurrentPage(pnum);
+            final DOMFilePageHeader ph = page.getPageHeader();
 
-	    if (isTransactional && transaction != null) {						
-		RemovePageLoggable loggable = new RemovePageLoggable(
-								     transaction, pnum, 
-								     ph.getPrevDataPage(), ph.getNextDataPage(), 
-								     page.data, page.len, ph.getCurrentTID(), ph.getRecordCount());
-		writeToLog(loggable, page.page);
-	    }
+            if (isTransactional && transaction != null) {
+                RemovePageLoggable loggable = new RemovePageLoggable(
+                        transaction, pnum,
+                        ph.getPrevDataPage(), ph.getNextDataPage(),
+                        page.data, page.len, ph.getCurrentTID(), ph.getRecordCount());
+                writeToLog(loggable, page.page);
+            }
 
-	    pnum = ph.getNextDataPage();			
-	    try {				
-		ph.setNextDataPage(Page.NO_PAGE);
-		ph.setPrevDataPage(Page.NO_PAGE);
-		ph.setDataLength(0);
-		ph.setNextTID(ItemId.UNKNOWN_ID);
-		ph.setRecordCount((short) 0);
-		page.len = 0;
-		unlinkPages(page.page);
-		page.setDirty(true);	
-		dataCache.remove(page);
-	    } catch (IOException e) {
-		LOG.warn("Error while removing page: " + e.getMessage(), e);
-	    }
-	}
-	//		 LOG.debug(debug.toString());
+            pnum = ph.getNextDataPage();
+            try {
+                ph.setNextDataPage(Page.NO_PAGE);
+                ph.setPrevDataPage(Page.NO_PAGE);
+                ph.setDataLength(0);
+                ph.setNextTID(ItemId.UNKNOWN_ID);
+                ph.setRecordCount((short) 0);
+                page.len = 0;
+                unlinkPages(page.page);
+                page.setDirty(true);
+                dataCache.remove(page);
+            } catch (IOException e) {
+                LOG.warn("Error while removing page: " + e.getMessage(), e);
+            }
+        }
+//        		 LOG.debug(debug.toString());
     }
 
     public String debugPages(DocumentImpl doc, boolean showPageContents) {
@@ -2909,9 +2909,7 @@ public class DOMFile extends BTree implements Lockable {
     protected void undoUpdateHeader(UpdateHeaderLoggable loggable) {
         final DOMPage page = getCurrentPage(loggable.pageNum);
         final DOMFilePageHeader ph = page.getPageHeader();
-        if (loggable.oldPrev != Page.NO_PAGE)
             ph.setPrevDataPage(loggable.oldPrev);
-        if (loggable.oldNext != Page.NO_PAGE)
             ph.setNextDataPage(loggable.oldNext);
         ph.setLsn(loggable.getLsn());
         page.setDirty(true);
