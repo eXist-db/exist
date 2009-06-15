@@ -1898,6 +1898,20 @@ public class RpcConnection implements RpcAPI {
     }
     
     /**
+     * Parse a file previously uploaded with upload, forcing it to XML or Binary.
+     *
+     * The temporary file will be removed.
+     *
+     * @param localFile
+     * @throws EXistException
+     * @throws IOException
+     */
+    public boolean parseLocalExt(String localFile, String documentPath,
+            int overwrite, String mimeType, int isXML) throws Exception, URISyntaxException {
+        return parseLocalExt(localFile, documentPath, overwrite, mimeType, isXML, null, null);
+    }
+    
+    /**
      * The method <code>parseLocal</code>
      *
      * @param localFile a <code>String</code> value
@@ -1908,7 +1922,21 @@ public class RpcConnection implements RpcAPI {
      */
     private boolean parseLocal(String localFile, XmldbURI docUri,
             int overwrite, String mimeType) throws Exception {
-        return parseLocal(localFile, docUri, overwrite, mimeType, null, null);
+        return parseLocal(localFile, docUri, overwrite, mimeType, null, null, null);
+    }
+    
+    /**
+     * The method <code>parseLocal</code>
+     *
+     * @param localFile a <code>String</code> value
+     * @param docUri a <code>XmldbURI</code> value
+     * @param mimeType a <code>String</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     */
+    private boolean parseLocalExt(String localFile, XmldbURI docUri,
+            int overwrite, String mimeType, int isXML) throws Exception {
+        return parseLocal(localFile, docUri, overwrite, mimeType, new Boolean(isXML!=0), null, null);
     }
     
     /**
@@ -1925,7 +1953,24 @@ public class RpcConnection implements RpcAPI {
      */
     public boolean parseLocal(String localFile, String documentPath, int overwrite,
                               String mimeType, Date created, Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
-    	return parseLocal(localFile,XmldbURI.xmldbUriFor(documentPath), overwrite, mimeType, created, modified);
+    	return parseLocal(localFile,XmldbURI.xmldbUriFor(documentPath), overwrite, mimeType, null, created, modified);
+    }
+    
+    /**
+     * The method <code>parseLocal</code>
+     *
+     * @param localFile a <code>String</code> value
+     * @param documentPath a <code>String</code> value
+     * @param mimeType a <code>String</code> value
+     * @param created a <code>Date</code> value
+     * @param modified a <code>Date</code> value
+     * @return a <code>boolean</code> value
+     * @exception Exception if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
+    public boolean parseLocalExt(String localFile, String documentPath, int overwrite,
+                              String mimeType, int isXML, Date created, Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
+    	return parseLocal(localFile,XmldbURI.xmldbUriFor(documentPath), overwrite, mimeType, new Boolean(isXML!=0), created, modified);
     }
     
     /**
@@ -1940,7 +1985,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     private boolean parseLocal(String localFile, XmldbURI docUri,
-            int overwrite, String mimeType, Date created, Date modified) throws EXistException, PermissionDeniedException {
+            int overwrite, String mimeType, Boolean isXML, Date created, Date modified) throws EXistException, PermissionDeniedException {
         
     	File file = new File(localFile);
         if (!file.canRead())
@@ -1955,7 +2000,8 @@ public class RpcConnection implements RpcAPI {
         MimeType mime = MimeTable.getInstance().getContentType(mimeType);
         if (mime == null)
             mime = MimeType.BINARY_TYPE;
-                    
+        
+	boolean treatAsXML=(isXML!=null && isXML.booleanValue()) || (isXML==null && mime.isXMLType());
         try {
             broker = factory.getBrokerPool().get(user);
             Collection collection = null;
@@ -1979,7 +2025,7 @@ public class RpcConnection implements RpcAPI {
 	            }
 	            
 	            //XML
-	            if(mime.isXMLType()) {
+	            if(treatAsXML) {
 	                source = new InputSource(file.toURI().toASCIIString());
 	                info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
 	                if (created != null)
@@ -2003,7 +2049,7 @@ public class RpcConnection implements RpcAPI {
             }
 
             // DWES why seperate store?
-            if(mime.isXMLType()){
+            if(treatAsXML){
                 collection.store(transaction, broker, info, source, false);
             }
             
@@ -4563,8 +4609,16 @@ public class RpcConnection implements RpcAPI {
         return storeBinary(data, docName, mimeType, replace ? 1 : 0, null, null);
     }
 
+    public boolean parseLocalExt(String localFile, String docName, boolean replace, String mimeType, boolean treatAsXML, Date created, Date modified) throws EXistException, PermissionDeniedException, SAXException, URISyntaxException {
+        return parseLocalExt(localFile, docName, replace ? 1 : 0, mimeType, treatAsXML ? 1 : 0, created, modified);
+    }
+
     public boolean parseLocal(String localFile, String docName, boolean replace, String mimeType, Date created, Date modified) throws EXistException, PermissionDeniedException, SAXException, URISyntaxException {
         return parseLocal(localFile, docName, replace ? 1 : 0, mimeType, created, modified);
+    }
+
+    public boolean parseLocalExt(String localFile, String docName, boolean replace, String mimeType, boolean treatAsXML) throws EXistException, PermissionDeniedException, SAXException, URISyntaxException {
+        return parseLocalExt(localFile, docName, replace ? 1 : 0, mimeType, treatAsXML ? 1 : 0, null, null);
     }
 
     public boolean parseLocal(String localFile, String docName, boolean replace, String mimeType) throws EXistException, PermissionDeniedException, SAXException, URISyntaxException {

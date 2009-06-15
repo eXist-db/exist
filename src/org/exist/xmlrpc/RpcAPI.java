@@ -515,7 +515,13 @@ public interface RpcAPI {
 	public boolean parseLocal(String localFile, String docName, boolean replace, String mimeType)
             throws EXistException, PermissionDeniedException, SAXException, URISyntaxException;
 
+	public boolean parseLocalExt(String localFile, String docName, boolean replace, String mimeType, boolean treatAsXML)
+            throws EXistException, PermissionDeniedException, SAXException, URISyntaxException;
+
 	public boolean parseLocal(String localFile, String docName, boolean replace, String mimeType, Date created, Date modified)
+            throws EXistException, PermissionDeniedException, SAXException, URISyntaxException;
+	
+	public boolean parseLocalExt(String localFile, String docName, boolean replace, String mimeType, boolean treatAsXML, Date created, Date modified)
             throws EXistException, PermissionDeniedException, SAXException, URISyntaxException;
 	
 	/**

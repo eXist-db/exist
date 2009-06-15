@@ -611,23 +611,43 @@ public class RemoteCollection implements CollectionImpl {
 			}
 
 			params = new ArrayList(6);
+			List paramsEx = new ArrayList(7);
 			params.add(fileName);
+			paramsEx.add(fileName);
 			try {
-				params.add(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
+				String resURI=getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString();
+				params.add(resURI);
+				paramsEx.add(resURI);
 			} catch(URISyntaxException e) {
 				throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 			}
 			params.add(Boolean.TRUE);
+			paramsEx.add(Boolean.TRUE);
 			if(res instanceof EXistResource) {
 				EXistResource rxres=(EXistResource)res;
 				params.add(rxres.getMimeType());
+				paramsEx.add(rxres.getMimeType());
+				// This one is only for the new style!!!!
+				paramsEx.add((res.getResourceType().equals("BinaryResource"))?Boolean.FALSE:Boolean.TRUE);
+				
 				if(rxres.getCreationTime() != null) {
 					params.add(rxres.getCreationTime());
+					paramsEx.add(rxres.getCreationTime());
 					params.add(rxres.getLastModificationTime());
+					paramsEx.add(rxres.getLastModificationTime());
 				}
 			}
 			
-			rpcClient.execute("parseLocal", params);
+			try {
+				rpcClient.execute("parseLocalExt", paramsEx);
+			} catch(XmlRpcException e) {
+				// Identifying old versions
+				if(e.getMessage().contains("No such handler")) {
+					rpcClient.execute("parseLocal", params);
+				} else {
+					throw e;
+				}
+			}
 		} catch (IOException e) {
 			throw new XMLDBException(
 				ErrorCodes.INVALID_RESOURCE,
