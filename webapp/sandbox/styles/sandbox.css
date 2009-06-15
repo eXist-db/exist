@@ -303,6 +303,6 @@ fieldset select {
     overflow: auto;
 }
 
-.dbbrowser-table .yui-dt-table {
+.dbbrowser-table table {
     width: 100%;
 }
