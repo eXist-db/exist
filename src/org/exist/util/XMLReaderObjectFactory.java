@@ -62,13 +62,13 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     public final static String GRAMMER_POOL = "validation.grammar_pool";
     
     // Xerces feature and property names
-    public final static String FEATURES_VALIDATION_SCHEMA
+    public final static String APACHE_FEATURES_VALIDATION_SCHEMA
             ="http://apache.org/xml/features/validation/schema";
-    public final static String PROPERTIES_INTERNAL_GRAMMARPOOL
+    public final static String APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL
             ="http://apache.org/xml/properties/internal/grammar-pool";
-    public final static String PROPERTIES_LOAD_EXT_DTD
+    public final static String APACHE_PROPERTIES_LOAD_EXT_DTD
             ="http://apache.org/xml/features/nonvalidating/load-external-dtd";
-    public final static String PROPERTIES_ENTITYRESOLVER
+    public final static String APACHE_PROPERTIES_ENTITYRESOLVER
             ="http://apache.org/xml/properties/internal/entity-resolver";
     
     private BrokerPool pool;
@@ -125,12 +125,12 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         
         // Setup grammar cache
         if(grammarPool!=null){
-            xmlReader.setProperty(PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+            xmlReader.setProperty(APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
         }
 
         // Setup xml catalog resolver
         if(resolver!=null){
-            xmlReader.setProperty(PROPERTIES_ENTITYRESOLVER, resolver);
+            xmlReader.setProperty(APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
         }
         
         return xmlReader;
@@ -174,10 +174,10 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             xmlReader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC,
                 validation == VALIDATION_AUTO);
 
-            xmlReader.setFeature(FEATURES_VALIDATION_SCHEMA,
+            xmlReader.setFeature(APACHE_FEATURES_VALIDATION_SCHEMA,
                 validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);            
 
-            xmlReader.setFeature(PROPERTIES_LOAD_EXT_DTD,
+            xmlReader.setFeature(APACHE_PROPERTIES_LOAD_EXT_DTD,
                 validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
 
             // Attempt to make validation function equal to insert mode

@@ -204,7 +204,7 @@ public class Validator {
 
                 // Scenario 1 : no params - use system catalog
                 logger.debug("Validation using system catalog.");
-                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, systemCatalogResolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, systemCatalogResolver);
 
             } else if(grammarUrl.endsWith(".xml")){
 
@@ -212,21 +212,21 @@ public class Validator {
                 logger.debug("Validation using user specified catalog '" + grammarUrl + "'.");
                 eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
                 resolver.setCatalogList(new String[]{grammarUrl});
-                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
 
             } else if(grammarUrl.endsWith("/")){
 
                 // Scenario 3 : path to collection ("/"): search.
                 logger.debug("Validation using searched grammar, start from '" + grammarUrl + "'.");
                 SearchResourceResolver resolver = new SearchResourceResolver(grammarUrl, brokerPool);
-                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
 
             } else {
 
                 // Scenario 4 : path to grammar (xsd, dtd) specified.
                 logger.debug("Validation using specified grammar '" + grammarUrl + "'.");
                 AnyUriResolver resolver = new AnyUriResolver(grammarUrl);
-                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_ENTITYRESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
             }
 
             logger.debug("Validation started.");
@@ -276,12 +276,12 @@ public class Validator {
         XMLReader xmlReader = saxParser.getXMLReader();
 
         // Setup xmlreader
-        xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+        xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
 
         xmlReader.setFeature(Namespaces.SAX_VALIDATION, true);
         xmlReader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
-        xmlReader.setFeature(XMLReaderObjectFactory.FEATURES_VALIDATION_SCHEMA, true);
-        xmlReader.setFeature(XMLReaderObjectFactory.PROPERTIES_LOAD_EXT_DTD, true);
+        xmlReader.setFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA, true);
+        xmlReader.setFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD, true);
         xmlReader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
 
         xmlReader.setContentHandler(contentHandler);

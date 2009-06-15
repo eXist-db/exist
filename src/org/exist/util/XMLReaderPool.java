@@ -72,7 +72,7 @@ public class XMLReaderPool extends StackObjectPool {
             
             // DIZZZ; workaround Xerces bug. Cached DTDs cause for problems during validation parsing.
             GrammarPool grammarPool =
-               (GrammarPool) reader.getProperty(XMLReaderObjectFactory.PROPERTIES_INTERNAL_GRAMMARPOOL);
+               (GrammarPool) reader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL);
             if(grammarPool!=null){
                 grammarPool.clearDTDs();
             }
