@@ -209,6 +209,8 @@
             <exclude name="org/exist/xquery/modules/svn/**" unless="include.module.svn.config"/>
             <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
             <exclude name="org/exist/xquery/modules/jfreechart/**" unless="include.module.jfreechart.config"/>
+            <exclude name="org/exist/xquery/modules/onvdl/**" unless="include.module.onvdl.config"/>
+
         </javac>
 	</target>
 	
