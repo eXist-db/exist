@@ -29,7 +29,7 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  *
- * @author jimfuller
+ * @author jim.fuller@webcomposite.com
  */
 public class SerializeTest {
 
