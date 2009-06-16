@@ -77,7 +77,8 @@ declare function admin:display-login-form() as element()
         <div class="panel-head">Login</div>
         <p>This is a protected resource. Only registered database users can log
         in. If you have not set up any users, login as "admin" and leave the
-        password field empty. Note that the "guest" user is not permitted access.</p>
+        password field empty or use the password you supplied during the installation
+		process. Note that the "guest" user is not permitted access.</p>
 
         <form action="{session:encode-url(request:get-uri())}" method="post">
             <table class="login" cellpadding="5">
