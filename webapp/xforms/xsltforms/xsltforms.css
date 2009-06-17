@@ -1,0 +1,514 @@
+/*
+table.xforms-control, .xforms-group, .xforms-repeat, .xforms-switch, .xforms-tree, .ajx-tabs {
+	font				: normal 12px Arial, Verdana;
+}
+*/
+
+/* GROUPS */
+
+/*
+div.xforms-group {
+	border				: 1px solid black;
+	padding				: 0px;
+	margin 				: 5px 0px 5px 0px;
+}
+
+div.xforms-group-content {
+	padding				: 15px;
+	background-color	: #f8f8f8;
+}
+
+div.xforms-group-label, caption.xforms-label {
+	padding				: 10px;
+	border-bottom		: 1px solid black;
+	background-image	: url(titleBackground.png);
+	font-size			: 1.4em;
+	color 				: black;
+	height				: 40px;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+}
+
+fieldset.xforms-group {
+	margin 				: 5px 0px 5px 0px;
+	padding				: 10px;
+}
+
+caption.xforms-label {
+	border-top			: 1px solid black;
+	border-left			: 1px solid black;
+	border-right		: 1px solid black;
+	border-bottom		: 0px;
+	margin-bottom		: -5px;
+}
+*/
+
+
+/* REPEAT */
+
+/*
+table.xforms-repeat, table.xforms-group {
+	border				: 1px solid black;
+	border-collapse		: collapse;
+	padding				: 5px;
+	background-color 	: #ffffff;	
+	margin 				: 5px 0px 5px 0px;
+}
+
+table.xforms-repeat tr, table.xforms-group tr {
+	margin				: 0px;
+}
+
+table.xforms-repeat thead, table.xforms-group thead {
+	background-image	: url(thBackground.png);
+}
+
+table.xforms-repeat th.xforms-label, table.xforms-group th.xforms-label {
+	border				: 1px solid black;
+	height				: 22px;
+	padding				: 0px 5px 0px 5px;
+}
+
+td.td-cell {
+	border				: 1px solid #333;
+}
+*/
+
+.xforms-repeat-item-selected {
+	background-color	: #e2eadf;
+}
+
+/*
+ul.xforms-repeat {
+	border				: 1px solid black;
+	margin 				: 5px 0px 5px 0px;
+	padding				: 0;
+}
+*/
+
+ul.xforms-repeat li {
+	list-style-type		: none;
+	padding				: 10px
+}
+
+/* LABEL */ 
+
+/*
+.xforms-label {
+	font-weight			: bold;
+	color 				: black;
+}
+
+label.xforms-label {
+	width				: 150px;
+	height				: 24px;
+	padding-top			: 4px;
+	display				: block;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+}
+
+label.xforms-label.xforms-appearance-minimal {
+	width				: auto;
+	padding-right		: 10px;
+}
+*/
+
+/* Control */
+table.xforms-control {
+	border 				: 0;
+}
+
+table.xforms-control td {
+	vertical-align		: top;
+}
+
+table.xforms-control td.value {
+	vertical-align		: middle;
+}
+
+
+table.xforms-control.xforms-appearance-minimal {
+	display				: inline;
+}
+
+/* Opera */
+@media all and (min-width: 0px) {
+	table.xforms-control.xforms-appearance-minimal {
+		display				: inline-block;
+	}
+}
+
+td.focus {
+	width				: 10px;
+}
+
+table.xforms-focus td.focus {
+	background			: transparent url(focus.gif) no-repeat left 8px;
+}
+
+.xforms-readonly input, .xforms-readonly textarea, .xforms-readonly select, .xforms-readonly option {
+	background-color	: #f8f8f8;
+	color				: #333333;
+}
+
+.xforms-disabled, table.xforms-control.xforms-appearance-minimal.xforms-disabled {
+	display				: none;
+}
+
+/* ICONS */
+
+span.xforms-required-icon, span.xforms-alert, span.xforms-help, span.xforms-hint {
+	vertical-align		: top;
+}
+
+.xforms-required-icon {
+    display				: none;
+    color				: red;
+}
+
+.xforms-required .xforms-required-icon {
+    display				: inline;
+    margin-left			: 3px;
+}
+
+div.xforms-help-value, div.xforms-alert-value, div.xforms-hint-value { 
+	display				: none;
+	background-color	: #ffffee;
+	position			: absolute;
+	border				: black 1px solid; 
+	width				: 200px;
+	margin-top			: 16px;
+	margin-left			: -16px;
+	padding				: 5px;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+}
+
+span.xforms-alert {
+	display				: none;
+}
+
+.xforms-invalid span.xforms-alert {
+	display				: inline;
+}
+
+div.xforms-alert-value {
+	background-color	: #ffeeee;
+}
+
+span.xforms-alert-icon, span.xforms-help-icon, span.xforms-hint-icon {
+	cursor				: help;
+	padding-left		: 16px;
+	width				: 16px;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+}
+
+span.xforms-alert-icon {
+	background-image	: url(icon_error.gif); 
+	background-repeat : no-repeat;
+}
+
+span.xforms-help-icon {
+	background-image	: url(icon_help.gif); 
+	background-repeat : no-repeat;
+}
+
+span.xforms-hint-icon {
+	background-image	: url(icon_hint.gif); 
+	background-repeat : no-repeat;
+}
+
+/* TABS */
+
+dix.ajx-tabs {
+	margin-top			: 5px;
+}
+
+ul.ajx-tabs-list {
+	margin				: 5px 0px 0px 0px;
+	padding				: 0px;
+	height				: 22px;
+}
+
+ul.ajx-tabs-list li {
+	list-style-type		: none;
+	float				: left;
+	font-weight			: bold;
+}
+
+ul.ajx-tabs-list li a {
+	margin-left			: 0px;
+	margin-right		: 3px;
+	border-top			: 1px solid black; 
+	border-left			: 1px solid black; 
+	border-right		: 1px solid black;
+	background-image	: url(tab.png);
+	display				: block;
+	text-decoration		: none;
+	color				: black;
+	padding				: 3px 10px 3px 10px;
+	font-size			: 1.2em;
+	color				: #333333;
+}
+
+ul.ajx-tabs-list li a:hover {
+	background-position	: 0px -23px;
+	color 				: black;
+}
+
+ul.ajx-tabs-list li.ajx-tab-selected a {
+	background-color	: #9999bb;
+	background-position	: 0px -46px;
+}
+
+ul.ajx-tabs-list li.ajx-tab-selected a:hover {
+	background-position	: 0px -69px;
+}
+
+div.ajx-tab {
+	clear				: both;
+	border				: 1px solid black; 
+	padding				: 10px;
+	margin-top			: 0px;
+	background-color	: #f8f8f8;
+}
+
+/* TREE */
+
+div.xforms-tree {
+	overflow			: auto;
+	padding				: 10px;
+	background-color	: white;
+	border				: 1px solid black;
+}
+
+
+div.xforms-tree ul {
+	margin				: 0px;
+	padding				: 0px;
+}
+
+div.xforms-tree ul ul {
+	padding-left		: 25px;
+}
+
+li.xforms-tree-item {
+	list-style-type		: none;
+}
+a.xforms-label.xforms-tree-item-label {
+	font-weight			: normal;
+}
+
+a.xforms-tree-item-label, a.xforms-tree-item-label:visited {
+	cursor				: pointer;
+	padding				: 0px 3px 0px 3px;
+	color				: black;
+	text-decoration		: none;
+}
+
+a.xforms-tree-item-label:hover {
+	color				: white;
+	background-color	: #777777;
+}
+
+a.xforms-tree-item-label.xforms-tree-item-label-selected, a.xforms-tree-item-label.xforms-tree-item-label-selected:visited {
+	background-color	: blue;
+	color				: white;
+}
+
+.xforms-tree-item-button {
+	padding-left		: 18px;
+	width				: 18px;
+	height				: 15px;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+}
+
+.xforms-tree-item-fork {
+	background-image	: url(icon_folder.gif);
+	background-repeat	: no-repeat;
+	cursor				: pointer;
+}
+
+.xforms-tree-item-leaf {
+	background-image	: url(icon_file.gif);
+	background-repeat	: no-repeat;
+}
+
+.xforms-tree-label {
+	padding-bottom		: 10px;
+}
+
+/* Calendar */
+
+.calendar, .calendarList {
+	border-top			: 1px solid black;
+	border-right		: 2px solid black;
+	border-bottom		: 2px solid black;
+	border-left			: 1px solid black;
+	padding				: 1px 0px 0px 1px;
+	font-family			: tahoma, verdana, sans-serif;
+	font-size			: 12px;
+	color				: black;
+	background			: #f8f8f8;
+	display				: none;
+	position			: absolute;
+	z-index				: 9;
+}
+ 
+.calendar .button {
+	text-align			: center;
+	padding				: 1px;
+	border				: 1px solid;
+	border-color		: #fff #000 #000 #fff;
+}
+
+.calendar thead .hover {
+	border				: 2px solid;
+	border-color		: #fff #000 #000 #fff;
+	padding				: 0px;
+	background-color	: #d8e0e4;
+}
+
+.calendar .title, .calendar .title input, .calendar .title select, .calendar tfoot {
+	font-weight			: bold;
+	padding				: 1px;
+	border				: 1px solid #000;
+	color				: #000;
+	text-align			: center;
+	background-color	: #f8f8f8;
+	background-image	: url(titleBackground.png);
+}
+
+.calendar .title input {
+	width				: 4em;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+	background			: #f8f8f8;
+}
+
+.date tfoot {
+	display				: none;
+}
+
+.calendar tfoot input {
+	width				: 2em;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+	text-align			: center;
+	background			: #f0f0f0;
+}
+
+.calendar .names {
+	background-image	: url(thBackground.png);
+}
+
+.calendar .name {
+	border-bottom		: 1px solid #000;
+	padding				: 2px;
+	text-align			: center;
+}
+
+.calendar .day {
+	width				: 2em;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+	text-align			: right;
+	padding				: 2px 4px 2px 2px;
+}
+
+.calendar tbody .hover {
+	padding				: 1px 3px 1px 1px;
+	border				: 1px solid;
+	border-color		: #fff #000 #000 #fff;
+	background-color	: #dddddd;
+}
+
+.calendar .today {
+	font-weight			: bold;
+	color				: #00f;
+}
+
+.calendar .selected {
+	font-weight			: bold;
+	padding				: 2px 2px 0px 2px;
+	border				: 1px solid;
+	border-color		: #000 #fff #fff #000;
+	background			: #cccccc;
+}
+
+.calendar .weekend {
+	color				: #f00;
+}
+
+.calendarList {
+	padding				: 0;
+	margin				: 0;
+	width				: 55px;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+}
+
+.calendarList li {
+	list-style-type		: none;
+	text-align			: center;
+	padding				: 1px;
+}
+
+.calendarList li.hover {
+	border				: 1px solid;
+	border-color		: #fff #000 #000 #fff;
+	padding				: 0px;
+	background-color	: #dddddd;
+	width				: 100%;
+}
+
+span.xforms-message {
+	display				: none;
+}
+
+div.ajx-dialog {
+	display				: none;
+	position			: absolute;
+	width				: 400px;
+	height				: 300px;
+	background-color	: white;
+	border-top			: 1px solid black;
+	border-left			: 1px solid black;
+	border-bottom		: 3px solid black;
+	border-right		: 3px solid black;
+	padding				: 10px;
+	z-index				: 10;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+}
+
+.aid-button {
+	padding				: 0;
+}
+
+#console {
+	font-size			: 0.8em;
+	color				: #888888;
+	border-top			: thin solid #888888;
+	display: block;
+}
+
+div#statusPanel {
+	display				: none;
+	position			: absolute;
+	width				: 300px;
+	height				: 120px;
+	padding-top			: 40px;
+	text-align			: center;
+	background-color	: #eeeeee;
+	opacity				: 0.85;
+	filter				: alpha(opacity=85);
+	border				: 1px solid black;
+	font				: bold 20px Arial, Verdana;
+	z-index				: 11;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+}

@@ -1,0 +1,49 @@
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html
+   xmlns="http://www.w3.org/1999/xhtml"
+   xmlns:xf="http://www.w3.org/2002/xforms"
+	 xmlns:sample="http://www.agencexml.com/sample"
+	 >
+   <head>
+      <title>XForms Radio Button Usng Select1 appearance="full"</title>
+      <xf:model>
+         <xf:instance>
+            <sample:data>
+               <sample:ColorCode/>
+            </sample:data>
+         </xf:instance>
+      </xf:model>
+   </head>
+   <body>
+			<div id="xformControl">
+				<span>
+					<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';"  checked="checked"/> Debug
+				</span>
+			</div>
+       <p>XForms Radio Button Usng Select1 appearance="full"</p>
+        <xf:select1 ref="sample:ColorCode" appearance="full" incremental="true">  
+            <xf:item>
+                <xf:label>Red</xf:label>
+                <xf:value>red</xf:value> 
+            </xf:item>
+            <xf:item>
+                <xf:label>Orange</xf:label>
+                <xf:value>orange</xf:value>
+            </xf:item>
+            <xf:item>
+                <xf:label>Yellow</xf:label>
+                <xf:value>yellow</xf:value>
+            </xf:item>
+            <xf:item>
+                <xf:label>Green</xf:label>
+                <xf:value>green</xf:value>
+            </xf:item>
+            <xf:item>
+                <xf:label>Blue</xf:label>
+                <xf:value>blue</xf:value>
+            </xf:item>
+       </xf:select1>
+       Output: <xf:output ref="sample:ColorCode"/>
+			<div id="console"></div>
+   </body>
+</html>

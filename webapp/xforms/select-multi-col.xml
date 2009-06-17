@@ -1,0 +1,118 @@
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html 
+xmlns="http://www.w3.org/1999/xhtml" 
+xmlns:xf="http://www.w3.org/2002/xforms" 
+xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+xmlns:ev="http://www.w3.org/2001/xml-events"
+xmlns:sample="http://www.agencexml.com/sample"
+>
+   <head>
+      <title>Select County</title>
+      <style type="text/css">
+         @namespace xf url("http://www.w3.org/2002/xforms");
+         body {
+			 font-family: Helvetica, sans-serif;
+			 font-size: 10pt;
+         }
+        .table-container {
+			display: table-row;
+         }
+         .table-cell {
+			display: table-cell;
+			vertical-align: top;
+         }
+         xf|label {
+			 font-weight: bold;
+         }
+      </style>
+      <xf:model>
+         <xf:instance>
+             <sample:data>
+                 <sample:counties1>anoka carver</sample:counties1>
+                 <sample:counties2>dakota</sample:counties2>
+                 <sample:counties3>hennepin</sample:counties3>
+                 <sample:counties4>mower</sample:counties4>
+                 <sample:counties5>ramsey</sample:counties5>
+                 <sample:counties6>scott</sample:counties6>
+                 <sample:counties7>washington</sample:counties7>
+                 <sample:counties />
+              </sample:data>
+          </xf:instance>
+      <xf:bind nodeset="sample:counties"
+               calculate="concat(../sample:counties1, ' ', ../sample:counties2, ' ', ../sample:counties3, ' ', ../sample:counties4,' ', ../sample:counties5, ' ', ../sample:counties6, ' ',../sample:counties7)" />
+      </xf:model>
+      <xf:model id="code-tables">
+         <xf:instance id="MNCountyCode" src="counties.xml" />
+      </xf:model>
+   </head>
+   <body>
+			<div id="xformControl">
+				<span>
+					<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';"  checked="checked"/> Debug
+				</span>
+			</div>
+      <p>Select all counties to include in the search:</p>
+      <div class="table-container ">
+        <div class="table-cell">
+          <xf:select ref="sample:counties1" appearance="full">
+            <xf:itemset model="code-tables" nodeset="instance('MNCountyCode')/sample:EnumeratedValues/sample:Item[boolean(position() &lt; 14)]">
+                     <xf:label ref="sample:Label" />
+                     <xf:value ref="sample:Value" />
+                  </xf:itemset>
+                </xf:select>
+       </div>
+      <div class="table-cell">
+         <xf:select ref="sample:counties2" appearance="full">
+					<xf:itemset model="code-tables" nodeset="instance('MNCountyCode')/sample:EnumeratedValues/sample:Item[(position() &gt; 13) and (position() &lt; 27)]">
+						<xf:label ref="sample:Label" />
+						<xf:value ref="sample:Value" />
+					</xf:itemset>
+				</xf:select>
+			</div>
+			<div class="table-cell">
+				<xf:select ref="sample:counties3" appearance="full">
+					<xf:itemset model="code-tables" nodeset="instance('MNCountyCode')/sample:EnumeratedValues/sample:Item[(position() &gt; 26) and (position() &lt; 40)]">
+						<xf:label ref="sample:Label" />
+						<xf:value ref="sample:Value" />
+					</xf:itemset>
+				</xf:select>
+			</div>
+			<div class="table-cell">
+				<xf:select ref="sample:counties4" appearance="full">
+					<xf:itemset model="code-tables" nodeset="instance('MNCountyCode')/sample:EnumeratedValues/sample:Item[(position() &gt; 39) and (position() &lt; 53)]">
+						<xf:label ref="sample:Label" />
+						<xf:value ref="sample:Value" />
+					</xf:itemset>
+				</xf:select>
+			</div>
+			<div class="table-cell">
+				<xf:select ref="sample:counties5" appearance="full">
+					<xf:itemset model="code-tables" nodeset="instance('MNCountyCode')/sample:EnumeratedValues/sample:Item[(position() &gt; 52) and (position() &lt; 66)]">
+						<xf:label ref="sample:Label" />
+						<xf:value ref="sample:Value" />
+					</xf:itemset>
+				</xf:select>
+			</div>
+			<div class="table-cell">
+				<xf:select ref="sample:counties6" appearance="full">
+					<xf:itemset model="code-tables" nodeset="instance('MNCountyCode')/sample:EnumeratedValues/sample:Item[(position() &gt; 65) and (position() &lt; 79)]">
+						<xf:label ref="sample:Label" />
+						<xf:value ref="sample:Value" />
+					</xf:itemset>
+				</xf:select>
+			</div>
+			<div class="table-cell">
+				<xf:select ref="sample:counties7" appearance="full">
+					<xf:itemset model="code-tables" nodeset="instance('MNCountyCode')/sample:EnumeratedValues/sample:Item[(position() &gt; 78)]">
+						<xf:label ref="sample:Label" />
+						<xf:value ref="sample:Value" />
+					</xf:itemset>
+				</xf:select>
+			</div>
+		</div>
+		<xf:output ref="sample:counties">
+			<xf:label>Counties selected: </xf:label>
+		</xf:output>
+			<div id="console"></div>
+	</body>
+</html>

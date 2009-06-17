@@ -1,0 +1,59 @@
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:xf="http://www.w3.org/2002/xforms"
+		xmlns:sample="http://www.agencexml.com/sample"
+		>
+    <head>
+        <title>Demonstration of XForms Select1</title>
+        <style type="text/css">body {font-family: Helvetica, sans-serif;}</style>
+        <xf:model>
+            <xf:instance>
+                <sample:data>
+                    <sample:DayOfWeekCode/>
+                </sample:data>
+            </xf:instance>
+        </xf:model>
+    </head>
+    <body>       
+			<div id="xformControl">
+				<span>
+					<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';"  checked="checked"/> Debug
+				</span>
+			</div>
+        <xf:select1 ref="sample:DayOfWeekCode" appearance="minimal" incremental="true">  
+            <xf:label>Day of Week:</xf:label>
+                <xf:item>
+                    <xf:label>Monday</xf:label>
+                    <xf:value>monday</xf:value> 
+                </xf:item>
+                <xf:item>
+                    <xf:label>Tuesday</xf:label>
+                    <xf:value>tuesday</xf:value>
+                </xf:item>
+                <xf:item>
+                    <xf:label>Wednesday</xf:label>
+                    <xf:value>wednesday</xf:value>
+                </xf:item>
+                <xf:item>
+                    <xf:label>Thrusday</xf:label>
+                    <xf:value>thrusday</xf:value>
+                </xf:item>
+                <xf:item>
+                    <xf:label>Friday</xf:label>
+                    <xf:value>friday</xf:value>
+                </xf:item>
+                <xf:item>
+                    <xf:label>Saturday</xf:label>
+                    <xf:value>saturday</xf:value>
+                </xf:item>
+                <xf:item>
+                    <xf:label>Sunday</xf:label>
+                    <xf:value>sunday</xf:value>
+                </xf:item>             
+        </xf:select1>
+        <br/>
+        Output: <xf:output ref="sample:DayOfWeekCode"/>
+			<div id="console"></div>
+    </body>
+</html>

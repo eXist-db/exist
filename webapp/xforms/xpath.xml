@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html menu="samples" xmlns="http://www.w3.org/1999/xhtml"
+			xmlns:sample="http://www.agencexml.com/sample"
+      xmlns:xf="http://www.w3.org/2002/xforms"
+      xmlns:ajx="http://www.ajaxforms.net/2006/ajx">
+	<head>
+		<title>XPath</title>
+		<meta name="description" content="Samples about XPath expresions."/>
+		<meta name="keywords" content="AJAX, Javascript, Web, XForms, AJAXForms, Ejemplos, Samples, XPath, Function"/>
+		<xf:model>
+			<xf:instance>
+				<sample:data>
+					<sample:item id="1">one</sample:item>
+					<sample:item id="2">two</sample:item>      			
+					<sample:item id="3">three</sample:item>
+				</sample:data>
+			</xf:instance>
+			<xf:instance id="nums">
+				<sample:data>
+					<sample:item>2</sample:item>
+					<sample:item>5</sample:item>
+					<sample:item>7</sample:item>
+				</sample:data>
+			</xf:instance>
+		</xf:model>
+	</head>
+	<body>
+		<h3>XPath Functions</h3>
+		<div id="xformControl">
+			<span>
+				<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';" checked="checked"/> Debug
+			</span>
+		</div>
+		<ajx:tabs>
+			<ajx:tab>
+				<xf:label>Node-set</xf:label>
+				<xf:output value="/sample:data/sample:item[last()]">
+					<xf:label>number <b>last</b>()</xf:label>
+					<xf:help>This function returns a number equal to the context size from
+						the expression evaluation context</xf:help>
+				</xf:output>
+				<xf:output value="/sample:data/sample:item[position() = 1]">
+					<xf:label>number <b>position</b>()</xf:label>
+					<xf:help>This function returns a number equal to the context position
+						from the expression evaluation context.</xf:help>
+				</xf:output>					
+				<xf:output value="count(/sample:data/sample:item)">
+					<xf:label>number <b>count</b>(node-set)</xf:label>
+					<xf:help>This function returns the number of nodes in the
+						argument node-set.</xf:help>
+				</xf:output>
+				<!-- 
+				<xf:output value="id('2')">
+					<xf:label>node-set <b>id</b>()</xf:label>
+				</xf:output>
+				 -->					 
+				<xf:output value="local-name(/sample:data/sample:item)">
+					<xf:label>string <b>local-name</b>(node-set?)</xf:label>
+					<xf:help>Returns the local part of the expanded-name of
+						the node in the argument node-set that is first in
+						document order.</xf:help>
+				</xf:output>
+				<!--
+				 <xf:output value="namespace-uri(/data/item)">
+					<xf:label>string <b>namespace-uri</b>(node-set?)</xf:label>
+				</xf:output>
+				-->
+				<xf:output value="name(/sample:data/sample:item)">
+					<xf:label>string <b>name</b>(node-set?)</xf:label>
+					<xf:help>Returns a string containing a QName representing
+						the expanded-name of the node in the argument node-set
+						that is first in document order.</xf:help>
+				</xf:output>
+				<xf:output value="instance('nums')/sample:item">
+					<xf:label>node-set <b>instance</b>(string)</xf:label>
+					<xf:help>This function allows access to instance data.</xf:help>
+				</xf:output>
+				<xf:output value="current()/sample:item">
+					<xf:label>node-set <b>current</b>()</xf:label>
+					<xf:help>Returns the context node used to initialize the
+						evaluation of the containing XPath expression.</xf:help>
+				</xf:output>
+			</ajx:tab>
+			<ajx:tab>
+				<xf:label>Boolean</xf:label>
+				<xf:output value="boolean('a')">
+					<xf:label>boolean <b>boolean</b>(object)</xf:label>
+					<xf:help>A object is converted to a boolean.</xf:help>
+				</xf:output>	
+				<xf:output value="not(true())">
+					<xf:label>boolean <b>not</b>(boolean)</xf:label>
+					<xf:help>Returns true if its argument is false, 
+						and false otherwise.</xf:help>
+				</xf:output>
+				<xf:output value="true()">
+					<xf:label>boolean <b>true</b>()</xf:label>
+					<xf:help>Returns false</xf:help>
+				</xf:output>	
+				<xf:output value="false()">
+					<xf:label>boolean <b>false</b>()</xf:label>
+					<xf:help>Returns true</xf:help>
+				</xf:output>	
+				<xf:output value="boolean-from-string('true')">
+					<xf:label>boolean <b>boolean-from-string</b>()</xf:label>
+					<xf:help>Returns true if the required parameter string is "true"
+						or "1", else returns false</xf:help>
+				</xf:output>
+				<xf:output value="if(false(), 'bad', 'good')">
+					<xf:label>boolean <b>if</b>(condition, onTrue, onFalse)</xf:label>
+					<xf:help>Function if evaluates the first parameter as boolean,
+						returning the second parameter when true, otherwise the
+						third parameter.</xf:help>
+				</xf:output>
+				<!--	
+				<xf:output value="lang(instance('string')//item[1])">
+					<xf:label>boolean <b>lang</b>()</xf:label>
+				</xf:output>
+				 -->
+			</ajx:tab>
+			<ajx:tab>
+				<xf:label>Number</xf:label>
+				<xf:output value="number('67')">
+					<xf:label>number <b>number</b>(object?)</xf:label>
+					<xf:help>The function converts its argument to a number.</xf:help>
+				</xf:output>
+				<xf:output value="sum(instance('nums')/sample:data/sample:item)">
+					<xf:label>number <b>sum</b>(node-set)</xf:label>
+					<xf:help>Returns the sum, for each node in the argument node-set,
+						of the result of converting the string-values of the node to
+						a number.</xf:help>
+				</xf:output>	
+				<xf:output value="floor('3.4')">
+					<xf:label>number <b>floor</b>(number)</xf:label>
+					<xf:help>Returns the largest (closest to positive infinity) number
+						that is not greater than the argument and that is an integer.</xf:help>
+				</xf:output>		
+				<xf:output value="ceiling('3.4')">
+					<xf:label>number <b>ceiling</b>(number)</xf:label>
+					<xf:help>Returns the smallest (closest to negative infinity) number
+						that is not less than the argument and that is an integer.</xf:help>
+				</xf:output>				
+				<xf:output value="round('3.4')">
+					<xf:label>number <b>round</b>(number)</xf:label>
+					<xf:help>Returns the number that is closest to the argument
+						and that is an integer</xf:help>
+				</xf:output>
+				<xf:output value="avg(instance('nums')/sample:item)">
+					<xf:label>node-set <b>avg</b>(node-set)</xf:label>
+					<xf:help>Returns the arithmetic average of the result of converting 
+						the string-values of each node in the argument node-set to a number.</xf:help>
+				</xf:output>
+				<xf:output value="min(instance('nums')/sample:item)">
+					<xf:label>number <b>min</b>(node-set)</xf:label>
+					<xf:help>Returns the minimum value of the result of converting
+						the string-values of each node in argument node-set to a number.</xf:help>
+				</xf:output>
+				<xf:output value="max(instance('nums')/sample:item)">
+					<xf:label>number <b>max</b>(node-set)</xf:label>
+					<xf:help>Returns the maximum value of the result of converting the
+						string-values of each node in argument node-set to a number.</xf:help>
+				</xf:output>
+				<xf:output value="count-non-empty(/sample:data/sample:item)">
+					<xf:label>number <b>count-non-empty</b>(node-set)</xf:label>
+					<xf:help>Function count-non-empty returns the number of non-empty
+						nodes in argument node-set</xf:help>
+				</xf:output>
+			</ajx:tab>
+			<ajx:tab>
+				<xf:label>String</xf:label>
+				<xf:output value="string(6.2)">
+					<xf:label>string <b>string</b>(object?)</xf:label>
+					<xf:help>This function converts an object to a string.</xf:help>
+				</xf:output>
+				<xf:output value="concat('ajax', 'forms')">
+					<xf:label>string <b>concat</b>(string, string, string*)</xf:label>
+					<xf:help>Returns the concatenation of its arguments</xf:help>
+				</xf:output>
+				<xf:output value="starts-with('ajaxforms', 'ajax')">
+					<xf:label>boolean <b>starts-with</b>(string, string)</xf:label>
+					<xf:help>Returns true if the first argument string starts
+						with the second argument string</xf:help>
+				</xf:output>
+				<xf:output value="contains('ajaxforms', 'xforms')">
+					<xf:label>boolean <b>contains</b>(string, string)</xf:label>
+					<xf:help>Returns true if the first argument string contains
+						the second argument string.</xf:help>
+				</xf:output>
+				<xf:output value="substring-before('ajaxforms', 'forms')">
+					<xf:label>string <b>substring-before</b>(string, string)</xf:label>
+					<xf:help>Returns the substring of the first argument string
+						that precedes the first occurrence of the second argument
+						string in the first argument string.</xf:help>
+				</xf:output>
+				<xf:output value="substring-after('ajaxforms', 'aja')">
+					<xf:label>string <b>substring-after</b>(string, string)</xf:label>
+					<xf:help>Returns the substring of the first argument string
+						that follows the first occurrence of the second argument
+						string in the first argument string.</xf:help>
+				</xf:output>
+				<xf:output value="substring('ajaxforms', 4, 2)">
+					<xf:label>string <b>substring</b>(string, number, number?)</xf:label>
+					<xf:help>Returns the substring of the first argument starting
+						at the position specified in the second argument with length
+						specified in the third argument.</xf:help>
+				</xf:output>				
+				<xf:output value="string-length('ajaxforms')">
+					<xf:label>number <b>string-length</b>(string?)</xf:label>
+					<xf:help>Returns the number of characters in the string.</xf:help>
+				</xf:output>
+				<xf:output value="normalize-space('hello    world')">
+					<xf:label>string <b>normalize-space</b>(string?)</xf:label>
+					<xf:help>Returns the argument string with whitespace normalized.</xf:help>
+				</xf:output>
+				<xf:output value="translate('ajaxforms','jx','xj')">
+					<xf:label>string <b>translate</b>(string, string, string)</xf:label>
+					<xf:help>Returns the first argument string with occurrences of
+						characters in the second argument string replaced by the
+						character at the corresponding position in the third
+						argument string.</xf:help>
+				</xf:output>
+			</ajx:tab>
+			<ajx:tab>
+				<xf:label>Others</xf:label>
+				<xf:output value="now()">
+					<xf:label>string <b> now</b>(node-set)</xf:label>
+					<xf:help>Returns the current system date and time as a string
+						value in the canonical XML Schema xsd:dateTime format.</xf:help>
+				</xf:output>
+				<xf:output value="is-valid(/sample:data/sample:item)">
+					<xf:label>boolean <b>is-valid</b>(node-set)</xf:label>
+					<xf:help>Returns true when all nodes in noseset are valid</xf:help>
+				</xf:output>
+				index, nodeindex
+			</ajx:tab>
+		</ajx:tabs>
+		<div id="console"/>
+	</body>
+</html>

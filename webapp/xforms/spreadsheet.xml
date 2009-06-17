@@ -1,0 +1,154 @@
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:sample="http://www.agencexml.com/sample" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsd:dummy="dummy">
+   <head>
+      <title>XForms Spreadsheet like Update</title>
+      <style type="text/css">
+    table {
+       font-family: Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+      }
+ 
+    th {
+        color: white;
+        background-color: black;
+      }
+ 
+    .output tr td {
+       border: solid black 1px;
+       padding: 2px;
+       text-align: center;
+    }
+    </style>
+      <xf:model>
+         <xf:instance>
+            <sample:Spreadsheet>
+               <sample:Row>
+                  <sample:A>10</sample:A>
+                  <sample:B>20</sample:B>
+                  <sample:C>30</sample:C>
+               </sample:Row>
+               <sample:Row>
+                  <sample:A>40</sample:A>
+                  <sample:B>50</sample:B>
+                  <sample:C>60</sample:C>
+               </sample:Row>
+               <sample:Row>
+                  <sample:A>70</sample:A>
+                  <sample:B>80</sample:B>
+                  <sample:C>90</sample:C>
+               </sample:Row>
+               <sample:Results>
+                  <sample:sum/>
+                  <sample:avg/>
+                  <sample:min/>
+               </sample:Results>
+            </sample:Spreadsheet>
+         </xf:instance>
+         <xf:bind nodeset="/sample:Spreadsheet/sample:Results/sample:sum" calculate="sum(/sample:Spreadsheet/sample:Row/sample:A)" type="xsd:decimal" />
+         <xf:bind nodeset="/sample:Spreadsheet/sample:Results/sample:avg" calculate="avg(/sample:Spreadsheet/sample:Row/sample:B)" type="xsd:decimal" />
+         <xf:bind nodeset="/sample:Spreadsheet/sample:Results/sample:min" calculate="min(/sample:Spreadsheet/sample:Row/sample:C)" type="xsd:decimal" />
+      </xf:model>
+   </head>
+   <body>
+			<div id="xformControl">
+				<span>
+					<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';"  checked="checked"/> Debug
+				</span>
+			</div>
+      <xf:group ref="/sample:Spreadsheet">
+         <xf:input ref="sample:Row[1]/sample:A">
+            <xf:label></xf:label>
+         </xf:input>
+         <xf:input ref="sample:Row[1]/sample:B">
+            <xf:label></xf:label>
+         </xf:input>
+         <xf:input ref="sample:Row[1]/sample:C">
+            <xf:label></xf:label>
+         </xf:input>
+         <br/>
+         <xf:input ref="sample:Row[2]/sample:A">
+            <xf:label></xf:label>
+         </xf:input>
+         <xf:input ref="sample:Row[2]/sample:B">
+            <xf:label></xf:label>
+         </xf:input>
+         <xf:input ref="sample:Row[2]/sample:C">
+            <xf:label></xf:label>
+         </xf:input>
+         <br/>
+         <xf:input ref="sample:Row[3]/sample:A">
+            <xf:label></xf:label>
+         </xf:input>
+         <xf:input ref="sample:Row[3]/sample:B">
+            <xf:label></xf:label>
+         </xf:input>
+         <xf:input ref="sample:Row[3]/sample:C">
+            <xf:label></xf:label>
+         </xf:input>
+         <table class="output">
+            <thead>
+               <tr>
+                  <th>#</th>
+                  <th>A</th>
+                  <th>B</th>
+                  <th>C</th>
+               </tr>
+            </thead>
+            <tbody>
+               <tr>
+                  <td>
+                     <xf:output value="1" />
+                  </td>
+                  <td>
+                     <xf:output ref="sample:Row[1]/sample:A" />
+                  </td>
+                  <td>
+                     <xf:output ref="sample:Row[1]/sample:B" />
+                  </td>
+                  <td>
+                     <xf:output ref="sample:Row[1]/sample:C" />
+                  </td>
+               </tr>
+               <tr>
+                  <td>
+                     <xf:output value="2" />
+                  </td>
+                  <td>
+                     <xf:output ref="sample:Row[2]/sample:A" />
+                  </td>
+                  <td>
+                     <xf:output ref="sample:Row[2]/sample:B" />
+                  </td>
+                  <td>
+                     <xf:output ref="sample:Row[2]/sample:C" />
+                  </td>
+               </tr>
+               <tr>
+                  <td>
+                     <xf:output value="3" />
+                  </td>
+                  <td>
+                     <xf:output ref="sample:Row[3]/sample:A" />
+                  </td>
+                  <td>
+                     <xf:output ref="sample:Row[3]/sample:B" />
+                  </td>
+                  <td>
+                     <xf:output ref="sample:Row[3]/sample:C" />
+                  </td>
+               </tr>
+               <tr>
+                  <td />
+                  <td>Sum=<xf:output ref="sample:Results/sample:sum" />
+                  </td>
+                  <td>Avg=<xf:output ref="sample:Results/sample:avg" />
+                  </td>
+                  <td>Min=<xf:output ref="sample:Results/sample:min" />
+                  </td>
+               </tr>
+            </tbody>
+         </table>
+      </xf:group>
+			<div id="console"></div>
+   </body>
+</html>
