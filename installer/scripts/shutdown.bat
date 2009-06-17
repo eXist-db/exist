@@ -38,9 +38,9 @@ if not "%EXIST_HOME%" == "" goto gotExistHome
 rem will be set by the installer
 set EXIST_HOME=$INSTALL_PATH
 
-if exist %EXIST_HOME%\start.jar goto gotExistHome
+if exist "%EXIST_HOME%"\start.jar goto gotExistHome
 set EXIST_HOME=..
-if exist %EXIST_HOME%\start.jar goto gotExistHome
+if exist "%EXIST_HOME%"\start.jar goto gotExistHome
 
 echo EXIST_HOME not found. Please set your
 echo EXIST_HOME environment variable to the
