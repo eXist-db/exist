@@ -21,7 +21,9 @@
  */
 package org.exist.xquery.modules.file;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,6 +43,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -50,10 +53,13 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 public class SerializeToFile extends BasicFunction 
-{	
+{
+    private final static String FN_SERIALIZE_LN = "serialize";
+    private final static String FN_SERIALIZE_BINARY_LN = "serialize-binary";
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName( "serialize", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
+			new QName( FN_SERIALIZE_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Writes the node set passed in parameter $a into a file on the file system. The " +
 			"full path to the file is specified in parameter $b. $c contains a " +
 			"sequence of zero or more serialization parameters specified as key=value pairs. The " +
@@ -66,10 +72,21 @@ public class SerializeToFile extends BasicFunction
 				new SequenceType( Type.NODE, Cardinality.ZERO_OR_MORE ),
 				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
 				new SequenceType( Type.STRING, Cardinality.ZERO_OR_MORE )
-				},
+                        },
 			new SequenceType( Type.BOOLEAN, Cardinality.ZERO_OR_ONE )
-			)
-		};
+                ),
+                new FunctionSignature(
+			new QName(FN_SERIALIZE_BINARY_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX),
+			"Writes binary data in parameter $a into a file on the file system. The " +
+			"full path to the file is specified in parameter $b. False is returned if the " +
+			"specified file can not be created or is not writable, true on success.",
+			new SequenceType[]{
+				new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                        },
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+                )
+        };
 	
 	
 	public SerializeToFile( XQueryContext context, FunctionSignature signature )
@@ -79,46 +96,48 @@ public class SerializeToFile extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
-		Sequence	 ret 				= BooleanValue.TRUE;
-		Properties	 outputProperties 	= null;
-		OutputStream os 				= null;
-		
-		if( args[0].isEmpty() ) {
-			ret = Sequence.EMPTY_SEQUENCE;
-		} else {
-			// check the file output path
-			
-			String path = args[1].itemAt(0).getStringValue();
-			File file = new File( path );
-			
-			if( file.isDirectory() ) {
-				LOG.debug( "Output file is a directory: " + file.getAbsolutePath() );
-				ret = BooleanValue.FALSE;
-			} else if( file.exists() && !file.canWrite() ) {
-				LOG.debug( "Cannot write to file " + file.getAbsolutePath() );
-				ret = BooleanValue.FALSE;
-			} else {
-				//parse serialization options from third argument to function
-				outputProperties = parseSerializationOptions( args[2].iterate() );
-				
-				//setup output stream for file
-				try {
-					os = new FileOutputStream( file );
-				}
-				catch( IOException e ) {
-					throw( new XPathException( this, "A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
-				}
-				
-				//do the serialization
-				serialize( args[0].iterate(), outputProperties, os) ;
-			}
-		}
-		
-		return( ret );
+            if(args[0].isEmpty())
+                return Sequence.EMPTY_SEQUENCE;
+
+
+            //check the file output path
+            String path = args[1].itemAt(0).getStringValue();
+            File file = new File( path );
+
+            if(file.isDirectory())
+            {
+                LOG.debug("Cannot serialize file. Output file is a directory: " + file.getAbsolutePath());
+                return BooleanValue.FALSE;
+            }
+
+            if(file.exists() && !file.canWrite())
+            {
+                LOG.debug("Cannot serialize file. Cannot write to file " + file.getAbsolutePath() );
+                return BooleanValue.FALSE;
+            }
+
+            if(isCalledAs(FN_SERIALIZE_LN))
+            {
+                //parse serialization options from third argument to function
+                Properties outputProperties = parseXMLSerializationOptions( args[2].iterate() );
+
+                //do the serialization
+                serializeXML(args[0].iterate(), outputProperties, file);
+            }
+            else if(isCalledAs(FN_SERIALIZE_BINARY_LN))
+            {
+                serializeBinary((Base64Binary)args[0].itemAt(0), file);
+            }
+            else
+            {
+                throw new XPathException(this, "Unknown function name");
+            }
+
+            return BooleanValue.TRUE;
 	}
 	
 	
-	private Properties parseSerializationOptions( SequenceIterator siSerializeParams ) throws XPathException
+	private Properties parseXMLSerializationOptions( SequenceIterator siSerializeParams ) throws XPathException
 	{
 		//parse serialization options
 		Properties outputProperties = new Properties();
@@ -135,11 +154,12 @@ public class SerializeToFile extends BasicFunction
 	}
 	
 	
-	private void serialize( SequenceIterator siNode, Properties outputProperties, OutputStream os ) throws XPathException
+	private void serializeXML( SequenceIterator siNode, Properties outputProperties, File file ) throws XPathException
 	{
 		// serialize the node set
 		SAXSerializer sax = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
 		try {
+                        OutputStream os = new FileOutputStream(file);
 			String encoding = outputProperties.getProperty( OutputKeys.ENCODING, "UTF-8" );
 			Writer writer = new OutputStreamWriter( os, encoding );
 			
@@ -160,13 +180,34 @@ public class SerializeToFile extends BasicFunction
 			writer.close();
 		}
 		catch( SAXException e ) {
-			throw( new XPathException( this, "A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
+			throw( new XPathException( this, "Cannot serialize file. A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
 		}
 		catch ( IOException e ) {
-			throw( new XPathException(this, "A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
+			throw( new XPathException(this, "Cannot serialize file. A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
 		}
 		finally {
 			SerializerPool.getInstance().returnObject( sax );
 		}
 	}
+
+    private void serializeBinary(Base64Binary binary, File file) throws XPathException
+    {
+        try
+        {
+            OutputStream fos = new BufferedOutputStream(new FileOutputStream(file));
+
+            fos.write(binary.getBinaryData());
+
+            fos.flush();
+            fos.close();
+        }
+        catch(FileNotFoundException fnfe)
+        {
+            throw new XPathException(this, "Cannot serialize file. A problem ocurred while serializing the binary data: " + fnfe.getMessage(), fnfe);
+        }
+        catch(IOException ioe)
+        {
+            throw new XPathException(this, "Cannot serialize file. A problem ocurred while serializing the binary data: " + ioe.getMessage(), ioe);
+        }
+    }
 }
