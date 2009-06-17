@@ -103,6 +103,41 @@
                     <lib>endorsed/stax-api-1.0.1.jar</lib>
 					<homepage>http://stax.codehaus.org/</homepage>
                 </file>
+                <file>
+                    <title>XML-RPC Server</title>
+                    <description>XML-RPC server-side interfaces</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/xmlrpc-server-3.1.1.jar</lib>
+					<homepage>http://ws.apache.org/xmlrpc/</homepage>
+                </file>
+                <file>
+                    <title>XML-RPC Common</title>
+                    <description>XML-RPC common classes</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/xmlrpc-common-3.1.1.jar</lib>
+					<homepage>http://ws.apache.org/xmlrpc/</homepage>
+                </file>
+                <file>
+                    <title>XML-RPC Client</title>
+                    <description>XML-RPC client classes</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/xmlrpc-client-3.1.1.jar</lib>
+					<homepage>http://ws.apache.org/xmlrpc/</homepage>
+                </file>
+                <file>
+                    <title>XML-RPC Utilities</title>
+                    <description>Classes required by XML-RPC</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/ws-commons-util-1.0.2.jar</lib>
+					<homepage>http://ws.apache.org/xmlrpc/</homepage>
+                </file>
+                <file>
+                    <title>Sun XACML</title>
+                    <description>XACML implementation</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/sunxacml.jar</lib>
+					<homepage>http://sunxacml.sourceforge.net/</homepage>
+                </file>
             </xsl:if>
         </jars>
     </xsl:template>
@@ -112,8 +147,7 @@
     </xsl:template>
 
     <!-- Use patched jar for XML-RPC -->
-    <xsl:template match="file[title = 'XML-RPC']/lib">
-        <lib>optional/xmlrpc-1.2-patched.jar</lib>
+    <xsl:template match="file[title = 'XML-RPC']">
     </xsl:template>
 
     <!-- Use patched jar for XML-RPC -->
