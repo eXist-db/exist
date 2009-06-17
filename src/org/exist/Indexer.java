@@ -337,7 +337,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		    setChildCount(last);
 	    } else {
 		document.setOwnerDocument(document);
-		if (childCnt == null && last.getChildCount() > 0) {
+        if ((childCnt == null && last.getChildCount() > 0) ||
+            (childCnt != null && childCnt[last.getPosition()] != last.getChildCount())) {
 		    broker.updateNode(transaction, last, false);
 		}
 	    }
