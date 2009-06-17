@@ -126,7 +126,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                     </form>
                 else (
                     <div id="f-search">
-                        <form name="f-query" action="functions.xq" method="POST">
+                        <form name="f-query" action="functions.xql" method="POST">
                             <table>
                                 <tr>
                                     <td>
