@@ -22,7 +22,7 @@ rem and for NT handling to skip to.
 if not "%JAVA_HOME%" == "" goto gotJavaHome
 
 rem will be set by the installer
-set JAVA_HOME="$JDKPath"
+set JAVA_HOME=$JDKPath
 
 rem second check
 if not "%JAVA_HOME%" == "" goto gotJavaHome
@@ -38,9 +38,9 @@ if not "%EXIST_HOME%" == "" goto gotExistHome
 rem will be set by the installer
 set EXIST_HOME=$INSTALL_PATH
 
-if exist %EXIST_HOME%\start.jar goto gotExistHome
+if exist "%EXIST_HOME%"\start.jar goto gotExistHome
 set EXIST_HOME=..
-if exist %EXIST_HOME%\start.jar goto gotExistHome
+if exist "%EXIST_HOME%"\start.jar goto gotExistHome
 
 echo EXIST_HOME not found. Please set your
 echo EXIST_HOME environment variable to the
@@ -48,9 +48,8 @@ echo home directory of eXist.
 goto :eof
 
 :gotExistHome
-set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
-set JAVA_OPTS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
+set JAVA_ENDORSED_DIRS=%EXIST_HOME%"\lib\endorsed
+set JAVA_OPTS=-Xms128m -Xmx512m -Dfile.encoding=UTF-8 -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%"
 
-"%JAVA_HOME%\bin\java" "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" backup %CMD_LINE_ARGS%
+"%JAVA_HOME%\bin\java" %JAVA_OPTS%  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" backup %CMD_LINE_ARGS%
 :eof
-
