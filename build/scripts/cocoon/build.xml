@@ -97,6 +97,8 @@
             </fileset>
             <fileset dir="${exist.home}/lib/core">
                 <include name="xmlrpc*.jar"/>
+				<include name="ws*.jar"/>
+				<include name="sunxacml*.jar"/>
                 <include name="xmldb.jar"/>
                 <include name="jline*.jar"/>
                 <include name="jEdit-syntax*.jar"/>

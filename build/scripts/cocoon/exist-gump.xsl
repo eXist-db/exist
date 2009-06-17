@@ -42,7 +42,11 @@
                     <library name="start"/>
                     <library name="antlr"/>
                     <library name="commons-pool"/>
-                    <library name="xmlrpc-1.2-patched"/>
+					<library name="xmlrpc-client"/>
+					<library name="xmlrpc-common"/>
+					<library name="xmlrpc-server"/>
+					<library name="ws-commons-util"/>
+					<library name="sunxacml"/>
                     <library name="commons-fileupload"/>
                     <library name="excalibur-cli"/>
                     <library name="jgroups-all"/>
