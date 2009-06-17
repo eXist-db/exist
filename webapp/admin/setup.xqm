@@ -100,7 +100,17 @@ declare function setup:importLocal() as element()+
                 setup:create-collection("/db", "xproc"),
                 setup:store-files("/db/xproc", $webapp, "xproc/*.xml", "text/xml"),
                 setup:store-files("/db/xproc", $webapp, "xproc/*.xproc", "text/xml"),
-                setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery")
+                setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery"),
+                setup:create-collection("/db", "xforms"),
+                setup:store-files("/db/xforms", $webapp, "xforms/*.xml", "text/xml"),
+                setup:store-files("/db/xforms", $webapp, "xforms/*.xq*", "application/xquery"),
+                setup:create-collection("/db/xforms", "xsltforms"),
+                setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.properties", "text/plain"),
+                setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.png", "image/png"),
+                setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.gif", "image/gif"),
+                setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.xsl","text/xml"),
+                setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.js","application/x-javascript"),
+                setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.css","text/css")
     )
 };
 
