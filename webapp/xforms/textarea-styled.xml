@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html
+ xmlns="http://www.w3.org/1999/xhtml"
+ xmlns:xf="http://www.w3.org/2002/xforms"
+ xmlns:sample="http://www.agencexml.com/sample"
+ >
+   <head>
+      <title>XForms textarea demo</title>
+      <link rel="stylesheet" type="text/css" href="textarea.css" />
+      <xf:model>
+         <xf:instance>
+            <sample:data>
+               <sample:Default>Default Default Default Default</sample:Default>
+               <sample:Small>Small Small Small Small Small Small Small Small Small Small Small
+               Small Small Small Small Small Small Small </sample:Small>
+               <sample:Medium>Medium Medium Medium Medium Medium Medium Medium Medium Medium Medium
+               Medium Medium Medium Medium Medium Medium Medium Medium Medium Medium Medium
+               Medium Medium Medium Medium Medium Medium Medium Medium Medium Medium</sample:Medium>
+               <sample:Large>Large Large Large Large Large Large Large Large Large Large Large Large
+               Large Large Large Large Large Large Large Large Large Large Large Large Large
+               Large Large Large Large Large Large Large Large Large Large Large Large Large
+               Large Large Large Large Large Large Large Large Large Large Large Large</sample:Large>
+               <sample:XLarge>X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large
+               X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large
+               X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large
+               X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large
+               X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large
+               X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large
+               X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large
+               X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large X-Large
+               X-Large X-Large X-Large X-Large X-Large X-Large X-Large</sample:XLarge>
+            </sample:data>
+         </xf:instance>
+      </xf:model>
+   </head>
+   <body>
+			<div id="xformControl">
+				<span>
+					<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';"  checked="checked"/> Debug
+				</span>
+			</div>
+      <p>Resizing textarea and scrolling.</p>
+      <xf:textarea ref="sample:Default">
+         <xf:label>Default: </xf:label>
+      </xf:textarea>
+      <xf:textarea class="small-textarea" ref="sample:Small">
+         <xf:label>Small: </xf:label>
+      </xf:textarea>
+      <xf:textarea class="medium-textarea" ref="sample:Medium">
+         <xf:label>Medium: </xf:label>
+      </xf:textarea>
+      <xf:textarea class="large-textarea" ref="sample:Large">
+         <xf:label>Large: </xf:label>
+      </xf:textarea>
+      <xf:textarea class="x-large-textarea" ref="sample:XLarge">
+         <xf:label>X-Large: </xf:label>
+      </xf:textarea>
+			<div id="console"></div>
+   </body>
+</html>

@@ -1,0 +1,104 @@
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html
+   xmlns="http://www.w3.org/1999/xhtml"
+   xmlns:xf="http://www.w3.org/2002/xforms" 
+   xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xmlns:sample="http://www.agencexml.com/sample"
+	 >
+   <head>
+      <title>Controlling Input Field Width</title>
+      <style type="text/css">
+   @namespace xf url("http://www.w3.org/2002/xforms");
+   body {
+      font-family: Helvetica;sans-serif;
+   }
+ 
+   label, legend {
+      font-weight: bold;
+   }
+ 
+   /* The default field width for all inputs */
+   .xforms-value {
+      width: 100px
+   }
+ 
+   /* custom field width overrides relative to current font size */
+   /* ex is the size of the current lowercase 'x' in pixels */
+   /* em is the size of the current "M" character in pixels */
+   .PersonGivenName .xforms-value {width:20ex}
+   .PersonMiddleName .xforms-value {width:15ex}
+   .PersonSurName .xforms-value {width:25ex}
+   .LocationCityName .xforms-value {width:20ex}
+   .LocationStateCode .xforms-value {width:2em}
+   .LocationPostalID .xforms-value {width:10ex}
+   </style>
+      <xf:model>
+         <xf:instance>
+            <sample:Data>
+               <sample:PersonGivenName>John</sample:PersonGivenName>
+               <sample:PersonMiddleName>George</sample:PersonMiddleName>
+               <sample:PersonSurName>Doe</sample:PersonSurName>
+               <sample:LocationCityName>Anytown</sample:LocationCityName>
+               <sample:LocationStateCode>MM</sample:LocationStateCode>
+               <sample:LocationPostalID>55123-1234</sample:LocationPostalID>
+            </sample:Data>
+         </xf:instance>
+      </xf:model>
+   </head>
+   <body>
+			<div id="xformControl">
+				<span>
+					<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';"  checked="checked"/> Debug
+				</span>
+			</div>
+      <fieldset>
+      <legend>Name and Address</legend>
+       <xf:input class="PersonGivenName" ref="/sample:Data/sample:PersonGivenName" incremental="true">
+         <xf:label>First:</xf:label>
+       </xf:input>
+       <xf:input class="PersonMiddleName"  ref="/sample:Data/sample:PersonMiddleName" incremental="true">
+         <xf:label>Middle:</xf:label>
+       </xf:input>
+       <xf:input class="PersonSurName" ref="/sample:Data/sample:PersonSurName" incremental="true">
+         <xf:label>Last:</xf:label>
+       </xf:input>
+       <br/>
+       <xf:input class="LocationCityName" ref="/sample:Data/sample:LocationCityName" incremental="true">
+         <xf:label>City:</xf:label>
+       </xf:input>
+       <xf:input class="LocationStateCode" ref="/sample:Data/sample:LocationStateCode" incremental="true">
+         <xf:label>State:</xf:label>
+       </xf:input>
+       <xf:input class="LocationPostalID" ref="/sample:Data/sample:LocationPostalID" incremental="true">
+         <xf:label>Postal:</xf:label>
+       </xf:input>
+       </fieldset>
+ 
+       <xf:output ref="/sample:Data/sample:PersonGivenName">
+         <xf:label>First Name:</xf:label>
+       </xf:output>
+       <br/>
+       <xf:output ref="/sample:Data/sample:PersonMiddleName">
+         <xf:label>Middle Name:</xf:label>
+       </xf:output>
+       <br/>
+       <xf:output ref="/sample:Data/sample:PersonSurName">
+         <xf:label>Last Name:</xf:label>
+       </xf:output>
+        <br/>
+        <xf:output ref="/sample:Data/sample:LocationCityName">
+         <xf:label>City Name:</xf:label>
+       </xf:output>
+        <br/>
+       <xf:output ref="/sample:Data/sample:LocationStateCode">
+         <xf:label>State Code:</xf:label>
+       </xf:output>
+       <br/>
+       <xf:output ref="/sample:Data/sample:LocationPostalID">
+         <xf:label>Postal Code:</xf:label>
+       </xf:output>
+       <br/>
+			<div id="console"></div>
+   </body>
+</html>

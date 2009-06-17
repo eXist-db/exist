@@ -1,0 +1,49 @@
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html
+   xmlns="http://www.w3.org/1999/xhtml"
+   xmlns:xf="http://www.w3.org/2002/xforms"
+   xmlns:xs="http://www.w3.org/2001/XMLSchema" xs:dummy="dummy"
+	 xmlns:sample="http://www.agencexml.com/sample"
+	 >
+   <head>
+      <title>XForms Checkbox Demo</title>
+      <style type="text/css">body {font-family: Helvetica, sans-serif;}</style>
+      <xf:model>
+         <!-- load the module test data into the model -->
+         <xf:instance>
+            <sample:data>
+               <sample:bool1>true</sample:bool1>
+               <sample:bool2>false</sample:bool2>
+            </sample:data>
+         </xf:instance>
+         <!-- Here is where we indicate the datatypes of the instance variables -->
+         <xf:bind nodeset="sample:bool1" type="xs:boolean"  />
+         <xf:bind id="bool2" nodeset="sample:bool2" type="xs:boolean"  />
+      </xf:model>
+   </head>
+   <body>
+			<div id="xformControl">
+				<span>
+					<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';"  checked="checked"/> Debug
+				</span>
+			</div>
+      <h1>XForms Checkbox Demo</h1>
+      <xf:input ref="sample:bool1" incremental="true">
+         <xf:label>Bool 1: </xf:label>
+      </xf:input>
+      <br/>
+      <!-- use a named binding -->
+      <xf:input bind="bool2" incremental="true">
+         <xf:label>Bool 2: </xf:label>
+      </xf:input>
+      <br/>
+      <xf:output ref="sample:bool1">
+         <xf:label>Bool 1: </xf:label>
+      </xf:output>
+      <br/>
+      <xf:output bind="bool2">
+         <xf:label>Bool 2: </xf:label>
+      </xf:output>
+			<div id="console"></div>
+   </body>
+</html>

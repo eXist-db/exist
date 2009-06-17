@@ -1,0 +1,42 @@
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html
+ xmlns="http://www.w3.org/1999/xhtml"
+ xmlns:xf="http://www.w3.org/2002/xforms"
+ xmlns:sample="http://www.agencexml.com/sample"
+ >
+   <head>
+      <title>XForms inputs with labels</title>
+      <xf:model>
+         <xf:instance>
+            <sample:data>
+               <sample:PersonGivenName/>
+               <sample:PersonSurName/>
+            </sample:data>
+         </xf:instance>
+      </xf:model>
+   </head>
+   <body>
+			<div id="xformControl">
+				<span>
+					<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';"  checked="checked"/> Debug
+				</span>
+			</div>
+      <p>Enter your first name, and last name.</p>
+         <xf:input ref="sample:PersonGivenName" incremental="true">
+            <xf:label>Input First-Name:</xf:label>
+            <xf:hint>Also known as given name.</xf:hint>
+         </xf:input>
+         <br/>
+         <xf:input ref="sample:PersonSurName" incremental="true">
+            <xf:label>Input Last Name:</xf:label>
+            <xf:hint>Also known as sur name or family name.</xf:hint>
+         </xf:input>
+         <br/>
+         <br/>
+         Output First Name: <b><xf:output ref="sample:PersonGivenName"/></b>
+         <br/>
+         Output Last Name: <b><xf:output ref="sample:PersonSurName"/></b>
+      <p>Note that as you type the model output will be updated.</p>
+			<div id="console"></div>
+   </body>
+</html>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article>
+    <articleinfo>
+        <graphic fileref="../logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>XForms Introduction</title>
+        <author>
+            <firstname>James</firstname>
+            <surname>Fuller</surname>
+            <affiliation>
+                <address format="linespecific"><email>jim.fuller at webcomposite.com</email></address>
+            </affiliation>
+        </author>
+    </articleinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+
+    <section>
+        <title>XForms Overview</title>
+		<para>eXist now has support for xforms processing via the Alain Couthures excellent <a href="http://www.agencexml.com">xsltforms</a> processor.</para>
+    </section>
+
+    <section>
+        <title>Configuration &amp; Quick Start</title>
+        <para>Since eXist v1.3 (???1.4), xsltxforms is built and configured by defualt with eXist and should be enabled and ready to use. Check out some simple <a href="examples.xml">examples</a> to check if your eXist is working.
+		</para>
+    </section>
+
+    <section>
+        <title>Using xsltform inside of eXist</title>
+		<para>Once you are sure xforms is working and installed for your version of eXist, to use in your xforms just prepend with an XSL PI, pointing to the /db/xforms/xsltforms/xsltforms.xsl stylesheet.</para>
+
+			<example>
+			<title>Activate xforms by using xsl PI</title>
+			<programlisting>
+			<markup>
+				<![CDATA[
+				<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+				<html xmlns:ajx="http://www.ajaxforms.net/2006/ajx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/1999/xhtml">
+					
+					.... xforms .....
+				</html>
+				]]>			
+			</markup>
+			</programlisting>
+			</example>
+			
+	<para>...	</para>
+	
+	<section>
+		<title>XForms handler</title>
+		<para></para>
+	</section>
+				
+		</section>
+		
+	    
+		<section>
+			<title>Additional XForms Resources</title>
+			<section>
+				<title>Mailing Lists</title>
+			<ul>
+			<li>W3C XProc dev mailing list xproc-dev@w3.org</li>
+			</ul>
+			</section>
+			<section>
+				<title>XForms articles</title>
+			<ul>
+			<li><a href="http://www.ibm.com/developerworks/library/x-xproc/" target="_resource"> Jim Fuller 'Discovering XProc' IBM Developworks 2008</a></li>
+			</ul>
+		</section>
+		
+			<section>
+				<title>XForms Specifications</title>
+			<ul>
+			<li><a href="http://www.w3.org/XML/XProc/docs/langspec.html" target="_resource">XProc</a>: An XML Pipeline Language]: Explore this W3C XProc Editors Draft (the W3C working draft dated 01 May 2008).</li>
+
+		</ul>
+			</section>
+		
+			<section>
+				<title>Useful</title>
+			<ul>
+			<li><a href="http://www.agencexml.com/xforms-tests/testsuite/XForms1.1/Edition1/driverPages/html/" target="_resource">xsltforms coverage of W3C test suite</a></li>
+
+		</ul>
+			</section>
+
+	</section>
+
+    <section>
+        <title>xforms FAQ</title>
+
+		<section>
+			<title>What is xsltforms and why does eXist use it for XForms processing ?</title>
+			<para>...</para>
+		</section>
+		
+	</section>
+</article>

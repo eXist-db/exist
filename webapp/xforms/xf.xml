@@ -1,0 +1,85 @@
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:sample="http://www.agencexml.com/sample" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Template</title>
+        <xf:model>
+            <xf:instance>
+                <sample:person>
+                    <sample:name>Javier</sample:name>
+                    <sample:birthdate>1979-08-31</sample:birthdate>
+                    <sample:gender>M</sample:gender>
+                    <sample:telephones>
+                        <sample:telephone type="mobile">666005000</sample:telephone>
+                        <sample:telephone type="home">986888888</sample:telephone>
+                    </sample:telephones>
+                </sample:person>
+            </xf:instance>
+            <xf:bind nodeset="sample:name" required="true()" type="xsd:name"/>
+            <xf:bind nodeset="sample:birthdate" type="xsd:date"/>
+            <xf:submission id="s01" method="xml-urlencoded-post" replace="all" action="http://localhost:8080/exist/rest/db/xforms/post-handler.xq?path=/db/savedtestdata.xml">
+                <xf:message level="modeless" ev:event="xforms-submit-error">Submit error.</xf:message>
+            </xf:submission>
+        </xf:model>
+    </head>
+    <body>
+        <h2>Template XSLTForms</h2>
+        <group xmlns="http://www.w3.org/2002/xforms">
+            <input ref="sample:name">
+                <label>Name</label>
+            </input>
+            <select1 ref="sample:gender">
+                <label>Gender</label>
+                <item>
+                    <label>Male</label>
+                    <value>M</value>
+                </item>
+                <item>
+                    <label>Female</label>
+                    <value>F</value>
+                </item>
+            </select1>
+            <input ref="sample:birthdate">
+                <label>Birth date</label>
+            </input>
+            <group>
+                <label>Telephones</label>
+                <repeat id="repeat" nodeset="sample:telephones/sample:telephone" appearance="compact">
+                    <select1 ref="@type" appearance="minimal">
+                        <label>Type</label>
+                        <item>
+                            <label>Home</label>
+                            <value>hombe</value>
+                        </item>
+                        <item>
+                            <label>Mobile</label>
+                            <value>mobile</value>
+                        </item>
+                        <item>
+                            <label>Company</label>
+                            <value>company</value>
+                        </item>
+                    </select1>
+                    <input ref=".">
+                        <label>Number</label>
+                    </input>
+                    <trigger>
+                        <label>X</label>
+                        <delete nodeset="." at="1" if="count(//sample:telephone) &gt; 1" ev:event="DOMActivate"/>
+                    </trigger>
+                </repeat>
+                <trigger>
+                    <label>New</label>
+                    <insert nodeset="sample:telephones/sample:telephone" at="index('repeat')" position="after" ev:event="DOMActivate"/>
+                </trigger>
+            </group>
+        </group>
+        <xf:submit submission="s01">
+            <xf:label>Save</xf:label>
+        </xf:submit>
+        <xf:trigger>
+            <xf:label>Reset</xf:label>
+            <xf:reset ev:event="DOMActivate"/>
+        </xf:trigger>
+        <div id="console"/>
+    </body>
+</html>

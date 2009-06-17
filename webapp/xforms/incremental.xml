@@ -1,0 +1,81 @@
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:xf="http://www.w3.org/2002/xforms"
+	xmlns:sample="http://www.agencexml.com/sample"
+>
+<head>
+    <title>Many to one</title>
+    <xf:model>
+         <xf:instance >
+            <sample:DataElement>
+               <sample:ObjectClassName />
+               <sample:PropertyName />
+               <sample:RepresentationTerm />
+            </sample:DataElement>
+         </xf:instance>
+      </xf:model>
+   </head>
+   <body>
+			<div id="xformControl">
+				<span>
+					<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';"  checked="checked"/> Debug
+				</span>
+			</div>
+      <xf:group nodeset="/sample:DataElement">
+         <fieldset>
+            <legend>Data Element Name</legend>
+            <xf:label>DataElementName: </xf:label>
+            <xf:output value="concat(sample:ObjectClassName, sample:PropertyName, sample:RepresentationTerm)"/>
+            <p>
+               <xf:input ref="sample:ObjectClassName" incremental="true">
+                  <xf:label>Object Name:</xf:label>
+               </xf:input>
+            </p>
+            <p>
+               <xf:input ref="sample:PropertyName" incremental="true">
+                  <xf:label>Property Name:</xf:label>
+               </xf:input>
+            </p>
+            <p>
+               <xf:select1 ref="sample:RepresentationTerm" incremental="true">
+                  <xf:label>Representation Term:</xf:label>
+                  <xf:item>
+                     <xf:label>Amount</xf:label>
+                     <xf:value>Amount</xf:value>
+                  </xf:item>
+                  <xf:item>
+                     <xf:label>Code</xf:label>
+                     <xf:value>Code</xf:value>
+                  </xf:item>
+                  <xf:item>
+                     <xf:label>Count</xf:label>
+                     <xf:value>Count</xf:value>
+                  </xf:item>
+                  <xf:item>
+                     <xf:label>ID</xf:label>
+                     <xf:value>ID</xf:value>
+                  </xf:item>
+                  <xf:item>
+                     <xf:label>Indicator</xf:label>
+                     <xf:value>Indicator</xf:value>
+                  </xf:item>
+                  <xf:item>
+                     <xf:label>Name</xf:label>
+                     <xf:value>Name</xf:value>
+                  </xf:item>
+                  <xf:item>
+                     <xf:label>Percent</xf:label>
+                     <xf:value>Percent</xf:value>
+                  </xf:item>
+                  <xf:item>
+                     <xf:label>Text</xf:label>
+                     <xf:value>Text</xf:value>
+                  </xf:item>
+               </xf:select1>
+            </p>
+         </fieldset>
+      </xf:group>
+			<div id="console"></div>
+   </body>
+</html>
