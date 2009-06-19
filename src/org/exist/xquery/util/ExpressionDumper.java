@@ -27,7 +27,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import org.exist.xquery.Expression;
-import org.exist.xquery.parser.XQueryAST;
 
 /**
  * @author wolf

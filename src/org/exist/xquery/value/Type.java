@@ -22,14 +22,13 @@
 package org.exist.xquery.value;
 
 import java.util.HashSet;
-import java.util.Arrays;
 
+import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xquery.XPathException;
-import org.apache.log4j.Logger;
 
 /**
  * Defines all built-in types and their relations.

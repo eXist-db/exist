@@ -20,10 +20,8 @@
  * 
  *  $Id$
  */
+
 package org.exist.xquery;
-
-import org.exist.xquery.parser.XQueryAST;
-
 
 /**
  * @author wolf

@@ -26,15 +26,14 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.AbstractInternalModule;
-import org.exist.xquery.FunctionDef;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.Function;
-import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.FunctionDef;
+import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.Variable;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)

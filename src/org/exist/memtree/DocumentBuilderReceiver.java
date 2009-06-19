@@ -22,6 +22,10 @@
  */
 package org.exist.memtree;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
@@ -34,12 +38,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.NamespaceSupport;
 import org.xml.sax.ext.LexicalHandler;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  * Builds an in-memory DOM tree from SAX {@link org.exist.util.serializer.Receiver}

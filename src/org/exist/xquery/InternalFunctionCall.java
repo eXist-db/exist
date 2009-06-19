@@ -1,18 +1,18 @@
 package org.exist.xquery;
 
-import com.sun.xacml.ctx.RequestCtx;
+import java.io.Writer;
+import java.util.List;
+
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.ExistPDP;
-import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
-import java.io.Writer;
-import java.util.List;
+import com.sun.xacml.ctx.RequestCtx;
 
 /**
 * Wrapper for internal modules in order to

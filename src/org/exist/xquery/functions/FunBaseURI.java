@@ -24,7 +24,6 @@ package org.exist.xquery.functions;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.memtree.NodeImpl;
