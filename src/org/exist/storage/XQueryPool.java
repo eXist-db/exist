@@ -170,7 +170,18 @@ public class XQueryPool extends Object2ObjectHashMap {
        }
        Stack stack = (Stack) values[idx];
        if (stack == null || stack.isEmpty()) return null;
-       return stack.pop();
+        // now check if the compiled expression is valid
+        // it might become invalid if an imported module has changed.
+        CompiledXQuery query = (CompiledXQuery) stack.pop();
+        XQueryContext context = query.getContext();
+        context.setBroker(broker);
+        if (!query.isValid()) {
+            // the compiled query is no longer valid: one of the imported
+            // modules may have changed
+            remove(key);
+            return null;
+        } else
+            return query;
     }
 
     public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) {

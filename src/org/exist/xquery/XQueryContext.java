@@ -1343,7 +1343,26 @@ public class XQueryContext {
 	void setModulesChanged() {
 		this.modulesChanged = true;
 	}
-	
+
+    /**
+	 * For compiled expressions: check if the source of any
+	 * module imported by the current query has changed since
+	 * compilation.
+	 */
+	public boolean checkModulesValid() {
+		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
+			Module module = (Module)i.next();
+			if(!module.isInternalModule()) {
+				if(!((ExternalModule)module).moduleIsValid(getBroker())) {
+					LOG.debug("Module with URI " + module.getNamespaceURI() +
+							" has changed and needs to be reloaded");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	public void analyzeAndOptimizeIfModulesChanged(PathExpr expr) throws XPathException {
         expr.analyze(new AnalyzeContextInfo());
         if (optimizationsEnabled()) {
