@@ -24,9 +24,12 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
-import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 
 /**
  * Check a function parameter type at runtime.

@@ -21,6 +21,19 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Date;
+import java.util.SimpleTimeZone;
+
+import javax.xml.datatype.Duration;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.exist.Namespaces;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -64,19 +77,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-
-import javax.xml.datatype.Duration;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Date;
-import java.util.SimpleTimeZone;
-import org.exist.dom.NodeSet;
 
 /**
  * @author wolf

@@ -34,9 +34,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import java.util.Iterator;
-
-
 /**
  * Kill a running XQuery (must be dba)
  * 

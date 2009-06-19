@@ -22,15 +22,19 @@
  */
 package org.exist.xquery;
 
-import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.*;
-import org.exist.dom.NodeSet;
-import org.exist.memtree.InMemoryNodeSet;
-import org.exist.memtree.NodeImpl;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.exist.dom.NodeSet;
+import org.exist.memtree.NodeImpl;
+import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.MemoryNodeSet;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * FilteredExpression represents a primary expression with a predicate. Examples:

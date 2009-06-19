@@ -21,10 +21,23 @@
 package org.exist.storage;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Properties;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.Vector;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.PerformanceStats;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
@@ -45,14 +58,15 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
+import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
+import org.exist.util.ReadOnlyException;
+import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.NumberFormat;
-import java.util.*;
+import org.exist.xquery.PerformanceStats;
 /**
  * This class controls all available instances of the database.
  * Use it to configure, start and stop database instances. 
