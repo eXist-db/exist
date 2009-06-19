@@ -14,7 +14,7 @@
         <ant antfile="build.xml" dir="tools/izpack"/>
     </target>
 
-    <target depends="all,samples,javadocs" name="prepare-installer">
+    <target depends="all,samples" name="prepare-installer">
         <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
                 classname="com.izforge.izpack.ant.IzPackTask"/>
         <tstamp/>
