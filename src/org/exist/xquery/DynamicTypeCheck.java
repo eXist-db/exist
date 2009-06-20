@@ -25,11 +25,7 @@ package org.exist.xquery;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Check a function parameter type at runtime.
@@ -63,6 +59,10 @@ public class DynamicTypeCheck extends AbstractExpression {
 		Item contextItem)
 		throws XPathException {
 		Sequence seq = expression.eval(contextSequence, contextItem);
+        Sequence result = null;
+        if (Type.subTypeOf(requiredType, Type.ATOMIC) && !Type.subTypeOf(seq.getItemType(), requiredType)) {
+            result = new ValueSequence();
+        }
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			Item item = i.nextItem();
 			int type = item.getType();
@@ -139,8 +139,10 @@ public class DynamicTypeCheck extends AbstractExpression {
 							item.getStringValue() + ")'");
 				}
 			}
+            if (result != null)
+                result.add(item);
 		}
-		return seq;
+		return result == null ? seq : result;
 	}
 
 	/* (non-Javadoc)
