@@ -213,7 +213,7 @@ public class FunctionCall extends Function {
 				getSignature().getReturnType().checkType(result.getItemType()); 
 		} catch (XPathException e) {
 			throw new XPathException(this, "err:XPTY0004: return type of function '" + getSignature().getName() + "'. " +
-					e.getMessage());
+					e.getMessage(), e);
 		}
 
 		return result;

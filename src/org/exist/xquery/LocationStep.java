@@ -184,7 +184,7 @@ public class LocationStep extends Step {
      */
     protected Sequence applyPredicate(Sequence outerSequence,
                                       Sequence contextSequence) throws XPathException {
-        if (contextSequence == null)
+        if (contextSequence == null || contextSequence.isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         if (predicates.size() == 0 || !applyPredicate)
             // Nothing to apply
@@ -228,7 +228,7 @@ public class LocationStep extends Step {
     private Sequence processPredicate(Sequence outerSequence, Sequence contextSequence) throws XPathException {
         Predicate pred;
         Sequence result = contextSequence;
-        for (Iterator i = predicates.iterator(); i.hasNext();) {
+        for (Iterator i = predicates.iterator(); i.hasNext() && !result.isEmpty();) {
             // TODO : log and/or profile ?
             pred = (Predicate) i.next();
             pred.setContextDocSet(getContextDocSet());

@@ -103,9 +103,9 @@ public class FunNot extends Function {
 				// TODO: special treatment if the context sequence is empty:
 				// within a predicate, we just return the empty sequence
 				// otherwise evaluate the argument and return a boolean result			    
-				if (inPredicate && !inWhereClause)
-                    result = Sequence.EMPTY_SEQUENCE;
-				else
+//				if (inPredicate && !inWhereClause)
+//                    result = Sequence.EMPTY_SEQUENCE;
+//				else
                     result = evalBoolean(contextSequence, contextItem, arg);
 			} else {            
     			result = new NewArrayNodeSet();
