@@ -2744,7 +2744,7 @@ public class RpcConnection implements RpcAPI {
 	/**
 	 * The method <code>retrieveFirstChunk</code>
 	 *
-	 * @param doc a <code>String</code> value
+	 * @param docName a <code>String</code> value
 	 * @param id a <code>String</code> value
 	 * @param parameters a <code>HashMap</code> value
 	 * @return a <code>HashMap</code> value
