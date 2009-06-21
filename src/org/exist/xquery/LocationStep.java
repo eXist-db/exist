@@ -184,9 +184,9 @@ public class LocationStep extends Step {
      */
     protected Sequence applyPredicate(Sequence outerSequence,
                                       Sequence contextSequence) throws XPathException {
-        if (contextSequence == null || contextSequence.isEmpty())
+        if (contextSequence == null)
             return Sequence.EMPTY_SEQUENCE;
-        if (predicates.size() == 0 || !applyPredicate)
+        if (predicates.size() == 0 || !applyPredicate || contextSequence.isEmpty())
             // Nothing to apply
             return contextSequence;
         Sequence result;
