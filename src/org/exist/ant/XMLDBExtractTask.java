@@ -20,21 +20,26 @@
 
 package org.exist.ant;
 
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
-import java.io.*;
-import java.util.Properties;
-import org.exist.dom.DocumentImpl;
-import org.exist.xmldb.EXistResource;
+
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
+
 import org.exist.xmldb.ExtendedResource;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
@@ -44,7 +49,7 @@ import org.xmldb.api.modules.XMLResource;
  * an ant task to extract the content of a collection or resource
  *
  * @author peter.klotz@blue-elephant-systems.com
- * @modified jim.fuller at webcomposite.com to handle binary file extraction
+ * @author jim.fuller at webcomposite.com to handle binary file extraction
  */
 public class XMLDBExtractTask extends AbstractXMLDBTask
 {

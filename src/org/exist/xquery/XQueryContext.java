@@ -2732,7 +2732,6 @@ public class XQueryContext {
      * that the specified module class exists and is a subclass of {@link org.exist.xquery.Module}.
      *
      * @param xquery configuration root
-     * @return class name mapped to Class object.
      * @throws DatabaseConfigurationException
      */
     public static void loadModuleClasses(Element xquery, Map classMap, Map externalMap)
