@@ -20,8 +20,8 @@ import java.util.Date;
 
 public class GetScheduledJobs extends BasicFunction {
 
-    private static final String TODAY_TIMESTAMP = "HH:mm:ss.SSS Z";
-	private static final String DATE_TIME_FORMAT = "yyyy-mm-dd HH:mm:ss.SSS Z";
+    private static final String TODAY_TIMESTAMP				= "HH:mm:ss.SSS Z";
+	private static final String DATE_TIME_FORMAT 			= "yyyy-MM-dd HH:mm:ss.SSS Z";
 	final static String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
     final static String PREFIX                              = SystemModule.PREFIX;
 
@@ -33,11 +33,13 @@ public class GetScheduledJobs extends BasicFunction {
                 new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
         );
 
-    public GetScheduledJobs(XQueryContext context) {
-        super(context, signature);
+    public GetScheduledJobs (XQueryContext context ) 
+	{
+        super( context, signature );
     }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
+	{
         if( !context.getUser().hasDbaRole() ) {
             throw( new XPathException( this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to get the list of scheduled jobs" ) );
         }
@@ -49,21 +51,21 @@ public class GetScheduledJobs extends BasicFunction {
 
         BrokerPool brokerPool = context.getBroker().getBrokerPool();
         
-        if (brokerPool != null) {
+        if( brokerPool != null ) {
             org.exist.scheduler.Scheduler existScheduler = brokerPool.getScheduler();
             
-            if (existScheduler != null) {
+            if( existScheduler != null ) {
                 ScheduledJobInfo[] scheduledJobsInfo = existScheduler.getScheduledJobs();
                 ScheduledJobInfo[] executingJobsInfo = existScheduler.getExecutingJobs();
                 
-                if (scheduledJobsInfo != null) {
-                    for (int i = 0; i < scheduledJobsInfo.length; i++) {
-                    	addRow(scheduledJobsInfo[i], builder, false);
+                if( scheduledJobsInfo != null ) {
+                    for( int i = 0; i < scheduledJobsInfo.length; i++ ) {
+                    	addRow( scheduledJobsInfo[i], builder, false );
                     }
                 }
-                if (executingJobsInfo != null) {
-                    for (int i = 0; i < executingJobsInfo.length; i++) {
-                    	addRow(executingJobsInfo[i], builder, true);
+                if( executingJobsInfo != null ) {
+                    for( int i = 0; i < executingJobsInfo.length; i++ ) {
+                    	addRow( executingJobsInfo[i], builder, true );
                     }
                 }
             }
@@ -72,23 +74,24 @@ public class GetScheduledJobs extends BasicFunction {
         builder.endElement();
         builder.endDocument();
 
-        return (NodeValue)builder.getDocument().getDocumentElement();
+        return( (NodeValue)builder.getDocument().getDocumentElement() );
     }
     
-    private void addRow(ScheduledJobInfo scheduledJobInfo, MemTreeBuilder builder, boolean isRunning) {
-    	String name = scheduledJobInfo.getName();
-    	String group = scheduledJobInfo.getGroup();
-    	String triggerName = scheduledJobInfo.getTriggerName();
-    	Date startTime = scheduledJobInfo.getStartTime();
-    	Date endTime = scheduledJobInfo.getEndTime();
-    	Date fireTime = scheduledJobInfo.getPreviousFireTime();
-    	Date nextFireTime = scheduledJobInfo.getNextFireTime();
-    	Date finalFireTime = scheduledJobInfo.getFinalFireTime();
-    	String triggerExpression = scheduledJobInfo.getTriggerExpression();
-    	int triggerState = scheduledJobInfo.getTriggerState();
-    	String triggerStateName = "ERROR";
+    private void addRow( ScheduledJobInfo scheduledJobInfo, MemTreeBuilder builder, boolean isRunning )
+	{
+    	String 	name 				= scheduledJobInfo.getName();
+    	String 	group 				= scheduledJobInfo.getGroup();
+    	String 	triggerName			= scheduledJobInfo.getTriggerName();
+    	Date 	startTime 			= scheduledJobInfo.getStartTime();
+    	Date 	endTime 			= scheduledJobInfo.getEndTime();
+    	Date 	fireTime 			= scheduledJobInfo.getPreviousFireTime();
+    	Date 	nextFireTime 		= scheduledJobInfo.getNextFireTime();
+    	Date 	finalFireTime 		= scheduledJobInfo.getFinalFireTime();
+    	String 	triggerExpression 	= scheduledJobInfo.getTriggerExpression();
+    	int 	triggerState 		= scheduledJobInfo.getTriggerState();
+    	String 	triggerStateName 	= "ERROR";
     	
-    	switch (triggerState) {
+    	switch( triggerState ) {
     		case ScheduledJobInfo.TRIGGER_STATE_ERROR:
     			triggerStateName = "ERROR";
     			break;
@@ -113,55 +116,54 @@ public class GetScheduledJobs extends BasicFunction {
     			triggerStateName = "COMPLETE";
     			break;
     	}
-        builder.startElement( new QName( "job", NAMESPACE_URI, PREFIX ), null);
-        builder.addAttribute( new QName("name", null, null), name);
-        builder.addAttribute( new QName("group", null, null), group);
-        builder.addAttribute( new QName("triggerName", null, null), triggerName);
-        builder.addAttribute( new QName("startTime", null, null), dateText(startTime));
-        builder.addAttribute( new QName("endTime", null, null), dateText(endTime));
-        builder.addAttribute( new QName("fireTime", null, null), dateText(fireTime));
-        builder.addAttribute( new QName("nextFireTime", null, null), dateText(nextFireTime));
-        builder.addAttribute( new QName("finalFireTime", null, null), dateText(finalFireTime));
-        builder.addAttribute( new QName("triggerExpression", null, null), triggerExpression);
-        builder.addAttribute( new QName("triggerState", null, null), triggerStateName);
-        builder.addAttribute( new QName("running", null, null), (isRunning) ? "RUNNING" : "SCHEDULED");
+		
+        builder.startElement( new QName( "job", NAMESPACE_URI, PREFIX ), null );
+        builder.addAttribute( new QName( "name", null, null), name );
+        builder.addAttribute( new QName( "group", null, null), group );
+        builder.addAttribute( new QName( "triggerName", null, null ), triggerName ) ;
+        builder.addAttribute( new QName( "startTime", null, null ), dateText( startTime ) );
+        builder.addAttribute( new QName( "endTime", null, null ), dateText( endTime ) );
+        builder.addAttribute( new QName( "fireTime", null, null ), dateText( fireTime ) );
+        builder.addAttribute( new QName( "nextFireTime", null, null ), dateText( nextFireTime ) );
+        builder.addAttribute( new QName( "finalFireTime", null, null ), dateText( finalFireTime ) );
+        builder.addAttribute( new QName( "triggerExpression", null, null ), triggerExpression );
+        builder.addAttribute( new QName( "triggerState", null, null ), triggerStateName );
+        builder.addAttribute( new QName( "running", null, null ), (isRunning) ? "RUNNING" : "SCHEDULED" );
         builder.endElement();
 
     }
     
-    private String dateText(Date aDate) {
-    	
+    private String dateText( Date aDate ) 
+	{ 	
     	String returnValue = "";
-    	if (aDate != null) {
+		
+    	if( aDate != null ) {
     		String formatString = DATE_TIME_FORMAT;
 
-    		if (isToday(aDate)) {
+    		if( isToday( aDate ) ) {
     			formatString = TODAY_TIMESTAMP;
     		}
-    		SimpleDateFormat format =
-                new SimpleDateFormat(formatString);
+    		SimpleDateFormat format = new SimpleDateFormat( formatString );
+			
     		returnValue = format.format(aDate);
     	}
-    	return returnValue;
+		
+    	return( returnValue );
     }
 
-    private boolean isToday(Date aDate)
+    private boolean isToday( Date aDate )
     {
         Calendar aCal1 = Calendar.getInstance();
-        aCal1.setTime(aDate);
+        aCal1.setTime( aDate );
 
         Calendar aCal2 = Calendar.getInstance();
 
-        if( (aCal1.get(Calendar.DATE) == aCal2.get(Calendar.DATE)) &&
-            (aCal1.get(Calendar.YEAR) == aCal2.get(Calendar.YEAR)) &&
-            (aCal1.get(Calendar.MONTH) == aCal2.get(Calendar.MONTH))
-            )
-        {
-            return true;
-        }
-        else
-        {
-            return false;
+        if( ( aCal1.get( Calendar.DATE ) == aCal2.get( Calendar.DATE ) ) &&
+            ( aCal1.get( Calendar.YEAR ) == aCal2.get( Calendar.YEAR ) ) &&
+			( aCal1.get( Calendar.MONTH ) == aCal2.get( Calendar.MONTH ) ) ) {
+            return( true );
+        } else {
+            return( false );
         }
     }
 
