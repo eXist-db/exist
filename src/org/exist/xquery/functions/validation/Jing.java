@@ -17,10 +17,15 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
+ *  $Id: Validation.java 9042 2009-05-17 18:06:40Z wolfgang_m $
  */
 package org.exist.xquery.functions.validation;
 
+import com.thaiopensource.util.PropertyMapBuilder;
+import com.thaiopensource.validate.SchemaReader;
+import com.thaiopensource.validate.ValidateProperty;
+import com.thaiopensource.validate.ValidationDriver;
+import com.thaiopensource.validate.rng.CompactSchemaReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -29,11 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 
 
-import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
@@ -54,20 +55,21 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.xml.sax.InputSource;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
  *   xQuery function for validation of XML instance documents
- * using grammars like XSDs and DTDs.
+ * using jing for grammars like XSD, Relaxng, onvdl and schematron.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class Jaxv extends BasicFunction  {
+public class Jing extends BasicFunction  {
     
     
     private static final String extendedFunctionTxt=
         "Validate document specified by $a using grammar $b. " +
-        "Heavily relies on javax.xml.validation.Validator";
+        "Heavily relies on com.thaiopensource.validate.ValidationDriver";
         
 
     private final BrokerPool brokerPool;
@@ -76,7 +78,7 @@ public class Jaxv extends BasicFunction  {
     public final static FunctionSignature signatures[] = {        
         
         new FunctionSignature(
-                new QName("jaxv", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                new QName("jing", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
                 extendedFunctionTxt,
                 new SequenceType[]{
                     new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
@@ -87,7 +89,7 @@ public class Jaxv extends BasicFunction  {
         
         
         new FunctionSignature(
-                new QName("jaxv-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                new QName("jing-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
                 extendedFunctionTxt+" A simple report is returned.",
                 new SequenceType[]{
                    new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
@@ -99,7 +101,7 @@ public class Jaxv extends BasicFunction  {
     };
     
     
-    public Jaxv(XQueryContext context, FunctionSignature signature) {
+    public Jing(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
         brokerPool = context.getBroker().getBrokerPool();
     }
@@ -149,28 +151,26 @@ public class Jaxv extends BasicFunction  {
                 grammarUrl = "xmldb:exist://" + grammarUrl;
             }
 
-            // TODO add check .xsd extension
 
-            // Prepare
-            String schemaLang = XMLConstants.W3C_XML_SCHEMA_NS_URI;
-            SchemaFactory factory = SchemaFactory.newInstance(schemaLang);
-
-            // Create grammar
-            StreamSource grammar = new StreamSource(grammarUrl);
-            Schema schema = factory.newSchema(grammar);
- 
-            // Setup validator
-            Validator validator = schema.newValidator();
-            validator.setErrorHandler(report);
-
-            // TODO add external resolver
             report.start();
 
-            // Perform validation
-            StreamSource instance = new StreamSource(is);
-            validator.validate(instance);
+            // Setup validation properties. see Jing interface
+            PropertyMapBuilder properties = new PropertyMapBuilder();
+            ValidateProperty.ERROR_HANDLER.put(properties, report);
 
+            // Special setup for compact notation
+            SchemaReader schemaReader = grammarUrl.endsWith(".rnc") ? CompactSchemaReader.getInstance() : null;
 
+            // Setup driver
+            ValidationDriver driver = new ValidationDriver(properties.toPropertyMap(), schemaReader);
+
+            // Load schema
+            driver.loadSchema(new InputSource(grammarUrl));
+
+            // Validate XML instance
+            InputSource instance = new InputSource(is);
+            driver.validate(instance);
+            
         } catch (MalformedURLException ex) {
             LOG.error(ex);
             throw new XPathException(this, "Invalid resource URI", ex);
@@ -184,9 +184,9 @@ public class Jaxv extends BasicFunction  {
             throw new XPathException(this, "exception", ex);
 
         } finally {
+            // Force release stream
             report.stop();
             
-            // Force release stream
             try {
                 if(is!=null)
                     is.close();
@@ -196,12 +196,12 @@ public class Jaxv extends BasicFunction  {
         }
 
         // Create response
-        if (isCalledAs("jaxv")) {
+        if (isCalledAs("jing")) {
             Sequence result = new ValueSequence();
             result.add(new BooleanValue(report.isValid()));
             return result;
 
-        } else if (isCalledAs("jaxv-report")) {
+        } else if (isCalledAs("jing-report")) {
             MemTreeBuilder builder = context.getDocumentBuilder();
             NodeImpl result = writeReport(report, builder);
             return result;
