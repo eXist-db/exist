@@ -64,8 +64,8 @@ public class SetCurrentUser extends BasicFunction {
 			"Change the user identity for the current HTTP session. Subsequent XQueries in the session will run with the " +
 			"new user identity.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "the user name"),
+				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "the password")
 			},
 			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE),
 			"Moved to session module. See session:set-current-user.");

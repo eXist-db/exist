@@ -1,12 +1,12 @@
-/**
+/*
  * 
  */
 package org.exist.xquery.value;
 
-import org.exist.dom.QName;
-
 /**
+ * This class is used to specify the name and description of an XQuery function parameter.
  * @author lcahlander
+ * @version 1.3
  *
  */
 public class FunctionParameterSequenceType extends SequenceType {
@@ -15,10 +15,11 @@ public class FunctionParameterSequenceType extends SequenceType {
 	private String description = null;
 
 	/**
-	 * @param nodeName
-	 * @param primaryType
-	 * @param cardinality
-	 * @param description
+	 * @param attributeName	The name of the parameter in the <strong>FunctionSignature</strong>.
+	 * @param primaryType	The <strong>Type</strong> of the parameter.
+	 * @param cardinality	The <strong>Cardinality</strong> of the parameter.
+	 * @param description	A description of the parameter in the <strong>FunctionSignature</strong>.
+	 * @see FunctionSignature, Type, Cardinality
 	 */
 	public FunctionParameterSequenceType(String attributeName, int primaryType, int cardinality, String description) {
 		super(primaryType, cardinality);
