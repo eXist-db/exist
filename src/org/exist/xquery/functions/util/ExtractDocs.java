@@ -9,6 +9,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -56,10 +57,46 @@ public class ExtractDocs extends BasicFunction {
             simpleElement(builder, "signature", function.toString());
             builder.startElement(XQDOC_NS, "comment", "comment", null);
             simpleElement(builder, "description", function.getDescription());
+            int index = -1;
+            if (function.getArgumentTypes() != null) {
+                for (SequenceType parameter : function.getArgumentTypes()) {
+                	simpleElement(builder, "param", parameterText(parameter, ++index));
+                }
+            } else {
+            	for (; index < function.getArgumentCount();) {
+                	simpleElement(builder, "param", parameterText(null, ++index));
+            	}
+            }
+            if (function.isOverloaded()) {
+            	simpleElement(builder, "param", "overloaded");
+            }
+            SequenceType returnValue = function.getReturnType();
+            if (returnValue instanceof FunctionParameterSequenceType) {
+            	simpleElement(builder, "return", ((FunctionParameterSequenceType)returnValue).getDescription());
+            }
+
+            String deprecated = function.getDeprecated();            
+            if (deprecated != null && deprecated.length() > 0) {
+            	simpleElement(builder, "deprecated", deprecated);
+            }
             builder.endElement();
             builder.endElement();
         }
         builder.endElement();
+    }
+    
+    private String parameterText(SequenceType parameter, int index) {
+        char var = 'a';
+    	StringBuffer buf = new StringBuffer("$");
+        if (parameter != null && parameter instanceof FunctionParameterSequenceType) {
+        	FunctionParameterSequenceType funcType = (FunctionParameterSequenceType)parameter;
+        	buf.append(funcType.getAttributeName());
+        		buf.append(" ");
+        		buf.append(funcType.getDescription());
+        } else {
+        	buf.append((char)(var + index));
+        }
+    	return buf.toString();
     }
 
     private void module(Module module, MemTreeBuilder builder) {

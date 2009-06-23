@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
@@ -31,6 +32,8 @@ import org.exist.xquery.value.Type;
  * its name, the type and cardinality of its arguments and its return type.
  *  
  * @author wolf
+ * @author lcahlander
+ * @version 1.3
  */
 public class FunctionSignature {
 
@@ -162,7 +165,11 @@ public class FunctionSignature {
 				if(i > 0)
 					buf.append(", ");
                 buf.append('$');
-                buf.append((char)(var + i));
+                if (arguments[i] instanceof FunctionParameterSequenceType) {
+                    buf.append(((FunctionParameterSequenceType)arguments[i]).getAttributeName());
+                } else {
+                    buf.append((char)(var + i));
+                }
                 buf.append(" as ");
 				buf.append(arguments[i].toString());
 			}
@@ -173,7 +180,8 @@ public class FunctionSignature {
 		buf.append(returnType.toString());
 		return buf.toString();
 	}
-    
+
+
     public boolean equals(Object obj) {
         FunctionSignature other = (FunctionSignature) obj;
         if (name.equalsSimple(other.name))
