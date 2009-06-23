@@ -156,10 +156,10 @@ public class ValidationReport implements ErrorHandler {
     
     public String[] getValidationReportArray(){
         
-        List<String> validationReport = getTextValidationReport();
-        String report[] = new String[ validationReport.size() ];
+        List<String> vr = getTextValidationReport();
+        String report[] = new String[ vr.size() ];
         
-        return validationReport.toArray(report);
+        return vr.toArray(report);
     }
     
     public void setValidationDuration(long time) {
@@ -170,16 +170,17 @@ public class ValidationReport implements ErrorHandler {
         return duration;
     }
     
+    @Override
     public String toString(){
         
-        StringBuilder validationReport = new  StringBuilder();
+        StringBuilder sb = new  StringBuilder();
 
         for(String line : getTextValidationReport()){
-            validationReport.append(line);
-            validationReport.append("\n");
+            sb.append(line);
+            sb.append("\n");
         }
         
-        return validationReport.toString();
+        return sb.toString();
     }
 
     public void start() {

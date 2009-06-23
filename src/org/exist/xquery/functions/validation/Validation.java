@@ -143,7 +143,7 @@ public class Validation extends BasicFunction  {
         }
 
         InputStream is = null;
-        ValidationReport vr = null;
+        ValidationReport report = null;
 
         try {
             // Get inputstream of XML instance document
@@ -170,7 +170,7 @@ public class Validation extends BasicFunction  {
 
             if(args.length == 1) {
                 // Validate using system catalog
-                vr=validator.validate(is);
+                report=validator.validate(is);
 
             } else {
                 // Validate using resource speciefied in second parameter
@@ -180,7 +180,7 @@ public class Validation extends BasicFunction  {
                     url="xmldb:exist://" + url;
                 }
 
-                vr=validator.validate(is, url);
+                report=validator.validate(is, url);
             }
 
 
@@ -208,12 +208,12 @@ public class Validation extends BasicFunction  {
         // Create response
         if (isCalledAs("validate") || isCalledAs("jing")) {
             Sequence result = new ValueSequence();
-            result.add(new BooleanValue(vr.isValid()));
+            result.add(new BooleanValue(report.isValid()));
             return result;
 
         } else if (isCalledAs("validate-report") || isCalledAs("jing-report")) {
             MemTreeBuilder builder = context.getDocumentBuilder();
-            NodeImpl result = writeReport(vr, builder);
+            NodeImpl result = writeReport(report, builder);
             return result;
 
         }
