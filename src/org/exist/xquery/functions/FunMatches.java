@@ -235,12 +235,13 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     }
     
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
-    	//  call analyze for each argument
-        inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
-        for(int i = 0; i < getArgumentCount(); i++) {
-            getArgument(i).analyze(contextInfo);            
-        }        
+        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        newContextInfo.setParent(this);
+        //  call analyze for each argument
+        inPredicate = (newContextInfo.getFlags() & IN_PREDICATE) > 0;
+        for (int i = 0; i < getArgumentCount(); i++) {
+            getArgument(i).analyze(newContextInfo);
+        }
     }
     
 	/* (non-Javadoc)
