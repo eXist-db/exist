@@ -33,6 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -48,79 +49,54 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 
+    private final static QName FUNCTION_NAME = new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
+
+    private final static String FUNCTION_DESCRIPTION = "Store new resources into the database. Resources are read from the server's " +
+            "file system, using file patterns. " +
+            "The function returns a sequence of all document paths added " +
+            "to the db. These can be directly passed to fn:doc() to retrieve the document(s).";
+
+    private final static SequenceType PARAM_COLLECTION = new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection where resources should be stored. Specified either as a simple collection path or an XMLDB URI.");
+    private final static SequenceType PARAM_FS_DIRECTORY = new FunctionParameterSequenceType("fs-directory", Type.STRING, Cardinality.EXACTLY_ONE, "The directory in the file system from where the files are read.");
+    private final static SequenceType PARAM_FS_PATTERN = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ONE_OR_MORE, "The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one");
+    private final static SequenceType PARAM_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.");
+
+
+
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-                new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                "Store new resources into the database. Resources are read from the server's " +
-                "file system, using file patterns. " +
-                "The first argument denotes the collection where resources should be stored. " +
-                "The collection can be either specified as a simple collection path or " +
-                "an XMLDB URI. " +
-                "The second argument is the directory in the file system wherefrom the files are read." +
-                "The third argument is the file pattern. File pattern matching is based " +
-                "on code from Apache's Ant, thus following the same conventions. For example: " +
-                "*.xml matches any file ending with .xml in the current directory, **/*.xml matches files " +
-                "in any directory below the current one. " +
-                "The function returns a sequence of all document paths added " +
-                "to the db. These can be directly passed to fn:doc() to retrieve the document.",
+                FUNCTION_NAME,
+                FUNCTION_DESCRIPTION,
                 new SequenceType[] {
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
+                    PARAM_COLLECTION,
+                    PARAM_FS_DIRECTORY,
+                    PARAM_FS_PATTERN
                 },
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)),
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+        ),
         new FunctionSignature(
-                new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                "Store new resources into the database. Resources are read from the server's " +
-                "file system, using file patterns. " +
-                "The first argument denotes the collection where resources should be stored. " +
-                "The collection can be either specified as a simple collection path or " +
-                "an XMLDB URI. " +
-                "The second argument is the directory in the file system wherefrom the files are read." +
-                "The third argument is the file pattern. File pattern matching is based " +
-                "on code from Apache's Ant, thus following the same conventions. For example: " +
-                "*.xml matches any file ending with .xml in the current directory, **/*.xml matches files " +
-                "in any directory below the current one. " +
-                "The fourth argument $d is used to specify a mime-type.  If the mime-type " +
-                "is something other than 'text/xml' or 'application/xml', the resource will be stored as " +
-                "a binary resource." +
-                "The function returns a sequence of all document paths added " +
-                "to the db. These can be directly passed to fn:doc() to retrieve the document.",
+                FUNCTION_NAME,
+                FUNCTION_DESCRIPTION,
                 new SequenceType[] {
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                    PARAM_COLLECTION,
+                    PARAM_FS_DIRECTORY,
+                    PARAM_FS_PATTERN,
+                    PARAM_MIME_TYPE
                 },
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)),
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+        ),
         new FunctionSignature(
-                new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                "Store new resources into the database. Resources are read from the server's " +
-                "file system, using file patterns. " +
-                "The first argument denotes the collection where resources should be stored. " +
-                "The collection can be either specified as a simple collection path or " +
-                "an XMLDB URI. " +
-                "The second argument is the directory in the file system wherefrom the files are read." +
-                "The third argument is the file pattern. File pattern matching is based " +
-                "on code from Apache's Ant, thus following the same conventions. For example: " +
-                "*.xml matches any file ending with .xml in the current directory, **/*.xml matches files " +
-                "in any directory below the current one. " +
-                "The fourth argument $d is used to specify a mime-type.  If the mime-type " +
-                "is something other than 'text/xml' or 'application/xml', the resource will be stored as " +
-                "a binary resource." +
-                "If the final boolean argument is true(), the directory structure will be kept in the collection, " +
-                "otherwise all the matching resources, including the ones in sub-directories, will be stored " +
-                "in the collection given in the first argument flatly." +
-                "The function returns a sequence of all document paths added " +
-                "to the db. These can be directly passed to fn:doc() to retrieve the document.",
+                FUNCTION_NAME,
+                FUNCTION_DESCRIPTION,
                 new SequenceType[] {
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-        },
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE))
+                    PARAM_COLLECTION,
+                    PARAM_FS_DIRECTORY,
+                    PARAM_FS_PATTERN,
+                    PARAM_MIME_TYPE,
+                    new FunctionParameterSequenceType("preserve-structure", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.")
+                },
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+        )
     };
 
     public XMLDBLoadFromPattern(XQueryContext context, FunctionSignature signature) {
