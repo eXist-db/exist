@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2007 The eXist Project
+ *  Copyright (C) 2007-2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -20,6 +20,7 @@
  *  $Id$
  *  
  *  @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ *  @author ljo
  */
 package org.exist.xquery.modules.spatial;        
 
@@ -35,6 +36,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -52,8 +54,8 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             new QName("equals", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $a that contain a geometry which is equal to geometry $b",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
         ),
@@ -61,8 +63,8 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             new QName("disjoint", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $a that contain a geometry which is disjoint with geometry $b",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
         ),
@@ -70,8 +72,8 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             new QName("intersects", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $a that contain a geometry which instersects with geometry $b",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
         ),
@@ -79,8 +81,8 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             new QName("touches", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $a that contain a geometry which touches geometry $b",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
         ),
@@ -88,8 +90,8 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             new QName("crosses", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $a that contain a geometry which crosses geometry $b",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
         ),
@@ -97,8 +99,8 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             new QName("within", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $a that contain a geometry which is within geometry $b",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
         ),
@@ -106,8 +108,8 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             new QName("contains", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $a that contain a geometry which contains geometry $b",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
+                    new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
         ),
@@ -115,8 +117,8 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             new QName("overlaps", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $a that contain a geometry which overlaps geometry $b",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
+                    new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
         )                
@@ -129,7 +131,7 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         Sequence result = null;
-    	Sequence nodes = args[0];        
+    	Sequence nodes = args[0];
         if (nodes.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else if (args[1].isEmpty())
