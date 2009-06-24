@@ -816,13 +816,13 @@ uri="${backup.uri}/db" name="guest" secret="ToPSecreT" primaryGroup="users" />]]
             <title>Change resource permissions (chmod)</title>
             <para>
               This task changes the permissions of a resource.
-            </para>
+						   </para>
 
             <example>
                 <title>Chmod</title>
                 <programlisting>
     <markup><![CDATA[<xdb:chmod xmlns:xdb="http://exist-db.org/ant"
-        uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" mod=""/>]]></markup></programlisting>
+        uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" mode="group=-write,other=-write"/>]]></markup></programlisting>
             </example>
 
         <variablelist>
@@ -833,9 +833,13 @@ uri="${backup.uri}/db" name="guest" secret="ToPSecreT" primaryGroup="users" />]]
               </listitem>
           </varlistentry>
           <varlistentry>
-              <term>mod</term>
+              <term>mode</term>
               <listitem>
-                  <para>Permission modification string.</para>
+                  <para>Permission modification string. The string has the following syntax:</para>
+		  <synopsis>[user|group|other]=[+|-][read|write|update]</synopsis>
+		  <para>For example, to set read and write permissions for the group, but not for others:</para>
+		  <synopsis>group=+read,+write,other=-read,-write</synopsis>
+		  <para>The new settings are or'ed with the existing settings.</para>
               </listitem>
           </varlistentry>
         </variablelist>
