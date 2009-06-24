@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2007 The eXist Project
+ *  Copyright (C) 2007-2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -20,6 +20,7 @@
  *  $Id$
  *  
  *  @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ *  @author ljo
  */
 package org.exist.xquery.modules.spatial;        
 
@@ -38,6 +39,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -61,7 +63,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new QName("getWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the WKT representation of geometry $a",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
         ),
@@ -69,7 +71,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getWKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the WKB representation of geometry $a",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
         ),        
@@ -77,7 +79,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getMinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the minimal X of geometry $a",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -85,7 +87,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getMaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the maximal X of geometry $a",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -93,7 +95,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getMinY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the minimal Y of geometry $a",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -101,7 +103,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getMaxY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the maximal Y of geometry $a",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -109,7 +111,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getCentroidX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the X of centroid of geometry $a",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -117,7 +119,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getCentroidY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the Y of centroid of geometry $a",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -125,7 +127,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getArea", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the area of geometry $a",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -133,7 +135,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                 new QName("getEPSG4326WKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
                 "Returns the WKT representation of geometry $a in the EPSG:4326 SRS",
                 new SequenceType[]{
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
                 },
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
             ),         
@@ -141,7 +143,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getEPSG4326WKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the WKB representation of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
         ),         
@@ -149,7 +151,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getEPSG4326MinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the minimal X of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -157,7 +159,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getEPSG4326MaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the maximal X of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -165,7 +167,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getEPSG4326MinY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the minimal Y of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -173,7 +175,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getEPSG4326MaxY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the maximal Y of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -181,7 +183,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getEPSG4326CentroidX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the X of centroid of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -189,7 +191,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getEPSG4326CentroidY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the Y of centroid of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
@@ -197,7 +199,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     		new QName("getEPSG4326Area", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the area of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
-	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),            
@@ -205,7 +207,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new QName("getSRS", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the spatial reference system of geometry $a",
             new SequenceType[]{
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
         ),
@@ -213,31 +215,31 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new QName("getGeometryType", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the type of geometry $a",
             new SequenceType[]{
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
             new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
         ),
         new FunctionSignature(
             new QName("isClosed", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns if geometry $a is closed",
+            "Returns true() if geometry $a is closed, otherwise false()",
             new SequenceType[]{
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
             },
             new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
         ),
         new FunctionSignature(
             new QName("isSimple", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns if geometry $a is simple",
+            "Returns true() if geometry $a is simple, otherwise false()",
             new SequenceType[]{
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
             },
             new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
         ),
         new FunctionSignature(
             new QName("isValid", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns if geometry $a is valid",
+            "Returns true() if geometry $a is valid, otherwise false()",
             new SequenceType[]{
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
             },
             new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
         )
