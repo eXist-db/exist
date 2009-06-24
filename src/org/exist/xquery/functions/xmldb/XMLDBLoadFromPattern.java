@@ -106,14 +106,14 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
         /* (non-Javadoc)
          * @see org.exist.xquery.functions.xmldb.XMLDBAbstractCollectionManipulator#evalWithCollection(org.xmldb.api.base.Collection, org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
          */
-    protected Sequence evalWithCollection(Collection collection, Sequence[] args,
-            Sequence contextSequence) throws XPathException {
+    protected Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException
+    {
         File baseDir = new File(args[1].getStringValue());
         LOG.debug("Loading files from directory: " + baseDir);
-        Sequence patterns = args[2];
-        String resourceType = "XMLResource";
+
+        //determine resource type - xml or binary?
         String mimeType = MimeType.XML_TYPE.getName();
-        boolean keepDirStructure = false;
+        String resourceType = "XMLResource";
         if(getSignature().getArgumentCount() > 3) {
             mimeType = args[3].getStringValue();
 	    MimeType mime = MimeTable.getInstance().getContentType(mimeType);
@@ -121,49 +121,68 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
             if(mime != null && !mime.isXMLType())
                 resourceType = "BinaryResource";
         }
-        if (getSignature().getArgumentCount() == 5)
+
+        //keep the directory structure?
+        boolean keepDirStructure = false;
+        if(getSignature().getArgumentCount() == 5)
             keepDirStructure = args[4].effectiveBooleanValue();
         
         ValueSequence stored = new ValueSequence();
-        for(SequenceIterator i = patterns.iterate(); i.hasNext(); ) {
+
+        //store according to each pattern
+        Sequence patterns = args[2];
+        for(SequenceIterator i = patterns.iterate(); i.hasNext(); )
+        {
+            //get the files to store
             String pattern = i.nextItem().getStringValue();
             File[] files = DirectoryScanner.scanDir(baseDir, pattern);
             LOG.debug("Found: " + files.length);
+            
             Collection col = collection;
             String relDir, prevDir = null;
-            for(int j = 0; j < files.length; j++) {
-                try {
+            
+            for(int j = 0; j < files.length; j++)
+            {
+                try
+                {
                     LOG.debug(files[j].getAbsolutePath());
-                    String relPath = files[j].toString().substring( baseDir.toString().length() );
-                    int p = relPath.lastIndexOf( File.separatorChar );
+                    String relPath = files[j].toString().substring(baseDir.toString().length());
+                    int p = relPath.lastIndexOf(File.separatorChar);
 					
-					if( p >= 0 ) {
-	                    relDir = relPath.substring( 0, p );
-	                    relDir = relDir.replace(File.separatorChar, '/');
-					} else {
-						relDir = relPath;
-					}
+                    if(p >= 0)
+                    {
+                        relDir = relPath.substring(0, p);
+                        relDir = relDir.replace(File.separatorChar, '/');
+                    }
+                    else
+                    {
+                        relDir = relPath;
+                    }
 					
-                    if ( keepDirStructure && ( prevDir == null || ( !relDir.equals(prevDir) ) ) ) {
-                        col = createCollection(collection, relDir);
+                    if(keepDirStructure && (prevDir == null || (!relDir.equals(prevDir))))
+                    {
+                        col = createCollectionPath(collection, relDir);
                         prevDir = relDir;
                     }
+
                     //TODO  : these probably need to be encoded
-                    Resource resource =
-                            col.createResource(files[j].getName(), resourceType);
+                    Resource resource = col.createResource(files[j].getName(), resourceType);
                     resource.setContent(files[j]);
+
                     if("BinaryResource".equals(resourceType))
                         ((EXistResource)resource).setMimeType(mimeType);
+
                     col.storeResource(resource);
+
                     //TODO : use dedicated function in XmldbURI
                     stored.add(new StringValue(col.getName() + "/" + resource.getId()));
-                } catch (XMLDBException e) {
-                    LOG.warn("Could not store file " + files[j].getAbsolutePath() +
-                            ": " + e.getMessage(), e);
+                }
+                catch(XMLDBException e)
+                {
+                    LOG.warn("Could not store file " + files[j].getAbsolutePath() + ": " + e.getMessage(), e);
                 }
             }
         }
         return stored;
     }
-
 }
