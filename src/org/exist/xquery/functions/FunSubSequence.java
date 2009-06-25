@@ -25,13 +25,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -82,12 +76,28 @@ public class FunSubSequence extends Function {
         super(context, signature);
     }
 
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        // statically check the argument list
+        checkArguments();
+        // call analyze for each argument
+    	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+    	contextId = contextInfo.getContextId();
+    	contextInfo.setParent(this);
+
+        for(int i = 0; i < getArgumentCount(); i++) {
+            AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+            getArgument(i).analyze(argContextInfo);
+            if (i == 0)
+                contextInfo.setStaticReturnType(argContextInfo.getStaticReturnType());
+        }
+    }
+
     /*
-     * (non-Javadoc)
-     * 
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
-     *      org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
+    * (non-Javadoc)
+    *
+    * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
+    *      org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+    */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
