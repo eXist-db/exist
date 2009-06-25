@@ -1,13 +1,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -34,7 +28,20 @@ public class FunReverse extends Function {
 		super(context, signature);
 	}
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        // statically check the argument list
+        checkArguments();
+        // call analyze for each argument
+    	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+    	contextId = contextInfo.getContextId();
+    	contextInfo.setParent(this);
+
+        AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+        getArgument(0).analyze(argContextInfo);
+        contextInfo.setStaticReturnType(argContextInfo.getStaticReturnType());
+    }
+
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
