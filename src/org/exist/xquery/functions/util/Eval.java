@@ -116,7 +116,7 @@ public class Eval extends BasicFunction {
 				"namespace declarations and variable declarations are visible from within the " +
 				"inner expression. " +
                 "The function returns an empty sequence if a whitespace string is passed. " +
-				"The third argument specifies if the compiled query expression " +
+				"The second argument specifies if the compiled query expression " +
 				"should be cached. The cached query will be globally available within the db instance.",
 				new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
