@@ -89,7 +89,7 @@
 	<classpathentry kind="lib" path="thirdparty/tomcat5/bin/jmx.jar"/>
 	<classpathentry kind="lib" path="thirdparty/tomcat5/server/lib/catalina-5.0.28.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant.jar"/>
-	<classpathentry kind="lib" path="tools/ant/lib/junit-4.5.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/junit-4.6.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/xmlunit-1.2.jar"/>
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/org.mortbay.jetty.jar"/>
