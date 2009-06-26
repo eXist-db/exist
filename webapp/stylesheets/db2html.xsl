@@ -37,8 +37,19 @@
 				<xsl:apply-templates select="(bookinfo|articleinfo)/style"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
+                <!--script type="text/javascript" src="{$pathToWebapp}scripts/syntax/sh-min.js"/-->
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shCore.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushCss.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushJScript.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushPlain.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXml.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXQuery.js"></script>
+
+                <link type="text/css" rel="stylesheet" href="{$pathToWebapp}styles/syntax/shCore.css"/>
+                <link type="text/css" rel="Stylesheet" href="styles/syntax/shThemeDefault.css" id="theme" />
+
                 <script type="text/javascript" src="{$pathToWebapp}styles/niftycube.js"/>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/sh-min.js"/>
+                
                 <script type="text/javascript">
                     window.onload = function () {
                         Nifty("h1.chaptertitle", "transparent");
@@ -47,8 +58,6 @@
                         Nifty("div.important", "transparent");
                         Nifty("div.block div.head", "top");
                         Nifty("div.block ul", "bottom");
-                        
-                        dp.SyntaxHighlighter.HighlightAll('code');
                     }</script>
             </head>
             <body bgcolor="#FFFFFF">
@@ -70,6 +79,12 @@
                     <xsl:apply-templates select="bookinfo|articleinfo" mode="backmatter"/>
                 </div>
                 <xsl:call-template name="analytics"/>
+
+                <script type="text/javascript">
+                SyntaxHighlighter.config.stripBrs = true;
+                SyntaxHighlighter.all();
+                </script>
+
             </body>
         </html>
     </xsl:template>
@@ -326,10 +341,10 @@
         <div id="page-head">
             <xsl:choose>
                 <xsl:when test="graphic/@fileref">
-                    <img src="{$pathToWebapp}{graphic/@fileref}"/>
+                    <img src="{$pathToWebapp}{graphic/@fileref}" title="eXist-db: Open Source Native XML Database"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <img src="{$pathToWebapp}logo.jpg" title="eXist"/>
+                    <img src="{$pathToWebapp}logo.jpg" title="eXist-db: Open Source Native XML Database"/>
                 </xsl:otherwise>
             </xsl:choose>
             <div id="quicksearch">
@@ -378,9 +393,9 @@
     <xsl:template match="synopsis">
         <xsl:choose>
             <xsl:when test="@language">
-                <textarea class="{@language}" name="code">
+                <pre class="brush: xquery;">
                     <xsl:apply-templates/>
-                </textarea>
+                </pre>
             </xsl:when>
             <xsl:otherwise>
                 <div class="synopsis">
@@ -415,17 +430,17 @@
     <xsl:template match="programlisting">
         <xsl:choose>
             <xsl:when test="markup">
-                <textarea class="xml" name="code">
+                <pre class="brush: xml;">
                     <xsl:apply-templates select="markup/node()"/>
-                </textarea>
+                </pre>
             </xsl:when>
             <xsl:when test="@language">
-                <textarea class="{@language}" name="code">
+                <pre class="brush: xquery;">
                     <xsl:apply-templates/>
-                </textarea>
+                </pre>
             </xsl:when>
             <xsl:otherwise>
-                <pre>
+                <pre class="brush: plain;">
                     <xsl:apply-templates/>
                 </pre>
             </xsl:otherwise>
