@@ -34,11 +34,11 @@
 	<classpathentry kind="lib" path="extensions/fluent/lib/hamcrest-library-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-2.4.0.jar"/>
 	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-junit4-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/core/commons-pool-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-pool-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/ws-commons-util-1.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/core/xmlrpc-client-3.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/xmlrpc-common-3.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/xmlrpc-server-3.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/xmlrpc-client-3.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/core/xmlrpc-common-3.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/core/xmlrpc-server-3.1.2.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.3.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-impl-4.1.5.jar"/>
