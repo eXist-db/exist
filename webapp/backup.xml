@@ -79,7 +79,7 @@
                             the backup is running, so logical dependencies between different resources may
                             not be preserved correctly.</para>
 
-                        <para>Client-side backups are <emphasis>not save</emphasis>. The client uses
+                        <para>Client-side backups are <emphasis>not safe</emphasis>. The client uses
                             the XML:DB API to access the db. This means that it cannot backup
                             documents or collections if they are damaged in any way.</para>
                     </listitem>
