@@ -238,7 +238,7 @@ public class OptimizerTest {
         execute("/root//b/parent::c[b = 'two']", true, MSG_OPT_ERROR, r);
 
         r = execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", false);
-        Assert.assertEquals(15, r);
+        Assert.assertEquals(16, r);
         execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", true, MSG_OPT_ERROR, r);
     }
 
