@@ -32,7 +32,8 @@
 
     <section>
         <title>Learning XProc</title>
-		<para>XProc pipelines accept zero or more XML documents as their input and produce zero or more XML documents as output. The XProc code in the following listing consists of a &lt;p:pipeline&gt; top-level element, a &lt;p:xslt&gt; step, and not much else. An XML document that comes into the standard input of the XProc processor is handed off to the &lt;p:xslt&gt; step, which then applies an XSLT process using mystylesheet.xslt (where mystylesheet is defined by the &lt;p:input&gt;/&lt;p:document&gt;  element) on the XML document.
+		<para>At their simplest, XProc pipelines contain steps, each of which accept zero or more XML documents as their input and produce zero or more XML documents as output.</para>
+        <para>The XProc code in the following listing consists of a &lt;p:pipeline&gt; top-level element, a &lt;p:xslt&gt; step, and not much else.
 			</para>
 
 			<example>
@@ -55,10 +56,15 @@
 				]]>			
 			</markup>
 			</programlisting>
-			<a href="simple-pipeline.xproc" target="_example">run simple-pipeline.xproc</a>
+			<a href="simple-pipeline.xproc?stdin=/db/xproc/test.xml" target="_example">run simple-pipeline.xproc?stdin=/db/xproc/test.xml</a>
 			</example>
-			
-	<para>With only a single step, results are placed onto the result port for the entire pipeline, which then outputs the XML document to standard output. The following figure shows this process, outlining where the XML document flows from source and result ports.
+	<para>
+        An XML document is brought in as standard input using the stdin url param.
+        The XProc processor uses this XML document as the input to the first step, &lt;p:xslt&gt; step, which applies an XSLT process using stylesheet.xml.
+    </para>		
+	<para>
+        As the pipeline contains only a single step, results of XSLT processing are placed onto the result port for the pipeline, providing the XML document to standard output.
+        The following figure illustrates this process, outlining where the XML document flows from source and result ports.
 	</para>
 	
 	<graphic fileref="resource/image/processflow.gif"/>
@@ -79,38 +85,54 @@
 	<programlisting>
 	<markup>
 		<![CDATA[
-		<p:pipeline name="mypipeline" type="myexample" xmlns:p="http://www.w3.org/ns/xproc">
-			<p:xinclude name="step1"/>
-			<p:choose name="step2">
-				<p:when test="/*[@version &lt; 2.0]">
-					<!-- subpipeline //-->
-					<p:validate-with-xml-schema name="step2a1">
-						<p:input port="schema">
-							<p:document href="newer-schema.xsd"/>
-						</p:input>
-					</p:validate-with-xml-schema>
-				</p:when>
-				<p:otherwise>
-					<!-- subpipeline //-->
-					<p:validate-with-xml-schema name="step2b1">
-						<p:input port="schema">
-							<p:document href="older-schema.xsd"/>
-						</p:input>
-					</p:validate-with-xml-schema>
-				</p:otherwise>
-			</p:choose>
-			<p:for-each name="step3">
-				<p:iteration-source select="//div"/>
-				<!-- subpipeline //-->
-				<p:string-replace name="step3a1">
-					<p:option name="match" value="//span[@class=’css1’]"/>
-					<p:option name="replace" value=""/>
-				</p:string-replace>
-			</p:for-each>
-			<p:wrap-sequence name="step4">
-				<p:option name="wrapper" value="document"/>
-			</p:wrap-sequence>
-		</p:pipeline>
+		<p:pipeline xmlns:p="http://www.w3.org/ns/xproc"
+                                     xmlns:c="http://www.w3.org/ns/xproc-step"
+                           name="pipeline">
+
+<p:compare name="compare">                       (: compare test step :)
+   <p:input port="alternate">
+       <p:document href="/db/xproc/test.xml"/> (: example of using p:document :)
+   </p:input>
+</p:compare>
+
+<p:choose name="mychoosestep">
+       <p:when test=".//c:result[.='false']">      (: note the eXist specific path convention with root :)
+           <p:identity>
+               <p:input port="source">
+                   <p:inline>
+                       <p>This pipeline failed.</p>
+                   </p:inline>
+               </p:input>
+           </p:identity>
+       </p:when>
+       <p:when test=".//c:result[.='true']">  (: success :)
+       <p:identity>
+           <p:input port="source">
+               <p:inline>
+                   <p>This pipeline successfully processed.</p>
+               </p:inline>
+           </p:input>
+       </p:identity>
+       </p:when>
+       <p:otherwise>
+           <p:identity>
+               <p:input port="source">
+                   <p:inline>
+                       <p>This pipeline failed.</p>
+                   </p:inline>
+               </p:input>
+           </p:identity>
+       </p:otherwise>
+   </p:choose>
+
+    <p:identity>        (: need to explicitly define p:step to get multi container step output :)
+        <p:input port="source">
+            <p:step port="result" step="mychoosestep"/>
+        </p:input>
+    </p:identity>
+
+
+</p:pipeline>
 		]]>			
 	</markup>
 	</programlisting>
