@@ -7,7 +7,8 @@
 
     <target name="test_XMLDBCopy" description="test the copying of resources">
 
-        <xdb:copy uri="${test.coll}/antunit" resource="test.xml" user="admin" password="" destination="/db/antunit/test" name="test1.xml"/>
+        <xdb:copy uri="${test.coll}/antunit" resource="test.xml"
+                  user="${exist.user}" password="${exist.password}" destination="/db/antunit/test" name="test1.xml"/>
 
         <au:assertTrue message="XLMDBCopy doesnt work">
             <xdb:exist uri="${test.coll}/antunit" resource="test1.xml"/>
@@ -17,7 +18,7 @@
 
     <target name="test_XMLDBCreate" description="test creation of collection">
 
-        <xdb:create uri="${test.coll}/antunit" user="admin" password="" collection="new"/>
+        <xdb:create uri="${test.coll}/antunit" user="${exist.user}" password="${exist.password}" collection="new"/>
 
         <au:assertTrue message="XLMDBCreate doesnt work">
             <xdb:exist uri="${test.coll}/antunit/new"/>
@@ -39,7 +40,7 @@
     <target name="test_XMLDBExtract" description="test extraction of XML into files and collections">
 
         <!-- destfile attribute is actually file //-->
-        <xdb:extract uri="${test.coll}/antunit"  user="admin" password=""  type="xml" resource="test.xml" destfile="test-output.xml"/>
+        <xdb:extract uri="${test.coll}/antunit"  user="${exist.user}" password="${exist.password}"  type="xml" resource="test.xml" destfile="test-output.xml"/>
 
         <au:assertFileExists file="test-output.xml"/>
 
@@ -48,7 +49,7 @@
     <target name="test_binary_XMLDBExtract" description="test extraction of XML into files and collections">
 
         <!-- destfile attribute is actually file //-->
-        <xdb:extract uri="${test.coll}/antunit"  user="admin" password=""  type="binary" resource="logo.jpg" destfile="test-logo.jpg"/>
+        <xdb:extract uri="${test.coll}/antunit"  user="${exist.user}" password="${exist.password}"  type="binary" resource="logo.jpg" destfile="test-logo.jpg"/>
 
         <au:assertFileExists file="test-logo.jpg"/>
 
@@ -70,10 +71,10 @@
 
     <target name="problem_XMLDBMove" description="test moving of resources">
 
-        <xdb:copy uri="${test.coll}/antunit" resource="test.xml" user="admin" password="" destination="/db/antunit" name="test2.xml"/>
+        <xdb:copy uri="${test.coll}/antunit" resource="test.xml" user="${exist.user}" password="${exist.password}" destination="/db/antunit" name="test2.xml"/>
 
         <!-- move reuses xdb:remove...error messages //-->
-        <xdb:move uri="${test.coll}/antunit" user="admin" password="" resource="test2.xml" destination="/db/antunit" name="test3.xml"/>
+        <xdb:move uri="${test.coll}/antunit" user="${exist.user}" password="${exist.password}" resource="test2.xml" destination="/db/antunit" name="test3.xml"/>
 
         <au:assertTrue message="XLMDBMove did not work">
             <xdb:exist uri="${test.coll}/antunit/test3.xml"/>

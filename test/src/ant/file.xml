@@ -6,7 +6,22 @@
     <import file="common.xml"/>
 
     <target name="test_Chmod">
-        <echo>tbd</echo>
+
+    <xdb:chmod
+        uri="${test.coll}/antunit"
+        resource="test.xml"
+        mode="group=+read,other=+read"
+        user="${exist.user}" password="${exist.password}"/>
+
+    <xdb:list uri="${test.coll}/antunit"
+              resources="true"
+              outputproperty="check"
+            user="${exist.user}" password="${exist.password}"/>
+
+        <echo message="${check}"/>
+        <!--au:assertTrue message="ant chmod task did not work properly">
+            <contains string="${check}" substring="This file is used for testing Ant tasks"/>
+        </au:assertTrue-->
     </target>
 
     <target name="test_Chown">
