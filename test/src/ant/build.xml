@@ -30,7 +30,6 @@
            createcollection="true" srcfile="common.xml"/>
     </target>
 
-
     <target name="alltests">
         <au:antunit>
             <file file="base.xml"/>
