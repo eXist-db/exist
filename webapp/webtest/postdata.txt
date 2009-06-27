@@ -1,7 +1,0 @@
-<enquiry xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:chiba="http://chiba.sourceforge.net/xforms">
-    <name>Adam</name>
-    <address>Virginia</address>
-    <number>01404</number>
-    <email>adam.retter@exist.dom</email>
-    <message>test</message>
-</enquiry>
