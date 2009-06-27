@@ -117,6 +117,20 @@
 
     </target>
 
+    <target name="test_XMLDBXPath2" description="bug ID: 1774683 test xpath query with xml in output property">
+
+        <!-- xdb:xpath does not support destfile
+        <xdb:xpath uri="${test.coll}" query="//para" destfile="xpath-return.txt"/>
+        //-->
+
+        <xdb:xpath uri="${test.coll}/antunit" query="/test" outputproperty="xpath-result"/>
+
+        <au:assertTrue message="XLMDBXPath did not match">
+            <contains string="${xpath-result}" substring="&lt;para&gt;This file is used for testing Ant tasks&lt;/para&gt;"/>
+        </au:assertTrue>
+
+    </target>
+
     <target name="test_XMLDBXQuery" description="test xquery query">
         <xdb:xquery uri="${test.coll}/antunit" outputproperty="xquery-result" query="collection('/db/antunit')//para[1]"/>
 
