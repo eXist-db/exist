@@ -80,8 +80,8 @@ public class Expand extends BasicFunction {
         Properties serializeOptions = new Properties();
         serializeOptions.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         serializeOptions.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
-        if (getArgumentCount() == 4) {
-            String serOpts = args[3].getStringValue();
+        if (getArgumentCount() == 2) {
+            String serOpts = args[1].getStringValue();
             String[] contents = Option.tokenize(serOpts);
             for (int i = 0; i < contents.length; i++) {
                 String[] pair = Option.parseKeyValuePair(contents[i]);
