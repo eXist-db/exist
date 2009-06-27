@@ -393,7 +393,7 @@
     <xsl:template match="synopsis">
         <xsl:choose>
             <xsl:when test="@language">
-                <pre class="brush: xquery;">
+                <pre class="brush: xquery; gutter: false; wrap-lines: false;">
                     <xsl:apply-templates/>
                 </pre>
             </xsl:when>
