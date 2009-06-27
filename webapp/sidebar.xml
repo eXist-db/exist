@@ -38,7 +38,7 @@
     </group>
     <group name="Examples">
         <item>
-            <link href="sandbox/sandbox.xql">XQuery Sandbox</link>
+            <link href="sandbox/sandbox.xql" target="_sandbox">XQuery Sandbox</link>
         </item>
         <item>
             <link href="xquery/acronyms.xql">XML Acronyms</link>
