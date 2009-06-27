@@ -42,7 +42,15 @@
               </address>
           </affiliation>
       </author>
-        
+       <author>
+          <firstname>James</firstname>
+          <surname>Fuller</surname>
+          <affiliation>
+              <address format="linespecific">
+                  <email>jim.fuller@webcomposite.com</email>
+              </address>
+          </affiliation>
+      </author>
         
     </bookinfo>
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
@@ -877,6 +885,85 @@ uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" name="guest" group
             <para>The shutdown task is required if you use the database in embedded
             mode. It will try to shut down the database instance listening at
             the provided URI.</para>
+        </section>
+        <section>
+            <title>Example Ant script - Simple Data Migration</title>
+            <para>This example Ant script shows how to copy data from two different instances of eXist (remote or local).</para>
+            <para>To use supply your own values for the source and target user, pass, and url properties. Run the default target 'migrate'
+            to copy data from one instance of eXist to another.</para><example>
+                <title>Simple Data Migration</title>
+                <programlisting>
+<markup><![CDATA[<?xml version='1.0'?>
+<project name="exist-data-migrate" default="migrate" xmlns:xdb="http://exist-db.org/ant">
+<description>Migrate data from one instance of eXist to another</description>
+
+<!-- edit these properties //-->
+<property name="p.exist.dir" value="/opt/eXist-1.0"/>
+<property name="p.source.exist.url" value="xmldb:exist://www.example.org:8080/exist/xmlrpc/db/"/>
+<property name="p.source.user" value="myusername"/>
+<property name="p.source.pass" value="myuserpass"/>
+<property name="p.target.exist.url" value="xmldb:exist://www.example.org:8680/exist/xmlrpc/db/"/>
+<property name="p.target.user" value="myotherusername"/>
+<property name="p.target.pass" value="myotheruserpass"/>
+<property name="p.export.dir" location="export"/>
+
+<!-- import eXist-db tasks -->
+<typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+<classpath>
+<fileset dir="${p.exist.dir}/lib/core">
+    <include name="*.jar"/>
+</fileset>
+<fileset dir="${p.exist.dir}/lib/endorsed">
+    <include name="*.jar"/>
+</fileset>
+<fileset dir="${p.exist.dir}/lib/optional">
+    <include name="*.jar"/>
+</fileset>
+<pathelement location="${p.exist.dir}/exist.jar"/>
+<pathelement location="${p.exist.dir}/exist-optional.jar"/>
+</classpath>
+</typedef>
+
+<target name="clean" >
+    <delete dir="${p.export.dir}"/>
+    <mkdir dir="${p.export.dir}"/>
+</target>
+
+<target name="migrate" depends="extract-source, load-target">
+    <echo message="migration complete"/>
+</target>
+
+<target name="extract-source" depends="clean" description="export xml from source eXist instance">
+
+<xdb:extract uri="${p.source.exist.url}"
+user="${p.source.user}"
+password="${p.source.pass}"
+destdir="${p.export.dir}"/>
+
+</target>
+
+<target name="load-target" description="store xml to
+target eXist instance">
+
+<xdb:store uri="${p.target.exist.url}"
+user="${p.target.user}"
+password="${p.target.pass}"
+createcollection="true"
+createsubcollections="true">
+
+<fileset dir="${p.export.dir}"/>
+</xdb:store>
+
+</target>
+
+<target name="check-env"
+description="check env and dependencies are
+installed">
+</target>
+
+</project>
+        ]]></markup></programlisting>
+            </example>
         </section>
     </chapter>
 </book>
