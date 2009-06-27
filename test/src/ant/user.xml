@@ -42,7 +42,7 @@
     <target name="test4_RemoveUser">
         
         <!-- remove testtest user //-->
-        <xdb:rmuser uri="${exist.uri}/db" user="admin" password="" name="testtest"/>        
+        <xdb:rmuser uri="${exist.uri}/db" user="${exist.user}" password="${exist.password}" name="testtest"/>        
         
         <!-- list users //-->
         <xdb:users uri="${exist.uri}/db/system" outputproperty="list2.user"/>
