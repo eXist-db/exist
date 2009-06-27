@@ -57,7 +57,7 @@ public class AntUnitTestRunner {
     @Test
     public void testAntUnit() throws BuildException {
 
-        File buildFile = new File("test/ant-tasks/build.xml");
+        File buildFile = new File("src/ant/build.xml");
         Project p = new Project();
         p.setUserProperty("ant.file", buildFile.getAbsolutePath());
         DefaultLogger consoleLogger = new DefaultLogger();
