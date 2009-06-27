@@ -4,7 +4,6 @@ eXist AntUnit testcases
 These testcases contain integration/functional/regression 
 tests of eXists Ant tasks. It uses the Apache antunit library.
 
-
 Deps
 ----
 
@@ -37,6 +36,10 @@ xmldb.xml: tests xmldb functions
 Installation
 ------------
 
+org.exist.ant.AntUnitTestRunner runs these tests via eXist normal junit tests
+
+to run the tests manually
+
 1) adjust exist.properties to reflect your test instance of eXist
 
 2) manually startup eXist
@@ -45,7 +48,6 @@ Installation
 
 4) run ant on antunit.xml with default Target ('run')
 
-ant
 
 Rationale
 ---------
@@ -65,7 +67,7 @@ This module is released under the same terms as eXist e.g.
 
 /*
  *  eXist antunit tests
- *  Copyright (C) 2007 Jim Fuller
+ *  Copyright (C) 2007,2008,2009 Jim Fuller
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
