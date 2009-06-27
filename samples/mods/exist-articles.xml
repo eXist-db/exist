@@ -607,6 +607,38 @@
             <url>http://jim.fuller.name/x-advxquery-pdf.pdf</url>
         </location>
     </mods>
+        <mods>
+        <titleInfo>
+            <title>Dashboards with XQuery: Present business data with a Web-based dashboard</title>
+        </titleInfo>
+        <name type="personal">
+            <namePart type="family">Fuller</namePart>
+            <namePart type="given">James R.</namePart>
+        </name>
+        <typeOfResource>text</typeOfResource>
+        <originInfo>
+            <dateCreated>2009-03-31</dateCreated>
+        </originInfo>
+        <location>
+            <url>http://www.ibm.com/developerworks/xml/library/x-xqdashboard/</url>
+        </location>
+    </mods>
+        <mods>
+        <titleInfo>
+            <title>Implement Web cut-and-paste using Atom XML and Firefox XUL: Create AtomClip: A Web clipboard</title>
+        </titleInfo>
+        <name type="personal">
+            <namePart type="family">Fuller</namePart>
+            <namePart type="given">James R.</namePart>
+        </name>
+        <typeOfResource>text</typeOfResource>
+        <originInfo>
+            <dateCreated>2008-05-02</dateCreated>
+        </originInfo>
+        <location>
+            <url>http://www.ibm.com/developerworks/xml/library/x-cldexp/</url>
+        </location>
+    </mods>
     <mods>
         <titleInfo>
             <title>eXist: An Open Source Native XML Database</title>
