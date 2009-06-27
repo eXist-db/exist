@@ -1,0 +1,69 @@
+<?xml version='1.0'?>
+<project name="exist-data-migrate" default="migrate" xmlns:xdb="http://exist-db.org/ant">
+<description>Migrate data from one instance of eXist to another</description>
+
+<!-- edit these properties //-->
+<property name="p.exist.dir" value="/opt/eXist-1.0"/>
+<property name="p.source.exist.url" value="xmldb:exist://www.example.org:8080/exist/xmlrpc/db/"/>
+<property name="p.source.user" value="myusername"/>
+<property name="p.source.pass" value="myuserpass"/>
+<property name="p.target.exist.url" value="xmldb:exist://www.example.org:8680/exist/xmlrpc/db/"/>
+<property name="p.target.user" value="myotherusername"/>
+<property name="p.target.pass" value="myotheruserpass"/>
+<property name="p.export.dir" location="export"/>
+
+<!-- import eXist-db tasks -->
+<typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+<classpath>
+<fileset dir="${p.exist.dir}/lib/core">
+    <include name="*.jar"/>
+</fileset>
+<fileset dir="${p.exist.dir}/lib/endorsed">
+    <include name="*.jar"/>
+</fileset>
+<fileset dir="${p.exist.dir}/lib/optional">
+    <include name="*.jar"/>
+</fileset>
+<pathelement location="${p.exist.dir}/exist.jar"/>
+<pathelement location="${p.exist.dir}/exist-optional.jar"/>
+</classpath>
+</typedef>
+
+<target name="clean" >
+    <delete dir="${p.export.dir}"/>
+    <mkdir dir="${p.export.dir}"/>
+</target>
+
+<target name="migrate" depends="extract-source, load-target">
+    <echo message="migration complete"/>
+</target>
+
+<target name="extract-source" depends="clean" description="export xml from source eXist instance">
+
+<xdb:extract uri="${p.source.exist.url}"
+user="${p.source.user}"
+password="${p.source.pass}"
+destdir="${p.export.dir}"/>
+
+</target>
+
+<target name="load-target" description="store xml to
+target eXist instance">
+
+<xdb:store uri="${p.target.exist.url}"
+user="${p.target.user}"
+password="${p.target.pass}"
+createcollection="true"
+createsubcollections="true">
+
+<fileset dir="${p.export.dir}"/>
+</xdb:store>
+
+</target>
+
+<target name="check-env"
+description="check env and dependencies are
+installed">
+</target>
+
+</project>
