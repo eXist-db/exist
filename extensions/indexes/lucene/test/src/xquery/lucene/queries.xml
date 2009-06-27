@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>Following and preceding axis tests</testName>
+    <description>
+        <p>Test the following and preceding XPath axes</p>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+		<create-collection parent="/db/system" name="config"/>
+		<create-collection parent="/db/system/config" name="db"/>
+		<store collection="/db/system/config/db" name="collection.xconf">
+			<collection xmlns="http://exist-db.org/collection-config/1.0">
+				<index>
+					<!-- Disable the standard full text index -->
+					<fulltext default="none" attributes="false">
+					</fulltext>
+					<!-- Lucene index is configured below -->
+					<lucene>
+						<analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+						<text qname="p"/>
+					</lucene>
+				</index>
+			</collection>
+		</store>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="text1.xml">
+			<test>
+				<p>Eins zwei drei vier zwei fünf sechs.</p>
+				<p>Sieben acht <b>neun</b> zehn acht.</p>
+			</test>
+		</store>
+    </setup>
+    <tearDown>
+        <!--remove-collection collection="/db/test"/-->
+    </tearDown>
+	<!-- Following axis tests -->
+    <test output="xml">
+        <task>Phrase highlighting 1</task>
+        <code>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., '"zwei drei"')]
+			return
+				util:expand($hit)
+		</code>
+        <expected>
+			<p>Eins <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">zwei drei</exist:match> vier zwei fünf sechs.</p>
+		</expected>
+    </test>
+    <test output="xml">
+        <task>Phrase highlighting 2</task>
+        <code>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., '"eins zwei"')]
+			return
+				util:expand($hit)
+		</code>
+        <expected>
+			<p><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">Eins zwei</exist:match> drei vier zwei fünf sechs.</p>
+		</expected>
+    </test>
+	<test output="xml">
+		<task>Phrase highlighting 3</task>
+		<code>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., '"zwei fünf"')]
+			return
+			util:expand($hit)
+		</code>
+		<expected>
+			<p>Eins zwei drei vier <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">zwei fünf</exist:match> sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>Phrase highlighting 4</task>
+		<code>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., '"eins zwei"')]
+			return
+			util:expand($hit)
+		</code>
+		<expected>
+			<p><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">Eins zwei</exist:match> drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>Phrase highlighting 5</task>
+		<code>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., '"acht neun"')]
+			return
+				util:expand($hit/b)
+		</code>
+		<expected>
+			<b><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match></b>
+		</expected>
+	</test>
+</TestSet>

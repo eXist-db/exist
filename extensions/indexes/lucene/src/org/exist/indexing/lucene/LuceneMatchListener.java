@@ -27,6 +27,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.PhraseQuery;
 import org.exist.dom.*;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
@@ -41,12 +42,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 public class LuceneMatchListener extends AbstractMatchListener {
 
@@ -54,7 +50,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     private Match match;
 
-    private Set termSet;
+    private Map termMap;
 
     private Map nodesWithMatch;
 
@@ -196,22 +192,72 @@ public class LuceneMatchListener extends AbstractMatchListener {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
         // Use Lucene's analyzer to tokenize the text and find matching query terms
-        TokenStream stream = index.getDefaultAnalyzer().tokenStream(null, new StringReader(extractor.getText().toString()));
+        TokenStream tokenStream = index.getDefaultAnalyzer().tokenStream(null, new StringReader(extractor.getText().toString()));
+        MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
         Token token;
         try {
 
             while ((token = stream.next()) != null) {
-                String text = token.termText();
-                if (termSet.contains(text)) {
-                    int idx = offsets.getIndex(token.startOffset());
-                    NodeId nodeId = offsets.ids[idx];
-                    Offset offset = (Offset) nodesWithMatch.get(nodeId);
-                    if (offset != null)
-                        offset.add(token.startOffset() - offsets.offsets[idx],
+                String text = token.term();
+                Query query = (Query) termMap.get(text);
+                if (query != null) {
+                    // phrase queries need to be handled differently to filter
+                    // out wrong matches: only the phrase should be marked, not single
+                    // words which may also occur elsewhere in the document
+                    if (query instanceof PhraseQuery) {
+                        PhraseQuery phraseQuery = (PhraseQuery) query;
+                        Term[] terms = phraseQuery.getTerms();
+                        if (text.equals(terms[0].text())) {
+                            // scan the following text and collect tokens to see if
+                            // they are part of the phrase
+                            stream.mark();
+                            int t = 1;
+                            List<Token> tokenList = new ArrayList<Token>(terms.length);
+                            tokenList.add(token);
+                            while ((token = stream.next()) != null && t < terms.length) {
+                                text = token.term();
+                                if (text.equals(terms[t].text())) {
+                                    tokenList.add(token);
+                                    if (++t == terms.length) {
+                                        break;
+                                    }
+                                } else {
+                                    stream.reset();
+                                    break;
+                                }
+                            }
+                            if (tokenList.size() == terms.length) {
+                                // we indeed have a phrase match. record the offsets of its terms.
+                                int lastIdx = -1;
+                                for (int i = 0; i < terms.length; i++) {
+                                    Token nextToken = tokenList.get(i);
+                                    int idx = offsets.getIndex(nextToken.startOffset());
+                                    NodeId nodeId = offsets.ids[idx];
+                                    Offset offset = (Offset) nodesWithMatch.get(nodeId);
+                                    if (offset != null)
+                                        if (lastIdx == idx)
+                                            offset.setEndOffset(nextToken.endOffset() - offsets.offsets[idx]);
+                                        else
+                                            offset.add(nextToken.startOffset() - offsets.offsets[idx],
+                                                nextToken.endOffset() - offsets.offsets[idx]);
+                                    else
+                                        nodesWithMatch.put(nodeId, new Offset(nextToken.startOffset() - offsets.offsets[idx],
+                                            nextToken.endOffset() - offsets.offsets[idx]));
+                                    lastIdx = idx;
+                                }
+                            }
+                        }
+                    } else {
+                        int idx = offsets.getIndex(token.startOffset());
+                        NodeId nodeId = offsets.ids[idx];
+                        Offset offset = (Offset) nodesWithMatch.get(nodeId);
+                        if (offset != null)
+                            offset.add(token.startOffset() - offsets.offsets[idx],
                                 token.endOffset() - offsets.offsets[idx]);
-                    else
-                        nodesWithMatch.put(nodeId, new Offset(token.startOffset() - offsets.offsets[idx],
+                        else
+                            nodesWithMatch.put(nodeId, new Offset(token.startOffset() - offsets.offsets[idx],
                                 token.endOffset() - offsets.offsets[idx]));
+                    }
                 }
             }
         } catch (IOException e) {
@@ -239,7 +285,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
      */
     private void getTerms() {
         Set queries = new HashSet();
-        Set set = new TreeSet();
+        termMap = new TreeMap();
         Match nextMatch = this.match;
         while (nextMatch != null) {
             if (nextMatch.getIndexId() == LuceneIndex.ID) {
@@ -255,15 +301,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     } finally {
                         index.releaseReader(reader);
                     }
-                    query.extractTerms(set);
+                    LuceneUtil.extractTerms(query, termMap);
                 }
             }
             nextMatch = nextMatch.getNextMatch();
-        }
-        termSet = new TreeSet();
-        for (Iterator i = set.iterator(); i.hasNext(); ) {
-            Term term = (Term) i.next();
-            termSet.add(term.text());
         }
     }
 
@@ -319,6 +360,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 next = next.next;
             }
             next.next = new Offset(offset, endOffset);
+        }
+
+        void setEndOffset(int offset) {
+            this.endOffset = offset;
         }
     }
 }
