@@ -41,10 +41,12 @@
             </classespath>
         </jdepend>
 
-        <xslt in="test/jdepend/data/jdepend.xml" out="test/jdepend/html/jdepend.html"
-                style="${tools.ant}/etc/jdepend-frames.xsl">
-        </xslt>
+        <style  destdir="test/jdepend/html"
+               includes="test/jdepend/data/jdepend.xml" 
+               style="${tools.ant}/etc/jdepend-frames.xsl" />
 
+
+        
     </target>
 	
     <available file="${tools.ant}/lib/pmd-3.6.jar" property="jars-present" />
