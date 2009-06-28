@@ -15,7 +15,7 @@ eXist XMLDB Integration
 -----------------------
 
 xprocxq is now a part of the eXist standard build and release and enabled
-by default.
+by default (as of v1.3/1.4).
 
 
 Why XProc in XQuery ?
@@ -38,11 +38,14 @@ for impl to do things as they see fit). The real impact though is that we
 need things like expath and exquery to allow for even a remote chance at 
 compatibility between processors. 
 
+	* that this approach may prove highly performaant within the context of XML 
+database
+
 
 Documentation
 -------------
 
-Documentation is online at http://code.google.com/p/xprocxq/wiki/XprocxqDocs
+Documentation is online at http://exist.sourceforge.net/xproc
 
 Examples are included in the /examples directory
 
@@ -50,10 +53,9 @@ Examples are included in the /examples directory
 Prerequisites
 -------------
 This version of xprocxq requires the current trunk version of eXist XML Database 
-(exist.sourceforge.net).
+(exist.sourceforge.net) and is built and enabled by default.
 
-xprocxq uses the EXPath http-client module which I have included in jar
-form.
+xprocxq uses the EXPath http-client module which is included within the xprocxq.jar
 
 
 Install
@@ -108,18 +110,16 @@ like to use the p:xsl-formatter step. To do this set include.module.xslfo = true
 to use the p:directory-list step. To do this set include.module.file = true in 
 extensions/build.properties
 
-III) Load doc/examples directory, included in the dist, into eXist XML Database. You 
-can use the eXist webadmin, webdav or java client interfaces to do this.
+III) Load doc/examples directory using the load examples area within eXist admin interface
 
-IV) Amend the path variable in the examples to reflect the collection path you have placed it
-in (most likely /db/examples) and test using the browser.
+IV) If you move or have manually uploaded examples then you will have to amend the path variable in the examples to reflect the collection path you have placed it in (most likely /db/examples) and test using the browser.
 
 ex. http://127.0.0.1:8080/exist/rest/examples/helloworld.xq
 
 
 Build from Source
 -----------------
-You may build xprocxq.jar from source distribution by running the dist Apache Ant target.
+You may build xprocxq.jar from source distribution by running the jar Apache Ant target.
 
 
 Limitations
@@ -211,7 +211,9 @@ Source distro is available by svn checkout http://xprocxq.googlecode.com/svn/tru
 
 Contact
 -------
-A general mailing list is maintained by W3C for xproc developers
+eXist-dev mailing list is good for specific questions about Xproc.
+
+A general XProc mailing list is maintained by W3C for xproc developers
 xproc-dev@w3.org where questions can be asked about xprocxq and 
 other XProc processors.
 
@@ -221,22 +223,16 @@ You can always contact me direct at jim.fuller@webcomposite.com
 Changes
 -------
 Review the ChangeLog file which is generated from svn 
-history (http://code.google.com/p/xprocxq/source/list). 
+history. 
 
 
 Todo/Issues/Bugs
 ----------------
-Known issues are tracked using the project issue tracker
-http://code.google.com/p/xprocxq/issues/list.
-
-Please report bugs here.
+Known issues are tracked using eXist project issue tracker
 
 
 More Info
 ---------
-xproc.xq 
-http://code.google.com/p/xprocxq/
-
 W3C XML Working Group lastest XProc draft
 http://www.w3.org/XML/XProc/docs/langspec.html
 
@@ -270,5 +266,5 @@ of James Fuller (jim.fuller@webcomposite.com), All rights reserved.
 
 Disclaimer
 ----------
-xprocxq is BETA software and is not intended for production usage. Use this
+xprocxq is BETA software and is not currently intended for production usage. Use this
 software at your own risk.

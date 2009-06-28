@@ -2,7 +2,7 @@
 xprocxq licensing information
 --------------------------------------------------------------------------------
 xprocxq is released under the MPL v1.1 license. A copy of which can be obtained
-here http://www.mozilla.org/MPL/MPL-1.1.html or at xprocxq project site at http://code.google.com/p/xprocxq/.
+here http://www.mozilla.org/MPL/MPL-1.1.html.
 
 
 --------------------------------------------------------------------------------
@@ -21,6 +21,8 @@ eXist XML Database licensing information
 
 As xprocxq is used within eXist XML Database, please refer to eXist XML Database 
 license (http://exist.sourceforge.net)
+
+xprocxq uses eXist XSLFO module for p:xsl-formatter step
 
 xprocxq uses eXist XSLFO module for p:xsl-formatter step
 
