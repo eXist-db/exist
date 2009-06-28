@@ -12,7 +12,7 @@
             </affiliation>
         </author>
     </articleinfo>
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
     <section>
         <title>XProc Components</title>
         <para>The </para>

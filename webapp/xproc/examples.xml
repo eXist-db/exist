@@ -27,19 +27,19 @@
             <tbody>
                 <tr>
                     <td>
-                        <ulink url="hello.xproc">hello.xproc</ulink>
+                        <ulink url="examples/hello.xproc">hello.xproc</ulink>
                     </td>
                     <td>"Hello world" in XProc</td>
                 </tr>
                 <tr>
                     <td>
-                        <ulink url="xslt-identity.xproc">xslt-identity.xproc</ulink>
+                        <ulink url="examples/xslt-identity.xproc">xslt-identity.xproc</ulink>
                     </td>
                     <td>Pass an XML fragment through an XSLT identity transformation.</td>
                 </tr>
                 <tr>
                     <td>
-                        <ulink url="twitter.xproc">twitter.xproc</ulink>
+                        <ulink url="examples/twitter.xproc">twitter.xproc</ulink>
                     </td>
                     <td>Retrieve a feed from twitter in Atom format and display it.</td>
                 </tr>
