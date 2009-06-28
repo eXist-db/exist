@@ -49,7 +49,7 @@
 			<xforms:bind nodeset="sample:totals/sample:in" type="xforms:amount" calculate="sum(/sample:balance/sample:transaction[sample:withdraw='false']/sample:amount)"/>
 			<xforms:bind nodeset="sample:totals/sample:out" type="xforms:amount" calculate="sum(/sample:balance/sample:transaction[sample:withdraw='true']/sample:amount)"/>
 			<xforms:bind nodeset="sample:totals/sample:total" type="xforms:amount" calculate="../sample:in - ../sample:out"/>
-			<xforms:submission id="s01" method="xml-urlencoded-post" replace="all" action="xsltforms/dump.php">
+			<xforms:submission id="s01" method="put" replace="all" action="/db/xforms/data/balance.xml">
 				<xforms:message level="modeless" ev:event="xforms-submit-error">Submit error.</xforms:message>
 			</xforms:submission>
 		</xforms:model>

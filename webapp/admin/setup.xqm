@@ -105,6 +105,7 @@ declare function setup:importLocal() as element()+
                 setup:store-files("/db/xforms", $webapp, "xforms/*.xml", "text/xml"),
                 setup:store-files("/db/xforms", $webapp, "xforms/*.xq*", "application/xquery"),
                 setup:create-collection("/db/xforms", "xsltforms"),
+                setup:create-collection("/db/xforms", "data"),
                 setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.properties", "text/plain"),
                 setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.png", "image/png"),
                 setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.gif", "image/gif"),

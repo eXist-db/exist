@@ -16,7 +16,7 @@
             </xf:instance>
             <xf:bind nodeset="sample:name" required="true()" type="xsd:name"/>
             <xf:bind nodeset="sample:birthdate" type="xsd:date"/>
-            <xf:submission id="s01" method="xml-urlencoded-post" replace="all" action="http://localhost:8080/exist/rest/db/xforms/post-handler.xq?path=/db/savedtestdata.xml">
+            <xf:submission id="s01" method="put" replace="all" action="/db/xforms/data/xf.xml">
                 <xf:message level="modeless" ev:event="xforms-submit-error">Submit error.</xf:message>
             </xf:submission>
         </xf:model>
