@@ -1,0 +1,52 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+  <t:title>Test p:declare-step-003</t:title>
+
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Tests declaring a step with no type or name, which also does not get declared</p>
+  </t:description>
+  
+  <t:input port="source">
+    <t:document>
+		<test>
+		    <a>test1</a>
+		    <b/>
+		</test>    
+	</t:document>
+  </t:input>
+
+  <t:pipeline>
+		 <p:pipeline xmlns:p="http://www.w3.org/ns/xproc" name="pipeline">
+<p:declare-step>
+  <p:input port="source"/>
+  <p:output port="result"/>
+
+  <p:identity>
+      <p:input port="source">
+          <p:inline>
+              <inline_test/>
+          </p:inline>
+      </p:input>
+  </p:identity>
+
+</p:declare-step>
+
+<p:identity/>
+
+</p:pipeline>
+  </t:pipeline>
+
+  <t:output port="result">
+    <t:document>
+		<test>
+		    <a>test1</a>
+		    <b/>
+		</test>    
+	</t:document>
+  </t:output>
+
+</t:test>

@@ -1,0 +1,34 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XC0057">
+  
+  <t:title>Test err:XC0057 - #001</t:title>
+  
+  <t:pipeline>
+    <p:declare-step>
+      <p:input port="parameters" kind="parameter"/>
+      <p:output port="result" sequence="true"/>
+
+      <p:xquery>
+        <p:input port="source">
+          <p:inline>
+            <doc/>
+          </p:inline>
+        </p:input>
+        <p:input port="query">
+          <p:inline>
+            <c:query>
+              1
+            </c:query>
+          </p:inline>
+        </p:input>
+      </p:xquery>
+
+    </p:declare-step>
+  </t:pipeline>
+  
+</t:test>
+

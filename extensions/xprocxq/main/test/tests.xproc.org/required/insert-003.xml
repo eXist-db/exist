@@ -1,0 +1,32 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test p:insert #003</t:title>
+
+<t:input port='source'>
+<doc>
+  <div>
+    <p>First paragraph.</p>
+    <p>Middle paragraph.</p>
+    <p>Last paragraph.</p>
+  </div>
+</doc>
+</t:input>
+
+<t:pipeline href="insert-003.xpl"/>
+
+<t:output port='result'>
+<doc>
+  <p>New before paragraph</p><div>
+    <p>First paragraph.</p>
+    <p>Middle paragraph.</p>
+    <p>Last paragraph.</p>
+  </div>
+</doc>
+</t:output>
+
+</t:test>
+

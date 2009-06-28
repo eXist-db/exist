@@ -1,0 +1,51 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">
+
+<t:title>Test validxsd-006</t:title>
+
+<t:pipeline>
+<p:declare-step name="pipeline">
+<p:output port="result"/>
+
+<p:validate-with-xml-schema assert-valid="false">
+  <p:input port="source">
+    <p:inline>
+      <doc>
+	<p>Some paragraph.</p>
+      </doc>
+    </p:inline>
+  </p:input>
+  <p:input port="schema">
+    <p:inline>
+      <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		 elementFormDefault="qualified">
+	<xs:element name="doc">
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:element minOccurs="1" ref="title"/>
+	      <xs:element minOccurs="0" maxOccurs="unbounded" ref="p"/>
+	    </xs:sequence>
+	  </xs:complexType>
+	</xs:element>
+	<xs:element name="title" type="xs:string"/>
+	<xs:element name="p" type="xs:string"/>
+      </xs:schema>
+    </p:inline>
+  </p:input>
+</p:validate-with-xml-schema>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port="result">
+  <doc>
+    <p>Some paragraph.</p>
+  </doc>
+</t:output>
+
+</t:test>
+

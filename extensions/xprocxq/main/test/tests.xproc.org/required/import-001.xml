@@ -1,0 +1,23 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+  <t:title>Test p:import #001</t:title>
+  
+  <t:input port="source">
+    <doc xmlns=""/>
+  </t:input>
+
+  <t:pipeline>
+    <p:pipeline>
+      <p:import href="pipeline-imported.xpl"/>
+      <test:imported xmlns:test="http://acme.com/test"/>
+    </p:pipeline>
+  </t:pipeline>
+
+  <t:output port="result"><doc/></t:output>
+
+</t:test>
+

@@ -1,0 +1,54 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test xsl-t004</t:title>
+
+<t:input port='source'>
+<document>
+<title>Some Title</title>
+<para>Some paragraph.</para>
+</document>
+</t:input>
+
+<t:input port='style'>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                version="2.0">
+
+<xsl:output method="xml" encoding="utf-8" indent="no"
+	    omit-xml-declaration="yes"/>
+
+<xsl:template match="/">
+  <xsl-version>
+    <xsl:value-of select="system-property('xsl:version')"/>
+  </xsl-version>
+</xsl:template>
+
+</xsl:stylesheet>
+</t:input>
+
+<t:pipeline>
+<p:declare-step name="pipeline">
+<p:input port="parameters" kind="parameter"/>
+<p:input port="source"/>
+<p:input port="style"/>
+<p:output port="result"/>
+
+<p:xslt version="2.0">
+  <p:input port="source">
+    <p:pipe step="pipeline" port="source"/>
+  </p:input>
+  <p:input port="stylesheet">
+    <p:pipe step="pipeline" port="style"/>
+  </p:input>
+</p:xslt>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'><xsl-version>2.0</xsl-version></t:output>
+
+</t:test>
+

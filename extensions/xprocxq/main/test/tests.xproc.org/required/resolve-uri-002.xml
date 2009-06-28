@@ -1,0 +1,49 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test resolve-uri #002</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Test <code>p:resolve-uri($relative, $base)</code>.</p>
+  </t:description>
+
+  <t:input port="source">
+    <t:document>
+      <doc xml:base="http://example.org/base/uri">
+        <title xml:base="http://example.org/other/uri">Some title</title>
+        <para>Some paragraph.</para>
+        <para class="replaceme">Some paragraph.</para>
+        <para>Some paragraph.</para>
+        <para>Some paragraph.</para>
+      </doc>
+    </t:document>
+  </t:input>
+  
+  <t:pipeline>
+    <p:pipeline>
+      <!-- This p:identity step makes sure that we grab the root element -->
+      <!-- where the xml:base exists. Otherwise, we get the base uri -->
+      <!-- of the input document itself, and that varies by test env. -->
+      <p:identity>
+	<p:input port="source" select="/doc"/>
+      </p:identity>
+
+      <p:string-replace match="para[@class]/text()">
+	<p:with-option name="replace"
+		       select="concat('&quot;',p:resolve-uri('test', p:base-uri(/doc/title)),'&quot;')"/>
+      </p:string-replace>
+    </p:pipeline>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <doc xml:base="http://example.org/base/uri">
+      <title xml:base="http://example.org/other/uri">Some title</title>
+      <para>Some paragraph.</para>
+      <para class="replaceme">http://example.org/other/test</para>
+      <para>Some paragraph.</para>
+      <para>Some paragraph.</para>
+    </doc>
+  </t:output>
+</t:test>

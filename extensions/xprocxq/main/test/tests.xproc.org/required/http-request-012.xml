@@ -1,0 +1,36 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test http-request #012</t:title>
+
+<t:description xmlns="http://www.w3.org/1999/xhtml">
+  <p>This test checks to see if an <code>p:http-request</code>
+  preserves cookies across an HTTP redirect.</p>
+</t:description>
+
+<t:pipeline>
+<p:declare-step name="main">
+  <p:output port="result"/>
+
+  <p:http-request>
+    <p:input port="source">
+      <p:inline>
+	<c:request href="http://tests.xproc.org/service/over-here" method="get"/>
+      </p:inline>
+    </p:input>
+  </p:http-request>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<doc>
+  <IKnowYou>I Really Do!</IKnowYou>
+</doc>
+</t:output>
+
+</t:test>
+

@@ -1,0 +1,44 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step">
+
+<t:title>Test validsch-003</t:title>
+
+<t:input port="source"
+	 href="../doc/docbook-invalid.xml"/>
+
+<t:input port="schema"
+	 href="../doc/docbook.sch"/>
+
+<t:pipeline>
+<p:declare-step name="main" exclude-inline-prefixes="t c">
+<p:input port="parameters" kind="parameter"/>
+<p:input port="source"/>
+<p:input port="schema"/>
+<p:output port="result"/>
+
+<p:validate-with-schematron name="schematron" assert-valid="false">
+  <p:input port="source">
+    <p:pipe step="main" port="source"/>
+  </p:input>
+  <p:input port="schema">
+    <p:pipe step="main" port="schema"/>
+  </p:input>
+</p:validate-with-schematron>
+
+<p:count limit="1">
+  <p:input port="source" select="//svrl:failed-assert" xmlns:svrl="http://purl.oclc.org/dsdl/svrl">
+    <p:pipe step="schematron" port="report"/>
+  </p:input>
+</p:count>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port="result">
+<c:result>1</c:result>
+</t:output>
+
+</t:test>
+

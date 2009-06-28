@@ -1,0 +1,29 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:px="http://xproc.dev.java.net/ns/extensions"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XS0039">
+  <t:title>Test for err:XS0039 - 002</t:title>
+
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>It is a static error if more than one p:serialization element is applied to the same port.</p>  
+  </t:description>
+
+  <t:input port="source">
+    <doc/>
+  </t:input>
+
+  <t:pipeline>
+    <p:pipeline>
+      <p:serialization port="result"/>
+      <p:serialization port="result"/>
+
+      <p:identity/>
+
+    </p:pipeline>
+  </t:pipeline>
+
+</t:test>
+

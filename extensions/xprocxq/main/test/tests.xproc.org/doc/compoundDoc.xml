@@ -1,0 +1,10 @@
+<doc>
+  <p>This document contains a couple of divs that are XIncluded and a few
+elements with xs:anyURI content.</p>
+  <xi:include xmlns:xi='http://www.w3.org/2001/XInclude'
+	      href="chaps/div.xml"/>
+  <xi:include xmlns:xi='http://www.w3.org/2001/XInclude'
+	      href="divs/div.xml"/>
+  <xi:include xmlns:xi='http://www.w3.org/2001/XInclude'
+	      href="chaps/div2.xml"/>
+</doc>

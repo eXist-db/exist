@@ -1,0 +1,51 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test input-005</t:title>
+
+<t:description xmlns="http://www.w3.org/1999/xhtml">
+  <p>Tests the usage of a sequence in source input port.</p>  
+</t:description>
+
+<t:input port='source'>
+<doc>
+<?pi test?>
+<p>This is a p.</p>
+</doc>
+</t:input>
+
+<t:pipeline>
+	 <p:declare-step name="pipeline"
+	            xmlns:p="http://www.w3.org/ns/xproc">
+
+	<p:input port="source" sequence="true"/>
+	<p:output port="result" sequence="true"/>
+
+	   <p:identity name="step1">
+	        <p:input port="source">
+	              <p:inline>
+	                  <root1/>
+	              </p:inline>
+	              <p:inline>
+	                  <root2/>
+	              </p:inline>
+	              <p:inline>
+	                  <root3/>
+	              </p:inline>
+	        </p:input>
+	   </p:identity>
+
+	</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<t:document><root1/></t:document>
+<t:document><root2/></t:document>
+<t:document><root3/></t:document>
+</t:output>
+
+</t:test>
+

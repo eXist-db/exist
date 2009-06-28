@@ -1,0 +1,38 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test preserving base URI #002</t:title>
+
+<t:input port='source'>
+<doc xml:base="http://example.com/base/">
+  <chap xml:base="http://example.com/base/chaps/">
+    <para>…</para>
+  </chap>
+</doc>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:rename match="@xml:base" new-name="foo"/>
+
+<p:string-replace match="para/text()">
+  <p:with-option name="replace"
+		 select="concat('&quot;',p:base-uri(/doc/chap),'&quot;')"/>
+</p:string-replace>
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<doc foo="http://example.com/base/">
+  <chap foo="http://example.com/base/chaps/">
+    <para>http://example.com/base/chaps/</para>
+  </chap>
+</doc>
+</t:output>
+
+</t:test>
+

@@ -1,0 +1,46 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test replace001</t:title>
+
+<t:input port='source'>
+<p:pipeline name="pipeline" xmlns:p="http://www.w3.org/ns/xproc">
+
+<p:replace>
+  <p:source port="replacement">
+    <p:identity/>
+  </p:source>
+  <p:option name="match" value="p:replace"/>
+</p:replace>
+
+</p:pipeline>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:replace match="p:replace">
+  <p:input port="replacement">
+    <p:inline>
+      <p:identity/>
+    </p:inline>
+  </p:input>
+</p:replace>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<p:pipeline xmlns:p="http://www.w3.org/ns/xproc" name="pipeline">
+
+
+      <p:identity/>
+    
+
+</p:pipeline></t:output>
+
+</t:test>
+

@@ -1,0 +1,38 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">
+
+<t:title>Test validxsd-007</t:title>
+
+<t:pipeline>
+<p:declare-step name="pipeline">
+<p:output port="result"/>
+
+<p:validate-with-xml-schema>
+  <p:input port="source">
+    <p:document href="http://tests.xproc.org/tests/doc/document.xml"/>
+  </p:input>
+  <p:input port="schema">
+    <p:inline>
+      <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		 elementFormDefault="qualified">
+        <xs:include schemaLocation="http://tests.xproc.org/tests/doc/document.xsd"/>
+      </xs:schema>
+    </p:inline>
+
+  </p:input>
+</p:validate-with-xml-schema>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<doc>
+<p>This is a test document</p>
+</doc></t:output>
+
+</t:test>
+

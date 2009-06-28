@@ -1,0 +1,49 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+  <t:title>Test p:declare-step-002</t:title>
+
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Tests nested p:declare-step from within p:pipeline</p>
+	<p>Output should come from nested p:inline element from within p:identity in the p:declare-step subpipeline</p>
+  </t:description>
+  
+  <t:input port="source">
+    <t:document>
+		<test xml:base="data/test.xml">
+		    <a>test1</a>
+		    <b/>
+		    <c>
+		        I wish I was a fish
+		          <d/>
+		    </c>
+		</test>    
+	</t:document>
+  </t:input>
+
+  <t:pipeline>
+	<p:pipeline xmlns:p="http://www.w3.org/ns/xproc" xmlns:mine="http://www.example.org/test/mine" name="pipeline">
+	<p:declare-step name="test1" type="mine:identity">
+	    <p:input port="source"/>
+	    <p:output port="result"/>
+	    <p:identity>
+	        <p:input port="source">
+	            <p:inline>
+	                <inline_identity_test/>
+	            </p:inline>
+	        </p:input>
+	    </p:identity>
+
+	</p:declare-step>
+
+	<mine:identity/>
+
+	</p:pipeline>
+  </t:pipeline>
+
+  <t:output port="result"><inline_identity_test xmlns:mine="http://www.example.org/test/mine"/></t:output>
+
+</t:test>

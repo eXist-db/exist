@@ -1,0 +1,33 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test uuid-001</t:title>
+
+<t:input port='source'>
+<doc>
+<p>This is a p.</p>
+<uuid>here</uuid>
+</doc>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:uuid match="/doc/uuid/text()" version="4"/>
+
+<p:count>
+  <p:input port="source" select="//uuid[string-length(.) = 36]"/>
+</p:count>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<c:result>1</c:result>
+</t:output>
+
+</t:test>
+

@@ -1,0 +1,18 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XS0057">
+  <t:title>Test err:XS0057 #001</t:title>
+  
+  <t:description><p xmlns="http://www.w3.org/1999/xhtml">It is a static error if a namespace prefix is used within the exclude-inline-prefixes attribute and there is no namespace binding in scope for that prefix.</p></t:description>
+
+  <t:pipeline>
+    <p:pipeline exclude-inline-prefixes="foo">
+
+      <p:identity/>
+      
+    </p:pipeline>
+  </t:pipeline>
+  
+</t:test>

@@ -1,0 +1,24 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XD0016">
+  <t:title>Test for err:XD0016 #002</t:title>
+  
+  <t:pipeline>
+    <p:declare-step>
+      
+      <p:identity>
+        <p:input port="source" select="'Mew!'">
+          <p:inline>
+            <doc>
+              <para>some text</para>
+            </doc>
+          </p:inline>
+        </p:input>
+      </p:identity>
+    
+    </p:declare-step>
+  </t:pipeline>
+  
+</t:test>

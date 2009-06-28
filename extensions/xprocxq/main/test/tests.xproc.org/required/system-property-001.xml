@@ -1,0 +1,91 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">
+
+<t:title>Test system-property-001</t:title>
+
+<t:description xmlns='http://www.w3.org/1999/xhtml'>
+<div>
+<p>This test demonstrates that the implementation supports all of the
+required <code>p:system-property()</code> values.</p>
+<p>Because many of these values can or must vary on a per-implementation
+basis, there's no expectation that the results of this test will match
+the putative “correct answer” for this test.</p>
+<p>Implementors should verify that they get reasonable results and report
+this test as a success on that basis.</p>
+</div>
+</t:description>
+
+<t:input port='source'>
+<doc>
+  <episode value="???"/>
+  <language value="???"/>
+  <product-name value="???"/>
+  <product-version value="???"/>
+  <vendor value="???"/>
+  <vendor-uri value="???"/>
+  <version value="???"/>
+  <xpath-version value="???"/>
+  <psvi-supported value="???"/>
+</doc>
+</t:input>
+
+<t:pipeline>
+<p:declare-step xmlns:p="http://www.w3.org/ns/xproc"
+		name="main">
+<p:input port="source"/>
+<p:output port="result"/>
+
+<p:string-replace match="/doc/episode/@value">
+  <p:with-option name="replace" select="concat('&quot;',p:system-property('p:episode'), '&quot;')"/>
+</p:string-replace>
+
+<p:string-replace match="/doc/language/@value">
+  <p:with-option name="replace" select="concat('&quot;',p:system-property('p:language'), '&quot;')"/>
+</p:string-replace>
+
+<p:string-replace match="/doc/product-name/@value">
+  <p:with-option name="replace" select="concat('&quot;',p:system-property('p:product-name'), '&quot;')"/>
+</p:string-replace>
+
+<p:string-replace match="/doc/product-version/@value">
+  <p:with-option name="replace" select="concat('&quot;',p:system-property('p:product-version'), '&quot;')"/>
+</p:string-replace>
+
+<p:string-replace match="/doc/vendor/@value">
+  <p:with-option name="replace" select="concat('&quot;',p:system-property('p:vendor'), '&quot;')"/>
+</p:string-replace>
+
+<p:string-replace match="/doc/vendor-uri/@value">
+  <p:with-option name="replace" select="concat('&quot;',p:system-property('p:vendor-uri'), '&quot;')"/>
+</p:string-replace>
+
+<p:string-replace match="/doc/version/@value">
+  <p:with-option name="replace" select="concat('&quot;',p:system-property('p:version'), '&quot;')"/>
+</p:string-replace>
+
+<p:string-replace match="/doc/xpath-version/@value">
+  <p:with-option name="replace" select="concat('&quot;',p:system-property('p:xpath-version'), '&quot;')"/>
+</p:string-replace>
+
+<p:string-replace match="/doc/psvi-supported/@value">
+  <p:with-option name="replace" select="concat('&quot;',p:system-property('p:psvi-supported'), '&quot;')"/>
+</p:string-replace>
+
+<p:count>
+  <p:input port="source" select="//*[@value='???']|//*[@value='']"/>
+</p:count>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<c:result>0</c:result>
+</t:output>
+
+</t:test>
+
+

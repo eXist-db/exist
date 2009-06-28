@@ -1,0 +1,42 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test split-sequence 006</t:title>
+
+<t:input port='source'>
+<doc>
+  <p/>
+  <p/>
+  <not-p/>
+  <p/>
+  <not-p/>
+</doc>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:split-sequence name="split" test="p" initial-only="true">
+  <p:input port="source" select="/doc/*"/>
+</p:split-sequence>
+
+<p:sink/>
+
+<p:count>
+  <p:input port="source">
+    <p:pipe step="split" port="not-matched"/>
+  </p:input>
+</p:count>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<c:result>3</c:result>
+</t:output>
+
+</t:test>
+

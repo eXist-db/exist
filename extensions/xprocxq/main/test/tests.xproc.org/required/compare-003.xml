@@ -1,0 +1,43 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	error="err:XC0019">
+
+<t:title>Test compare</t:title>
+
+<t:input port="source">
+<doc>
+  <p>This is a para</p>
+</doc>
+</t:input>
+
+<t:input port="alternate">
+<doc>
+  <div>This is not a para</div>
+</doc>
+</t:input>
+
+<t:pipeline>
+<p:declare-step name="main"
+	    xmlns:p="http://www.w3.org/ns/xproc">
+  <p:input port="source"/>
+  <p:input port="alternate"/>
+  <p:output port="result">
+    <p:pipe step="compare" port="result"/>
+  </p:output>
+
+  <p:compare name="compare" fail-if-not-equal="true">
+    <p:input port="source">
+      <p:pipe step="main" port="source"/>
+    </p:input>
+    <p:input port="alternate">
+      <p:pipe step="main" port="alternate"/>
+    </p:input>
+  </p:compare>
+</p:declare-step>
+</t:pipeline>
+
+</t:test>
+

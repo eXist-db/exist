@@ -1,0 +1,27 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step">
+
+  <t:title>Test rename-003</t:title>
+
+  <t:input port="source">
+    <doc test:foo="value" xmlns:test="http://test.com"
+         test2:foo="value2" xmlns:test2="http://test2.com"/>
+  </t:input>
+  
+  <t:pipeline>
+    <p:pipeline>
+
+      <p:rename match="@test:foo" new-name="test2:foo"
+                xmlns:test="http://test.com" xmlns:test2="http://test2.com"/>
+
+    </p:pipeline>
+  </t:pipeline>
+
+  <t:output port="result">
+    <doc test2:foo="value" xmlns:test2="http://test2.com"/>
+  </t:output>
+
+</t:test>
+

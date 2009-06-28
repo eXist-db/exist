@@ -1,0 +1,36 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test add-xml-base-002</t:title>
+
+<t:pipeline>
+<p:declare-step name="main"
+	    xmlns:p="http://www.w3.org/ns/xproc"
+	    xmlns:ex="http://xproc.org/ns/xproc/ex">
+  <p:input port="source">
+    <p:document href="../doc/xml-base-test.xml"/>
+  </p:input>
+  <p:output port="result"/>
+
+  <p:add-xml-base all="true" relative="false"/>
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<doc xml:base='http://tests.xproc.org/tests/doc/xml-base-test.xml'>
+<p xml:base='http://tests.xproc.org/tests/doc/xml-base-test.xml'>This has one base URI: <uri xml:base='http://tests.xproc.org/tests/doc/xml-base-test.xml'>xml-base-test.xml</uri></p>
+<?pi in base-test?>
+<div xml:base='http://tests.xproc.org/tests/doc/xml-base-chap.xml'>
+<p xml:base='http://tests.xproc.org/tests/doc/xml-base-chap.xml'>This has a different base URI: <uri xml:base='http://tests.xproc.org/tests/doc/xml-base-chap.xml'>xml-base-chap.xml</uri>.</p>
+<?pi in base-chap?>
+</div>
+
+<p xml:base='http://tests.xproc.org/tests/doc/xml-base-test.xml'>This has the original base URI.</p>
+</doc>
+</t:output>
+
+</t:test>
+

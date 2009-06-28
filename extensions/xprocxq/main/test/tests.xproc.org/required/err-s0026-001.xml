@@ -1,0 +1,18 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:px="http://xproc.dev.java.net/ns/extensions"
+      xmlns:c="http://www.w3.org/ns/xproc-step"
+      xmlns:err="http://www.w3.org/ns/xproc-error"
+      error="err:XS0026">
+  <t:title>Test for err:XS0026 #001</t:title>
+  
+  <t:pipeline>
+    <p:pipeline>
+      <p:identity>
+        <p:log port="foo"/>
+      </p:identity>
+    </p:pipeline>
+  </t:pipeline>
+  
+</t:test>

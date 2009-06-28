@@ -1,0 +1,8 @@
+<document>
+  <xi:include xmlns:xi='http://www.w3.org/2001/XInclude'
+	      href="input.xml">
+    <xi:fallback>
+      <p>Fallback: XInclude failed.</p>
+    </xi:fallback>
+  </xi:include>
+</document>

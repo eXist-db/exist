@@ -1,0 +1,49 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   elementFormDefault="qualified">
+  <xs:element name="doc">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element minOccurs="0" ref="title"/>
+	<xs:element minOccurs="0" maxOccurs="unbounded" ref="p"/>
+	<xs:element minOccurs="0" maxOccurs="unbounded" ref="div"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="title" type="xs:string"/>
+  <xs:element name="div">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element minOccurs="0" ref="title"/>
+	<xs:element minOccurs="0" maxOccurs="unbounded" ref="p"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="p">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+	<xs:element ref="a"/>
+	<xs:element ref="img"/>
+	<xs:element ref="uri"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="a">
+    <xs:complexType>
+      <xs:simpleContent>
+	<xs:extension base="xs:string">
+	  <xs:attribute name="href" type="xs:anyURI"/>
+	</xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="img">
+    <xs:complexType>
+      <xs:complexContent>
+	<xs:restriction base="xs:anyType">
+	  <xs:attribute name="src" type="xs:anyURI"/>
+	</xs:restriction>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="uri" type="xs:anyURI"/>
+</xs:schema>

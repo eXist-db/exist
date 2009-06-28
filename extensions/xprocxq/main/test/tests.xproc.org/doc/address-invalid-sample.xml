@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE address SYSTEM "address.dtd">
+<address1>
+ <first>Jon</first>
+ <last>Tester</last>
+ <phone>5555555555</phone>
+</address1>

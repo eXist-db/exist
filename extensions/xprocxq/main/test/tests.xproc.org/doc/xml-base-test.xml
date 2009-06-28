@@ -1,0 +1,9 @@
+<!DOCTYPE doc [
+<!ENTITY subdoc SYSTEM "xml-base-chap.xml">
+]>
+<doc>
+<p>This has one base URI: <uri>xml-base-test.xml</uri></p>
+<?pi in base-test?>
+&subdoc;
+<p>This has the original base URI.</p>
+</doc>

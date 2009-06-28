@@ -1,0 +1,33 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step">
+  <t:title>Test p:string-replace #004</t:title>
+  
+
+  <t:input port="source">
+    <t:document>
+      <!-- comment -->
+      <?pi foo?>
+      <doc>
+        <?pi bar?>
+        <para>some <!-- comment -->text</para>
+        <!-- comment -->
+      </doc>
+      <!-- comment -->
+      <?pi baz?>
+    </t:document>
+  </t:input>
+  
+  <t:pipeline>
+    <p:pipeline>
+      <p:string-replace match="comment() | processing-instruction()" replace="''"/>
+    </p:pipeline>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <doc>
+      <para>some text</para>
+    </doc>
+  </t:output>
+</t:test>

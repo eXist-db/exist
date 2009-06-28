@@ -1,0 +1,48 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite">
+
+<t:title>Test set-attributes #001</t:title>
+
+<t:input port='source'>
+<doc>
+<this/>
+<is>
+<other>
+<doc/>
+</other>
+</is>
+</doc>
+</t:input>
+
+
+<t:pipeline>
+<p:pipeline name="pipeline"
+	    xmlns:p="http://www.w3.org/ns/xproc">
+
+<p:set-attributes match="*">
+  <p:input port="attributes">
+  <p:inline>
+    <attributes att="1" a:att="2" xmlns:a="http://xproc.org/ns/testsuite/attributes">
+      <a:foo/>
+    </attributes>  
+  </p:inline>
+  </p:input>
+</p:set-attributes>
+
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<doc att="1" a:att="2" xmlns:a="http://xproc.org/ns/testsuite/attributes">
+<this att="1" a:att="2"/>
+<is att="1" a:att="2">
+<other att="1" a:att="2">
+<doc att="1" a:att="2"/>
+</other>
+</is>
+</doc>
+</t:output>
+
+</t:test>
+

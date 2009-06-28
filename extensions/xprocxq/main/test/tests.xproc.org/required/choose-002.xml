@@ -1,0 +1,46 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test choose #002</t:title>
+
+<t:input port='source'>
+<document>
+<title>Some Title</title>
+<para>Some paragraph.</para>
+<para>Some other paragraph.</para>
+</document>
+
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:choose>
+  <p:when test="count(//*) mod 2 = 0">
+    <p:output port="result"/>
+    <p:identity>
+      <p:input port="source">
+	<p:inline><p>There are an even number of elements in the document.</p></p:inline>
+      </p:input>
+    </p:identity>
+  </p:when>
+  <p:otherwise>
+    <p:output port="result"/>
+    <p:identity>
+      <p:input port="source">
+	<p:inline><p>There are an odd number of elements in the document.</p></p:inline>
+      </p:input>
+    </p:identity>
+  </p:otherwise>
+</p:choose>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'><p>There are an even number of elements in the document.</p></t:output>
+
+</t:test>
+

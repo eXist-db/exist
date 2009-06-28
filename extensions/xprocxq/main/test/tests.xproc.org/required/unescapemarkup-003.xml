@@ -1,0 +1,34 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test unescape markup-003</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>This test tests base64 decoding of ISO-8859-2 XML content 
+    in the <code>p:unescape-markup</code> step.</p>
+  </t:description>
+  
+  <t:input port="source">
+    <t:document>
+      <!-- base64 encoded ISO-8859-2 character data -->
+      <doc>PHBhcmE+uWVk6SBteblpPC9wYXJhPg0K</doc>
+    </t:document>
+  </t:input>
+  
+  <t:pipeline>
+    <p:declare-step xmlns:p="http://www.w3.org/ns/xproc">
+      <p:input port="source"/>
+      <p:output port="result"/>
+      <p:unescape-markup encoding="base64" charset="ISO-8859-2"/>
+    </p:declare-step>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <t:document>
+      <!-- base64 encoded ISO-8859-2 character data -->
+      <doc><para>šedé myši</para></doc>
+    </t:document>
+  </t:output>
+</t:test>

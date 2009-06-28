@@ -1,0 +1,72 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test for-each #003</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Test <code>p:for-each</code> and <code>p:iteration-position()</code>
+    and <code>p:iteration-size()</code></p>
+  </t:description>
+
+  <t:input port="source">
+    <doc>
+      <title>Some title</title>
+      <para>Paragraph 1.</para>
+      <para>Paragraph 2.</para>
+      <para>Paragraph 3.</para>
+    </doc>
+  </t:input>
+  
+  <t:pipeline>
+    <p:declare-step>
+      <p:input port="source"/>
+      <p:output port="result" sequence="true"/>
+      
+      <p:for-each name="for">
+        <p:iteration-source select="//para"/>
+        
+        <p:choose>
+          <p:when test="p:iteration-position() = 1">
+            <p:identity>
+              <p:input port="source">
+                <p:inline><first/></p:inline>
+                <p:pipe step="for" port="current"/>
+              </p:input>
+            </p:identity>
+          </p:when>
+          <p:when test="p:iteration-position() = p:iteration-size()">
+            <p:identity>
+              <p:input port="source">
+                <p:pipe step="for" port="current"/>
+                <p:inline><last/></p:inline>
+              </p:input>
+            </p:identity>
+          </p:when>
+          <p:otherwise>
+            <p:identity/>
+          </p:otherwise>
+        </p:choose>
+      </p:for-each>
+    </p:declare-step>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <t:document>
+      <first/>
+    </t:document>
+    <t:document>
+      <para>Paragraph 1.</para>
+    </t:document>
+    <t:document>
+      <para>Paragraph 2.</para>
+    </t:document>
+    <t:document>
+      <para>Paragraph 3.</para>
+    </t:document>
+    <t:document>
+      <last/>
+    </t:document>
+  </t:output>
+</t:test>

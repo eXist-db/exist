@@ -1,0 +1,39 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	error="err:XD0017">
+
+<t:title>Test extension elements and attributes</t:title>
+
+<t:pipeline>
+<p:declare-step name="main" ex:attr="value" xml:id="main"
+		xmlns:p="http://www.w3.org/ns/xproc"
+		xmlns:ex="http://xproc.org/ns/xproc/ex">
+  <p:input port="source" ex:debug-reader="true" ex:debug-writer="true">
+    <p:document href="http://tests.xproc.org/tests/doc/xml-base-test.xml"/>
+  </p:input>
+
+  <p:documentation xml:id="doc" xmlns="http://docbook.org/ns/docbook">
+    <para xml:id="p">This pipeline can't be run, it just tests the schema
+validity of extension attributes and elements.</para>
+  </p:documentation>
+
+  <p:declare-step type="ex:fribble" name="fribble" xml:id="fribble">
+    <p:input port="source" primary="true"/>
+    <p:output port="result"/>
+  </p:declare-step>
+
+  <ex:fribble ex:attr="value" xml:id="dofribble">
+    <p:input port="source" ex:debug-reader="true" ex:debug-writer="true">
+      <p:pipe step="main" port="source"/>
+    </p:input>
+  </ex:fribble>
+ 
+  <p:sink/>
+</p:declare-step>
+</t:pipeline>
+
+</t:test>
+

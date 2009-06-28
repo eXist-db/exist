@@ -1,0 +1,5 @@
+<!ELEMENT doc (title?,(p|lit)+)>
+<!ELEMENT title (#PCDATA)*>
+<!ELEMENT p (#PCDATA)*>
+<!ELEMENT lit (#PCDATA)*>
+

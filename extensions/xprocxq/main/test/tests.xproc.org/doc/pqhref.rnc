@@ -1,0 +1,15 @@
+start = doc
+
+doc = element doc { title?, (p|q)* }
+
+title = element title { text }
+
+p = element p { 
+   attribute href { xsd:anyURI }?,
+   text
+}
+
+q = element q { 
+   attribute href { text }?,
+   text
+}

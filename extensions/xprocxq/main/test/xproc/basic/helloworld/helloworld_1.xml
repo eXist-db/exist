@@ -1,0 +1,8 @@
+<p:pipeline
+            xmlns:p="http://www.w3.org/ns/xproc">
+
+<!-- no pipeline name //-->
+
+<p:identity/>
+    
+</p:pipeline>

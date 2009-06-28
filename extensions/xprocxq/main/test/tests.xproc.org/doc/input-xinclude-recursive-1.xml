@@ -1,0 +1,4 @@
+<document>
+  <para>some para</para>
+  <xi:include href="input-xinclude-recursive-2.xml" xml:base="xinclude/" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</document>

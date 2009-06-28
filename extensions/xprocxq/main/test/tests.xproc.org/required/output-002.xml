@@ -1,0 +1,35 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test output-001</t:title>
+
+<t:description xmlns="http://www.w3.org/1999/xhtml">
+  <p>This test tests the ability of a <code>p:output</code> element to
+produce a sequence of results coming from different bindings.</p>
+</t:description>
+
+<t:input port='source'><doc/></t:input>
+
+<t:pipeline>
+<p:declare-step xmlns:p="http://www.w3.org/ns/xproc"
+		name="main">
+<p:input port="source"/>
+<p:output port="result" sequence="true">
+  <p:pipe step="id" port="result"/>
+  <p:document href="http://tests.xproc.org/tests/doc/document.xml"/>
+</p:output>
+
+<p:identity name='id'/>
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<t:document><doc/></t:document>
+<t:document><doc>
+<p>This is a test document</p>
+</doc></t:document>
+</t:output>
+</t:test>

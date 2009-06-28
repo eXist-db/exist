@@ -1,0 +1,40 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test exec-001</t:title>
+
+<t:input port='source'>
+<doc>
+<?pi test?>
+<p>This is a p.</p>
+</doc></t:input>
+
+<t:pipeline>
+<p:declare-step name="main">
+<p:input port="source"/>
+<p:output port="result"/>
+  
+<p:exec name="exec" command="/bin/cat" result-is-xml="false" source-is-xml="true">
+  <p:input port="source">
+    <p:pipe step="main" port="source"/>
+  </p:input>
+</p:exec>
+
+<p:unescape-markup/>
+
+<p:unwrap match="/*"/>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<doc>
+<?pi test?>
+<p>This is a p.</p>
+</doc></t:output>
+
+</t:test>
+

@@ -1,0 +1,24 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test try/catch #002</t:title>
+
+<t:input port='source'>
+<document>
+<title>Some Title</title>
+<para>Some paragraph.</para>
+</document>
+
+</t:input>
+
+<t:pipeline href="try-001.xpl"/>
+
+<t:output port='result'>
+<p>p:compare failed</p>
+</t:output>
+
+</t:test>
+

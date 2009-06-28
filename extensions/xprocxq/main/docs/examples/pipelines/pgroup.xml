@@ -1,0 +1,11 @@
+<p:pipeline name="pipeline"
+                                xmlns:p="http://www.w3.org/ns/xproc"
+                                xmlns:c="http://www.w3.org/ns/xproc-step">
+								<p:group name="test">
+								<p:xslt>                                         
+								   <p:input port="stylesheet">
+								       <p:document href="{$local:XPROCXQ_EXAMPLES}/xslt/stylesheet.xsl"/>
+								   </p:input>
+								</p:xslt>
+								</p:group>
+                    </p:pipeline>

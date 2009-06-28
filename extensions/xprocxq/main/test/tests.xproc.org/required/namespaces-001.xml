@@ -1,0 +1,46 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test p:namespaces #001</t:title>
+
+<t:input port='source'>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Some title</title>
+  </head>
+  <body>
+    <h1>Some title</h1>
+    <p>Some <del>deleted</del>text.</p>
+  </body>
+</html>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:delete>
+  <p:with-option name="match" select="'h:del'">
+    <p:namespaces xmlns:h="http://www.w3.org/1999/xhtml"/>
+  </p:with-option>
+</p:delete>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Some title</title>
+  </head>
+  <body>
+    <h1>Some title</h1>
+    <p>Some text.</p>
+  </body>
+</html>
+</t:output>
+
+</t:test>
+

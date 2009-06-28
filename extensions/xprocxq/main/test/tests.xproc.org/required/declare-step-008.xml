@@ -1,0 +1,35 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+  <t:title>Test p:declare-step-008</t:title>
+
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Tests p:pipeline inside p:declare-step.</p>
+  </t:description>
+
+  <t:input port="source">
+    <doc/>
+  </t:input>
+  
+  <t:pipeline>
+    <p:declare-step xmlns:foo="http://acme.com/test">
+      <p:input port="source"/>
+      <p:output port="result"/>
+
+      <p:declare-step type="foo:test">
+	<p:input port="source"/>
+	<p:output port="result"/>
+        <p:count/>
+      </p:declare-step>
+
+      <foo:test/>
+    </p:declare-step>
+  </t:pipeline>
+
+  <t:output port="result"><c:result>1</c:result></t:output>
+
+</t:test>
+

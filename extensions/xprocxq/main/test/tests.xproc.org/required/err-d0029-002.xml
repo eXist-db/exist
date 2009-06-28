@@ -1,0 +1,22 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:c="http://www.w3.org/ns/xproc-step"
+      xmlns:err="http://www.w3.org/ns/xproc-error"
+      error="err:XD0029">
+<t:title>Test for err:XD0029 #002</t:title>
+
+<t:pipeline>
+  <p:declare-step>
+    <p:output port="result"/>
+
+    <p:identity>
+      <p:input port="source">
+	<p:data  href="textdata-utf8.data" content-type="text/plain; charset=unsupported"/>
+      </p:input>
+    </p:identity>
+  </p:declare-step>
+</t:pipeline>
+
+</t:test>
+

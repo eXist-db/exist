@@ -1,0 +1,40 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">
+
+<t:title>Test wrap-002</t:title>
+
+<t:input port='source'>
+<p:pipeline name="pipeline" xmlns:p="http://www.w3.org/ns/xproc">
+
+<p:wrap>
+  <p:option name="target" value="p:option"/>
+  <p:option name="name" value="option-wrapper"/>
+</p:wrap>
+
+</p:pipeline>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:wrap match="p:option" wrapper="option-wrapper" group-adjacent="local-name()"/>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<p:pipeline xmlns:p="http://www.w3.org/ns/xproc" name="pipeline">
+
+<p:wrap>
+  <option-wrapper><p:option value="p:option" name="target"/>
+      <p:option value="option-wrapper" name="name"/></option-wrapper>
+</p:wrap>
+
+</p:pipeline></t:output>
+
+</t:test>
+

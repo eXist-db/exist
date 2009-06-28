@@ -1,0 +1,40 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<test xmlns="http://xproc.org/ns/testsuite"
+      xmlns:t="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:c="http://www.w3.org/ns/xproc-step">
+<title>Test of the <code>p:count</code> Step #002</title>
+
+<t:description xmlns="http://www.w3.org/1999/xhtml">
+  <p>This test runs a small document through the <code>p:count</code> step
+  to prove that it can count to two because we use <code>limit</code>.</p>
+</t:description>
+
+<input port="source">
+  <document>
+    <doc xmlns=""/>
+  </document>
+  <document>
+    <doc xmlns=""/>
+  </document>
+  <document>
+    <doc xmlns=""/>
+  </document>
+</input>
+
+<pipeline>
+  <p:declare-step>
+    <p:input port="source" sequence="true"/>
+    <p:output port="result"/>
+
+    <p:count limit="2"/>
+
+  </p:declare-step>
+</pipeline>
+
+<output port="result">
+  <c:result>2</c:result>
+</output>
+
+</test>
+

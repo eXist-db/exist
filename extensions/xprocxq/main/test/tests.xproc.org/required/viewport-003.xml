@@ -1,0 +1,40 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test viewport #003</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Test <code>p:viewport</code> used for removing nodes.</p>
+  </t:description>
+
+  <t:input port="source">
+    <doc>
+      <para>Some paragraph.</para>
+      <para>Some paragraph.</para>
+      <para>Some paragraph.</para>
+      <para>
+        <para>Nested paragraph.</para>
+      </para>
+    </doc>
+  </t:input>
+
+  <t:pipeline>
+    <p:pipeline>
+      <p:viewport match="para">
+        <p:identity>
+          <p:input port="source">
+            <p:empty/>
+          </p:input>
+        </p:identity>
+      </p:viewport>
+
+    </p:pipeline>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <doc>
+    </doc>
+  </t:output>
+</t:test>

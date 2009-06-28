@@ -1,0 +1,26 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<test xmlns="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:px="http://xproc.dev.java.net/ns/extensions"
+      xmlns:c="http://www.w3.org/ns/xproc-step"
+      xmlns:err="http://www.w3.org/ns/xproc-error"
+      error="err:XS0004">
+<title>Test for err:XS0004</title>
+
+<input port="source">
+  <doc xmlns=""/>
+</input>
+
+<pipeline>
+  <p:pipeline xmlns:ix="http://www.innovimax.fr/xproc/ns">
+      <p:declare-step name="_" type="ix:_">
+          <p:option name="_"/>
+          <p:option name="_"/>
+          <p:identity/>
+      </p:declare-step>
+      <p:identity/>
+  </p:pipeline>
+</pipeline>
+
+</test>
+

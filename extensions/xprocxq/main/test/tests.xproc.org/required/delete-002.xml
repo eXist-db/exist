@@ -1,0 +1,39 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">
+
+<t:title>Test delete-002</t:title>
+
+<t:input port='source'>
+<p:pipeline name="pipeline" xmlns:p="http://www.w3.org/ns/xproc">
+<?not option ?>
+<p:delete>
+  <p:option name="target" value="p:delete"/>
+</p:delete>
+<?option ?>
+</p:pipeline>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:delete match="node()[local-name()='option']|@name"/>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<p:pipeline xmlns:p="http://www.w3.org/ns/xproc">
+<?not option ?>
+<p:delete>
+  
+</p:delete>
+
+</p:pipeline>
+</t:output>
+
+</t:test>
+

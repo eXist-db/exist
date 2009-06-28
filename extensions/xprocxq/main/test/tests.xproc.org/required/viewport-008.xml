@@ -1,0 +1,58 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test viewport #008</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Test <code>p:viewport</code> with <code>p:output</code>
+    that is bound to a sequence of documents, mixing the inline
+    and pipe bindings.</p>
+  </t:description>
+
+  <t:input port="source">
+    <doc>
+      <para>Some paragraph.</para>
+      <para>Some paragraph.</para>
+      <para>Some paragraph.</para>
+      <para>
+        <para>Nested paragraph.</para>
+      </para>
+    </doc>
+  </t:input>
+
+  <t:pipeline>
+    <p:pipeline>
+      <p:viewport match="para">
+        <p:output port="tmp" sequence="true">
+          <p:inline><foo/></p:inline>
+          <p:pipe step="identity1" port="result"/>
+        </p:output>
+        <p:identity name="identity1">
+          <p:input port="source">
+            <p:inline><bar/></p:inline>
+          </p:input>
+        </p:identity>
+        <p:identity name="identity2">
+          <p:input port="source">
+            <p:inline><baz/></p:inline>
+          </p:input>
+        </p:identity>
+      </p:viewport>
+    </p:pipeline>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <doc>
+      <foo/>
+      <bar/>
+      <foo/>
+      <bar/>
+      <foo/>
+      <bar/>
+      <foo/>
+      <bar/>
+    </doc>
+  </t:output>
+</t:test>

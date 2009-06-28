@@ -1,0 +1,42 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test base-uri #001</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Test <code>p:base-uri(arg)</code>.</p>
+  </t:description>
+
+  <t:input port="source">
+    <t:document>
+      <doc xml:base="http://example.org/base/uri/">
+        <title xml:base="http://example.org/other/uri/">Some title</title>
+        <para>Some paragraph.</para>
+        <para class="replaceme">Some paragraph.</para>
+        <para>Some paragraph.</para>
+        <para>Some paragraph.</para>
+      </doc>
+    </t:document>
+  </t:input>
+  
+  <t:pipeline>
+    <p:pipeline>
+      <p:string-replace match="para[@class]/text()">
+	<p:with-option name="replace"
+		       select="concat('&quot;',p:base-uri(/doc/title),'&quot;')"/>
+      </p:string-replace>
+    </p:pipeline>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <doc xml:base="http://example.org/base/uri/">
+      <title xml:base="http://example.org/other/uri/">Some title</title>
+      <para>Some paragraph.</para>
+      <para class="replaceme">http://example.org/other/uri/</para>
+      <para>Some paragraph.</para>
+      <para>Some paragraph.</para>
+    </doc>
+  </t:output>
+</t:test>

@@ -1,0 +1,27 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<test xmlns="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:px="http://xproc.dev.java.net/ns/extensions"
+      xmlns:c="http://www.w3.org/ns/xproc-step"
+      xmlns:err="http://www.w3.org/ns/xproc-error"
+      error="err:XS0044">
+<title>Test err:XS0044 #001</title>
+
+<input port="source">
+  <doc xmlns=""/>
+</input>
+
+<pipeline>
+  <p:pipeline name="pipeline">
+
+    <p:this-is-an-error/>
+
+    <p:identity name="stepname"/>
+
+    <p:count name="stepname"/>
+
+  </p:pipeline>
+</pipeline>
+
+</test>
+

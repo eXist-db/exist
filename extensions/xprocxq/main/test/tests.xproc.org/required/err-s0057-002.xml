@@ -1,0 +1,18 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XS0057">
+  <t:title>Test err:XS0057 #002</t:title>
+  
+  <t:description><p xmlns="http://www.w3.org/1999/xhtml">It is a static error (err:XS0057) if the exclude-inline-prefixes attribute does not contain a list of tokens.</p></t:description>
+
+  <t:pipeline>
+    <p:pipeline exclude-inline-prefixes="t foo^bar">
+
+      <p:identity/>
+      
+    </p:pipeline>
+  </t:pipeline>
+  
+</t:test>

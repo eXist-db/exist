@@ -1,0 +1,4 @@
+<div>
+<p>This has a different base URI: <uri>xml-base-chap.xml</uri>.</p>
+<?pi in base-chap?>
+</div>

@@ -1,0 +1,27 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<test xmlns="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:c="http://www.w3.org/ns/xproc-step"
+      xmlns:err="http://www.w3.org/ns/xproc-error"
+      error="err:XS0008">
+<title>Test err:XS0008</title>
+
+<input port="source">
+  <doc xmlns=""/>
+</input>
+
+<pipeline>
+  <p:pipeline name="pipeline">
+    <p:identity name="stepname">
+      <p:input port="source" primary="true">
+	<p:pipe step="pipeline" port="source"/>
+      </p:input>
+    </p:identity>
+
+    <p:count/>
+
+  </p:pipeline>
+</pipeline>
+
+</test>
+
