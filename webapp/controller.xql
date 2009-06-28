@@ -213,7 +213,7 @@ return
 	    return
     	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     			<forward url="/rest/db/xproc/run.xql">
-    				<add-parameter name="xproc" value="/db/xproc/{$docName}"/>
+    				<add-parameter name="xproc" value="/db/xproc/examples/{$docName}"/>
     			</forward>
     		</dispatch>
     else if ($name = ('default-style.css', 'niftycube.js', 'niftyCorners.css', 'sh-min.js')) then

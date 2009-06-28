@@ -111,8 +111,10 @@ declare function setup:importLocal() as element()+
                 setup:store-files("/db/xproc/pipelines", $webapp, "xproc/pipelines/*.xml", "text/xml"),
                 setup:store-files("/db/xproc/xml", $webapp, "xproc/xml/*.xml", "text/xml"),
                 setup:store-files("/db/xproc/xslt", $webapp, "xproc/xml/*.xsl", "text/xml"),
-                setup:store-files("/db/xproc/examples", $webapp, "xproc/examples/*.xml", "text/xml"),
+
                 setup:store-files("/db/xproc/examples", $webapp, "xproc/examples/*.xproc", "text/xml"),
+                setup:store-files("/db/xproc/examples", $webapp, "xproc/examples/*.xml", "text/xml"),
+
                 setup:store-files("/db/xproc/examples", $webapp, "xproc/examples/*.xql", "application/xquery"),
                 setup:store-files("/db/xproc", $webapp, "xproc/*.xml", "text/xml"),
                 setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery"),
