@@ -964,6 +964,7 @@ installed">
 </project>
         ]]></markup></programlisting>
             </example>
+            <para> You can find this Ant script under the samples/ant directory.</para>
         </section>
     </chapter>
 </book>

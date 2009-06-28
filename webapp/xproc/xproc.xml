@@ -45,22 +45,22 @@
 			<programlisting>
 			<markup>
 				<![CDATA[
-				<p:declare-step xmlns:p="http://www.w3.org/ns/xproc" name="xslt-example">
-					<p:input port="source" primary="true" sequence="false"/>
-					<p:output port="result" primary="true" sequence="false"/> 
-					<p:xslt name="step1">
-						<p:input port="source">       
-							<p:pipe step="xslt-example" port="source"/>     
-						</p:input>
-						<p:input port="stylesheet">
-							<p:document href="mystylesheet.xslt"/>
-						</p:input>
-					</p:xslt>
-				</p:declare-step>
-				]]>			
+<p:declare-step xmlns:p="http://www.w3.org/ns/xproc" name="simple-pipeline">
+    <p:input port="source" primary="true" sequence="false"/>
+    <p:output port="result" primary="true" sequence="false"/>
+    <p:xslt name="step1">
+        <p:input port="source">
+            <p:pipe step="simple-pipeline" port="source"/>
+        </p:input>
+        <p:input port="stylesheet">
+            <p:document href="/db/xproc/examples/stylesheet.xml"/>
+        </p:input>
+    </p:xslt>
+</p:declare-step>
+]]>			
 			</markup>
 			</programlisting>
-			<a href="simple-pipeline.xproc?stdin=/db/xproc/test.xml" target="_example">run simple-pipeline.xproc?stdin=/db/xproc/test.xml</a>
+			<a href="examples/simple-pipeline.xproc?stdin=/db/xproc/examples/test.xml" target="_example">run simple-pipeline.xproc?stdin=/db/xproc/test.xml</a>
 			</example>
 	<para>
         An XML document is brought in as standard input using the stdin url param.

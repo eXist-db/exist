@@ -11,6 +11,13 @@
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
             </affiliation>
         </author>
+        <author>
+            <firstname>James</firstname>
+            <surname>Fuller</surname>
+            <affiliation>
+                <address format="linespecific"><email>jim.fuller at webcomposite.com</email></address>
+            </affiliation>
+        </author>        
     </articleinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <section>
@@ -27,22 +34,29 @@
             <tbody>
                 <tr>
                     <td>
-                        <ulink url="examples/hello.xproc">hello.xproc</ulink>
+                        <a href="examples/hello.xproc" target="_example">hello.xproc</a>
                     </td>
                     <td>"Hello world" in XProc</td>
                 </tr>
                 <tr>
                     <td>
-                        <ulink url="examples/xslt-identity.xproc">xslt-identity.xproc</ulink>
+                        <a href="examples/xslt-identity.xproc" target="_example">xslt-identity.xproc</a>
                     </td>
                     <td>Pass an XML fragment through an XSLT identity transformation.</td>
                 </tr>
                 <tr>
                     <td>
-                        <ulink url="examples/twitter.xproc">twitter.xproc</ulink>
+                        <a href="examples/twitter.xproc" target="_example">twitter.xproc</a>
                     </td>
                     <td>Retrieve a feed from twitter in Atom format and display it.</td>
                 </tr>
+                <tr>
+                    <td>
+                        <a href="examples/simple-pipeline.xproc?stdin=/db/xproc/examples/test.xml" target="_example">xslt transformation</a>
+                    </td>
+                    <td>Apply xslt transformation to input supplied as a url paramater.</td>                    
+                </tr>
+
             </tbody>
         </table>
     </section>
