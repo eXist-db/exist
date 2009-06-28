@@ -30,24 +30,24 @@
                     </xsl:when>
                     <xsl:otherwise>
                         <link rel="stylesheet" type="text/css"
-                            href="{$pathToWebapp}styles/default-style.css"/>
+                            href="/exist/styles/default-style.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
 				<xsl:apply-templates select="(bookinfo|articleinfo)/style"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
                 <!--script type="text/javascript" src="{$pathToWebapp}scripts/syntax/sh-min.js"/-->
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shCore.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushCss.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushJScript.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushPlain.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXml.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXQuery.js"></script>
+                <script type="text/javascript" src="/exist/scripts/syntax/shCore.js"></script>
+                <script type="text/javascript" src="/exist/scripts/syntax/shBrushCss.js"></script>
+                <script type="text/javascript" src="/exist/scripts/syntax/shBrushJScript.js"></script>
+                <script type="text/javascript" src="/exist/scripts/syntax/shBrushPlain.js"></script>
+                <script type="text/javascript" src="/exist/scripts/syntax/shBrushXml.js"></script>
+                <script type="text/javascript" src="/exist/scripts/syntax/shBrushXQuery.js"></script>
 
-                <link type="text/css" rel="stylesheet" href="{$pathToWebapp}styles/syntax/shCore.css"/>
-                <link type="text/css" rel="Stylesheet" href="{$pathToWebapp}styles/syntax/shThemeDefault.css" id="theme" />
+                <link type="text/css" rel="stylesheet" href="/exist/styles/syntax/shCore.css"/>
+                <link type="text/css" rel="Stylesheet" href="/exist/styles/syntax/shThemeDefault.css" id="theme" />
 
-                <script type="text/javascript" src="{$pathToWebapp}styles/niftycube.js"/>
+                <script type="text/javascript" src="/exist/styles/niftycube.js"/>
                 
                 <script type="text/javascript">
                     window.onload = function () {
@@ -338,13 +338,13 @@
     </xsl:template>
     <xsl:template match="bookinfo|articleinfo">
         <div id="page-head">
-            <a href="/exist">
+            <a href="/exist" style="text-decoration: none">
             <xsl:choose>
                 <xsl:when test="graphic/@fileref">
-                    <img src="{$pathToWebapp}{graphic/@fileref}" title="eXist-db: Open Source Native XML Database" style="border-style: none"/>
+                    <img src="{$pathToWebapp}{graphic/@fileref}" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <img src="{$pathToWebapp}logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none"/>
+                    <img src="{$pathToWebapp}logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
                 </xsl:otherwise>
             </xsl:choose>
             </a>
