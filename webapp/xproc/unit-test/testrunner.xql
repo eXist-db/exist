@@ -8,9 +8,11 @@ import module namespace xproc = "http://xproc.net/xproc";
 import module namespace u = "http://xproc.net/xproc/util";
 import module namespace naming = "http://xproc.net/xproc/naming";
 
+declare option exist:serialize "method=html media-type=text/html omit-xml-declaration=yes indent=yes";
+
 let $not :=  request:get-parameter("not", ())
 let $type :=  request:get-parameter("type", ())
-let $dir := concat('/Users/jimfuller/Source/Webcomposite/xprocxq-exist/main/test/tests.xproc.org/',$type)
+let $dir := concat('/Users/jimfuller/Source/Thirdparty/eXist/extensions/xprocxq/main/test/tests.xproc.org/',$type)
 let $file :=  request:get-parameter("file", ())
 let $files := file:directory-list($dir,$file)
 let $result := for $file in $files/file:file[not(contains(@name,$not))]
@@ -37,30 +39,36 @@ return
 
 {$stdin1//t:output}
 </t:test>
-
                else
                  $stdin1
 
 let $pipeline := if (count($stdin//t:input) = 0) then
-        doc('/db/examples/test-runner2.xml')
+        doc('/db/xproc/unit-test/test-runner2.xml')
     else if ( count($stdin//t:input) = 1) then
-        doc('/db/examples/test-runner.xml')
+        doc('/db/xproc/unit-test/test-runner.xml')
     else
-        doc('/db/examples/test-runner1.xml')
+        doc('/db/xproc/unit-test/test-runner1.xml')
 
 let $runtime-debug := request:get-parameter("dbg", ())
     return
     <test file="{$file/@name}">
         {
         if (contains($path,request:get-parameter("debug", ()))) then
-            xproc:run($pipeline,$stdin,$runtime-debug)
+           xproc:run($pipeline,$stdin,$runtime-debug)
         else
-            util:catch('java.lang.Exception', xproc:run($pipeline,$stdin,$runtime-debug), 'fail')
+            util:catch('java.lang.Exception', xproc:run($pipeline,$stdin,$runtime-debug), 'test crashed')
          }
      </test>
 return
-
-<result pass="{count($result//c:result[.= 'true'])}" nopass="{count($result//c:result[.= 'false'])}" total="{count($result//test)}">
+let $final-result := <result pass="{count($result//c:result[.= 'true'])}" nopass="{count($result//c:result[.= 'false'])}" total="{count($result//test)}">
     {$result}
 </result>
-
+let	$params :=
+		<parameters>
+			<param name="now" value="{current-time()}"/>
+		</parameters>
+return
+    if (request:get-parameter("format", ()) eq 'html') then
+      transform:transform(document{$final-result}, xs:anyURI("xmldb:exist:///db/xproc/unit-test/test-result.xsl"), ())
+    else
+        $final-result
