@@ -180,6 +180,16 @@
             </tr>
 
             <tr>
+              <td class="doclink"><ulink url="xforms/xforms.xml">XForms</ulink>:</td>
+              <td>XForms support in eXist using xsltforms.</td>
+            </tr>
+
+            <tr>
+              <td class="doclink"><ulink url="xproc/xproc.xml">XProc</ulink>:</td>
+              <td>XProc support in eXist using xprocxq.</td>
+            </tr>
+
+            <tr>
               <td class="doclink"><ulink url="xquery.xml">XQuery</ulink>:</td>
               <td>current status, supported features and extensions.</td>
             </tr>
