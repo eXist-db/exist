@@ -22,6 +22,8 @@
                 technology. It stores XML data according to the XML data model and features
                 efficient, <a href="http://www.w3.org/TR/xquery/">index-based XQuery</a> processing.</p>
 
+            <a id="download" href="download.xml"><img src="resources/download.png"/></a>
+            
             <p>eXist-db supports many (<a href="http://en.wikipedia.org/wiki/Web_2">web</a>)
                 technology standards making it an excellent platform for developing web based applications: <ul>
                     <li><a href="http://www.w3.org/TR/xquery/">XQuery 1.0</a> / <a
@@ -51,8 +53,6 @@
                     href="http://www.w3.org/XML/Query/test-suite/XQTSReportSimple.html">99.4%</a>).
                 The query engine is extensible and features a large collection of XQuery
                 Function Modules.</p>
-
-            <a id="download" href="download.xml"><img src="resources/download.png"/></a>
 
             <p>eXist-db provides a powerful environment for the development of web applications
                 based on XQuery and related standards. Entire web applications can be written in
