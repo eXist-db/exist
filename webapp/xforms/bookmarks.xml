@@ -23,7 +23,7 @@
                     </sample:section>
                 </sample:bookmarks>
             </xf:instance>
-						<xf:submission id="s01" method="xml-urlencoded-post" replace="all" action="xsltforms/dump.php">
+						<xf:submission id="s01" method="put" replace="all" action="/db/xforms/data/bookmarks.xml">
 							<xf:message level="modeless" ev:event="xforms-submit-error">Submit error.</xf:message>
 						</xf:submission>
         </xf:model>
