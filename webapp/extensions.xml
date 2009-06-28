@@ -259,6 +259,20 @@
 	<command>Namespace:</command>&#160;http://exist-db.org/xquery/xslfo
       </para>
     </section>
-    
+
+    <section id="module_xprocxq">
+      <title>XProcxq Module</title>
+      <para>This module provides XProc functionality to eXist.</para>
+      <para>
+	<command>Creator:</command>&#160;<dc:creator><ulink url="http://www.webcomposite.com">James R. Fuller</ulink></dc:creator>
+	<command>Licence:</command>&#160;MPL v1.1
+	<command>Features Used:</command>&#160;<ulink url="http://www.expath.org">expath http library</ulink>
+	<command>Status:</command>&#160;in development for v1.3/1.4 release
+      </para>
+      <para>
+	<command>Class:</command>&#160;static xquery module via extensions/xprocxq.jar
+	<command>Namespace:</command>&#160;http://xproc.net/xproc
+      </para>
+    </section>
   </chapter>
 </book>
