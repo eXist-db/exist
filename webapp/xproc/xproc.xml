@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<article>
+<book>
     <articleinfo>
         <graphic fileref="../logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
@@ -14,6 +14,7 @@
     </articleinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
 
+    <chapter>
     <section>
         <title>XProc Overview</title>
         <para>W3C XProc is a specification that defines a processor for working with XML technologies. eXist XProc implementation is called <b>xprocxq</b> and is mostly developed in XQuery.</para>
@@ -25,8 +26,11 @@
     </section>
 
     <section>
-        <title>Configuration &amp; Quick Start</title>
-        <para>Since eXist v1.3 (???1.4), xprocxq is built and configured by defualt with eXist and should be enabled and ready to use. Check out some simple <a href="examples.xml">examples</a> to check if your eXist is working.
+        <title>Quick Start &amp; Examples</title>
+        <para>Since eXist v1.3/1.4, xprocxq is built and configured by default and should be enabled and ready to use.
+         </para>
+        <para>
+            Check out some simple <a href="examples.xml">examples</a> to check if your eXist is working.
 		</para>
     </section>
 
@@ -442,9 +446,23 @@
 			</ul>
 			</para>
 		</section>
-				
+
 		</section>
-		
+
+       <section>
+			<title>W3C XProc Unit Test</title>
+			<para> The following links run xprocxq against W3C XProc Unit Test suite
+			<ul>
+				<li><a href="unit-test/testrunner.xql?type=required/&amp;file=*.xml&amp;not=err&amp;debug=err&amp;dbg=0&amp;format=html" target="_result">All required without err tests</a></li>
+                <li><a href="unit-test/testrunner.xql?type=optional/&amp;file=*.xml&amp;not=err&amp;debug=err&amp;dbg=0&amp;format=html" target="_result">All optional without err tests </a></li>
+			</ul>
+			</para>
+            <note>
+                <para>Currently this set of tests will return results lower then expected as the test runner
+                is undergoing development.</para>
+            </note>
+
+		</section>
 	    
 		<section>
 			<title>Additional XProc Resources</title>
@@ -583,5 +601,8 @@
 		<para>I think that most people will find using XProc with XQuery is a powerful combination which can be used to implement a wide range of server side applications.
         </para>
     </section>
+
 </section>
-</article>
+</chapter>
+    
+</book>
