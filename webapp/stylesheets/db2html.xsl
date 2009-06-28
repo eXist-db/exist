@@ -19,8 +19,7 @@
                 <title>
                     <xsl:value-of select="(bookinfo|articleinfo)/title/text()"/>
                 </title>
-                <link type="text/css" href="{$pathToWebapp}styles/SyntaxHighlighter.css"
-                    rel="stylesheet"/>
+
                 <link rel="shortcut icon" href="{$pathToWebapp}resources/exist_icon_16x16.ico"/>
                 <link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png"
                     type="image/png"/>
@@ -339,6 +338,7 @@
     </xsl:template>
     <xsl:template match="bookinfo|articleinfo">
         <div id="page-head">
+            <a href="/exist">
             <xsl:choose>
                 <xsl:when test="graphic/@fileref">
                     <img src="{$pathToWebapp}{graphic/@fileref}" title="eXist-db: Open Source Native XML Database"/>
@@ -347,6 +347,7 @@
                     <img src="{$pathToWebapp}logo.jpg" title="eXist-db: Open Source Native XML Database"/>
                 </xsl:otherwise>
             </xsl:choose>
+            </a>
             <div id="quicksearch">
                 <form action="{../sidebar:sidebar/sidebar:search/@href}" method="GET">
                     <input type="text" size="20" name="q"/>
