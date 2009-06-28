@@ -341,10 +341,10 @@
             <a href="/exist">
             <xsl:choose>
                 <xsl:when test="graphic/@fileref">
-                    <img src="{$pathToWebapp}{graphic/@fileref}" title="eXist-db: Open Source Native XML Database"/>
+                    <img src="{$pathToWebapp}{graphic/@fileref}" title="eXist-db: Open Source Native XML Database" style="border-style: none"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <img src="{$pathToWebapp}logo.jpg" title="eXist-db: Open Source Native XML Database"/>
+                    <img src="{$pathToWebapp}logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none"/>
                 </xsl:otherwise>
             </xsl:choose>
             </a>
