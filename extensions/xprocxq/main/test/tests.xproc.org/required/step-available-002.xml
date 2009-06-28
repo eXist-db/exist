@@ -1,0 +1,45 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test step-available #002</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Test <code>p:step-available</code>.</p>
+  </t:description>
+  
+  <t:pipeline>
+    <p:declare-step xmlns:ex="http://example.com/ns/xproc-extensions">
+      <p:output port="result"/>
+
+      <p:choose>
+	<p:when test="p:step-available('p:identity')">
+	  <p:xpath-context>
+	    <p:empty/>
+	  </p:xpath-context>
+	  <p:identity>
+	    <p:input port="source">
+	      <p:inline>
+		<doc>Success.</doc>
+	      </p:inline>
+	    </p:input>
+	  </p:identity>
+	</p:when>
+	<p:otherwise>
+	  <p:identity>
+	    <p:input port="source">
+	      <p:inline>
+		<doc>Failure.</doc>
+	      </p:inline>
+	    </p:input>
+	  </p:identity>
+	</p:otherwise>
+      </p:choose>
+    </p:declare-step>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <doc>Success.</doc>
+  </t:output>
+</t:test>

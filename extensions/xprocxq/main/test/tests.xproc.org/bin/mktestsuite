@@ -1,0 +1,108 @@
+#!/home/ndw/perl/bin/perl -- # -*- Perl -*-
+
+use strict;
+use English;
+
+if (! -d "required" && -d "optional" && -d "extension" && -d "serialization") {
+    die "$0: I don't think I'm in the right place.\n";
+}
+
+my @ALLTESTS = ();
+
+my $count = 0;
+my $line = undef;
+open (SVN, "svn update |");
+while (<SVN>) {
+    $count++;
+    print $line if $count > 1;
+    $line = $_;
+}
+close (SVN);
+
+print $line if $count > 1;
+
+my $force = ($count > 1);
+
+my $revision = "unknown";
+open (SVN, "svn info |");
+while (<SVN>) {
+    chop;
+    $revision = $1 if /Revision: (.+)$/;
+}
+close (SVN);
+
+# Ok, something changed, rebuild the catalogs...
+my $rebuild = ($force
+	       || ! -f "required/test-suite.xml"
+	       || ! -f "optional/test-suite.xml"
+	       || ! -f "extension/test-suite.xml"
+	       || ! -f "serialization/test-suite.xml"
+	       || ! -f "test-suite.xml");
+
+if ($rebuild) {
+    makeCatalog("required", "Required tests");
+    makeCatalog("optional", "Optional tests");
+    makeCatalog("extension", "Extension tests");
+    makeCatalog("serialization", "Serialization tests");
+
+    open(CAT, ">test-suite.xml");
+    print CAT "<t:test-suite xmlns:t='http://xproc.org/ns/testsuite'>\n";
+    print CAT "<t:title>All tests</t:title>\n";
+    foreach my $name (@ALLTESTS) {
+	print CAT "<t:test href='$name'/>\n";
+    }
+    print CAT "</t:test-suite>\n";
+    close (CAT);
+
+    my @SVN = ();
+    open (FIND, "find . -type d -name .svn -print 2>/dev/null |");
+    while (<FIND>) {
+	chop;
+	$_ = substr($_, 2);
+	push(@SVN, $_);
+    }
+    close (FIND);
+
+    my $zipargs = "-x doc/chmod0.xml -x bin -x \"bin/*\" -x required/directory-list-test -x \"required/directory-list-test/*\"";
+    foreach my $svn (@SVN) {
+	$zipargs .= " -x $svn -x \"$svn/*\"";
+    }
+
+    unlink("xproc-test-suite.zip");
+    #print("zip -q -rp xproc-test-suite.zip * $zipargs\n");
+    system("zip -q -rp xproc-test-suite.zip * $zipargs");
+}
+
+# ============================================================
+
+sub makeCatalog {
+    my $dir = shift;
+    my $title = shift;
+
+    die "No $dir?\n" if ! -d $dir;
+
+    my @tests = ();
+    opendir(DIR,$dir);
+    while (my $name = readdir(DIR)) {
+	next if $name =~ /^\.\.?$/;
+	next if ! -f "$dir/$name";
+	next if $name eq 'test-suite.xml';
+	next if $name !~ /\.xml$/;
+	push(@tests, $name);
+	push(@ALLTESTS, "$dir/$name");
+    }
+    closedir(DIR);
+
+    return if !@tests;
+
+    open(CAT, ">$dir/test-suite.xml");
+    print CAT "<t:test-suite xmlns:t='http://xproc.org/ns/testsuite'>\n";
+    print CAT "<t:title>$title (Revision $revision)</t:title>\n" if defined($title);
+    foreach my $name (sort @tests) {
+	print CAT "<t:test href='$name'/>\n";
+    }
+    print CAT "</t:test-suite>\n";
+    close (CAT);
+}
+    
+

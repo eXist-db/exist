@@ -1,0 +1,39 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+	xmlns:cl="http://xmlcalabash.com/ns/library"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">
+
+<t:title>Test make-sequence</t:title>
+
+<t:input port='source'>
+<doc>
+<p>This is a p.</p>
+</doc>
+</t:input>
+
+<t:option name="count" value="6"/>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+<p:option name="count" required="true"/>
+
+<p:import href="library.xpl"/>
+
+<cl:make-sequence>
+  <p:with-option name="count" select="$count"/>
+</cl:make-sequence>
+
+<p:count/>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<c:result>6</c:result>
+</t:output>
+
+</t:test>
+

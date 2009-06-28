@@ -1,0 +1,80 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test psvi-required-001.xml</t:title>
+
+<t:input port="source">
+  <doc>
+    <p href="http://www.example.com/"/>
+    <q href="http://www.example.com/"/>
+    <q href="http://www.example.com/"/>
+    <p href="http://www.example.com/"/>
+    <p href="http://www.example.com/"/>
+  </doc>
+</t:input>
+
+<t:pipeline>
+<p:declare-step name="pipeline">
+<p:input port="parameters" kind="parameter"/>
+<p:input port="source"/>
+<p:output port="result"/>
+
+<p:validate-with-xml-schema assert-valid="true">
+  <p:input port="schema">
+    <p:document href="http://tests.xproc.org/tests/doc/pqhref.xsd"/>
+  </p:input>
+</p:validate-with-xml-schema>
+
+<p:xslt version="2.0">
+  <p:input port="stylesheet">
+    <p:inline>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                version="2.0">
+
+<xsl:template match="*">
+  <xsl:copy>
+    <xsl:copy-of select="@*"/>
+    <xsl:apply-templates/>
+  </xsl:copy>
+</xsl:template>
+
+<xsl:template match="p|q">
+  <xsl:copy>
+    <xsl:choose>
+      <xsl:when test="(@href instance of attribute(*, xs:anyURI))">
+	<xsl:text>href is an xs:anyURI</xsl:text>
+      </xsl:when>
+      <xsl:when test="@href">
+	<xsl:text>href is not an xs:anyURI</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:text>What href?</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:apply-templates/>
+  </xsl:copy>
+</xsl:template>
+</xsl:stylesheet>
+    </p:inline>
+  </p:input>
+</p:xslt>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port="result">
+<doc>
+   <p>href is an xs:anyURI</p>
+   <q>href is not an xs:anyURI</q>
+   <q>href is not an xs:anyURI</q>
+   <p>href is an xs:anyURI</p>
+   <p>href is an xs:anyURI</p>
+</doc>
+</t:output>
+
+</t:test>
+

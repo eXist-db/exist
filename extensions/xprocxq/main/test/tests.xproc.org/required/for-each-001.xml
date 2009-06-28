@@ -1,0 +1,54 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test for-each #001</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Test <code>p:for-each</code></p>
+  </t:description>
+
+  <t:input port="source">
+    <t:document>
+      <doc>
+        <title>Some title</title>
+        <para>Some paragraph.</para>
+      </doc>
+    </t:document>
+    <t:document>
+      <doc>
+        <title>Some other title</title>
+        <para>Some other paragraph.</para>
+      </doc>
+    </t:document>
+  </t:input>
+  
+  <t:pipeline>
+    <p:declare-step>
+
+      <p:input port="source" sequence="true"/>
+      <p:output port="result" sequence="true"/>
+  
+      <p:for-each>
+        <p:identity/>
+      </p:for-each>
+ 
+    </p:declare-step>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <t:document>
+      <doc>
+        <title>Some title</title>
+        <para>Some paragraph.</para>
+      </doc>
+    </t:document>
+    <t:document>
+      <doc>
+        <title>Some other title</title>
+        <para>Some other paragraph.</para>
+      </doc>
+    </t:document>
+  </t:output>
+</t:test>

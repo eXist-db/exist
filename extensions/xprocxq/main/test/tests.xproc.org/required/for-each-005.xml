@@ -1,0 +1,59 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test for-each #005</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Test evaluation of variables in the context of a <code>p:for-each</code>.
+    </p>
+  </t:description>
+
+  <t:pipeline>
+    <p:declare-step xmlns:p="http://www.w3.org/ns/xproc">
+
+      <p:output port="result" />
+
+      <p:input port="source">
+	<p:inline>
+	  <doc>
+	    <para id="x1">Some paragraph.</para>
+	    <para id="x2">Some paragraph.</para>
+	    <para id="x3">Some paragraph.</para>
+	  </doc>
+	</p:inline>
+      </p:input>
+
+      <p:for-each name="loop">
+	<p:iteration-source select="/doc/para"/>
+
+	<p:variable name="q" select="/para/@id">
+	  <p:pipe step="loop" port="current"/>
+	</p:variable>
+
+	<p:choose>
+	  <p:when test="$q = 'x2'">
+	    <p:identity/>
+	  </p:when>
+	  <p:otherwise>
+	    <p:identity>
+	      <p:input port="source">
+		<p:empty/>
+	      </p:input>
+	    </p:identity>
+	  </p:otherwise>
+	</p:choose>
+      </p:for-each>
+
+      <p:wrap-sequence wrapper="newdoc"/>
+
+    </p:declare-step>
+  </t:pipeline>
+
+  <t:output port="result">
+    <newdoc>
+      <para id="x2">Some paragraph.</para>
+    </newdoc>
+  </t:output>
+</t:test>

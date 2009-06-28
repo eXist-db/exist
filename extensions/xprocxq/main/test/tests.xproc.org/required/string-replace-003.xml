@@ -1,0 +1,27 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step">
+  <t:title>Test p:string-replace #003</t:title>
+  
+
+<t:input port="source">
+<t:document>
+<doc>
+<para>some text</para>
+</doc>
+</t:document>
+</t:input>
+  
+  <t:pipeline>
+    <p:pipeline>
+      <p:string-replace match="para" replace="'censored'"/>
+    </p:pipeline>
+  </t:pipeline>
+  
+<t:output port="result">
+<doc>
+censored
+</doc>
+</t:output>
+</t:test>

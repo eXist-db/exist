@@ -1,0 +1,5 @@
+<!DOCTYPE doc [
+<!ENTITY p SYSTEM "divs/p.xml">
+]><doc>
+&p;
+</doc>

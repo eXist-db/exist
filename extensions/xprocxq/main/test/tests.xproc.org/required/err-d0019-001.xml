@@ -1,0 +1,27 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XD0019">
+  
+  <t:title>Test err:XD0019</t:title>
+  
+<t:description xmlns="http://www.w3.org/1999/xhtml">
+  <p>Tests if dynamic error XD0019 is thrown if any option value does not satisfy the type required for that option.</p>  
+</t:description>
+
+<t:input port="source">
+   <doc>
+     <p>Some paragraph.</p>
+   </doc>
+ </t:input>
+
+ <t:pipeline>
+   <p:pipeline>
+     <p:count limit="stringvalue"/>
+   </p:pipeline>
+ </t:pipeline>
+  
+</t:test>
+

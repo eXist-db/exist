@@ -1,0 +1,28 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XC0001">
+  
+  <t:title>Test err:XC0001 #001</t:title>
+  <t:description>
+    <p xmlns='http://www.w3.org/1999/xhtml'>The implementation may report
+    a dynamic error err:XC0001 if the serialization method is not supported
+    (implementations are not required to check that the specified options
+    are allowed if the specified output is not being serialized).</p>
+  </t:description>
+  
+  <t:input port="source">
+    <doc/>
+  </t:input>
+
+  <t:pipeline>
+    <p:pipeline>
+      <p:serialization port="result" method="nonexistant"/>
+      <p:identity/>
+    </p:pipeline>
+  </t:pipeline>
+  
+</t:test>
+

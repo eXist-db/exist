@@ -1,0 +1,30 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XD0007">
+  
+  <t:title>Test err:XD0007</t:title>
+  
+  <t:input port='source'>
+    <t:document>
+      <doc/>
+    </t:document>
+    <t:document>
+      <doc/>
+    </t:document>
+  </t:input>
+  
+  <t:pipeline>
+    <p:declare-step>
+      <p:input port="source" sequence="true"/>
+      <p:output port="result" sequence="false"/>
+
+      <p:identity/>
+
+    </p:declare-step>
+  </t:pipeline>
+  
+</t:test>
+

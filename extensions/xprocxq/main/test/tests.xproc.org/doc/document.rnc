@@ -1,0 +1,12 @@
+start = doc
+
+doc = element doc { title?, (\div|p)* }
+
+title = element title { text }
+
+\div = element div { (\div|p)* }
+
+p = element p { (text|a)* }
+
+a = element a { attribute href { text }?, text }
+

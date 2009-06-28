@@ -1,0 +1,40 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">
+
+<t:title>Test XSL Formatter #001</t:title>
+
+<t:description xmlns="http://www.w3.org/1999/xhtml">
+  <p>WARNING: This test writes to <code>file:///tmp/out.pdf</code>.
+  </p>
+</t:description>
+
+<t:pipeline>
+<p:declare-step name="main">
+<p:input port="parameters" kind="parameter"/>
+<p:output port="result">
+  <p:pipe step="xsl-fo" port="result"/>
+</p:output>
+
+<p:xsl-formatter name="xsl-fo"
+		 href="file:///tmp/out.pdf" content-type="application/pdf">
+  <p:input port="source">
+    <p:document href="../doc/envelope.fo"/>
+  </p:input>
+  <p:with-param name="CONFIG" select="'/share/java/xep/xep.xml'">
+    <p:empty/>
+  </p:with-param>
+</p:xsl-formatter>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<c:result>file:///tmp/out.pdf</c:result>
+</t:output>
+
+</t:test>
+

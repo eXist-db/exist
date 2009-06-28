@@ -1,0 +1,24 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XC0004">
+  
+  <t:title>Test err:XC0004 #001</t:title>
+  
+  <t:pipeline>
+    <p:declare-step>
+      <p:http-request>
+        <p:input port="source">
+          <p:inline>
+            <c:request method="GET" href="http://whatever"
+                       status-only="true"/>
+          </p:inline>
+        </p:input>
+      </p:http-request>
+    </p:declare-step>
+  </t:pipeline>
+  
+</t:test>
+

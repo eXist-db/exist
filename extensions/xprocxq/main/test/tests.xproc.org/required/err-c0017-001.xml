@@ -1,0 +1,42 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XC0017">
+
+  <t:title>Test err:XC0017 (p:directory-list with a non-directory path).</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>To pass this test, it must be
+    run in a location where there is a directory named
+    “directory-list-test”. The directory must have the following structure:</p>
+    <pre>afile
+      bfile
+      adir/
+        cfile
+      bdir/</pre>
+    <p>The directory “bdir” must not be accessible for reading.</p>
+  </t:description>
+
+  <t:option name="path" value="directory-list-test/afile"/>
+
+  <t:pipeline>
+    <p:declare-step xmlns:p="http://www.w3.org/ns/xproc"
+                    xmlns:px="http://example.org/ns/pipelines"
+                    xmlns:c="http://www.w3.org/ns/xproc-step"
+                    name="main">
+      <p:output port="result"/>
+      <p:option name="path" required="true"/>
+      
+      <p:directory-list>
+        <p:with-option name="path" select="$path">
+          <p:empty/>
+        </p:with-option>
+      </p:directory-list>
+
+    </p:declare-step>
+  </t:pipeline>
+  
+</t:test>
+

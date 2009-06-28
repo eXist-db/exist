@@ -1,0 +1,50 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+		>
+
+  <t:title>Test p:declare-step-004</t:title>
+
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Tests p:input precedence by declaring a mine:count step, then invokes the step with an input source containing inline elements</p>    </t:description>
+  
+  <t:input port="source">
+    <t:document>
+		<test>
+		    <a>test1</a>
+		    <b/>
+		</test>    
+	</t:document>
+  </t:input>
+
+  <t:pipeline>
+      <p:pipeline xmlns:p="http://www.w3.org/ns/xproc" xmlns:mine="http://www.example.org/test/mine" name="pipeline">
+	<p:declare-step name="test1" type="mine:count">
+	    <p:input port="source" sequence="true">
+	      <p:inline>
+		<nested_inline_test/>
+	      </p:inline>	
+	    </p:input>
+	    <p:output port="result" sequence="true"/>
+	    <p:count/>
+	</p:declare-step>
+
+	<mine:count>
+	    <p:input port="source">
+	        <p:inline>
+	            <root1/>
+	        </p:inline>
+	        <p:inline>
+	            <root2/>
+	        </p:inline>
+	    </p:input>
+	</mine:count>
+
+	</p:pipeline>
+  </t:pipeline>
+
+  <t:output port="result"><c:result xmlns:c="http://www.w3.org/ns/xproc-step">2</c:result></t:output>
+
+</t:test>

@@ -1,0 +1,6 @@
+<doc>
+<div>
+<p>This is a test document</p>
+</div>
+<xi:include xmlns:xi='http://www.w3.org/2001/XInclude' href="chaps/div.xml"/>
+</doc>

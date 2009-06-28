@@ -1,0 +1,29 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XC0014">
+
+  <t:title>Test err:XC0014 #001</t:title>
+  <t:description>
+    <p xmlns='http://www.w3.org/1999/xhtml'>It is a dynamic error if
+    the XML namespace (http://www.w3.org/XML/1998/namespace) or the
+    XMLNS namespace (http://www.w3.org/2000/xmlns/) is the value of
+    either the from option or the to option.</p>
+  </t:description>
+
+  <t:input port="source">
+    <doc>
+      <p/>
+    </doc>
+  </t:input>
+
+  <t:pipeline>
+    <p:pipeline>
+      <p:namespace-rename to="http://www.w3.org/XML/1998/namespace"/>
+    </p:pipeline>
+  </t:pipeline>
+
+</t:test>
+

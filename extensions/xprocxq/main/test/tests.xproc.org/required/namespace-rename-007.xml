@@ -1,0 +1,28 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+  <t:title>Test p:namespace-rename #007</t:title>
+
+  <t:input port="source">
+    <doc xmlns="http://bar.com" bar:attr1="val1" x:attr2="val2" xmlns:x="http://test.com" xmlns:bar="http://bar.com">
+      <p/>
+    </doc>
+  </t:input>
+
+  <t:pipeline>
+    <p:pipeline>
+      <p:namespace-rename from="http://bar.com" to="http://foo.com" apply-to="elements"/>
+    </p:pipeline>
+  </t:pipeline>
+
+  <t:output port="result">
+    <doc xmlns="http://foo.com" bar:attr1="val1" x:attr2="val2" xmlns:x="http://test.com" xmlns:bar="http://bar.com">
+      <p/>
+    </doc>
+  </t:output>
+
+</t:test>
+

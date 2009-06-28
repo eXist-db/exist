@@ -1,0 +1,21 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<test xmlns="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:c="http://www.w3.org/ns/xproc-step"
+      xmlns:err="http://www.w3.org/ns/xproc-error"
+      error="err:XS0002">
+<title>Test for duplicate names error (<code>err:XS0002</code>)</title>
+
+<input port="source">
+  <doc xmlns=""/>
+</input>
+
+<pipeline>
+  <p:pipeline name="pipeline" xmlns:p="http://www.w3.org/ns/xproc">
+    <p:identity name="identity"/>
+    <p:identity name="identity"/>
+  </p:pipeline>
+</pipeline>
+
+</test>
+

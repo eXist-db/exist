@@ -1,0 +1,34 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite">
+  
+  <t:title>Test pack #004</t:title>
+  
+  <t:input port='source'>
+  </t:input>
+  
+  <t:input port="alt">
+  </t:input>
+  
+  <t:pipeline>
+    <p:declare-step name="pipeline"
+                    xmlns:p="http://www.w3.org/ns/xproc">
+      <p:input port="source" sequence="true"/>
+      <p:input port="alt" sequence="true"/>
+      <p:output port="result" sequence="true"/>
+      
+      <p:pack wrapper="wrapper">
+        <p:input port="source">
+          <p:pipe step="pipeline" port="source"/>
+        </p:input>
+        <p:input port="alternate">
+          <p:pipe step="pipeline" port="alt"/>
+        </p:input>
+      </p:pack>
+    </p:declare-step>
+  </t:pipeline>
+
+  <t:output port='result'>
+  </t:output>
+
+</t:test>
+

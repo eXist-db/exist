@@ -1,0 +1,61 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test XSLT 2.0 #002</t:title>
+
+<t:input port='source'>
+<document>
+<title>Some Title</title>
+<para>Some paragraph.</para>
+</document>
+</t:input>
+
+<t:input port='style'>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+		xmlns="http://www.w3.org/1999/xhtml"
+                version="2.0">
+
+<xsl:output method="xml" encoding="utf-8" indent="no"/>
+
+<xsl:template match="document">
+  <html>
+    <head>
+      <title>
+	<xsl:value-of select="title"/>
+      </title>
+    </head>
+    <body>
+      <h1>
+	<xsl:value-of select="title"/>
+      </h1>
+      <xsl:apply-templates/>
+    </body>
+  </html>
+
+  <xsl:result-document href="irrelevant.xml">
+    <xsl:copy-of select="title"/>
+  </xsl:result-document>
+</xsl:template>
+
+<xsl:template match="title"/>
+
+<xsl:template match="para">
+  <p>
+    <xsl:apply-templates/>
+  </p>
+</xsl:template>
+
+</xsl:stylesheet>
+</t:input>
+
+<t:pipeline href="xslt2-002.xpl"/>
+
+<t:output port='result'>
+<title>Some Title</title>
+</t:output>
+
+</t:test>
+

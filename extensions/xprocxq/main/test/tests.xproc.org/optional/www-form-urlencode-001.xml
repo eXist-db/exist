@@ -1,0 +1,42 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test www-form-urlencode-001</t:title>
+
+<t:description>
+<p xmlns="http://www.w3.org/1999/xhtml">Note: this test is incomplete.
+It tests the order of the parameters in the result, which is insignificant.
+</p></t:description>
+
+<t:input port='source'>
+<doc params="wrong">
+<p>This is a p.</p>
+</doc>
+</t:input>
+
+<t:pipeline>
+<p:declare-step name="main">
+<p:input port="parameters" kind="parameter"/>
+<p:input port="source"/>
+<p:output port="result"/>
+
+<p:www-form-urlencode match="/doc/@params">
+  <p:with-param name="p1" select="'one'"/>
+  <p:with-param name="p2" select="'two'"/>
+  <p:with-param name="p3" select="'three&amp;four'"/>
+</p:www-form-urlencode>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<doc params="p1=one&amp;p2=two&amp;p3=three%26four">
+<p>This is a p.</p>
+</doc>
+</t:output>
+
+</t:test>
+

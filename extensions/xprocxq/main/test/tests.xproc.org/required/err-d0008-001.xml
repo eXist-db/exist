@@ -1,0 +1,39 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XD0008">
+  
+  <t:title>Test err:XD0008</t:title>
+  
+<t:description xmlns="http://www.w3.org/1999/xhtml">
+  <p>Tests if dynamic error XD0008 is thrown if a document sequence appears where a document to be used as the context node is expected.</p>  
+</t:description>
+
+  <t:input port='source'>
+    <t:document>
+      <doc><a>test</a></doc>
+    </t:document>
+    <t:document>
+      <doc/>
+    </t:document>
+    <t:document>
+      <doc/>
+    </t:document>
+  </t:input>
+  
+  <t:pipeline>
+    <p:declare-step>
+		<p:input port="source" sequence="true"/>
+		<p:output port="result" sequence="true"/>
+		
+		<p:variable name="value" select="/doc/a"/>
+
+		<p:string-replace match="//doc" replace="concat('test-',$value)"/>
+		
+    </p:declare-step>
+  </t:pipeline>
+  
+</t:test>
+

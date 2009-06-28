@@ -1,0 +1,8 @@
+<test>
+    <a>test1</a>
+    <b/>
+    <c>
+        I wish I was a fish
+          <d/>
+    </c>
+</test>

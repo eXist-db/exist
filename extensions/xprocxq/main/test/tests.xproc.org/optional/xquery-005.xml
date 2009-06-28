@@ -1,0 +1,72 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">
+
+  <t:title>Test XQuery #005</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Tests that external XQuery variables are bound to XProc parameters.</p>  
+  </t:description>
+
+  <t:input port="source">
+    <authors>
+      <author>
+        <firstname>William</firstname>
+        <lastname>Shakespeare</lastname>
+      </author>
+      <author>
+        <firstname>Christopher</firstname>
+        <lastname>Marlowe</lastname>
+      </author>
+      <author>
+        <firstname>Ben</firstname>
+        <lastname>Johnson</lastname>
+      </author>
+    </authors>
+  </t:input>
+
+  <t:parameter name="str" value="Will"/>
+  <t:parameter name="test:str" value="Chris" xmlns:test="http://www.test.com"/>
+  
+  <t:pipeline>
+    <p:pipeline>
+      
+      <p:xquery>
+        <p:input port="query">
+          <p:inline>
+            <c:query>
+              declare namespace test = "http://www.test.com";
+              declare variable $str external;
+              declare variable $test:str external;
+
+              for $author in //author[contains(firstname, $str) or contains(firstname, $test:str)]
+              order by $author/firstname
+              return $author
+            </c:query>
+          </p:inline>
+        </p:input>
+      </p:xquery>
+
+      <p:wrap-sequence wrapper="wrapper"/>
+
+    </p:pipeline>
+  </t:pipeline>
+
+  <t:output port="result">
+    <wrapper>
+      <author>
+        <firstname>Christopher</firstname>
+        <lastname>Marlowe</lastname>
+      </author>
+      <author>
+        <firstname>William</firstname>
+        <lastname>Shakespeare</lastname>
+      </author>
+    </wrapper>
+</t:output>
+
+</t:test>
+

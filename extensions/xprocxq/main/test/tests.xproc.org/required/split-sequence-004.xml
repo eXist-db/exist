@@ -1,0 +1,51 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test tail001</t:title>
+
+<t:input port='source'>
+<p:pipeline name="pipeline" xmlns:p="http://www.w3.org/ns/xproc">
+
+<p:identity>
+  <p:input port="source">
+    <p:pipe step="pipeline" port="source"/>
+    <p:pipe step="pipeline" port="source"/>
+    <p:pipe step="pipeline" port="source"/>
+  </p:input>
+</p:identity>
+
+<p:head>
+  <p:option name="count" value="2"/>
+</p:head>
+
+<p:count/>
+
+</p:pipeline>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:identity>
+  <p:input port="source">
+    <p:pipe step="pipeline" port="source"/>
+    <p:pipe step="pipeline" port="source"/>
+    <p:pipe step="pipeline" port="source"/>
+  </p:input>
+</p:identity>
+
+<p:split-sequence test="position() &lt;= 2"/>
+
+<p:count/>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<c:result xmlns:c="http://www.w3.org/ns/xproc-step">2</c:result></t:output>
+
+</t:test>
+

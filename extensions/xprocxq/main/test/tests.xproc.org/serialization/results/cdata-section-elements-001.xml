@@ -1,0 +1,7 @@
+<doc><title>Document Title</title>
+<p>Some prose.</p>
+<lit><![CDATA[This is <literally>literally</literally>
+what should appear in this   element.]]></lit>
+<p>The Balisage conference
+takes place in Montréal.</p>
+</doc>

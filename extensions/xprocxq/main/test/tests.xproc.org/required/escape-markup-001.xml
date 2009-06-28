@@ -1,0 +1,17 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test escape-markup #001</t:title>
+
+<t:pipeline href="escape-markup-001.xpl">
+</t:pipeline>
+
+<t:output port='result'>
+<body-wrapper>&lt;doc>&lt;p>foo&amp;amp;bar;&lt;/p>&lt;/doc></body-wrapper>
+</t:output>
+
+</t:test>
+

@@ -1,0 +1,63 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test p:xinclude #001</t:title>
+
+<t:input port='source'>
+<document>
+  <xi:include xmlns:xi='http://www.w3.org/2001/XInclude'
+	      href="../doc/input-xinclude.xml">
+    <xi:fallback>
+      <p>Fallback: XInclude failed.</p>
+    </xi:fallback>
+  </xi:include>
+
+  <xi:include xmlns:xi='http://www.w3.org/2001/XInclude'
+	      href="http://example.com/no/documents/here.xml">
+    <xi:fallback>
+      <p>Fallback.</p>
+    </xi:fallback>
+  </xi:include>
+
+  <pre>
+    <xi:include xmlns:xi='http://www.w3.org/2001/XInclude'
+		href="../doc/input.xml" parse="text"/>
+  </pre>
+</document>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:xinclude/>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<document>
+  <document>
+  <doc>
+  <title>input.xml</title>
+  <p>This is input.xml.</p>
+</doc>
+</document>
+
+  
+      <p>Fallback.</p>
+    
+
+  <pre>
+    &lt;doc&gt;
+  &lt;title&gt;input.xml&lt;/title&gt;
+  &lt;p&gt;This is input.xml.&lt;/p&gt;
+&lt;/doc&gt;
+
+  </pre>
+</document></t:output>
+
+</t:test>
+

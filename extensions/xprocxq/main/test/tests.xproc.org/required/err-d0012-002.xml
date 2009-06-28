@@ -1,0 +1,21 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XD0012">
+  
+  <t:title>Test err:XD0012 #002</t:title>
+  
+  <t:pipeline>
+    <p:declare-step>
+      <p:identity>
+        <p:input port="source">
+          <p:document href="unsupported://foo/bar.xml"/>
+        </p:input>
+      </p:identity>
+    </p:declare-step>
+  </t:pipeline>
+  
+</t:test>
+

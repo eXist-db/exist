@@ -1,0 +1,135 @@
+----------------------------------------
+current
+----------------------------------------
+
+* declare-step/pipeline need declared name attribute
+
+* sequence issue with input to choose
+
+* dont forget I changed p namespace and p1 namespace in util.xqm
+
+* pipelines need name attribute, should default to xproc:defaultname
+
+* steps need name attribute, should default to xproc:defaultname
+
+* add primary input to evaluation in u:xquery, instead of passing
+to each function
+
+* fix p:choose deal with xpath-context, each subpipeline must have the same output signature (static check)
+
+* need to check eq and = throughout the codebase to ensure we are testing equality properly
+
+* migrate errors from string to QName
+
+* make error reporting look nicer and try to get some semblance of line number reporting correct
+
+* declare-steps needs refactoring in parsing and execution
+
+* inputs in nested p:declare-steps need fixing due to $allcomp in xproc:explicitnames
+
+* namespace fixups: enumerate step level in scope namespaces
+
+* sequences need rationalization and sanitization
+
+* p:try in evalstep ?
+
+* create namespace module to manage namespace fixups 
+
+* testsuite represents sequences as t:document in count-001.xml in testing suite ?
+
+* target main eXist scenarios
+	- form handler
+	- the same applies to all apps where a user needs to log in first
+	- how about a simple wizard-style example, e.g. along the lines of the "number guessing" example in eXist. I think the page flow logic could all be done in xproc.
+
+parameters are like options, names until runtime (good to use with p:xslt). 
+
+* in p:escape-markup / p:unescape-markup lose top level text() ... amend so it doesn't get stripped
+
+Variables are created in compound steps and are immutable
+Options can be declared on atomic or compound steps.
+Parameters, unlike options and variables, have names that can be computed at runtime.
+
+
+------------------------------
+complex/container steps
+------------------------------
+	p:try/catch
+	p:viewport - treewalker and then apply ext:eval-step to node
+
+------------------------------
+Reuse
+------------------------------
+	p:declare-step
+	p:libary
+	p:import
+
+------------------------------
+standard steps
+------------------------------
+	p:add-xml-base
+	p:split-sequence - easy
+	p:make-absolute-uris
+	p:namespace-rename
+	p:parameters
+
+------------------------------
+optional steps
+------------------------------
+	p:exec - anywhere in eXist a util:exec function ?
+	p:hash - easy
+	p:validate-with-relax-ng - deps on Dannes
+	p:validate-with-schematron - deps on Dannes
+	p:validate-with-xml-schema - deps on Dannes
+	p:www-form-urldecode - easy
+	p:www-form-urlencode - easy
+
+------------------------------
+extension functions
+------------------------------
+	p:step-available()
+
+
+------------------------------
+components
+------------------------------
+	p:serialisation
+	p:log
+	p:pipeinfo
+	
+--------------------------------------------------------------------------------
+
+
+filter 1 * (one test should be error, the other is dynamically constructed select)
+insert 2 *
+label-elements 0 *
+pack 0 *
+rename 0 *
+replace 0 *
+set-attributes 0 *
+unescape 1 *
+unwrap 0 *
+wrap 2 *
+
+
+add-attribute 3
+delete 3
+choose 4
+compare 4
+count 2
+data 0
+declare-step 3
+escape-markup 0
+evaluation-order 3
+for-each 0
+group 2
+http-request 0
+identity 4 (1 due to eXist issue with PI)
+input 5
+load 0
+pipe 001 1
+sink 0
+string-replace 0 
+xinclude 0
+xslt 3
+

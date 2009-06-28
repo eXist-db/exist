@@ -1,0 +1,45 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+  <t:title>Test iteration #001</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Test <code>p:iteration-position()</code> and
+    <code>p:iteration-size()</code>.</p>
+  </t:description>
+
+  <t:input port="source">
+    <t:document>
+      <doc>
+        <title>Some title</title>
+        <para>Some paragraph.</para>
+        <para>Some paragraph.</para>
+        <para>Some paragraph.</para>
+        <para>Some paragraph.</para>
+      </doc>
+    </t:document>
+  </t:input>
+  
+  <t:pipeline>
+    <p:pipeline>
+      <p:viewport match="para">
+	<p:add-attribute match="para" attribute-name="count">
+	  <p:with-option name="attribute-value"
+			 select="concat(p:iteration-position(), ' of ', p:iteration-size())"/>
+	</p:add-attribute>
+      </p:viewport>
+    </p:pipeline>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <doc>
+      <title>Some title</title>
+      <para count="1 of 4">Some paragraph.</para>
+      <para count="2 of 4">Some paragraph.</para>
+      <para count="3 of 4">Some paragraph.</para>
+      <para count="4 of 4">Some paragraph.</para>
+    </doc>
+  </t:output>
+</t:test>

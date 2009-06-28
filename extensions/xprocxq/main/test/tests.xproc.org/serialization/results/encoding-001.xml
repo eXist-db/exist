@@ -1,0 +1,7 @@
+<doc><title>Document Title</title>
+<p>Some prose.</p>
+<lit>This is &lt;literally&gt;literally&lt;/literally&gt;
+what should appear in this   element.</lit>
+<p>The Balisage conference
+takes place in Montr&#233;al.</p>
+</doc>

@@ -1,0 +1,27 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XD0015">
+  <t:title>Test for err:XD0015 #001</t:title>
+  
+  <t:pipeline>
+    <p:declare-step>
+      
+      <p:count>
+        <p:input port="source">
+          <p:inline>
+            <doc>
+              <para>some text</para>
+            </doc>
+          </p:inline>
+        </p:input>
+        <p:with-option name="limit" select="p:system-property('unbound:limit')">
+          <p:empty/>
+        </p:with-option>
+      </p:count>
+    
+    </p:declare-step>
+  </t:pipeline>
+  
+</t:test>

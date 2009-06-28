@@ -1,0 +1,38 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test xquery-002</t:title>
+
+<t:description xmlns="http://www.w3.org/1999/xhtml">
+  <p>Tests inline xqueries.</p>  
+</t:description>
+
+<t:input port='source'>
+<doc>
+<?pi test?>
+<p>This is a p.</p>
+</doc>
+</t:input>
+
+<t:pipeline>
+	<p:pipeline name="pipeline"
+	            xmlns:p="http://www.w3.org/ns/xproc">
+
+	<p:xquery>
+	     <p:input port="query">
+	         <p:inline>
+	             <c:query xmlns:c="http://www.w3.org/ns/xproc-step">//p</c:query>
+	         </p:inline>
+	     </p:input>
+	</p:xquery>
+
+	</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'><p>This is a p.</p></t:output>
+
+</t:test>
+

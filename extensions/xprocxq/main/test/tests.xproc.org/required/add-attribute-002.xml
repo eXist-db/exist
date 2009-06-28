@@ -1,0 +1,40 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+  <t:title>Test p:add-attribute #002</t:title>
+
+  <t:input port='source'>
+    <document>
+      <title>Some Title</title>
+      <para>Some paragraph.</para>
+    </document>
+  </t:input>
+
+  <t:pipeline>
+    <p:pipeline name="pipeline">
+
+      <p:add-attribute match="title" attribute-value="bar" xmlns:test="http://test.com">
+        <p:with-option name="attribute-name" select="'test:foo'"/>
+      </p:add-attribute>
+
+      <!-- After this step, only one (test2:foo) attribute should be set since
+           test and test2 are bound to the same namespace URI -->  
+      <p:add-attribute match="title" attribute-value="bar" xmlns:test2="http://test.com">
+        <p:with-option name="attribute-name" select="'test2:foo'"/>
+      </p:add-attribute>
+
+    </p:pipeline>
+  </t:pipeline>
+
+  <t:output port="result">
+    <document>
+      <title xmlns:test2="http://test.com" test2:foo="bar">Some Title</title>
+      <para>Some paragraph.</para>
+    </document>
+  </t:output>
+
+</t:test>
+

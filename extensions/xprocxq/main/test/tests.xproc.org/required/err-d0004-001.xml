@@ -1,0 +1,34 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	error="err:XD0004">
+
+<t:title>Test err:XD0004</t:title>
+
+<t:input port='source'>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Some title</title>
+  </head>
+  <body>
+    <h1>Some title</h1>
+    <p>Some <del>deleted</del>text.</p>
+  </body>
+</html>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:choose>
+    <p:when test="1 = 0">
+        <p:identity/>
+    </p:when>
+</p:choose>
+</p:pipeline>
+</t:pipeline>
+
+</t:test>
+

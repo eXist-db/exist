@@ -1,0 +1,44 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite">
+
+<t:title>Test pack #001</t:title>
+
+<t:input port='source'>
+  <t:document><doc1/></t:document>
+  <t:document><doc2/></t:document>
+  <t:document><doc3/></t:document>
+</t:input>
+
+<t:input port="alt">
+  <t:document><doc-a/></t:document>
+  <t:document><doc-b/></t:document>
+  <t:document><doc-c/></t:document>
+</t:input>
+
+<t:pipeline>
+<p:declare-step name="pipeline"
+	    xmlns:p="http://www.w3.org/ns/xproc">
+<p:input port="source" sequence="true"/>
+<p:input port="alt" sequence="true"/>
+<p:output port="result"/>
+
+<p:pack wrapper="wrapper">
+  <p:input port="source">
+    <p:pipe step="pipeline" port="source"/>
+  </p:input>
+  <p:input port="alternate">
+    <p:pipe step="pipeline" port="alt"/>
+  </p:input>
+</p:pack>
+
+<p:wrap-sequence wrapper="sequence-wrapper"/>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<sequence-wrapper><wrapper><doc1/><doc-a/></wrapper><wrapper><doc2/><doc-b/></wrapper><wrapper><doc3/><doc-c/></wrapper></sequence-wrapper>
+</t:output>
+
+</t:test>
+

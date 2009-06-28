@@ -1,0 +1,33 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+<t:title>Test filter-001</t:title>
+
+<t:input port='source'>
+<doc>
+<?pi test?>
+<p>This is a p.</p>
+</doc>
+</t:input>
+
+<t:pipeline>
+<p:pipeline name="pipeline">
+
+<p:variable name="element" select="'p'"/>
+
+<p:filter>
+  <p:with-option name="select" select="concat('//*[local-name(.) = &quot;',$element,'&quot;]')"/>
+</p:filter>
+
+</p:pipeline>
+</t:pipeline>
+
+<t:output port='result'>
+<p>This is a p.</p>
+</t:output>
+
+</t:test>
+

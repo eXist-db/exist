@@ -1,0 +1,47 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">
+
+<t:title>Test XQuery #001</t:title>
+
+<t:input port='source'>
+<document>
+<title>Some Title</title>
+<para>Some paragraph.</para>
+</document>
+</t:input>
+
+<t:input port='query'>
+<c:query>
+//title
+</c:query>
+</t:input>
+
+<t:pipeline>
+<p:declare-step name="pipeline">
+<p:input port="parameters" kind="parameter"/>
+<p:input port="source"/>
+<p:input port="query"/>
+<p:output port="result"/>
+
+<p:xquery>
+  <p:input port="source">
+    <p:pipe step="pipeline" port="source"/>
+  </p:input>
+  <p:input port="query">
+    <p:pipe step="pipeline" port="query"/>
+  </p:input>
+</p:xquery>
+
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+<title>Some Title</title>
+</t:output>
+
+</t:test>
+

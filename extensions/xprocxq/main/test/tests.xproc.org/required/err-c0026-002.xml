@@ -1,0 +1,25 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:px="http://xproc.dev.java.net/ns/extensions"
+      xmlns:c="http://www.w3.org/ns/xproc-step"
+      xmlns:err="http://www.w3.org/ns/xproc-error"
+      error="err:XC0026">
+<t:title>Test for err:XC0026 - 002</t:title>
+
+<t:description xmlns="http://www.w3.org/1999/xhtml">
+  <p>Tests if dynamic error XC0026 is thrown if the document does not exist or is not well-formed.</p>  
+</t:description>
+
+<t:input port="source">
+  <doc/>
+</t:input>
+
+<t:pipeline>
+	<p:pipeline name="main" xmlns:p="http://www.w3.org/ns/xproc">
+		<p:load href="../doc/non-well-formed.xml"/>
+	</p:pipeline>
+</t:pipeline>
+
+</t:test>
+

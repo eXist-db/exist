@@ -1,0 +1,37 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XD0023">
+
+  <t:title>Test err:XD0023 - #007</t:title>
+
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Tests that the variable bindings consist only of bindings for options
+    and variables whose declaration precedes the p:variable itself in the
+    surrounding step signature.</p>
+  </t:description>
+
+  <t:input port="source">
+    <doc/>
+  </t:input>
+
+  <t:pipeline>
+
+    <p:declare-step>
+      <p:input port="source"/>
+      <p:variable name="var1" select="$var2"/>
+      <p:variable name="var2" select="'value'"/>
+
+      <p:identity>
+        <p:input port="source">
+          <p:inline><doc/></p:inline>
+        </p:input>
+      </p:identity>
+    </p:declare-step>
+
+  </t:pipeline>
+
+
+</t:test>

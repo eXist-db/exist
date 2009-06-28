@@ -1,0 +1,26 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:px="http://xproc.dev.java.net/ns/extensions"
+      xmlns:c="http://www.w3.org/ns/xproc-step"
+      xmlns:err="http://www.w3.org/ns/xproc-error"
+      error="err:XC0034">
+  <t:title>Test for err:XC0034 - 001</t:title>
+  
+  <t:description xmlns="http://www.w3.org/1999/xhtml">
+    <p>Tests if dynamic error XC0034 is thrown if the current
+    working directory cannot be changed.</p>  
+  </t:description>
+  
+  <t:input port="source">
+    <doc/>
+  </t:input>
+  
+  <t:pipeline>
+    <p:pipeline>
+      <p:exec command="/bin/cat" cwd="/i/do/not/exist"/>
+    </p:pipeline>
+  </t:pipeline>
+  
+</t:test>
+

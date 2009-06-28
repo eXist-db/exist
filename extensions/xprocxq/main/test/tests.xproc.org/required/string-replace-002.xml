@@ -1,0 +1,29 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step">
+  <t:title>Test p:string-replace #002</t:title>
+  
+
+  <t:input port="source">
+    <t:document>
+      <doc>
+        <version>1</version>
+        <para>some text</para>
+      </doc>
+    </t:document>
+  </t:input>
+  
+  <t:pipeline>
+    <p:pipeline>
+      <p:string-replace match="version/text()" replace="number(/doc/version)+1"/>
+    </p:pipeline>
+  </t:pipeline>
+  
+  <t:output port="result">
+    <doc>
+      <version>2</version>
+      <para>some text</para>
+    </doc>
+  </t:output>
+</t:test>

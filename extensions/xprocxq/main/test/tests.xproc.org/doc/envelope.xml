@@ -1,0 +1,27 @@
+<envelope xmlns='http://dev.w3.org/cvsweb/2001/palmagent/hiptop'>
+<from>
+  <first_name>John</first_name>
+  <last_name>Smith</last_name>
+  <addresses>
+    <address>
+      <street>123 Main Street</street>
+      <city>Anytown</city>
+      <state>SA</state>
+      <zip>12345</zip>
+    </address>
+  </addresses>
+</from>
+<to>
+  <first_name>Jane</first_name>
+  <last_name>Doe</last_name>
+  <addresses>
+    <address>
+      <street>456 Random Street
+Suite 200</street>
+      <city>Othertown</city>
+      <state>OA</state>
+      <zip>67890</zip>
+    </address>
+  </addresses>
+</to>
+</envelope>

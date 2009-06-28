@@ -1,0 +1,20 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+        error="err:XC0037">
+  
+  <t:title>Test err:XC0037 - #001</t:title>
+  
+  <t:pipeline>
+    <p:declare-step>
+      <p:output port="result"/>
+
+      <p:www-form-urldecode value="param=%x"/>
+
+    </p:declare-step>
+  </t:pipeline>
+  
+</t:test>
+

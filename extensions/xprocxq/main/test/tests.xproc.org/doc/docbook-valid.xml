@@ -1,0 +1,38 @@
+<book xmlns="http://docbook.org/ns/docbook"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      version="5.0">
+<title>Valid Book</title>
+<chapter xml:id="ch1">
+<title>XML?</title>
+<para>This is a story about <biblioref linkend="xml10"/> and
+<biblioref linkend="xml11"/>. We explicitly reference
+<biblioref linkend="xmlns10"/> and we explicitly don't reference
+<citetitle>Namespaces in XML 1.1</citetitle>.</para>
+</chapter>
+
+<bibliography>
+<bibliomixed xml:id="xml10"><abbrev>XML 1.0</abbrev>
+<citetitle xlink:href="http://www.w3.org/TR/REC-xml/">Extensible
+Markup Language (XML) 1.0 (Fourth Edition)</citetitle>. Tim Bray,
+Jean Paoli, C. M. Sperberg-McQueen, et. al.
+editors. W3C Recommendation 16 August 2006.</bibliomixed>
+
+<bibliomixed xml:id="xmlns10"><abbrev>Namespaces 1.0</abbrev>
+<citetitle xlink:href="http://www.w3.org/TR/REC-xml-names/">Namespaces
+in XML 1.0 (Second Edition)</citetitle>. Tim Bray,
+Dave Hollander, Andrew Layman, et. al.,
+editors. W3C Recommendation 16 August 2006.</bibliomixed>
+
+<bibliomixed xml:id="xml11"><abbrev>XML 1.1</abbrev>
+<citetitle xlink:href="http://www.w3.org/TR/xml11/">Extensible
+Markup Language (XML) 1.1 (Second Edition)</citetitle>. Tim Bray,
+Jean Paoli, C. M. Sperberg-McQueen, et. al.
+editors. W3C Recommendation 16 August 2006.</bibliomixed>
+
+<bibliomixed xml:id="xmlns11"><abbrev>Namespaces 1.1</abbrev>
+<citetitle xlink:href="http://www.w3.org/TR/xml-names11/">Namespaces
+in XML 1.1 (Second Edition)</citetitle>. Tim Bray,
+Dave Hollander, Andrew Layman, et. al.,
+editors. W3C Recommendation 16 August 2006.</bibliomixed>
+</bibliography>
+</book>

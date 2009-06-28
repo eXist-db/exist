@@ -1,0 +1,24 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+      xmlns:p="http://www.w3.org/ns/xproc"
+      xmlns:c="http://www.w3.org/ns/xproc-step"
+      xmlns:err="http://www.w3.org/ns/xproc-error"
+      xmlns:usrerr="http://xproc.org/ns/user-error"
+      error="usrerr:X1">
+<t:title>Test for user-defined error conditions</t:title>
+
+<t:pipeline>
+  <p:declare-step>
+    <p:error name="go-bang" code="usrerr:X1">
+      <p:input port="source">
+	<p:inline>
+	  <message>Bang!</message>
+	</p:inline>
+      </p:input>
+    </p:error>
+  </p:declare-step>
+</t:pipeline>
+
+</t:test>
+
+
