@@ -71,7 +71,7 @@
             <p:step port="result" step="test-uptodate"/>
         </p:input>
         <p:input port="query">
-            <p:data href="/db/xproc/twitter-view.xql"
+            <p:data href="/db/xproc/examples/twitter-view.xql"
             wrapper="c:query" content-type="plain/text"
             xproc:escape="false"/>
         </p:input>
