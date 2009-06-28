@@ -18,16 +18,16 @@
     <body>
         <section id="overview" title="Overview">
 
-            <p>eXist-db is an open source database management system entirely built on XML
+            <p>eXist-db is an open source database management system built using XML
                 technology. It stores XML data according to the XML data model and features
                 efficient, <a href="http://www.w3.org/TR/xquery/">index-based XQuery</a> processing.</p>
 
             <p>eXist-db supports many (<a href="http://en.wikipedia.org/wiki/Web_2">web</a>)
-                technology standards making it an excellent application platform: <ul>
+                technology standards making it an excellent platform for developing web based applications: <ul>
                     <li><a href="http://www.w3.org/TR/xquery/">XQuery 1.0</a> / <a
-                            href="http://www.w3.org/TR/xpath20/">XPath 2.0</a></li>
-                    <li><a href="http://www.w3.org/TR/xslt">XSLT 1.0</a> (using Apache Xalan) or <a
-                            href="http://www.w3.org/TR/xslt20">XSLT 2.0</a> (optional using <a
+                            href="http://www.w3.org/TR/xpath20/">XPath 2.0</a>
+                    / <a href="http://www.w3.org/TR/xslt">XSLT 1.0</a> (using Apache Xalan) or <a
+                            href="http://www.w3.org/TR/xslt20">XSLT 2.0</a> (optional with <a
                             href="http://saxon.sourceforge.net/">Saxon</a>)</li>
                     <li>HTTP interfaces: <a
                             href="http://en.wikipedia.org/wiki/Representational_State_Transfer"
@@ -49,16 +49,16 @@
                 >XQuery</a> standard (current <a href="http://www.w3.org/XML/Query/test-suite/"
                 >XQTS</a> score is <a
                     href="http://www.w3.org/XML/Query/test-suite/XQTSReportSimple.html">99.4%</a>).
-                The query engine is highly extensible and features a large collection of XQuery
+                The query engine is extensible and features a large collection of XQuery
                 Function Modules.</p>
-            
+
+            <a id="download" href="download.xml"><img src="resources/download.png"/></a>
+
             <p>eXist-db provides a powerful environment for the development of web applications
                 based on XQuery and related standards. Entire web applications can be written in
                 XQuery, using XSLT, XHTML, CSS and Javascript (for AJAX functionality). XQuery
                 server pages can be executed from the filesystem or stored in the database.</p>
-            
-            <a id="download" href="download.xml"><img src="resources/download.png"/></a>
-            
+                        
             <!--p>eXist is an Open Source native XML database featuring efficient, index-based <a
                     href="http://www.w3.org/TR/xquery/">XQuery</a> processing, automatic structural
                 indexing, extensions for full-text search, <a
