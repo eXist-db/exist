@@ -45,7 +45,7 @@
                 <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXQuery.js"></script>
 
                 <link type="text/css" rel="stylesheet" href="{$pathToWebapp}styles/syntax/shCore.css"/>
-                <link type="text/css" rel="Stylesheet" href="styles/syntax/shThemeDefault.css" id="theme" />
+                <link type="text/css" rel="Stylesheet" href="{$pathToWebapp}styles/syntax/shThemeDefault.css" id="theme" />
 
                 <script type="text/javascript" src="{$pathToWebapp}styles/niftycube.js"/>
                 
