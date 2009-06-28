@@ -1,10 +1,7 @@
 <!-- Generates html version of Unit Test results //--><!-- TODO: uses XSLT 2.0 at the moment //-->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:c="http://www.w3.org/ns/xproc-step" xmlns:fn="http://www.w3.org/2003/05/xpath-functions" version="2.0">
 
-    <xsl:variable name="total" select="count(result/test)"/>
-    <xsl:variable name="success" select="count(result/test[contains(result,expected)])"/>
-    <xsl:variable name="failed" select="count(result/test[not(contains(result,expected))])"/>
-    <xsl:template match="result">
+   <xsl:template match="result">
         <html>
             <head>
                 <style>
