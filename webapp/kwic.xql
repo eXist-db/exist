@@ -161,7 +161,7 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 		operations or an ngram search.
 :)
 declare function kwic:get-matches($hit as element()) as element(exist:match)* {
-    let $expanded := util:expand($hit)
+    let $expanded := util:expand($hit, "expand-xincludes=no")
 	return $expanded//exist:match
 };
 
@@ -191,7 +191,7 @@ declare function kwic:get-matches($hit as element()) as element(exist:match)* {
 :)
 declare function kwic:summarize($hit as element(), $config as element(config))
 as element()* {
-    let $expanded := util:expand($hit)
+    let $expanded := util:expand($hit, "expand-xincludes=no")
 	for $match in $expanded//exist:match
 	return
 		kwic:get-summary($expanded, $match, $config)

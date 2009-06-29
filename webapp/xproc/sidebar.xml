@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
-	<search href="../search.xql"/>
+	<search href="../xquery/search.xql"/>
     <toolbar>
         <link href="../index.xml">Home</link>
         <link href="../download.xml">Download</link>
@@ -55,7 +55,7 @@
             <link href="../index.xml#mailing">Mailing List/IRC</link>
         </item>
         <item>
-            <link href="applications.xml">Powered By eXist</link>
+            <link href="../applications.xml">Powered By eXist</link>
         </item>
         <!--item>
             <link href="http://wiki.exist-db.org/space/ThirdPartyTools">

@@ -12,7 +12,7 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace ngram="http://exist-db.org/xquery/ngram" at
     "java:org.exist.xquery.modules.ngram.NGramModule";
 
-import module namespace setup="http://exist-db.org/xquery/docs/setup" at "../docsetup.xql";
+import module namespace setup="http://exist-db.org/xquery/docs/setup" at "docsetup.xql";
 
 declare option exist:serialize "media-type=text/xml";
 (:~
