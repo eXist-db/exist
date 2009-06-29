@@ -22,6 +22,7 @@
 package org.exist.collections;
 
 import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -67,7 +68,9 @@ import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+
 import org.w3c.dom.Node;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;

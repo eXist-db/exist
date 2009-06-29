@@ -22,7 +22,11 @@
  */
 package org.exist.source;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
 
 import org.exist.storage.DBBroker;
 

@@ -22,15 +22,44 @@
 
 package org.exist.security.xacml;
 
-import com.sun.xacml.*;
+
+import com.sun.xacml.AbstractPolicy;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.Policy;
+import com.sun.xacml.PolicyReference;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.PolicyTreeElement;
+import com.sun.xacml.ProcessingException;
+import com.sun.xacml.Target;
 import com.sun.xacml.cond.Apply;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.PolicyFinderResult;
+
+import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URI;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.*;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.XMLSecurityManager;
@@ -45,15 +74,12 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.*;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+
+
 
 /**
  * This class contains utility methods for working with XACML
