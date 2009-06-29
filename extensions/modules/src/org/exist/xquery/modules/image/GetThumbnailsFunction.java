@@ -1,8 +1,9 @@
 package org.exist.xquery.modules.image;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;

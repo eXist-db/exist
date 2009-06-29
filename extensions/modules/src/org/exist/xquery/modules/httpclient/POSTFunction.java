@@ -21,11 +21,13 @@
  */
 package org.exist.xquery.modules.httpclient;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+
 import org.exist.dom.QName;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.Cardinality;
@@ -37,7 +39,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
