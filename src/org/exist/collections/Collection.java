@@ -1816,7 +1816,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     }
     
     /**
-     * @deprecated Make private ASAP
+     * (Make private?)
      * @param broker
      */
     public IndexSpec getIndexConfiguration(DBBroker broker) {
