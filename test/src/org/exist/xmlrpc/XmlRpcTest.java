@@ -30,7 +30,6 @@ import java.util.Vector;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.ByteArrayOutputStream;
 
 import javax.xml.transform.OutputKeys;
 
@@ -39,6 +38,8 @@ import junit.textui.TestRunner;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.util.MimeType;
 import org.exist.StandaloneServer;

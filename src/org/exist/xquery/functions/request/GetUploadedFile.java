@@ -22,8 +22,9 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

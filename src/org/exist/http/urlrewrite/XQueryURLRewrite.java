@@ -24,7 +24,6 @@ package org.exist.http.urlrewrite;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,7 +31,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+
 import org.apache.log4j.Logger;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.source.Source;
 import org.exist.source.DBSource;
@@ -72,6 +73,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 import org.xml.sax.SAXException;
 
 import javax.servlet.Filter;
@@ -85,7 +87,6 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponseWrapper;
-
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;

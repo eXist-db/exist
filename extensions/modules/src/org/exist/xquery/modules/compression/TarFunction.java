@@ -21,12 +21,14 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
+
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
