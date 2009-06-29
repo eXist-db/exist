@@ -537,15 +537,15 @@ public class Propfind extends AbstractWebDAVMethod {
     }
     
     private void writeEmptyElement(QName qname, SAXSerializer serializer) throws SAXException {
-        serializer.startElement(WebDAV.DAV_NS, qname.getLocalName(), qname.toString(), new AttributesImpl());
-        serializer.endElement(WebDAV.DAV_NS, qname.getLocalName(), qname.toString());
+        serializer.startElement(WebDAV.DAV_NS, qname.getLocalName(), qname.getStringValue(), new AttributesImpl());
+        serializer.endElement(WebDAV.DAV_NS, qname.getLocalName(), qname.getStringValue());
     }
     
     private void writeSimpleElement(QName element, String content, SAXSerializer serializer)
     throws SAXException {
-        serializer.startElement(WebDAV.DAV_NS, element.getLocalName(), element.toString(), new AttributesImpl());
+        serializer.startElement(WebDAV.DAV_NS, element.getLocalName(), element.getStringValue(), new AttributesImpl());
         serializer.characters(content);
-        serializer.endElement(WebDAV.DAV_NS, element.getLocalName(), element.toString());
+        serializer.endElement(WebDAV.DAV_NS, element.getLocalName(), element.getStringValue());
     }
     
     private void writeResponse(HttpServletResponse response, String content)

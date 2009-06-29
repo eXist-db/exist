@@ -211,7 +211,7 @@ public class PerformanceStats {
         }
         for (FunctionStats stats: functions.values()) {
             attrs.clear();
-            attrs.addAttribute("", "name", "name", "CDATA", stats.qname.toString());
+            attrs.addAttribute("", "name", "name", "CDATA", stats.qname.getStringValue());
             attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
             attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.callCount));
             if (stats.source != null)

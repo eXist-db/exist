@@ -21,8 +21,10 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.net.URISyntaxException;
 import org.exist.dom.QName;
 import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -73,27 +75,37 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 	 */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
 		if(getSignature().getArgumentCount() == 3) {
-			String doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
+			XmldbURI doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
 			try {
-				Resource resource = collection.getResource(doc);
+				Resource resource = collection.getResource(doc.toString());
 				if (resource == null)
 					throw new XPathException(this, "Resource " + doc + " not found");
                String newName = args[2].itemAt(0).getStringValue();
 			   CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
 					collection.getService("CollectionManagementService", "1.0");
-				service.moveResource(doc,null,newName);
+				service.moveResource(doc, (XmldbURI) null, 
+                        XmldbURI.xmldbUriFor(newName));
 			} catch (XMLDBException e) {
 				throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
-			}
+                
+			} catch (URISyntaxException e) {
+                throw new XPathException(this, "URI exception: " + e.getMessage(), e);
+            }
+
 		} else {
 			try {
                 String newName = args[1].itemAt(0).getStringValue();
 				CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
 					collection.getService("CollectionManagementService", "1.0");
-				service.move(collection.getName(),null,newName);
+				service.move(XmldbURI.xmldbUriFor(collection.getName()),null,
+                        XmldbURI.xmldbUriFor(newName));
+
 			} catch (XMLDBException e) {
 				throw new XPathException(this, "Cannot rename collection: " + e.getMessage(), e);
-			}
+                
+			} catch (URISyntaxException e) {
+                throw new XPathException(this, "URI exception: " + e.getMessage(), e);
+            }
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

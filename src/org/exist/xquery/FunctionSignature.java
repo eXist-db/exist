@@ -157,7 +157,7 @@ public class FunctionSignature {
 	
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append(name.toString());
+		buf.append(name.getStringValue());
 		buf.append('(');
 		if(arguments != null) {
             char var = 'a';

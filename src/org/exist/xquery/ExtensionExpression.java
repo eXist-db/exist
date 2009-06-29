@@ -112,7 +112,7 @@ public class ExtensionExpression extends AbstractExpression {
     public void dump(ExpressionDumper dumper) {
         for (int i = 0; i < pragmas.size(); i++) {
             Pragma pragma = (Pragma) pragmas.get(i);
-            dumper.display("(# " + pragma.getQName().toString(), line);
+            dumper.display("(# " + pragma.getQName().getStringValue(), line);
             if (pragma.getContents() != null)
                 dumper.display(' ').display(pragma.getContents());
             dumper.display("#)").nl();
