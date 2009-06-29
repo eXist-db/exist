@@ -64,6 +64,8 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetServerPort.signature, GetServerPort.class),
 		new FunctionDef(GetHostname.signature, GetHostname.class),
 		new FunctionDef(GetRemoteAddr.signature, GetRemoteAddr.class),
+		new FunctionDef(GetRemoteHost.signature, GetRemoteHost.class),
+		new FunctionDef(GetRemotePort.signature, GetRemotePort.class),
 		new FunctionDef(GetExists.signature, GetExists.class),
 		new FunctionDef(SetAttribute.signature, SetAttribute.class),
 		

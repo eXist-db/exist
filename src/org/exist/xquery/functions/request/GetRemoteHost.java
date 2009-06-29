@@ -37,29 +37,21 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author José María Fernández (jmfg@users.sourceforge.net)
  */
-public class GetHostname extends BasicFunction {
+public class GetRemoteHost extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-hostname", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns the hostname of the current request.",
+			new QName("get-remote-host", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns the fully qualified name of the client or the last proxy that sent the current request.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
-	
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("request-hostname", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns the hostname of the current request.",
-			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-			"Renamed to request:get-hostname.");
 
 	/**
 	 * @param context
 	 */
-	public GetHostname(XQueryContext context) {
+	public GetRemoteHost(XQueryContext context) {
 		super(context, signature);
 	}
 
@@ -78,7 +70,6 @@ public class GetHostname extends BasicFunction {
 			throw new XPathException(this, "Variable $request is not bound to an Java object.");
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		
 		if (value.getObject() instanceof RequestWrapper)
 			return new StringValue(((RequestWrapper) value.getObject()).getRemoteHost());
 		else
