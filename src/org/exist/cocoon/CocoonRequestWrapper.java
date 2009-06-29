@@ -202,6 +202,12 @@ public class CocoonRequestWrapper implements RequestWrapper {
 		return cocoonRequest.getRemoteHost();
 	}
 
+	/**@see org.apache.cocoon.environment.Request#getRemotePort()
+	 */
+	public int getRemotePort() {
+		return cocoonRequest.getRemotePort();
+	}
+
 	/**@see org.apache.cocoon.environment.Request#getRemoteUser()
 	 */
 	public String getRemoteUser() {

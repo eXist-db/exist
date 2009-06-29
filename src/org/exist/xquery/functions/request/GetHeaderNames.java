@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: GetHeaderNames.java,v 1.0 2006/07/20 10:33:13 deliriumsky Exp $
+ *  $Id$
  */
 package org.exist.xquery.functions.request;
 

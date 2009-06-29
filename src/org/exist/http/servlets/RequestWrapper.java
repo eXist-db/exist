@@ -80,6 +80,8 @@ public interface RequestWrapper {
 	
 	public String getRemoteHost();
 	
+	public int getRemotePort();
+	
 	public String getRemoteUser();
 	
 	public String getRequestedSessionId();

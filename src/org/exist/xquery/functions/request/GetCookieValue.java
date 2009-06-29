@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: RequestParameter.java 2895 2006-03-15 19:11:34 +0000 (Wed, 15 Mar 2006) wolfgang_m $
+ *  $Id$
  */
 package org.exist.xquery.functions.request;
 

@@ -482,6 +482,12 @@ public class HttpRequestWrapper implements RequestWrapper {
         return servletRequest.getRemoteHost();
     }
     
+    /**@see javax.servlet.http.HttpServletRequest#getRemotePort()
+     */
+    public int getRemotePort() {
+        return servletRequest.getRemotePort();
+    }
+    
     /**@see javax.servlet.http.HttpServletRequest#getRemoteUser()
      */
     public String getRemoteUser() {
