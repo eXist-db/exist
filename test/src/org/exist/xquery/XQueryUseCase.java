@@ -22,7 +22,8 @@
  */
 package org.exist.xquery;
 
-import java.io.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -31,6 +32,7 @@ import java.io.InputStream;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;

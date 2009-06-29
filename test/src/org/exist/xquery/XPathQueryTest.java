@@ -1,5 +1,7 @@
 package org.exist.xquery;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.StandaloneServer;
 import org.exist.TestUtils;
@@ -27,7 +29,7 @@ import org.xmldb.api.modules.XQueryService;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
-import java.io.ByteArrayOutputStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

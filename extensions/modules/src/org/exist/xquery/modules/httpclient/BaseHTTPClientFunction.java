@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import org.apache.commons.httpclient.*;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.methods.OptionsMethod;
 import org.apache.commons.httpclient.util.EncodingUtil;
@@ -48,10 +49,18 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
+import org.apache.commons.httpclient.Cookie;
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.ProxyHost;
+import org.apache.commons.httpclient.URIException;
 
 
 /**

@@ -5,7 +5,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.Properties;
@@ -19,6 +18,8 @@ import junit.framework.TestCase;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;

@@ -22,7 +22,8 @@
 
 package org.exist.xquery.modules.sql;
 
-import java.io.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -39,13 +40,13 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
 import org.w3c.dom.Node;
 
 /**
