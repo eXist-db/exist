@@ -131,7 +131,7 @@ public class QName implements Comparable {
 	}
 
 	/**
-	 * @deprecated : use for debugging purpose only, 
+	 * (deprecated) : use for debugging purpose only,
 	 * use getStringValue() for production
 	 */
 	public String toString() {
