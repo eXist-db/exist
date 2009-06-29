@@ -202,10 +202,12 @@ public class CocoonRequestWrapper implements RequestWrapper {
 		return cocoonRequest.getRemoteHost();
 	}
 
-	/**@see org.apache.cocoon.environment.Request#getRemotePort()
+	/**
+		As Cocoon does not implement the concept of remote port,
+		give at least the server port. Beware, it could be wrong!!!!
 	 */
 	public int getRemotePort() {
-		return cocoonRequest.getRemotePort();
+		return cocoonRequest.getServerPort();
 	}
 
 	/**@see org.apache.cocoon.environment.Request#getRemoteUser()
