@@ -139,9 +139,9 @@ public class DirectoryListFunction extends BasicFunction {
 				builder.startElement(new QName("file", NAMESPACE_URI, PREFIX), null);
 				
 				builder.addAttribute(new QName("name", null, null), files[j].getName());
-				builder.addAttribute(new QName("size", null, null), files[j].length());				
+				builder.addAttribute(new QName("size", null, null), Long.toString(files[j].length()));				
 				// FIXIT: return a dateTime instead of a long. /ljo
-				builder.addAttribute(new QName("modified", null, null), files[j].lastModified());				
+				builder.addAttribute(new QName("modified", null, null), Long.toString(files[j].lastModified()));				
 				if (relDir != null && relDir.length() > 0) {
 					builder.addAttribute(new QName("subdir", null, null), relDir);
 				}
