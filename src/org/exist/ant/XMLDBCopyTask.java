@@ -22,9 +22,11 @@
  */
 package org.exist.ant;
 
+import java.net.URISyntaxException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -35,91 +37,99 @@ import org.xmldb.api.base.XMLDBException;
  *
  * @author peter.klotz@blue-elephant-systems.com
  */
-public class XMLDBCopyTask extends AbstractXMLDBTask
-{
+public class XMLDBCopyTask extends AbstractXMLDBTask {
 
-  private String resource = null;
-  private String collection = null;
-  private String destination = null;
-  private String name = null;
+    private String resource = null;
+    private String collection = null;
+    private String destination = null;
+    private String name = null;
 
-  /* (non-Javadoc)
-   * @see org.apache.tools.ant.Task#execute()
-   */
-  public void execute() throws BuildException
-  {
-    if (uri == null)
-      throw new BuildException("You have to specify an XMLDB collection URI");
-    if (resource == null && collection == null)
-      throw new BuildException("Missing parameter: either resource or collection should be specified");
+    /* (non-Javadoc)
+     * @see org.apache.tools.ant.Task#execute()
+     */
+    public void execute() throws BuildException {
+        if (uri == null) {
+            throw new BuildException("You have to specify an XMLDB collection URI");
+        }
+        if (resource == null && collection == null) {
+            throw new BuildException("Missing parameter: either resource or collection should be specified");
+        }
 
-    registerDatabase();
-    try
-    {
-      log("Get base collection: " + uri, Project.MSG_DEBUG);
-      Collection base = DatabaseManager.getCollection(uri, user, password);
+        registerDatabase();
+        try {
+            log("Get base collection: " + uri, Project.MSG_DEBUG);
+            Collection base = DatabaseManager.getCollection(uri, user, password);
 
-      if(base==null){
-    	  String msg="Collection " + uri + " could not be found.";
-    	  if(failonerror)
-    		  throw new BuildException(msg);
-    	  else
-    		  log(msg,Project.MSG_ERR);
-      } else {
-	      log("Create collection management service for collection " + base.getName(), Project.MSG_DEBUG);
-	      CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) base.getService("CollectionManagementService", "1.0");
-	      if (resource != null)
-	      {
-	        log("Copying resource: " + resource, Project.MSG_INFO);
-	        Resource res = base.getResource(resource);
-	        if (res == null) {
-	      	  String msg="Resource " + resource + " not found.";
-	    	  if(failonerror)
-	    		  throw new BuildException(msg);
-	    	  else
-	    		  log(msg,Project.MSG_ERR);
-	        } else {
-	        	service.copyResource(resource, destination, name);
-	        }
-	      } else
-	      {
-	        log("Copying collection: " + collection, Project.MSG_INFO);
-	        service.copy(collection, destination, name);
-	      }
-      }
-    } catch (XMLDBException e)
-    {
-  	  String msg="XMLDB exception during copy: " + e.getMessage();
-	  if(failonerror)
-		  throw new BuildException(msg,e);
-	  else
-		  log(msg,e,Project.MSG_ERR);
+            if (base == null) {
+                String msg = "Collection " + uri + " could not be found.";
+                if (failonerror) {
+                    throw new BuildException(msg);
+                } else {
+                    log(msg, Project.MSG_ERR);
+                }
+            } else {
+                log("Create collection management service for collection " + base.getName(), Project.MSG_DEBUG);
+                CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) base.getService("CollectionManagementService", "1.0");
+                if (resource != null) {
+                    log("Copying resource: " + resource, Project.MSG_INFO);
+                    Resource res = base.getResource(resource);
+                    if (res == null) {
+                        String msg = "Resource " + resource + " not found.";
+                        if (failonerror) {
+                            throw new BuildException(msg);
+                        } else {
+                            log(msg, Project.MSG_ERR);
+                        }
+                    } else {
+                        //XmldbURI resource = XmldbURI.create(resource);
+                        service.copyResource(XmldbURI.xmldbUriFor(resource),
+                                XmldbURI.xmldbUriFor(destination),
+                                XmldbURI.xmldbUriFor(name));
+                    }
+                } else {
+                    log("Copying collection: " + collection, Project.MSG_INFO);
+                    service.copy(XmldbURI.xmldbUriFor(collection),
+                            XmldbURI.xmldbUriFor(destination),
+                            XmldbURI.xmldbUriFor(name) );
+                }
+            }
+        } catch (XMLDBException e) {
+            String msg = "XMLDB exception during copy: " + e.getMessage();
+            if (failonerror) {
+                throw new BuildException(msg, e);
+            } else {
+                log(msg, e, Project.MSG_ERR);
+            }
+            
+        } catch (URISyntaxException e) {
+          String msg = "URI syntax exception: " + e.getMessage();
+            if (failonerror) {
+                throw new BuildException(msg, e);
+            } else {
+                log(msg, e, Project.MSG_ERR);
+            }
+        }
     }
-  }
 
-  /**
-   * @param collection
-   */
-  public void setCollection(String collection)
-  {
-    this.collection = collection;
-  }
+    /**
+     * @param collection
+     */
+    public void setCollection(String collection) {
+        this.collection = collection;
+    }
 
-  /**
-   * @param resource
-   */
-  public void setResource(String resource)
-  {
-    this.resource = resource;
-  }
+    /**
+     * @param resource
+     */
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
 
-  public void setDestination(String destination)
-  {
-    this.destination = destination;
-  }
+    public void setDestination(String destination) {
+        this.destination = destination;
+    }
 
-  public void setName(String name)
-  {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 }

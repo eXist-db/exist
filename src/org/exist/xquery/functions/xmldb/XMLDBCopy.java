@@ -21,8 +21,10 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.net.URISyntaxException;
 import org.exist.dom.QName;
 import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -41,60 +43,62 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Copy a collection $a to the collection $b. The collections can be specified either as " +
-				"a simple collection path or an XMLDB URI.",
-				new SequenceType[] {
-						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                       new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-                       new SequenceType(Type.ITEM, Cardinality.EMPTY)
-		),
-		new FunctionSignature(
-			new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Copy a resource $c from the collection specified in $a to collection in $b. " +
-            "The collections can be either specified as a simple collection path " +
-            "or an XMLDB URI.",
-			new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                   new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-                   new SequenceType(Type.ITEM, Cardinality.EMPTY)
-		)
-	};
-	
-	public XMLDBCopy(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
-        String destination = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
-		if(getSignature().getArgumentCount() == 3) {
-			String doc = new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI().toString();
-			try {
-				Resource resource = collection.getResource(doc);
-				if (resource == null)
-					throw new XPathException(this, "Resource " + doc + " not found");
-				CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
-					collection.getService("CollectionManagementService", "1.0");
-				service.copyResource(doc,destination,null);
-			} catch (XMLDBException e) {
-				throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
-			}
-		} else {
-			try {
-				CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
-					collection.getService("CollectionManagementService", "1.0");
-				service.copy(collection.getName(),destination,null);
-			} catch (XMLDBException e) {
-				throw new XPathException(this, "Cannot copy collection: " + e.getMessage(), e);
-			}
-		}
-		return Sequence.EMPTY_SEQUENCE;
-	}
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+        new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+        "Copy a collection $a to the collection $b. The collections can be specified either as " +
+        "a simple collection path or an XMLDB URI.",
+        new SequenceType[]{
+            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+        new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+        new FunctionSignature(
+        new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+        "Copy a resource $c from the collection specified in $a to collection in $b. " +
+        "The collections can be either specified as a simple collection path " +
+        "or an XMLDB URI.",
+        new SequenceType[]{
+            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+        new SequenceType(Type.ITEM, Cardinality.EMPTY))
+    };
 
+    public XMLDBCopy(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
+        XmldbURI destination = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
+        if (getSignature().getArgumentCount() == 3) {
+            XmldbURI doc = new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI();
+            try {
+                Resource resource = collection.getResource(doc.toString());
+                if (resource == null) {
+                    throw new XPathException(this, "Resource " + doc + " not found");
+                }
+                CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
+                service.copyResource(doc, destination, null);
+            } catch (XMLDBException e) {
+                throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
+            }
+            
+        } else {
+            try {
+                CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
+                // DWES to check not sure about XmldbURI.xmldbUriFor() here.
+                service.copy(XmldbURI.xmldbUriFor(collection.getName()), destination, null);
+
+            } catch (XMLDBException e) {
+                throw new XPathException(this, "Cannot copy collection: " + e.getMessage(), e);
+
+            } catch (URISyntaxException e) {
+                throw new XPathException(this, "URI exception: " + e.getMessage(), e);
+            }
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
 }

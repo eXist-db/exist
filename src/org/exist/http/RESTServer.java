@@ -318,7 +318,7 @@ public class RESTServer {
 		}
 		// Process the request
 		DocumentImpl resource = null;
-		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( path ) );
+		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( path , "UTF-8" ) );
 		try {
 			// check if path leads to an XQuery resource
 			String xquery_mime_type = MimeType.XQUERY_TYPE.getName();

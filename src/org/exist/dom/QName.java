@@ -136,10 +136,7 @@ public class QName implements Comparable {
 	 */
 	public String toString() {
 		//TODO : remove this copy of getStringValue()
-		if (prefix_ != null && prefix_.length() > 0)
-			return prefix_ + ':' + localName_;
-		else 
-			return localName_;
+		return getStringValue();
 		//TODO : replace by something like this
 		/*
 		if (prefix_ != null && prefix_.length() > 0)

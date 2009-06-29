@@ -368,7 +368,7 @@ public class FulltextIndexSpec {
         }
 
         public String toString() {
-            return qname.toString() + " [" + mixedContent + ']';
+            return qname.getStringValue() + " [" + mixedContent + ']';
         }
     }
 }

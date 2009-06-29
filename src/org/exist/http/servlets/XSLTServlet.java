@@ -74,6 +74,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
 import java.util.HashMap;
+import javax.servlet.ServletContext;
 
 public class XSLTServlet extends HttpServlet {
 
@@ -193,7 +194,7 @@ public class XSLTServlet extends HttpServlet {
             if (f.canRead())
                 stylesheet = f.toURI().toASCIIString();
             else {
-                stylesheet = request.getRealPath(stylesheet);
+                stylesheet = getServletContext().getRealPath(stylesheet);
                 f = new File(stylesheet);
                 stylesheet = f.toURI().toASCIIString();
             }

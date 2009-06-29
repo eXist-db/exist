@@ -75,7 +75,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     public void startElement(QName qname) throws TransformerException {
         super.startElement(qname);
-        currentTag = qname.toString();
+        currentTag = qname.getStringValue();
     }
     
     public void startElement(String qname) throws TransformerException {
