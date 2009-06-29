@@ -22,6 +22,16 @@
  */
 package org.exist.http.urlrewrite;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import org.apache.log4j.Logger;
 
 import org.exist.source.Source;
@@ -41,7 +51,6 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.NodeValue;
 import org.exist.Namespaces;
 import org.exist.EXistException;
-import org.exist.collections.*;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.BinaryDocument;
@@ -57,7 +66,6 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
-import org.exist.http.servlets.HttpServletRequestWrapper;
 import org.exist.http.Descriptor;
 
 import org.w3c.dom.Node;
@@ -78,9 +86,17 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import java.io.*;
-import java.util.*;
+
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Vector;
 
 /**
  * A filter to redirect HTTP requests. Similar to the popular UrlRewriteFilter, but

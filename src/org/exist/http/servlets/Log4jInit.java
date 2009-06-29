@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.xml.DOMConfigurator;
+
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
@@ -99,6 +100,7 @@ public class Log4jInit extends HttpServlet {
     /**
      * Initialize servlet for log4j purposes in servlet container (war file).
      */
+    @Override
     public void init() throws ServletException {
         
         // We need to check how eXist is running. If eXist is started in a
@@ -177,6 +179,7 @@ public class Log4jInit extends HttpServlet {
      * @param req HTTP Request object
      * @param res HTTP Response object
      */
+    @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res) {
         //
     }

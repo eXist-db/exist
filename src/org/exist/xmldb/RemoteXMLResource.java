@@ -23,19 +23,20 @@ package org.exist.xmldb;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
+
 import org.exist.Namespaces;
 import org.exist.dom.DocumentTypeImpl;
-import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.Compressor;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.value.StringValue;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -52,10 +53,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
+
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -65,7 +65,6 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
