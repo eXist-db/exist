@@ -22,9 +22,10 @@
 
 package org.exist.xquery.modules.image;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
 
 import org.exist.dom.QName;
