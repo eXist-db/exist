@@ -2,38 +2,15 @@
 	XQueryURLRewrite filter configured in web.xml. :)
 xquery version "1.0";
 
+(:~ -------------------------------------------------------
+    Main controller: handles all requests not matched by
+    sub-controllers.
+    ------------------------------------------------------- :)
+
 declare namespace c="http://exist-db.org/xquery/controller";
 
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb = "http://exist-db.org/xquery/xmldb";
-
-declare function c:admin($path as xs:string, $name as xs:string) {
-    if (starts-with($path, "/admin/backups")) then
-        let $user := xdb:get-current-user()
-        return
-            if (not(xdb:is-admin-user($user))) then
-                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        			<redirect url="../admin.xql"/>
-        		</dispatch>
-        	else
-                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="/admin/retrieve-backup.xql">
-                        <add-parameter name="archive" value="{$name}"/>
-                    </forward>
-                </dispatch>
-    else if (matches($path, "admin/?$")) then
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<redirect url="admin.xql"/>
-		</dispatch>
-    else if ($name eq "admin.xql") then
-	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-	        <forward url="/admin/admin.xql"/>
-	    </dispatch>
-    else
-        <ignore xmlns="http://exist.sourceforge.net/NS/exist">
-            <cache-control cache="yes"/>
-		</ignore>
-};
 
 let $uri := request:get-uri()
 let $context := request:get-context-path()
@@ -56,75 +33,6 @@ return
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<redirect url="sandbox.xql"/>
 		</dispatch>
-	else if (starts-with($path, "/admin")) then
-	    c:admin($path, $name)
-	else if ($name = ('search.xql', 'functions.xql', 'svnlog.xql')) then
-		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<forward url="{$path}">
-				<!-- query results are passed to XSLT servlet via request attribute -->
-				<set-attribute name="xquery.attribute"
-					value="xslt.model"/>
-			</forward>
-			<view>
-				<forward servlet="XSLTServlet">
-					<set-attribute name="xslt.input"
-						value="xslt.model"/>
-					<set-attribute name="xslt.stylesheet" 
-						value="stylesheets/db2html.xsl"/>
-				</forward>
-			</view>
-		</dispatch>
-	else if ($name eq 'acronyms.xql') then
-		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<!-- query results are passed to XSLT servlet via request attribute -->
-			<set-attribute name="xquery.attribute"
-				value="xslt.model"/>
-			<view>
-				<forward servlet="XSLTServlet">
-					<set-attribute name="xslt.input"
-						value="xslt.model"/>
-					<set-attribute name="xslt.stylesheet"
-						value="xquery/stylesheets/acronyms.xsl"/>
-				</forward>
-				<forward servlet="XSLTServlet">
-					<set-attribute name="xslt.input"
-						value=""/>
-					<set-attribute name="xslt.stylesheet" 
-						value="stylesheets/db2html.xsl"/>
-				</forward>
-			</view>
-		</dispatch>
-	else if ($name eq 'biblio.xql') then
-		let $display := request:get-parameter("display", "overview")
-		let $xsl := 
-			if ($display eq "details") then "detailed.xsl" else "overview.xsl"
-		return
-			<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-				<set-attribute name="xquery.attribute" value="xslt.model"/>
-				<view>
-				<forward servlet="XSLTServlet">
-					<set-attribute name="xslt.input"
-						value="xslt.model"/>
-					<set-attribute name="xslt.stylesheet" 
-						value="xquery/stylesheets/{$xsl}"/>
-				</forward>
-				<forward servlet="XSLTServlet">
-					<set-attribute name="xslt.input"
-						value=""/>
-					<set-attribute name="xslt.stylesheet" 
-						value="stylesheets/doc2html-2.xsl"/>
-				</forward>
-
-				</view>
-			</dispatch>
-			
-	else if ($name eq 'twitter.xql') then
-	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-	        <view>
-	            <forward url="twitter-view.xql"/>
-            </view>
-	    </dispatch>
-	    
 	else if ($name eq 'applications.xml') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<!-- query results are passed to XSLT servlet via request attribute -->
@@ -145,7 +53,6 @@ return
 				</forward>
 			</view>
 		</dispatch>
-
 	else if ($name eq 'articles') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<forward url="/xquery/exist-articles.xql">
@@ -162,9 +69,22 @@ return
 				</forward>
 			</view>
 		</dispatch>
-
+		
+    else if ($path = "/xforms/idxconf.xml") then
+        let $log := util:log("DEBUG", "in xforms rule") return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="idxconf.xql"/>
+			<!--view>
+				<forward servlet="XSLTServlet">
+					<set-attribute name="xslt.stylesheet" 
+						value="xforms/xsltforms/xsltforms.xsl"/>
+				</forward>
+			</view-->
+            <cache-control cache="no"/>
+		</dispatch>
+		
 	(: the following xml files use different stylesheets :)
-	else if ($name = ('index.xml', 'roadmap.xml', 'facts.xml', 'biblio.xml')
+	else if ($name = ('index.xml', 'roadmap.xml', 'facts.xml')
 	    or $path = '/examples.xml') then
 		let $stylesheet :=
 			if ($name eq 'roadmap.xml') then
@@ -190,7 +110,7 @@ return
 			let $docName := replace($uri, '^.*/([^/]+)$', '$1')
 			return
 				<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-					<forward url="docs.xql">
+					<forward url="/xquery/docs.xql">
 						<add-parameter name="path" value="/db/xqdocs/{$docName}"/>
 					</forward>
 				</dispatch>
@@ -204,18 +124,6 @@ return
 				</view>
             	<cache-control cache="no"/>
 			</dispatch>
-	else if ($path = "/xproc") then
-	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    		<redirect url="xproc/examples.xml"/>
-    	</dispatch>
-	else if (ends-with($uri, '.xproc')) then
-	    let $docName := replace($uri, '^.*/([^/]+)$', '$1')
-	    return
-    	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    			<forward url="/rest/db/xproc/run.xql">
-    				<add-parameter name="xproc" value="/db/xproc/examples/{$docName}"/>
-    			</forward>
-    		</dispatch>
     else if ($name = ('default-style.css', 'niftycube.js', 'niftyCorners.css', 'sh-min.js')) then
         let $newPath := 
             if ($name eq 'sh-min.js') then

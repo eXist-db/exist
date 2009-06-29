@@ -5,7 +5,7 @@ xquery version "1.0";
     ================================================ :)
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
-import module namespace kwic="http://exist-db.org/xquery/kwic" at "kwic.xql";
+import module namespace kwic="http://exist-db.org/xquery/kwic" at "../kwic.xql";
 
 import module namespace setup="http://exist-db.org/xquery/docs/setup" at "docsetup.xql";
 
@@ -32,7 +32,7 @@ declare function dq:print($hit as element(), $docXPath as xs:string, $mode as xs
 as element()* {
     let $nodeId := util:node-id($hit)
 	let $uri := concat(
-		util:document-name(root($hit)), "?q=",
+		"../", util:document-name(root($hit)), "?q=",
 		(: "docs.xql?path=", document-uri(root($hit)), "&amp;q=", :)
 		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
 	)

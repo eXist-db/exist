@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.exist.source.Source;
 import org.exist.source.DBSource;
 import org.exist.source.SourceFactory;
+import org.exist.source.FileSource;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
@@ -40,6 +41,8 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.NodeValue;
 import org.exist.Namespaces;
 import org.exist.EXistException;
+import org.exist.collections.*;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.BinaryDocument;
 import org.exist.xmldb.XmldbURI;
@@ -75,23 +78,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.io.OutputStreamWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Enumeration;
-import java.util.Vector;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.List;
-import java.util.LinkedList;
+import java.io.*;
+import java.util.*;
 import java.net.URISyntaxException;
 
 /**
@@ -100,73 +88,42 @@ import java.net.URISyntaxException;
  *
  * The request is passed to an XQuery whose return value determines where the request will be
  * redirected to. An empty return value means the request will be passed through the filter
- * untouched. Otherwise, the query should return a single XML element, either
- * &lt;exist:dispatch&gt; or &lt;exist:ignore&gt;:
- *
- * <pre>
- *  &lt;exist:dispatch xmlns:exist="http://exist.sourceforge.net/NS/exist">
- *      &lt;!-- use exist:forward to forward the request to a different url -->
- *      &lt;exist:forward url="..."/>
- *      &lt;!-- or servlet: -->
- *      &lt;exist:forward servlet="..."/>
- *      &lt;!-- use exist:redirect to trigger a client redirect -->
- *      &lt;exist:redirect url="..."/>
- *      &lt;!-- pass additional parameters -->
- *       &lt;exist:add-parameter name="new-param" value="new-param-value"/>
- *       &lt;exist:cache-control cache="yes|no"/>
- *   &lt;/exist:dispatch>
- *
- *  &lt;exist:ignore xmlns:exist="http://exist.sourceforge.net/NS/exist"/&gt;
- * </pre>
- *
- * &lt;exist:ignore&gt; has the same effect as returning the empty sequence from the query: the request
- * will not be touched and is passed on to the next filter or servlet.
- *
- * &lt;exist:dispatch&gt; should have one of three attributes: <em>path</em>, <em>servlet-name</em> or
- * <em>redirect</em>.
- *
- * If the <em>servlet-name</em> attribute is present, the request will be forwarded to the named servlet
- * (name as specified in web.xml). Alternatively, <em>path</em> can point to an arbitrary resource. It can be either absolute or relative.
- * Relative paths are resolved relative to the original request.
+ * untouched. Otherwise, the query should return a single XML element, which will instruct the filter
+ * how to further process the request. Details about the format can be found in the main documentation.
  *
  * The request is forwarded via {@link javax.servlet.RequestDispatcher#forward(javax.servlet.ServletRequest, javax.servlet.ServletResponse)}.
  * Contrary to HTTP forwarding, there is no additional roundtrip to the client. It all happens on
  * the server. The client will not notice the redirect.
  *
- * When forwarding to other servlets, the fields in {@link javax.servlet.http.HttpServletRequest} will be
- * updated to point to the new, redirected URI. However, the original request URI is stored in the
- * request attribute org.exist.forward.request-uri.
- *
- * As an alternative to the server-side forward, the <em>redirect</em> attribute causes the server to send a redirect request to the client, which will usually respond
- * with a new request to the redirected location. Note that this is quite different from a forwarding via RequestDispatcher,
- * which is completely transparent to the client.
- *
- * One or more &lt;exist:add-parameter&gt; can be used to pass additional query parameters in the URL. The parameters will
- * be added to the already existing parameters of the original request.
- *
- * The &lt;cache-control&lt; element controls if the rewritten URL will be cached or not. For a cached URL, the XQuery will not
- * be executed again. Instead, the forward or redirect is executed directly. By default caching is disabled. Please note that
- * request parameters are not taken into account when caching the URL. 
- *
- * RedirectorServlet takes a single parameter in web.xml: "xquery". This parameter should point to an
- * XQuery script. It should be relative to the current web context.
- *
+ * XQueryURLrewrite is configured in web.xml as follows:
  * <pre>
- * &lt;servlet>
- *       &lt;servlet-name>RedirectorServlet</servlet-name>
- *       &lt;servlet-class>org.exist.http.servlets.RedirectorServlet</servlet-class>
- *
- *       &lt;init-param>
- *           &lt;param-name>xquery</param-name>
- *           &lt;param-value>dispatcher.xql</param-value>
- *       &lt;/init-param>
- *   &lt;/servlet>
- *
- * &lt;servlet-mapping>
- *       &lt;servlet-name>RedirectorServlet</servlet-name>
- *       &lt;url-pattern>/wiki/*</url-pattern>
- *   &lt;/servlet-mapping>
+ *   &lt;filter>
+ *       &lt;filter-name>XQueryURLRewrite&lt;/filter-name>
+ *       &lt;filter-class>org.exist.http.urlrewrite.XQueryURLRewrite&lt;/filter-class>
+ *	     &lt;init-param>
+ *			&lt;param-name>base&lt;/param-name>
+ *	        &lt;param-value>.&lt;/param-value>
+ *			&lt;!--param-value>xmldb:exist:///db&lt;/param-value-->
+ *		&lt;/init-param>
+ *      &lt;!--init-param>
+ *          &lt;param-name>xquery&lt;/param-name>
+ *          &lt;param-value>controller.xql&lt;/param-value>
+ *      &lt;/init-param-->
+ *   &lt;/filter>
  * </pre>
+ *
+ * Parameter "xquery" directly points to the controller XQuery which should be used for
+ * <b>all</b> requests. The query may reside on the file system or can be stored in the
+ * database. If it is stored in the db, the parameter value for "xquery" should be a valid
+ * XML:DB URI, containing the complete path to the resource in the db.
+ *
+ * Alternatively, XQueryURLRewrite can try to search for a controller
+ * matching the current request path. As above, it can either search the database collection
+ * hierarchy or the file system. The starting point for the search is determined by parameter
+ * "base".
+ *
+ * If neither "xquery" nor "base" are present, XQueryURLRewrite sets base to point to the current
+ * webapp root directory.
  */
 public class XQueryURLRewrite implements Filter {
 
@@ -183,14 +140,17 @@ public class XQueryURLRewrite implements Filter {
 
     private FilterConfig config;
 
-    private Map urlCache = new HashMap();
+    private Map<String, ModelAndView> urlCache = new HashMap<String, ModelAndView>();
 
     private User user;
     private BrokerPool pool;
 
     // path to the query
     private String query = null;
-    private Source source = null;
+    
+    private List<Source> sources = new ArrayList<Source>();
+
+    private String basePath = null;
     private boolean checkModified = true;
 
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -198,9 +158,10 @@ public class XQueryURLRewrite implements Filter {
         this.config = filterConfig;
 
         query = filterConfig.getInitParameter("xquery");
-        if (query == null)
-            throw new ServletException(getClass().getName() + " requires a parameter 'xquery'.");
-
+        basePath = filterConfig.getInitParameter("base");
+        if (query == null && basePath == null)
+            basePath = ".";
+        
         String opt = filterConfig.getInitParameter("check-modified");
         if (opt != null)
             checkModified = opt != null && opt.equalsIgnoreCase("true");
@@ -237,27 +198,32 @@ public class XQueryURLRewrite implements Filter {
             configure();
 
             DBBroker broker = null;
-            if (source != null && checkModified) {
-                if (source instanceof DBSource) {
-                    // Check if the XQuery source changed. If yes, clear all caches.
-                    try {
-                        broker = pool.get(user);
-                        if (source.isValid(broker) != Source.VALID)
+            if (checkModified) {
+                // check if any of the currently used sources has been updated
+                // if yes, clear the cache
+                for (int i = 0; i < sources.size(); i++) {
+                    Source source = sources.get(i);
+                    if (source instanceof DBSource) {
+                        // Check if the XQuery source changed. If yes, clear all caches.
+                        try {
+                            broker = pool.get(user);
+                            if (source.isValid(broker) != Source.VALID)
+                                urlCache.clear();
+                        } finally {
+                            pool.release(broker);
+                        }
+                    } else {
+                        if (source.isValid((DBBroker)null) != Source.VALID)
                             urlCache.clear();
-                    } finally {
-                        pool.release(broker);
                     }
-                } else {
-                    if (source.isValid((DBBroker)null) != Source.VALID)
-                        urlCache.clear();
                 }
             }
-
+            
             if (LOG.isTraceEnabled())
                 LOG.trace("Processing request URI: " + request.getRequestURI());
             RequestWrapper modifiedRequest = new RequestWrapper(request);
             // check if the request URI is already in the url cache
-            ModelAndView modelView = (ModelAndView) urlCache.get(request.getRequestURI());
+            ModelAndView modelView = urlCache.get(request.getRequestURI());
             // no: create a new model and view configuration
             if (modelView == null) {
                 modelView = new ModelAndView();
@@ -455,7 +421,134 @@ public class XQueryURLRewrite implements Filter {
 
     private Sequence runQuery(DBBroker broker, HttpServletRequest request, HttpServletResponse response) throws ServletException, XPathException {
         // Try to find the XQuery
+        Source source;
         String moduleLoadPath = config.getServletContext().getRealPath(".");
+        if (basePath == null)
+            source = getSource(broker, moduleLoadPath);
+        else
+            source = findSource(request, broker, moduleLoadPath);
+        sources.add(source);
+        XQuery xquery = broker.getXQueryService();
+		XQueryPool pool = xquery.getXQueryPool();
+		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
+        XQueryContext queryContext;
+        if (compiled == null) {
+			queryContext = xquery.newContext(AccessContext.REST);
+		} else {
+			queryContext = compiled.getContext();
+		}
+        // Find correct module load path
+		queryContext.setModuleLoadPath(moduleLoadPath);
+        declareVariables(queryContext, request, response);
+        if (compiled == null) {
+			try {
+				compiled = xquery.compile(queryContext, source);
+			} catch (IOException e) {
+				throw new ServletException("Failed to read query from " + query, e);
+			}
+		}
+        try {
+			return xquery.execute(compiled, null);
+		} finally {
+			pool.returnCompiledXQuery(source, compiled);
+		}
+    }
+
+    private Source findSource(HttpServletRequest request, DBBroker broker, String moduleLoadPath) throws ServletException {
+        String requestURI = request.getRequestURI();
+        String path = requestURI.substring(request.getContextPath().length());
+        if (path.startsWith("/"))
+            path = path.substring(1);
+        String[] components = path.split("/");
+
+        if (basePath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+            try {
+                XmldbURI locationUri = XmldbURI.xmldbUriFor(basePath);
+                Collection collection = broker.openCollection(locationUri, Lock.READ_LOCK);
+                if (collection == null)
+                    throw new ServletException("Base collection not found: " + basePath);
+
+                Collection subColl = collection;
+                DocumentImpl controllerDoc = null;
+                for (int i = 0; i < components.length; i++) {
+                    if (components[i].length() > 0) {
+                        if (subColl.hasChildCollection(XmldbURI.createInternal(components[i]))) {
+                            DocumentImpl doc = null;
+                            try {
+                                subColl = broker.openCollection(subColl.getURI().append(components[i]), Lock.READ_LOCK);
+                                if (subColl != null) {
+                                    XmldbURI docUri = subColl.getURI().append("controller.xql");
+                                    doc = broker.getXMLResource(docUri, Lock.READ_LOCK);
+                                    if (doc != null)
+                                        controllerDoc = doc;
+                                } else
+                                    break;
+                            } catch (PermissionDeniedException e) {
+                                LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " +
+                                    e.getMessage(), e);
+                            } finally {
+                                if (doc != null)
+                                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                                if (subColl != null)
+                                    subColl.getLock().release(Lock.READ_LOCK);
+                            }
+                        } else
+                            break;
+                    }
+                }
+                if (controllerDoc == null) {
+                    try {
+                        XmldbURI docUri = collection.getURI().append("controller.xql");
+                        controllerDoc = broker.getXMLResource(docUri, Lock.READ_LOCK);
+                    } catch (PermissionDeniedException e) {
+                        LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " +
+                            e.getMessage(), e);
+                    }
+                }
+                if (controllerDoc == null)
+                    throw new ServletException("XQueryURLRewrite controller could not be found");
+                if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
+                            !controllerDoc.getMetadata().getMimeType().equals("application/xquery"))
+                        throw new ServletException("XQuery resource: " + query + " is not an XQuery or " +
+                                "declares a wrong mime-type");
+                    return new DBSource(broker, (BinaryDocument) controllerDoc, true);
+            } catch (URISyntaxException e) {
+                throw new ServletException("Bad URI for base path: " + e.getMessage(), e);
+            }
+        } else {
+            String realPath = config.getServletContext().getRealPath(basePath);
+            File baseDir = new File(realPath);
+            if (!baseDir.isDirectory())
+                throw new ServletException("Base path for XQueryURLRewrite does not point to a directory");
+
+            File controllerFile = null;
+            File subDir = baseDir;
+            for (int i = 0; i < components.length; i++) {
+                if (components[i].length() > 0) {
+                    subDir = new File(subDir, components[i]);
+                    if (subDir.isDirectory()) {
+                        File cf = new File(subDir, "controller.xql");
+                        if (cf.canRead())
+                            controllerFile = cf;
+                    } else
+                        break;
+                }
+            }
+            if (controllerFile == null) {
+                File cf = new File(baseDir, "controller.xql");
+                if (cf.canRead())
+                    controllerFile = cf;
+            }
+            if (controllerFile == null)
+                throw new ServletException("XQueryURLRewrite controller could not be found");
+            if (LOG.isTraceEnabled())
+                LOG.trace("Found controller file: " + controllerFile.getAbsolutePath());
+            return new FileSource(controllerFile, "UTF-8", true);
+        }
+    }
+    
+    private Source getSource(DBBroker broker, String moduleLoadPath) throws ServletException {
+        Source source;
         if (query.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             // Is the module source stored in the database?
             try {
@@ -488,30 +581,7 @@ public class XQueryURLRewrite implements Filter {
                 throw new ServletException("Permission denied while reading XQuery source: " + query);
             }
         }
-        XQuery xquery = broker.getXQueryService();
-		XQueryPool pool = xquery.getXQueryPool();
-		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
-        XQueryContext queryContext;
-        if (compiled == null) {
-			queryContext = xquery.newContext(AccessContext.REST);
-		} else {
-			queryContext = compiled.getContext();
-		}
-        // Find correct module load path
-		queryContext.setModuleLoadPath(moduleLoadPath);
-        declareVariables(queryContext, request, response);
-        if (compiled == null) {
-			try {
-				compiled = xquery.compile(queryContext, source);
-			} catch (IOException e) {
-				throw new ServletException("Failed to read query from " + query, e);
-			}
-		}
-        try {
-			return xquery.execute(compiled, null);
-		} finally {
-			pool.returnCompiledXQuery(source, compiled);
-		}
+        return source;
     }
 
     private void declareVariables(XQueryContext context,
