@@ -33,6 +33,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -51,7 +52,7 @@ public class GetUploadedFileSize extends BasicFunction {
 			"Returns the empty sequence if the request is not a multi-part request or the parameter name " +
 			"does not point to a file part.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "")
 			},
 			new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE));
 	

@@ -31,6 +31,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,12 +48,13 @@ public class GetHeader extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("get-header", RequestModule.NAMESPACE_URI,
 					RequestModule.PREFIX),
-			"Returns the HTTP request header identified by $a. The list of all "
+			"Returns the HTTP request header identified by $header-name. The list of all "
 					+ "headers included in the HTTP request are available through the "
 					+ "request:get-header-names function.",
-			new SequenceType[] { new SequenceType(Type.STRING,
-					Cardinality.EXACTLY_ONE) }, new SequenceType(Type.STRING,
-					Cardinality.ZERO_OR_ONE));
+			new SequenceType[] { 
+				new FunctionParameterSequenceType("header-name", Type.STRING, Cardinality.EXACTLY_ONE, "The HTTP request header name") 
+				}, 
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 
 	public GetHeader(XQueryContext context) {
 		super(context, signature);

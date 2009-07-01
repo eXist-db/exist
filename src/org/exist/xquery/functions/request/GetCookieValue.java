@@ -32,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -49,9 +50,9 @@ public class GetCookieValue extends BasicFunction {
 				"get-cookie-value",
 				RequestModule.NAMESPACE_URI,
 				RequestModule.PREFIX),
-			"Returns the value of the Cookie named in $a.",
+			"Returns the value of a named Cookie.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("cookie-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the cookie to retrieve the value from.")
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 

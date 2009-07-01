@@ -31,6 +31,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,7 +48,7 @@ public class GetRequestAttribute extends BasicFunction {
 			"Returns the string value of the request attribute specified in the argument or the empty " +
             "sequence if no such attribute exists. The attribute value should be a string.",
 			new SequenceType[] {
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "Name of the attribute")
             },
 			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
 
