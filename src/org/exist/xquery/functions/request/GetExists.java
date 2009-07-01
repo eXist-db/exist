@@ -44,7 +44,7 @@ public class GetExists extends BasicFunction
 		new FunctionSignature(
 			new QName( "exists", RequestModule.NAMESPACE_URI, RequestModule.PREFIX ),
 			"Returns whether a request object exists.",
-			null,
+			FunctionSignature.NO_ARGS,
 			new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ) );
 
 	/**

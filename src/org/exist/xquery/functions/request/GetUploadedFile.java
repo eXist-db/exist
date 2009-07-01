@@ -40,6 +40,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -57,7 +58,7 @@ public class GetUploadedFile extends BasicFunction {
 			"Returns the empty sequence if the request is not a multi-part request or the parameter name " +
 			"does not point to a file part.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "")
 			},
 			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE),
 			"Deprecated in favour of get-uploaded-file-data()"
@@ -69,7 +70,7 @@ public class GetUploadedFile extends BasicFunction {
 				"Returns the empty sequence if the request is not a multi-part request or the parameter name " +
 				"does not point to a file part.",
 				new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+					new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "")
 				},
 				new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
 		)

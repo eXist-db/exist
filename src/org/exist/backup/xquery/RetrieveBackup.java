@@ -7,6 +7,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.Variable;
 import org.exist.xquery.functions.response.ResponseModule;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.Sequence;
@@ -49,12 +50,10 @@ public class RetrieveBackup extends BasicFunction {
         new FunctionSignature(
                 new QName("retrieve", BackupModule.NAMESPACE_URI, BackupModule.PREFIX),
                 "Retrieves a zipped backup archive and directly streams it to the HTTP response. " +
-                "For security reasons, the function will not allow to read other files. The base directory " +
-                "for the backup files is specified in the first parameter, the second parameter contains the " +
-                "name of the file to retrieve.",
+                "For security reasons, the function will not allow to read other files.",
                 new SequenceType[] {
-                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                        new FunctionParameterSequenceType("exportDir", Type.STRING, Cardinality.EXACTLY_ONE, "The base directory for the backup files."),
+                        new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "Name of the file to retrieve.")
                 },
                 new SequenceType(Type.ITEM, Cardinality.EMPTY)
         );

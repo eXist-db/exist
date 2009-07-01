@@ -31,6 +31,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,13 +48,13 @@ public class GetParameter extends BasicFunction {
 			"get-parameter",
 			RequestModule.NAMESPACE_URI,
 			RequestModule.PREFIX),
-			"Returns the HTTP request parameter identified by $a. If the parameter could not be found, " +
-			"the default value specified in $b is returned instead. Note: this function will not try to expand " +
+			"Returns the HTTP request parameter identified by $parameter-name. If the parameter could not be found, " +
+			"the default value is returned instead. Note: this function will not try to expand " +
 			"predefined entities like &amp; or &lt;, so a &amp; passed through a parameter will indeed " +
 			"be treated as an &amp; character.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},
+				new FunctionParameterSequenceType("parameter-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "")},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)),
 	
 		new FunctionSignature(
@@ -61,15 +62,15 @@ public class GetParameter extends BasicFunction {
 			"get-parameter",
 			RequestModule.NAMESPACE_URI,
 			RequestModule.PREFIX),
-			"Returns the HTTP request parameter identified by $a. If the parameter could not be found, " +
-			"the default value specified in $b is returned instead. Note: this function will not try to expand " +
+			"Returns the HTTP request parameter identified by $parameter-name. If the parameter could not be found, " +
+			"the default value is returned instead. Note: this function will not try to expand " +
 			"predefined entities like &amp; or &lt;, so a &amp; passed through a parameter will indeed " +
-			"be treated as an &amp; character. If the  $c (failonerror) value is set to false, then the function " +
+			"be treated as an &amp; character. If the $failonerror value is set to false, then the function " +
 			"will not fail if there is no request in scope.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-				new SequenceType( Type.BOOLEAN, Cardinality.ZERO_OR_MORE )},
+				new FunctionParameterSequenceType("parameter-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, ""),
+				new FunctionParameterSequenceType( "failonerror", Type.BOOLEAN, Cardinality.ZERO_OR_MORE, "" )},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE))
 		
 	};
@@ -80,13 +81,13 @@ public class GetParameter extends BasicFunction {
 		"request-parameter",
 		RequestModule.NAMESPACE_URI,
 		RequestModule.PREFIX),
-		"Returns the HTTP request parameter identified by $a. If the parameter could not be found, " +
-		"the default value specified in $b is returned instead. Note: this function will not try to expand " +
+		"Returns the HTTP request parameter identified by $parameter-name. If the parameter could not be found, " +
+		"the default value is returned instead. Note: this function will not try to expand " +
 		"predefined entities like &amp; or &lt;, so a &amp; passed through a parameter will indeed " +
 		"be treated as an &amp; character.",
 		new SequenceType[] {
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},
+			new FunctionParameterSequenceType("parameter-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+			new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "")},
 		new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
 		"Renamed to request:get-parameter.");
 	
