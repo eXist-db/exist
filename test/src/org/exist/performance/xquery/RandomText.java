@@ -37,9 +37,9 @@ public class RandomText extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("random-text", PerfTestModule.NAMESPACE_URI, PerfTestModule.PREFIX),
-                "",
+                "This function generates a string of random words.",
                 new SequenceType[] {
-                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("max-words", Type.INT, Cardinality.EXACTLY_ONE, "The maximum number of random words to generate.")
                 },
             new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 
