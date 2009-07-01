@@ -37,9 +37,9 @@ public class ExtDoctype extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doctype", Function.BUILTIN_FUNCTION_NS),
-			"Returns the document nodes of the documents whose DOCTYPE is given by $a.",
+			"Returns the document nodes of the documents based on the DOCTYPE.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
+				 new FunctionParameterSequenceType("doctype", Type.STRING, Cardinality.ONE_OR_MORE, "one or more DOCTYPE names"),
 			},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 			"This function is eXist-specific and should not be in the standard functions namespace. Please " +

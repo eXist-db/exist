@@ -104,6 +104,7 @@ public class ExtractDocs extends BasicFunction {
         attribs.addAttribute("", "type", "type", "CDATA", "library");
         builder.startElement(XQDOC_NS, "module", "module", attribs);
         simpleElement(builder, "uri", module.getNamespaceURI());
+        simpleElement(builder, "name", module.getDefaultPrefix());
         builder.startElement(XQDOC_NS, "comment", "comment", null);
         simpleElement(builder, "description", module.getDescription());
         builder.endElement();

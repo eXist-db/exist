@@ -32,6 +32,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -52,9 +53,9 @@ public class GetAttribute extends Function
 			"Returns an attribute stored in the current session object or an empty sequence " +
 			"if the attribute cannot be found.",
 			new SequenceType[] {
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "" )
 			},
-			new SequenceType( Type.STRING, Cardinality.ZERO_OR_MORE ) );
+			new FunctionParameterSequenceType( "", Type.STRING, Cardinality.ZERO_OR_MORE, "attribute value" ) );
 	
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -62,9 +63,9 @@ public class GetAttribute extends Function
 			"Returns an attribute stored in the current session object or an empty sequence " +
 			"if the attribute cannot be found.",
 			new SequenceType[] {
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "" )
 			},
-			new SequenceType( Type.STRING, Cardinality.ZERO_OR_MORE ),
+			new FunctionParameterSequenceType( "", Type.STRING, Cardinality.ZERO_OR_MORE, "attribute value" ),
 			"Moved to 'session' module. Renamed to session:get-attribute");
 		
 	public GetAttribute( XQueryContext context ) 
