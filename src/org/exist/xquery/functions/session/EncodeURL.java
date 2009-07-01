@@ -33,6 +33,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -48,7 +49,7 @@ public class EncodeURL extends BasicFunction {
 			new QName("encode-url", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
 			"Encodes the specified URL with the current HTTP session-id.",
 			new SequenceType[] {
-				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "")
 			},
 			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE));
 	
@@ -57,7 +58,7 @@ public class EncodeURL extends BasicFunction {
 			new QName("encode-url", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Encodes the specified URL with the current HTTP session-id.",
 			new SequenceType[] {
-				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "")
 			},
 			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
 			"Moved to the 'session' module. See session:encode-url.");

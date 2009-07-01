@@ -72,6 +72,7 @@ public class ExtFulltext extends Function implements Optimizable {
 		new FunctionSignature(
             //TODO : change this ! -pb
 			new QName("contains", Function.BUILTIN_FUNCTION_NS),
+			"",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
 		);
