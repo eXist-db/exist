@@ -44,23 +44,27 @@ public class IndexTerms extends BasicFunction {
             new QName("index-terms", TextModule.NAMESPACE_URI, TextModule.PREFIX),
             "This function can be used to collect some information on the distribution " +
             "of index terms within a set of nodes. The set of nodes is specified in the first " +
-            "argument $a. The function returns term frequencies for all terms in the index found " +
-            "in descendants of the nodes in $a. The second argument $b specifies " +
+            "argument $nodes. The function returns term frequencies for all terms in the index found " +
+            "in descendants of the nodes in $nodes. The second argument $start specifies " +
             "a start string. Only terms starting with the specified character sequence are returned. " +
-            "If $a is the empty sequence, all terms in the index will be selected. " +
-            "$c is a function reference, which points to a callback function that will be called " +
-            "for every term occurrence. $d defines the maximum number of terms that should be " +
-            "reported. The function reference for $c can be created with the util:function " +
+            "If $nodes is the empty sequence, all terms in the index will be selected. " +
+            "$function is a function reference, which points to a callback function that will be called " +
+            "for every term occurrence. $returnMax defines the maximum number of terms that should be " +
+            "reported. The function reference for $function can be created with the util:function " +
             "function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
             "1) the current term as found in the index as xs:string, 2) a sequence containing four int " +
             "values: a) the overall frequency of the term within the node set, b) the number of distinct " +
             "documents in the node set the term occurs in, c) the current position of the term in the whole " +
             "list of terms returned, d) the rank of the current term in the whole list of terms returned.",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                        "The set of nodes in which the returned tokens occur"),
+                    new FunctionParameterSequenceType("start", Type.STRING, Cardinality.ZERO_OR_ONE,
+                        "Optional start string"),
+                    new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE,
+                        "Callback function reference"),
+                    new FunctionParameterSequenceType("returnMax", Type.INT, Cardinality.EXACTLY_ONE,
+                        "Maximum number of terms to report")
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)),
         new FunctionSignature(
@@ -70,11 +74,16 @@ public class IndexTerms extends BasicFunction {
             "lists the QNames or elements or attributes for which occurrences should be" +
             "returned. Otherwise, the function behaves like the 4-argument version.",
             new SequenceType[]{
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.QNAME, Cardinality.ONE_OR_MORE),
-                    new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                        "The set of nodes in which the returned tokens occur"),
+                    new FunctionParameterSequenceType("qnames", Type.QNAME, Cardinality.ONE_OR_MORE,
+                        "One or more element or attribute names for which index terms are returned"),
+                    new FunctionParameterSequenceType("start", Type.STRING, Cardinality.ZERO_OR_ONE,
+                        "Optional start string"),
+                    new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE,
+                        "Callback function reference"),
+                    new FunctionParameterSequenceType("returnMax", Type.INT, Cardinality.EXACTLY_ONE,
+                        "Maximum number of terms to report")
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE))
     };
