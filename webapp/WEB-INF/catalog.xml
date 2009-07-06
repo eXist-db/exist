@@ -15,7 +15,8 @@
 	<system systemId="xhtml-symbol.ent" uri="entities/xhtml-symbol.ent"/> 
 	<public publicId="-//W3C//ENTITIES Special for XHTML//EN" uri="entities/xhtml-special.ent"/>
 	<system systemId="xhtml-special.ent" uri="entities/xhtml-special.ent"/>
-
+    <public publicId="-//W3C//DTD XHTML 1.0 Transitional//EN" uri="entities/xhtml1-transitional.dtd"/>
+    <system systemId="xhtml1-transitional.dtd" uri="entities/xhtml1-transitional.dtd"/>
 	
     <uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/>
     
