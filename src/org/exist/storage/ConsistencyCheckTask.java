@@ -74,7 +74,7 @@ public class ConsistencyCheckTask implements SystemTask {
 
         String backup = properties.getProperty(BACKUP_PROP_NAME, "no");
         createBackup = backup.equalsIgnoreCase("YES");
-        String inc = properties.getProperty(INCREMENTAL_PROP_NAME, "yes");
+        String inc = properties.getProperty(INCREMENTAL_PROP_NAME, "no");
         incremental = inc.equalsIgnoreCase("YES");
         String incCheck = properties.getProperty(INCREMENTAL_CHECK_PROP_NAME, "no");
         incrementalCheck = incCheck.equalsIgnoreCase("YES");
