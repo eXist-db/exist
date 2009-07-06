@@ -417,7 +417,6 @@ public class FtQueryTest extends XMLTestCase {
     			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
 		    	"    <index>" +
 		    	"        <fulltext default=\"none\" attributes=\"false\">" +
-                "           <include path=\"//node\"/>" +
                 "           <create qname=\"node\"/>" +
                 "           <create qname=\"@id\"/>" +
                 "	      </fulltext>" +
@@ -450,6 +449,15 @@ public class FtQueryTest extends XMLTestCase {
 
 	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//node, (), util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        ResourceSet result = service.query(query);
+            for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
+                Resource resource = i.nextResource();
+                System.out.println(resource.getContent());
+            }
+            assertEquals(5, result.getSize());
+
+            query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//node, " +
+                "xs:QName('node'), (), util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
+	        result = service.query(query);
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
                 Resource resource = i.nextResource();
                 System.out.println(resource.getContent());
