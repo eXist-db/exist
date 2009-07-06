@@ -78,7 +78,10 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
                                     </div>
                                     <h3>{$match/xqdoc:name/text()}</h3>
                                     <div class="f-signature">{$match/xqdoc:signature/text()}</div>
-                                    <div class="f-description">{$match/xqdoc:comment/xqdoc:description/text()}</div>
+                                    <div class="f-description">
+                                        <div>{$match/xqdoc:comment/xqdoc:description/text()}</div>
+                                        { xqdoc:print-parameters($match/xqdoc:comment) }
+                                    </div>
                                 </div>
                         } 
                     </div>
@@ -87,6 +90,25 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
         return <div class="query-result">{ $hideshowButtons, $return }</div>
     else
         ()
+};
+
+declare function xqdoc:print-parameters($comment as element(xqdoc:comment)) {
+    let $params := $comment/xqdoc:param
+    return
+        if ($params[1] != '$a') then
+            <table class="f-params">
+            {
+                for $param in $comment/xqdoc:param
+                let $split := text:groups($param, "^(\$[^ ]+) (.*)$")
+                return
+                    <tr>
+                        <td>{$split[2]}</td>
+                        <td>{$split[3]}</td>
+                    </tr>
+            }
+            </table>
+        else
+            ()
 };
 
 (:~
