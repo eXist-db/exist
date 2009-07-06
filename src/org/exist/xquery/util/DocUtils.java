@@ -47,6 +47,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.URLSource;
+import org.exist.util.XMLReaderPool;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -82,6 +83,7 @@ public class DocUtils {
 
 		if(path.matches("^[a-z]+:.*") && !path.startsWith("xmldb:"))
 		{
+            XMLReader reader = null;
 			/* URL */
             try {
                 Source source = SourceFactory.getSource(context.getBroker(), "", path, false);
@@ -99,12 +101,9 @@ public class DocUtils {
                 //TODO : process pseudo-protocols URLs more efficiently.
                 org.exist.memtree.DocumentImpl memtreeDoc = null;
                 // we use eXist's in-memory DOM implementation
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                factory.setNamespaceAware(true);
+                reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
                 //TODO : we should be able to cope with context.getBaseURI()
                 InputSource src = new InputSource(istream);
-                SAXParser parser = factory.newSAXParser();
-                XMLReader reader = parser.getXMLReader();
                 SAXAdapter adapter = new SAXAdapter();
                 reader.setContentHandler(adapter);
                 reader.parse(src);
@@ -116,12 +115,7 @@ public class DocUtils {
             } catch(MalformedURLException e)
             {
                 throw new XPathException(e.getMessage(), e);
-            }
-            catch(ParserConfigurationException e)
-            {
-                throw new XPathException(e.getMessage(), e);
-            }
-            catch(SAXException e)
+            } catch(SAXException e)
             {
                 throw new XPathException(e.getMessage(), e);
             }
@@ -136,6 +130,9 @@ public class DocUtils {
                 {
                     throw new XPathException(e.getMessage(), e);
                 }
+            } finally {
+                if (reader != null)
+                    context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
             }
 		}
 		else
