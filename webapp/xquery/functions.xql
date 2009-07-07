@@ -81,8 +81,12 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
                                     <div class="f-description">
                                         <div>{$match/xqdoc:comment/xqdoc:description/text()}</div>
                                         { xqdoc:print-parameters($match/xqdoc:comment) }
-                                    </div>
-                                </div>
+                                    </div>{
+			                       if (string-length($match/xqdoc:comment/xqdoc:deprecated/text()) > 0)
+			                       then
+			                           <div class="f-deprecated"><div>Deprecated: {$match/xqdoc:comment/xqdoc:deprecated/text()}</div></div>
+			                       else ()
+                                }</div>
                         } 
                     </div>
                 </div>

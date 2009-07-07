@@ -138,3 +138,10 @@
 .f-params {
     margin-top:         1em;
 }
+
+.f-deprecated {
+	color:				red; 
+	font-weight:		bold;
+    margin: 15px 0 5px 0;
+    padding: 5px;
+}
