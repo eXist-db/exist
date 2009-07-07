@@ -32,89 +32,80 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
 /**
- * Compresses a sequence of resources and/or collections into a Tar file
+ * Extracts files and folders from a Tar file
  * 
  * @author Adam Retter <adam@exist-db.org>
  * @version 1.0
  */
-public class UnTarFunction extends AbstractUnCompressFunction {
+public class UnTarFunction extends AbstractExtractFunction {
 
-	public final static FunctionSignature signatures[] = {
-			new FunctionSignature(
-					new QName("untar", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-					"UnTar's resources listed in $b form data provided in $a into collection $c." +
-					"if $b is empty unTar's all resources",
-					new SequenceType[] {
-							new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE), 
-							new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-					new SequenceType(Type.EMPTY, Cardinality.EMPTY)),
-					
-			new FunctionSignature(
-					new QName("untar", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-					"UnTar's resources listed in $b form data provided in $a into result sequence." +
-					"if $b is empty unTar's all resources. " +
-					"Every tar's enry is XML fragment kind of: <entry name='entry-name' type='entry-type'>content</entry>. " +
-					"Where 'entry-name' is name of resourse or collection, " +
-					"'entry-type' is type of entry: 'xml', 'binary' or 'collection', " +
-					"'content' is content of resource or empty for collection. " +
-					"For binary resources the content is BASE64_BINARY.",
-					new SequenceType[] {
-							new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
-					new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE))
-			};
+   public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("untar", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+            "UnTar all the resources/folders from the provided data by calling user defined functions " +
+            "to determine what and how to store the resources/folders",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("tar-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The tar file data"),
+                new FunctionParameterSequenceType("entry-filter", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for filtering resources from the tar file. The function takes 2 parameters e.g. user:untar-entry-filter($path as xs:anyURI, $data-type as xs:string) as xs:boolean. $type may be 'resource' or 'folder'. If the return type is true() it indicates the entry should be processed and passed to the entry-data function, else the resource is skipped."),
+                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for storing an extracted resource from the tar file. The function takes 3 parameters e.g. user:untar-entry-data($path as xs:anyURI, $data-type as xs:string, $data as item()?). $type may be 'resource' or 'folder'"),
+            },
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+        )
+    };
 
-	public UnTarFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public UnTarFunction(XQueryContext context, FunctionSignature signature)
+    {
+        super(context, signature);
+    }
 	
-	protected Sequence unCompress(ByteArrayInputStream bais, Collection collection) throws XPathException {
-		TarInputStream tis = new TarInputStream(bais);
-		try {
-			TarEntry entry;
-			while ((entry = tis.getNextEntry()) != null){
-				if (doUncompress(entry.getName())){
-					if (entry.isDirectory()){
-						createCollectionPath(collection, entry.getName());
-					} else {
-						createResource(tis, collection, entry.getName());
-					}
-				}
-			}
-		} catch (IOException e) {
-			throw new XPathException(this, e.getMessage());
-		} catch (XMLDBException e) {
-			throw new XPathException(this, e.getMessage());
-		}
-		return Sequence.EMPTY_SEQUENCE;
-	}
+    @Override
+    protected Sequence processCompressedData(Base64Binary compressedData) throws XPathException
+    {
+        TarInputStream tis = null;
+        try
+        {
+            tis = new TarInputStream(new ByteArrayInputStream(compressedData.getBinaryData()));
+            TarEntry entry = null;
 
-	protected Sequence unCompress(ByteArrayInputStream bais) throws XPathException {
-		Sequence result = new InMemoryNodeSet();
-		TarInputStream tis = new TarInputStream(bais);
-		try {
-			TarEntry entry;
-			while ((entry = tis.getNextEntry()) != null){
-				if (doUncompress(entry.getName())){
-					if (entry.isDirectory()){
-						result.add(createCollectionEntry(entry.getName()));
-					} else {
-						result.add(createResourceEntry(tis, entry.getName()));
-					}
-				}
-			}
-		} catch (IOException e) {
-			throw new XPathException(this, e.getMessage());
-		}
-		return result;
-	}
+            Sequence results = new ValueSequence();
 
+            while((entry = tis.getNextEntry()) != null)
+            {
+                Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), tis);
+
+                results.addAll(processCompressedEntryResults);
+            }
+
+            return results;
+        }
+        catch(IOException ioe)
+        {
+            LOG.error(ioe.getMessage(), ioe);
+            throw new XPathException(this, ioe.getMessage(), ioe);
+        }
+        finally
+        {
+            if(tis != null)
+            {
+                try
+                {
+                    tis.close();
+                }
+                catch(IOException ioe)
+                {
+                    LOG.warn(ioe.getMessage(), ioe);
+                }
+            }
+        }
+    }
 }
