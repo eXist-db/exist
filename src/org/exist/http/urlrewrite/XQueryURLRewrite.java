@@ -765,7 +765,19 @@ public class XQueryURLRewrite implements Filter {
             return characterEncoding;
         }
 
-//        public void setAttribute(String key, Object value) {
+        public String getHeader(String s) {
+            if (s.equals("If-Modified-Since"))
+                return null;
+            return super.getHeader(s);
+        }
+
+        public long getDateHeader(String s) {
+            if (s.equals("If-Modified-Since"))
+                return -1;
+            return super.getDateHeader(s);
+        }
+
+        //        public void setAttribute(String key, Object value) {
 //            attributes.put(key, value);
 //        }
 //
