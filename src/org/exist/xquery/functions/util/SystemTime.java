@@ -24,34 +24,97 @@ package org.exist.xquery.functions.util;
 import java.util.Date;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Function;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-public class SystemTime extends BasicFunction {
+/**
+ * @author Andrzej Taramina (andrzej@chaeron.com)
+ */
 
-    public final static FunctionSignature signature =
+public class SystemTime extends Function 
+{
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-            new QName("system-time", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Returns the xs:time (with timezone) as reported by the Java method System.currentTimeMillis(). " +
+            new QName( "system-time", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
+            "Returns the current xs:time (with timezone) as reported by the Java method System.currentTimeMillis(). " +
             "Contrary to fn:current-time, this function is not stable, i.e. the returned xs:time will change " +
             "during the evaluation time of a query and can be used to measure time differences.",
             null,
-            new SequenceType(Type.TIME, Cardinality.EXACTLY_ONE));
-    
-    public SystemTime(XQueryContext context) {
-        super(context, signature);
-    }
+            new SequenceType(Type.TIME, Cardinality.EXACTLY_ONE )
+		),
+	
+		 new FunctionSignature(
+            new QName( "system-date", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
+            "Returns the current xs:date (with timezone) as reported by the Java method System.currentTimeMillis(). " +
+            "Contrary to fn:current-date, this function is not stable, i.e. the returned xs:date will change " +
+            "during the evaluation time of a query and can be used to measure time differences.",
+            null,
+            new SequenceType( Type.DATE, Cardinality.EXACTLY_ONE ) 
+		),
+			
+		new FunctionSignature(
+            new QName( "system-dateTime", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
+            "Returns the current xs:dateTime (with timezone) as reported by the Java method System.currentTimeMillis(). " +
+            "Contrary to fn:current-dateTime, this function is not stable, i.e. the returned xs:dateTime will change " +
+            "during the evaluation time of a query and can be used to measure time differences.",
+            null,
+            new SequenceType( Type.DATE_TIME, Cardinality.EXACTLY_ONE )
+		)
+	};
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
-            throws XPathException {
-        return new DateTimeValue(new Date()).convertTo(Type.TIME);
+    
+    public SystemTime( XQueryContext context, FunctionSignature signature ) 
+	{
+        super( context, signature );
+    }
+	
+
+    public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
+	{
+		if( context.getProfiler().isEnabled() ) {
+			context.getProfiler().start( this );       
+			context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
+			if( contextSequence != null ) {
+				context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence );
+			}
+			if( contextItem != null ) {
+				context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence() );
+			}
+		}        
+
+		Sequence result = new DateTimeValue( new Date() );
+		
+		if( isCalledAs("system-dateTime" ) ) {
+			// do nothing, result already in right form
+		} else if( isCalledAs("system-date" ) ) {
+			result = result.convertTo( Type.DATE );
+		} else if( isCalledAs("system-time" ) ) {
+			result = result.convertTo( Type.TIME );
+		} else {
+			throw( new Error( "can't handle function " + mySignature.getName().getLocalName() ) );
+		}
+
+		if( context.getProfiler().isEnabled() ) {
+			context.getProfiler().end( this, "", result );   
+		}
+
+		return( result );
+    }
+	
+	
+	public int getDependencies() 
+	{
+        return( Dependency.CONTEXT_SET );
     }
 
 }
