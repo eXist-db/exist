@@ -1,120 +1,88 @@
-/*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-08 The eXist Project
- *  http://exist-db.org
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
- */
 package org.exist.xquery.modules.compression;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
 import org.exist.dom.QName;
-import org.exist.memtree.InMemoryNodeSet;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
+import org.exist.xquery.value.ValueSequence;
 
 /**
- * Compresses a sequence of resources and/or collections into a Zip file
- * 
+ * Extracts files and folders from a Zip file
+ *
  * @author Adam Retter <adam@exist-db.org>
  * @version 1.0
  */
-public class UnZipFunction extends AbstractUnCompressFunction {
+public class UnZipFunction extends AbstractExtractFunction
+{
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("unzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+            "UnZip all the resources/folders from the provided data by calling user defined functions " +
+            "to determine what and how to store the resources/folders",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("zip-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The zip file data"),
+                new FunctionParameterSequenceType("entry-filter", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for filtering resources from the zip file. The function takes 2 parameters e.g. user:unzip-entry-filter($path as xs:anyURI, $data-type as xs:string) as xs:boolean. $type may be 'resource' or 'folder'. If the return type is true() it indicates the entry should be processed and passed to the entry-data function, else the resource is skipped."),
+                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for storing an extracted resource from the zip file. The function takes 3 parameters e.g. user:unzip-entry-data($path as xs:anyURI, $data-type as xs:string, $data as item()?). $type may be 'resource' or 'folder'"),
+            },
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+        )
+    };
 
-	public final static FunctionSignature signatures[] = {
-			new FunctionSignature(
-					new QName("unzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-					"UnZip's resources listed in $b form data provided in $a into collection $c." +
-					"if $b is empty unZip's all resources",
-					new SequenceType[] {
-							new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE), 
-							new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-					new SequenceType(Type.EMPTY, Cardinality.EMPTY)),
-					
-			new FunctionSignature(
-					new QName("unzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-					"UnZip's resources listed in $b form data provided in $a into result sequence." +
-					"if $b is empty unZip's all resources. " +
-					"Every zip's enry is XML fragment kind of: <entry name='entry-name' type='entry-type'>content</entry>. " +
-					"Where 'entry-name' is name of resourse or collection, " +
-					"'entry-type' is type of entry: 'xml', 'binary' or 'collection', " +
-					"'content' is content of resource or empty for collection. " +
-					"For binary resources the content is BASE64_BINARY.",
-					new SequenceType[] {
-							new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
-					new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE))
-			};
+    public UnZipFunction(XQueryContext context, FunctionSignature signature)
+    {
+            super(context, signature);
+    }
 
-	public UnZipFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
-	
-	protected Sequence unCompress(ByteArrayInputStream bais, Collection collection) throws XPathException {
-		ZipInputStream zis = new ZipInputStream(bais);
-		try {
-			ZipEntry entry;
-			while ((entry = zis.getNextEntry()) != null){
-				if (doUncompress(entry.getName())){
-					if (entry.isDirectory()){
-						createCollectionPath(collection, entry.getName());
-					} else {
-						createResource(zis, collection, entry.getName());
-					}
-				}
-			}
-		} catch (IOException e) {
-			throw new XPathException(this, e.getMessage());
-		} catch (XMLDBException e) {
-			throw new XPathException(this, e.getMessage());
-		}
-		return Sequence.EMPTY_SEQUENCE;
-	}
+    @Override
+    protected Sequence processCompressedData(Base64Binary compressedData) throws XPathException
+    {
+        ZipInputStream zis = null;
+        try
+        {
+            zis = new ZipInputStream(new ByteArrayInputStream(compressedData.getBinaryData()));
+            ZipEntry entry = null;
 
-	protected Sequence unCompress(ByteArrayInputStream bais) throws XPathException {
-		Sequence result = new InMemoryNodeSet();
-		ZipInputStream zis = new ZipInputStream(bais);
-		try {
-			ZipEntry entry;
-			while ((entry = zis.getNextEntry()) != null){
-				if (doUncompress(entry.getName())){
-					if (entry.isDirectory()){
-						result.add(createCollectionEntry(entry.getName()));
-					} else {
-						result.add(createResourceEntry(zis, entry.getName()));
-					}
-				}
-			}
-		} catch (IOException e) {
-			throw new XPathException(this, e.getMessage());
-		}
-		return result;
-	}
+            Sequence results = new ValueSequence();
 
+            while((entry = zis.getNextEntry()) != null)
+            {
+                Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), zis);
+
+                results.addAll(processCompressedEntryResults);
+
+                zis.closeEntry();
+            }
+
+            return results;
+        }
+        catch(IOException ioe)
+        {
+            LOG.error(ioe.getMessage(), ioe);
+            throw new XPathException(this, ioe.getMessage(), ioe);
+        }
+        finally
+        {
+            if(zis != null)
+            {
+                try
+                {
+                    zis.close();
+                }
+                catch(IOException ioe)
+                {
+                    LOG.warn(ioe.getMessage(), ioe);
+                }
+            }
+        }
+    }
 }
