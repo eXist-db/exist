@@ -585,10 +585,10 @@
                 </listitem>
             </varlistentry>
             <varlistentry>
-                <term>createsubdirectories</term>
+                <term>createdirectories</term>
                 <listitem>
                     <para>If "true" directories for sub-collections will be created
-                      Otherwise all extracted resoruces are written to the destination
+                      Otherwise all extracted resources are written to the destination
                       directory directly.
                     </para>
                 </listitem>
