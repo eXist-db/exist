@@ -75,6 +75,6 @@ public class SchedulerModule extends AbstractInternalModule
 
 	public String getDescription()
 	{
-		return "A module for Scheduling Jobs";
+		return "A module for Scheduling Jobs using the Quartz Scheduler";
 	}
 }
