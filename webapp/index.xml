@@ -102,7 +102,7 @@
 
             <p>The project has an chat box <b>#existdb</b> which is accessible via IRC on <a
                     href="irc://irc.freenode.net/existdb">irc.freenode.net</a> and via an AJAX based
-                    <a href="http://webchat.freenode.net/?channels=existdb">web interface</a>. The channel is open for
+                    <a href="http://webchat.freenode.net/?randomnick=1&amp;channels=existdb&amp;prompt=1">web interface</a>. The channel is open for
                 general discussions on eXist and related subjects 
 								(<a href="http://demo.exist-db.org/exist/irclog/irclog.xql">transcript</a>).</p>
 
