@@ -154,6 +154,11 @@
               <td>configuration options for the server.</td>
             </tr>
 
+            <tr>
+              <td class="doclink"><ulink url="scheduler.xml">Scheduler Module</ulink>:</td>
+              <td>Optional module for scheduling jobs.</td>
+            </tr>
+
               <tr>
                   <td class="doclink"><ulink url="tuning.xml">Tuning Guide</ulink>:</td>
                   <td>provides a few rules to consider when tuning the db and the XQueries</td>
