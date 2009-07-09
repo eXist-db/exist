@@ -29,7 +29,7 @@
                         <name></name>
                         <project>default</project>
                         <priority>0</priority>
-                        <progress></progress>
+                        <progress>0</progress>
                         <description></description>
                     </todo>
                 </edit>
@@ -113,7 +113,7 @@
                     <span class="project">
                         <xf:output ref="project"/>
                     </span>
-                    <span class="project">
+                    <span class="progress">
                         <xf:output ref="progress"/>
                     </span>
                     <span class="buttons">
