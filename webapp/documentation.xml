@@ -123,9 +123,8 @@
             </tr>
 
             <tr>
-              <td class="doclink"><ulink url="developper.html">Developer's Notes</ulink>:</td>
-              <td>a few notes on how to use the various tools; SVN, eclipse, Ant, PMD, JDepend,
-              ...</td>
+              <td class="doclink"><ulink url="eclipse.xml">Eclipse Setup Notes</ulink>:</td>
+              <td>a few notes on how to setup eclipse to run eXist in a debugging mode ...</td>
             </tr>
 
             <tr>
