@@ -1,0 +1,64 @@
+xquery version "1.0";
+
+import module namespace request="http://exist-db.org/xquery/request";
+import module namespace xdb = "http://exist-db.org/xquery/xmldb";
+
+(:~
+    Initialize the todo application
+:)
+declare function local:setup() {
+    if (not(collection("/db/todo"))) then
+        let $coll := xdb:create-collection("/db", "todo")
+        let $home := system:get-exist-home()
+    	let $dir := 
+    		if (doc-available(concat("file:///", $home, "/webapp/download.xml"))) then
+    			concat($home, "/webapp")
+    		else if(ends-with($home, "WEB-INF")) then
+    			substring-before($home, "WEB-INF")
+    		else
+    			concat($home)
+    	return (
+    		xdb:store-files-from-pattern("/db/todo", concat($dir, "/xforms/tasks"), "todo-projects.xml", "text/xml"),
+    		xdb:store("/db/todo", "3d5ce5a0-2420-4eb9-a94f-fcbe05589f99.xml",
+    		    <todo id="3d5ce5a0-2420-4eb9-a94f-fcbe05589f99">
+                    <name>Add some tasks and projects</name>
+                    <project>default</project>
+                    <priority>0</priority>
+                    <progress/>
+                    <description/>
+                </todo>
+            )
+    	)
+    else ()
+};
+
+let $dummy := local:setup()
+let $uri := request:get-uri()
+let $context := request:get-context-path()
+let $path := substring-after($uri, $context)
+let $name := replace($uri, '^.*/([^/]+)$', '$1')
+return
+    (: send docbook docs through the db2xhtml stylesheet :)
+    if (ends-with($uri, ".xml")) then
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+			<view>
+				<forward servlet="XSLTServlet">
+					<set-attribute name="xslt.stylesheet"
+						value="/stylesheets/db2xhtml.xsl"/>
+				</forward>
+			</view>
+			<cache-control cache="yes"/>
+		</dispatch>
+    (: make sure the global css and js files are resolved :)
+    else if ($name = ('default-style.css', 'curvycorners.js')) then
+        let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
+        return
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    			<forward url="{$newPath}"/>
+    			<cache-control cache="yes"/>
+    		</dispatch>
+    else
+        (: everything else is passed through :)
+        <ignore xmlns="http://exist.sourceforge.net/NS/exist">
+            <cache-control cache="yes"/>
+    	</ignore>

@@ -534,11 +534,9 @@
 		</div>
 	</xsl:template>
 	<xsl:template match="xhtml:link[@type='text/css' and @rel='stylesheet']">
-		<style type="text/css">
-			<xsl:call-template name="cssconv">
-				<xsl:with-param name="input" select="normalize-space(document(@href,/)/*)"/>
-			</xsl:call-template>
-		</style>
+		<xsl:copy>
+		    <xsl:apply-templates select="@*|node()"/>
+		</xsl:copy>
 	</xsl:template>
 	<xsl:template match="xhtml:style">
 		<style type="text/css">
