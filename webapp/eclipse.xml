@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbookxi.rng" type="xml"?>
-<article xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude"
-    xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
-    <info>
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        
+        <productname>Open Source Native XML Database</productname>
         <title>Eclipse setup</title>
         <author>
-            <personname>Loren Cahlander</personname>
-            <email>loren.cahlander@gmail.com</email>
+            <firstname>Loren</firstname>
+            <surname>Cahlander</surname>
             <affiliation>
-                <orgname>
-                    <link xlink:href="http://syntactica.com">Syntactica</link>
-                </orgname>
+                <address format="linespecific">
+                    <email>loren at syntactica.com</email>
+                </address>
             </affiliation>
         </author>
-    </info>
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../../sidebar.xml"/>
-    <section>
+    </bookinfo>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>Eclipse setup</title>
+        <section>
         <title>Overview</title>
         <para>This article demonstrates how to set up eclipse for developing eXist. It shows you how
             to check out the source from the Subversion repository, how to compile eXist and how to
@@ -27,36 +31,20 @@
         <para>Download and install eclipse</para>
         <para>Launch eclipse and add the Subclipse plug-ins</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse.png"/>
         </screenshot>
         <para>Install the subclipse plug-in for eclipse.</para>
         <para>Select Help-&gt;Software Updates...</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_software_update.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_software_update.png"/>
         </screenshot>
         <para>Click on Add Site...</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_add_site.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_add_site.png"/>
         </screenshot>
         <para>Enter: http://subclipse.tigris.org/update_1.4.x</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_add_subclipse.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_add_subclipse.png"/>
         </screenshot>
         <para>Select all of the entries under http://subclipse.tigris.org/update_1.4.x</para>
         <para>Click on Install...</para>
@@ -65,59 +53,31 @@
         <title>Checkout eXist 1.3 from the SVN repository.</title>
         <para>Open the SVN Repository Exploring perspective.</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_perspective.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_perspective.png"/>
         </screenshot>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_svn_perspective.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_svn_perspective.png"/>
         </screenshot>
         <para>Select Add SVN Repository</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_svn_action.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_svn_action.png"/>
         </screenshot>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_add_svn_repository.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_add_svn_repository.png"/>
         </screenshot>
         <para>Enter https://exist.svn.sourceforge.net/svnroot/exist/trunk</para>
         <para>Click on Finish</para>
         <para>The repository will show up in the SVN Repositiries window.</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_exist_svn_repository.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_exist_svn_repository.png"/>
         </screenshot>
         <para>Expand the view of the repository.</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_svn_exist_project.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_svn_exist_project.png"/>
         </screenshot>
         <para>Right click on the eXist project and select Checkout....</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/CheckOutAs.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/CheckOutAs.png"/>
         </screenshot>
         <para>Click on Finish</para>
     </section>
@@ -127,20 +87,12 @@
             able to run the eclipse debugger on the eXist codebase.</para>
         <para>Right-click on the exist project and select Properties.</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_prjprop_build_path.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_prjprop_build_path.png"/>
         </screenshot>
         <para>Select the Libraries tab.</para>
         <para>Click on Add Jars...</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_add_activation_jar.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_add_activation_jar.png"/>
         </screenshot>
         <para>Select /lib/user/activation-1.1.1.jar</para>
         <para>Click on OK.</para>
@@ -157,22 +109,14 @@
     <section>
         <title>Debug Configuration</title>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_debug_config_main.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_debug_config_main.png"/>
         </screenshot>
         <para>Select Java Application and click on New.</para>
         <para>Title it eXist Jetty run.</para>
         <para>Click on Browse... and select the eXist-1.3dev project.</para>
         <para>Enter org.exist.start.Main as the Main class.</para>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_debug_config_arguments.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_debug_config_arguments.png"/>
         </screenshot>
         <para>Select the Arguments tab.</para>
         <para>Enter jetty in the Program arguments field.</para>
@@ -217,43 +161,24 @@
             </tgroup>
         </table>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_debug_config_jre.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_debug_config_jre.png"/>
         </screenshot>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_debug_config_classpath.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_debug_config_classpath.png"/>
         </screenshot>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_debug_config_source.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_debug_config_source.png"/>
         </screenshot>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_debug_config_environment.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_debug_config_environment.png"/>
         </screenshot>
         <screenshot>
-            <mediaobject>
-                <imageobject>
-                    <imagedata fileref="images/eclipse_debug_config_common.png"/>
-                </imageobject>
-            </mediaobject>
+            <graphic fileref="resources/eclipse/eclipse_debug_config_common.png"/>
         </screenshot>
     </section>
     <section>
         <title>Conclusion</title>
         <para>Your environment is now set up.</para>
     </section>
-</article>
+    </chapter>
+</book>

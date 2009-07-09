@@ -8,10 +8,22 @@
             <orgname>eXist Open Source Native XML Database</orgname>
         </author>
         <author>
-            <personname><firstname>Loren</firstname><surname>Cahlander</surname></personname>
+            <firstname>Loren</firstname>
+            <surname>Cahlander</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>loren at syntactica.com</email>
+                </address>
+            </affiliation>
         </author>
         <author>
-            <personname><firstname>Dan</firstname><surname>McCreary</surname></personname>
+            <firstname>Dan</firstname>
+            <surname>McCreary</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>dan at syntactica.com</email>
+                </address>
+            </affiliation>
         </author>
     </info>
     <part>
