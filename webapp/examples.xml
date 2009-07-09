@@ -135,18 +135,6 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            URL Rewriting
-                        </td>
-                        <td width="70%">eXist's XQueryURLRewrite servlet filter calls a user-defined XQuery to 
-                        decide how a HTTP request is handled. The XML fragment returned by the
-                        query determines how the request is processed. This happens transparently
-                        to the client. One or more "views" can be applied to a request to further processes it.
-                        This is how most of the pages here are rendered (except the Cocoon examples). Have a look
-                        the main controller XQuery, which resides in <code>webapp/controller.xql</code>.</td>
-                        
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
                             <link href="xquery/biblio.xml">Bibliography 2</link>
                         </td>
                         <td width="70%"> Another bibliographic demo from
@@ -155,6 +143,33 @@
                 </table>
             </section>
 
+            <section title="Building Blocks for Web Applications">
+                <table border="0" width="100%" cellspacing="10">
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xforms/examples.xml">XForms</link>
+                        </td>
+                        <td width="70%">Examples based on XML Forms.</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xproc/examples.xml">XProc</link>
+                        </td>
+                        <td width="70%">XProc: the XML pipeline language.</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            URL Rewriting
+                        </td>
+                        <td width="70%">eXist's XQueryURLRewrite servlet filter calls a user-defined XQuery to 
+                            decide how a HTTP request is handled. The XML fragment returned by the
+                            query determines how the request is processed. This happens transparently
+                            to the client. One or more "views" can be applied to a request to further processes it.
+                            This is how most of the pages here are rendered (except the Cocoon examples). Have a look
+                            the main controller XQuery, which resides in <code>webapp/controller.xql</code>.</td>
+                    </tr>
+                </table>
+            </section>
             <section title="Misc Examples">
                 <table border="0" width="100%" cellspacing="10">
                     <tr>

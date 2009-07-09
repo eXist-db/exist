@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<article>
-    <articleinfo>
+<book>
+    <bookinfo>
         <graphic fileref="../logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>XForm Examples</title>
@@ -11,43 +11,138 @@
                 <address format="linespecific"><email>jim.fuller at webcomposite.com</email></address>
             </affiliation>
         </author>
-    </articleinfo>
+    </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
-    <section>
+    <chapter>
         <title>XForms Examples</title>
-		
-        <para>A few examples using the <ulink url="http://www.agencexml.com/xsltforms"
-                >xsltforms</ulink> xforms processor.</para>
-        
-        <para>You first need to run the "Examples Setup" page from the <ulink url="../admin/">admin web application</ulink> to run any of the following examples, as xsltforms needs to be uploaded to eXist.</para>
 
-		<ul>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/hello.xml">hello</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/calculator.xml">Calculator</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/input.xml">Input</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/incremental.xml">Incremental</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/spreadsheet.xml">Spreadsheet</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/bind.xml">Bind</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/address.xml">Address</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/secret.xml">Secret</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/textarea.xml">Textarea</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/checkbox.xml">Checkbox</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/select1.xml">Select1</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/select1-drop.xml">Select1 drop</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/select.xml">Select</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/select-model.xml">Select model</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/select-multi-col.xml">Select multi column</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/select-from-file.xml">Select from file</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/date.xml">Date</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/button.xml">Button</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/deep-copy.xml">Deep copy</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/first-field.xml">Setting initial cursor</ulink></li>
-		</ul>
-	<para>The following example will save form input into /db/xforms/data on submission.</para>
-	<ul>
-		<li><ulink url="http://localhost:8080/exist/rest/db/xforms/xf.xml">Contact</ulink></li>
-					<li><ulink url="http://localhost:8080/exist/rest/db/xforms/balance.xml">Balance*</ulink></li>
-			<li><ulink url="http://localhost:8080/exist/rest/db/xforms/bookmarks.xml">Bookmarks*</ulink></li>
-	</ul>
-    </section>
-</article>
+        <abstract>
+            <para>This page provides a few examples based on the 
+                <ulink url="http://www.agencexml.com/xsltforms">xsltforms</ulink>
+            XForms processor, which is included in the eXist distribution. xsltforms implements
+            the XForms standard within the browser and is thus easy to integrate. However, eXist will
+            also work with other XForms processors like <ulink url="http://www.orbeon.com">Orbeon</ulink>
+                or <ulink url="http://chiba-project.org">Chiba</ulink>.</para>
+            
+            <para>For learning XForms we highly recommend the 
+                <ulink url="http://en.wikibooks.org/wiki/XForms">XForms Wikibook</ulink>.</para> 
+        </abstract>
+
+        <section>
+            <title>Advanced Example: Task Manager</title>
+            
+            <para>The following example implements a simple, but functional task manager
+                in XForms. It demonstrates features like switch/case and
+                showing/hiding parts of a form, working with helper
+                instances or communicating with an XQuery backend:</para>
+            
+            <itemizedlist>
+                <listitem>
+                    <para><ulink url="tasks/todo-list.xml">Task Manager</ulink></para>
+                </listitem>
+            </itemizedlist>
+        </section>
+
+        <section>
+            <title>Simple Examples from the XSLTForms distribution</title>
+                
+            <para>You first need to run the "Examples Setup" page from the <ulink url="../admin/"
+                    >admin web application</ulink> to run any of the following examples, as
+                xsltforms needs to be uploaded to eXist.</para>
+
+            <ul>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/hello.xml">hello</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/calculator.xml"
+                        >Calculator</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/input.xml">Input</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/incremental.xml"
+                        >Incremental</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/spreadsheet.xml"
+                        >Spreadsheet</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/bind.xml">Bind</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/address.xml"
+                        >Address</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/secret.xml"
+                        >Secret</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/textarea.xml"
+                        >Textarea</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/checkbox.xml"
+                        >Checkbox</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/select1.xml"
+                        >Select1</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/select1-drop.xml">Select1
+                        drop</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/select.xml"
+                        >Select</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/select-model.xml">Select
+                        model</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/select-multi-col.xml"
+                        >Select multi column</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/select-from-file.xml"
+                        >Select from file</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/date.xml">Date</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/button.xml"
+                        >Button</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/deep-copy.xml">Deep
+                        copy</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/first-field.xml">Setting
+                        initial cursor</ulink>
+                </li>
+            </ul>
+            <para>The following example will save form input into /db/xforms/data on
+                submission.</para>
+            <ul>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/xf.xml">Contact</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/balance.xml"
+                        >Balance*</ulink>
+                </li>
+                <li>
+                    <ulink url="http://localhost:8080/exist/rest/db/xforms/bookmarks.xml"
+                        >Bookmarks*</ulink>
+                </li>
+            </ul>
+        </section>
+    </chapter>
+</book>

@@ -1,0 +1,108 @@
+ul.xforms-repeat li
+{
+    list-style-type:none;
+    padding: 10px;
+}
+
+.xforms-repeat-item
+{
+    padding: 4px;
+}
+
+.xforms-value
+{
+    width: 280px;
+}
+
+textarea.xforms-value
+{
+    width: 480px;
+    height: 200px;
+}
+
+.fw
+{
+    display: block;
+    width: 80px;
+    text-align: right;
+    margin-right: 1em;
+}
+
+.tablehead {
+    background-color: #4B4B4A;
+    color: white;
+    padding-bottom: 5px;
+}
+
+.project, .colhead
+{
+    display: block;
+    float: left;
+    width: 15%;
+}
+
+.colhead {
+    font-weight: bold;
+}
+
+.title
+{
+    display: block;
+    width: 60%;
+}
+
+.buttons
+{
+    float: right;
+    display: block;
+    text-align: right;
+    margin-top: -6px;
+}
+
+#cancel-button div
+{
+    float: left;
+}
+
+.project-select {
+    float: left;
+}
+
+#mask {
+    position: absolute;
+    z-index: 9000;
+    background-color: #000;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    opacity: .4;
+	filter: alpha(opacity=40);
+	/* this hack is so it works in IE
+	 * I find setting the color in the css gives me more flexibility 
+	 * than the PNG solution.
+	 */
+	background-color:transparent !important;
+	background-color: #333333;
+	/* this hack is for opera support
+	 * you can uncomment the background-image if you don't care about opera.
+	 * this gives you the flexibility to use any bg color that you want, instead of the png
+	 */
+	background-image/**/: url("maskBG.png") !important; // For browsers Moz, Opera, etc.
+	background-image:none;
+	background-repeat: repeat;
+}
+
+#delete-confirm-box, #edit-box
+{
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    margin-left: -175px;
+    width:350px;
+    height:200px;
+    z-index: 9999;
+    padding: 20px;
+    border:1px solid black;
+    background: #fff;
+}
