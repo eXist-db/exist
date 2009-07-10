@@ -1,6 +1,6 @@
 /*
  *  eXist Scheduler Module Extension GetSheduledJobs
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-2009 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -48,8 +48,10 @@ import org.xml.sax.SAXException;
  * Retrieves details of Jobs that have been Scheduled
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Loren Cahlander <loren@syntactica.com>
  * @serial 2007-12-04
- * @version 1.1
+ * @serial 2009-07-09
+ * @version 1.3
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
@@ -60,7 +62,22 @@ public class GetScheduledJobs extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "get-scheduled-jobs", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Get's details of all Scheduled Jobs",
+			"Get's details of all Scheduled Jobs in the form: " +
+			"<scheduler:jobs xmlns:scheduler=\"http://exist-db.org/xquery/scheduler\" count=\"iJobs\">" +
+			"    <scheduler:group name=\"group\">" +
+			"        <scheduler:job name=\"\">" +
+			"            <scheduler:trigger name=\"\">" +
+			"                <expression></expression>" +
+			"                <state></state>" +
+			"                <start></start>" +
+			"                <end></end>" +
+			"                <previous></previous>" +
+			"                <next></next>" +
+			"                <final></final>" +
+			"            </scheduler:trigger>" +
+			"        </scheduler:job>" +
+			"    </scheduler:group>" +
+			"</scheduler:jobs>",
 			null,
 			new FunctionParameterSequenceType( "scheduled-jobs", Type.NODE, Cardinality.EXACTLY_ONE, "returns the XML containing the list of jobs" ) );
 	
