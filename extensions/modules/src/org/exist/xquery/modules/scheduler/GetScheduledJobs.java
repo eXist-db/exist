@@ -36,8 +36,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import org.xml.sax.SAXException;
@@ -62,7 +62,7 @@ public class GetScheduledJobs extends BasicFunction
 			new QName( "get-scheduled-jobs", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
 			"Get's details of all Scheduled Jobs",
 			null,
-			new SequenceType( Type.NODE, Cardinality.EXACTLY_ONE ) );
+			new FunctionParameterSequenceType( "scheduled-jobs", Type.NODE, Cardinality.EXACTLY_ONE, "returns the XML containing the list of jobs" ) );
 	
 	/**
 	 * GetScheduledJobs Constructor

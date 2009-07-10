@@ -32,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -54,12 +55,12 @@ public class DeleteScheduledJob extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("delete-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Delete the job named in $a from the Scheduler. Will only delete User Scheduled Jobs! Returns true() if the Job was deleted.",
+			"Delete the named job named from the Scheduler. Will only delete User Scheduled Jobs! Returns true() if the Job was deleted.",
 			new SequenceType[]
 			{
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job to be deleted")
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Returns boolean value indicating success or failure on deleting the named job."));
 	
 	/**
 	 * DeleteScheduledJob Constructor

@@ -32,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -54,12 +55,12 @@ public class ResumeScheduledJob extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("resume-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Resumes the job named in $a with the Scheduler. Will only resume User Scheduled Jobs!",
+			"Resumes the named job in the Scheduler. Will only resume User Scheduled Jobs!",
 			new SequenceType[]
 			{
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job to resume.")
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "successful resumption"));
 	
 	/**
 	 * ResumeScheduledJob Constructor
