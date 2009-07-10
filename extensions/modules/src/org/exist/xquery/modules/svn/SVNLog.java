@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -58,13 +59,13 @@ public class SVNLog extends BasicFunction {
             "log should be retrieved. The second argument denotes the start revision (or rev." +
             " 0 if the argument is empty). The third argument specifies the end revision (or HEAD).",
 			new SequenceType[] {
-                new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE),
-                new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("repositort-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, ""),
+                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+                new FunctionParameterSequenceType("start-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, ""),
+                new FunctionParameterSequenceType("end-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "")
             },
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
+			new FunctionParameterSequenceType("logs", Type.NODE, Cardinality.ZERO_OR_MORE, "logs"));
 
     private final static QName LOG_ELEMENT = new QName("log", "", "");
     private final static QName ENTRY_ELEMENT = new QName("entry", "", "");
