@@ -14,9 +14,16 @@
        <xdb:create user="admin" password=""
        uri="${test.coll}/antunit" collection="test"/>
 
-       <xdb:store user="admin" password=""
+       <xdb:create user="admin" password=""
+       uri="${test.coll}/antunit/test" collection="test"/>
+
+        <xdb:store user="admin" password=""
            uri="${test.coll}/antunit"
            createcollection="true" srcfile="test.xml"/>
+
+        <xdb:store user="admin" password=""
+            uri="${test.coll}/antunit/test"
+            createcollection="true" srcfile="test.xml"/>
 
         <xdb:store user="admin" password=""
            uri="${test.coll}/antunit"
@@ -32,11 +39,11 @@
 
     <target name="alltests">
         <au:antunit>
-            <file file="base.xml"/>
+            <!--file file="base.xml"/>
             <file file="user.xml"/>
             <file file="file.xml"/>
+            <file file="server.xml"/-->
             <file file="xmldb.xml"/>
-            <file file="server.xml"/>
             <au:plainlistener/>
         </au:antunit>
     </target>
@@ -46,12 +53,13 @@
 
         <delete file="test-logo.jpg"/>
         <delete file="test-output.xml"/>
+        <delete dir="antunit"/>
 
         <!-- remove testtest user //-->
         <xdb:rmuser uri="${exist.uri}/db" user="admin" password="" name="testtest"/>
 
     </target>
 
-    <target name="run" depends="teardown,setup, alltests, teardown"/>
+    <target name="run" depends="teardown,setup, alltests"/>
 
 </project>

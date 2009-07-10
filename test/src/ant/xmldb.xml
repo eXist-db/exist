@@ -42,9 +42,43 @@
         <!-- destfile attribute is actually file //-->
         <xdb:extract uri="${test.coll}/antunit"  user="${exist.user}" password="${exist.password}"  type="xml" resource="test.xml" destfile="test-output.xml"/>
 
-        <au:assertFileExists file="test-output.xml"/>
+        <au:assertFileExists message="XMLDBExtract does not work" file="test-output.xml"/>
 
     </target>
+
+    <!-- repeat test to see overwritefiles behavior //-->
+     <!--target name="test_overwrite_XMLDBExtract" description="repeat basic extract file test to test overwrite behavior">
+
+        <xdb:extract uri="${test.coll}/antunit"  user="${exist.user}" password="${exist.password}"  type="xml" resource="test.xml" overwritefiles="true" destfile="test-output.xml"/>
+
+        <au:assertFileExists file="test-output.xml"/>
+
+    </target-->
+
+     <target name="test_createdirectories_XMLDBExtract" description="repeat basic extract dir/file test to test createdirectories property">
+
+        <xdb:extract uri="${test.coll}/antunit"
+                     user="${exist.user}"
+                     password="${exist.password}"
+                     createdirectories="true"
+                     subcollections="true"
+                     overwrite="true"
+                     destdir="antunit"/>
+
+         <au:assertEquals message="all files were not extracted" expected="true"
+                               actual="true" casesensitive="false"/>
+
+    </target>
+
+
+     <!--target name="test_overwritedirs_XMLDBExtract" description="repeat extract dir/file test to test overwritedirs property">
+
+        <xdb:extract uri="${test.coll}/antunit"  user="${exist.user}" password="${exist.password}" overwrite="true" createdirectories="true" destdir="antunit"/>
+
+         <au:assertEquals message="all files were not extracted" expected="true"
+                               actual="true" casesensitive="false"/>
+
+    </target-->
 
     <target name="test_binary_XMLDBExtract" description="test extraction of XML into files and collections">
 
