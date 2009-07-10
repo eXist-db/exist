@@ -62,7 +62,7 @@
                      password="${exist.password}"
                      createdirectories="true"
                      subcollections="true"
-                     overwrite="true"
+                     overwrite="false"
                      destdir="antunit"/>
 
          <au:assertEquals message="all files were not extracted" expected="true"
@@ -71,14 +71,19 @@
     </target>
 
 
-     <!--target name="test_overwritedirs_XMLDBExtract" description="repeat extract dir/file test to test overwritedirs property">
+     <target name="test_overwritedirs_XMLDBExtract" description="repeat extract dir/file test to test overwritedirs property">
 
-        <xdb:extract uri="${test.coll}/antunit"  user="${exist.user}" password="${exist.password}" overwrite="true" createdirectories="true" destdir="antunit"/>
+        <xdb:extract uri="${test.coll}/antunit"
+                     user="${exist.user}"
+                     password="${exist.password}"
+                     overwrite="false"
+                     createdirectories="true"
+                     destdir="antunit"/>
 
          <au:assertEquals message="all files were not extracted" expected="true"
                                actual="true" casesensitive="false"/>
 
-    </target-->
+    </target>
 
     <target name="test_binary_XMLDBExtract" description="test extraction of XML into files and collections">
 
