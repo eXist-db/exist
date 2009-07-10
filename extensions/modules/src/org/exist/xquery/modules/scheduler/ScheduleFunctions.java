@@ -118,6 +118,7 @@ public class ScheduleFunctions extends BasicFunction
 	private final static FunctionSignature scheduleXQueryCronJobNoParam = new FunctionSignature(
 			new QName(SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
 			"Schedules the named XQuery resource (e.g. /db/foo.xql) according to the Cron expression. " +
+			"XQuery job's will be launched under the guest account initially, although the running XQuery may switch permissions through calls to xmldb:login(). " +
             "The job will be registered using the job name.",
 			new SequenceType[]
 			{
@@ -130,6 +131,7 @@ public class ScheduleFunctions extends BasicFunction
 	private final static FunctionSignature scheduleXQueryCronJobParam = new FunctionSignature(
             new QName(SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
             "Schedules the named XQuery resource (e.g. /db/foo.xql) according to the Cron expression. " +
+			"XQuery job's will be launched under the guest account initially, although the running XQuery may switch permissions through calls to xmldb:login(). " +
             "The job will be registered using the job name. The final argument can be used to specify " +
             "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
             "in an XML fragment with the following structure: " +
@@ -146,6 +148,7 @@ public class ScheduleFunctions extends BasicFunction
 	private final static FunctionSignature scheduleXQueryPeriodicParam = new FunctionSignature(
             new QName(SCHEDULE_XQUERY_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
             "Schedules the named XQuery resource (e.g. /db/foo.xql) according to the period. " +
+			"XQuery job's will be launched under the guest account initially, although the running XQuery may switch permissions through calls to xmldb:login(). " +
             "The job will be registered using the job name. The job parameters argument can be used to specify " +
             "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
             "in an XML fragment with the following structure: " +
