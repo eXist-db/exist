@@ -601,6 +601,13 @@
                     </para>
                 </listitem>
             </varlistentry>
+            <varlistentry>
+                <term>overwrite</term>
+                <listitem>
+                    <para>Set to true to force overwriting of files.
+                    </para>
+                </listitem>
+            </varlistentry>
           </variablelist>
       </section>
         <section>
