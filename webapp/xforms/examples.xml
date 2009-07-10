@@ -52,79 +52,79 @@
 
             <ul>
                 <li>
-                    <ulink url="hello.xml">hello</ulink>
+                    <ulink url="../rest/db/xforms/hello.xml">hello</ulink>
                 </li>
                 <li>
-                    <ulink url="calculator.xml"
+                    <ulink url="../rest/db/xforms/calculator.xml"
                         >Calculator</ulink>
                 </li>
                 <li>
-                    <ulink url="input.xml">Input</ulink>
+                    <ulink url="../rest/db/xforms/input.xml">Input</ulink>
                 </li>
                 <li>
-                    <ulink url="incremental.xml"
+                    <ulink url="../rest/db/xforms/incremental.xml"
                         >Incremental</ulink>
                 </li>
                 <li>
-                    <ulink url="spreadsheet.xml"
+                    <ulink url="../rest/db/xforms/spreadsheet.xml"
                         >Spreadsheet</ulink>
                 </li>
                 <li>
-                    <ulink url="bind.xml">Bind</ulink>
+                    <ulink url="../rest/db/xforms/bind.xml">Bind</ulink>
                 </li>
                 <li>
-                    <ulink url="address.xml"
+                    <ulink url="../rest/db/xforms/address.xml"
                         >Address</ulink>
                 </li>
                 <li>
-                    <ulink url="secret.xml"
+                    <ulink url="../rest/db/xforms/secret.xml"
                         >Secret</ulink>
                 </li>
                 <li>
-                    <ulink url="textarea.xml"
+                    <ulink url="../rest/db/xforms/textarea.xml"
                         >Textarea</ulink>
                 </li>
                 <li>
-                    <ulink url="checkbox.xml"
+                    <ulink url="../rest/db/xforms/checkbox.xml"
                         >Checkbox</ulink>
                 </li>
                 <li>
-                    <ulink url="select1.xml"
+                    <ulink url="../rest/db/xforms/select1.xml"
                         >Select1</ulink>
                 </li>
                 <li>
-                    <ulink url="select1-drop.xml">Select1
+                    <ulink url="../rest/db/xforms/select1-drop.xml">Select1
                         drop</ulink>
                 </li>
                 <li>
-                    <ulink url="select.xml"
+                    <ulink url="../rest/db/xforms/select.xml"
                         >Select</ulink>
                 </li>
                 <li>
-                    <ulink url="select-model.xml">Select
+                    <ulink url="../rest/db/xforms/select-model.xml">Select
                         model</ulink>
                 </li>
                 <li>
-                    <ulink url="select-multi-col.xml"
+                    <ulink url="../rest/db/xforms/select-multi-col.xml"
                         >Select multi column</ulink>
                 </li>
                 <li>
-                    <ulink url="select-from-file.xml"
+                    <ulink url="../rest/db/xforms/select-from-file.xml"
                         >Select from file</ulink>
                 </li>
                 <li>
-                    <ulink url="date.xml">Date</ulink>
+                    <ulink url="../rest/db/xforms/date.xml">Date</ulink>
                 </li>
                 <li>
-                    <ulink url="button.xml"
+                    <ulink url="../rest/db/xforms/button.xml"
                         >Button</ulink>
                 </li>
                 <li>
-                    <ulink url="deep-copy.xml">Deep
+                    <ulink url="../rest/db/xforms/deep-copy.xml">Deep
                         copy</ulink>
                 </li>
                 <li>
-                    <ulink url="first-field.xml">Setting
+                    <ulink url="../rest/db/xforms/first-field.xml">Setting
                         initial cursor</ulink>
                 </li>
             </ul>
@@ -132,14 +132,14 @@
                 submission.</para>
             <ul>
                 <li>
-                    <ulink url="xf.xml">Contact</ulink>
+                    <ulink url="../rest/db/xforms/xf.xml">Contact</ulink>
                 </li>
                 <li>
-                    <ulink url="balance.xml"
+                    <ulink url="../rest/db/xforms/balance.xml"
                         >Balance*</ulink>
                 </li>
                 <li>
-                    <ulink url="bookmarks.xml"
+                    <ulink url="../rest/db/xforms/bookmarks.xml"
                         >Bookmarks*</ulink>
                 </li>
             </ul>
