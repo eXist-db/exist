@@ -30,6 +30,10 @@
            createcollection="true" type="binary" srcfile="logo.jpg"/>
 
         <xdb:store user="admin" password=""
+           uri="${test.coll}/antunit/test/binary-test"
+           createcollection="true" type="binary" srcfile="logo.jpg"/>
+
+        <xdb:store user="admin" password=""
            uri="${test.coll}/antunit"
            createcollection="true" srcfile="test1.xml"/>
         <xdb:store user="admin" password=""
@@ -60,6 +64,6 @@
 
     </target>
 
-    <target name="run" depends="teardown,setup, alltests"/>
+    <target name="run" depends="teardown,setup, alltests,teardown"/>
 
 </project>
