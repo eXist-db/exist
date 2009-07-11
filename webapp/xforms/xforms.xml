@@ -46,10 +46,7 @@
 			
 	<para>...	</para>
 	
-	<section>
-		<title>XForms handler</title>
-		<para></para>
-	</section>
+
 				
 		</section>
 		
@@ -59,20 +56,20 @@
 			<section>
 				<title>Mailing Lists</title>
 			<ul>
-			<li>W3C XProc dev mailing list xproc-dev@w3.org</li>
+			<li>mailing list</li>
 			</ul>
 			</section>
 			<section>
 				<title>XForms articles</title>
 			<ul>
-			<li><a href="http://www.ibm.com/developerworks/library/x-xproc/" target="_resource"> Jim Fuller 'Discovering XProc' IBM Developworks 2008</a></li>
+			<li></li>
 			</ul>
 		</section>
 		
 			<section>
 				<title>XForms Specifications</title>
 			<ul>
-			<li><a href="http://www.w3.org/XML/XProc/docs/langspec.html" target="_resource">XProc</a>: An XML Pipeline Language]: Explore this W3C XProc Editors Draft (the W3C working draft dated 01 May 2008).</li>
+			<li></li>
 
 		</ul>
 			</section>
