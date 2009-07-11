@@ -65,8 +65,14 @@
                      overwrite="false"
                      destdir="antunit"/>
 
-         <au:assertEquals message="all files were not extracted" expected="true"
-                               actual="true" casesensitive="false"/>
+         <available file="antunit/logo.jpg" property="binary.present"/>
+         <available file="antunit/test.xml" property="xml.present"/>
+
+         <au:assertEquals message="binary file was not extracted" expected="true"
+                               actual="${binary.present}" casesensitive="false"/>
+
+         <au:assertEquals message="xml file was not extracted" expected="true"
+                               actual="${xml.present}" casesensitive="false"/>
 
     </target>
 
@@ -76,12 +82,18 @@
         <xdb:extract uri="${test.coll}/antunit"
                      user="${exist.user}"
                      password="${exist.password}"
-                     overwrite="false"
+                     overwrite="true"
                      createdirectories="true"
                      destdir="antunit"/>
 
-         <au:assertEquals message="all files were not extracted" expected="true"
-                               actual="true" casesensitive="false"/>
+         <available file="antunit/logo.jpg" property="binary.present"/>
+         <available file="antunit/test.xml" property="xml.present"/>
+
+         <au:assertEquals message="binary file was not extracted" expected="true"
+                               actual="${binary.present}" casesensitive="false"/>
+
+         <au:assertEquals message="xml file was not extracted" expected="true"
+                               actual="${xml.present}" casesensitive="false"/>
 
     </target>
 
