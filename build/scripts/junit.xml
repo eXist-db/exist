@@ -244,6 +244,25 @@
         </junit>
     </target>
 
+    
+        <!-- Test set 6 : tests on exist ant tasks -->
+    <target name="test-ant" depends="jar">
+        <mkdir dir="${junit.reports}"/>
+        <echo message="--------------------------------"/>
+        <echo message="Running antunit tests on exist ant tasks"/>
+        <echo message="--------------------------------"/>
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+
+            <test fork="yes" name="org.exist.ant.AntUnitTestRunner" todir="${junit.reports.dat}"/>
+        </junit>
+    </target>
+
     <target name="extra-tests">
         <echo message="------------------------------------------"/>
         <echo message="Running additional tests, which may take some time"/>
